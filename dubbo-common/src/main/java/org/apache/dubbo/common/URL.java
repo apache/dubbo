@@ -228,14 +228,10 @@ class URL implements Serializable {
      * @return
      */
     public static URL valueOf(String url, boolean encoded) {
-        return valueOf(url, encoded, false);
-    }
-
-    public static URL valueOf(String url, boolean encoded, boolean modifiable) {
         if (encoded) {
-            return URLStrParser.parseEncodedStr(url, modifiable);
+            return URLStrParser.parseEncodedStr(url);
         }
-        return URLStrParser.parseDecodedStr(url, modifiable);
+        return URLStrParser.parseDecodedStr(url);
     }
 
     public static URL valueOf(String url, String... reserveParams) {

@@ -103,7 +103,7 @@ public class RemoteMetadataServiceImpl {
 
     private void checkRemoteConfigured() {
         if (getMetadataReports().size() == 0) {
-            String msg = "Remote Metadata Report Server not hasn't been configured. Unable to get Metadata from remote!";
+            String msg = "Remote Metadata Report Server not hasn't been configured or unavailable . Unable to get Metadata from remote!";
             logger.error(msg);
             throw new IllegalStateException(msg);
         }

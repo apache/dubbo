@@ -82,6 +82,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -175,7 +176,7 @@ public final class DubboBootstrap {
 
     protected AtomicBoolean destroyed = new AtomicBoolean(false);
 
-    protected AtomicBoolean shutdown = new AtomicBoolean(false);
+    protected volatile boolean isCurrentlyInStart = false;
 
     protected volatile ServiceInstance serviceInstance;
 
@@ -189,9 +190,9 @@ public final class DubboBootstrap {
 
     protected final List<CompletableFuture<?>> asyncReferringFutures = new ArrayList<>();
 
-    protected boolean asyncExportFinish = true;
+    protected volatile boolean asyncExportFinish = true;
 
-    protected boolean asyncReferFinish = true;
+    protected volatile boolean asyncReferFinish = true;
 
     protected static boolean ignoreConfigState;
 
@@ -548,7 +549,7 @@ public final class DubboBootstrap {
     /**
      * Initialize
      */
-    public void initialize() {
+    public synchronized void initialize() {
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
@@ -766,6 +767,7 @@ public final class DubboBootstrap {
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
             ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
             if (!metadataReportConfig.isValid()) {
+                logger.info("Ignore invalid metadata-report config: " + metadataReportConfig);
                 continue;
             }
             MetadataReportInstance.init(metadataReportConfig);
@@ -796,11 +798,14 @@ public final class DubboBootstrap {
                 .stream()
                 .filter(this::isUsedRegistryAsConfigCenter)
                 .map(this::registryAsConfigCenter)
-                .forEach(configManager::addConfigCenter);
+                .forEach(configCenter -> {
+                    if (configManager.getConfigCenter(configCenter.getId()).isPresent()) {
+                        return;
+                    }
+                    configManager.addConfigCenter(configCenter);
+                    logger.info("use registry as config-center: " + configCenter);
 
-            if (configManager.getConfigCenters().size() > 0) {
-                logger.info("use registry as config-center: " + configManager.getConfigCenters());
-            }
+                });
         }
     }
 
@@ -812,7 +817,8 @@ public final class DubboBootstrap {
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
-        String id = "config-center-" + protocol + "-" + port;
+        URL url = URL.valueOf(registryConfig.getAddress());
+        String id = "config-center-" + protocol + "-" + url.getHost() + "-" + port;
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setId(id);
         if (cc.getParameters() == null) {
@@ -852,11 +858,14 @@ public final class DubboBootstrap {
                 .stream()
                 .filter(this::isUsedRegistryAsMetadataCenter)
                 .map(this::registryAsMetadataCenter)
-                .forEach(configManager::addMetadataReport);
-
-            if (configManager.getMetadataConfigs().size() > 0) {
-                logger.info("use registry as metadata-center: " + configManager.getMetadataConfigs());
-            }
+                .forEach(metadataReportConfig -> {
+                    Optional<MetadataReportConfig> configOptional = configManager.getConfig(MetadataReportConfig.class, metadataReportConfig.getId());
+                    if (configOptional.isPresent()) {
+                        return;
+                    }
+                    configManager.addMetadataReport(metadataReportConfig);
+                    logger.info("use registry as metadata-center: " + metadataReportConfig);
+                });
         }
     }
 
@@ -917,8 +926,8 @@ public final class DubboBootstrap {
 
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
-        Integer port = registryConfig.getPort();
-        String id = "metadata-center-" + protocol + "-" + port;
+        URL url = URL.valueOf(registryConfig.getAddress());
+        String id = "metadata-center-" + protocol + "-" + url.getHost() + "-" + url.getPort();
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
         metadataReportConfig.setId(id);
         if (metadataReportConfig.getParameters() == null) {
@@ -1085,61 +1094,78 @@ public final class DubboBootstrap {
     /**
      * Start the bootstrap
      */
-    public DubboBootstrap start() {
-        if (started.compareAndSet(false, true)) {
-            startup.set(false);
-            shutdown.set(false);
-            awaited.set(false);
-
-            initialize();
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " is starting...");
-            }
-            // 1. export Dubbo Services
-            exportServices();
-
-            // If register consumer instance or has exported services
-            if (isRegisterConsumerInstance() || hasExportedServices()) {
-                // 2. export MetadataService
-                exportMetadataService();
-                // 3. Register the local ServiceInstance if required
-                registerServiceInstance();
-            }
-
-            referServices();
-
-            // wait async export / refer finish if needed
-            awaitFinish();
-
-            if (isExportBackground() || isReferBackground()) {
-                new Thread(() -> {
-                    while (!asyncExportFinish || !asyncReferFinish) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            logger.error(NAME + " waiting async export / refer occurred and error.", e);
-                        }
-                    }
-
-                    startup.set(true);
-                    if (logger.isInfoEnabled()) {
-                        logger.info(NAME + " is ready.");
-                    }
-                    onStart();
-                }).start();
-            } else {
-                startup.set(true);
-                if (logger.isInfoEnabled()) {
-                    logger.info(NAME + " is ready.");
-                }
-                onStart();
-            }
-
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " has started.");
-            }
+    public synchronized DubboBootstrap start() {
+        // avoid re-entry start method multiple times in same thread
+        if (isCurrentlyInStart) {
+            return this;
         }
-        return this;
+
+        isCurrentlyInStart = true;
+        try {
+            if (started.compareAndSet(false, true)) {
+                startup.set(false);
+                shutdown.set(false);
+                awaited.set(false);
+
+                initialize();
+
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " is starting...");
+                }
+
+                doStart();
+
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " has started.");
+                }
+            } else {
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " is started, export/refer new services.");
+                }
+
+                doStart();
+
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " finish export/refer new services.");
+                }
+            }
+            return this;
+        } finally {
+            isCurrentlyInStart = false;
+        }
+    }
+
+    private void doStart() {
+        // 1. export Dubbo Services
+        exportServices();
+
+        // If register consumer instance or has exported services
+        if (isRegisterConsumerInstance() || hasExportedServices()) {
+            // 2. export MetadataService
+            exportMetadataService();
+            // 3. Register the local ServiceInstance if required
+            registerServiceInstance();
+        }
+
+        referServices();
+
+        // wait async export / refer finish if needed
+        awaitFinish();
+
+        if (isExportBackground() || isReferBackground()) {
+            new Thread(() -> {
+                while (!asyncExportFinish || !asyncReferFinish) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        logger.error(NAME + " waiting async export / refer occurred and error.", e);
+                    }
+                }
+                onStarted();
+            }).start();
+        } else {
+            onStarted();
+        }
     }
 
     private boolean hasExportedServices() {
@@ -1242,10 +1268,9 @@ public final class DubboBootstrap {
         }
     }
 
-    public DubboBootstrap awaitFinish() {
+    private void awaitFinish() {
         waitAsyncExportIfNeeded();
         waitAsyncReferIfNeeded();
-        return this;
     }
 
     public boolean isInitialized() {
@@ -1302,10 +1327,23 @@ public final class DubboBootstrap {
 
     private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
         if (configCenter.isValid()) {
-            if (!configCenter.checkOrUpdateInited()) {
+            if (!configCenter.checkOrUpdateInitialized(true)) {
                 return null;
             }
-            DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+
+            DynamicConfiguration dynamicConfiguration = null;
+            try {
+                dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+            } catch (Exception e) {
+                if (!configCenter.isCheck()) {
+                    logger.warn("The configuration center failed to initialize", e);
+                    configCenter.checkOrUpdateInitialized(false);
+                    return null;
+                } else {
+                    throw new IllegalStateException(e);
+                }
+            }
+
             String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = getApplication().getName();
@@ -1349,7 +1387,11 @@ public final class DubboBootstrap {
 
     private void unexportMetadataService() {
         if (metadataServiceExporter != null && metadataServiceExporter.isExported()) {
-            metadataServiceExporter.unexport();
+            try{
+                metadataServiceExporter.unexport();
+            }catch (Exception ignored){
+                // ignored
+            }
         }
     }
 
@@ -1361,7 +1403,9 @@ public final class DubboBootstrap {
             if (!serviceConfig.isRefreshed()) {
                 serviceConfig.refresh();
             }
-
+            if (sc.isExported()) {
+                continue;
+            }
             if (sc.shouldExportAsync()) {
                 ExecutorService executor = executorRepository.getServiceExportExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
@@ -1387,8 +1431,12 @@ public final class DubboBootstrap {
 
     private void unexportServices() {
         exportedServices.forEach(sc -> {
-            configManager.removeConfig(sc);
-            sc.unexport();
+            try{
+                configManager.removeConfig(sc);
+                sc.unexport();
+            }catch (Exception ignored){
+                // ignored
+            }
         });
 
         asyncExportingFutures.forEach(future -> {
@@ -1406,77 +1454,93 @@ public final class DubboBootstrap {
         }
 
         configManager.getReferences().forEach(rc -> {
-            // TODO, compatible with  ReferenceConfig.refer()
-            ReferenceConfig<?> referenceConfig = (ReferenceConfig<?>) rc;
-            referenceConfig.setBootstrap(this);
-            if (!referenceConfig.isRefreshed()) {
-                referenceConfig.refresh();
-            }
-
-            if (rc.shouldInit()) {
-                if (rc.shouldReferAsync()) {
-                    ExecutorService executor = executorRepository.getServiceReferExecutor();
-                    CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                        try {
-                            cache.get(rc);
-                        } catch (Throwable t) {
-                            logger.error("refer async catch error : " + t.getMessage(), t);
-                        }
-                    }, executor);
-
-                    asyncReferringFutures.add(future);
-                } else {
-                    cache.get(rc);
+            try {
+                // TODO, compatible with  ReferenceConfig.refer()
+                ReferenceConfig<?> referenceConfig = (ReferenceConfig<?>) rc;
+                referenceConfig.setBootstrap(this);
+                if (!referenceConfig.isRefreshed()) {
+                    referenceConfig.refresh();
                 }
+
+                if (rc.shouldInit()) {
+                    if (rc.shouldReferAsync()) {
+                        ExecutorService executor = executorRepository.getServiceReferExecutor();
+                        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                            try {
+                                cache.get(rc);
+                            } catch (Throwable t) {
+                                logger.error("refer async catch error : " + t.getMessage(), t);
+                            }
+                        }, executor);
+
+                        asyncReferringFutures.add(future);
+                    } else {
+                        cache.get(rc);
+                    }
+                }
+            } catch (Throwable t) {
+                logger.error("refer catch error", t);
+                cache.destroy(rc);
             }
         });
     }
 
     private void unreferServices() {
-        if (cache == null) {
-            cache = ReferenceConfigCache.getCache();
-        }
-
-        asyncReferringFutures.forEach(future -> {
-            if (!future.isDone()) {
-                future.cancel(true);
+        try{
+            if (cache == null) {
+                cache = ReferenceConfigCache.getCache();
             }
-        });
-        asyncReferringFutures.clear();
-        cache.destroyAll();
+
+            asyncReferringFutures.forEach(future -> {
+                if (!future.isDone()) {
+                    future.cancel(true);
+                }
+            });
+            asyncReferringFutures.clear();
+            cache.destroyAll();
+        }catch (Exception ignored){
+        }
     }
 
     protected void registerServiceInstance() {
+        if (this.serviceInstance != null) {
+            return;
+        }
+
         ApplicationConfig application = getApplication();
-
         String serviceName = application.getName();
-
         ServiceInstance serviceInstance = createServiceInstance(serviceName);
-
+        boolean registered = true;
         try {
             ServiceInstanceMetadataUtils.registerMetadataAndInstance(serviceInstance);
         } catch (Exception e) {
+            registered = false;
             logger.error("Register instance error", e);
         }
-
-        // scheduled task for updating Metadata and ServiceInstance
-        asyncMetadataFuture = executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
-            InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
-            localMetadataService.blockUntilUpdated();
-            try {
-                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
-            } catch (Exception e) {
-                logger.error("Refresh instance and metadata error", e);
-            } finally {
-                localMetadataService.releaseBlock();
-            }
-        }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
+        if(registered){
+            // scheduled task for updating Metadata and ServiceInstance
+            asyncMetadataFuture = executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
+                InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+                localMetadataService.blockUntilUpdated();
+                try {
+                    ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                } catch (Exception e) {
+                    logger.error("Refresh instance and metadata error", e);
+                } finally {
+                    localMetadataService.releaseBlock();
+                }
+            }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
+        }
     }
 
     private void unregisterServiceInstance() {
         if (serviceInstance != null) {
             getServiceDiscoveries().forEach(serviceDiscovery -> {
-                serviceDiscovery.unregister(serviceInstance);
+                try{
+                    serviceDiscovery.unregister(serviceInstance);
+                }catch (Exception ignored){
+                    // ignored
+                }
             });
         }
     }
@@ -1521,7 +1585,10 @@ public final class DubboBootstrap {
 
                 destroyDynamicConfigurations();
                 ShutdownHookCallbacks.INSTANCE.clear();
-            } finally {
+            }catch (Throwable ignored){
+                // ignored
+                logger.warn(ignored.getMessage(),ignored);
+            }finally {
                 initialized.set(false);
                 startup.set(false);
                 destroyLock.unlock();
@@ -1529,7 +1596,11 @@ public final class DubboBootstrap {
         }
     }
 
-    private void onStart() {
+    private void onStarted() {
+        startup.set(true);
+        if (logger.isInfoEnabled()) {
+            logger.info(NAME + " is ready.");
+        }
         ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
         exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(this));
     }
@@ -1574,7 +1645,11 @@ public final class DubboBootstrap {
 
     private void destroyServiceDiscoveries() {
         getServiceDiscoveries().forEach(serviceDiscovery -> {
-            execute(serviceDiscovery::destroy);
+            try{
+                execute(serviceDiscovery::destroy);
+            }catch (Throwable ignored){
+                logger.warn(ignored.getMessage(),ignored);
+            }
         });
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ServiceDiscoveries have been destroyed.");
@@ -1611,16 +1686,11 @@ public final class DubboBootstrap {
 
     private void release() {
         executeMutually(() -> {
-            while (awaited.compareAndSet(false, true)) {
+            if (awaited.compareAndSet(false, true)) {
                 if (logger.isInfoEnabled()) {
                     logger.info(NAME + " is about to shutdown...");
                 }
                 condition.signalAll();
-                // sleep
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                }
             }
         });
     }
@@ -1628,7 +1698,12 @@ public final class DubboBootstrap {
     private void shutdown() {
         if (!executorService.isShutdown()) {
             // Shutdown executorService
-            executorService.shutdown();
+            try{
+                executorService.shutdown();
+            }catch (Throwable ignored){
+                // ignored
+                logger.warn(ignored.getMessage(),ignored);
+            }
         }
     }
 

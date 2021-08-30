@@ -79,6 +79,7 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_ADDRESS;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.FILTER_KEY;
@@ -86,6 +87,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
@@ -304,29 +306,35 @@ public class ConfigValidationUtils {
         AbstractConfig.appendParameters(map, monitor);
         AbstractConfig.appendParameters(map, application);
         String address = null;
-        String sysaddress = System.getProperty("dubbo.monitor.address");
-        if (sysaddress != null && sysaddress.length() > 0) {
-            address = sysaddress;
+        String sysAddress = System.getProperty(DUBBO_MONITOR_ADDRESS);
+        if (sysAddress != null && sysAddress.length() > 0) {
+            address = sysAddress;
         } else if (monitor != null) {
             address = monitor.getAddress();
         }
-        if (ConfigUtils.isNotEmpty(address)) {
+        String protocol = monitor == null ? null : monitor.getProtocol();
+        if (monitor != null &&
+            (REGISTRY_PROTOCOL.equals(protocol) || SERVICE_REGISTRY_PROTOCOL.equals(protocol))
+            && registryURL != null) {
+            return URLBuilder.from(registryURL)
+                .setProtocol(DUBBO_PROTOCOL)
+                .addParameter(PROTOCOL_KEY, protocol)
+                .putAttribute(REFER_KEY, map)
+                .build();
+        } else if (ConfigUtils.isNotEmpty(address) || ConfigUtils.isNotEmpty(protocol)) {
             if (!map.containsKey(PROTOCOL_KEY)) {
                 if (getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
                     map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
+                } else if (ConfigUtils.isNotEmpty(protocol)) {
+                    map.put(PROTOCOL_KEY, protocol);
                 } else {
                     map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                 }
             }
+            if (ConfigUtils.isEmpty(address)) {
+                address = LOCALHOST_VALUE;
+            }
             return UrlUtils.parseURL(address, map);
-        } else if (monitor != null &&
-            (REGISTRY_PROTOCOL.equals(monitor.getProtocol()) || SERVICE_REGISTRY_PROTOCOL.equals(monitor.getProtocol()))
-            && registryURL != null) {
-            return URLBuilder.from(registryURL)
-                .setProtocol(DUBBO_PROTOCOL)
-                .addParameter(PROTOCOL_KEY, monitor.getProtocol())
-                .putAttribute(REFER_KEY, map)
-                .build();
         }
         return null;
     }
@@ -702,7 +710,7 @@ public class ConfigValidationUtils {
             return;
         }
         if (value.length() > maxlength) {
-            throw new IllegalStateException("Invalid " + property + "=\"" + value + "\" is longer than " + maxlength);
+            logger.error("Invalid " + property + "=\"" + value + "\" is longer than " + maxlength);
         }
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);

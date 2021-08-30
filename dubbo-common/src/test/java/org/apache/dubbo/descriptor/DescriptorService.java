@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.descriptor;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.proto.HelloReply;
 
 public interface DescriptorService {
@@ -29,4 +30,8 @@ public interface DescriptorService {
      * @return
      */
     HelloReply sayHello(HelloReply reply);
+
+    void sayHelloServerStream(HelloReply request, StreamObserver<HelloReply> reply);
+
+    void sayHelloServerStream2(Object request, StreamObserver<Object> reply);
 }

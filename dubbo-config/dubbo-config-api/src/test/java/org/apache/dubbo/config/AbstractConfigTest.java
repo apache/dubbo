@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -208,7 +209,7 @@ public class AbstractConfigTest {
 
     @Test
     public void checkLength() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertDoesNotThrow(() -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
                 builder.append('a');
@@ -219,7 +220,7 @@ public class AbstractConfigTest {
 
     @Test
     public void checkPathLength() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertDoesNotThrow(() -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
                 builder.append('a');
@@ -498,6 +499,19 @@ public class AbstractConfigTest {
 
             Assertions.assertEquals("value6", overrideConfig.getParameters().get("key3"));
             Assertions.assertEquals("value4", overrideConfig.getParameters().get("key4"));
+        } finally {
+            SysProps.clear();
+            ApplicationModel.getEnvironment().destroy();
+        }
+    }
+
+    @Test
+    public void testRefreshParametersWithAttribute() {
+        try {
+            OverrideConfig overrideConfig = new OverrideConfig();
+            SysProps.setProperty("dubbo.override.parameters.key00", "value00");
+            overrideConfig.refresh();
+            assertEquals("value00", overrideConfig.getParameters().get("key00"));
         } finally {
             SysProps.clear();
             ApplicationModel.getEnvironment().destroy();

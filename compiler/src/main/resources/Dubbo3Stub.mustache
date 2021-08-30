@@ -1,0 +1,26 @@
+{{#packageName}}
+    package {{packageName}};
+{{/packageName}}
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+{{#deprecated}}
+    @java.lang.Deprecated
+{{/deprecated}}
+public final class {{className}} {
+private static final AtomicBoolean registered = new AtomicBoolean();
+
+public static boolean init() {
+    if (registered.compareAndSet(false, true)) {
+        {{#methodTypes}}
+            org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils.marshaller(
+            {{.}}.getDefaultInstance());
+        {{/methodTypes}}
+    }
+    return true;
+}
+
+private {{className}}() {}
+
+}

@@ -20,10 +20,12 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -181,13 +183,14 @@ public class MethodConfig extends AbstractMethodConfig {
 
     /**
      * TODO remove constructMethodConfig
+     *
      * @param methods
      * @return
      */
     @Deprecated
     public static List<MethodConfig> constructMethodConfig(Method[] methods) {
         if (methods != null && methods.length != 0) {
-            List<MethodConfig> methodConfigs = new ArrayList<MethodConfig>(methods.length);
+            List<MethodConfig> methodConfigs = new ArrayList<>(methods.length);
             for (int i = 0; i < methods.length; i++) {
                 MethodConfig methodConfig = new MethodConfig(methods[i]);
                 methodConfigs.add(methodConfig);
@@ -199,6 +202,7 @@ public class MethodConfig extends AbstractMethodConfig {
 
     /**
      * Get method prefixes
+     *
      * @return
      */
     @Override
@@ -207,7 +211,7 @@ public class MethodConfig extends AbstractMethodConfig {
         // parent prefix + method name
         if (parentPrefix != null) {
             List<String> prefixes = new ArrayList<>();
-            prefixes.add(parentPrefix + "." +this.getName());
+            prefixes.add(parentPrefix + "." + this.getName());
             return prefixes;
         } else {
             throw new IllegalStateException("The parent prefix of MethodConfig is null");
@@ -253,6 +257,50 @@ public class MethodConfig extends AbstractMethodConfig {
                     }
                 }
             }
+        }
+    }
+
+
+    public AsyncMethodInfo convertMethodConfig2AsyncInfo() {
+        if ((getOninvoke() == null && getOnreturn() == null && getOnthrow() == null)) {
+            return null;
+        }
+
+        //check config conflict
+        if (Boolean.FALSE.equals(isReturn()) && (getOnreturn() != null || getOnthrow() != null)) {
+            throw new IllegalStateException("method config error : return attribute must be set true when on-return or on-throw has been set.");
+        }
+
+        AsyncMethodInfo asyncMethodInfo = new AsyncMethodInfo();
+
+        asyncMethodInfo.setOninvokeInstance(getOninvoke());
+        asyncMethodInfo.setOnreturnInstance(getOnreturn());
+        asyncMethodInfo.setOnthrowInstance(getOnthrow());
+
+        try {
+            if (StringUtils.isNotEmpty(oninvokeMethod)) {
+                asyncMethodInfo.setOninvokeMethod(getMethodByName(getOninvoke().getClass(), oninvokeMethod));
+            }
+
+            if (StringUtils.isNotEmpty(onreturnMethod)) {
+                asyncMethodInfo.setOnreturnMethod(getMethodByName(getOnreturn().getClass(), onreturnMethod));
+            }
+
+            if (StringUtils.isNotEmpty(onthrowMethod)) {
+                asyncMethodInfo.setOnthrowMethod(getMethodByName(getOnthrow().getClass(), onthrowMethod));
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+
+        return asyncMethodInfo;
+    }
+
+    private java.lang.reflect.Method getMethodByName(Class<?> clazz, String methodName) {
+        try {
+            return ReflectUtils.findMethodByMethodName(clazz, methodName);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
         }
     }
 

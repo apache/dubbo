@@ -24,11 +24,15 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfigTest;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SysProps;
+import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -36,8 +40,14 @@ import org.apache.dubbo.integration.single.SingleZooKeeperServer;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -58,11 +68,19 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_ADDRESS;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
+import static org.apache.dubbo.rpc.model.ApplicationModel.getApplicationConfig;
+import static org.hamcrest.CoreMatchers.anything;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.is;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getApplicationConfig;
 import static org.hamcrest.CoreMatchers.anything;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -159,15 +177,11 @@ public class DubboBootstrapTest {
         }
     }
 
-
     @Test
-    public void testLoadMonitor() {
-        SysProps.setProperty("dubbo.monitor.address", "monitor-addr:12080");
-        SysProps.setProperty("dubbo.monitor.protocol", "monitor");
-        AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
-        interfaceConfig.setApplication(new ApplicationConfig("testLoadMonitor"));
-        interfaceConfig.setMonitor(new MonitorConfig());
-        URL url = ConfigValidationUtils.loadMonitor(interfaceConfig, new ServiceConfigURL("dubbo", "addr1", 9090));
+    public void testLoadUserMonitor_address_only() {
+        // -Ddubbo.monitor.address=monitor-addr:12080
+        SysProps.setProperty(DUBBO_MONITOR_ADDRESS, "monitor-addr:12080");
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(new MonitorConfig()), new ServiceConfigURL("dubbo", "addr1", 9090));
         Assertions.assertEquals("monitor-addr:12080", url.getAddress());
         Assertions.assertEquals(MonitorService.class.getName(), url.getParameter("interface"));
         Assertions.assertNotNull(url.getParameter("dubbo"));
@@ -176,8 +190,61 @@ public class DubboBootstrapTest {
     }
 
     @Test
-    public void testRegister() {
+    public void testLoadUserMonitor_registry() {
+        // dubbo.monitor.protocol=registry
+        MonitorConfig monitorConfig = new MonitorConfig();
+        monitorConfig.setProtocol("registry");
 
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertEquals("dubbo", url.getProtocol());
+        Assertions.assertEquals("registry", url.getParameter("protocol"));
+    }
+
+    @Test
+    public void testLoadUserMonitor_service_discovery() {
+        // dubbo.monitor.protocol=service-discovery-registry
+        MonitorConfig monitorConfig = new MonitorConfig();
+        monitorConfig.setProtocol("service-discovery-registry");
+
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertEquals("dubbo", url.getProtocol());
+        Assertions.assertEquals("service-discovery-registry", url.getParameter("protocol"));
+    }
+
+    @Test
+    public void testLoadUserMonitor_no_monitor() {
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(null), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertNull(url);
+    }
+
+    @Test
+    public void testLoadUserMonitor_user() {
+        // dubbo.monitor.protocol=user
+        MonitorConfig monitorConfig = new MonitorConfig();
+        monitorConfig.setProtocol("user");
+
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertEquals("user", url.getProtocol());
+    }
+
+    @Test
+    public void testLoadUserMonitor_user_address() {
+        // dubbo.monitor.address=user://1.2.3.4:5678?k=v
+        MonitorConfig monitorConfig = new MonitorConfig();
+        monitorConfig.setAddress("user://1.2.3.4:5678?param1=value1");
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertEquals("user", url.getProtocol());
+        Assertions.assertEquals("1.2.3.4:5678", url.getAddress());
+        Assertions.assertEquals("value1", url.getParameter("param1"));
+    }
+
+    private InterfaceConfig getTestInterfaceConfig(MonitorConfig monitorConfig) {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setApplication(new ApplicationConfig("testLoadMonitor"));
+        if(monitorConfig!=null) {
+            interfaceConfig.setMonitor(monitorConfig);
+        }
+        return interfaceConfig;
     }
 
     @Test
@@ -288,6 +355,7 @@ public class DubboBootstrapTest {
         }
     }
 
+
     private void writeDubboProperties(String key, String value) {
         OutputStream os = null;
         try {
@@ -305,6 +373,11 @@ public class DubboBootstrapTest {
                 }
             }
         }
+    }
+
+
+    public static class InterfaceConfig extends AbstractInterfaceConfig {
+
     }
 
 }

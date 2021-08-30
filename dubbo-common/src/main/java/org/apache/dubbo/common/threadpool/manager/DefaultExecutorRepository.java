@@ -215,7 +215,12 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     public void shutdownServiceExportExecutor() {
         synchronized (LOCK) {
             if (serviceExportExecutor != null && !serviceExportExecutor.isShutdown()) {
-                serviceExportExecutor.shutdown();
+                try{
+                    serviceExportExecutor.shutdown();
+                }catch (Throwable ignored){
+                    // ignored
+                    logger.warn(ignored.getMessage(),ignored);
+                }
             }
 
             serviceExportExecutor = null;
@@ -258,7 +263,11 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     public void shutdownServiceReferExecutor() {
         synchronized (LOCK) {
             if (serviceReferExecutor != null && !serviceReferExecutor.isShutdown()) {
-                serviceReferExecutor.shutdown();
+                try{
+                    serviceReferExecutor.shutdown();
+                }catch (Throwable ignored){
+                    logger.warn(ignored.getMessage(),ignored);
+                }
             }
 
             serviceReferExecutor = null;
@@ -312,11 +321,20 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     @Override
     public void destroyAll() {
-        poolRouterExecutor.shutdown();
+        try{
+            poolRouterExecutor.shutdown();
+        }catch (Throwable ignored){
+            // ignored
+            logger.warn(ignored.getMessage(),ignored);
+        }
 //        serviceDiscoveryAddressNotificationExecutor.shutdown();
 //        registryNotificationExecutor.shutdown();
-        metadataRetryExecutor.shutdown();
-
+        try{
+            metadataRetryExecutor.shutdown();
+        }catch (Throwable ignored){
+            // ignored
+            logger.warn(ignored.getMessage(),ignored);
+        }
         shutdownServiceExportExecutor();
         shutdownServiceReferExecutor();
 
@@ -324,7 +342,12 @@ public class DefaultExecutorRepository implements ExecutorRepository {
             if (executors != null) {
                 executors.values().forEach(executor -> {
                     if (executor != null && !executor.isShutdown()) {
-                        ExecutorUtil.shutdownNow(executor, 100);
+                        try{
+                            ExecutorUtil.shutdownNow(executor, 100);
+                        }catch (Throwable ignored){
+                            // ignored
+                            logger.warn(ignored.getMessage(),ignored);
+                        }
                     }
                 });
             }

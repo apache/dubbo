@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.metadata.MetadataInfo;
 
 import com.alibaba.fastjson.JSON;
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +51,7 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private boolean healthy = true;
 
-    private Map<String, String> metadata = new UnifiedMap<>();
+    private Map<String, String> metadata = new HashMap<>();
 
     private transient String address;
     private transient MetadataInfo serviceMetadata;

@@ -154,8 +154,11 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
                             handlers.forEach((_key, handler) ->
                                 executorService.submit(() -> {
-                                    handler.doMigrate(this.rule);
-                                    countDownLatch.countDown();
+                                    try {
+                                        handler.doMigrate(this.rule);
+                                    }finally {
+                                        countDownLatch.countDown();
+                                    }
                                 }));
 
                             try {

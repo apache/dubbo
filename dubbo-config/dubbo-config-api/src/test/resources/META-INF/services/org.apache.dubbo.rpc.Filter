@@ -1,1 +1,5 @@
 mockfilter=org.apache.dubbo.config.mock.MockFilter
+singleConfigCenterInjvm=org.apache.dubbo.integration.single.injvm.SingleRegistryCenterInjvmFilter
+multipleConfigCenterInjvm=org.apache.dubbo.integration.multiple.injvm.MultipleRegistryCenterInjvmFilter
+singleConfigCenterExportProvider=org.apache.dubbo.integration.single.exportprovider.SingleRegistryCenterExportProviderFilter
+multipleConfigCenterExportProvider=org.apache.dubbo.integration.multiple.exportprovider.MultipleRegistryCenterExportProviderFilter

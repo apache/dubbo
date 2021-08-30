@@ -72,8 +72,8 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withCause(cause);
         Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleConstant.STATUS_KEY, Integer.toString(status.code.code));
-        metadata.put(TripleConstant.MESSAGE_KEY, status.toMessage());
+        metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(status.code.code));
+        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
         logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code, cause);
         clientStream.asStreamObserver().onError(status.asException());
         ctx.close();

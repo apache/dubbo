@@ -223,7 +223,7 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
             serviceInstance.setMetadata(JSONObject.parseObject(metadataString, Map.class));
         } else {
             // refer from MetadataUtils, this proxy is different from the one used to refer exportedURL
-            MetadataService metadataService = MetadataUtils.getMetadataServiceProxy(serviceInstance, this);
+            MetadataService metadataService = MetadataUtils.getMetadataServiceProxy(serviceInstance);
 
             String consumerId = ApplicationModel.getName() + NetUtils.getLocalHost();
             String metadata = metadataService.getAndListenInstanceMetadata(
@@ -264,7 +264,7 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
             allServiceInstances.removeAll(oldServiceInstances);
 
             allServiceInstances.forEach(removedServiceInstance -> {
-                MetadataUtils.destroyMetadataServiceProxy(removedServiceInstance, this);
+                MetadataUtils.destroyMetadataServiceProxy(removedServiceInstance);
             });
 
             cachedServiceInstances.put(serviceName, instances);

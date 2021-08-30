@@ -19,12 +19,14 @@ package org.apache.dubbo.config.spring.reference;
 
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.ZooKeeperServer;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +40,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -59,10 +60,20 @@ import java.util.List;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class DubboConfigBeanInitializerTest {
 
+    private static RegistryCenter singleRegistryCenter;
     @BeforeAll
     public static void beforeAll() {
-        ZooKeeperServer.start();
+        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
+        singleRegistryCenter.startup();
+        DubboBootstrap.reset();
     }
+
+    @AfterAll
+    public static void afterAll() {
+        singleRegistryCenter.shutdown();
+        DubboBootstrap.reset();
+    }
+
 
     @Autowired
     private FooService fooService;

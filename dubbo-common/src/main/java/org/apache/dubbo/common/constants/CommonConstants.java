@@ -27,13 +27,25 @@ import java.util.regex.Pattern;
 public interface CommonConstants {
     String DUBBO = "dubbo";
 
-    String TRIPLE= "tri";
+    String TRIPLE = "tri";
 
     String PROVIDER = "provider";
 
     String CONSUMER = "consumer";
 
     String APPLICATION_KEY = "application";
+
+    String APPLICATION_VERSION_KEY = "application.version";
+
+    String APPLICATION_PROTOCOL_KEY = "application-protocol";
+
+    String METADATA_SERVICE_PORT_KEY = "metadata-service-port";
+
+    String LIVENESS_PROBE_KEY = "liveness-probe";
+
+    String READINESS_PROBE_KEY = "readiness-probe";
+
+    String STARTUP_PROBE = "startup-probe";
 
     String REMOTE_APPLICATION_KEY = "remote.application";
 
@@ -286,6 +298,8 @@ public interface CommonConstants {
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
+    String HEADER_FILTER_KEY = "header.filter";
+
     String INVOCATION_INTERCEPTOR_KEY = "invocation.interceptor";
 
     String INVOKER_LISTENER_KEY = "invoker.listener";
@@ -413,7 +427,9 @@ public interface CommonConstants {
 
     String UTF8ENCODE = "UTF-8";
 
-    /** Pseudo URL prefix for loading from the class path: "classpath:". */
+    /**
+     * Pseudo URL prefix for loading from the class path: "classpath:".
+     */
     String CLASSPATH_URL_PREFIX = "classpath:";
 
     String DEFAULT_VERSION = "0.0.0";
@@ -439,5 +455,21 @@ public interface CommonConstants {
      */
     String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 
+    /**
+     * use native image to compile dubbo's identifier
+     */
+    String NATIVE = "native";
+
+    String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
+
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
+
+    /**
+     * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
+     * the Dubbo application will be ignored
+     *
+     * @since 2.7.6
+     */
+    String DUBBO_NETWORK_IGNORED_INTERFACE = "dubbo.network.interface.ignored";
+
 }

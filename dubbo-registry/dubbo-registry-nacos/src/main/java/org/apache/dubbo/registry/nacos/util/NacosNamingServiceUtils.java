@@ -36,7 +36,6 @@ import java.util.Properties;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
-import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
@@ -49,6 +48,7 @@ import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of
 public class NacosNamingServiceUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(NacosNamingServiceUtils.class);
+    private static String NACOS_GROUP_KEY = "nacos.group";
 
     /**
      * Convert the {@link ServiceInstance} to {@link Instance}
@@ -81,17 +81,6 @@ public class NacosNamingServiceUtils {
         serviceInstance.setEnabled(instance.isEnabled());
         serviceInstance.setHealthy(instance.isHealthy());
         return serviceInstance;
-    }
-
-    /**
-     * The group of {@link NamingService} to register
-     *
-     * @param connectionURL {@link URL connection url}
-     * @return non-null, "default" as default
-     * @since 2.7.5
-     */
-    public static String getGroup(URL connectionURL) {
-        return connectionURL.getParameter("nacos.group", DEFAULT_GROUP);
     }
 
     /**

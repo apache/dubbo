@@ -1,0 +1,174 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-demo-native</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dubbo-demo-native-provider</artifactId>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-demo-native-interface</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-config-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-registry-multicast</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-registry-zookeeper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-dubbo</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-netty4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-hessian2</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-native</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+    </dependencies>
+
+
+    <profiles>
+
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <profileActive>dev</profileActive>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>native</id>
+            <properties>
+                <profileActive>native</profileActive>
+            </properties>
+
+            <build>
+                <plugins>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>3.7.0</version>
+                        <configuration>
+                            <source>1.8</source>
+                            <target>1.8</target>
+                            <fork>true</fork>
+                            <verbose>true</verbose>
+                            <encoding>UTF-8</encoding>
+                            <compilerArguments>
+                                <sourcepath>
+                                    ${project.basedir}/src/main/java
+                                </sourcepath>
+                            </compilerArguments>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.graalvm.nativeimage</groupId>
+                        <artifactId>native-image-maven-plugin</artifactId>
+                        <version>21.0.0.2</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>native-image</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <skip>false</skip>
+                            <imageName>demo-native-provider</imageName>
+                            <mainClass>org.apache.dubbo.demo.graalvm.provider.Application</mainClass>
+                            <buildArgs>
+                                --no-fallback
+
+                                --initialize-at-build-time=org.slf4j.MDC
+                                --initialize-at-build-time=org.slf4j.LoggerFactory
+                                --initialize-at-build-time=org.slf4j.impl.StaticLoggerBinder
+                                --initialize-at-build-time=org.apache.log4j.helpers.Loader
+                                --initialize-at-build-time=org.apache.log4j.Logger
+                                --initialize-at-build-time=org.apache.log4j.helpers.LogLog
+                                --initialize-at-build-time=org.apache.log4j.LogManager
+                                --initialize-at-build-time=org.apache.log4j.spi.LoggingEvent
+                                --initialize-at-build-time=org.slf4j.impl.Log4jLoggerFactory
+                                --initialize-at-build-time=org.slf4j.impl.Log4jLoggerAdapter
+                                --initialize-at-build-time=org.eclipse.collections.api.factory.Sets
+
+
+
+                                --initialize-at-run-time=io.netty.channel.epoll.Epoll
+                                --initialize-at-run-time=io.netty.channel.epoll.Native
+                                --initialize-at-run-time=io.netty.channel.epoll.EpollEventLoop
+                                --initialize-at-run-time=io.netty.channel.epoll.EpollEventArray
+                                --initialize-at-run-time=io.netty.channel.DefaultFileRegion
+                                --initialize-at-run-time=io.netty.channel.kqueue.KQueueEventArray
+                                --initialize-at-run-time=io.netty.channel.kqueue.KQueueEventLoop
+                                --initialize-at-run-time=io.netty.channel.kqueue.Native
+                                --initialize-at-run-time=io.netty.channel.unix.Errors
+                                --initialize-at-run-time=io.netty.channel.unix.IovArray
+                                --initialize-at-run-time=io.netty.channel.unix.Limits
+                                --initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger
+                                --initialize-at-run-time=io.netty.channel.unix.Socket
+                                --initialize-at-run-time=io.netty.channel.ChannelHandlerMask
+
+                                --report-unsupported-elements-at-runtime
+                                --allow-incomplete-classpath
+                                --enable-url-protocols=http
+                                -H:+ReportExceptionStackTraces
+                            </buildArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+        </profile>
+
+    </profiles>
+
+
+</project>

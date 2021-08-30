@@ -90,7 +90,7 @@ public class OverrideInstanceAddressURL extends InstanceAddressURL {
 
     @Override
     public String getAddress() {
-        return originUrl.getAddress() + "?" + overrideParams.toString();
+        return originUrl.getAddress();
     }
 
     @Override
@@ -258,6 +258,10 @@ public class OverrideInstanceAddressURL extends InstanceAddressURL {
             methodNumbers = new ConcurrentHashMap<>();
         }
         return methodNumbers;
+    }
+
+    public URLParam getOverrideParams() {
+        return overrideParams;
     }
 
     @Override

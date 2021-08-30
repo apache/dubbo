@@ -182,7 +182,7 @@ public class ServiceInstancesChangedListenerTest {
         ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
 
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
-            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any(), Mockito.any())).thenReturn(metadataService);
+            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
             // notify instance change
             ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1Instances);
             listener.onEvent(event);
@@ -215,7 +215,7 @@ public class ServiceInstancesChangedListenerTest {
         ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
 
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
-            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any(), Mockito.any())).thenReturn(metadataService);
+            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
             // notify app1 instance change
             ServiceInstancesChangedEvent app1_event = new ServiceInstancesChangedEvent("app1", app1Instances);
             listener.onEvent(app1_event);
@@ -257,7 +257,7 @@ public class ServiceInstancesChangedListenerTest {
         ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
 
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
-            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any(), Mockito.any())).thenReturn(metadataService);
+            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
             // notify app1 instance change
             ServiceInstancesChangedEvent app1_event = new ServiceInstancesChangedEvent("app1", app1Instances);
             listener.onEvent(app1_event);
@@ -325,7 +325,7 @@ public class ServiceInstancesChangedListenerTest {
         listener.addListenerAndNotify(service2 + ":dubbo", demoService2Listener);
 
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
-            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any(), Mockito.any())).thenReturn(metadataService);
+            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
             // notify app1 instance change
             ServiceInstancesChangedEvent app1_event = new ServiceInstancesChangedEvent("app1", app1Instances);
             listener.onEvent(app1_event);
@@ -369,7 +369,7 @@ public class ServiceInstancesChangedListenerTest {
         serviceNames.add("app1");
         ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
-            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any(), Mockito.any())).thenReturn(metadataService);
+            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
             // notify app1 instance change
             ServiceInstancesChangedEvent failed_revision_event = new ServiceInstancesChangedEvent("app1", app1FailedInstances);
             listener.onEvent(failed_revision_event);
@@ -398,7 +398,7 @@ public class ServiceInstancesChangedListenerTest {
         ConcurrentMap tmpProxyMap = MetadataUtils.metadataServiceProxies;
 
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
-            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any(), Mockito.any())).thenReturn(metadataService);
+            mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
 
             // notify app1 instance change
             ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1Instances);

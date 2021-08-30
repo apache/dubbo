@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -76,7 +77,7 @@ public class RouterChain<T> {
 
     private final ExecutorService loopPool;
 
-    private boolean firstBuildCache = true;
+    private AtomicBoolean firstBuildCache = new AtomicBoolean(true);
 
     public static <T> RouterChain<T> buildChain(URL url) {
         return new RouterChain<>(url);
@@ -235,18 +236,18 @@ public class RouterChain<T> {
     /**
      * Cache the address list for each StateRouter.
      * @param router router
-     * @param orign The original address cache
+     * @param origin The original address cache
      * @param invokers The full address list
      * @param notify Whether the addresses in registry has changed.
      * @return
      */
-    private RouterCache poolRouter(StateRouter router, AddrCache<T> orign, List<Invoker<T>> invokers, boolean notify) {
+    private RouterCache poolRouter(StateRouter router, AddrCache<T> origin, List<Invoker<T>> invokers, boolean notify) {
         String routerName = router.getName();
         RouterCache routerCache;
-        if (isCacheMiss(orign, routerName) || router.shouldRePool() || notify) {
+        if (isCacheMiss(origin, routerName) || router.shouldRePool() || notify) {
             return router.pool(invokers);
         } else {
-            routerCache = orign.getCache().get(routerName);
+            routerCache = origin.getCache().get(routerName);
         }
         if (routerCache == null) {
             return new RouterCache();
@@ -265,8 +266,8 @@ public class RouterChain<T> {
      * @param notify Whether the addresses in registry has changed.
      */
     public void loop(boolean notify) {
-        if (firstBuildCache) {
-            firstBuildCache = false;
+        if (firstBuildCache.get()) {
+            firstBuildCache.compareAndSet(true,false);
             buildCache(notify);
         }
         if (notify) {
@@ -292,8 +293,8 @@ public class RouterChain<T> {
 
         @Override
         public void run() {
-            loopPermit.release();
             buildCache(notify);
+            loopPermit.release();
         }
     }
 

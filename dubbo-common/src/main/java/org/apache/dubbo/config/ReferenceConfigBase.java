@@ -134,7 +134,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     public Map<String, String> getMetaData() {
         Map<String, String> metaData = new HashMap<>();
         ConsumerConfig consumer = this.getConsumer();
-        // consumer should be inited at preProcessRefresh()
+        // consumer should be initialized at preProcessRefresh()
         if (isRefreshed() && consumer == null) {
             throw new IllegalStateException("Consumer is not initialized");
         }
@@ -150,7 +150,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      * @return
      */
     public Class<?> getServiceInterfaceClass() {
-        Class actualInterface = interfaceClass;
+        Class<?> actualInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
             try {
                 actualInterface = Class.forName(interfaceName);
@@ -200,10 +200,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return null;
     }
 
+    @Override
     public String getInterface() {
         return interfaceName;
     }
 
+    @Override
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
     }

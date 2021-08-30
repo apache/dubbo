@@ -42,7 +42,7 @@ public class ServerTransportObserver implements TransportObserver {
         if (!headerSent) {
             headerSent = true;
             headers.status(OK.codeAsText());
-            headers.set(TripleConstant.CONTENT_TYPE_KEY, TripleConstant.CONTENT_PROTO);
+            headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO);
             ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream));
         } else {
             ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream));

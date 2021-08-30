@@ -16,14 +16,19 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
-
 import org.apache.dubbo.rpc.service.GenericService;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
@@ -122,5 +127,61 @@ public class DubboAnnotationUtils {
         }
 
         return interfaceName;
+    }
+
+    /**
+     * Resolve the parameters of {@link org.apache.dubbo.config.annotation.DubboService}
+     * and {@link org.apache.dubbo.config.annotation.DubboReference} from the specified.
+     * It iterate elements in order.The former element plays as key or key&value role, it would be
+     * spilt if it contain specific string, for instance, ":" and "=". As for later element can't
+     * be split in anytime.It will throw IllegalArgumentException If converted array length isn't
+     * even number.
+     * The convert cases below work in right way,which are best practice.
+     * <p>
+     * (array->map)
+     * ["a","b"] ==> {a=b}
+     * [" a "," b "] ==> {a=b}
+     * ["a=b"] ==>{a=b}
+     * ["a:b"] ==>{a=b}
+     * ["a=b","c","d"] ==>{a=b,c=d}
+     * ["a","a:b"] ==>{a="a:b"}
+     * ["a","a,b"] ==>{a="a,b"}
+     * </p>
+     *
+     * @param parameters
+     * @return
+     */
+    public static Map<String, String> convertParameters(String[] parameters) {
+        if (ArrayUtils.isEmpty(parameters)) {
+            return null;
+        }
+
+        List<String> compatibleParameterArray = Arrays.stream(parameters)
+            .map(String::trim)
+            .reduce(new ArrayList<>(parameters.length), (list, parameter) ->
+                {
+                    if (list.size() % 2 == 1) {
+                        //value doesn't split
+                        list.add(parameter);
+                        return list;
+                    }
+
+                    String[] sp1 = parameter.split(":");
+                    if (sp1.length > 0 && sp1.length % 2 == 0) {
+                        //key split
+                        list.addAll(Arrays.stream(sp1).map(String::trim).collect(Collectors.toList()));
+                        return list;
+                    }
+                    sp1 = parameter.split("=");
+                    if (sp1.length > 0 && sp1.length % 2 == 0) {
+                        list.addAll(Arrays.stream(sp1).map(String::trim).collect(Collectors.toList()));
+                        return list;
+                    }
+                    list.add(parameter);
+                    return list;
+                }
+                , (a, b) -> a);
+
+        return CollectionUtils.toStringMap(compatibleParameterArray.toArray(new String[0]));
     }
 }

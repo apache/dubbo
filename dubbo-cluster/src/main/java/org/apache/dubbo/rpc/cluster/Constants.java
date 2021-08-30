@@ -118,4 +118,9 @@ public interface Constants {
     String ARGUMENTS = "arguments";
 
     String NEED_REEXPORT = "need-reexport";
+
+    /**
+     * The key of shortestResponseSlidePeriod
+     */
+    String SHORTEST_RESPONSE_SLIDE_PERIOD = "shortestResponseSlidePeriod";
 }

@@ -44,7 +44,6 @@ import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.core.env.Environment;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -61,6 +60,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+import static org.apache.dubbo.config.spring.util.SpringCompatUtils.getPropertyValue;
 
 /**
  * AbstractBeanDefinitionParser
@@ -76,6 +76,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     private static final String ONINVOKE = "oninvoke";
     private static final String METHOD = "Method";
     private static final String BEAN_NAME = "BEAN_NAME";
+    private static boolean resolvePlaceholdersEnabled = true;
     private final Class<?> beanClass;
     private static Map<String, Map<String, Class>> beanPropsCache = new HashMap<>();
 
@@ -96,9 +97,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         // get id from name
         if (StringUtils.isEmpty(configId)) {
             configId = resolveAttribute(element, "name", parserContext);
-        }
-        if (StringUtils.isNotEmpty(configId)) {
-            configId = resolvePlaceholders(configId, parserContext);
         }
 
         String beanName = configId;
@@ -250,11 +248,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         String generic = resolveAttribute(element, ReferenceAttributes.GENERIC, parserContext);
         if (StringUtils.isBlank(generic) && consumerDefinition != null) {
             // get generic from consumerConfig
-            generic = (String) consumerDefinition.getPropertyValues().get(ReferenceAttributes.GENERIC);
+            generic = getPropertyValue(consumerDefinition.getPropertyValues(), ReferenceAttributes.GENERIC);
         }
         if (generic != null) {
-            Environment environment = parserContext.getReaderContext().getEnvironment();
-            generic = environment.resolvePlaceholders(generic);
+            generic = resolvePlaceholders(generic, parserContext);
             beanDefinition.getPropertyValues().add(ReferenceAttributes.GENERIC, generic);
         }
         beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
@@ -516,6 +513,13 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     }
 
     private static String resolvePlaceholders(String str, ParserContext parserContext) {
-        return parserContext.getReaderContext().getEnvironment().resolveRequiredPlaceholders(str);
+        if (resolvePlaceholdersEnabled) {
+            try {
+                return parserContext.getReaderContext().getEnvironment().resolveRequiredPlaceholders(str);
+            } catch (NoSuchMethodError e) {
+                resolvePlaceholdersEnabled = false;
+            }
+        }
+        return str;
     }
 }

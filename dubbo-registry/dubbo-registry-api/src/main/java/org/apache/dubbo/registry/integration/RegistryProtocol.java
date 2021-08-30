@@ -138,7 +138,7 @@ public class RegistryProtocol implements Protocol {
     private final Map<String, ServiceConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
     private final ProviderConfigurationListener providerConfigurationListener = new ProviderConfigurationListener();
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
-    //providerurl <--> exporter
+    //provider url <--> exporter
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
     protected Protocol protocol;
     protected RegistryFactory registryFactory;
@@ -804,12 +804,14 @@ public class RegistryProtocol implements Protocol {
                 logger.warn(t.getMessage(), t);
             }
             try {
-                NotifyListener listener = RegistryProtocol.this.overrideListeners.remove(subscribeUrl);
-                registry.unsubscribe(subscribeUrl, listener);
-                if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-                    ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                        .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                            serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));
+                if (subscribeUrl != null) {
+                    NotifyListener listener = RegistryProtocol.this.overrideListeners.remove(subscribeUrl);
+                    registry.unsubscribe(subscribeUrl, listener);
+                    if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+                        ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                            .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
+                                serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));
+                    }
                 }
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);

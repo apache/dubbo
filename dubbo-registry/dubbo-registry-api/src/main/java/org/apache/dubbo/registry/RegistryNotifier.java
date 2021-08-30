@@ -21,6 +21,8 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class RegistryNotifier {
 
@@ -29,6 +31,11 @@ public abstract class RegistryNotifier {
 
     private Object rawAddresses;
     private long delayTime;
+
+    // should delay notify or not
+    private final AtomicBoolean shouldDelay = new AtomicBoolean(false);
+    // for the first 10 notification will be notified immediately
+    private final AtomicInteger executeTime = new AtomicInteger(0);
 
     private ScheduledExecutorService scheduler;
 
@@ -52,10 +59,17 @@ public abstract class RegistryNotifier {
         this.lastEventTime = notifyTime;
 
         long delta = (System.currentTimeMillis() - lastExecuteTime) - delayTime;
-        if (delta >= 0) {
-            scheduler.submit(new NotificationTask(this, notifyTime));
-        } else {
+
+        // more than 10 calls && next execute time is in the future
+        boolean delay = shouldDelay.get() && delta < 0;
+        if (delay) {
             scheduler.schedule(new NotificationTask(this, notifyTime), -delta, TimeUnit.MILLISECONDS);
+        } else {
+            // check if more than 10 calls
+            if (!shouldDelay.get() && executeTime.incrementAndGet() > 10) {
+                shouldDelay.set(true);
+            }
+            scheduler.submit(new NotificationTask(this, notifyTime));
         }
     }
 

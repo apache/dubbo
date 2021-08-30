@@ -72,20 +72,18 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     if (null != resultException) {
                         exception = getRpcException(result.getException());
                         logger.warn(exception.getMessage(), exception);
+                        failIndex++;
                         if (failIndex == failThresholdIndex) {
                             break;
-                        } else {
-                            failIndex++;
                         }
                     }
                 }
             } catch (Throwable e) {
                 exception = getRpcException(e);
                 logger.warn(exception.getMessage(), exception);
+                failIndex++;
                 if (failIndex == failThresholdIndex) {
                     break;
-                } else {
-                    failIndex++;
                 }
             }
         }
@@ -96,7 +94,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
                         String.format("The number of BroadcastCluster call failures has reached the threshold %s", failThresholdIndex));
             } else {
                 logger.debug(String.format("The number of BroadcastCluster call failures has not reached the threshold %s, fail size is %s",
-                        failIndex));
+                        failThresholdIndex, failIndex));
             }
             throw exception;
         }

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 public class ServerStream extends AbstractServerStream implements Stream {
     protected ServerStream(URL url) {
@@ -53,16 +54,16 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onError(Throwable throwable) {
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(throwable)
-                    .withDescription("Biz exception");
+                .withCause(throwable)
+                .withDescription("Biz exception");
             transportError(status);
         }
 
         @Override
         public void onCompleted() {
             Metadata metadata = new DefaultMetadata();
-            metadata.put(TripleConstant.MESSAGE_KEY, "OK");
-            metadata.put(TripleConstant.STATUS_KEY, Integer.toString(GrpcStatus.Code.OK.code));
+            metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), "OK");
+            metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
             getTransportSubscriber().tryOnMetadata(metadata, true);
         }
     }
@@ -72,6 +73,9 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
             super.onMetadata(metadata, endStream, handler);
+            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                return;
+            }
             final RpcInvocation inv = buildInvocation(metadata);
             inv.setArguments(new Object[]{asStreamObserver()});
             final Result result = getInvoker().invoke(inv);
@@ -79,26 +83,39 @@ public class ServerStream extends AbstractServerStream implements Stream {
                 subscribe((StreamObserver<Object>) result.getValue());
             } catch (Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Failed to create server's observer"));
+                    .withDescription("Failed to create server's observer"));
             }
         }
 
         @Override
         public void onData(byte[] in, boolean endStream, OperationHandler handler) {
             try {
-                final Object[] arguments = deserializeRequest(in);
-                if (arguments != null) {
-                    getStreamSubscriber().onNext(arguments[0]);
+                if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                    RpcInvocation inv = buildInvocation(getHeaders());
+                    final Object[] arguments = deserializeRequest(in);
+                    if (arguments != null) {
+                        inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
+                        getInvoker().invoke(inv);
+                    }
+                } else {
+                    final Object[] arguments = deserializeRequest(in);
+                    if (arguments != null) {
+                        getStreamSubscriber().onNext(arguments[0]);
+                    }
                 }
-            } catch (Throwable t) {
+            } catch (
+                Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Deserialize request failed")
-                        .withCause(t));
+                    .withDescription("Deserialize request failed")
+                    .withCause(t));
             }
         }
 
         @Override
         public void onComplete(OperationHandler handler) {
+            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                return;
+            }
             getStreamSubscriber().onCompleted();
         }
     }

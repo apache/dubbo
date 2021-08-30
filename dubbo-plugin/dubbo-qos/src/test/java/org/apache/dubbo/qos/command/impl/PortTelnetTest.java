@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
@@ -26,6 +27,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import org.junit.jupiter.api.AfterEach;
@@ -54,7 +56,7 @@ public class PortTelnetTest {
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
         given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:" + availablePort + "/demo"));
 
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
     }
 
     @AfterEach

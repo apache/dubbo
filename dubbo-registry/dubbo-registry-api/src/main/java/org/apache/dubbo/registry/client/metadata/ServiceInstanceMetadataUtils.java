@@ -33,7 +33,7 @@ import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataS
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -109,7 +109,7 @@ public class ServiceInstanceMetadataUtils {
     public static Map<String, String> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
-        return isBlank(param) ? emptyMap() : (Map) JSON.parse(param);
+        return isBlank(param) ? emptyMap() : (Map) new Gson().fromJson(param,Map.class);
     }
 
     public static String getMetadataServiceParameter(URL url) {
@@ -123,7 +123,7 @@ public class ServiceInstanceMetadataUtils {
             return null;
         }
 
-        return JSON.toJSONString(params);
+        return new Gson().toJson(params);
     }
 
     private static Map<String, String> getParams(URL providerURL) {
@@ -206,7 +206,7 @@ public class ServiceInstanceMetadataUtils {
             endpoints.add(endpoint);
         });
 
-        metadata.put(ENDPOINTS, JSON.toJSONString(endpoints));
+        metadata.put(ENDPOINTS, new Gson().toJson(endpoints));
     }
 
     /**
@@ -277,7 +277,9 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
-        reportMetadataToRemote(serviceInstance);
+        if (REMOTE_METADATA_STORAGE_TYPE.equals(ServiceInstanceMetadataUtils.getMetadataStorageType(serviceInstance))) {
+            reportMetadataToRemote(serviceInstance);
+        }
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
             ServiceInstance instance = serviceDiscovery.getLocalInstance();

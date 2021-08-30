@@ -48,5 +48,13 @@ public interface ConfigKeys {
      */
     String DUBBO_CONFIG_IGNORE_DUPLICATED_INTERFACE = "dubbo.config.ignore-duplicated-interface";
 
-
+    /**
+     * Disable dubbo shutdown hook, Default value is false.
+     * When disable the shutdown hook, you may need to do :
+     * 1. offline all services by qos manually before shutdown dubbo application
+     * 2. no DubboBootstrapStopedEvent will be sent
+     * 3. all ShutdownHookCallback will not be called
+     * 4. dubbo application will not be destroyed when spring context is closed
+     */
+    String DUBBO_LIFECYCLE_DISABLE_SHUTDOWN_HOOK = "dubbo.lifecycle.disable-shutdown-hook";
 }

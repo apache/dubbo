@@ -24,7 +24,7 @@
     </appender>
 
     <logger name="org.apache.dubbo.config" additivity="false">
-        <level value="DEBUG"/>
+        <level value="WARN"/>
         <appender-ref ref="CONSOLE"/>
     </logger>
 

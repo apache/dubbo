@@ -23,8 +23,11 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.ErrorInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
@@ -42,6 +45,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -51,7 +57,9 @@ public class TripleUtil {
             "tri_server_stream");
     public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
             "tri_client_stream");
-    private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();
+
+    public static final String LANGUAGE = "java";
+
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 
@@ -75,19 +83,19 @@ public class TripleUtil {
 
     public static void responseErr(ChannelHandlerContext ctx, GrpcStatus status) {
         Http2Headers trailers = new DefaultHttp2Headers()
-                .status(OK.codeAsText())
-                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                .setInt(TripleConstant.STATUS_KEY, status.code.code)
-                .set(TripleConstant.MESSAGE_KEY, status.toMessage());
+            .status(OK.codeAsText())
+            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
     }
 
     public static void responsePlainTextError(ChannelHandlerContext ctx, int code, GrpcStatus status) {
         Http2Headers headers = new DefaultHttp2Headers(true)
-                .status("" + code)
-                .setInt(TripleConstant.STATUS_KEY, status.code.code)
-                .set(TripleConstant.MESSAGE_KEY, status.description)
-                .set(TripleConstant.CONTENT_TYPE_KEY, "text/plain; encoding=utf-8");
+            .status("" + code)
+            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
+            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), "text/plain; encoding=utf-8");
         ctx.write(new DefaultHttp2HeadersFrame(headers));
         ByteBuf buf = ByteBufUtil.writeUtf8(ctx.alloc(), status.description);
         ctx.write(new DefaultHttp2DataFrame(buf, true));
@@ -105,6 +113,30 @@ public class TripleUtil {
             throw new RuntimeException("Failed to unwrap resp", e);
         }
     }
+
+    public static Map<Class<?>, Object> tranFromStatusDetails(List<Any> detailList) {
+        Map<Class<?>, Object> map = new HashMap<>();
+        try {
+            for (Any any : detailList) {
+                if (any.is(ErrorInfo.class)) {
+                    ErrorInfo errorInfo = any.unpack(ErrorInfo.class);
+                    map.putIfAbsent(ErrorInfo.class, errorInfo);
+                } else if (any.is(DebugInfo.class)) {
+                    DebugInfo debugInfo = any.unpack(DebugInfo.class);
+                    map.putIfAbsent(DebugInfo.class, debugInfo);
+                }
+                // support others type but now only support this
+            }
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
+    public static boolean overEachHeaderListSize(String str) {
+        return TripleConstant.DEFAULT_HEADER_LIST_SIZE <= str.length();
+    }
+
 
     public static Object[] unwrapReq(URL url, TripleWrapper.TripleRequestWrapper wrap,
                                      MultipleSerialization multipleSerialization) {
@@ -139,6 +171,45 @@ public class TripleUtil {
             throw new RuntimeException("Failed to pack wrapper req", e);
         }
     }
+
+    public static TripleWrapper.TripleExceptionWrapper wrapException(URL url, Throwable throwable,
+                                                                     String serializeType,
+                                                                     MultipleSerialization serialization) {
+        try {
+            final TripleWrapper.TripleExceptionWrapper.Builder builder = TripleWrapper.TripleExceptionWrapper.newBuilder()
+                    .setLanguage(LANGUAGE)
+                    .setClassName(throwable.getClass().getName())
+                    .setSerialization(serializeType);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            serialization.serialize(url, serializeType, builder.getClassName(), throwable, bos);
+            builder.setData(ByteString.copyFrom(bos.toByteArray()));
+            bos.close();
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper exception", e);
+        }
+    }
+
+    public static Throwable unWrapException(URL url, TripleWrapper.TripleExceptionWrapper wrap,
+                                            String serializeType,
+                                            MultipleSerialization serialization) {
+        if (wrap == null) {
+            return null;
+        }
+        if (!LANGUAGE.equals(wrap.getLanguage())) {
+            return null;
+        }
+        try {
+            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
+            Object obj = serialization.deserialize(url, serializeType, wrap.getClassName(), bais);
+            bais.close();
+            return (Throwable) obj;
+        } catch (Exception e) {
+            // if this null ,can get common exception
+            return null;
+        }
+    }
+
 
     public static TripleWrapper.TripleRequestWrapper wrapReq(URL url, String serializeType, Object req,
                                                              String type,
@@ -182,7 +253,7 @@ public class TripleUtil {
 
     public static <T> T unpack(InputStream is, Class<T> clz) {
         try {
-            final T req = (T) pbSerialization.deserialize(is, clz);
+            final T req = SingleProtobufUtils.deserialize(is, clz);
             is.close();
             return req;
         } catch (IOException e) {
@@ -205,7 +276,7 @@ public class TripleUtil {
     public static byte[] pack(Object obj) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            pbSerialization.serialize(obj, baos);
+            SingleProtobufUtils.serialize(obj, baos);
         } catch (IOException e) {
             throw new RuntimeException("Failed to pack protobuf object", e);
         }

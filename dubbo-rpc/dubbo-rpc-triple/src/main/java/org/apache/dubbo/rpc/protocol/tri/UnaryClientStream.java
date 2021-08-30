@@ -22,14 +22,20 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.triple.TripleWrapper;
 
-import java.util.concurrent.Executor;
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
+
+import java.util.List;
+import java.util.Map;
 
 public class UnaryClientStream extends AbstractClientStream implements Stream {
 
 
-    protected UnaryClientStream(URL url, Executor executor) {
-        super(url, executor);
+    protected UnaryClientStream(URL url) {
+        super(url);
     }
 
     @Override
@@ -48,10 +54,15 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
         public void doOnComplete(OperationHandler handler) {
             execute(() -> {
                 try {
-                    final Object resp = deserializeResponse(getData());
+                    AppResponse result;
+                    if (!Void.TYPE.equals(getMethodDescriptor().getReturnClass())) {
+                        final Object resp = deserializeResponse(getData());
+                        result = new AppResponse(resp);
+                    } else {
+                        result = new AppResponse();
+                    }
                     Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-                    final AppResponse result = new AppResponse(resp);
-                    result.setObjectAttachments(parseMetadataToMap(getTrailers()));
+                    result.setObjectAttachments(parseMetadataToAttachmentMap(getTrailers()));
                     response.setResult(result);
                     DefaultFuture2.received(getConnection(), response);
                 } catch (Exception e) {
@@ -63,16 +74,66 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             });
         }
 
+        @Override
         protected void onError(GrpcStatus status) {
             Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-            if (status.description != null) {
-                response.setErrorMessage(status.description);
-            } else {
-                response.setErrorMessage(status.cause.getMessage());
+            response.setErrorMessage(status.description);
+            final AppResponse result = new AppResponse();
+            result.setException(getThrowable(this.getTrailers()));
+            result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(this.getTrailers()));
+            response.setResult(result);
+            if (!result.hasException()) {
+                final byte code = GrpcStatus.toDubboStatus(status.code);
+                response.setStatus(code);
             }
-            final byte code = GrpcStatus.toDubboStatus(status.code);
-            response.setStatus(code);
             DefaultFuture2.received(getConnection(), response);
+        }
+
+        private Throwable getThrowable(Metadata metadata) {
+            // first get throwable from exception tw bin
+            try {
+                if (metadata.contains(TripleHeaderEnum.EXCEPTION_TW_BIN.getHeader())) {
+                    final CharSequence raw = metadata.get(TripleHeaderEnum.EXCEPTION_TW_BIN.getHeader());
+                    byte[] exceptionTwBin = TripleUtil.decodeASCIIByte(raw);
+                    ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                    try {
+                        TripleWrapper.TripleExceptionWrapper wrapper = TripleUtil.unpack(exceptionTwBin,
+                                TripleWrapper.TripleExceptionWrapper.class);
+                        Throwable throwable = TripleUtil.unWrapException(getUrl(), wrapper, getSerializeType(),
+                                getMultipleSerialization());
+                        if (throwable != null) {
+                            return throwable;
+                        }
+                    } finally {
+                        ClassLoadUtil.switchContextLoader(tccl);
+                    }
+                }
+            } catch (Throwable t) {
+                LOGGER.warn(String.format("Decode exception instance from triple trailers:%s failed", metadata), t);
+            }
+            // second get status detail
+            if (metadata.contains(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
+                final CharSequence raw = metadata.get(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader());
+                byte[] statusDetailBin = TripleUtil.decodeASCIIByte(raw);
+                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                try {
+                    final Status statusDetail = TripleUtil.unpack(statusDetailBin, Status.class);
+                    List<Any> detailList = statusDetail.getDetailsList();
+                    Map<Class<?>, Object> classObjectMap = TripleUtil.tranFromStatusDetails(detailList);
+
+                    // get common exception from DebugInfo
+                    DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
+                    if (debugInfo == null) {
+                        return new TripleRpcException(statusDetail.getCode(),
+                                statusDetail.getMessage(), metadata);
+                    }
+                    String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
+                    return new TripleRpcException(statusDetail.getCode(), msg, metadata);
+                } finally {
+                    ClassLoadUtil.switchContextLoader(tccl);
+                }
+            }
+            return null;
         }
     }
 }

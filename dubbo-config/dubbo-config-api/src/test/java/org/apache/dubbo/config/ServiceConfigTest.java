@@ -18,6 +18,7 @@
 package org.apache.dubbo.config;
 
 import com.google.common.collect.Lists;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
@@ -43,20 +44,18 @@ import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_DEFAULT;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
@@ -183,10 +182,10 @@ public class ServiceConfigTest {
         service.export();
 
         String serviceVersion = service.getVersion();
-        String serviceVersion2 = service.toUrl().getParameter(VERSION_KEY);
+        String serviceVersion2 = service.toUrl().getVersion();
 
         String group = service.getGroup();
-        String group2 = service.toUrl().getParameter(GROUP_KEY);
+        String group2 = service.toUrl().getGroup();
 
         assertEquals(serviceVersion2, serviceVersion);
         assertEquals(group, group2);
@@ -204,11 +203,22 @@ public class ServiceConfigTest {
 
     @Test
     public void testDelayExport() throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        delayService.addServiceListener(new ServiceListener() {
+            @Override
+            public void exported(ServiceConfig sc) {
+                assertThat(delayService.getExportedUrls(), hasSize(1));
+                latch.countDown();
+            }
+
+            @Override
+            public void unexported(ServiceConfig sc) {
+
+            }
+        });
         delayService.export();
         assertTrue(delayService.getExportedUrls().isEmpty());
-        //add 300ms to ensure that the delayService has been exported
-        TimeUnit.MILLISECONDS.sleep(delayService.getDelay() + 300);
-        assertThat(delayService.getExportedUrls(), hasSize(1));
+        latch.await();
     }
 
     @Test

@@ -92,9 +92,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     private Invoker<?> getInvoker(Http2Headers headers, String serviceName) {
-        final String version = headers.contains(TripleConstant.SERVICE_VERSION) ? headers.get(
-                TripleConstant.SERVICE_VERSION).toString() : null;
-        final String group = headers.contains(TripleConstant.SERVICE_GROUP) ? headers.get(TripleConstant.SERVICE_GROUP)
+        final String version = headers.contains(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ? headers.get(
+            TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
+        final String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader())
                 .toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = PATH_RESOLVER.resolve(key);

@@ -96,6 +96,8 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     " Master URL: " + config.getMasterUrl() +
                     " Hostname: " + currentHostname;
             logger.error(message);
+        } else {
+            KubernetesMeshEnvListener.injectKubernetesEnv(kubernetesClient, namespace);
         }
     }
 

@@ -22,7 +22,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.rpc.Invoker;
@@ -90,7 +89,7 @@ public class MetadataUtils {
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
     }
 
-    public static MetadataService getMetadataServiceProxy(ServiceInstance instance, ServiceDiscovery serviceDiscovery) {
+    public static MetadataService getMetadataServiceProxy(ServiceInstance instance) {
         String key = computeKey(instance);
         Lock lock = metadataServiceLocks.computeIfAbsent(key, k -> new ReentrantLock());
 
@@ -102,7 +101,7 @@ public class MetadataUtils {
         }
     }
 
-    public static void destroyMetadataServiceProxy(ServiceInstance instance, ServiceDiscovery serviceDiscovery) {
+    public static void destroyMetadataServiceProxy(ServiceInstance instance) {
         String key = computeKey(instance);
         Lock lock = metadataServiceLocks.computeIfAbsent(key, k -> new ReentrantLock());
 

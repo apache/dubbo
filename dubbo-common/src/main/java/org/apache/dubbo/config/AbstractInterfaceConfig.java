@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.utils.ClassUtils;
@@ -46,6 +47,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.NATIVE;
+
 
 /**
  * AbstractDefaultConfig
@@ -87,7 +90,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected MonitorConfig monitor;
 
     /**
-     * Strategies for generating dynamic agents，there are two strategies can be choosed: jdk and javassist
+     * Strategies for generating dynamic agents，there are two strategies can be chosen: jdk and javassist
      */
     protected String proxy;
 
@@ -213,6 +216,20 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         map.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
             map.put(PID_KEY, String.valueOf(ConfigUtils.getPid()));
+        }
+    }
+
+    /**
+     * To obtain the method list in the port, use reflection when in native mode and javaassist otherwise.
+     * @param interfaceClass
+     * @return
+     */
+    protected String[] methods(Class<?> interfaceClass) {
+        boolean isNative = ApplicationModel.getEnvironment().getConfiguration().getBoolean(NATIVE, false);
+        if (isNative) {
+            return Arrays.stream(interfaceClass.getMethods()).map(Method::getName).toArray(String[]::new);
+        } else {
+            return Wrapper.getWrapper(interfaceClass).getMethodNames();
         }
     }
 
