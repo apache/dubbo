@@ -197,7 +197,7 @@ public class ExtensionLoader<T> {
     }
 
     public static void destroyAll() {
-        EXTENSION_INSTANCES.forEach((_type, instance) -> {
+        EXTENSION_INSTANCES.forEach((type, instance) -> {
             if (instance instanceof Lifecycle) {
                 Lifecycle lifecycle = (Lifecycle) instance;
                 try {
