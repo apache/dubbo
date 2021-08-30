@@ -30,7 +30,6 @@ import org.apache.dubbo.config.ServiceConfigBase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -115,15 +114,9 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt,
             serviceMetadata, null);
         consumers.putIfAbsent(serviceKey, consumerModel);
     }
-    public void registerConsumer(String serviceKey,
-                                 ServiceDescriptor serviceDescriptor,
-                                 ReferenceConfigBase<?> rc,
-                                 Object proxy,
-                                 ServiceMetadata serviceMetadata,
-                                 Map<String, AsyncMethodInfo> methodConfigs) {
-        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
-            serviceMetadata, methodConfigs);
-        consumers.putIfAbsent(serviceKey, consumerModel);
+
+    public void registerConsumer(ConsumerModel consumerModel) {
+        consumers.putIfAbsent(consumerModel.getServiceKey(), consumerModel);
     }
 
     public void reRegisterConsumer(String newServiceKey, String serviceKey) {
@@ -143,6 +136,11 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt,
             serviceMetadata);
         providers.putIfAbsent(serviceKey, providerModel);
         providersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), providerModel);
+    }
+
+    public void registerProvider(ProviderModel providerModel) {
+        providers.putIfAbsent(providerModel.getServiceKey(), providerModel);
+        providersWithoutGroup.putIfAbsent(keyWithoutGroup(providerModel.getServiceKey()), providerModel);
     }
 
     private static String keyWithoutGroup(String serviceKey) {

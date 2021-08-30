@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcServiceContext;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.lang.reflect.Field;
@@ -54,11 +53,8 @@ public class InvokerInvocationHandler implements InvocationHandler {
     public InvokerInvocationHandler(Invoker<?> handler) {
         this.invoker = handler;
         this.url = invoker.getUrl();
-        String serviceKey = this.url.getServiceKey();
         this.protocolServiceKey = this.url.getProtocolServiceKey();
-        if (serviceKey != null) {
-            this.consumerModel = ApplicationModel.defaultModel().getConsumerModel(serviceKey);
-        }
+        this.consumerModel = (ConsumerModel) this.url.getServiceModel();
     }
 
     @Override

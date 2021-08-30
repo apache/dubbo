@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.grpc.support.DubboGreeterGrpc;
@@ -67,13 +68,10 @@ public class GrpcProtocolTest {
         serviceMetadata.setServiceKey(URL.buildKey(DubboGreeterGrpc.IGreeter.class.getName(), null, null));
 
         Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
-        ApplicationModel.defaultModel().getApplicationServiceRepository().registerConsumer(
-            url.getServiceKey(),
-            serviceDescriptor,
-            mockReferenceConfig,
-            null,
-            serviceMetadata,
-            methodConfigs);
+        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), null, serviceDescriptor, mockReferenceConfig,
+            serviceMetadata, methodConfigs);
+
+        ApplicationModel.defaultModel().getApplicationServiceRepository().registerConsumer(consumerModel);
 
         protocol.export(proxy.getInvoker(serviceImpl, DubboGreeterGrpc.IGreeter.class, url));
         serviceImpl = proxy.getProxy(protocol.refer(DubboGreeterGrpc.IGreeter.class, url));

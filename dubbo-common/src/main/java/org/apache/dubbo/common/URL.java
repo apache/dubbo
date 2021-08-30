@@ -549,8 +549,7 @@ class URL implements Serializable {
     }
 
     public URL setScopeModel(ScopeModel scopeModel) {
-        putAttribute(CommonConstants.SCOPE_MODEL, scopeModel);
-        return this;
+        return putAttribute(CommonConstants.SCOPE_MODEL, scopeModel);
     }
 
     public ScopeModel getScopeModel() {
@@ -558,8 +557,7 @@ class URL implements Serializable {
     }
 
     public URL setServiceModel(ServiceModel serviceModel) {
-        putAttribute(CommonConstants.SERVICE_MODEL, serviceModel);
-        return this;
+        return putAttribute(CommonConstants.SERVICE_MODEL, serviceModel);
     }
 
     public ServiceModel getServiceModel() {

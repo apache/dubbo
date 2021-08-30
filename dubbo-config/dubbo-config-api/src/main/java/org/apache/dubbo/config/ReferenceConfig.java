@@ -111,6 +111,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private ProxyFactory proxyFactory;
 
+    private ConsumerModel consumerModel;
+
     /**
      * The interface proxy reference
      */
@@ -257,13 +259,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         ServiceRepository repository = getApplicationModel().getApplicationServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        repository.registerConsumer(
-            serviceMetadata.getServiceKey(),
-            serviceDescriptor,
-            this,
-            null,
-            serviceMetadata,
-            createAsyncMethodInfo());
+        consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
+            serviceMetadata, createAsyncMethodInfo());
+
+        repository.registerConsumer(consumerModel);
 
         serviceMetadata.getAttachments().putAll(referenceParameters);
 
@@ -272,7 +271,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
 
-        ConsumerModel consumerModel = repository.lookupReferredService(serviceMetadata.getServiceKey());
         consumerModel.setProxyObject(ref);
         consumerModel.initMethodModels();
 
@@ -390,7 +388,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         URL consumerUrl = new ServiceConfigURL(CONSUMER_PROTOCOL, referenceParameters.get(REGISTER_IP_KEY), 0,
             referenceParameters.get(INTERFACE_KEY), referenceParameters);
-        consumerUrl.setScopeModel(getScopeModel());
+        consumerUrl = consumerUrl.setScopeModel(getScopeModel());
+        consumerUrl = consumerUrl.setServiceModel(consumerModel);
         MetadataUtils.publishServiceDefinition(consumerUrl);
 
         // create service proxy
@@ -404,7 +403,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private void createInvokerForLocal(Map<String, String> referenceParameters) {
         URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(referenceParameters);
-        url.setScopeModel(getScopeModel());
+        url = url.setScopeModel(getScopeModel());
+        url = url.setServiceModel(consumerModel);
         invoker = protocolSPI.refer(interfaceClass, url);
         if (logger.isInfoEnabled()) {
             logger.info("Using in jvm service " + interfaceClass.getName());
@@ -422,6 +422,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (StringUtils.isEmpty(url.getPath())) {
                     url = url.setPath(interfaceName);
                 }
+                url = url.setServiceModel(consumerModel);
                 if (UrlUtils.isRegistry(url)) {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
                 } else {
@@ -445,6 +446,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (monitorUrl != null) {
                     u = u.putAttribute(MONITOR_KEY, monitorUrl);
                 }
+                u = u.setServiceModel(consumerModel);
                 urls.add(u.putAttribute(REFER_KEY, referenceParameters));
             }
         }

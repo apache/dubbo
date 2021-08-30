@@ -203,8 +203,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     private void registerStatedUrl(URL registryUrl, URL registeredProviderUrl, boolean registered) {
-        ApplicationModel applicationModel = getApplicationModel(registryUrl.getScopeModel());
-        ProviderModel model = applicationModel.getProviderModel(registeredProviderUrl.getServiceKey());
+        ProviderModel model = (ProviderModel) registeredProviderUrl.getServiceModel();
         model.addStatedUrl(new ProviderModel.RegisterStatedURL(
             registeredProviderUrl,
             registryUrl,

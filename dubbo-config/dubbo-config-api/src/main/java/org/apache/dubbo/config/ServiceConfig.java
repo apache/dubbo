@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -123,6 +124,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * default implementation
      */
     private ProxyFactory proxyFactory;
+
+    private ProviderModel providerModel;
 
     /**
      * Whether the provider has been exported
@@ -355,13 +358,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void doExportUrls() {
         ServiceRepository repository = getApplicationModel().getApplicationServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(getInterfaceClass());
-        repository.registerProvider(
-                getUniqueServiceName(),
-                ref,
-                serviceDescriptor,
-                this,
-                serviceMetadata
-        );
+        providerModel = new ProviderModel(getUniqueServiceName(),
+            ref,
+            serviceDescriptor,
+            this,
+            serviceMetadata);
+
+        repository.registerProvider(providerModel);
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
@@ -536,7 +539,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             url = this.getExtensionLoader(ConfiguratorFactory.class)
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
-        url.setScopeModel(getScopeModel());
+        url = url.setScopeModel(getScopeModel());
+        url =  url.setServiceModel(providerModel);
         return url;
     }
 
