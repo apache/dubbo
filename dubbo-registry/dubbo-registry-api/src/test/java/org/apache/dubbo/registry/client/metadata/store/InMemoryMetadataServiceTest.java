@@ -17,14 +17,18 @@
 package org.apache.dubbo.registry.client.metadata.store;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.registry.MockLogger;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
@@ -32,14 +36,28 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Construction of {@link org.apache.dubbo.metadata.MetadataInfo} and {@link org.apache.dubbo.metadata.MetadataInfo.ServiceInfo} included.
  */
 public class InMemoryMetadataServiceTest {
+    private static final MockLogger logger = new MockLogger();
+
+    @BeforeAll
+    public static void setUp() {
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("demo-provider2");
+        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+    }
+
+    @AfterAll
+    public static void clearUp() {
+        ApplicationModel.reset();
+    }
 
     /**
      * <ul>
@@ -56,12 +74,12 @@ public class InMemoryMetadataServiceTest {
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
             "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService" +
             "&metadata-type=remote&methods=sayHello&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
-            "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0");
+            "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-default");
         metadataService.exportURL(url);
 
         Map<String, MetadataInfo> metadataInfoMap = metadataService.getMetadataInfos();
-        MetadataInfo defaultMetadataInfo = metadataInfoMap.get(DEFAULT_KEY);
-        assertNotNull(defaultMetadataInfo);
+        MetadataInfo defaultMetadataInfo = metadataInfoMap.get("registry1");
+        assertNotNull(defaultMetadataInfo.getServiceInfo(url.getProtocolServiceKey()));
         assertEquals("demo-provider2", defaultMetadataInfo.getApp());
         assertEquals(1, defaultMetadataInfo.getServices().size());
         MetadataInfo.ServiceInfo serviceInfo = defaultMetadataInfo.getServiceInfo(url.getProtocolServiceKey());
@@ -97,7 +115,32 @@ public class InMemoryMetadataServiceTest {
         metadataService.exportURL(url);
         // serviceInfo is replaced
         assertEquals(2, defaultMetadataInfo.getServices().size());
-        assertNotEquals(serviceInfo, defaultMetadataInfo.getServiceInfo(url.getProtocolServiceKey()));
+        assertNotSame(serviceInfo, defaultMetadataInfo.getServiceInfo(url.getProtocolServiceKey()));
+
+        try {
+            metadataService.blockUntilUpdated();
+            assertTrue(true);
+            metadataService.logger = logger;
+           Thread mainThread = Thread.currentThread();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    mainThread.interrupt();
+                }
+            }).start();
+            metadataService.blockUntilUpdated();
+            logger.checkLogHappened("metadata refresh thread has been ");
+            metadataService.exportURL(url.addParameter(GROUP_KEY, "anotherGroup"));
+            metadataService.blockUntilUpdated();
+            assertTrue(true);
+        } finally {
+            metadataService.releaseBlock();
+        }
     }
 
 
@@ -111,17 +154,22 @@ public class InMemoryMetadataServiceTest {
      */
     @Test
     public void testUnExport() {
+        InMemoryWritableMetadataService metadataService = new InMemoryWritableMetadataService();
+        // export normal url
+        URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
+            "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
+            "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService" +
+            "&metadata-type=remote&methods=sayHello&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
+            "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=-default");
+        metadataService.exportURL(url);
+        Map<String, MetadataInfo> metadataInfoMap = metadataService.getMetadataInfos();
+        MetadataInfo defaultMetadataInfo = metadataInfoMap.get("registry1");
+        assertEquals(1, defaultMetadataInfo.getServices().size());
+        MetadataInfo.ServiceInfo serviceInfo = defaultMetadataInfo.getServiceInfo(url.getProtocolServiceKey());
+        assertNotNull(serviceInfo);
 
-    }
-
-    @Test
-    public void testPublishServiceDefinition() {}
-
-    /**
-     * <p>Test </p>
-     */
-    @Test
-    public void testBlockUntilUpdated() {
-
+        metadataService.unexportURL(url);
+        assertEquals(0, defaultMetadataInfo.getServices().size());
+        assertNull(defaultMetadataInfo.getServiceInfo(url.getProtocolServiceKey()));
     }
 }

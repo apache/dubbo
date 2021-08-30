@@ -14,26 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.infra.support;
+package org.apache.dubbo.registry;
 
-import org.apache.dubbo.common.infra.InfraAdapter;
+import org.apache.dubbo.common.extension.SPI;
 
-import java.util.Collections;
-import java.util.Map;
-
-public class CmdbAdapter implements InfraAdapter {
-
-    public CmdbAdapter() {
-        // init;
-    }
-
-    @Override
-    public Map<String, String> getExtraAttributes(Map<String, String> params) {
-        return Collections.emptyMap();
-    }
-
-    @Override
-    public String getAttribute(String key) {
-        return "";
-    }
+@SPI
+public interface ProviderFirstParams {
+    String[] params();
 }

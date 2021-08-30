@@ -14,29 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.filter;
+package org.apache.dubbo.registry.support;
 
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metadata.MetadataParamsFilter;
+import org.apache.dubbo.registry.ProviderFirstParams;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 
-@Activate
-public class CustomizedParamsFilter implements MetadataParamsFilter {
+public class DefaultProviderFirstParams implements ProviderFirstParams {
 
     @Override
-    public String[] serviceParamsIncluded() {
-        return new String[]{APPLICATION_KEY, TIMEOUT_KEY, GROUP_KEY, VERSION_KEY};
+    public String[] params() {
+        return new String[]{RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY};
     }
 
-    /**
-     * Not included in this test
-     */
-    @Override
-    public String[] instanceParamsIncluded() {
-        return new String[0];
-    }
 }
