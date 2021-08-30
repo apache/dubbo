@@ -107,20 +107,24 @@ public class ApplicationModel extends ScopeModel {
         return frameworkModel;
     }
 
-    public Collection<ConsumerModel> allConsumerModels() {
-        return getApplicationServiceRepository().getReferredServices();
+    @Deprecated
+    public static Collection<ConsumerModel> allConsumerModels() {
+        return defaultModel().getApplicationServiceRepository().getReferredServices();
     }
 
-    public Collection<ProviderModel> allProviderModels() {
-        return getApplicationServiceRepository().getExportedServices();
+    @Deprecated
+    public static Collection<ProviderModel> allProviderModels() {
+        return defaultModel().getApplicationServiceRepository().getExportedServices();
     }
 
-    public ProviderModel getProviderModel(String serviceKey) {
-        return getApplicationServiceRepository().lookupExportedService(serviceKey);
+    @Deprecated
+    public static ProviderModel getProviderModel(String serviceKey) {
+        return defaultModel().getApplicationServiceRepository().lookupExportedService(serviceKey);
     }
 
-    public ConsumerModel getConsumerModel(String serviceKey) {
-        return getApplicationServiceRepository().lookupReferredService(serviceKey);
+    @Deprecated
+    public static ConsumerModel getConsumerModel(String serviceKey) {
+        return defaultModel().getApplicationServiceRepository().lookupReferredService(serviceKey);
     }
 
     public void initFrameworkExts() {
@@ -190,6 +194,11 @@ public class ApplicationModel extends ScopeModel {
     @Deprecated
     public static String getName() {
         return defaultModel().getCurrentConfig().getName();
+    }
+
+    @Deprecated
+    public static String getApplication() {
+        return getName();
     }
 
     public String getApplicationName() {
