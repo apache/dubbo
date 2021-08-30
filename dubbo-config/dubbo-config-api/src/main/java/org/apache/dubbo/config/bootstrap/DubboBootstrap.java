@@ -176,6 +176,8 @@ public final class DubboBootstrap {
 
     protected AtomicBoolean destroyed = new AtomicBoolean(false);
 
+    protected AtomicBoolean shutdown = new AtomicBoolean(false);
+
     protected volatile boolean isCurrentlyInStart = false;
 
     protected volatile ServiceInstance serviceInstance;

@@ -277,9 +277,7 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
-        if (REMOTE_METADATA_STORAGE_TYPE.equals(ServiceInstanceMetadataUtils.getMetadataStorageType(serviceInstance))) {
-            reportMetadataToRemote(serviceInstance);
-        }
+        reportMetadataToRemote(serviceInstance);
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
             ServiceInstance instance = serviceDiscovery.getLocalInstance();
