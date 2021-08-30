@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -35,6 +34,7 @@ import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -183,18 +183,6 @@ public class ServiceInstanceMetadataUtils {
 
     public static boolean hasEndpoints(ServiceInstance serviceInstance) {
         return StringUtils.isNotEmpty(serviceInstance.getMetadata().get(ENDPOINTS));
-    }
-
-    /**
-     * Is Dubbo Service instance or not
-     *
-     * @param serviceInstance {@link ServiceInstance service instance}
-     * @return if Dubbo Service instance, return <code>true</code>, or <code>false</code>
-     */
-    public static boolean isDubboServiceInstance(ServiceInstance serviceInstance) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.containsKey(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME)
-                || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
     }
 
     public static void setEndpoints(ServiceInstance serviceInstance, Map<String, Integer> protocolPorts) {

@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.registry.client.metadata.store;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.MetadataParamsFilter;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 
+@Activate
 public class ExcludedParamsFilter implements MetadataParamsFilter {
 
     @Override

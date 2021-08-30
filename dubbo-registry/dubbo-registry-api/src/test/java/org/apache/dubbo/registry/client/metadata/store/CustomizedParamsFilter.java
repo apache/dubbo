@@ -16,13 +16,16 @@
  */
 package org.apache.dubbo.registry.client.metadata.store;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.MetadataParamsFilter;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
+@Activate
 public class CustomizedParamsFilter implements MetadataParamsFilter {
 
     @Override
@@ -35,6 +38,6 @@ public class CustomizedParamsFilter implements MetadataParamsFilter {
      */
     @Override
     public String[] instanceParamsIncluded() {
-        return new String[0];
+        return new String[]{SIDE_KEY};
     }
 }
