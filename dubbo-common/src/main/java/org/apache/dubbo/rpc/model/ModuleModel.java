@@ -27,16 +27,10 @@ public class ModuleModel extends ScopeModel {
     private final ApplicationModel applicationModel;
 
     public ModuleModel(ApplicationModel applicationModel) {
-        this(applicationModel, true);
-    }
-
-    public ModuleModel(ApplicationModel applicationModel, boolean shouldInit) {
         super(applicationModel, new ExtensionDirector(applicationModel.getExtensionDirector(), ExtensionScope.MODULE));
         this.applicationModel = applicationModel;
         applicationModel.addModule(this);
-        if(shouldInit) {
-            postConstruct();
-        }
+        postProcessAfterCreated();
     }
 
     public ApplicationModel getApplicationModel() {
