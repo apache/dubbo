@@ -51,7 +51,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
     private class UnaryClientTransportObserver extends UnaryTransportObserver implements TransportObserver {
 
         @Override
-        public void doOnComplete(OperationHandler handler) {
+        public void doOnComplete() {
             execute(() -> {
                 try {
                     AppResponse result;

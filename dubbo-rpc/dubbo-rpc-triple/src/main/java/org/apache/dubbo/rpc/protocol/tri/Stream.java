@@ -66,18 +66,4 @@ public interface Stream {
      */
     void execute(Runnable runnable);
 
-    enum OperationResult {
-        OK,
-        FAILURE,
-        NETWORK_FAIL
-    }
-
-    interface OperationHandler {
-
-        /**
-         * @param result operation's result
-         * @param cause  null if the operation succeed
-         */
-        void operationDone(OperationResult result, Throwable cause);
-    }
 }

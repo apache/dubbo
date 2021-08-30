@@ -59,7 +59,7 @@ public class ClientTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler) {
+    public void onMetadata(Metadata metadata, boolean endStream) {
         if (!headerSent) {
             final Http2Headers headers = new DefaultHttp2Headers(true)
                     .path(metadata.get(TripleHeaderEnum.PATH_KEY.getHeader()))
@@ -78,7 +78,7 @@ public class ClientTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onData(byte[] data, boolean endStream, Stream.OperationHandler handler) {
+    public void onData(byte[] data, boolean endStream) {
         ByteBuf buf = ctx.alloc().buffer();
         buf.writeByte(0);
         buf.writeInt(data.length);
@@ -92,7 +92,7 @@ public class ClientTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onComplete(Stream.OperationHandler handler) {
+    public void onComplete() {
         if (!endStreamSent) {
             endStreamSent = true;
             streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true))
