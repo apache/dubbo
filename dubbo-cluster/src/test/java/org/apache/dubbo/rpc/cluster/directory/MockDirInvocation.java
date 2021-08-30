@@ -131,6 +131,11 @@ public class MockDirInvocation implements Invocation {
     }
 
     @Override
+    public void setServiceModel(ServiceModel serviceModel) {
+
+    }
+
+    @Override
     public ServiceModel getServiceModel() {
         return null;
     }

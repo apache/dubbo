@@ -22,6 +22,8 @@ import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -389,6 +391,16 @@ public class InstanceAddressURL extends URL {
 
     private Map<String, String> getInstanceMetadata() {
         return this.instance.getMetadata();
+    }
+
+    @Override
+    public ScopeModel getScopeModel() {
+        return RpcContext.getServiceContext().getConsumerUrl().getScopeModel();
+    }
+
+    @Override
+    public ServiceModel getServiceModel() {
+        return RpcContext.getServiceContext().getConsumerUrl().getServiceModel();
     }
 
     @Override

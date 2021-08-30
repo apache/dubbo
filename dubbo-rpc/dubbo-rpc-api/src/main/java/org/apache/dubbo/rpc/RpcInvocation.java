@@ -486,6 +486,11 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     @Override
+    public void setServiceModel(ServiceModel serviceModel) {
+        this.serviceModel = serviceModel;
+    }
+
+    @Override
     public ServiceModel getServiceModel() {
         return serviceModel;
     }

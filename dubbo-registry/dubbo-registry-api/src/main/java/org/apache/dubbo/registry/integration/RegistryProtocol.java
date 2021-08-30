@@ -532,6 +532,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         URL urlToRegistry = new ServiceConfigURL(
             parameters.get(PROTOCOL_KEY) == null ? DUBBO : parameters.get(PROTOCOL_KEY),
             parameters.remove(REGISTER_IP_KEY), 0, getPath(parameters, type), parameters);
+        urlToRegistry = urlToRegistry.setScopeModel(directory.getConsumerUrl().getScopeModel());
+        urlToRegistry = urlToRegistry.setServiceModel(directory.getConsumerUrl().getServiceModel());
         if (directory.isShouldRegister()) {
             directory.setRegisteredConsumerUrl(urlToRegistry);
             registry.register(directory.getRegisteredConsumerUrl());

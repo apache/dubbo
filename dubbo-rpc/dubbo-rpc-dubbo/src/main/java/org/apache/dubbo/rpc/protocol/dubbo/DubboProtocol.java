@@ -118,6 +118,7 @@ public class DubboProtocol extends AbstractProtocol {
 
             Invocation inv = (Invocation) message;
             Invoker<?> invoker = getInvoker(channel, inv);
+            inv.setServiceModel(invoker.getUrl().getServiceModel());
             // need to consider backward-compatibility if it's a callback
             if (Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
                 String methodsStr = invoker.getUrl().getParameters().get("methods");

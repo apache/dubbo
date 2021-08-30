@@ -139,6 +139,8 @@ public interface Invocation {
      */
     Invoker<?> getInvoker();
 
+    void setServiceModel(ServiceModel serviceModel);
+
     ServiceModel getServiceModel();
 
     Object put(Object key, Object value);
