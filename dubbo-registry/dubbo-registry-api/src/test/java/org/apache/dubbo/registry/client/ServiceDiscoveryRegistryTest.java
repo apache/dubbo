@@ -115,7 +115,11 @@ public class ServiceDiscoveryRegistryTest {
             // Exception case, no interface-app mapping found
             when(mapping.getAndListenServices(any(), any(), any())).thenReturn(Collections.emptySet());
             // when check = false
-            serviceDiscoveryRegistry.doSubscribe(url, testServiceListener);
+            try {
+                serviceDiscoveryRegistry.doSubscribe(url, testServiceListener);
+            } finally {
+                spiedMetadataService.unsubscribeURL(url);
+            }
             // when check = true
             URL checkURL = url.addParameter(CHECK_KEY, true);
             Exception exceptionShouldHappen = null;
@@ -123,6 +127,8 @@ public class ServiceDiscoveryRegistryTest {
                 serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
             } catch (IllegalStateException e) {
                 exceptionShouldHappen = e;
+            } finally {
+                spiedMetadataService.unsubscribeURL(checkURL);
             }
             if (exceptionShouldHappen == null) {
                 fail();
@@ -132,7 +138,11 @@ public class ServiceDiscoveryRegistryTest {
             Set<String> singleApp = new HashSet<>();
             singleApp.add(APP_NAME1);
             when(mapping.getAndListenServices(any(), any(), any())).thenReturn(singleApp);
-            serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
+            try {
+                serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
+            } finally {
+                spiedMetadataService.unsubscribeURL(checkURL);
+            }
         }
     }
 
