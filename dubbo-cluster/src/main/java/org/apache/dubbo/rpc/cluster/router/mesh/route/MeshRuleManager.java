@@ -24,8 +24,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 
 public final class MeshRuleManager {
@@ -43,7 +45,8 @@ public final class MeshRuleManager {
         DynamicConfiguration configuration = ApplicationModel.defaultModel().getApplicationEnvironment().getDynamicConfiguration()
             .orElse(null);
 
-        Set<MeshEnvListener> envListeners = ExtensionLoader.getExtensionLoader(MeshEnvListener.class).getSupportedExtensionInstances();
+        Set<MeshEnvListenerFactory> envListenerFactories = ExtensionLoader.getExtensionLoader(MeshEnvListenerFactory.class).getSupportedExtensionInstances();
+        Set<MeshEnvListener> envListeners = envListenerFactories.stream().map(MeshEnvListenerFactory::getListener).filter(Objects::nonNull).collect(Collectors.toSet());
 
         if (configuration == null && envListeners.stream().noneMatch(MeshEnvListener::isEnable)) {
             logger.warn("Doesn't support Configuration!");

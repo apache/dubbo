@@ -14,16 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.integration.single.exportmetadata;
 
-public class DefaultMetadataParamsFilter implements MetadataParamsFilter {
-    @Override
-    public String[] serviceParamsIncluded() {
-        return new String[0];
-    }
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.integration.AbstractRegistryCenterExporterListener;
+import org.apache.dubbo.metadata.MetadataService;
 
+@Activate(group = CommonConstants.PROVIDER, order = 1000)
+public class SingleRegistryCenterExportMetadataExporterListener extends AbstractRegistryCenterExporterListener {
+
+    /**
+     * Returns the interface of exported service.
+     */
     @Override
-    public String[] instanceParamsIncluded() {
-        return new String[0];
+    protected Class<?> getInterface() {
+        return MetadataService.class;
     }
 }

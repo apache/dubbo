@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.descriptor;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.proto.HelloReply;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 
@@ -55,6 +56,19 @@ public class MethodDescriptorTest {
         method = DescriptorService.class.getMethod("sayHello", HelloReply.class);
         descriptor = new MethodDescriptor(method);
         Assertions.assertTrue(descriptor.isUnary());
+    }
+
+    @Test
+    public void testIsServerStream() throws NoSuchMethodException {
+        Method method = DescriptorService.class.getMethod("sayHelloServerStream", HelloReply.class, StreamObserver.class);
+        MethodDescriptor descriptor = new MethodDescriptor(method);
+        Assertions.assertFalse(descriptor.isUnary());
+        Assertions.assertFalse(descriptor.isNeedWrap());
+
+        Method method2 = DescriptorService.class.getMethod("sayHelloServerStream2", Object.class, StreamObserver.class);
+        MethodDescriptor descriptor2 = new MethodDescriptor(method2);
+        Assertions.assertFalse(descriptor2.isUnary());
+        Assertions.assertTrue(descriptor2.isNeedWrap());
     }
 
     @Test

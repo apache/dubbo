@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
@@ -46,8 +44,6 @@ public class MetadataUtils {
     public static ConcurrentMap<String, MetadataService> metadataServiceProxies = new ConcurrentHashMap<>();
 
     public static ConcurrentMap<String, Invoker<?>> metadataServiceInvokers = new ConcurrentHashMap<>();
-
-    public static ConcurrentMap<String, Lock> metadataServiceLocks = new ConcurrentHashMap<>();
 
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
@@ -71,31 +67,16 @@ public class MetadataUtils {
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
     }
 
-    public static MetadataService getMetadataServiceProxy(ServiceInstance instance) {
-        String key = computeKey(instance);
-        Lock lock = metadataServiceLocks.computeIfAbsent(key, k -> new ReentrantLock());
-
-        lock.lock();
-        try {
-            return metadataServiceProxies.computeIfAbsent(key, k -> referProxy(k, instance));
-        } finally {
-            lock.unlock();
-        }
+    public static synchronized MetadataService getMetadataServiceProxy(ServiceInstance instance) {
+        return metadataServiceProxies.computeIfAbsent(computeKey(instance), k -> referProxy(k, instance));
     }
 
-    public static void destroyMetadataServiceProxy(ServiceInstance instance) {
+    public static synchronized void destroyMetadataServiceProxy(ServiceInstance instance) {
         String key = computeKey(instance);
-        Lock lock = metadataServiceLocks.computeIfAbsent(key, k -> new ReentrantLock());
-
-        lock.lock();
-        try {
-            if (metadataServiceProxies.containsKey(key)) {
-                metadataServiceProxies.remove(key);
-                Invoker<?> invoker = metadataServiceInvokers.remove(key);
-                invoker.destroy();
-            }
-        } finally {
-            lock.unlock();
+        if (metadataServiceProxies.containsKey(key)) {
+            metadataServiceProxies.remove(key);
+            Invoker<?> invoker = metadataServiceInvokers.remove(key);
+            invoker.destroy();
         }
     }
 

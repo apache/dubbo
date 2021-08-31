@@ -501,6 +501,19 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         return new ServiceDiscoveryMigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
+    /**
+     * This method tries to load all RegistryProtocolListener definitions, which are used to control the behaviour of invoker by interacting with defined, then uses those listeners to
+     * change the status and behaviour of the MigrationInvoker.
+     *
+     * Currently available Listener is MigrationRuleListener, one used to control the Migration behaviour with dynamically changing rules.
+     *
+     * @param invoker MigrationInvoker that determines which type of invoker list to use
+     * @param url The original url generated during refer, more like a registry:// style url
+     * @param consumerUrl Consumer url representing current interface and its config
+     * @param registryURL The actual registry url, zookeeper:// for example
+     * @param <T> The service definition
+     * @return The @param MigrationInvoker passed in
+     */
     protected <T> Invoker<T> interceptInvoker(ClusterInvoker<T> invoker, URL url, URL consumerUrl, URL registryURL) {
         List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(url);
         if (CollectionUtils.isEmpty(listeners)) {
@@ -854,14 +867,16 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 logger.warn(t.getMessage(), t);
             }
             try {
-                Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
-                NotifyListener listener = overrideListeners.remove(registerUrl);
-                registry.unsubscribe(subscribeUrl, listener);
-                ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
-                if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
-                    applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                        .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                            serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                if (subscribeUrl != null) {
+                    Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
+                    NotifyListener listener = overrideListeners.remove(registerUrl);
+                    registry.unsubscribe(subscribeUrl, listener);
+                    ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
+                    if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+                        applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                            .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
+                                serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                    }
                 }
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);

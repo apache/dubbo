@@ -25,6 +25,7 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -90,6 +91,11 @@ public class ServiceOrientedRegistryTest {
         metadataService = WritableMetadataService.getDefaultExtension(scopeModel);
         notifyListener = new MyNotifyListener();
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
+    }
+
+    @AfterAll
+    public static void clearUp() {
+        ApplicationModel.reset();
     }
 
     @Test
@@ -158,11 +164,15 @@ public class ServiceOrientedRegistryTest {
     @Test
     public void testSubscribe() {
 
-        registry.subscribe(url, new MyNotifyListener());
+        try {
+            registry.subscribe(url, new MyNotifyListener());
 
-        SortedSet<String> urls = metadataService.getSubscribedURLs();
+            SortedSet<String> urls = metadataService.getSubscribedURLs();
 
-        assertTrue(urls.isEmpty());
+            assertTrue(urls.isEmpty());
+        } finally {
+            metadataService.unsubscribeURL(url);
+        }
 
     }
 

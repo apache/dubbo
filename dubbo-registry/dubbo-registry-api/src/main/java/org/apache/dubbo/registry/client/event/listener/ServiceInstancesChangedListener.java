@@ -109,9 +109,7 @@ public class ServiceInstancesChangedListener {
         }
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
-        Map<ServiceInfo, Set<String>> localServiceToRevisions = new HashMap<>();
-        Map<String, Map<Set<String>, Object>> protocolRevisionsToUrls = new HashMap<>();
-        Map<String, Object> newServiceUrls = new HashMap<>();//TODO
+        Map<String, Map<String, Set<String>>> localServiceToRevisions = new HashMap<>();
         Map<String, MetadataInfo> newRevisionToMetadata = new HashMap<>();
 
         // grouping all instances of this app(service name) by revision
@@ -119,7 +117,7 @@ public class ServiceInstancesChangedListener {
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
                 String revision = getExportedServicesRevision(instance);
-                if (EMPTY_REVISION.equals(revision)) {
+                if (revision == null || EMPTY_REVISION.equals(revision)) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Find instance without valid service metadata: " + instance.getAddress());
                     }
@@ -159,17 +157,21 @@ public class ServiceInstancesChangedListener {
 
         this.revisionToMetadata = newRevisionToMetadata;
 
-        localServiceToRevisions.forEach((serviceInfo, revisions) -> {
-            String protocol = serviceInfo.getProtocol();
-            Map<Set<String>, Object> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> new HashMap<>());
-            Object urls = revisionsToUrls.get(revisions);
-            if (urls == null) {
-                urls = getServiceUrlsCache(revisionToInstances, revisions, protocol);
-                revisionsToUrls.put(revisions, urls);
-            }
+        Map<String, Map<Set<String>, Object>> protocolRevisionsToUrls = new HashMap<>();
+        Map<String, Object> newServiceUrls = new HashMap<>();
+        for (Map.Entry<String, Map<String, Set<String>>> entry : localServiceToRevisions.entrySet()) {
+            String protocol = entry.getKey();
+            entry.getValue().forEach((protocolServiceKey, revisions) -> {
+                Map<Set<String>, Object> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> new HashMap<>());
+                Object urls = revisionsToUrls.get(revisions);
+                if (urls == null) {
+                    urls = getServiceUrlsCache(revisionToInstances, revisions, protocol);
+                    revisionsToUrls.put(revisions, urls);
+                }
 
-            newServiceUrls.put(serviceInfo.getMatchKey(), urls);
-        });
+                newServiceUrls.put(protocolServiceKey, urls);
+            });
+        }
 
         this.serviceUrls = newServiceUrls;
         this.notifyAddressChanged();
@@ -273,7 +275,7 @@ public class ServiceInstancesChangedListener {
         return false;
     }
 
-    protected MetadataInfo getRemoteMetadata(String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, ServiceInstance instance) {
+    protected MetadataInfo getRemoteMetadata(String revision, Map<String, Map<String, Set<String>>> localServiceToRevisions, ServiceInstance instance) {
         MetadataInfo metadata = revisionToMetadata.get(revision);
 
         if (metadata != null && metadata != MetadataInfo.EMPTY) {
@@ -308,10 +310,13 @@ public class ServiceInstancesChangedListener {
         return metadata;
     }
 
-    protected Map<ServiceInfo, Set<String>> parseMetadata(String revision, MetadataInfo metadata, Map<ServiceInfo, Set<String>> localServiceToRevisions) {
+    protected Map<String, Map<String, Set<String>>> parseMetadata(String revision, MetadataInfo metadata, Map<String, Map<String, Set<String>>> localServiceToRevisions) {
         Map<String, ServiceInfo> serviceInfos = metadata.getServices();
         for (Map.Entry<String, ServiceInfo> entry : serviceInfos.entrySet()) {
-            Set<String> set = localServiceToRevisions.computeIfAbsent(entry.getValue(), k -> new TreeSet<>());
+            String protocol = entry.getValue().getProtocol();
+            String protocolServiceKey = entry.getValue().getMatchKey();
+            Map<String, Set<String>> map = localServiceToRevisions.computeIfAbsent(protocol, _p -> new HashMap<>());
+            Set<String> set = map.computeIfAbsent(protocolServiceKey, _k -> new TreeSet<>());
             set.add(revision);
         }
 
@@ -336,6 +341,7 @@ public class ServiceInstancesChangedListener {
                 // change the instance used to communicate to avoid all requests route to the same instance
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+                MetadataUtils.destroyMetadataServiceProxy(instance);
             }
         } catch (Exception e) {
             logger.error("Failed to load service metadata, meta type is " + metadataType, e);
@@ -364,7 +370,7 @@ public class ServiceInstancesChangedListener {
                 if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
                     DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
                     if (endpoint != null && !endpoint.getPort().equals(i.getPort())) {
-                        urls.add(((DefaultServiceInstance) i).copy(endpoint).toURL());
+                        urls.add(((DefaultServiceInstance) i).copyFrom(endpoint).toURL());
                         continue;
                     }
                 }

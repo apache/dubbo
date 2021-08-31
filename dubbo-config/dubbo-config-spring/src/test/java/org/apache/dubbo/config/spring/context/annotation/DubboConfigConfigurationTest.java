@@ -22,8 +22,8 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,7 +83,7 @@ public class DubboConfigConfigurationTest {
 
     @Test
     public void testMultiple() {
-        SingleRegistryCenter singleRegistryCenter = new DefaultSingleRegistryCenter();
+        RegistryCenter singleRegistryCenter = new ZookeeperSingleRegistryCenter();
         singleRegistryCenter.startup();
         try{
             context.register(DubboConfigConfiguration.Multiple.class);

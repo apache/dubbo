@@ -100,10 +100,20 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             stream.asStreamObserver().onNext(inv);
             stream.asStreamObserver().onCompleted();
         } else {
-            final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[0];
-            stream.subscribe(streamObserver);
             Response response = new Response(req.getId(), req.getVersion());
-            final AppResponse result = new AppResponse(stream.asStreamObserver());
+            AppResponse result;
+            if (methodDescriptor.getRpcType() == MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM
+                    || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
+                final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[0];
+                stream.subscribe(streamObserver);
+                result = new AppResponse(stream.asStreamObserver());
+            } else {
+                final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[1];
+                stream.subscribe(streamObserver);
+                result = new AppResponse();
+                stream.asStreamObserver().onNext(inv.getArguments()[0]);
+                stream.asStreamObserver().onCompleted();
+            }
             response.setResult(result);
             DefaultFuture2.received(stream.getConnection(), response);
         }

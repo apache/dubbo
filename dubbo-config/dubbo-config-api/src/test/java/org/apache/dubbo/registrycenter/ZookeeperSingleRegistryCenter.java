@@ -14,26 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.infra.support;
+package org.apache.dubbo.registrycenter;
 
-import org.apache.dubbo.common.infra.InfraAdapter;
+/**
+ * The default zookeeper single registry center.
+ */
+public class ZookeeperSingleRegistryCenter extends ZookeeperRegistryCenter {
 
-import java.util.Collections;
-import java.util.Map;
-
-public class CmdbAdapter implements InfraAdapter {
-
-    public CmdbAdapter() {
-        // init;
+    /**
+     * Initialize {@link ZookeeperSingleRegistryCenter} instance.
+     */
+    public ZookeeperSingleRegistryCenter() {
+        this(DEFAULT_PORT);
     }
 
-    @Override
-    public Map<String, String> getExtraAttributes(Map<String, String> params) {
-        return Collections.emptyMap();
+    /**
+     * Initialize {@link RegistryCenter} instance.
+     *
+     * @param port the zookeeper server's port.
+     */
+    public ZookeeperSingleRegistryCenter(int port) {
+        super(port);
     }
 
-    @Override
-    public String getAttribute(String key) {
-        return "";
-    }
+    /**
+     * The zookeeper server's default port.
+     */
+    private static final int DEFAULT_PORT = 2181;
 }

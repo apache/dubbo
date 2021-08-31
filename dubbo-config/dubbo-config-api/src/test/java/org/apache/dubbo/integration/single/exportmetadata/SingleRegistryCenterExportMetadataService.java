@@ -14,19 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registrycenter;
-
-import org.apache.dubbo.config.RegistryConfig;
-
-import java.util.List;
+package org.apache.dubbo.integration.single.exportmetadata;
 
 /**
- * Mock multiple registry center.
+ * This interface is used to check if the exported metadata service works well or not.
  */
-public interface MultipleRegistryCenter extends RegistryCenter {
+public interface SingleRegistryCenterExportMetadataService {
 
     /**
-     * Returns {@link RegistryConfig} instances.
+     * The simple method for testing.
      */
-    List<RegistryConfig> getRegistryConfigs();
+    String hello(String name);
 }

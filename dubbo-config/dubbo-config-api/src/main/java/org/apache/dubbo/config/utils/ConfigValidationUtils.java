@@ -314,7 +314,7 @@ public class ConfigValidationUtils {
         } else if (monitor != null) {
             address = monitor.getAddress();
         }
-        String protocol = monitor == null ? DUBBO_PROTOCOL : monitor.getProtocol();
+        String protocol = monitor == null ? null : monitor.getProtocol();
         if (monitor != null &&
             (REGISTRY_PROTOCOL.equals(protocol) || SERVICE_REGISTRY_PROTOCOL.equals(protocol))
             && registryURL != null) {

@@ -14,17 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.registrycenter;
+package org.apache.dubbo.metadata.filter;
 
-import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.metadata.MetadataParamsFilter;
 
-/**
- * Mock single registry center.
- */
-public interface SingleRegistryCenter extends RegistryCenter {
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+
+@Activate
+public class CustomizedParamsFilter implements MetadataParamsFilter {
+
+    @Override
+    public String[] serviceParamsIncluded() {
+        return new String[]{APPLICATION_KEY, TIMEOUT_KEY, GROUP_KEY, VERSION_KEY};
+    }
 
     /**
-     * Returns {@link RegistryConfig} instance.
+     * Not included in this test
      */
-    RegistryConfig getRegistryConfig();
+    @Override
+    public String[] instanceParamsIncluded() {
+        return new String[0];
+    }
 }

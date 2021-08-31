@@ -777,6 +777,18 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.common.url.component.param.DynamicParamSource
                                     </resource>
                                 </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.router.mesh.route.MeshEnvListenerFactory
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.registry.ProviderFirstParams
+                                    </resource>
+                                </transformer>
                             </transformers>
                             <filters>
                                 <filter>

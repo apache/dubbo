@@ -41,12 +41,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
+/**
+ * Listens to {@MigrationRule} from Config Center.
+ *
+ * - Migration rule is of consumer application scope.
+ * - Listener is shared among all invokers (interfaces), it keeps the relation between interface and handler.
+ *
+ * There're two execution points:
+ * - Refer, invoker behaviour is determined with default rule.
+ * - Rule change, invoker behaviour is changed according to the newly received rule.
+ */
 @Activate
 public class MigrationRuleListener implements RegistryProtocolListener, ConfigurationListener, ScopeModelAware {
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
@@ -54,11 +66,14 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private static final String MIGRATION_DELAY_KEY = "dubbo.application.migration.delay";
     private String ruleKey;
 
-    private final Map<MigrationInvoker, MigrationRuleHandler> handlers = new ConcurrentHashMap<>();
-    private final LinkedBlockingQueue<String> ruleQueue = new LinkedBlockingQueue<>();
+    protected final Map<MigrationInvoker, MigrationRuleHandler> handlers = new ConcurrentHashMap<>();
+    protected final LinkedBlockingQueue<String> ruleQueue = new LinkedBlockingQueue<>();
 
     private final AtomicBoolean executorSubmit = new AtomicBoolean(false);
     private final ExecutorService ruleManageExecutor = Executors.newFixedThreadPool(1, new NamedThreadFactory("Dubbo-Migration-Listener"));
+
+    protected ScheduledFuture<?> localRuleMigrationFuture;
+    protected Future<?> ruleMigrationFuture;
 
     private DynamicConfiguration configuration;
 
@@ -97,7 +112,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
         String localRawRule = applicationModel.getApplicationEnvironment().getLocalMigrationRule();
         if (!StringUtils.isEmpty(localRawRule)) {
-            Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMigrationRuleDelayWorker", true))
+            localRuleMigrationFuture = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMigrationRuleDelayWorker", true))
                 .schedule(() -> {
                     if (this.rawRule.equals(INIT)) {
                         this.process(new ConfigChangedEvent(null, null, localRawRule));
@@ -136,7 +151,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         }
 
         if (executorSubmit.compareAndSet(false, true)) {
-            ruleManageExecutor.submit(() -> {
+            ruleMigrationFuture = ruleManageExecutor.submit(() -> {
                 while (true) {
                     String rule = "";
                     try {
@@ -228,6 +243,12 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         if (configuration != null) {
             configuration.removeListener(ruleKey, this);
         }
+        if (ruleMigrationFuture != null) {
+            ruleMigrationFuture.cancel(true);
+        }
+        if (localRuleMigrationFuture != null) {
+            localRuleMigrationFuture.cancel(true);
+        }
     }
 
     public Map<MigrationInvoker, MigrationRuleHandler> getHandlers() {
@@ -236,5 +257,9 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     protected void removeMigrationInvoker(MigrationInvoker<?> migrationInvoker) {
         handlers.remove(migrationInvoker);
+    }
+
+    public MigrationRule getRule() {
+        return rule;
     }
 }

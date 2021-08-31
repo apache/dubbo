@@ -72,20 +72,18 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     if (null != resultException) {
                         exception = getRpcException(result.getException());
                         logger.warn(exception.getMessage(), exception);
+                        failIndex++;
                         if (failIndex == failThresholdIndex) {
                             break;
-                        } else {
-                            failIndex++;
                         }
                     }
                 }
             } catch (Throwable e) {
                 exception = getRpcException(e);
                 logger.warn(exception.getMessage(), exception);
+                failIndex++;
                 if (failIndex == failThresholdIndex) {
                     break;
-                } else {
-                    failIndex++;
                 }
             }
         }
