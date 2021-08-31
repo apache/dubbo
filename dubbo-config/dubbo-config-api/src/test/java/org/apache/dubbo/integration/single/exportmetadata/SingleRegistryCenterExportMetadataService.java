@@ -14,16 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.integration.single.exportmetadata;
 
-public class DefaultMetadataParamsFilter implements MetadataParamsFilter {
-    @Override
-    public String[] serviceParamsIncluded() {
-        return new String[0];
-    }
+/**
+ * This interface is used to check if the exported metadata service works well or not.
+ */
+public interface SingleRegistryCenterExportMetadataService {
 
-    @Override
-    public String[] instanceParamsIncluded() {
-        return new String[0];
-    }
+    /**
+     * The simple method for testing.
+     */
+    String hello(String name);
 }

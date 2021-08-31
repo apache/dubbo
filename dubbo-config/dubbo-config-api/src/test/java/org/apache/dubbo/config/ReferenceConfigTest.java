@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -34,11 +36,16 @@ import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
+import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +68,8 @@ import java.util.stream.Collectors;
 
 
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -85,8 +94,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFER_BACKGROUND
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-
-
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
@@ -98,6 +106,9 @@ import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
+import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -414,6 +425,133 @@ public class ReferenceConfigTest {
         metadataReportInstanceMockedStatic.closeOnDemand();
     }
 
+    @Test
+    public void testShouldJvmRefer() {
+
+        Map<String, String> parameters = new HashMap<>();
+
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+
+        // verify that if injvm is configured as true, local references should be made
+        referenceConfig.setInjvm(true);
+        Assertions.assertTrue(referenceConfig.shouldJvmRefer(parameters));
+
+        // verify that if injvm is configured as false, local references should not be made
+        referenceConfig.setInjvm(false);
+        Assertions.assertFalse(referenceConfig.shouldJvmRefer(parameters));
+
+        // verify that if url is configured, local reference should not be made
+        referenceConfig.setInjvm(null);
+        referenceConfig.setUrl("dubbo://127.0.0.1:20880/DemoService");
+        parameters.put(INTERFACE_KEY, DemoService.class.getName());
+        Assertions.assertFalse(referenceConfig.shouldJvmRefer(parameters));
+        parameters.clear();
+
+        // verify that if scope is configured as local, local references should be made
+        referenceConfig.setInjvm(null);
+        referenceConfig.setUrl(null);
+        parameters.put(SCOPE_KEY, SCOPE_LOCAL);
+        Assertions.assertTrue(referenceConfig.shouldJvmRefer(parameters));
+        parameters.clear();
+
+        // verify that if url protocol is configured as injvm, local references should be made
+        referenceConfig.setInjvm(null);
+        referenceConfig.setUrl(null);
+        parameters.put(LOCAL_PROTOCOL, "true");
+        Assertions.assertTrue(referenceConfig.shouldJvmRefer(parameters));
+        parameters.clear();
+
+        // verify that if generic is configured as true, local references should not be made
+        referenceConfig.setInjvm(null);
+        referenceConfig.setUrl(null);
+        parameters.put(GENERIC_KEY, "true");
+        Assertions.assertFalse(referenceConfig.shouldJvmRefer(parameters));
+        parameters.clear();
+
+        // verify that if the service has been exposed, and the cluster is not configured with broadcast, local reference should be made
+        referenceConfig.setInjvm(null);
+        referenceConfig.setUrl(null);
+        ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        DemoService service = new DemoServiceImpl();
+        URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
+            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+        parameters.put(INTERFACE_KEY, DemoService.class.getName());
+        Exporter<?> exporter = InjvmProtocol.getInjvmProtocol().export(proxy.getInvoker(service, DemoService.class, url));
+        InjvmProtocol.getInjvmProtocol().getExporterMap().put(DemoService.class.getName(), exporter);
+        Assertions.assertTrue(referenceConfig.shouldJvmRefer(parameters));
+
+        // verify that if the service has been exposed, and the cluster is configured with broadcast, local reference should not be made
+        parameters.put(CLUSTER_KEY, BROADCAST_CLUSTER);
+        Assertions.assertFalse(referenceConfig.shouldJvmRefer(parameters));
+        parameters.clear();
+        InjvmProtocol.getInjvmProtocol().destroy();
+    }
+
+    @Test
+    public void testCreateInvokerForLocalRefer() {
+
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setScope(LOCAL_KEY);
+
+        DubboBootstrap.getInstance()
+            .application("application1")
+            .initialize();
+        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("key1", "value1");
+        parameters.put("key2", "value2");
+        applicationConfig.setParameters(parameters);
+
+        ConfigManager configManager = mock(ConfigManager.class);
+        Environment environment = mock(Environment.class);
+        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
+        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
+        ServiceRepository serviceRepository = mock(ServiceRepository.class);
+        ConsumerModel consumerModel = mock(ConsumerModel.class);
+
+        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
+
+        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
+        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
+        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
+        applicationModelMockedStatic.when(ApplicationModel::getServiceRepository).thenReturn(serviceRepository);
+        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
+        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
+        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
+            .thenReturn(true);
+
+        MockedStatic<MetadataReportInstance> metadataReportInstanceMockedStatic =
+            Mockito.mockStatic(MetadataReportInstance.class);
+
+        MetadataReport metadataReport = mock(MetadataReport.class);
+        metadataReportInstanceMockedStatic.when(() -> MetadataReportInstance.getMetadataReport("default"))
+            .thenReturn(metadataReport);
+
+
+        when(serviceRepository.lookupReferredService("org.apache.dubbo.config.api.DemoService"))
+            .thenReturn(consumerModel);
+
+        referenceConfig.refreshed.set(true);
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.getInterfaceClass();
+        referenceConfig.setCheck(false);
+
+        referenceConfig.init();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof ListenerInvokerWrapper);
+        Assertions.assertTrue(((ListenerInvokerWrapper<?>) referenceConfig.getInvoker()).getInvoker() instanceof InjvmInvoker);
+        URL url = ((ListenerInvokerWrapper<?>) referenceConfig.getInvoker()).getInvoker().getUrl();
+        Assertions.assertEquals("application1", url.getParameter("application"));
+        Assertions.assertEquals("value1", url.getParameter("key1"));
+        Assertions.assertEquals("value2", url.getParameter("key2"));
+
+        applicationModelMockedStatic.closeOnDemand();
+        metadataReportInstanceMockedStatic.closeOnDemand();
+    }
+
+
     /**
      * Verify the configuration of the registry protocol for remote reference
      */
@@ -568,13 +706,13 @@ public class ReferenceConfigTest {
         protocol.setName("dubbo");
 
         ServiceConfig<DemoService> demoService;
-        demoService = new ServiceConfig<DemoService>();
+        demoService = new ServiceConfig<>();
         demoService.setInterface(DemoService.class);
         demoService.setRef(new DemoServiceImpl());
         demoService.setRegistry(registry);
         demoService.setProtocol(protocol);
 
-        ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
+        ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
         rc.setScope(SCOPE_REMOTE);
@@ -608,7 +746,7 @@ public class ReferenceConfigTest {
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress(zkUrl);
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("mockprotocol");
+        protocol.setName("injvm");
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
         rc.setRegistry(registry);
@@ -625,23 +763,22 @@ public class ReferenceConfigTest {
         Assertions.assertFalse(success);
         Assertions.assertNull(demoService);
 
-        ServiceConfig<DemoService> sc = new ServiceConfig<>();
-        sc.setInterface(DemoService.class);
-        sc.setRef(new DemoServiceImpl());
-        sc.setRegistry(registry);
-        sc.setProtocol(protocol);
-
         try {
             System.setProperty("java.net.preferIPv4Stack", "true");
-            sc.export();
+            ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+            DemoService service = new DemoServiceImpl();
+            URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
+                .addParameter(INTERFACE_KEY, DemoService.class.getName());
+            InjvmProtocol.getInjvmProtocol().export(proxy.getInvoker(service, DemoService.class, url));
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
             // ignore
         } finally {
             rc.destroy();
-            sc.unexport();
+            InjvmProtocol.getInjvmProtocol().destroy();
             System.clearProperty("java.net.preferIPv4Stack");
+
         }
         Assertions.assertTrue(success);
         Assertions.assertNotNull(demoService);

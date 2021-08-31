@@ -570,7 +570,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         boolean isJvmRefer;
         if (isInjvm() == null) {
             // if an url is specified, don't do local reference
-            if (url != null && url.length() > 0) {
+            if (StringUtils.isNotEmpty(url)) {
                 isJvmRefer = false;
             } else {
                 // by default, reference local service if there is

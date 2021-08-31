@@ -27,8 +27,8 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.ENDPOINTS;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 
 /**
  * The default implementation of {@link ServiceInstance}.
@@ -185,7 +185,7 @@ public class DefaultServiceInstance implements ServiceInstance {
         return JSON.parseArray(metadata.get(ENDPOINTS), Endpoint.class);
     }
 
-    public DefaultServiceInstance copy(Endpoint endpoint) {
+    public DefaultServiceInstance copyFrom(Endpoint endpoint) {
         DefaultServiceInstance copyOfInstance = new DefaultServiceInstance(this);
         copyOfInstance.setPort(endpoint.getPort());
         return copyOfInstance;
@@ -233,7 +233,7 @@ public class DefaultServiceInstance implements ServiceInstance {
                 Objects.equals(getHost(), that.getHost()) &&
                 Objects.equals(getPort(), that.getPort());
         for (Map.Entry<String, String> entry : this.getMetadata().entrySet()) {
-            if (entry.getKey().equals(REVISION_KEY)) {
+            if (entry.getKey().equals(EXPORTED_SERVICES_REVISION_PROPERTY_NAME)) {
                 continue;
             }
             equals = equals && entry.getValue().equals(that.getMetadata().get(entry.getKey()));
@@ -246,7 +246,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     public int hashCode() {
         int result = Objects.hash(getServiceName(), getHost(), getPort());
         for (Map.Entry<String, String> entry : this.getMetadata().entrySet()) {
-            if (entry.getKey().equals(REVISION_KEY)) {
+            if (entry.getKey().equals(EXPORTED_SERVICES_REVISION_PROPERTY_NAME)) {
                 continue;
             }
             result = 31 * result + (entry.getValue() == null ? 0 : entry.getValue().hashCode());

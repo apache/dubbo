@@ -32,7 +32,7 @@ public class AccessKeyAuthenticator implements Authenticator {
     @Override
     public void sign(Invocation invocation, URL url) {
         String currentTime = String.valueOf(System.currentTimeMillis());
-        String consumer = url.getParameter(CommonConstants.APPLICATION_KEY);
+        String consumer = url.getApplication();
         AccessKeyPair accessKeyPair = getAccessKeyPair(invocation, url);
         invocation.setAttachment(Constants.REQUEST_SIGNATURE_KEY, getSignature(url, invocation, accessKeyPair.getSecretKey(), currentTime));
         invocation.setAttachment(Constants.REQUEST_TIMESTAMP_KEY, currentTime);
