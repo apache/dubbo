@@ -33,19 +33,15 @@ public class ServiceModel {
 
     private ServiceMetadata serviceMetadata;
 
-    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, ModuleModel moduleModel, AbstractInterfaceConfig config) {
-        this.proxyObject = proxyObject;
-        this.serviceKey = serviceKey;
-        this.serviceModel = serviceModel;
-        this.moduleModel = moduleModel;
-        this.config = config;
+    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config) {
+        this(proxyObject, serviceKey, serviceModel, config, null);
     }
 
-    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, ModuleModel moduleModel, AbstractInterfaceConfig config, ServiceMetadata serviceMetadata) {
+    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config, ServiceMetadata serviceMetadata) {
         this.proxyObject = proxyObject;
         this.serviceKey = serviceKey;
         this.serviceModel = serviceModel;
-        this.moduleModel = moduleModel;
+        this.moduleModel = ScopeModelUtil.getModuleModel(config != null ? config.getScopeModel() : null);
         this.config = config;
         this.serviceMetadata = serviceMetadata;
     }

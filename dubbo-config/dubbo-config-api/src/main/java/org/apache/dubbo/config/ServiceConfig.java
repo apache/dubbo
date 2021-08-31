@@ -361,7 +361,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         providerModel = new ProviderModel(getUniqueServiceName(),
             ref,
             serviceDescriptor,
-            getScopeModel(),
             this,
             serviceMetadata);
 

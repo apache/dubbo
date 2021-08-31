@@ -260,7 +260,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         ServiceRepository repository = getApplicationModel().getApplicationServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
         consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
-            serviceMetadata, getScopeModel(), createAsyncMethodInfo());
+            serviceMetadata, createAsyncMethodInfo());
 
         repository.registerConsumer(consumerModel);
 

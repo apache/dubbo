@@ -111,7 +111,7 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt,
                                  Object proxy,
                                  ServiceMetadata serviceMetadata) {
         ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
-            serviceMetadata, rc.getScopeModel(), null);
+            serviceMetadata, null);
         consumers.putIfAbsent(serviceKey, consumerModel);
     }
 
@@ -132,7 +132,7 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt,
                                  ServiceDescriptor serviceModel,
                                  ServiceConfigBase<?> serviceConfig,
                                  ServiceMetadata serviceMetadata) {
-        ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel, serviceConfig.getScopeModel(),
+        ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel,
             serviceConfig, serviceMetadata);
         providers.putIfAbsent(serviceKey, providerModel);
         providersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), providerModel);
