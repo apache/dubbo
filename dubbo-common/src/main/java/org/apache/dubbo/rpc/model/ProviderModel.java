@@ -38,7 +38,7 @@ public class ProviderModel extends ServiceModel {
                          Object serviceInstance,
                          ServiceDescriptor serviceModel,
                          ServiceConfigBase<?> serviceConfig) {
-        super(serviceInstance, serviceKey, serviceModel, ApplicationModel.defaultModel().getDefaultModule(), serviceConfig);
+        super(serviceInstance, serviceKey, serviceModel, serviceConfig.getScopeModel(), serviceConfig);
         if (null == serviceInstance) {
             throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
         }

@@ -43,10 +43,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -379,18 +376,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // In case user specified path, register service one more time to map it to path.
             repository.registerService(pathKey, interfaceClass);
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
-        }
-    }
-
-    @Override
-    public ModuleModel getScopeModel() {
-        ScopeModel scopeModel = super.getScopeModel();
-        if (scopeModel instanceof ApplicationModel) {
-            return ((ApplicationModel) scopeModel).getDefaultModule();
-        } else if (scopeModel instanceof ModuleModel) {
-            return (ModuleModel) scopeModel;
-        } else {
-            throw new IllegalStateException("scope model is invalid: " + scopeModel);
         }
     }
 

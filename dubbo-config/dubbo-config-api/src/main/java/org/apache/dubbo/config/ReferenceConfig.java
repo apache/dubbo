@@ -40,11 +40,8 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
@@ -280,18 +277,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         initialized = true;
 
         checkInvokerAvailable();
-    }
-
-    @Override
-    public ModuleModel getScopeModel() {
-        ScopeModel scopeModel = super.getScopeModel();
-        if (scopeModel instanceof ApplicationModel) {
-            return ((ApplicationModel) scopeModel).getDefaultModule();
-        } else if (scopeModel instanceof ModuleModel) {
-            return (ModuleModel) scopeModel;
-        } else {
-            throw new IllegalStateException("scope model is invalid: " + scopeModel);
-        }
     }
 
     /**
