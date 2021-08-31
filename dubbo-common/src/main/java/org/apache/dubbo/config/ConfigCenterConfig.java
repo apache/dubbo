@@ -173,7 +173,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.address = address;
         if (address != null) {
             try {
-                URL url = URL.valueOf(address, getScopeModel());
+                URL url = URL.valueOf(address);
                 updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());
                 updatePropertyIfAbsent(this::getPassword, this::setPassword, url.getPassword());
                 updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());

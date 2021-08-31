@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 
@@ -94,6 +95,10 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
      * Forks for forking cluster
      */
     protected Integer forks;
+
+    public AbstractMethodConfig() {
+        super(ApplicationModel.defaultModel().getDefaultModule());
+    }
 
     public Integer getForks() {
         return forks;

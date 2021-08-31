@@ -106,7 +106,11 @@ public abstract class AbstractConfig implements Serializable {
     protected ScopeModel scopeModel;
 
     public AbstractConfig() {
-        setScopeModel(ApplicationModel.defaultModel());
+        this(ApplicationModel.defaultModel());
+    }
+
+    public AbstractConfig(ScopeModel scopeModel) {
+        this.setScopeModel(scopeModel);
     }
 
     public static String getTagName(Class<?> cls) {
@@ -332,9 +336,11 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public void setScopeModel(ScopeModel scopeModel) {
-        this.scopeModel = scopeModel;
-        // REINITIALIZE SPI extension here
-        this.initExtensions();
+        if (this.scopeModel != scopeModel) {
+            this.scopeModel = scopeModel;
+            // reinitialize spi extension here
+            this.initExtensions();
+        }
     }
 
     /**

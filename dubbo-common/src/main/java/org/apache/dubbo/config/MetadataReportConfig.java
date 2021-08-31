@@ -139,7 +139,7 @@ public class MetadataReportConfig extends AbstractConfig {
         this.address = address;
         if (address != null) {
             try {
-                URL url = URL.valueOf(address, getScopeModel());
+                URL url = URL.valueOf(address);
 
                 // Refactor since 2.7.8
                 updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());
