@@ -14,11 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.rpc.protocol;
 
-/**
- *
- */
-public class ServieDiscoveryRegistryTest {
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.InvokerListener;
+import org.apache.dubbo.rpc.RpcException;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+
+public class CountInvokerListener implements InvokerListener {
+
+    private final static AtomicInteger counter = new AtomicInteger(0);
+
+    @Override
+    public void referred(Invoker<?> invoker) throws RpcException {
+        counter.incrementAndGet();
+    }
+
+    @Override
+    public void destroyed(Invoker<?> invoker) {
+
+    }
+
+    public static int getCounter() {
+        return counter.get();
+    }
 }

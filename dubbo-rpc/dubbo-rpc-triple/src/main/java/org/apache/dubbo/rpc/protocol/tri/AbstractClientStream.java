@@ -169,9 +169,9 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         public void onNext(Object data) {
             RpcInvocation invocation = (RpcInvocation) data;
             final Metadata metadata = createRequestMeta(invocation);
-            getTransportSubscriber().tryOnMetadata(metadata, false);
+            getTransportSubscriber().onMetadata(metadata, false);
             final byte[] bytes = encodeRequest(invocation);
-            getTransportSubscriber().tryOnData(bytes, false);
+            getTransportSubscriber().onData(bytes, false);
         }
 
         @Override
@@ -181,7 +181,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
         @Override
         public void onCompleted() {
-            getTransportSubscriber().tryOnComplete();
+            getTransportSubscriber().onComplete();
         }
     }
 

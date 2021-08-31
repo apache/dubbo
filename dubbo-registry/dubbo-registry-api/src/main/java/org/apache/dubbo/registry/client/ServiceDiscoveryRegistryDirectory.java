@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.Constants;
+import org.apache.dubbo.registry.ProviderFirstParams;
 import org.apache.dubbo.registry.integration.AbstractConfiguratorListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.rpc.Invoker;
@@ -41,6 +42,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
@@ -59,9 +61,24 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private volatile boolean enableConfigurationListen = true;
     private volatile List<URL> originalUrls = null; // initial for null
     private volatile Map<String, String> overrideQueryMap;
+    private volatile Map<String, String> consumerFirstQueryMap;
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
+        Set<ProviderFirstParams> providerFirstParams = ExtensionLoader.getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
+        if (CollectionUtils.isEmpty(providerFirstParams)) {
+            consumerFirstQueryMap = queryMap;
+        } else {
+            consumerFirstQueryMap = new HashMap<>(queryMap);
+            for (ProviderFirstParams paramsFilter : providerFirstParams) {
+                if (paramsFilter.params() == null) {
+                    break;
+                }
+                for (String keyToRemove : paramsFilter.params()) {
+                    consumerFirstQueryMap.remove(keyToRemove);
+                }
+            }
+        }
     }
 
     @Override
@@ -273,8 +290,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 continue;
             }
 
-            // FIXME, some keys may need to be removed.
-            instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), queryMap);
+            instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), consumerFirstQueryMap);
 
             // Override provider urls if needed
             if (enableConfigurationListen) {

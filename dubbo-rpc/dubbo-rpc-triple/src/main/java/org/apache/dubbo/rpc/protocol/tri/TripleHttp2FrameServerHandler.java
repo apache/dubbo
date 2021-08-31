@@ -86,7 +86,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (msg.isEndStream()) {
             final AbstractServerStream serverStream = TripleUtil.getServerStream(ctx);
             if (serverStream != null) {
-                serverStream.asTransportObserver().tryOnComplete();
+                serverStream.asTransportObserver().onComplete();
             }
         }
     }
@@ -201,9 +201,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             stream.methods(methodDescriptors);
         }
         final TransportObserver observer = stream.asTransportObserver();
-        observer.tryOnMetadata(new Http2HeaderMeta(headers), false);
+        observer.onMetadata(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {
-            observer.tryOnComplete();
+            observer.onComplete();
         }
 
         ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(stream);

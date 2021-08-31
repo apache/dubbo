@@ -76,7 +76,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  */
 public class InMemoryWritableMetadataService implements WritableMetadataService {
 
-    final Logger logger = LoggerFactory.getLogger(getClass());
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Lock lock = new ReentrantLock();
 

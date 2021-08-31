@@ -14,26 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.infra.support;
+package org.apache.dubbo.metadata.filter;
 
-import org.apache.dubbo.common.infra.InfraAdapter;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.metadata.MetadataParamsFilter;
 
-import java.util.Collections;
-import java.util.Map;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
-public class CmdbAdapter implements InfraAdapter {
-
-    public CmdbAdapter() {
-        // init;
-    }
-
-    @Override
-    public Map<String, String> getExtraAttributes(Map<String, String> params) {
-        return Collections.emptyMap();
-    }
+@Activate
+public class CustomizedParamsFilter implements MetadataParamsFilter {
 
     @Override
-    public String getAttribute(String key) {
-        return "";
+    public String[] serviceParamsIncluded() {
+        return new String[]{APPLICATION_KEY, TIMEOUT_KEY, GROUP_KEY, VERSION_KEY};
+    }
+
+    /**
+     * Not included in this test
+     */
+    @Override
+    public String[] instanceParamsIncluded() {
+        return new String[0];
     }
 }
