@@ -196,6 +196,12 @@ public class ExtensionLoader<T> {
         }
     }
 
+    /**
+     * Try reset dubbo status for new instance.
+     *
+     * @deprecated For testing purposes only
+     */
+    @Deprecated
     public static void destroyAll() {
         EXTENSION_INSTANCES.forEach((_type, instance) -> {
             if (instance instanceof Lifecycle) {
@@ -454,17 +460,6 @@ public class ExtensionLoader<T> {
     public Object getLoadedAdaptiveExtensionInstances() {
         return cachedAdaptiveInstance.get();
     }
-
-//    public T getPrioritizedExtensionInstance() {
-//        Set<String> supported = getSupportedExtensions();
-//
-//        Set<T> instances = new HashSet<>();
-//        Set<T> prioritized = new HashSet<>();
-//        for (String s : supported) {
-//
-//        }
-//
-//    }
 
     /**
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
