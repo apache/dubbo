@@ -574,11 +574,21 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     @Override
     public void destroy() {
-        List<RegistryProtocolListener> listeners = frameworkModel.getExtensionLoader(RegistryProtocolListener.class)
-            .getLoadedExtensionInstances();
-        if (CollectionUtils.isNotEmpty(listeners)) {
-            for (RegistryProtocolListener listener : listeners) {
-                listener.onDestroy();
+        for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
+            List<RegistryProtocolListener> listeners = applicationModel.getExtensionLoader(RegistryProtocolListener.class)
+                .getLoadedExtensionInstances();
+            if (CollectionUtils.isNotEmpty(listeners)) {
+                for (RegistryProtocolListener listener : listeners) {
+                    listener.onDestroy();
+                }
+            }
+        }
+
+        for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
+            if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+                applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                    .removeListener(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX,
+                        getProviderConfigurationListener(applicationModel));
             }
         }
 
@@ -587,12 +597,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             exporter.unexport();
         }
         bounds.clear();
-
-        //TODO  destroy registry protocol
-//        if (applicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-//            frameworkModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-//                .removeListener(applicationModel.getName() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
-//        }
     }
 
     @Override
@@ -742,6 +746,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private ProviderConfigurationListener getProviderConfigurationListener(URL url) {
         ApplicationModel applicationModel = getApplicationModel(url.getScopeModel());
+        return getProviderConfigurationListener(applicationModel);
+    }
+
+    private ProviderConfigurationListener getProviderConfigurationListener(ApplicationModel applicationModel) {
         return applicationModel.getBeanFactory().registerBeanIfAbsent(ProviderConfigurationListener.class,
             type -> new ProviderConfigurationListener(applicationModel) );
     }
