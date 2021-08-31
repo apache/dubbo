@@ -101,6 +101,10 @@ public class ApplicationModel extends ScopeModel {
         // TODO destroy application resources
     }
 
+    public boolean isInit() {
+        return initFlag.get();
+    }
+
     public FrameworkModel getFrameworkModel() {
         return frameworkModel;
     }

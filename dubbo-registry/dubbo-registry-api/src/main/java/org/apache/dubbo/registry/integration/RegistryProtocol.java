@@ -598,10 +598,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
 
         for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
-            if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-                applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                    .removeListener(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX,
-                        getProviderConfigurationListener(applicationModel));
+            if (applicationModel.isInit()) {
+                if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+                    applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                        .removeListener(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX,
+                            getProviderConfigurationListener(applicationModel));
+                }
             }
         }
 

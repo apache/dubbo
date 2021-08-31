@@ -71,7 +71,7 @@ public class MetadataServiceNameMappingTest {
 
             try (MockedStatic<MetadataReportInstance> mockedMetadataHolder = Mockito.mockStatic(MetadataReportInstance.class)) {
                 when(configManager.getMetadataConfigs()).thenReturn(Arrays.asList(new MetadataReportConfig()));
-                mockedMetadataHolder.when(() -> MetadataReportInstance.getMetadataReport(any())).thenReturn(metadataReport);
+                mockedMetadataHolder.when(() -> ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReport(any())).thenReturn(metadataReport);
                 when(metadataReport.registerServiceAppMapping(any(), any(), any())).thenReturn(true);
 
                 // metadata report directly
@@ -116,7 +116,7 @@ public class MetadataServiceNameMappingTest {
         Set<String> set = new HashSet<>();
         set.add("app1");
         try (MockedStatic<MetadataReportInstance> mockedMetadataHolder = Mockito.mockStatic(MetadataReportInstance.class)) {
-            mockedMetadataHolder.when(() -> MetadataReportInstance.getMetadataReport(any())).thenReturn(metadataReport);
+            mockedMetadataHolder.when(() -> ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReport(any())).thenReturn(metadataReport);
             when(metadataReport.getServiceAppMapping(any(), any())).thenReturn(set);
 
             Set<String> result = mapping.get(url);

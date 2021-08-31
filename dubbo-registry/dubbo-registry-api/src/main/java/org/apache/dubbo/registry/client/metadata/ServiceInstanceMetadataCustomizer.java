@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -76,7 +75,6 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
         }
         MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServices().values().iterator().next();
         URL url = serviceInfo.getUrl();
-        List<MetadataParamsFilter> paramsFilters = loader.getActivateExtension(url, "params-filter");
         Map<String, String> allParams = new HashMap<>(url.getParameters());
 
         // load instance params users want to load.

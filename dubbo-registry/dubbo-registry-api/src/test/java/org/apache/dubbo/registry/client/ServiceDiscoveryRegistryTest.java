@@ -22,6 +22,7 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.listener.MockServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -97,7 +98,7 @@ public class ServiceDiscoveryRegistryTest {
         when(serviceDiscovery.createListener(any())).thenReturn(instanceListener);
         when(serviceDiscovery.getInstances(any())).thenReturn(Collections.emptyList());
 
-        spiedMetadataService  = spy(WritableMetadataService.getDefaultExtension());
+        spiedMetadataService  = spy(WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel()));
         serviceDiscoveryRegistry = new ServiceDiscoveryRegistry(registryURL, serviceDiscovery, spiedMetadataService);
     }
 

@@ -18,9 +18,10 @@ package org.apache.dubbo.registry.client.migration.model;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
@@ -79,12 +80,12 @@ public class MigrationRuleTest {
             assertEquals(60, migrationRule.getDelay());
             assertEquals(false, migrationRule.getForce());
 
-        URL url = Mockito.mock(URL.class);
-        ModuleModel defaultModule = ApplicationModel.defaultModel().getDefaultModule();
-        url.setScopeModel(defaultModule);
-        Mockito.when(url.getDisplayServiceKey()).thenReturn("DemoService:1.0.0");
-        Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
-        Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
+            URL url = Mockito.mock(URL.class);
+            ModuleModel defaultModule = ApplicationModel.defaultModel().getDefaultModule();
+            url.setScopeModel(defaultModule);
+            Mockito.when(url.getDisplayServiceKey()).thenReturn("DemoService:1.0.0");
+            Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
+            Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
 
             assertEquals(migrationRule.getInterfaces().size(), 2);
 
@@ -101,19 +102,20 @@ public class MigrationRuleTest {
             assertEquals(false, migrationRule.getForce(url));
             assertEquals(MigrationStep.FORCE_APPLICATION, migrationRule.getStep(url));
 
-        Mockito.when(url.getDisplayServiceKey()).thenReturn("GreetingService:1.0.1");
-        Mockito.when(url.getServiceInterface()).thenReturn("GreetingService");
-        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(defaultModule);
-        metadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(url), Collections.singleton("TestApplication"));
+            Mockito.when(url.getDisplayServiceKey()).thenReturn("GreetingService:1.0.1");
+            Mockito.when(url.getServiceInterface()).thenReturn("GreetingService");
+            WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(defaultModule);
+            metadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(url), Collections.singleton("TestApplication"));
 
-        Set<String> services =  new HashSet<>();
-        services.add("TestApplication");
-        when(mapping.getServices(any())).thenReturn(services);
-        assertEquals(0.3f, migrationRule.getThreshold(url));
-        assertEquals(20, migrationRule.getProportion(url));
-        assertEquals(10, migrationRule.getDelay(url));
-        assertEquals(false, migrationRule.getForce(url));
-        assertEquals(MigrationStep.FORCE_INTERFACE, migrationRule.getStep(url));
-        metadataService.removeCachedMapping("GreetingService");
+            Set<String> services = new HashSet<>();
+            services.add("TestApplication");
+            when(mapping.getServices(any())).thenReturn(services);
+            assertEquals(0.3f, migrationRule.getThreshold(url));
+            assertEquals(20, migrationRule.getProportion(url));
+            assertEquals(10, migrationRule.getDelay(url));
+            assertEquals(false, migrationRule.getForce(url));
+            assertEquals(MigrationStep.FORCE_INTERFACE, migrationRule.getStep(url));
+            metadataService.removeCachedMapping("GreetingService");
+        }
     }
 }

@@ -210,7 +210,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
         Set<String> subscribedServices = Collections.emptySet();
         try {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
             subscribedServices = serviceNameMapping.getAndListenServices(registryURL, url, new DefaultMappingListener(url, subscribedServices, listener));
         } catch (Exception e) {
             logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);

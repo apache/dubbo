@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -52,6 +53,10 @@ public interface ServiceNameMapping {
      */
     static ServiceNameMapping getDefaultExtension() {
         return getExtensionLoader(ServiceNameMapping.class).getDefaultExtension();
+    }
+
+    static ServiceNameMapping getDefaultExtension(ScopeModel scopeModel) {
+        return scopeModel.getDefaultExtension(ServiceNameMapping.class);
     }
 
     static String buildMappingKey(URL url) {

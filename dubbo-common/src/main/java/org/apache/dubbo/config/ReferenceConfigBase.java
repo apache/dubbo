@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -197,6 +198,14 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             throw new IllegalStateException(t.getMessage(), t);
         }
         return null;
+    }
+
+    @Override
+    public void setScopeModel(ScopeModel scopeModel) {
+        super.setScopeModel(scopeModel);
+        if (this.consumer != null && this.consumer.getScopeModel() != scopeModel) {
+            this.consumer.setScopeModel(scopeModel);
+        }
     }
 
     @Override

@@ -94,7 +94,7 @@ public class DefaultServiceInstanceTest {
         assertEquals("value", allParams2.get("key"));
 
         // test equals
-        DefaultServiceInstance instance2 = new DefaultServiceInstance("A", "127.0.0.1", 20880);
+        DefaultServiceInstance instance2 = new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
         instance2.setMetadata(new HashMap<>(instance.getMetadata()));
         instance2.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, "222");
         // assert instances with different revision and extend params are equal

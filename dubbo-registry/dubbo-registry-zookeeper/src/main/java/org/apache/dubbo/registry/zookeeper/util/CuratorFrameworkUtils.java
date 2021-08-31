@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.zookeeper.util;
 
-import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -26,6 +25,7 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
