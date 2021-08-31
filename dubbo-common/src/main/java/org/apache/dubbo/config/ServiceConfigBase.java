@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
@@ -271,9 +270,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
                 if (globalProtocol.isPresent()) {
                     tmpProtocols.add(globalProtocol.get());
                 } else {
-                    if (StringUtils.isEquals(id, CommonConstants.TRIPLE)) {
-                        throw new IllegalStateException("check whether dubbo.protocol.name is tri");
-                    }
                     throw new IllegalStateException("Protocol not found: "+id);
                 }
             }
