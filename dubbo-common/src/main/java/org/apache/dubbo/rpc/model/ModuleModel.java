@@ -39,8 +39,6 @@ public class ModuleModel extends ScopeModel {
 
     @Override
     public String toString() {
-        return "ModuleModel{" +
-            "applicationModel=" + applicationModel +
-            '}';
+        return "ModuleModel";
     }
 }

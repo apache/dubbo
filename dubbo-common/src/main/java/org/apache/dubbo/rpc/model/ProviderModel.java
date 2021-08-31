@@ -60,6 +60,21 @@ public class ProviderModel extends ServiceModel {
         this.urls = new ArrayList<>(1);
     }
 
+    public ProviderModel(String serviceKey,
+                         Object serviceInstance,
+                         ServiceDescriptor serviceModel,
+                         ServiceConfigBase<?> serviceConfig,
+                         ModuleModel moduleModel,
+                         ServiceMetadata serviceMetadata) {
+        super(serviceInstance, serviceKey, serviceModel, serviceConfig, moduleModel, serviceMetadata);
+        if (null == serviceInstance) {
+            throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
+        }
+
+        initMethod(serviceModel.getServiceInterfaceClass());
+        this.urls = new ArrayList<>(1);
+    }
+
     public Object getServiceInstance() {
         return getProxyObject();
     }

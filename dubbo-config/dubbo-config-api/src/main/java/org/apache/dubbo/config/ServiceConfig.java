@@ -362,6 +362,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             ref,
             serviceDescriptor,
             this,
+            getScopeModel(),
             serviceMetadata);
 
         repository.registerProvider(providerModel);

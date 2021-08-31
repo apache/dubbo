@@ -22,7 +22,6 @@ import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
@@ -396,14 +395,12 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public ScopeModel getScopeModel() {
-        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
-        return consumerUrl != null ? consumerUrl.getScopeModel() : ApplicationModel.defaultModel().getDefaultModule();
+        return RpcContext.getServiceContext().getConsumerUrl().getScopeModel();
     }
 
     @Override
     public ServiceModel getServiceModel() {
-        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
-        return consumerUrl != null ? consumerUrl.getServiceModel() : null;
+        return RpcContext.getServiceContext().getConsumerUrl().getServiceModel();
     }
 
     @Override

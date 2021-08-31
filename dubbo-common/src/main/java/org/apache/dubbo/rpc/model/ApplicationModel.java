@@ -246,13 +246,6 @@ public class ApplicationModel extends ScopeModel {
 
     @Override
     public String toString() {
-        return "ApplicationModel{" +
-            "moduleModels=" + moduleModels +
-            ", initFlag=" + initFlag +
-            ", environment=" + environment +
-            ", configManager=" + configManager +
-            ", serviceRepository=" + serviceRepository +
-            ", frameworkModel=" + frameworkModel +
-            '}';
+        return "ApplicationModel";
     }
 }

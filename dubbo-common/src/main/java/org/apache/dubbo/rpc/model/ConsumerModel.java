@@ -71,6 +71,20 @@ public class ConsumerModel extends ServiceModel {
         this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
     }
 
+    public ConsumerModel(String serviceKey,
+                         Object proxyObject,
+                         ServiceDescriptor serviceModel,
+                         ReferenceConfigBase<?> referenceConfig,
+                         ModuleModel moduleModel,
+                         ServiceMetadata metadata,
+                         Map<String, AsyncMethodInfo> methodConfigs) {
+
+        super(proxyObject, serviceKey, serviceModel, referenceConfig, moduleModel, metadata);
+        Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
+
+        this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
+    }
+
     public AsyncMethodInfo getMethodConfig(String methodName) {
         return methodConfigs.get(methodName);
     }

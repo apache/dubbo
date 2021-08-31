@@ -68,8 +68,6 @@ public class FrameworkModel extends ScopeModel {
 
     @Override
     public String toString() {
-        return "FrameworkModel{" +
-            "applicationModels=" + applicationModels +
-            '}';
+        return "FrameworkModel";
     }
 }
