@@ -253,7 +253,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<URL> exportedURLs = this.getExportedUrls();
         exportedURLs.forEach(url -> {
             if (url.getParameters().containsKey(SERVICE_NAME_MAPPING_KEY)) {
-                ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+                ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(getScopeModel());
                 try {
                     boolean succeeded = serviceNameMapping.map(url);
                     if (succeeded) {

@@ -56,7 +56,11 @@ public interface ServiceNameMapping {
     }
 
     static ServiceNameMapping getDefaultExtension(ScopeModel scopeModel) {
-        return scopeModel.getDefaultExtension(ServiceNameMapping.class);
+        if (scopeModel != null) {
+            return scopeModel.getDefaultExtension(ServiceNameMapping.class);
+        } else {
+            return getExtensionLoader(ServiceNameMapping.class).getDefaultExtension();
+        }
     }
 
     static String buildMappingKey(URL url) {
