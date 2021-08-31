@@ -1,1 +1,2 @@
-test-default=org.apache.dubbo.metadata.DefaultMetadataParamsFilter
+customized=org.apache.dubbo.metadata.filter.CustomizedParamsFilter
+excluded=org.apache.dubbo.metadata.filter.ExcludedParamsFilter

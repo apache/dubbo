@@ -243,7 +243,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         exportedURLs.forEach(url -> {
             if (url.getParameters().containsKey(SERVICE_NAME_MAPPING_KEY)) {
                 ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
-                serviceNameMapping.map(url);
+                try {
+                    boolean succeeded = serviceNameMapping.map(url);
+                    if (succeeded) {
+                        logger.info("Successfully registered interface application mapping for service " + url.getServiceKey());
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed register interface application mapping for service " + url.getServiceKey(), e);
+                }
             }
         });
         onExported();

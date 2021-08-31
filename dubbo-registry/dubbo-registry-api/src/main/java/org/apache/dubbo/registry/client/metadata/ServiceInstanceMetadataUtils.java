@@ -186,18 +186,6 @@ public class ServiceInstanceMetadataUtils {
         return StringUtils.isNotEmpty(serviceInstance.getMetadata().get(ENDPOINTS));
     }
 
-    /**
-     * Is Dubbo Service instance or not
-     *
-     * @param serviceInstance {@link ServiceInstance service instance}
-     * @return if Dubbo Service instance, return <code>true</code>, or <code>false</code>
-     */
-    public static boolean isDubboServiceInstance(ServiceInstance serviceInstance) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.containsKey(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME)
-                || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
-    }
-
     public static void setEndpoints(ServiceInstance serviceInstance, Map<String, Integer> protocolPorts) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         List<Endpoint> endpoints = new ArrayList<>();

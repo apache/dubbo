@@ -32,6 +32,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.ProviderFirstParams;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +40,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
@@ -57,7 +59,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARAT
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
-import static org.apache.dubbo.common.url.component.DubboServiceAddressURL.PROVIDER_FIRST_KEYS;
 
 /**
  * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
@@ -232,7 +233,15 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     }
 
     protected URL removeParamsFromConsumer(URL consumer) {
-        return consumer.removeParameters(PROVIDER_FIRST_KEYS);
+        Set<ProviderFirstParams> providerFirstParams = ExtensionLoader.getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
+        if (CollectionUtils.isEmpty(providerFirstParams)) {
+            return consumer;
+        }
+
+        for (ProviderFirstParams paramsFilter : providerFirstParams) {
+            consumer = consumer.removeParameters(paramsFilter.params());
+        }
+        return consumer;
     }
 
     private String stripOffVariableKeys(String rawProvider) {

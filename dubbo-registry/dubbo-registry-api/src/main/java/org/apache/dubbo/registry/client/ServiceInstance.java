@@ -110,17 +110,6 @@ public interface ServiceInstance extends Serializable {
         return getMetadata().getOrDefault(name, defaultValue);
     }
 
-    /**
-     * @return the hash code of current instance.
-     */
-    int hashCode();
-
-    /**
-     * @param another another {@link ServiceInstance}
-     * @return if equals , return <code>true</code>, or <code>false</code>
-     */
-    boolean equals(Object another);
-
     InstanceAddressURL toURL();
 
 }
