@@ -252,10 +252,6 @@ public abstract class AbstractStream implements Stream {
         Status status = builder.build();
         metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
                 TripleUtil.encodeBase64ASCII(status.toByteArray()));
-        // only wrapper mode support exception serialization
-        if (getMethodDescriptor() != null && !getMethodDescriptor().isNeedWrap()) {
-            return metadata;
-        }
         return metadata;
     }
 
