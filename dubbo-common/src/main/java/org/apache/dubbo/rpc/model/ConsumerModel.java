@@ -52,7 +52,7 @@ public class ConsumerModel extends ServiceModel {
                          ReferenceConfigBase<?> referenceConfig,
                          Map<String, AsyncMethodInfo> methodConfigs) {
 
-        super(proxyObject, serviceKey, serviceModel, referenceConfig);
+        super(proxyObject, serviceKey, serviceModel, ApplicationModel.defaultModel().getDefaultModule(), referenceConfig);
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
 
         this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
@@ -63,9 +63,10 @@ public class ConsumerModel extends ServiceModel {
                          ServiceDescriptor serviceModel,
                          ReferenceConfigBase<?> referenceConfig,
                          ServiceMetadata metadata,
+                         ModuleModel moduleModel,
                          Map<String, AsyncMethodInfo> methodConfigs) {
 
-        super(proxyObject, serviceKey, serviceModel, referenceConfig, metadata);
+        super(proxyObject, serviceKey, serviceModel, moduleModel, referenceConfig, metadata);
         Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
 
         this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;

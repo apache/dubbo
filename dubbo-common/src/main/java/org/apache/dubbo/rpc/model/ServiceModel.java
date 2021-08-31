@@ -27,22 +27,25 @@ import java.util.Set;
 public class ServiceModel {
     private String serviceKey;
     private Object proxyObject;
+    private final ModuleModel moduleModel;
     private final ServiceDescriptor serviceModel;
     private final AbstractInterfaceConfig config;
 
     private ServiceMetadata serviceMetadata;
 
-    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config) {
+    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, ModuleModel moduleModel, AbstractInterfaceConfig config) {
         this.proxyObject = proxyObject;
         this.serviceKey = serviceKey;
         this.serviceModel = serviceModel;
+        this.moduleModel = moduleModel;
         this.config = config;
     }
 
-    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config, ServiceMetadata serviceMetadata) {
+    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, ModuleModel moduleModel, AbstractInterfaceConfig config, ServiceMetadata serviceMetadata) {
         this.proxyObject = proxyObject;
         this.serviceKey = serviceKey;
         this.serviceModel = serviceModel;
+        this.moduleModel = moduleModel;
         this.config = config;
         this.serviceMetadata = serviceMetadata;
     }
@@ -86,7 +89,7 @@ public class ServiceModel {
     }
 
     public ReferenceConfigBase<?> getReferenceConfig() {
-        if(config instanceof ReferenceConfigBase) {
+        if (config instanceof ReferenceConfigBase) {
             return (ReferenceConfigBase<?>) config;
         } else {
             throw new IllegalArgumentException("Current ServiceModel is not a ConsumerModel");
@@ -94,7 +97,7 @@ public class ServiceModel {
     }
 
     public ServiceConfigBase<?> getServiceConfig() {
-        if(config instanceof ServiceConfigBase) {
+        if (config instanceof ServiceConfigBase) {
             return (ServiceConfigBase<?>) config;
         } else {
             throw new IllegalArgumentException("Current ServiceModel is not a ProviderModel");
@@ -118,5 +121,9 @@ public class ServiceModel {
      */
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
+    }
+
+    public ModuleModel getModuleModel() {
+        return moduleModel;
     }
 }
