@@ -38,10 +38,13 @@ public class ServiceModel {
     }
 
     public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config, ServiceMetadata serviceMetadata) {
+        this(proxyObject, serviceKey, serviceModel, config, ScopeModelUtil.getModuleModel(config != null ? config.getScopeModel() : null), serviceMetadata);
+    }
+    public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config, ModuleModel moduleModel, ServiceMetadata serviceMetadata) {
         this.proxyObject = proxyObject;
         this.serviceKey = serviceKey;
         this.serviceModel = serviceModel;
-        this.moduleModel = ScopeModelUtil.getModuleModel(config != null ? config.getScopeModel() : null);
+        this.moduleModel = moduleModel;
         this.config = config;
         this.serviceMetadata = serviceMetadata;
     }
