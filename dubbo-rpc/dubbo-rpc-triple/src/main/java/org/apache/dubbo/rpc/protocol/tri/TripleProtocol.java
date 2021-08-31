@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import grpc.health.v1.HealthCheckResponse;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -30,6 +31,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
+import org.apache.dubbo.rpc.protocol.tri.service.TriService;
 
 import java.util.ArrayList;
 
@@ -46,6 +48,10 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
             .getDefaultExtension();
     private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
             .getDefaultExtension();
+
+    static {
+        TriService.init();
+    }
 
     @Override
     public int getDefaultPort() {
@@ -71,6 +77,11 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
 
         pathResolver.add(url.getServiceKey(), invoker);
         pathResolver.add(url.getServiceInterface(), invoker);
+
+        // set service status
+        TriService.getHealthStatusManager().setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
+        TriService.getHealthStatusManager().setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
+
         PortUnificationExchanger.bind(invoker.getUrl());
         return exporter;
     }
