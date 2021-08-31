@@ -120,11 +120,17 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         // CallOptions
         try {
+            ReferenceConfigBase<?> referenceConfig;
+            if (url.getServiceModel() != null) {
+                referenceConfig = url.getServiceModel().getReferenceConfig();
+            } else {
+                referenceConfig = ApplicationModel.getConsumerModel(url.getServiceKey()).getReferenceConfig();
+            }
             @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null,
                     channel,
                     GrpcOptionsUtils.buildCallOptions(url),
                     url,
-                    url.getServiceModel().getReferenceConfig()
+                    referenceConfig
             );
             final Invoker<T> target = proxyFactory.getInvoker(stub, type, url);
             GrpcInvoker<T> grpcInvoker = new GrpcInvoker<>(type, url, target, channel);
