@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
@@ -134,7 +135,14 @@ class CallbackServiceCodec {
             // one channel can have multiple callback instances, no need to re-export for different instance.
             if (!channel.hasAttribute(cacheKey)) {
                 if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, false)) {
-                    ModuleModel moduleModel = ScopeModelUtil.getModuleModel(inv.getServiceModel().getModuleModel());
+                    ModuleModel moduleModel;
+                    if (inv.getServiceModel() == null) {
+                        moduleModel = ApplicationModel.defaultModel().getDefaultModule();
+                        logger.error("Unable to get Service Model from Invocation. Please check if your invocation failed! " +
+                            "This error only happen in UT cases! Invocation:" + inv);
+                    } else {
+                        moduleModel = inv.getServiceModel().getModuleModel();
+                    }
                     ServiceDescriptor serviceDescriptor = ScopeModelUtil.getApplicationModel(moduleModel).getApplicationServiceRepository().registerService(clazz);
                     ProviderModel providerModel = new ProviderModel(BaseServiceMetadata.buildServiceKey(exportUrl.getPath(), group, exportUrl.getVersion()),
                         inst,
