@@ -79,12 +79,13 @@ public class DubboBootstrapTest {
 
     private static File dubboProperties;
     private static TestingServer server;
+    private static int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
+    private static String zkServerAddress = "zookeeper://127.0.0.1:" + zkServerPort;
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
         DubboBootstrap.reset();
         try {
-            int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
             server = new TestingServer(zkServerPort, true);
             server.start();
         } catch (Exception e) {
@@ -252,7 +253,7 @@ public class DubboBootstrapTest {
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("bootstrap-test"))
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+            .registry(new RegistryConfig(zkServerAddress))
             .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
             .service(service)
             .start();
@@ -278,7 +279,7 @@ public class DubboBootstrapTest {
         applicationConfig.setMetadataServicePort(availablePort);
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(applicationConfig)
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+            .registry(new RegistryConfig(zkServerAddress))
             .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
             .service(service)
             .start();
@@ -298,7 +299,7 @@ public class DubboBootstrapTest {
         applicationConfig.setMetadataServicePort(availablePort);
         applicationConfig.setMetadataType(REMOTE_METADATA_STORAGE_TYPE);
 
-        RegistryConfig registryConfig = new RegistryConfig("zookeeper://127.0.0.1:2181");
+        RegistryConfig registryConfig = new RegistryConfig(zkServerAddress);
         registryConfig.setUseAsMetadataCenter(false);
         registryConfig.setUseAsConfigCenter(false);
 
@@ -322,7 +323,7 @@ public class DubboBootstrapTest {
             .registry(registryConfig)
             .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
             .service(service)
-            .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
+            .metadataReport(new MetadataReportConfig(zkServerAddress))
             .start();
 
         assertMetadataService(DubboBootstrap.getInstance(), availablePort, true);
