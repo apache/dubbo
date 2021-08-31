@@ -14,8 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata.store;
+package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 
-public class RemoteMetadataServiceImplTest {
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+
+@Activate(value = "demo",group = {CONSUMER})
+public class DemoClusterFilter implements ClusterFilter {
+    @Override
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        return invoker.invoke(invocation);
+    }
 }

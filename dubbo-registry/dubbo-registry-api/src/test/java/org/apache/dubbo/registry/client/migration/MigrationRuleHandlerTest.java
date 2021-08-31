@@ -30,7 +30,7 @@ public class MigrationRuleHandlerTest {
         MigrationClusterInvoker invoker = Mockito.mock(MigrationClusterInvoker.class);
         URL url = Mockito.mock(URL.class);
         Mockito.when(url.getDisplayServiceKey()).thenReturn("test");
-        Mockito.when(url.getParameter((String) Mockito.any(), (String) Mockito.any())).thenAnswer(i->i.getArgument(1));
+        Mockito.when(url.getParameter(Mockito.any(), (String) Mockito.any())).thenAnswer(i->i.getArgument(1));
         MigrationRuleHandler handler = new MigrationRuleHandler(invoker, url);
 
         Mockito.when(invoker.migrateToForceApplicationInvoker(Mockito.any())).thenReturn(true);

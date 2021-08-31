@@ -65,6 +65,7 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
         return doCreateInvoker(directory, cluster, registry, type);
     }
 
+    @Override
     protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
 //        ClusterInvoker<T> invoker = getInvoker(cluster, registry, type, url);
         return new MigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);
