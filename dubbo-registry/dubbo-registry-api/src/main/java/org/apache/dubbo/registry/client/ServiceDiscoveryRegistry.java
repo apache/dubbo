@@ -117,10 +117,8 @@ public class ServiceDiscoveryRegistry implements Registry {
      */
     protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
         ServiceDiscovery serviceDiscovery = getServiceDiscovery(registryURL);
-        execute(() -> {
-            serviceDiscovery.initialize(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
-                    .removeParameter(REGISTRY_TYPE_KEY));
-        });
+        execute(() -> serviceDiscovery.initialize(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
+                .removeParameter(REGISTRY_TYPE_KEY)));
         return serviceDiscovery;
     }
 

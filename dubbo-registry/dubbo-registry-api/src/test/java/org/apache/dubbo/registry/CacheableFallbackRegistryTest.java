@@ -24,12 +24,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CacheableFailbackRegistryTest {
+public class CacheableFallbackRegistryTest {
 
     static String service;
     static URL serviceUrl;
@@ -64,12 +63,7 @@ public class CacheableFailbackRegistryTest {
         registry = new MockCacheableRegistryImpl(registryUrl);
         URL url = URLStrParser.parseEncodedStr(urlStr);
 
-        NotifyListener listener = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                resCount.set(urls.size());
-            }
-        };
+        NotifyListener listener = urls -> resCount.set(urls.size());
 
         registry.addChildren(url);
         registry.subscribe(serviceUrl, listener);
@@ -100,12 +94,7 @@ public class CacheableFailbackRegistryTest {
         registry = new MockCacheableRegistryImpl(registryUrl);
         URL url = URLStrParser.parseEncodedStr(urlStr);
 
-        NotifyListener listener = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                resCount.set(urls.size());
-            }
-        };
+        NotifyListener listener = urls -> resCount.set(urls.size());
 
         registry.addChildren(url);
         registry.subscribe(serviceUrl, listener);
@@ -131,12 +120,7 @@ public class CacheableFailbackRegistryTest {
         registry = new MockCacheableRegistryImpl(registryUrl);
         URL url = URLStrParser.parseEncodedStr(urlStr);
 
-        NotifyListener listener = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                resCount.set(urls.size());
-            }
-        };
+        NotifyListener listener = urls -> resCount.set(urls.size());
 
         registry.addChildren(url);
         registry.subscribe(serviceUrl, listener);
@@ -162,12 +146,7 @@ public class CacheableFailbackRegistryTest {
         registry = new MockCacheableRegistryImpl(registryUrl);
         URL url = URLStrParser.parseEncodedStr(urlStr);
 
-        NotifyListener listener = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                resCount.set(urls.size());
-            }
-        };
+        NotifyListener listener = urls -> resCount.set(urls.size());
 
         registry.addChildren(url);
         registry.subscribe(serviceUrl, listener);

@@ -596,7 +596,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
     }
 
-    // just for test
+    /**
+     * just for test
+     * @return
+     */
     @Deprecated
     public Invoker<?> getInvoker() {
         return invoker;
