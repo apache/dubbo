@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -39,7 +39,6 @@ import static com.alibaba.spring.util.ObjectUtils.of;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveServiceInterfaceClass;
 import static org.apache.dubbo.config.spring.util.DubboBeanUtils.getOptionalBean;
 import static org.springframework.core.annotation.AnnotationAttributes.fromMap;
-import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 
 /**
  * {@link ReferenceBean} Builder
@@ -124,19 +123,11 @@ class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<Reference
         dataBinder.registerCustomEditor(String.class, "listener", new StringTrimmerEditor(true));
         dataBinder.registerCustomEditor(Map.class, "parameters", new PropertyEditorSupport() {
             @Override
-            public void setAsText(String text) throws java.lang.IllegalArgumentException {
-                // Trim all whitespace
-                String content = StringUtils.trimAllWhitespace(text);
-                if (!StringUtils.hasText(content)) { // No content , ignore directly
-                    return;
+            public void setValue(Object value) {
+                if (value instanceof String[]) {
+                    value = DubboAnnotationUtils.convertParameters((String[]) value);
                 }
-                // replace "=" to ","
-                content = StringUtils.replace(content, "=", ",");
-                // replace ":" to ","
-                content = StringUtils.replace(content, ":", ",");
-                // String[] to Map
-                Map<String, String> parameters = CollectionUtils.toStringMap(commaDelimitedListToStringArray(content));
-                setValue(parameters);
+                super.setValue(value);
             }
         });
 

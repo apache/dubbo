@@ -49,6 +49,7 @@ public class SerializeClassChecker {
         OPEN_CHECK_CLASS = Boolean.parseBoolean(openCheckClass);
 
         String blockAllClassExceptAllow = ConfigurationUtils.getProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL, "false");
+
         BLOCK_ALL_CLASS_EXCEPT_ALLOW = Boolean.parseBoolean(blockAllClassExceptAllow);
 
         String[] lines;

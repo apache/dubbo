@@ -92,11 +92,11 @@
         <spring_version>5.2.8.RELEASE</spring_version>
         <javassist_version>3.23.1-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
-        <netty4_version>4.1.51.Final</netty4_version>
-        <netty4_ssl_version>2.0.39.Final</netty4_ssl_version>
+        <netty4_version>4.1.66.Final</netty4_version>
+        <netty4_ssl_version>2.0.40.Final</netty4_ssl_version>
         <mina_version>1.1.7</mina_version>
         <grizzly_version>2.4.4</grizzly_version>
-        <httpclient_version>4.5.3</httpclient_version>
+        <httpclient_version>4.5.13</httpclient_version>
         <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.70</fastjson_version>
         <zookeeper_version>3.4.13</zookeeper_version>
@@ -113,7 +113,7 @@
         <protobuf-java_version>3.6.0</protobuf-java_version>
         <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
         <servlet_version>3.1.0</servlet_version>
-        <jetty_version>9.4.11.v20180605</jetty_version>
+        <jetty_version>9.4.43.v20210629</jetty_version>
         <validation_version>1.1.0.Final</validation_version>
         <hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
         <jel_version>3.0.1-b08</jel_version>
@@ -122,14 +122,14 @@
         <kryo_serializers_version>0.42</kryo_serializers_version>
         <fst_version>2.48-jdk-6</fst_version>
         <avro_version>1.8.2</avro_version>
-        <apollo_client_version>1.1.1</apollo_client_version>
+        <apollo_client_version>1.8.0</apollo_client_version>
         <snakeyaml_version>1.20</snakeyaml_version>
         <commons_lang3_version>3.8.1</commons_lang3_version>
         <protostuff_version>1.5.9</protostuff_version>
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
-        <tomcat_embed_version>8.5.31</tomcat_embed_version>
+        <tomcat_embed_version>9.0.48</tomcat_embed_version>
         <jetcd_version>0.5.3</jetcd_version>
         <nacos_version>1.4.2</nacos_version>
         <grpc.version>1.31.1</grpc.version>
@@ -139,7 +139,7 @@
         <log4j_version>1.2.16</log4j_version>
         <logback_version>1.2.2</logback_version>
         <log4j2_version>2.11.1</log4j2_version>
-        <commons_io_version>2.6</commons_io_version>
+        <commons_io_version>2.7</commons_io_version>
 
         <embedded_redis_version>0.10.0</embedded_redis_version>
 
@@ -168,7 +168,7 @@
         <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
-        <revision>2.7.13</revision>
+        <revision>2.7.14-SNAPSHOT</revision>
     </properties>
 
     <dependencyManagement>
