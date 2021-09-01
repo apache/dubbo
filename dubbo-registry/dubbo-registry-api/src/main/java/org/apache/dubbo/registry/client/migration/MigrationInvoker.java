@@ -518,4 +518,12 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     protected void setMigrationRuleListener(MigrationRuleListener migrationRuleListener) {
         this.migrationRuleListener = migrationRuleListener;
     }
+
+    public Cluster getCluster() {
+        return cluster;
+    }
+
+    public URL getConsumerUrl() {
+        return consumerUrl;
+    }
 }

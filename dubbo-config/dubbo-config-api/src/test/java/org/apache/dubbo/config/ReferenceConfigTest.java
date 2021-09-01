@@ -35,6 +35,7 @@ import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
@@ -113,6 +114,7 @@ import static org.mockito.Mockito.when;
 
 public class ReferenceConfigTest {
     private TestingServer zkServer;
+    private String zkUrl;
     private String registryUrl;
 
     @BeforeEach
@@ -121,7 +123,8 @@ public class ReferenceConfigTest {
         int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
         this.zkServer = new TestingServer(zkServerPort, true);
         this.zkServer.start();
-        this.registryUrl = "zookeeper://localhost:" + zkServerPort;
+        this.zkUrl = "zookeeper://localhost:" + zkServerPort;
+        this.registryUrl = "registry://localhost:" + zkServerPort+"?registry=zookeeper";
         ApplicationModel.getConfigManager();
         DubboBootstrap.getInstance();
     }
@@ -266,7 +269,7 @@ public class ReferenceConfigTest {
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(registryUrl);
+        registry.setAddress(zkUrl);
         applicationConfig.setRegistries(Collections.singletonList(registry));
         applicationConfig.setRegistryIds(registry.getId());
         moduleConfig.setRegistries(Collections.singletonList(registry));
@@ -548,6 +551,146 @@ public class ReferenceConfigTest {
         metadataReportInstanceMockedStatic.closeOnDemand();
     }
 
+
+    /**
+     * Verify the configuration of the registry protocol for remote reference
+     */
+    @Test
+    public  void testCreateInvokerForRemoteRefer(){
+
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setGeneric(Boolean.FALSE.toString());
+        referenceConfig.setProtocol("dubbo");
+        referenceConfig.setInit(true);
+        referenceConfig.setLazy(false);
+        referenceConfig.setInjvm(false);
+
+        DubboBootstrap.getInstance()
+            .application("application1")
+            .initialize();
+        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("key1", "value1");
+        parameters.put("key2", "value2");
+        applicationConfig.setParameters(parameters);
+
+        ConfigManager configManager = mock(ConfigManager.class);
+        Environment environment = mock(Environment.class);
+        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
+        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
+        ServiceRepository serviceRepository = mock(ServiceRepository.class);
+        ConsumerModel consumerModel = mock(ConsumerModel.class);
+
+        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
+
+        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
+        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
+        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
+        applicationModelMockedStatic.when(ApplicationModel::getServiceRepository).thenReturn(serviceRepository);
+        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
+        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
+        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
+            .thenReturn(true);
+
+        MockedStatic<MetadataReportInstance> metadataReportInstanceMockedStatic =
+            Mockito.mockStatic(MetadataReportInstance.class);
+
+        MetadataReport metadataReport = mock(MetadataReport.class);
+        metadataReportInstanceMockedStatic.when(() -> MetadataReportInstance.getMetadataReport("default"))
+            .thenReturn(metadataReport);
+
+
+        when(serviceRepository.lookupReferredService("org.apache.dubbo.config.api.DemoService"))
+            .thenReturn(consumerModel);
+
+        referenceConfig.refreshed.set(true);
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.getInterfaceClass();
+        referenceConfig.setCheck(false);
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress(zkUrl);
+        applicationConfig.setRegistries(Collections.singletonList(registry));
+        applicationConfig.setRegistryIds(registry.getId());
+
+        referenceConfig.setRegistry(registry);
+
+        referenceConfig.init();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
+
+        applicationModelMockedStatic.closeOnDemand();
+        metadataReportInstanceMockedStatic.closeOnDemand();
+    }
+
+    /**
+     * Verify that the registry url is directly configured for remote reference
+     */
+    @Test
+    public  void testCreateInvokerWithRegistryUrlForRemoteRefer(){
+
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setGeneric(Boolean.FALSE.toString());
+        referenceConfig.setProtocol("dubbo");
+        referenceConfig.setInit(true);
+        referenceConfig.setLazy(false);
+        referenceConfig.setInjvm(false);
+
+        DubboBootstrap.getInstance()
+            .application("application1")
+            .initialize();
+        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("key1", "value1");
+        parameters.put("key2", "value2");
+        applicationConfig.setParameters(parameters);
+
+        ConfigManager configManager = mock(ConfigManager.class);
+        Environment environment = mock(Environment.class);
+        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
+        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
+        ServiceRepository serviceRepository = mock(ServiceRepository.class);
+        ConsumerModel consumerModel = mock(ConsumerModel.class);
+
+        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
+
+        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
+        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
+        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
+        applicationModelMockedStatic.when(ApplicationModel::getServiceRepository).thenReturn(serviceRepository);
+        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
+        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
+        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
+            .thenReturn(true);
+
+        MockedStatic<MetadataReportInstance> metadataReportInstanceMockedStatic =
+            Mockito.mockStatic(MetadataReportInstance.class);
+
+        MetadataReport metadataReport = mock(MetadataReport.class);
+        metadataReportInstanceMockedStatic.when(() -> MetadataReportInstance.getMetadataReport("default"))
+            .thenReturn(metadataReport);
+
+
+        when(serviceRepository.lookupReferredService("org.apache.dubbo.config.api.DemoService"))
+            .thenReturn(consumerModel);
+
+        referenceConfig.refreshed.set(true);
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.getInterfaceClass();
+        referenceConfig.setCheck(false);
+
+        referenceConfig.setUrl(registryUrl);
+        referenceConfig.init();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
+
+        applicationModelMockedStatic.closeOnDemand();
+        metadataReportInstanceMockedStatic.closeOnDemand();
+    }
+
     @Test
     @Disabled("Disabled due to Github Actions environment")
     public void testInjvm() throws Exception {
@@ -557,7 +700,7 @@ public class ReferenceConfigTest {
         ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(registryUrl);
+        registry.setAddress(zkUrl);
 
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("dubbo");
@@ -601,7 +744,7 @@ public class ReferenceConfigTest {
         ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(registryUrl);
+        registry.setAddress(zkUrl);
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("injvm");
 
@@ -762,17 +905,17 @@ public class ReferenceConfigTest {
         Reference reference = getClass().getDeclaredField("innerTest").getAnnotation(Reference.class);
         ReferenceConfig referenceConfig = new ReferenceConfig(reference);
         Assertions.assertEquals(1, referenceConfig.getMethods().size());
-        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getName(), "sayHello");
-        Assertions.assertEquals(1300, (int) ((MethodConfig) referenceConfig.getMethods().get(0)).getTimeout());
-        Assertions.assertEquals(4, (int) ((MethodConfig) referenceConfig.getMethods().get(0)).getRetries());
-        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
-        Assertions.assertEquals(3, (int) ((MethodConfig) referenceConfig.getMethods().get(0)).getActives());
-        Assertions.assertEquals(5, (int) ((MethodConfig) referenceConfig.getMethods().get(0)).getExecutes());
-        Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).isAsync());
-        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOninvokeMethod(), "i");
-        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnreturnMethod(), "r");
-        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnthrowMethod(), "t");
-        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getCache(), "c");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getName(), "sayHello");
+        Assertions.assertEquals(1300, (int) (referenceConfig.getMethods().get(0)).getTimeout());
+        Assertions.assertEquals(4, (int) (referenceConfig.getMethods().get(0)).getRetries());
+        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
+        Assertions.assertEquals(3, (int) (referenceConfig.getMethods().get(0)).getActives());
+        Assertions.assertEquals(5, (int) (referenceConfig.getMethods().get(0)).getExecutes());
+        Assertions.assertTrue((referenceConfig.getMethods().get(0)).isAsync());
+        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getOninvokeMethod(), "i");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getOnreturnMethod(), "r");
+        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getOnthrowMethod(), "t");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getCache(), "c");
     }
 
 

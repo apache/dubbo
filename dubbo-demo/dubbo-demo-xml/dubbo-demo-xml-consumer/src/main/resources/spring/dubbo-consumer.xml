@@ -37,4 +37,7 @@
     <dubbo:reference protocol="rest" version="1.0.0" id="restDemoService" check="false"
                      interface="org.apache.dubbo.demo.RestDemoService"/>
 
+    <dubbo:reference protocol="tri" version="1.0.0" id="tripleService" check="false"
+                     interface="org.apache.dubbo.demo.TripleService"/>
+
 </beans>

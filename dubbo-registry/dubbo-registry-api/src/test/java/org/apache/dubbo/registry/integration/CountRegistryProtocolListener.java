@@ -14,16 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.registry.integration;
 
-public class DefaultMetadataParamsFilter implements MetadataParamsFilter {
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+
+public class CountRegistryProtocolListener implements RegistryProtocolListener {
+
+    private static final AtomicInteger referCounter = new AtomicInteger(0);
+
     @Override
-    public String[] serviceParamsIncluded() {
-        return new String[0];
+    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
+
     }
 
     @Override
-    public String[] instanceParamsIncluded() {
-        return new String[0];
+    public void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url, URL registryURL) {
+        referCounter.incrementAndGet();
+    }
+
+    @Override
+    public void onDestroy() {
+
+    }
+
+    public static AtomicInteger getReferCounter() {
+        return referCounter;
     }
 }

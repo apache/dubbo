@@ -14,26 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.infra.support;
+package org.apache.dubbo.integration.multiple.exportmetadata;
 
-import org.apache.dubbo.common.infra.InfraAdapter;
+import org.apache.dubbo.config.ServiceListener;
+import org.apache.dubbo.integration.AbstractRegistryCenterServiceListener;
+import org.apache.dubbo.metadata.MetadataService;
 
-import java.util.Collections;
-import java.util.Map;
+/**
+ * This implementation of {@link ServiceListener} is to record exported metadata services in multiple registry center.
+ */
+public class MultipleRegistryCenterExportMetadataServiceListener extends AbstractRegistryCenterServiceListener {
 
-public class CmdbAdapter implements InfraAdapter {
-
-    public CmdbAdapter() {
-        // init;
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Map<String, String> getExtraAttributes(Map<String, String> params) {
-        return Collections.emptyMap();
-    }
-
-    @Override
-    public String getAttribute(String key) {
-        return "";
+    protected Class<?> getInterface() {
+        return MetadataService.class;
     }
 }

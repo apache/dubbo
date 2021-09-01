@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
  */
 public class MockClusterWrapper implements Cluster {
 
-    private Cluster cluster;
+    private final Cluster cluster;
 
     public MockClusterWrapper(Cluster cluster) {
         this.cluster = cluster;
@@ -39,4 +39,7 @@ public class MockClusterWrapper implements Cluster {
                 this.cluster.join(directory));
     }
 
+    public Cluster getCluster() {
+        return cluster;
+    }
 }

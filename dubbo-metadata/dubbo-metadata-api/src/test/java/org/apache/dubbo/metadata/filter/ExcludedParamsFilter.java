@@ -14,8 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry;
+package org.apache.dubbo.metadata.filter;
 
-public class DelayedRegistryNotifierTest {
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.metadata.MetadataParamsFilter;
 
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+
+@Activate
+public class ExcludedParamsFilter implements MetadataParamsFilter {
+
+    @Override
+    public String[] serviceParamsIncluded() {
+        return new String[]{INTERFACE_KEY};
+    }
+
+    /**
+     * Not included in this test
+     */
+    @Override
+    public String[] instanceParamsIncluded() {
+        return new String[0];
+    }
 }
