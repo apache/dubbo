@@ -77,7 +77,7 @@ public class RpcContext {
     };
 
     /**
-     * the consumer url of async rpc, it will be reset at each callback process begining.
+     * the consumer url of async rpc, it will be set at each callback process begining.
      */
     private static ThreadLocal<URL> asyncConsumerUrl = null;
 
@@ -874,11 +874,11 @@ public class RpcContext {
      * save async rpc consumer url and return rpc context of the current thread,
      * it will be called at each asyncRpcResult creation.
      * @param the asyncRpcResult that is been creating
-     * @return rpc context of the current thread
+     * @return the rpc context of the current thread
      */
     public static RpcContext getContextAndSaveAsyncConsumerUrl(AsyncRpcResult asyncRpcResult) {
         RpcContext rpcContext = LOCAL.get();
-        // don't save at provide side: consumer Url is null at provide side  
+        // don't save at provide side: cosnumer url is null at provide side
         if (rpcContext.consumerUrl != null) {
             rpcContext.asyncRpcConsumerUrls.put(asyncRpcResult, rpcContext.consumerUrl);
         }
@@ -886,7 +886,7 @@ public class RpcContext {
     }
 
     /**
-     * restore async rpc context and set async consumer url local variable for the current thread,
+     * restore rpc context and set local variable async consumer url for the current thread,
      * it will be called at each callback process begining.
      * @param oldContext
      * @param asyncRpcResult
@@ -895,27 +895,27 @@ public class RpcContext {
         LOCAL.set(oldContext);
         // remove the saved conumer url item from the map
         URL consumerUrl = oldContext.asyncRpcConsumerUrls.remove(asyncRpcResult);
-        // don't set async consumer url at provide side: consumer url is null at provide side
+        // don't set async consumer url at provide side: cosnumer url is null at provide side
         if (consumerUrl != null) {
-            //  if the current thread's local variable asyncConsumerUrl not existed
+            //  if the current thread's local variable asyncConsumerUrl is not existed
             if (asyncConsumerUrl == null) {
                 // only create once
                 asyncConsumerUrl = new ThreadLocal<URL>();
             }
-            // set async consumer url of the current thread
+            // set the local variable async consumer url for the current thread
             asyncConsumerUrl.set(consumerUrl);
         }
     }
 
     /**
-     * get async rpc consumer url for onreturn / onthrow callback method
-     * @return  consumer url of aysnc rpc
+     * get the async rpc consumer url for onreturn / onthrow method
+     * @return  the aysnc rpc consumer url
      * @throws  IllegalStateException
-     *          if used outside of onreturn / onthrow callback method
+     *          if it is called outside of onreturn / onthrow method
      */
     public static URL getAsyncConsumerUrl() {
         if (asyncConsumerUrl == null) {
-            throw new IllegalStateException("getAsyncConsumerUrl() could only be used in onreturn or onthrow callback method!"); 
+            throw new IllegalStateException("getAsyncConsumerUrl() could only be called in onreturn or onthrow method!"); 
         }
         return asyncConsumerUrl.get();
     }

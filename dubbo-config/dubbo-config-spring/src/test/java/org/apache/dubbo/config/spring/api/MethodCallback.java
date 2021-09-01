@@ -28,4 +28,8 @@ public interface MethodCallback {
     String getOnReturn();
 
     String getOnThrow();
+
+    int getCnt();
+
+    void reset();
 }

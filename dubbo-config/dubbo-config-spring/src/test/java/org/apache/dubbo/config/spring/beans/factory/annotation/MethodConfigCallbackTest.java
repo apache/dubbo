@@ -53,6 +53,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class MethodConfigCallbackTest {
+    private MethodCallback notify;
 
     @BeforeAll
     public static void setUp() {
@@ -80,22 +81,23 @@ public class MethodConfigCallbackTest {
 
     @BeforeEach
     public void setUpEach() {
-        MethodCallbackImpl.cnt.set(0);
-        MethodCallbackImpl.cnt1.set(0);
-        MethodCallbackImpl.cnt2.set(0);
+        notify = (MethodCallback) context.getBean("methodCallback");
+        notify.reset();
     }
 
     @RepeatedTest(2)
     @Test
     public void testMethodAnnotationCallBack() {
-        // the reason of creating new thread for each call:
-        // rpcContext that is still using in callback process will be override at following invoke in the same thread.  
+        int callCnt = 10;
         new Thread(() -> {
-            helloServiceMethodCallBack.sayHello("dubbo");
-            helloServiceMethodCallBack2.sayHello("dubbo(2)");
+            // rpcContext that is still been using in callback process will be override at following invoke in the same thread.
+            for (int i = 0; i < callCnt; i++) {
+                helloServiceMethodCallBack.sayHello("dubbo");
+                helloServiceMethodCallBack2.sayHello("dubbo(2)");
+            }
         }).start();
         int i = 0;
-        while (MethodCallbackImpl.cnt.get() < 2 && i < 50){
+        while (notify.getCnt() < (2 * callCnt) && i < 50) {
             // wait for async callback finished
             try {
                 i++;
@@ -103,9 +105,19 @@ public class MethodConfigCallbackTest {
             } catch (InterruptedException e) {
             }
         }
-        MethodCallback notify = (MethodCallback) context.getBean("methodCallback");
-        Assertions.assertEquals("dubbo invoke success,dubbo invoke success(2)", notify.getOnInvoke());
-        Assertions.assertEquals("dubbo return success,dubbo return success(2)", notify.getOnReturn());
+
+        String invoke1 = "";
+        String invoke2 = "";
+        String result1 = "";
+        String result2 = "";
+        for (i = 0; i < callCnt; i++) {
+            invoke1 += "dubbo invoke success";
+            invoke2 += "dubbo invoke success(2)";
+            result1 += "dubbo return success";
+            result2 += "dubbo return success(2)";
+        } 
+        Assertions.assertEquals(invoke1 + "," + invoke2, notify.getOnInvoke());
+        Assertions.assertEquals(result1 + "," + result2, notify.getOnReturn());
     }
 
     @Configuration

@@ -29,17 +29,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.PostConstruct;
 
 public class MethodCallbackImpl implements MethodCallback {
-    public static AtomicInteger cnt = new AtomicInteger();
-    public static AtomicInteger cnt1 = new AtomicInteger();
-    public static AtomicInteger cnt2 = new AtomicInteger();
-
     private String onInvoke1;
     private String onReturn1;
     private String onThrow1;
-    
+
     private String onInvoke2;
     private String onReturn2;
     private String onThrow2;
+
+    private AtomicInteger cnt = new AtomicInteger();
+    private AtomicInteger cnt1 = new AtomicInteger();
+    private AtomicInteger cnt2 = new AtomicInteger();
 
     @Autowired
     private Environment environment;
@@ -52,28 +52,46 @@ public class MethodCallbackImpl implements MethodCallback {
         checkInjection();
     }
 
+    @Override
+    public int getCnt() {
+        return cnt.get();
+    }
+
+    @Override
+    public void reset() {
+        cnt.set(0);
+        cnt1.set(0);
+        cnt2.set(0);
+        onInvoke1 = "";
+        onInvoke2 = "";
+        onReturn1 = "";
+        onReturn2 = "";
+        onThrow1 = "";
+        onThrow2 = "";
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void oninvoke(String request) {
         try {
             checkInjection();
             checkTranscation();
-            // Do not use RpcContext.getAsyncConsumerUrl() because it's not set yet
+            // use RpcContext.getContext().getConsumerUrl() at oninvoke: because the correct asyncConsumerUrl is not set yet.
             switch (RpcContext.getContext().getConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                this.onInvoke1 = "dubbo invoke success";
+                onInvoke1 += "dubbo invoke success";
                 break;
             case "ref-2":
-                this.onInvoke2 = "dubbo invoke success(2)";
+                onInvoke2 += "dubbo invoke success(2)";
                 break;
             }
         } catch (Exception e) {
             switch (RpcContext.getContext().getConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                this.onInvoke1 = e.toString();
+                onInvoke1 += e.toString();
                 break;
             case "ref-2":
-                this.onInvoke2 = e.toString();
+                onInvoke2 += e.toString();
                 break;
             }
             throw e;
@@ -86,28 +104,22 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            // Do not use RpcContext.getContext().getConsumerUrl() because it might be reused by other async callings
+            // use getAsyncConsumerUrl() at onreturn: because the consumerUrl might be overrided by the following async callings.
             switch (RpcContext.getAsyncConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                this.onReturn1 = "dubbo return success";
-                if (cnt1.incrementAndGet() == 2) {
-                    this.onReturn1 = "double 1!";
-                }
+                onReturn1 += "dubbo return success";
                 break;
             case "ref-2":
-                this.onReturn2 = "dubbo return success(2)";
-                if (cnt2.incrementAndGet() == 2) {
-                    this.onReturn2 = "double 2!";
-                }
+                onReturn2 += "dubbo return success(2)";
                 break;
             }
         } catch (Exception e) {
             switch (RpcContext.getAsyncConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                this.onReturn1 = e.toString();
+                onReturn1 += e.toString();
                 break;
             case "ref-2":
-                this.onReturn2 = e.toString();
+                onReturn2 += e.toString();
                 break;
             }
             throw e;
@@ -122,22 +134,22 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            // Do not use RpcContext.getContext().getConsumerUrl() because it might be reused by other async callings
+            // use getAsyncConsumerUrl() at onthrow: because the consumerUrl might be overrided by the following async callings.
             switch (RpcContext.getAsyncConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                this.onThrow1 = "dubbo throw exception";
+                onThrow1 += "dubbo throw exception";
                 break;
             case "ref-2":
-                this.onThrow2 = "dubbo throw exception(2)";
+                onThrow2 += "dubbo throw exception(2)";
                 break;
             }
         } catch (Exception e) {
             switch (RpcContext.getAsyncConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                this.onThrow1 = e.toString();
+                onThrow1 += e.toString();
                 break;
             case "ref-2":
-                this.onThrow2 = e.toString();
+                onThrow2 += e.toString();
                 break;
             }
             throw e;
@@ -145,15 +157,15 @@ public class MethodCallbackImpl implements MethodCallback {
     }
 
     public String getOnInvoke() {
-        return this.onInvoke1 + ',' + this.onInvoke2;
+        return onInvoke1 + ',' + onInvoke2;
     }
 
     public String getOnReturn() {
-        return this.onReturn1 + ',' + this.onReturn2;
+        return onReturn1 + ',' + onReturn2;
     }
 
     public String getOnThrow() {
-        return this.onThrow1 + ',' + this.onThrow2;
+        return onThrow1 + ',' + onThrow2;
     }
 
     private void checkInjection() {
