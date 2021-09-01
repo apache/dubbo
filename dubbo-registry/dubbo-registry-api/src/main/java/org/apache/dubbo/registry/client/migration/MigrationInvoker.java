@@ -66,6 +66,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private volatile MigrationRule rule;
     private volatile int promotion = 100;
 
+    private static final String CURRENT_CLUSTER_INVOKER_KEY = "currentClusterInvoker";
+    private static final String APP_STATUS = "app";
+    private static final String INTERFACE_STATUS = "interface";
+
     public MigrationInvoker(RegistryProtocol registryProtocol,
                             Cluster cluster,
                             Registry registry,
@@ -94,7 +98,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
         ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerUrl.getServiceKey());
         if (consumerModel != null) {
-            Object object = consumerModel.getServiceMetadata().getAttribute("currentClusterInvoker");
+            Object object = consumerModel.getServiceMetadata().getAttribute(CURRENT_CLUSTER_INVOKER_KEY);
             Map<Registry, MigrationInvoker<?>> invokerMap;
             if (object instanceof Map) {
                 invokerMap = (Map<Registry, MigrationInvoker<?>>) object;
@@ -102,7 +106,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
                 invokerMap = new ConcurrentHashMap<>();
             }
             invokerMap.put(registry, this);
-            consumerModel.getServiceMetadata().addAttribute("currentClusterInvoker", invokerMap);
+            consumerModel.getServiceMetadata().addAttribute(CURRENT_CLUSTER_INVOKER_KEY, invokerMap);
         }
     }
 
@@ -147,7 +151,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     private void doReSubscribe(ClusterInvoker<T> invoker, URL newSubscribeUrl) {
         DynamicDirectory<T> directory = (DynamicDirectory<T>) invoker.getDirectory();
-        URL oldSubscribeUrl = directory.getRegisteredConsumerUrl();
+        URL oldSubscribeUrl = directory.getSubscribeUrl();
         Registry registry = directory.getRegistry();
         registry.unregister(directory.getRegisteredConsumerUrl());
         directory.unSubscribe(RegistryProtocol.toSubscribeUrl(oldSubscribeUrl));
@@ -317,13 +321,13 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerUrl.getServiceKey());
         if (consumerModel != null) {
-            Object object = consumerModel.getServiceMetadata().getAttribute("currentClusterInvoker");
+            Object object = consumerModel.getServiceMetadata().getAttribute(CURRENT_CLUSTER_INVOKER_KEY);
             Map<Registry, MigrationInvoker<?>> invokerMap;
             if (object instanceof Map) {
                 invokerMap = (Map<Registry, MigrationInvoker<?>>) object;
                 invokerMap.remove(registry);
                 if (invokerMap.isEmpty()) {
-                    consumerModel.getServiceMetadata().getAttributeMap().remove("currentClusterInvoker");
+                    consumerModel.getServiceMetadata().getAttributeMap().remove(CURRENT_CLUSTER_INVOKER_KEY);
                 }
             }
         }
@@ -427,7 +431,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         setListener(serviceDiscoveryInvoker, () -> {
             latch.countDown();
             FrameworkStatusReporter.reportConsumptionStatus(
-                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app")
+                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), APP_STATUS)
             );
             if (step == APPLICATION_FIRST) {
                 calcPreferredInvoker(rule);
@@ -450,7 +454,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         setListener(invoker, () -> {
             latch.countDown();
             FrameworkStatusReporter.reportConsumptionStatus(
-                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "interface")
+                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), INTERFACE_STATUS)
             );
             if (step == APPLICATION_FIRST) {
                 calcPreferredInvoker(rule);
