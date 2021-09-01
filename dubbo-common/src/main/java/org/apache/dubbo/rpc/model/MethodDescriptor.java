@@ -38,6 +38,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE
  *
  */
 public class MethodDescriptor {
+
+    private static final String GRPC_ASYNC_RETURN_CLASS = "com.google.common.util.concurrent.ListenableFuture";
+    private static final String GRPC_STREAM_CLASS = "io.grpc.stub.StreamObserver";
+
     private static final Logger logger = LoggerFactory.getLogger(MethodDescriptor.class);
     private final Method method;
     //    private final boolean isCallBack;
@@ -93,7 +97,7 @@ public class MethodDescriptor {
     }
 
     private static boolean isStreamType(Class<?> clz) {
-        return StreamObserver.class.isAssignableFrom(clz);
+        return StreamObserver.class.isAssignableFrom(clz) || GRPC_STREAM_CLASS.equalsIgnoreCase(clz.getName());
     }
 
     public boolean isStream() {
@@ -180,6 +184,9 @@ public class MethodDescriptor {
             }
             if (protobufParameterCount <= 0 && !returnClassProtobuf) {
                 return true;
+            }
+            if (GRPC_ASYNC_RETURN_CLASS.equalsIgnoreCase(returnClass.getName()) && protobufParameterCount == 1) {
+                return false;
             }
             throw new IllegalStateException("method params error method=" + methodName);
         }
