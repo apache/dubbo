@@ -38,8 +38,6 @@ public class MethodCallbackImpl implements MethodCallback {
     private String onThrow2;
 
     private AtomicInteger cnt = new AtomicInteger();
-    private AtomicInteger cnt1 = new AtomicInteger();
-    private AtomicInteger cnt2 = new AtomicInteger();
 
     @Autowired
     private Environment environment;
@@ -60,8 +58,6 @@ public class MethodCallbackImpl implements MethodCallback {
     @Override
     public void reset() {
         cnt.set(0);
-        cnt1.set(0);
-        cnt2.set(0);
         onInvoke1 = "";
         onInvoke2 = "";
         onReturn1 = "";
@@ -76,7 +72,7 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            // use RpcContext.getContext().getConsumerUrl() at oninvoke: because the correct asyncConsumerUrl is not set yet.
+            // use getConsumerUrl() at oninvoke: because the correct asyncConsumerUrl is not set yet.
             switch (RpcContext.getContext().getConsumerUrl().getParameter("refId")) {
             case "ref-1":
                 onInvoke1 += "dubbo invoke success";
@@ -104,7 +100,7 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            // use getAsyncConsumerUrl() at onreturn: because the consumerUrl might be overrided by the following async callings.
+            // use getAsyncConsumerUrl() at onreturn: because the consumerUrl will be overridden by the following invocations of the same thread.
             switch (RpcContext.getAsyncConsumerUrl().getParameter("refId")) {
             case "ref-1":
                 onReturn1 += "dubbo return success";
@@ -134,7 +130,7 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            // use getAsyncConsumerUrl() at onthrow: because the consumerUrl might be overrided by the following async callings.
+            // use getAsyncConsumerUrl() at onthrow: because the consumerUrl will be overridden by the following invocations of the same thread.
             switch (RpcContext.getAsyncConsumerUrl().getParameter("refId")) {
             case "ref-1":
                 onThrow1 += "dubbo throw exception";

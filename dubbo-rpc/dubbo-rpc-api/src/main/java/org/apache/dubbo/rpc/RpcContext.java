@@ -878,7 +878,7 @@ public class RpcContext {
      */
     public static RpcContext getContextAndSaveAsyncConsumerUrl(AsyncRpcResult asyncRpcResult) {
         RpcContext rpcContext = LOCAL.get();
-        // don't save at provide side: cosnumer url is null at provide side
+        // don't save at provide side: consumer url is null at provide side
         if (rpcContext.consumerUrl != null) {
             rpcContext.asyncRpcConsumerUrls.put(asyncRpcResult, rpcContext.consumerUrl);
         }
@@ -893,9 +893,9 @@ public class RpcContext {
      */
     public static void restoreContextAndSetAsyncConsumerUrl(RpcContext oldContext, AsyncRpcResult asyncRpcResult) {
         LOCAL.set(oldContext);
-        // remove the saved conumer url item from the map
+        // remove the saved consumer url item from the map
         URL consumerUrl = oldContext.asyncRpcConsumerUrls.remove(asyncRpcResult);
-        // don't set async consumer url at provide side: cosnumer url is null at provide side
+        // don't set async consumer url at provide side: consumer url is null at provide side
         if (consumerUrl != null) {
             //  if the current thread's local variable asyncConsumerUrl is not existed
             if (asyncConsumerUrl == null) {
