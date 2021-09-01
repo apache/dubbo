@@ -36,10 +36,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 
 /**
- * @author earthchen
- * @date 2021/8/30
+ * tri internal  service like grpc internal service
  **/
-public class TriService {
+public class TriBuiltinService {
 
     private static final ProxyFactory PROXY_FACTORY =
         ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
