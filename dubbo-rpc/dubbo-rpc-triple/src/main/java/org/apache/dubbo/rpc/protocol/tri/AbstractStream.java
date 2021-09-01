@@ -185,10 +185,13 @@ public abstract class AbstractStream implements Stream {
         return transportObserver;
     }
 
-    protected void transportError(GrpcStatus status, Map<String, Object> attachments) {
-        // set metadata
-        Metadata metadata = getMetaData(status);
-        getTransportSubscriber().onMetadata(metadata, false);
+    // https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#responses
+    protected void transportError(GrpcStatus status, Map<String, Object> attachments, boolean onlyTrailers) {
+        if (!onlyTrailers) {
+            // set metadata
+            Metadata metadata = new DefaultMetadata();
+            getTransportSubscriber().onMetadata(metadata, false);
+        }
         // set trailers
         Metadata trailers = getTrailers(status);
         if (attachments != null) {
@@ -196,8 +199,13 @@ public abstract class AbstractStream implements Stream {
         }
         getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
-            LOGGER.error("[Triple-Server-Error] " + status.toMessage());
+            LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
+                + " method=" + getMethodName() +" onlyTrailers=" + onlyTrailers, status.cause);
         }
+    }
+
+    protected void transportError(GrpcStatus status, Map<String, Object> attachments) {
+        transportError(status, attachments,false);
     }
 
     protected void transportError(GrpcStatus status) {
@@ -206,21 +214,7 @@ public abstract class AbstractStream implements Stream {
 
     protected void transportError(Throwable throwable) {
         GrpcStatus status = new GrpcStatus(Code.UNKNOWN, throwable, throwable.getMessage());
-        Metadata metadata = getMetaData(status);
-        getTransportSubscriber().onMetadata(metadata, false);
-        Metadata trailers = getTrailers(status);
-        getTransportSubscriber().onMetadata(trailers, true);
-        if (LOGGER.isErrorEnabled()) {
-            LOGGER.error("[Triple-Server-Error] service=" + getServiceDescriptor().getServiceName()
-                    + " method=" + getMethodName(), throwable);
-        }
-    }
-
-    private Metadata getMetaData(GrpcStatus status) {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), getGrpcMessage(status));
-        metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(status.code.code));
-        return metadata;
+        transportError(status, null);
     }
 
     private String getGrpcMessage(GrpcStatus status) {
@@ -234,13 +228,17 @@ public abstract class AbstractStream implements Stream {
     }
 
     private Metadata getTrailers(GrpcStatus grpcStatus) {
-
         Metadata metadata = new DefaultMetadata();
+        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), getGrpcMessage(grpcStatus));
+        metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
         Status.Builder builder = Status.newBuilder()
                 .setCode(grpcStatus.code.code)
                 .setMessage(getGrpcMessage(grpcStatus));
         Throwable throwable = grpcStatus.cause;
         if (throwable == null) {
+            Status status = builder.build();
+            metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
+                TripleUtil.encodeBase64ASCII(status.toByteArray()));
             return metadata;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()

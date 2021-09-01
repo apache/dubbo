@@ -43,10 +43,8 @@ public class ServerTransportObserver implements TransportObserver {
             headerSent = true;
             headers.status(OK.codeAsText());
             headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO);
-            ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream));
-        } else {
-            ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream));
         }
+        ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream));
     }
 
     @Override
