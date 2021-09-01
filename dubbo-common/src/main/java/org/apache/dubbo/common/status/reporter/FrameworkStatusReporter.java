@@ -30,7 +30,7 @@ import java.util.Set;
 
 @SPI
 public interface FrameworkStatusReporter {
-    static final Gson gson = new Gson();
+    Gson gson = new Gson();
     Logger logger = LoggerFactory.getLogger(FrameworkStatusReporter.class);
     String REGISTRATION_STATUS = "registration";
     String ADDRESS_CONSUMPTION_STATUS = "consumption";
