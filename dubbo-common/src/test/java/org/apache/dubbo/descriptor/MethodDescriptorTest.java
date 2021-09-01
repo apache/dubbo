@@ -26,6 +26,10 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Method;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MethodDescriptorTest {
     @Test
@@ -34,6 +38,46 @@ public class MethodDescriptorTest {
         MethodDescriptor descriptor = new MethodDescriptor(method);
         assertEquals("", descriptor.getParamDesc());
         Assertions.assertEquals(0, descriptor.getParameterClasses().length);
+    }
+
+    @Test
+    public void testMethodWithNoParametersAndReturnProtobuf() throws Exception {
+        Method method = DescriptorService.class.getMethod("noParameterAndReturnProtobufMethod");
+        MethodDescriptor descriptor = new MethodDescriptor(method);
+        assertEquals("", descriptor.getParamDesc());
+        Assertions.assertEquals(0, descriptor.getParameterClasses().length);
+        assertTrue(descriptor.isUnary());
+        assertFalse(descriptor.isNeedWrap());
+    }
+
+    @Test
+    public void testMethodWithNoParametersAndReturnJava() throws Exception {
+        Method method = DescriptorService.class.getMethod("noParameterAndReturnJavaClassMethod");
+        MethodDescriptor descriptor = new MethodDescriptor(method);
+        assertEquals("", descriptor.getParamDesc());
+        Assertions.assertEquals(0, descriptor.getParameterClasses().length);
+        assertTrue(descriptor.isUnary());
+        assertTrue(descriptor.isNeedWrap());
+    }
+
+    @Test
+    public void testWrapperBiStream() throws Exception {
+        Method method = DescriptorService.class.getMethod("wrapBidirectionalStream", StreamObserver.class);
+        MethodDescriptor descriptor = new MethodDescriptor(method);
+        Assertions.assertEquals(1, descriptor.getParameterClasses().length);
+        assertTrue(descriptor.isStream());
+        assertSame(descriptor.getRpcType(), MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM);
+        assertTrue(descriptor.isNeedWrap());
+    }
+
+    @Test
+    public void testBiStream() throws Exception {
+        Method method = DescriptorService.class.getMethod("bidirectionalStream", StreamObserver.class);
+        MethodDescriptor descriptor = new MethodDescriptor(method);
+        Assertions.assertEquals(1, descriptor.getParameterClasses().length);
+        assertTrue(descriptor.isStream());
+        assertSame(descriptor.getRpcType(), MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM);
+        assertFalse(descriptor.isNeedWrap());
     }
 
     @Test
@@ -60,7 +104,8 @@ public class MethodDescriptorTest {
 
     @Test
     public void testIsServerStream() throws NoSuchMethodException {
-        Method method = DescriptorService.class.getMethod("sayHelloServerStream", HelloReply.class, StreamObserver.class);
+        Method method = DescriptorService.class.getMethod("sayHelloServerStream", HelloReply.class,
+            StreamObserver.class);
         MethodDescriptor descriptor = new MethodDescriptor(method);
         Assertions.assertFalse(descriptor.isUnary());
         Assertions.assertFalse(descriptor.isNeedWrap());
@@ -81,4 +126,91 @@ public class MethodDescriptorTest {
         descriptor = new MethodDescriptor(method);
         Assertions.assertFalse(descriptor.isNeedWrap());
     }
+
+
+    @Test
+    public void testMultiProtoParameter() throws Exception {
+        Method method = DescriptorService.class.getMethod("testMultiProtobufParameters", HelloReply.class,
+            HelloReply.class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method);
+            });
+    }
+
+    @Test
+    public void testDiffParametersAndReturn() throws Exception {
+        Method method = DescriptorService.class.getMethod("testDiffParametersAndReturn", HelloReply.class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method);
+            });
+
+        Method method2 = DescriptorService.class.getMethod("testDiffParametersAndReturn2", String.class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method2);
+            });
+    }
+
+    @Test
+    public void testErrorServerStream() throws Exception {
+        Method method = DescriptorService.class.getMethod("testErrorServerStream", StreamObserver.class,
+            HelloReply.class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method);
+            });
+
+        Method method2 = DescriptorService.class.getMethod("testErrorServerStream2", HelloReply.class, HelloReply
+            .class, StreamObserver.class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method2);
+            });
+
+        Method method3 = DescriptorService.class.getMethod("testErrorServerStream3", String.class,
+            StreamObserver.class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method3);
+            });
+
+        Method method4 = DescriptorService.class.getMethod("testErrorServerStream4", String.class, String.class,
+            StreamObserver.class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method4);
+            });
+    }
+
+    @Test
+    public void testErrorBiStream() throws Exception {
+        Method method = DescriptorService.class.getMethod("testErrorBiStream",HelloReply.class, StreamObserver
+        .class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method);
+            });
+
+        Method method2 = DescriptorService.class.getMethod("testErrorBiStream2", String.class, StreamObserver.class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method2);
+            });
+
+        Method method3 = DescriptorService.class.getMethod("testErrorBiStream3", StreamObserver.class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method3);
+            });
+
+        Method method4 = DescriptorService.class.getMethod("testErrorBiStream4", StreamObserver.class,String.class);
+        assertThrows(IllegalStateException.class,
+            () -> {
+                MethodDescriptor descriptor = new MethodDescriptor(method4);
+            });
+    }
+
+
 }

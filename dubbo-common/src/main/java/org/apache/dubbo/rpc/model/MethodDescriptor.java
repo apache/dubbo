@@ -60,14 +60,15 @@ public class MethodDescriptor {
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
             this.parameterClasses = new Class<?>[]{
-                    (Class<?>) ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0]};
+                (Class<?>) ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0]};
             this.returnClass = (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[0])
-                    .getActualTypeArguments()[0];
+                .getActualTypeArguments()[0];
             this.rpcType = RpcType.BIDIRECTIONAL_STREAM;
         } else if (parameterTypes.length == 2 && method.getReturnType().equals(Void.TYPE)
-                && !isStreamType(parameterTypes[0]) && isStreamType(parameterTypes[1])) {
+            && !isStreamType(parameterTypes[0]) && isStreamType(parameterTypes[1])) {
             this.parameterClasses = method.getParameterTypes();
-            this.returnClass = (Class<?>) ((ParameterizedType)method.getGenericParameterTypes()[1]).getActualTypeArguments()[0];
+            this.returnClass =
+                (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[1]).getActualTypeArguments()[0];
             this.rpcType = RpcType.SERVER_STREAM;
         } else {
             this.parameterClasses = method.getParameterTypes();
@@ -86,8 +87,8 @@ public class MethodDescriptor {
         this.returnTypes = returnTypesResult;
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
         this.compatibleParamSignatures = Stream.of(parameterClasses)
-                .map(Class::getName)
-                .toArray(String[]::new);
+            .map(Class::getName)
+            .toArray(String[]::new);
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
     }
 
@@ -114,27 +115,91 @@ public class MethodDescriptor {
     private boolean needWrap() {
         if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
             return true;
-        } else if ($ECHO.equals(methodName)) {
-            return true;
-        } else {
-            if ((rpcType != RpcType.SERVER_STREAM && parameterClasses.length != 1) || parameterClasses[0] == null) {
-                return true;
-            }
-
-            Class<?> clazz = parameterClasses[0];
-            while (clazz != Object.class && clazz != null) {
-                Class<?>[] interfaces = clazz.getInterfaces();
-                if (interfaces.length > 0) {
-                    for (Class<?> clazzInterface : interfaces) {
-                        if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
-                            return false;
-                        }
-                    }
-                }
-                clazz = clazz.getSuperclass();
-            }
+        }
+        if ($ECHO.equals(methodName)) {
             return true;
         }
+        boolean returnClassProtobuf = isProtobufClass(returnClass);
+        if (parameterClasses.length == 0) {
+            return !returnClassProtobuf;
+        }
+        int protobufParameterCount = 0;
+        int javaParameterCount = 0;
+        int streamParameterCount = 0;
+        boolean secondParameterStream = false;
+        for (int i = 0; i < parameterClasses.length; i++) {
+            Class<?> parameterClass = parameterClasses[i];
+            if (isProtobufClass(parameterClass)) {
+                protobufParameterCount++;
+            } else {
+                if (isStreamType(parameterClass)) {
+                    if (i == 1) {
+                        secondParameterStream = true;
+                    }
+                    streamParameterCount++;
+                } else {
+                    javaParameterCount++;
+                }
+            }
+        }
+        if (streamParameterCount > 1) {
+            throw new IllegalStateException("method params error method=" + methodName);
+        }
+        if (protobufParameterCount >= 2) {
+            throw new IllegalStateException("method params error method=" + methodName);
+        }
+        if (streamParameterCount == 1) {
+            if (javaParameterCount + protobufParameterCount > 1) {
+                throw new IllegalStateException("method params error method=" + methodName);
+            }
+            if (!secondParameterStream) {
+                throw new IllegalStateException("method params error method=" + methodName);
+            }
+        }
+        if (isStream()) {
+            if (RpcType.SERVER_STREAM == rpcType) {
+                if (!secondParameterStream) {
+                    throw new IllegalStateException("method params error method=" + methodName);
+                }
+            }
+            if (returnClassProtobuf) {
+                if (javaParameterCount > 0) {
+                    throw new IllegalStateException("method params error method=" + methodName);
+                }
+            } else {
+                if (protobufParameterCount > 0) {
+                    throw new IllegalStateException("method params error method=" + methodName);
+                }
+            }
+        } else {
+            if (streamParameterCount > 0) {
+                throw new IllegalStateException("method params error method=" + methodName);
+            }
+            if (protobufParameterCount > 0 && returnClassProtobuf) {
+                return false;
+            }
+            if (protobufParameterCount <= 0 && !returnClassProtobuf) {
+                return true;
+            }
+            throw new IllegalStateException("method params error method=" + methodName);
+        }
+        return javaParameterCount > 0;
+    }
+
+
+    public boolean isProtobufClass(Class<?> clazz) {
+        while (clazz != Object.class && clazz != null) {
+            Class<?>[] interfaces = clazz.getInterfaces();
+            if (interfaces.length > 0) {
+                for (Class<?> clazzInterface : interfaces) {
+                    if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
+                        return true;
+                    }
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return false;
     }
 
     public boolean matchParams(String params) {
