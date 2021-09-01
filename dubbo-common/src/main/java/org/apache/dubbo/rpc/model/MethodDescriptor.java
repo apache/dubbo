@@ -40,6 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE
 public class MethodDescriptor {
 
     private static final String GRPC_ASYNC_RETURN_CLASS = "com.google.common.util.concurrent.ListenableFuture";
+    private static final String TRI_ASYNC_RETURN_CLASS = "java.util.concurrent.CompletableFuture";
     private static final String GRPC_STREAM_CLASS = "io.grpc.stub.StreamObserver";
 
     private static final Logger logger = LoggerFactory.getLogger(MethodDescriptor.class);
@@ -187,6 +188,17 @@ public class MethodDescriptor {
             }
             if (GRPC_ASYNC_RETURN_CLASS.equalsIgnoreCase(returnClass.getName()) && protobufParameterCount == 1) {
                 return false;
+            }
+            if (TRI_ASYNC_RETURN_CLASS.equalsIgnoreCase(returnClass.getName())) {
+                Class<?> actualReturnClass =
+                    (Class<?>) ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0];
+                boolean actualReturnClassProtobuf = isProtobufClass(actualReturnClass);
+                if (actualReturnClassProtobuf && protobufParameterCount == 1) {
+                    return false;
+                }
+                if (!actualReturnClassProtobuf && protobufParameterCount == 0) {
+                    return true;
+                }
             }
             throw new IllegalStateException("method params error method=" + methodName);
         }
