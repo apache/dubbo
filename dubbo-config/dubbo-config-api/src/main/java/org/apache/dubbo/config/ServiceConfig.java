@@ -244,7 +244,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             try {
                 doExport();
             } catch (Exception e) {
-                logger.error(e);
+                logger.error("Failed to export service config: " + interfaceName, e);
             }
         }, getDelay(), TimeUnit.MILLISECONDS);
     }
