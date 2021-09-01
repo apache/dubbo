@@ -64,7 +64,7 @@ public class AsyncRpcResult implements Result {
     public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
         this.responseFuture = future;
         this.invocation = invocation;
-        this.storedContext = RpcContext.getContext();
+        this.storedContext = RpcContext.getContextAndSaveAsyncConsumerUrl(this);
         this.storedServerContext = RpcContext.getServerContext();
     }
 
@@ -289,7 +289,7 @@ public class AsyncRpcResult implements Result {
     private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
         tmpContext = RpcContext.getContext();
         tmpServerContext = RpcContext.getServerContext();
-        RpcContext.restoreContext(storedContext);
+        RpcContext.restoreContextAndSetAsyncConsumerUrl(storedContext, this);
         RpcContext.restoreServerContext(storedServerContext);
     };
 

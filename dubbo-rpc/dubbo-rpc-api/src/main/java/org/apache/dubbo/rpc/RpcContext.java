@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -74,6 +75,18 @@ public class RpcContext {
             return new RpcContext();
         }
     };
+
+    /**
+     * the consumer url of async rpc, it will be reset at each callback process begining.
+     */
+    private static ThreadLocal<URL> asyncConsumerUrl = null;
+
+    /**
+     * the map that saved async rpc consumer urls,
+     * the async rpc consumer url will be put into the map at each asyncRpcResult creation,
+     * the saved url will be moved to the thread local variable asyncConsumerUrl at each callback process begining.
+     */
+    private Map<AsyncRpcResult, URL> asyncRpcConsumerUrls = new ConcurrentHashMap<AsyncRpcResult, URL>();
 
     protected final Map<String, Object> attachments = new HashMap<>();
     private final Map<String, Object> values = new HashMap<String, Object>();
@@ -855,5 +868,55 @@ public class RpcContext {
     public static void setRpcContext(URL url) {
         RpcContext rpcContext = RpcContext.getContext();
         rpcContext.setConsumerUrl(url);
+    }
+
+    /**
+     * save async rpc consumer url and return rpc context of the current thread,
+     * it will be called at each asyncRpcResult creation.
+     * @param the asyncRpcResult that is been creating
+     * @return rpc context of the current thread
+     */
+    public static RpcContext getContextAndSaveAsyncConsumerUrl(AsyncRpcResult asyncRpcResult) {
+        RpcContext rpcContext = LOCAL.get();
+        // don't save at provide side: consumer Url is null at provide side  
+        if (rpcContext.consumerUrl != null) {
+            rpcContext.asyncRpcConsumerUrls.put(asyncRpcResult, rpcContext.consumerUrl);
+        }
+        return rpcContext;
+    }
+
+    /**
+     * restore async rpc context and set async consumer url local variable for the current thread,
+     * it will be called at each callback process begining.
+     * @param oldContext
+     * @param asyncRpcResult
+     */
+    public static void restoreContextAndSetAsyncConsumerUrl(RpcContext oldContext, AsyncRpcResult asyncRpcResult) {
+        LOCAL.set(oldContext);
+        // remove the saved conumer url item from the map
+        URL consumerUrl = oldContext.asyncRpcConsumerUrls.remove(asyncRpcResult);
+        // don't set async consumer url at provide side: consumer url is null at provide side
+        if (consumerUrl != null) {
+            //  if the current thread's local variable asyncConsumerUrl not existed
+            if (asyncConsumerUrl == null) {
+                // only create once
+                asyncConsumerUrl = new ThreadLocal<URL>();
+            }
+            // set async consumer url of the current thread
+            asyncConsumerUrl.set(consumerUrl);
+        }
+    }
+
+    /**
+     * get async rpc consumer url for onreturn / onthrow callback method
+     * @return  consumer url of aysnc rpc
+     * @throws  IllegalStateException
+     *          if used outside of onreturn / onthrow callback method
+     */
+    public static URL getAsyncConsumerUrl() {
+        if (asyncConsumerUrl == null) {
+            throw new IllegalStateException("getAsyncConsumerUrl() could only be used in onreturn or onthrow callback method!"); 
+        }
+        return asyncConsumerUrl.get();
     }
 }
