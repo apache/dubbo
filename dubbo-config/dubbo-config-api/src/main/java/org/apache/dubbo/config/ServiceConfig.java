@@ -226,7 +226,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
 
             if (shouldDelay()) {
-                DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
+                doDelayExport();
             } else {
                 doExport();
             }
@@ -235,6 +235,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 this.bootstrap.start();
             }
         }
+    }
+
+    protected void doDelayExport() {
+        DELAY_EXPORT_EXECUTOR.schedule(() -> {
+            try {
+                doExport();
+            } catch (Exception e) {
+                logger.error("Failed to export service config: " + interfaceName, e);
+            }
+        }, getDelay(), TimeUnit.MILLISECONDS);
     }
 
     protected void exported() {
