@@ -185,6 +185,7 @@ public class DubboBootstrapMultiInstanceTest {
             Assertions.assertSame(moduleModels.get(0), applicationModel.getInternalModule());
             Assertions.assertSame(moduleModels.get(1), serviceConfig1.getScopeModel());
             Assertions.assertSame(moduleModels.get(2), serviceConfig2.getScopeModel());
+            Assertions.assertNotSame(applicationModel.getDefaultModule(), applicationModel.getInternalModule());
 
             providerBootstrap.start();
 

@@ -28,11 +28,11 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.spring.registrycenter.ZooKeeperServer;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.config.spring.registrycenter.ZooKeeperServer;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -69,8 +69,8 @@ public class SpringBootMultipleConfigPropsTest {
 
     @BeforeAll
     public static void beforeAll() {
-        ZooKeeperServer.start();
         DubboBootstrap.reset();
+        ZooKeeperServer.start();
     }
 
     @AfterAll
