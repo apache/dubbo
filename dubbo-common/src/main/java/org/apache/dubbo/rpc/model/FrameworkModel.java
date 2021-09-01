@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
@@ -34,11 +35,34 @@ public class FrameworkModel extends ScopeModel {
 
     private volatile static FrameworkModel defaultInstance;
 
+    private static List<FrameworkModel> allInstances = Collections.synchronizedList(new ArrayList<>());
+
     private List<ApplicationModel> applicationModels = Collections.synchronizedList(new ArrayList<>());
+
+    private FrameworkServiceRepository serviceRepository;
+
+    private AtomicBoolean inited = new AtomicBoolean(false);
+
 
     public FrameworkModel() {
         super(null, new ExtensionDirector(null, ExtensionScope.FRAMEWORK));
-        postProcessAfterCreated();
+        serviceRepository = new FrameworkServiceRepository(this);
+        allInstances.add(this);
+        initialize();
+    }
+
+    private void initialize() {
+        if (inited.compareAndSet(false, true)) {
+            postProcessAfterCreated();
+        }
+    }
+
+    public void destroy() {
+        //TODO destroy framework model
+        allInstances.remove(this);
+        if (defaultInstance == this) {
+            defaultInstance = null;
+        }
     }
 
     public static FrameworkModel defaultModel() {
@@ -50,6 +74,16 @@ public class FrameworkModel extends ScopeModel {
             }
         }
         return defaultInstance;
+    }
+
+    public static List<FrameworkModel> getAllInstances() {
+        return Collections.unmodifiableList(allInstances);
+    }
+
+    public static void destroyAll() {
+        for (FrameworkModel frameworkModel : new ArrayList<>(allInstances)) {
+            frameworkModel.destroy();
+        }
     }
 
     public void addApplication(ApplicationModel model) {
@@ -64,6 +98,10 @@ public class FrameworkModel extends ScopeModel {
 
     public List<ApplicationModel> getApplicationModels() {
         return applicationModels;
+    }
+
+    public FrameworkServiceRepository getServiceRepository() {
+        return serviceRepository;
     }
 
     @Override

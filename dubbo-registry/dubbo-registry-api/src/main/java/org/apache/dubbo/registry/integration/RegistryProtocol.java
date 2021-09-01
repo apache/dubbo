@@ -162,6 +162,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
     }
 
+    public RegistryProtocol() {
+    }
+
     @Override
     public void setFrameworkModel(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -574,11 +577,16 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     @Override
     public void destroy() {
-        List<RegistryProtocolListener> listeners = frameworkModel.getExtensionLoader(RegistryProtocolListener.class)
-            .getLoadedExtensionInstances();
-        if (CollectionUtils.isNotEmpty(listeners)) {
-            for (RegistryProtocolListener listener : listeners) {
-                listener.onDestroy();
+        //TODO MULTI_INSTANCES: destroy registry protocol
+
+        // invoke application scope spi
+        for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
+            List<RegistryProtocolListener> listeners = applicationModel.getExtensionLoader(RegistryProtocolListener.class)
+                .getLoadedExtensionInstances();
+            if (CollectionUtils.isNotEmpty(listeners)) {
+                for (RegistryProtocolListener listener : listeners) {
+                    listener.onDestroy();
+                }
             }
         }
 
@@ -588,9 +596,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
         bounds.clear();
 
-        //TODO  destroy registry protocol
+        //TODO MULTI_INSTANCES: invoke GovernanceRuleRepository removeListener
 //        if (applicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-//            frameworkModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+//            applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
 //                .removeListener(applicationModel.getName() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
 //        }
     }

@@ -16,155 +16,68 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.context.FrameworkExt;
-import org.apache.dubbo.common.context.LifecycleAdapter;
-import org.apache.dubbo.common.extension.ExtensionAccessor;
-import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.ReferenceConfigBase;
-import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.BaseServiceMetadata.interfaceFromServiceKey;
-import static org.apache.dubbo.common.BaseServiceMetadata.versionFromServiceKey;
-
-public class ServiceRepository extends LifecycleAdapter implements FrameworkExt, ExtensionAccessorAware {
+public class ServiceRepository {
 
     public static final String NAME = "repository";
 
-    // services
-    private ConcurrentMap<String, ServiceDescriptor> services = new ConcurrentHashMap<>();
+    private AtomicBoolean inited = new AtomicBoolean(false);
+    private ApplicationModel applicationModel;
 
-    // consumers
-    private ConcurrentMap<String, ConsumerModel> consumers = new ConcurrentHashMap<>();
-
-    // providers
-    private ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
-
-    // useful to find a provider model quickly with serviceInterfaceName:version
-    private ConcurrentMap<String, ProviderModel> providersWithoutGroup = new ConcurrentHashMap<>();
-
-    // useful to find a url quickly with serviceInterfaceName:version
-    private ConcurrentMap<String, Set<URL>> providerUrlsWithoutGroup = new ConcurrentHashMap<>();
-    private ExtensionAccessor extensionAccessor;
-
-    public ServiceRepository() {
+    public ServiceRepository(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        initialize();
     }
 
-    @Override
-    public void initialize() throws IllegalStateException {
-        Set<BuiltinServiceDetector> builtinServices
-            = extensionAccessor.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();
-        if (CollectionUtils.isNotEmpty(builtinServices)) {
-            for (BuiltinServiceDetector service : builtinServices) {
-                registerService(service.getService());
+    private void initialize() {
+        if (inited.compareAndSet(false, true)) {
+            Set<BuiltinServiceDetector> builtinServices
+                = applicationModel.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();
+            if (CollectionUtils.isNotEmpty(builtinServices)) {
+                for (BuiltinServiceDetector service : builtinServices) {
+                    applicationModel.getInternalModule().getServiceRepository().registerService(service.getService());
+                }
             }
         }
     }
 
-    public ServiceDescriptor registerService(Class<?> interfaceClazz) {
-        return services.computeIfAbsent(interfaceClazz.getName(),
-            _k -> new ServiceDescriptor(interfaceClazz));
+    public void destroy() {
+        //TODO destroy application service repository
     }
 
-    /**
-     * See {@link #registerService(Class)}
-     * <p>
-     * we assume:
-     * 1. services with different interfaces are not allowed to have the same path.
-     * 2. services share the same interface but has different group/version can share the same path.
-     * 3. path's default value is the name of the interface.
-     *
-     * @param path
-     * @param interfaceClass
-     * @return
-     */
-    public ServiceDescriptor registerService(String path, Class<?> interfaceClass) {
-        ServiceDescriptor serviceDescriptor = registerService(interfaceClass);
-        // if path is different with interface name, add extra path mapping
-        if (!interfaceClass.getName().equals(path)) {
-            services.putIfAbsent(path, serviceDescriptor);
+    public Collection<ConsumerModel> allConsumerModels() {
+        // aggregate from sub modules
+        List<ConsumerModel> allConsumerModels = new ArrayList<>();
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            allConsumerModels.addAll(moduleModel.getServiceRepository().getReferredServices());
         }
-        return serviceDescriptor;
+        return allConsumerModels;
     }
 
-    public void unregisterService(Class<?> interfaceClazz) {
-        unregisterService(interfaceClazz.getName());
-    }
-
-    public void unregisterService(String path) {
-        services.remove(path);
-    }
-
-    public void registerConsumer(String serviceKey,
-                                 ServiceDescriptor serviceDescriptor,
-                                 ReferenceConfigBase<?> rc,
-                                 Object proxy,
-                                 ServiceMetadata serviceMetadata) {
-        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
-            serviceMetadata, null);
-        consumers.putIfAbsent(serviceKey, consumerModel);
-    }
-
-    public void registerConsumer(ConsumerModel consumerModel) {
-        consumers.putIfAbsent(consumerModel.getServiceKey(), consumerModel);
-    }
-
-    public void reRegisterConsumer(String newServiceKey, String serviceKey) {
-        ConsumerModel consumerModel = consumers.get(serviceKey);
-        consumerModel.setServiceKey(newServiceKey);
-        consumers.putIfAbsent(newServiceKey, consumerModel);
-        consumers.remove(serviceKey);
-
-    }
-
-    public void registerProvider(String serviceKey,
-                                 Object serviceInstance,
-                                 ServiceDescriptor serviceModel,
-                                 ServiceConfigBase<?> serviceConfig,
-                                 ServiceMetadata serviceMetadata) {
-        ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel,
-            serviceConfig, serviceMetadata);
-        providers.putIfAbsent(serviceKey, providerModel);
-        providersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), providerModel);
-    }
-
-    public void registerProvider(ProviderModel providerModel) {
-        providers.putIfAbsent(providerModel.getServiceKey(), providerModel);
-        providersWithoutGroup.putIfAbsent(keyWithoutGroup(providerModel.getServiceKey()), providerModel);
-    }
-
-    private static String keyWithoutGroup(String serviceKey) {
-        String interfaceName = interfaceFromServiceKey(serviceKey);
-        String version = versionFromServiceKey(serviceKey);
-        if (StringUtils.isEmpty(version)) {
-            return interfaceName;
+    public Collection<ProviderModel> allProviderModels() {
+        // aggregate from sub modules
+        List<ProviderModel> allProviderModels = new ArrayList<>();
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            allProviderModels.addAll(moduleModel.getServiceRepository().getExportedServices());
         }
-        return interfaceName + ":" + version;
-    }
-
-    public void reRegisterProvider(String newServiceKey, String serviceKey) {
-        ProviderModel providerModel = providers.get(serviceKey);
-        providerModel.setServiceKey(newServiceKey);
-        providers.putIfAbsent(newServiceKey, providerModel);
-        providers.remove(serviceKey);
-    }
-
-    public List<ServiceDescriptor> getAllServices() {
-        return Collections.unmodifiableList(new ArrayList<>(services.values()));
+        return allProviderModels;
     }
 
     public ServiceDescriptor lookupService(String interfaceName) {
-        return services.get(interfaceName);
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            ServiceDescriptor serviceDescriptor = moduleModel.getServiceRepository().lookupService(interfaceName);
+            if (serviceDescriptor != null) {
+                return serviceDescriptor;
+            }
+        }
+        return null;
     }
 
     public MethodDescriptor lookupMethod(String interfaceName, String methodName) {
@@ -180,55 +93,24 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt,
         return methods.iterator().next();
     }
 
-    public List<ProviderModel> getExportedServices() {
-        return Collections.unmodifiableList(new ArrayList<>(providers.values()));
-    }
-
     public ProviderModel lookupExportedService(String serviceKey) {
-        return providers.get(serviceKey);
-    }
-
-    public ProviderModel lookupExportedServiceWithoutGroup(String key) {
-        return providersWithoutGroup.get(key);
-    }
-
-    public List<ConsumerModel> getReferredServices() {
-        return Collections.unmodifiableList(new ArrayList<>(consumers.values()));
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            ProviderModel providerModel = moduleModel.getServiceRepository().lookupExportedService(serviceKey);
+            if (providerModel != null) {
+                return providerModel;
+            }
+        }
+        return null;
     }
 
     public ConsumerModel lookupReferredService(String serviceKey) {
-        return consumers.get(serviceKey);
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            ConsumerModel consumerModel = moduleModel.getServiceRepository().lookupReferredService(serviceKey);
+            if (consumerModel != null) {
+                return consumerModel;
+            }
+        }
+        return null;
     }
 
-    public void registerProviderUrl(URL url) {
-        providerUrlsWithoutGroup.computeIfAbsent(keyWithoutGroup(url.getServiceKey()), (k) -> new ConcurrentHashSet<>()).add(url);
-    }
-
-    public Set<URL> lookupRegisteredProviderUrlsWithoutGroup(String key) {
-        return providerUrlsWithoutGroup.get(key);
-    }
-
-    @Deprecated
-    public ConcurrentMap<String, Set<URL>> getProviderUrlsWithoutGroup() {
-        return providerUrlsWithoutGroup;
-    }
-
-    @Deprecated
-    public void setProviderUrlsWithoutGroup(ConcurrentMap<String, Set<URL>> providerUrlsWithoutGroup) {
-        this.providerUrlsWithoutGroup = providerUrlsWithoutGroup;
-    }
-
-    @Override
-    public void destroy() throws IllegalStateException {
-        // currently works for unit test
-        services.clear();
-        consumers.clear();
-        providers.clear();
-        providersWithoutGroup.clear();
-    }
-
-    @Override
-    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
-        this.extensionAccessor = extensionAccessor;
-    }
 }

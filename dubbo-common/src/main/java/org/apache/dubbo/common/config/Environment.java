@@ -26,6 +26,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Environment extends LifecycleAdapter implements FrameworkExt {
+public class Environment extends LifecycleAdapter implements FrameworkExt, ScopeModelAware {
     private static final Logger logger = LoggerFactory.getLogger(Environment.class);
 
     public static final String NAME = "environment";
@@ -66,14 +68,20 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     private String localMigrationRule;
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
+    private ApplicationModel applicationModel;
 
     public Environment() {
     }
 
     @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
+    @Override
     public void initialize() throws IllegalStateException {
         if (initialized.compareAndSet(false, true)) {
-            this.propertiesConfiguration = new PropertiesConfiguration();
+            this.propertiesConfiguration = new PropertiesConfiguration(applicationModel);
             this.systemConfiguration = new SystemConfiguration();
             this.environmentConfiguration = new EnvironmentConfiguration();
             this.externalConfiguration = new InmemoryConfiguration("ExternalConfig");

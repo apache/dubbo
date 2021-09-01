@@ -56,7 +56,7 @@ public class BaseOnline implements BaseCommand {
     public boolean online(String servicePattern) {
         boolean hasService = false;
 
-        Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
+        Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
             ServiceMetadata metadata = providerModel.getServiceMetadata();
             if (metadata.getServiceKey().matches(servicePattern) || metadata.getDisplayServiceKey().matches(servicePattern)) {

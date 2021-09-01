@@ -49,6 +49,9 @@ public abstract class ScopeModel implements ExtensionAccessor {
         return parent;
     }
 
+    public void destroy() {
+    }
+
     protected void postProcessAfterCreated() {
         Set<ScopeModelPostProcessor> scopeModelPostProcessors = getExtensionLoader(ScopeModelPostProcessor.class)
             .getSupportedExtensionInstances();

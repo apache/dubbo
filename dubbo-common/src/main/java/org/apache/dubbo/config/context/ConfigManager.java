@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -88,6 +89,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt, Sco
 
     private boolean ignoreDuplicatedInterface = false;
 
+    private ApplicationModel applicationModel;
+
+    private AtomicBoolean inited = new AtomicBoolean(false);
+
     private static Map<String, AtomicInteger> configIdIndexes = new ConcurrentHashMap<>();
 
     private static Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
@@ -106,8 +111,6 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt, Sco
         }
     }
 
-    private ApplicationModel applicationModel;
-
     public ConfigManager() {
     }
 
@@ -118,6 +121,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt, Sco
 
     @Override
     public void initialize() throws IllegalStateException {
+        if (!inited.compareAndSet(false, true)) {
+            return;
+        }
         CompositeConfiguration configuration = applicationModel.getApplicationEnvironment().getConfiguration();
         String configModeStr = (String) configuration.getProperty(DUBBO_CONFIG_MODE);
         try {

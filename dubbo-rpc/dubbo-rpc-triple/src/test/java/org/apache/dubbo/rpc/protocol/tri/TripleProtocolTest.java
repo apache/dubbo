@@ -23,11 +23,11 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -44,8 +44,9 @@ public class TripleProtocolTest {
 
         URL url = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
 
-        ServiceDescriptor serviceDescriptor = ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(IGreeter.class);
-        ApplicationModel.defaultModel().getApplicationServiceRepository().registerProvider(
+        ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        ServiceDescriptor serviceDescriptor = serviceRepository.registerService(IGreeter.class);
+        serviceRepository.registerProvider(
             url.getServiceKey(),
             serviceImpl,
             serviceDescriptor,
@@ -59,6 +60,6 @@ public class TripleProtocolTest {
         Assertions.assertEquals("hello world", serviceImpl.echo("hello world"));
 
         // resource recycle.
-        ApplicationModel.defaultModel().getApplicationServiceRepository().destroy();
+        serviceRepository.destroy();
     }
 }

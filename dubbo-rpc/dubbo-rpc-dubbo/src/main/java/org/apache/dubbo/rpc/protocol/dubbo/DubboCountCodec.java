@@ -25,15 +25,24 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.io.IOException;
 
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
 import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 
-public final class DubboCountCodec implements Codec2 {
+public final class DubboCountCodec implements Codec2, ScopeModelAware {
 
     private DubboCodec codec = new DubboCodec();
+    private FrameworkModel frameworkModel;
+
+    @Override
+    public void setFrameworkModel(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+        codec.setFrameworkModel(frameworkModel);
+    }
 
     @Override
     public void encode(Channel channel, ChannelBuffer buffer, Object msg) throws IOException {
