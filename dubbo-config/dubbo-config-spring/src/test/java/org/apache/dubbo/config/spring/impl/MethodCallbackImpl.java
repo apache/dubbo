@@ -75,19 +75,27 @@ public class MethodCallbackImpl implements MethodCallback {
             // use getConsumerUrl() at oninvoke: because the correct asyncConsumerUrl is not set yet.
             switch (RpcContext.getContext().getConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                onInvoke1 += "dubbo invoke success";
+                synchronized (onInvoke1) { 
+                    onInvoke1 += "dubbo invoke success";
+                }
                 break;
             case "ref-2":
-                onInvoke2 += "dubbo invoke success(2)";
+                synchronized (onInvoke2) {
+                    onInvoke2 += "dubbo invoke success(2)";
+                }
                 break;
             }
         } catch (Exception e) {
             switch (RpcContext.getContext().getConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                onInvoke1 += e.toString();
+                synchronized (onInvoke1) {
+                    onInvoke1 += e.toString();
+                }
                 break;
             case "ref-2":
-                onInvoke2 += e.toString();
+                synchronized (onInvoke2) {
+                    onInvoke2 += e.toString();
+                }
                 break;
             }
             throw e;
@@ -103,19 +111,27 @@ public class MethodCallbackImpl implements MethodCallback {
             // use getAsyncConsumerUrl() at onreturn: because the consumerUrl will be overridden by the following invocations of the same thread.
             switch (RpcContext.getAsyncConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                onReturn1 += "dubbo return success";
+                synchronized (onReturn1) {
+                    onReturn1 += "dubbo return success";
+                }
                 break;
             case "ref-2":
-                onReturn2 += "dubbo return success(2)";
+                synchronized (onReturn2) {
+                    onReturn2 += "dubbo return success(2)";
+                }
                 break;
             }
         } catch (Exception e) {
             switch (RpcContext.getAsyncConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                onReturn1 += e.toString();
+                synchronized (onReturn1) {
+                    onReturn1 += e.toString();
+                }
                 break;
             case "ref-2":
-                onReturn2 += e.toString();
+                synchronized (onReturn2) {
+                    onReturn2 += e.toString();
+                }
                 break;
             }
             throw e;
@@ -133,19 +149,27 @@ public class MethodCallbackImpl implements MethodCallback {
             // use getAsyncConsumerUrl() at onthrow: because the consumerUrl will be overridden by the following invocations of the same thread.
             switch (RpcContext.getAsyncConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                onThrow1 += "dubbo throw exception";
+                synchronized (onThrow1) {
+                    onThrow1 += "dubbo throw exception";
+                }
                 break;
             case "ref-2":
-                onThrow2 += "dubbo throw exception(2)";
+                synchronized (onThrow2) {
+                    onThrow2 += "dubbo throw exception(2)";
+                }
                 break;
             }
         } catch (Exception e) {
             switch (RpcContext.getAsyncConsumerUrl().getParameter("refId")) {
             case "ref-1":
-                onThrow1 += e.toString();
+                synchronized (onThrow1) {
+                    onThrow1 += e.toString();
+                }
                 break;
             case "ref-2":
-                onThrow2 += e.toString();
+                synchronized (onThrow2) {
+                    onThrow2 += e.toString();
+                }
                 break;
             }
             throw e;

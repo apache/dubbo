@@ -85,19 +85,25 @@ public class MethodConfigCallbackTest {
         notify.reset();
     }
 
-    @RepeatedTest(2)
+    @RepeatedTest(1)
     @Test
     public void testMethodAnnotationCallBack() {
-        int callCntForEachService = 10;
+        int callCntForEachService = 20;
+        // rpcContext that is still been using in callback process will be overridden by the following invocations of the same thread.
+        new Thread(() -> {            
+            for (int i = 0; i < callCntForEachService; i++) {
+                helloServiceMethodCallBack.sayHello("dubbo");
+                helloServiceMethodCallBack2.sayHello("dubbo(2)");
+            }
+        }).start();
         new Thread(() -> {
-            // rpcContext that is still been using in callback process will be overridden by the following invocations of the same thread.
             for (int i = 0; i < callCntForEachService; i++) {
                 helloServiceMethodCallBack.sayHello("dubbo");
                 helloServiceMethodCallBack2.sayHello("dubbo(2)");
             }
         }).start();
         int i = 0;
-        while (notify.getCnt() < (2 * callCntForEachService) && i < 50) {
+        while (notify.getCnt() < (4 * callCntForEachService) && i < 50) {
             // wait for all async callback processes finished or timeout
             try {
                 i++;
@@ -110,7 +116,7 @@ public class MethodConfigCallbackTest {
         String invoke2 = "";
         String result1 = "";
         String result2 = "";
-        for (i = 0; i < callCntForEachService; i++) {
+        for (i = 0; i < 2 * callCntForEachService; i++) {
             invoke1 += "dubbo invoke success";
             invoke2 += "dubbo invoke success(2)";
             result1 += "dubbo return success";

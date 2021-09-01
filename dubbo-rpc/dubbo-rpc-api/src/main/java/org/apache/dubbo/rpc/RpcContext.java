@@ -77,14 +77,14 @@ public class RpcContext {
     };
 
     /**
-     * the consumer url of async rpc, it will be set at each callback process begining.
+     * the consumer url of async rpc, it will be set at each callback process beginning.
      */
     private static ThreadLocal<URL> asyncConsumerUrl = null;
 
     /**
      * the map that saved async rpc consumer urls,
-     * the async rpc consumer url will be put into the map at each asyncRpcResult creation,
-     * the saved url will be moved to the thread local variable asyncConsumerUrl at each callback process begining.
+     * the async rpc consumer url will be put into the map at each asyncRpcResult creation, the corresponding url
+     * will be moved from the map to the thread local variable asyncConsumerUrl at each callback process beginning.
      */
     private Map<AsyncRpcResult, URL> asyncRpcConsumerUrls = new ConcurrentHashMap<AsyncRpcResult, URL>();
 
@@ -873,7 +873,7 @@ public class RpcContext {
     /**
      * save async rpc consumer url and return rpc context of the current thread,
      * it will be called at each asyncRpcResult creation.
-     * @param the asyncRpcResult that is been creating
+     * @param asyncRpcResult the asyncRpcResult that is been creating
      * @return the rpc context of the current thread
      */
     public static RpcContext getContextAndSaveAsyncConsumerUrl(AsyncRpcResult asyncRpcResult) {
@@ -887,13 +887,13 @@ public class RpcContext {
 
     /**
      * restore rpc context and set local variable async consumer url for the current thread,
-     * it will be called at each callback process begining.
+     * it will be called at each callback process beginning.
      * @param oldContext
      * @param asyncRpcResult
      */
     public static void restoreContextAndSetAsyncConsumerUrl(RpcContext oldContext, AsyncRpcResult asyncRpcResult) {
         LOCAL.set(oldContext);
-        // remove the saved consumer url item from the map
+        // get the corresponding consumer url and remove it from the map
         URL consumerUrl = oldContext.asyncRpcConsumerUrls.remove(asyncRpcResult);
         // don't set async consumer url at provide side: consumer url is null at provide side
         if (consumerUrl != null) {
@@ -909,7 +909,7 @@ public class RpcContext {
 
     /**
      * get the async rpc consumer url for onreturn / onthrow method
-     * @return  the aysnc rpc consumer url
+     * @return  the async rpc consumer url
      * @throws  IllegalStateException
      *          if it is called outside of onreturn / onthrow method
      */
