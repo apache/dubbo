@@ -40,8 +40,7 @@ public enum TripleHeaderEnum {
     CONSUMER_APP_NAME_KEY("tri-consumer-appname"),
     UNIT_INFO_KEY("tri-unit-info"),
     SERVICE_VERSION("tri-service-version"),
-    SERVICE_GROUP("tri-service-group"),
-    EXCEPTION_TW_BIN("tri-exception-tw-bin");
+    SERVICE_GROUP("tri-service-group");
 
     static Map<String, TripleHeaderEnum> enumMap = new HashMap<>();
 

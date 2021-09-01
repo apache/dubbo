@@ -29,7 +29,6 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
-import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -245,7 +244,7 @@ public abstract class AbstractStream implements Stream {
             return metadata;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
-                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable))
+                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable,10))
                 // can not use now
                 // .setDetail(throwable.getMessage())
                 .build();
@@ -253,21 +252,6 @@ public abstract class AbstractStream implements Stream {
         Status status = builder.build();
         metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
                 TripleUtil.encodeBase64ASCII(status.toByteArray()));
-        // only wrapper mode support exception serialization
-        if (getMethodDescriptor() != null && !getMethodDescriptor().isNeedWrap()) {
-            return metadata;
-        }
-        try {
-            TripleWrapper.TripleExceptionWrapper exceptionWrapper = TripleUtil.wrapException(getUrl(), throwable,
-                    getSerializeType(), getMultipleSerialization());
-            String exceptionStr = TripleUtil.encodeBase64ASCII(exceptionWrapper.toByteArray());
-            if (!TripleUtil.overEachHeaderListSize(exceptionStr)) {
-                metadata.put(TripleHeaderEnum.EXCEPTION_TW_BIN.getHeader(), exceptionStr);
-            }
-        } catch (Throwable t) {
-            LOGGER.warn("Encode triple exception to trailers failed", t);
-        }
-
         return metadata;
     }
 
