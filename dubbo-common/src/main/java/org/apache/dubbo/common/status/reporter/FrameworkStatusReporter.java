@@ -68,11 +68,10 @@ public interface FrameworkStatusReporter {
     }
 
     static String createRegistrationReport(String status) {
-        return "{\"application\":\"" +
-                ApplicationModel.getName() +
-                "\",\"status\":\"" +
-                status +
-                "\"}";
+        HashMap<String, String> registration = new HashMap<>();
+        registration.put("application", ApplicationModel.getName() );
+        registration.put("status", status);
+        return gson.toJson(registration);
     }
 
     static String createConsumptionReport(String interfaceName, String version, String group, String status) {
