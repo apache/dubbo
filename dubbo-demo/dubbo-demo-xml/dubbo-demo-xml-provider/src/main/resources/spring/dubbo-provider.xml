@@ -42,7 +42,7 @@
                    ref="greetingService" protocol="dubbo"/>
     <dubbo:service delay="5000" version="1.0.0" timeout="5000" interface="org.apache.dubbo.demo.RestDemoService"
                    ref="restDemoService" protocol="rest"/>
-    <dubbo:service delay="5000" version="1.0.0" timeout="5000" interface="org.apache.dubbo.demo.TripleService" registry="registry1"
+    <dubbo:service delay="5000" version="1.0.0" timeout="5000" interface="org.apache.dubbo.demo.TripleService"
                    ref="tripleService" protocol="tri"/>
 
 </beans>
