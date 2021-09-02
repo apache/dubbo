@@ -53,14 +53,20 @@ import static org.apache.dubbo.rpc.cluster.Constants.STATE_ROUTER_KEY;
 public class RouterChain<T> {
     private static final Logger logger = LoggerFactory.getLogger(RouterChain.class);
 
-    // full list of addresses from registry, classified by method name.
+    /**
+     * full list of addresses from registry, classified by method name.
+     */
     private volatile List<Invoker<T>> invokers = Collections.emptyList();
 
-    // containing all routers, reconstruct every time 'route://' urls change.
+    /**
+     * containing all routers, reconstruct every time 'route://' urls change.
+     */
     private volatile List<Router> routers = Collections.emptyList();
 
-    // Fixed router instances: ConfigConditionRouter, TagRouter, e.g., the rule for each instance may change but the
-    // instance will never delete or recreate.
+    /**
+     * Fixed router instances: ConfigConditionRouter, TagRouter, e.g.,
+     * the rule for each instance may change but the instance will never delete or recreate.
+     */
     private List<Router> builtinRouters = Collections.emptyList();
 
     private List<StateRouter> builtinStateRouters = Collections.emptyList();

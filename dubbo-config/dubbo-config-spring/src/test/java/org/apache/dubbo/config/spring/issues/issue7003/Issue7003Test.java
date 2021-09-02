@@ -22,8 +22,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterAll;
@@ -50,11 +50,11 @@ import java.util.Map;
 @PropertySource("classpath:/META-INF/issues/issue7003/config.properties")
 public class Issue7003Test {
 
-    private static SingleRegistryCenter singleRegistryCenter;
+    private static RegistryCenter singleRegistryCenter;
 
     @BeforeAll
     public static void beforeAll() {
-        singleRegistryCenter = new DefaultSingleRegistryCenter();
+        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
         singleRegistryCenter.startup();
         DubboBootstrap.reset();
     }

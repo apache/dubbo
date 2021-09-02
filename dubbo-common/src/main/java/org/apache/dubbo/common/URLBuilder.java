@@ -164,6 +164,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return this;
     }
 
+    @Override
     public URLBuilder setUsername(String username) {
         this.username = username;
         return this;
@@ -174,16 +175,19 @@ public final class URLBuilder extends ServiceConfigURL {
         return this;
     }
 
+    @Override
     public URLBuilder setHost(String host) {
         this.host = host;
         return this;
     }
 
+    @Override
     public URLBuilder setPort(int port) {
         this.port = port;
         return this;
     }
 
+    @Override
     public URLBuilder setAddress(String address) {
         int i = address.lastIndexOf(':');
         String host;
@@ -199,6 +203,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return this;
     }
 
+    @Override
     public URLBuilder setPath(String path) {
         this.path = path;
         return this;
@@ -210,6 +215,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return this;
     }
 
+    @Override
     public URLBuilder addParameterAndEncoded(String key, String value) {
         if (StringUtils.isEmpty(value)) {
             return this;
@@ -287,6 +293,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return this;
     }
 
+    @Override
     public URLBuilder addParameterIfAbsent(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
@@ -309,6 +316,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return this;
     }
 
+    @Override
     public URLBuilder addParameters(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
@@ -341,6 +349,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return this;
     }
 
+    @Override
     public URLBuilder addParametersIfAbsent(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
@@ -351,6 +360,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return this;
     }
 
+    @Override
     public URLBuilder addParameters(String... pairs) {
         if (pairs == null || pairs.length == 0) {
             return this;
@@ -366,6 +376,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return addParameters(map);
     }
 
+    @Override
     public URLBuilder addParameterString(String query) {
         if (StringUtils.isEmpty(query)) {
             return this;
@@ -373,6 +384,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return addParameters(StringUtils.parseQueryString(query));
     }
 
+    @Override
     public URLBuilder removeParameter(String key) {
         if (StringUtils.isEmpty(key)) {
             return this;
@@ -380,6 +392,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return removeParameters(key);
     }
 
+    @Override
     public URLBuilder removeParameters(Collection<String> keys) {
         if (CollectionUtils.isEmpty(keys)) {
             return this;
@@ -387,6 +400,7 @@ public final class URLBuilder extends ServiceConfigURL {
         return removeParameters(keys.toArray(new String[0]));
     }
 
+    @Override
     public URLBuilder removeParameters(String... keys) {
         if (keys == null || keys.length == 0) {
             return this;
@@ -397,16 +411,19 @@ public final class URLBuilder extends ServiceConfigURL {
         return this;
     }
 
+    @Override
     public URLBuilder clearParameters() {
         parameters.clear();
         return this;
     }
 
+    @Override
     public boolean hasParameter(String key) {
         String value = getParameter(key);
         return StringUtils.isNotEmpty(value);
     }
 
+    @Override
     public boolean hasMethodParameter(String method, String key) {
         if (method == null) {
             String suffix = "." + key;

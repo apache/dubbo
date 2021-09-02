@@ -42,7 +42,7 @@ import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 /**
  * InjvmInvoker
  */
-class InjvmInvoker<T> extends AbstractInvoker<T> {
+public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final String key;
 

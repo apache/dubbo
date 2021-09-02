@@ -26,22 +26,30 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
+
 public abstract class AbstractMetadataReportFactory implements MetadataReportFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractMetadataReportFactory.class);
     private static final String EXPORT_KEY = "export";
     private static final String REFER_KEY = "refer";
 
-    // The lock for the acquisition process of the registry
+    /**
+     * The lock for the acquisition process of the registry
+     */
     private static final ReentrantLock LOCK = new ReentrantLock();
 
-    // Registry Collection Map<metadataAddress, MetadataReport>
-    private static final Map<String, MetadataReport> SERVICE_STORE_MAP = new ConcurrentHashMap<String, MetadataReport>();
+    /**
+     * Registry Collection Map<metadataAddress, MetadataReport>
+     */
+    private static final Map<String, MetadataReport> SERVICE_STORE_MAP = new ConcurrentHashMap<>();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMetadataReportFactory.class);
 
     @Override
     public MetadataReport getMetadataReport(URL url) {
         url = url.setPath(MetadataReport.class.getName())
-                .removeParameters(EXPORT_KEY, REFER_KEY);
+            .removeParameters(EXPORT_KEY, REFER_KEY);
         String key = url.toServiceString();
 
         MetadataReport metadataReport = SERVICE_STORE_MAP.get(key);
@@ -56,11 +64,23 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
             if (metadataReport != null) {
                 return metadataReport;
             }
-            metadataReport = createMetadataReport(url);
-            if (metadataReport == null) {
+            boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
+            try {
+                metadataReport = createMetadataReport(url);
+            } catch (Exception e) {
+                if (!check) {
+                    LOGGER.warn("The metadata reporter failed to initialize", e);
+                } else {
+                    throw e;
+                }
+            }
+
+            if (check && metadataReport == null) {
                 throw new IllegalStateException("Can not create metadata Report " + url);
             }
-            SERVICE_STORE_MAP.put(key, metadataReport);
+            if (metadataReport != null) {
+                SERVICE_STORE_MAP.put(key, metadataReport);
+            }
             return metadataReport;
         } finally {
             // Release the lock

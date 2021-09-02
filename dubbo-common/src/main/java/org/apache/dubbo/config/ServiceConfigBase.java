@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -102,6 +103,14 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             protocols.add(convertProviderToProtocol(provider));
         }
         return protocols;
+    }
+
+    @Override
+    public void setScopeModel(ScopeModel scopeModel) {
+        super.setScopeModel(scopeModel);
+        if (this.provider != null && this.provider.getScopeModel() != scopeModel) {
+            this.provider.setScopeModel(scopeModel);
+        }
     }
 
     @Deprecated

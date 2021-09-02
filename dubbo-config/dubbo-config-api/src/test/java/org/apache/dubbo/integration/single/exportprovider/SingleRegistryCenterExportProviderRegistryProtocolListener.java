@@ -24,10 +24,12 @@ import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
+import static org.apache.dubbo.integration.Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER;
+
 /**
  * The {@link RegistryProtocolListener} for {@link SingleRegistryCenterExportProviderService}
  */
-@Activate(order = 100)
+@Activate(order = 100, value = SINGLE_CONFIG_CENTER_EXPORT_PROVIDER)
 public class SingleRegistryCenterExportProviderRegistryProtocolListener implements RegistryProtocolListener {
 
     private boolean exported = false;

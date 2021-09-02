@@ -16,20 +16,26 @@
  */
 package org.apache.dubbo.integration.single.exportprovider;
 
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
+import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
-import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
-import org.apache.dubbo.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.registrycenter.RegistryCenter;
+import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +44,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import static org.apache.dubbo.integration.Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
 /**
@@ -52,11 +61,6 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
      * Define the provider application name.
      */
     private static String PROVIDER_APPLICATION_NAME = "single-registry-center-for-export-provider";
-
-    /**
-     * The name for getting the specified instance, which is loaded using SPI.
-     */
-    private static String SPI_NAME = "singleConfigCenterExportProvider";
 
     /**
      * Define the protocol's name.
@@ -75,7 +79,7 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
     /**
      * Define a registry center.
      */
-    private SingleRegistryCenter registryCenter;
+    private RegistryCenter registryCenter;
 
     /**
      * Define a {@link RegistryProtocolListener} instance.
@@ -101,7 +105,7 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        registryCenter = new DefaultSingleRegistryCenter();
+        registryCenter = new ZookeeperMultipleRegistryCenter();
         registryCenter.startup();
         // initialize service config
         serviceConfig = new ServiceConfig<>();
@@ -109,12 +113,21 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
         serviceConfig.setRef(new SingleRegistryCenterExportProviderServiceImpl());
         serviceConfig.setAsync(false);
 
-        // initailize bootstrap
+        // initialize bootstrap
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .registry(registryCenter.getRegistryConfig())
             .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
+        RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
+
+        RegistryConfig registryConfig = new RegistryConfig(String.format("%s://%s:%s",
+            instance.getType(),
+            instance.getHostname(),
+            instance.getPort()));
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("registry.protocol.listener", "singleConfigCenterExportProvider");
+        registryConfig.updateParameters(parameters);
+        DubboBootstrap.getInstance().registry(registryConfig);
     }
 
     /**
@@ -129,16 +142,16 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
     private void beforeExport() {
         registryProtocolListener = (SingleRegistryCenterExportProviderRegistryProtocolListener) ExtensionLoader
             .getExtensionLoader(RegistryProtocolListener.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         exporterListener = (SingleRegistryCenterExportProviderExporterListener) ExtensionLoader
             .getExtensionLoader(ExporterListener.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         filter = (SingleRegistryCenterExportProviderFilter) ExtensionLoader
             .getExtensionLoader(Filter.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         serviceListener = (SingleRegistryCenterExportProviderServiceListener) ExtensionLoader
             .getExtensionLoader(ServiceListener.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         // ---------------checkpoints--------------- //
         // ServiceConfig isn't exported
         Assertions.assertFalse(serviceConfig.isExported());
@@ -177,6 +190,7 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
      *     <li>The exported service is SingleRegistryCenterExportProviderService or not</li>
      *     <li>The SingleRegistryCenterExportProviderService is exported or not</li>
      *     <li>The exported exporter contains SingleRegistryCenterExportProviderFilter or not</li>
+     *     <li>The metadata mapping info is right or not</li>
      * </ul>
      */
     private void afterExport() {
@@ -196,6 +210,23 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
         Assertions.assertEquals(exporterListener.getExportedExporters().size(), 3);
         // The exported exporter contains SingleRegistryCenterExportProviderFilter
         Assertions.assertTrue(exporterListener.getFilters().contains(filter));
+        // The consumer can be notified and get provider's metadata through metadata mapping info.
+        // So, the metadata mapping is necessary to check after exported service (or provider)
+        // The best way to verify this issue is to check if the exported service (or provider)
+        // has been registered in the path of /dubbo/mapping/****
+        // What are the parameters?
+        // registryKey: the registryKey is the default cluster, CommonConstants.DEFAULT_KEY
+        // key: The exported interface's name
+        // group: the group is "mapping", ServiceNameMapping.DEFAULT_MAPPING_GROUP
+        ConfigItem configItem = ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReport(CommonConstants.DEFAULT_KEY)
+            .getConfigItem(serviceConfig.getInterface()
+                , ServiceNameMapping.DEFAULT_MAPPING_GROUP);
+        // Check if the exported service (provider) is registered
+        Assertions.assertNotNull(configItem);
+        // Check if registered service (provider)'s name is right
+        Assertions.assertEquals(PROVIDER_APPLICATION_NAME,configItem.getContent());
+        // Check if registered service (provider)'s version exists
+        Assertions.assertNotNull(configItem.getTicket());
     }
 
     /**
@@ -207,11 +238,11 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
      * </ul>
      */
     private void afterInvoke() {
-        // The SingleRegistryCenterInjvmFilter has called
+        // The SingleRegistryCenterExportProviderFilter has called
         Assertions.assertTrue(filter.hasCalled());
-        // The SingleRegistryCenterInjvmFilter doesn't exist error
+        // The SingleRegistryCenterExportProviderFilter doesn't exist error
         Assertions.assertFalse(filter.hasError());
-        // Check the SingleRegistryCenterInjvmFilter's response
+        // Check the SingleRegistryCenterExportProviderFilter's response
         Assertions.assertEquals("Hello " + PROVIDER_APPLICATION_NAME, filter.getResponse());
     }
 

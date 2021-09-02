@@ -22,7 +22,6 @@ import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
@@ -68,10 +67,12 @@ public class InstanceAddressURL extends URL {
         return RpcContext.getServiceContext().getInterfaceName();
     }
 
+    @Override
     public String getGroup() {
         return RpcContext.getServiceContext().getGroup();
     }
 
+    @Override
     public String getVersion() {
         return RpcContext.getServiceContext().getVersion();
     }
@@ -112,6 +113,16 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
+    public String getRemoteApplication() {
+        return instance.getServiceName();
+    }
+
+    @Override
+    public String getSide() {
+        return CONSUMER_SIDE;
+    }
+
+    @Override
     public String getPath() {
         MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
         if (serviceInfo == null) {
@@ -131,7 +142,7 @@ public class InstanceAddressURL extends URL {
         } else if (REMOTE_APPLICATION_KEY.equals(key)) {
             return instance.getServiceName();
         } else if (SIDE_KEY.equals(key)) {
-            return CONSUMER_SIDE;
+            return getSide();
         }
 
         String protocolServiceKey = getProtocolServiceKey();
@@ -249,7 +260,7 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public Map<String, String> getServiceParameters(String protocolServiceKey) {
-        Map<String, String> instanceParams = getInstanceMetadata();
+        Map<String, String> instanceParams = getInstance().getAllParams();
         Map<String, String> metadataParams = (metadataInfo == null ? new HashMap<>() : metadataInfo.getParameters(protocolServiceKey));
         int i = instanceParams == null ? 0 : instanceParams.size();
         int j = metadataParams == null ? 0 : metadataParams.size();
@@ -315,17 +326,17 @@ public class InstanceAddressURL extends URL {
         return this;
     }
 
+    /**
+     * Gets method level value of the specified key.
+     * @param key
+     * @return
+     */
     @Override
     public String getAnyMethodParameter(String key) {
         String suffix = "." + key;
-        for (String fullKey : instance.getMetadata().keySet()) {
-            if (fullKey.endsWith(suffix)) {
-                return getParameter(fullKey);
-            }
-        }
         String protocolServiceKey = getProtocolServiceKey();
         if (StringUtils.isNotEmpty(protocolServiceKey)) {
-            for (String fullKey : metadataInfo.getServiceInfo(protocolServiceKey).getParams().keySet()) {
+            for (String fullKey : metadataInfo.getServiceInfo(protocolServiceKey).getAllParams().keySet()) {
                 if (fullKey.endsWith(suffix)) {
                     return getParameter(fullKey);
                 }
@@ -396,14 +407,12 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public ScopeModel getScopeModel() {
-        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
-        return consumerUrl != null ? consumerUrl.getScopeModel() : ApplicationModel.defaultModel().getDefaultModule();
+        return RpcContext.getServiceContext().getConsumerUrl().getScopeModel();
     }
 
     @Override
     public ServiceModel getServiceModel() {
-        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
-        return consumerUrl != null ? consumerUrl.getServiceModel() : null;
+        return RpcContext.getServiceContext().getConsumerUrl().getServiceModel();
     }
 
     @Override

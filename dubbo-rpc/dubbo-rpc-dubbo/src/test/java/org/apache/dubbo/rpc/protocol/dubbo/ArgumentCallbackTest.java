@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -83,8 +84,11 @@ public class ArgumentCallbackTest {
                 + "&unxxx2.0.callback=false"
                 + "&timeout=" + timeout
                 + "&retries=0"
-                + "&" + CALLBACK_INSTANCES_LIMIT_KEY + "=" + callbacks
-        );
+                + "&" + CALLBACK_INSTANCES_LIMIT_KEY + "=" + callbacks)
+            .setScopeModel(ApplicationModel.defaultModel())
+            .setServiceModel(new ConsumerModel(IDemoService.class.getName(), null, null, null,
+            ApplicationModel.defaultModel().getDefaultModule(), null, null));
+
         //      uncomment is unblock invoking
 //        serviceURL = serviceURL.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));
 //        consumerUrl = consumerUrl.addParameter("yyy."+Constants.ASYNC_KEY,String.valueOf(true));

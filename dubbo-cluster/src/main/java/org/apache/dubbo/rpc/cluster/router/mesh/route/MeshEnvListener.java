@@ -17,13 +17,10 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-import org.apache.dubbo.common.extension.SPI;
-
 /**
  * Mesh Rule Listener
  * Such as Kubernetes, Service Mesh (xDS) environment support define rule in env
  */
-@SPI
 public interface MeshEnvListener {
     /**
      * @return whether current environment support listen

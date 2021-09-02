@@ -25,7 +25,8 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.spring.registrycenter.ZooKeeperServer;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
@@ -47,13 +48,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  */
 public class EnableDubboConfigTest {
 
+    private RegistryCenter multipleRegistryCenter;
+
     @BeforeEach
     public void setUp() {
+        multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
+        multipleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterEach
     public void tearDown() {
+        DubboBootstrap.reset();
+        multipleRegistryCenter.shutdown();
     }
 
     //@Test
@@ -100,8 +107,6 @@ public class EnableDubboConfigTest {
 
     //@Test
     public void testMultiple() {
-
-        ZooKeeperServer.start();
 
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(TestMultipleConfig.class);

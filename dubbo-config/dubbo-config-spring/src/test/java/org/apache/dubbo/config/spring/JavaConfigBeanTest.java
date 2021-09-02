@@ -28,8 +28,8 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
-import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -50,11 +50,11 @@ public class JavaConfigBeanTest {
 
     private static final String MY_PROTOCOL_ID = "myProtocol";
     private static final String MY_REGISTRY_ID = "my-registry";
-    private static SingleRegistryCenter singleRegistryCenter;
+    private static RegistryCenter singleRegistryCenter;
 
     @BeforeAll
     public static void beforeAll() {
-        singleRegistryCenter = new DefaultSingleRegistryCenter();
+        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
         singleRegistryCenter.startup();
     }
 

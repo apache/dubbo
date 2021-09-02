@@ -151,7 +151,7 @@ public class MigrationRule {
         }
 
         if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
             Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
@@ -163,6 +163,9 @@ public class MigrationRule {
             }
         }
 
+        /**
+         * FIXME, it's really hard to follow setting default values here.
+         */
         if (step == null) {
             // initial step : APPLICATION_FIRST
             step = MigrationStep.APPLICATION_FIRST;
@@ -189,7 +192,7 @@ public class MigrationRule {
         }
 
         if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
             Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
@@ -229,7 +232,7 @@ public class MigrationRule {
         }
 
         if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
             Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
@@ -265,7 +268,7 @@ public class MigrationRule {
         }
 
         if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
             Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
@@ -305,7 +308,7 @@ public class MigrationRule {
         }
 
         if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
             Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {

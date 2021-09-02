@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.logger.Logger;
@@ -32,8 +33,13 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -101,7 +107,7 @@ class CallbackServiceCodec {
      * @throws IOException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private String exportOrUnexportCallbackService(Channel channel, URL url, Class clazz, Object inst, Boolean export) throws IOException {
+    private String exportOrUnexportCallbackService(Channel channel, RpcInvocation inv, URL url, Class clazz, Object inst, Boolean export) throws IOException {
         int instid = System.identityHashCode(inst);
 
         Map<String, String> params = new HashMap<>(3);
@@ -124,11 +130,12 @@ class CallbackServiceCodec {
             }
         }
         tmpMap.putAll(params);
-        
+
         tmpMap.remove(VERSION_KEY);// doesn't need to distinguish version for callback
         tmpMap.remove(Constants.BIND_PORT_KEY); //callback doesn't needs bind.port
         tmpMap.put(INTERFACE_KEY, clazz.getName());
-        URL exportUrl = new ServiceConfigURL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(), channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpMap);
+        URL exportUrl = new ServiceConfigURL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(),
+            channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpMap);
 
         // no need to generate multiple exporters for different channel in the same JVM, cache key cannot collide.
         String cacheKey = getClientSideCallbackServiceCacheKey(instid);
@@ -137,7 +144,24 @@ class CallbackServiceCodec {
             // one channel can have multiple callback instances, no need to re-export for different instance.
             if (!channel.hasAttribute(cacheKey)) {
                 if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, false)) {
-                    ScopeModelUtil.getApplicationModel(url.getScopeModel()).getDefaultModule().getServiceRepository().registerService(clazz);
+                    ModuleModel moduleModel;
+                    if (inv.getServiceModel() == null) {
+                        //TODO should get scope model from url?
+                        moduleModel = ApplicationModel.defaultModel().getDefaultModule();
+                        logger.error("Unable to get Service Model from Invocation. Please check if your invocation failed! " +
+                            "This error only happen in UT cases! Invocation:" + inv);
+                    } else {
+                        moduleModel = inv.getServiceModel().getModuleModel();
+                    }
+
+                    ServiceDescriptor serviceDescriptor = moduleModel.getServiceRepository().registerService(clazz);
+                    ServiceMetadata serviceMetadata = new ServiceMetadata(clazz.getName() + "." + instid, exportUrl.getGroup(), exportUrl.getVersion(), clazz);
+                    String serviceKey = BaseServiceMetadata.buildServiceKey(exportUrl.getPath(), group, exportUrl.getVersion());
+                    ProviderModel providerModel = new ProviderModel(serviceKey, inst, serviceDescriptor, null, moduleModel, serviceMetadata);
+                    moduleModel.getServiceRepository().registerProvider(providerModel);
+
+                    exportUrl = exportUrl.setScopeModel(moduleModel);
+                    exportUrl = exportUrl.setServiceModel(providerModel);
                     Invoker<?> invoker = proxyFactory.getInvoker(inst, clazz, exportUrl);
                     // should destroy resource?
                     Exporter<?> exporter = protocolSPI.export(invoker);
@@ -284,10 +308,10 @@ class CallbackServiceCodec {
         Class<?>[] pts = inv.getParameterTypes();
         switch (callbackStatus) {
             case CallbackServiceCodec.CALLBACK_CREATE:
-                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], true));
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, inv,  url, pts[paraIndex], args[paraIndex], true));
                 return null;
             case CallbackServiceCodec.CALLBACK_DESTROY:
-                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], false));
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, inv,  url, pts[paraIndex], args[paraIndex], false));
                 return null;
             default:
                 return args[paraIndex];

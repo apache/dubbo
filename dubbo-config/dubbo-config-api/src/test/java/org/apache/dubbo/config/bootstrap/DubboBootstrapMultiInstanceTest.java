@@ -20,11 +20,13 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
-import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.registrycenter.RegistryCenter;
+import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -38,12 +40,20 @@ import java.util.List;
 
 public class DubboBootstrapMultiInstanceTest {
 
-    private static DefaultSingleRegistryCenter registryCenter;
+    private static ZookeeperSingleRegistryCenter registryCenter;
+
+    private static RegistryConfig registryConfig;
 
     @BeforeAll
     public static void setup() {
-        registryCenter = new DefaultSingleRegistryCenter(NetUtils.getAvailablePort());
+        registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
         registryCenter.startup();
+        RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
+        registryConfig = new RegistryConfig(String.format("%s://%s:%s",
+            instance.getType(),
+            instance.getHostname(),
+            instance.getPort()));
+
     }
 
     @AfterAll
@@ -170,7 +180,7 @@ public class DubboBootstrapMultiInstanceTest {
 
             providerBootstrap
                 .application("provider-app")
-                .registry(registryCenter.getRegistryConfig())
+                .registry(registryConfig)
                 .protocol(new ProtocolConfig("dubbo", 2002))
                 .addModule()
                 .service(serviceConfig1)
@@ -193,7 +203,7 @@ public class DubboBootstrapMultiInstanceTest {
             // consumer app
             consumerBootstrap = DubboBootstrap.newInstance();
             consumerBootstrap.application("consumer-app")
-                .registry(registryCenter.getRegistryConfig())
+                .registry(registryConfig)
                 .reference(builder -> builder
                     .interfaceClass(DemoService.class)
                     .version(version1)
@@ -230,7 +240,7 @@ public class DubboBootstrapMultiInstanceTest {
         if (!dubboBootstrap.getConfigManager().getApplication().isPresent()) {
             dubboBootstrap.application("consumer-app");
         }
-        dubboBootstrap.registry(registryCenter.getRegistryConfig())
+        dubboBootstrap.registry(registryConfig)
             .reference(referenceConfig);
         return dubboBootstrap;
     }
@@ -254,7 +264,7 @@ public class DubboBootstrapMultiInstanceTest {
         if (!dubboBootstrap.getConfigManager().getApplication().isPresent()) {
             dubboBootstrap.application("provider-app");
         }
-        dubboBootstrap.registry(registryCenter.getRegistryConfig())
+        dubboBootstrap.registry(registryConfig)
             .protocol(protocol1)
             .service(serviceConfig);
         return dubboBootstrap;

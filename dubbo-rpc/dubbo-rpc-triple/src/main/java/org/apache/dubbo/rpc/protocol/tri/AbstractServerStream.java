@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -40,6 +41,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
+
 public abstract class AbstractServerStream extends AbstractStream implements Stream {
 
     protected static final ExecutorRepository EXECUTOR_REPOSITORY =
@@ -47,6 +50,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     private final ProviderModel providerModel;
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
+    private List<HeaderFilter> headerFilters;
 
     protected AbstractServerStream(URL url) {
         this(url, lookupProviderModel(url));
@@ -60,6 +64,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         super(url, executor);
         this.providerModel = providerModel;
         this.serialize(getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+        this.headerFilters = ExtensionLoader.getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
     }
 
     private static Executor lookupExecutor(URL url, ProviderModel providerModel) {
@@ -108,6 +113,10 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return invoker;
     }
 
+    public List<HeaderFilter> getHeaderFilters() {
+        return headerFilters;
+    }
+
     public ProviderModel getProviderModel() {
         return providerModel;
     }
@@ -122,6 +131,9 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         final Map<String, Object> attachments = parseMetadataToAttachmentMap(metadata);
         inv.setObjectAttachments(attachments);
 
+        for (HeaderFilter headerFilter : getHeaderFilters()) {
+            inv = headerFilter.invoke(getInvoker(), inv);
+        }
         return inv;
     }
 
@@ -183,7 +195,16 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     @Override
     public void execute(Runnable runnable) {
         try {
-            super.execute(runnable);
+            super.execute(() -> {
+                try {
+                    runnable.run();
+                } catch (Throwable t) {
+                    LOGGER.error("Exception processing triple message", t);
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("Exception in invoker chain :" + t.getMessage())
+                            .withCause(t));
+                }
+            });
         } catch (RejectedExecutionException e) {
             LOGGER.error("Provider's thread pool is full", e);
             transportError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)

@@ -20,11 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
@@ -38,12 +38,13 @@ import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataS
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
-import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
-import org.apache.dubbo.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.registrycenter.RegistryCenter;
+import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.cluster.Directory;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,13 +105,13 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
     /**
      * Define a registry center.
      */
-    private SingleRegistryCenter registryCenter;
+    private RegistryCenter registryCenter;
 
     @BeforeEach
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        registryCenter = new DefaultSingleRegistryCenter(NetUtils.getAvailablePort());
+        registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
         registryCenter.startup();
         // initialize ServiceConfig
         serviceConfig = new ServiceConfig<>();
@@ -120,9 +121,14 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
 
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .registry(registryConfig = registryCenter.getRegistryConfig())
             .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
+        RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
+        registryConfig = new RegistryConfig(String.format("%s://%s:%s",
+            instance.getType(),
+            instance.getHostname(),
+            instance.getPort()));
+        DubboBootstrap.getInstance().registry(registryConfig);
     }
 
     @Test
@@ -238,7 +244,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         // MetadataInfo exists or not in InMemoryWritableMetadataService
         Assertions.assertNotNull(metadataInfo);
         // MetadataInfo has reported or not
-        Assertions.assertTrue(metadataInfo.hasReported());
+        Assertions.assertFalse(metadataInfo.hasReported());
         // MetadataInfo has reported or not has service or not
         Assertions.assertFalse(metadataInfo.getServices().isEmpty());
         // MetadataInfo has reported or not has service or not

@@ -27,14 +27,13 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder;
-import org.apache.dubbo.config.spring.registrycenter.ZooKeeperServer;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -50,18 +49,12 @@ import java.util.Map;
 
 public class JavaConfigReferenceBeanTest {
 
-    @BeforeAll
-    public static void beforeAll() {
-        ZooKeeperServer.start();
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        ZooKeeperServer.shutdown();
-    }
+    private RegistryCenter multipleRegistryCenter;
 
     @BeforeEach
     public void setUp() {
+        multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
+        multipleRegistryCenter.startup();
         DubboBootstrap.reset();
         SpringExtensionInjector.clearContexts();
     }
@@ -69,6 +62,7 @@ public class JavaConfigReferenceBeanTest {
     @AfterEach
     public void tearDown() {
         DubboBootstrap.reset();
+        multipleRegistryCenter.shutdown();
         SpringExtensionInjector.clearContexts();
     }
 

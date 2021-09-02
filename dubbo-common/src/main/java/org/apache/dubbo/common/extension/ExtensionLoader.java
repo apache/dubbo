@@ -735,6 +735,7 @@ public class ExtensionLoader<T> {
                 }
             }
 
+            // Warning: After an instance of Lifecycle is wrapped by cachedWrapperClasses, it may not still be Lifecycle instance, this application may not invoke the lifecycle.initialize hook.
             initExtension(instance);
             return instance;
         } catch (Throwable t) {

@@ -46,8 +46,10 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -220,6 +222,22 @@ public class DubboProtocol extends AbstractProtocol {
         }
 
         return INSTANCE;
+    }
+
+
+    public static DubboProtocol getDubboProtocol(ScopeModel scopeModel) {
+        Protocol protocolWrapper = scopeModel.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
+
+        try {
+            while (!(protocolWrapper instanceof DubboProtocol)) {
+                Field protocolField = protocolWrapper.getClass().getDeclaredField("protocol");
+                protocolField.setAccessible(true);
+                protocolWrapper = (Protocol) protocolField.get(protocolWrapper);
+            }
+        } catch (NoSuchFieldException | IllegalAccessException ignore) {
+        }
+
+        return (DubboProtocol) protocolWrapper;
     }
 
     @Override
@@ -599,9 +617,11 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private ExchangeClient initClient(URL url) {
 
-        // client type setting.
+        /**
+         * Instance of url is InstanceAddressURL, so addParameter actually adds parameters into ServiceInstance,
+         * which means params are shared among different services. Since client is shared among services this is currently not a problem.
+         */
         String str = url.getParameter(CLIENT_KEY, url.getParameter(SERVER_KEY, DEFAULT_REMOTING_CLIENT));
-
         url = url.addParameter(CODEC_KEY, DubboCodec.NAME);
         // enable heartbeat by default
         url = url.addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT));

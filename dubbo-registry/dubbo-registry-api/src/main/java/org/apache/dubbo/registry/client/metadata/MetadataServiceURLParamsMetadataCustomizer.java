@@ -26,6 +26,9 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceParameter;
 
+/**
+ * Used to interact with non-dubbo systems, also see {@link SpringCloudMetadataServiceURLBuilder}
+ */
 public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer {
 
     @Override

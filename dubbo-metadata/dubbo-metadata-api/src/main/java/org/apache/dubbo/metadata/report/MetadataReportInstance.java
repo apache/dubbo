@@ -59,7 +59,10 @@ public class MetadataReportInstance {
         String relatedRegistryId = config.getRegistry() == null ? DEFAULT_KEY : config.getRegistry();
 //        RegistryConfig registryConfig = applicationModel.getConfigManager().getRegistry(relatedRegistryId)
 //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not exist."));
-        metadataReports.put(relatedRegistryId, metadataReportFactory.getMetadataReport(url));
+        MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);
+        if (metadataReport != null) {
+            metadataReports.put(relatedRegistryId, metadataReport);
+        }
         init.set(true);
     }
 
@@ -82,7 +85,7 @@ public class MetadataReportInstance {
 
     private void checkInit() {
         if (!init.get()) {
-            throw new IllegalStateException("the metadata report was not inited.");
+            throw new IllegalStateException("the metadata report was not initialized.");
         }
     }
 

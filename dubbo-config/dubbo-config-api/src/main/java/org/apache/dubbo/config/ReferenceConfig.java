@@ -209,15 +209,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @Override
     public synchronized void destroy() {
-        if (ref == null) {
-            return;
-        }
         if (destroyed) {
             return;
         }
         destroyed = true;
         try {
-            invoker.destroy();
+            if (invoker != null) {
+                invoker.destroy();
+            }
         } catch (Throwable t) {
             logger.warn("Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
         }
@@ -422,6 +421,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (StringUtils.isEmpty(url.getPath())) {
                     url = url.setPath(interfaceName);
                 }
+                url = url.setScopeModel(getScopeModel());
                 url = url.setServiceModel(consumerModel);
                 if (UrlUtils.isRegistry(url)) {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
@@ -446,6 +446,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (monitorUrl != null) {
                     u = u.putAttribute(MONITOR_KEY, monitorUrl);
                 }
+                u = u.setScopeModel(getScopeModel());
                 u = u.setServiceModel(consumerModel);
                 urls.add(u.putAttribute(REFER_KEY, referenceParameters));
             }
@@ -581,8 +582,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         URL tmpUrl = new ServiceConfigURL("temp", "localhost", 0, map);
         boolean isJvmRefer;
         if (isInjvm() == null) {
-            // if a url is specified, don't do local reference
-            if (url != null && url.length() > 0) {
+            // if an url is specified, don't do local reference
+            if (StringUtils.isNotEmpty(url)) {
                 isJvmRefer = false;
             } else {
                 // by default, reference local service if there is
@@ -608,7 +609,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
     }
 
-    // just for test
+    /**
+     * just for test
+     * @return
+     */
     @Deprecated
     public Invoker<?> getInvoker() {
         return invoker;

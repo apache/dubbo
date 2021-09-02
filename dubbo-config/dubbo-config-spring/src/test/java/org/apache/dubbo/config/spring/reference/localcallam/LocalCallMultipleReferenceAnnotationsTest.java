@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.config.spring.reference.localcallam;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.config.spring.registrycenter.ZooKeeperServer;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.RpcContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -48,15 +49,18 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 public class LocalCallMultipleReferenceAnnotationsTest {
 
+    private static ZookeeperSingleRegistryCenter registryCenter;
+
     @BeforeAll
     public static void setUp() {
         DubboBootstrap.reset();
-        ZooKeeperServer.start();
+        registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
+        registryCenter.startup();
     }
 
     @AfterAll
     public static void tearDown() {
-        ZooKeeperServer.shutdown();
+        registryCenter.shutdown();
     }
 
     @Autowired

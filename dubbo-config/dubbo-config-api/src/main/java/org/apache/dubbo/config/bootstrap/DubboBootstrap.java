@@ -91,6 +91,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -128,7 +129,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
  *
  * @since 2.7.5
  */
-public class DubboBootstrap {
+public final class DubboBootstrap {
 
     private static final String NAME = DubboBootstrap.class.getSimpleName();
 
@@ -152,41 +153,44 @@ public class DubboBootstrap {
 
     private final ApplicationModel applicationModel;
 
-    private final ConfigManager configManager;
+    protected ScheduledFuture<?> asyncMetadataFuture;
 
-    private final Environment environment;
+    protected final ConfigManager configManager;
 
-    private ReferenceConfigCache cache;
+    protected final Environment environment;
 
-    private AtomicBoolean initialized = new AtomicBoolean(false);
+    protected ReferenceConfigCache cache;
 
-    private AtomicBoolean started = new AtomicBoolean(false);
+    protected AtomicBoolean initialized = new AtomicBoolean(false);
 
-    private AtomicBoolean startup = new AtomicBoolean(true);
+    protected AtomicBoolean started = new AtomicBoolean(false);
 
-    private AtomicBoolean destroyed = new AtomicBoolean(false);
+    protected AtomicBoolean startup = new AtomicBoolean(true);
 
-    private AtomicBoolean shutdown = new AtomicBoolean(false);
+    protected AtomicBoolean destroyed = new AtomicBoolean(false);
 
-    private volatile boolean isCurrentlyInStart = false;
+    protected AtomicBoolean shutdown = new AtomicBoolean(false);
 
-    private volatile ServiceInstance serviceInstance;
+    protected volatile boolean isCurrentlyInStart = false;
 
-    private volatile MetadataService metadataService;
+    protected volatile ServiceInstance serviceInstance;
 
-    private volatile MetadataServiceExporter metadataServiceExporter;
+    protected volatile MetadataService metadataService;
 
-    private List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
+    protected volatile MetadataServiceExporter metadataServiceExporter;
 
-    private final List<CompletableFuture<?>> asyncExportingFutures = new ArrayList<>();
+    protected List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
 
-    private final List<CompletableFuture<?>> asyncReferringFutures = new ArrayList<>();
+    protected final List<CompletableFuture<?>> asyncExportingFutures = new ArrayList<>();
 
-    private boolean asyncExportFinish = true;
+    protected final List<CompletableFuture<?>> asyncReferringFutures = new ArrayList<>();
 
-    private boolean asyncReferFinish = true;
+    protected boolean asyncExportFinish = true;
 
-    private static boolean ignoreConfigState;
+    protected volatile boolean asyncReferFinish = true;
+
+    protected static boolean ignoreConfigState;
+
     private Module currentModule;
 
     /**
@@ -1373,10 +1377,23 @@ public class DubboBootstrap {
 
     private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
         if (configCenter.isValid()) {
-            if (!configCenter.checkOrUpdateInited()) {
+            if (!configCenter.checkOrUpdateInitialized(true)) {
                 return null;
             }
-            DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+
+            DynamicConfiguration dynamicConfiguration = null;
+            try {
+                dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+            } catch (Exception e) {
+                if (!configCenter.isCheck()) {
+                    logger.warn("The configuration center failed to initialize", e);
+                    configCenter.checkOrUpdateInitialized(false);
+                    return null;
+                } else {
+                    throw new IllegalStateException(e);
+                }
+            }
+
             String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = getApplication().getName();
@@ -1484,28 +1501,33 @@ public class DubboBootstrap {
 
     private void referServices() {
         configManager.getReferences().forEach(rc -> {
-            // TODO, compatible with  ReferenceConfig.refer()
-            ReferenceConfig<?> referenceConfig = (ReferenceConfig<?>) rc;
-            referenceConfig.setBootstrap(this);
-            if (!referenceConfig.isRefreshed()) {
-                referenceConfig.refresh();
-            }
-
-            if (rc.shouldInit()) {
-                if (rc.shouldReferAsync()) {
-                    ExecutorService executor = executorRepository.getServiceReferExecutor();
-                    CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                        try {
-                            cache.get(rc);
-                        } catch (Throwable t) {
-                            logger.error("refer async catch error : " + t.getMessage(), t);
-                        }
-                    }, executor);
-
-                    asyncReferringFutures.add(future);
-                } else {
-                    cache.get(rc);
+            try {
+                // TODO, compatible with  ReferenceConfig.refer()
+                ReferenceConfig<?> referenceConfig = (ReferenceConfig<?>) rc;
+                referenceConfig.setBootstrap(this);
+                if (!referenceConfig.isRefreshed()) {
+                    referenceConfig.refresh();
                 }
+
+                if (rc.shouldInit()) {
+                    if (rc.shouldReferAsync()) {
+                        ExecutorService executor = executorRepository.getServiceReferExecutor();
+                        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                            try {
+                                cache.get(rc);
+                            } catch (Throwable t) {
+                                logger.error("refer async catch error : " + t.getMessage(), t);
+                            }
+                        }, executor);
+
+                        asyncReferringFutures.add(future);
+                    } else {
+                        cache.get(rc);
+                    }
+                }
+            } catch (Throwable t) {
+                logger.error("refer catch error", t);
+                cache.destroy(rc);
             }
         });
     }
@@ -1523,7 +1545,7 @@ public class DubboBootstrap {
         }
     }
 
-    private void registerServiceInstance() {
+    protected void registerServiceInstance() {
         if (this.serviceInstance != null) {
             return;
         }
@@ -1533,14 +1555,14 @@ public class DubboBootstrap {
         ServiceInstance serviceInstance = createServiceInstance(serviceName);
         boolean registered = true;
         try {
-            doRegisterServiceInstance(serviceInstance);
+            ServiceInstanceMetadataUtils.registerMetadataAndInstance(serviceInstance);
         } catch (Exception e) {
             registered = false;
             logger.error("Register instance error", e);
         }
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
-            executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
+            asyncMetadataFuture = executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
                 InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
                 localMetadataService.blockUntilUpdated();
                 try {
@@ -1582,6 +1604,7 @@ public class DubboBootstrap {
         remoteMetadataService.publishMetadata(serviceInstance.getServiceName());
     }
 
+
     private void unregisterServiceInstance() {
         if (serviceInstance != null) {
             getServiceDiscoveries().forEach(serviceDiscovery -> {
@@ -1611,6 +1634,9 @@ public class DubboBootstrap {
                         unexportMetadataService();
                         unexportServices();
                         unreferServices();
+                        if (asyncMetadataFuture != null) {
+                            asyncMetadataFuture.cancel(true);
+                        }
                     }
 
                     destroyRegistries();

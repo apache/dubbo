@@ -165,7 +165,7 @@ public abstract class AbstractConfig implements Serializable {
 
         // How to select the appropriate one from multiple getter methods of the property?
         // e.g. Using String getGeneric() or Boolean isGeneric()? Judge by field type ?
-        // Currently use @Parameter.attribute() to determine whether it is an attribute.
+        // Currently, use @Parameter.attribute() to determine whether it is an attribute.
 
         BeanInfo beanInfo = getBeanInfo(config.getClass());
         for (MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
