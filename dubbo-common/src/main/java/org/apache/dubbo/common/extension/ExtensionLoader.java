@@ -477,7 +477,11 @@ public class ExtensionLoader<T> {
         if ("true".equals(name)) {
             return getDefaultExtension();
         }
-        final Holder<Object> holder = getOrCreateHolder(name);
+        String cacheKey = name;
+        if (!wrap) {
+            cacheKey += "_origin";
+        }
+        final Holder<Object> holder = getOrCreateHolder(cacheKey);
         Object instance = holder.get();
         if (instance == null) {
             synchronized (holder) {
@@ -690,10 +694,10 @@ public class ExtensionLoader<T> {
             if (instance == null) {
                 extensionInstances.putIfAbsent(clazz, clazz.getDeclaredConstructor().newInstance());
                 instance = (T) extensionInstances.get(clazz);
+                instance = postProcessBeforeInitialization(instance, name);
+                injectExtension(instance);
+                instance = postProcessAfterInitialization(instance, name);
             }
-            instance = postProcessBeforeInitialization(instance, name);
-            injectExtension(instance);
-            instance = postProcessAfterInitialization(instance, name);
 
             if (wrap) {
                 List<Class<?>> wrapperClassesList = new ArrayList<>();

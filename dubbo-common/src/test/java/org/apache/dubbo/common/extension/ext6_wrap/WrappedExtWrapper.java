@@ -14,28 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.ext6_wrap.impl;
+package org.apache.dubbo.common.extension.ext6_wrap;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
-import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
+public interface WrappedExtWrapper {
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-public class Ext5Wrapper2 implements WrappedExt, WrappedExtWrapper {
-    public static AtomicInteger echoCount = new AtomicInteger();
-    WrappedExt origin;
-
-    public Ext5Wrapper2(WrappedExt origin) {
-        this.origin = origin;
-    }
-
-    public String echo(URL url, String s) {
-        echoCount.incrementAndGet();
-        return origin.echo(url, s);
-    }
-
-    public WrappedExt getOrigin() {
-        return origin;
-    }
+    WrappedExt getOrigin();
 }
