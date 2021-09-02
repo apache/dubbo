@@ -64,12 +64,12 @@ public class DubboProtocolTest {
     @AfterAll
     public static void after() {
         ProtocolUtils.closeAll();
-        ApplicationModel.getServiceRepository().unregisterService(DemoService.class);
+        ApplicationModel.defaultModel().getApplicationServiceRepository().unregisterService(DemoService.class);
     }
 
     @BeforeAll
     public static void setup() {
-        ApplicationModel.getServiceRepository().registerService(DemoService.class);
+        ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(DemoService.class);
     }
 
     @Test
@@ -165,7 +165,7 @@ public class DubboProtocolTest {
 
         RemoteService remote = new RemoteServiceImpl();
 
-        ApplicationModel.getServiceRepository().registerService(RemoteService.class);
+        ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(RemoteService.class);
 
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(remote, RemoteService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + RemoteService.class.getName())));

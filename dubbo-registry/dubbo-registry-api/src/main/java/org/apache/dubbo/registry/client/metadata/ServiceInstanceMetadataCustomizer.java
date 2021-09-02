@@ -58,10 +58,11 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
-        ExtensionLoader<MetadataParamsFilter> loader = ExtensionLoader.getExtensionLoader(MetadataParamsFilter.class);
+        ApplicationModel applicationModel = serviceInstance.getApplicationModel();
+        ExtensionLoader<MetadataParamsFilter> loader = applicationModel.getExtensionLoader(MetadataParamsFilter.class);
 
         InMemoryWritableMetadataService localMetadataService
-                = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+                = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
         // pick the first interface metadata available.
         // FIXME, check the same key in different urls have the same value
         Map<String, MetadataInfo> metadataInfos = localMetadataService.getMetadataInfos();
@@ -80,10 +81,10 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
         // load instance params users want to load.
         // TODO, duplicate snippet in ApplicationConfig
         Map<String, String> extraParameters = Collections.emptyMap();
-        Set<InfraAdapter> adapters = ExtensionLoader.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
+        Set<InfraAdapter> adapters = applicationModel.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(adapters)) {
             Map<String, String> inputParameters = new HashMap<>();
-            inputParameters.put(APPLICATION_KEY, ApplicationModel.getName());
+            inputParameters.put(APPLICATION_KEY, applicationModel.getApplicationName());
             for (InfraAdapter adapter : adapters) {
                 extraParameters = adapter.getExtraAttributes(inputParameters);
             }

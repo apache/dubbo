@@ -35,10 +35,10 @@ import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
 import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -47,10 +47,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN;
@@ -59,16 +59,16 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 public class RegistryProtocolTest {
 
     @AfterEach
     public void tearDown() throws IOException {
         Mockito.framework().clearInlineMocks();
+        ApplicationModel.defaultModel().destroy();
     }
 
     /**
@@ -92,10 +92,6 @@ public class RegistryProtocolTest {
         when(environment.getConfiguration()).thenReturn(compositeConfiguration);
         when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
@@ -117,7 +113,14 @@ public class RegistryProtocolTest {
         Registry registry = mock(Registry.class);
 
         RegistryProtocol registryProtocol = new RegistryProtocol();
-        registryProtocol.setRegistryFactory(registryFactory);
+
+        ApplicationModel applicationModel = Mockito.spy(ApplicationModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
+        ExtensionLoader<RegistryFactory> extensionLoaderMock = mock(ExtensionLoader.class);
+        Mockito.when(applicationModel.getExtensionLoader(RegistryFactory.class)).thenReturn(extensionLoaderMock);
+        Mockito.when(extensionLoaderMock.getAdaptiveExtension()).thenReturn(registryFactory);
+        url = url.setScopeModel(applicationModel);
+
 
         when(registryFactory.getRegistry(registryProtocol.getRegistryUrl(url))).thenReturn(registry);
 
@@ -135,8 +138,6 @@ public class RegistryProtocolTest {
         Assertions.assertEquals(parameters.get(REGISTER_IP_KEY), consumerUrl.getHost());
         Assertions.assertFalse(consumerUrl.getAttributes().containsKey(REFER_KEY));
         Assertions.assertEquals("value1", consumerUrl.getAttribute("key1"));
-
-        applicationModelMockedStatic.closeOnDemand();
     }
 
     /**
@@ -160,10 +161,6 @@ public class RegistryProtocolTest {
         when(environment.getConfiguration()).thenReturn(compositeConfiguration);
         when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
@@ -182,10 +179,16 @@ public class RegistryProtocolTest {
         URL url = serviceConfigURL.addAttributes(attributes);
 
         RegistryFactory registryFactory = mock(RegistryFactory.class);
-        Registry registry = mock(Registry.class);
 
         RegistryProtocol registryProtocol = new RegistryProtocol();
-        registryProtocol.setRegistryFactory(registryFactory);
+        Registry registry = mock(Registry.class);
+
+        ApplicationModel applicationModel = Mockito.spy(ApplicationModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
+        ExtensionLoader<RegistryFactory> extensionLoaderMock = mock(ExtensionLoader.class);
+        Mockito.when(applicationModel.getExtensionLoader(RegistryFactory.class)).thenReturn(extensionLoaderMock);
+        Mockito.when(extensionLoaderMock.getAdaptiveExtension()).thenReturn(registryFactory);
+        url = url.setScopeModel(applicationModel);
 
         when(registryFactory.getRegistry(registryProtocol.getRegistryUrl(url))).thenReturn(registry);
 
@@ -204,7 +207,6 @@ public class RegistryProtocolTest {
         Assertions.assertFalse(consumerUrl.getAttributes().containsKey(REFER_KEY));
         Assertions.assertEquals("value1", consumerUrl.getAttribute("key1"));
 
-        applicationModelMockedStatic.closeOnDemand();
     }
 
     /**
@@ -232,10 +234,6 @@ public class RegistryProtocolTest {
         when(environment.getConfiguration()).thenReturn(compositeConfiguration);
         when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
@@ -255,7 +253,12 @@ public class RegistryProtocolTest {
         Registry registry = mock(Registry.class);
 
         RegistryProtocol registryProtocol = new RegistryProtocol();
-        registryProtocol.setRegistryFactory(registryFactory);
+        ApplicationModel applicationModel = Mockito.spy(ApplicationModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
+        ExtensionLoader<RegistryFactory> extensionLoaderMock = mock(ExtensionLoader.class);
+        Mockito.when(applicationModel.getExtensionLoader(RegistryFactory.class)).thenReturn(extensionLoaderMock);
+        Mockito.when(extensionLoaderMock.getAdaptiveExtension()).thenReturn(registryFactory);
+        url = url.setScopeModel(applicationModel);
 
         when(registryFactory.getRegistry(registryProtocol.getRegistryUrl(url))).thenReturn(registry);
 
@@ -265,8 +268,6 @@ public class RegistryProtocolTest {
         Assertions.assertTrue(((MigrationInvoker<?>) invoker).getCluster() instanceof MockClusterWrapper);
         Assertions.assertTrue(
             ((MockClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster() instanceof FailoverCluster);
-
-        applicationModelMockedStatic.closeOnDemand();
     }
 
     /**
@@ -292,10 +293,6 @@ public class RegistryProtocolTest {
         when(environment.getConfiguration()).thenReturn(compositeConfiguration);
         when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
@@ -317,7 +314,12 @@ public class RegistryProtocolTest {
         Registry registry = mock(Registry.class);
 
         RegistryProtocol registryProtocol = new RegistryProtocol();
-        registryProtocol.setRegistryFactory(registryFactory);
+        ApplicationModel applicationModel = Mockito.spy(ApplicationModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
+        ExtensionLoader<RegistryFactory> extensionLoaderMock = mock(ExtensionLoader.class);
+        Mockito.when(applicationModel.getExtensionLoader(RegistryFactory.class)).thenReturn(extensionLoaderMock);
+        Mockito.when(extensionLoaderMock.getAdaptiveExtension()).thenReturn(registryFactory);
+        url = url.setScopeModel(applicationModel);
 
         when(registryFactory.getRegistry(registryProtocol.getRegistryUrl(url))).thenReturn(registry);
 
@@ -330,7 +332,6 @@ public class RegistryProtocolTest {
         Assertions.assertTrue(
             ((MockClusterWrapper) ((MigrationInvoker<?>) invoker).getCluster()).getCluster() instanceof MergeableCluster);
 
-        applicationModelMockedStatic.closeOnDemand();
     }
 
     /**
@@ -356,10 +357,6 @@ public class RegistryProtocolTest {
         when(environment.getConfiguration()).thenReturn(compositeConfiguration);
         when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
@@ -377,7 +374,6 @@ public class RegistryProtocolTest {
         attributes.put(REFER_KEY, refer);
         URL url = serviceConfigURL.addAttributes(attributes);
 
-        RegistryProtocol registryProtocol = new RegistryProtocol();
         MigrationInvoker<?> clusterInvoker = mock(MigrationInvoker.class);
 
         Map<String, Object> consumerAttribute = new HashMap<>(url.getAttributes());
@@ -393,19 +389,18 @@ public class RegistryProtocolTest {
         MigrationRuleListener migrationRuleListener = mock(MigrationRuleListener.class);
         List<RegistryProtocolListener> registryProtocolListeners = new ArrayList<>();
         registryProtocolListeners.add(migrationRuleListener);
-        MockedStatic<ExtensionLoader> extensionLoaderMockedStatic = mockStatic(ExtensionLoader.class);
-        ExtensionLoader extensionLoaderForRegistryProtocolListener = mock(ExtensionLoader.class);
-        when(ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class))
-            .thenReturn(extensionLoaderForRegistryProtocolListener);
-        when(extensionLoaderForRegistryProtocolListener.getActivateExtension(url, "registry.protocol.listener"))
+
+        RegistryProtocol registryProtocol = new RegistryProtocol();
+        ApplicationModel applicationModel = Mockito.spy(ApplicationModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
+        ExtensionLoader<RegistryProtocolListener> extensionLoaderMock = mock(ExtensionLoader.class);
+        Mockito.when(applicationModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, "registry.protocol.listener"))
             .thenReturn(registryProtocolListeners);
+        url = url.setScopeModel(applicationModel);
 
         registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl, url);
         verify(migrationRuleListener, times(1)).onRefer(registryProtocol, clusterInvoker, consumerUrl, url);
-
-        extensionLoaderMockedStatic.closeOnDemand();
-        applicationModelMockedStatic.closeOnDemand();
-
     }
 
 
@@ -432,10 +427,6 @@ public class RegistryProtocolTest {
         Environment environment = mock(Environment.class);
         when(environment.getConfiguration()).thenReturn(compositeConfiguration);
         when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
-
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
@@ -472,7 +463,6 @@ public class RegistryProtocolTest {
         registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl, url);
 
         Assertions.assertEquals(1, CountRegistryProtocolListener.getReferCounter().get());
-        applicationModelMockedStatic.closeOnDemand();
     }
 
     /**
@@ -496,10 +486,6 @@ public class RegistryProtocolTest {
         when(environment.getConfiguration()).thenReturn(compositeConfiguration);
         when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
@@ -520,8 +506,14 @@ public class RegistryProtocolTest {
         RegistryFactory registryFactory = mock(RegistryFactory.class);
         Registry registry = mock(Registry.class);
 
+        ApplicationModel applicationModel = Mockito.spy(ApplicationModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
+        ExtensionLoader<RegistryFactory> extensionLoaderMock = mock(ExtensionLoader.class);
+        Mockito.when(applicationModel.getExtensionLoader(RegistryFactory.class)).thenReturn(extensionLoaderMock);
+        Mockito.when(extensionLoaderMock.getAdaptiveExtension()).thenReturn(registryFactory);
+        url = url.setScopeModel(applicationModel);
+
         RegistryProtocol registryProtocol = new RegistryProtocol();
-        registryProtocol.setRegistryFactory(registryFactory);
 
         when(registryFactory.getRegistry(registryProtocol.getRegistryUrl(url))).thenReturn(registry);
 
@@ -543,8 +535,6 @@ public class RegistryProtocolTest {
             String.valueOf(false));
 
         verify(registry,times(1)).register(registeredConsumerUrl);
-
-        applicationModelMockedStatic.closeOnDemand();
     }
 
 }

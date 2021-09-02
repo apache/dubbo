@@ -368,7 +368,7 @@ public class RpcUtilsTest {
         RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         Assertions.assertFalse(RpcUtils.isReturnTypeFuture(inv));
 
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ServiceRepository repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
         repository.registerService(demoServiceClass);
 
         inv = new RpcInvocation("testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);

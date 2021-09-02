@@ -42,7 +42,7 @@ public final class MeshRuleManager {
 
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener(app);
         String appRuleDataId = app + MESH_RULE_DATA_ID_SUFFIX;
-        DynamicConfiguration configuration = ApplicationModel.getEnvironment().getDynamicConfiguration()
+        DynamicConfiguration configuration = ApplicationModel.defaultModel().getApplicationEnvironment().getDynamicConfiguration()
             .orElse(null);
 
         Set<MeshEnvListenerFactory> envListenerFactories = ExtensionLoader.getExtensionLoader(MeshEnvListenerFactory.class).getSupportedExtensionInstances();

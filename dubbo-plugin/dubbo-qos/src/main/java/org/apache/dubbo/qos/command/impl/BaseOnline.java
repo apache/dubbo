@@ -35,7 +35,7 @@ import java.util.List;
 public class BaseOnline implements BaseCommand {
     private static final Logger logger = LoggerFactory.getLogger(Online.class);
     public static RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
-    public static ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
+    public static ServiceRepository serviceRepository = ApplicationModel.defaultModel().getApplicationServiceRepository();
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {

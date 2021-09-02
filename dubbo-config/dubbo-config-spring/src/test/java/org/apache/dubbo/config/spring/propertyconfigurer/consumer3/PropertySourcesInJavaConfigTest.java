@@ -21,11 +21,14 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -77,10 +80,10 @@ public class PropertySourcesInJavaConfigTest {
             } catch (InterruptedException e) {
             }
 
-            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.getServiceRepository().getProviderUrlsWithoutGroup();
+            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getApplicationServiceRepository().getProviderUrlsWithoutGroup();
             // reset ConfigManager of provider context
             DubboBootstrap.reset(false);
-            ApplicationModel.getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+            ApplicationModel.defaultModel().getApplicationServiceRepository().setProviderUrlsWithoutGroup(tmp);
 
             // Resolve placeholder by import property sources
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class, ImportPropertyConfiguration.class);
@@ -115,10 +118,10 @@ public class PropertySourcesInJavaConfigTest {
             } catch (InterruptedException e) {
             }
 
-            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.getServiceRepository().getProviderUrlsWithoutGroup();
+            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getApplicationServiceRepository().getProviderUrlsWithoutGroup();
             // reset ConfigManager of provider context
             DubboBootstrap.reset(false);
-            ApplicationModel.getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+            ApplicationModel.defaultModel().getApplicationServiceRepository().setProviderUrlsWithoutGroup(tmp);
 
             // Resolve placeholder by custom PropertySourcesPlaceholderConfigurer bean
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class, PropertyBeanConfiguration.class);

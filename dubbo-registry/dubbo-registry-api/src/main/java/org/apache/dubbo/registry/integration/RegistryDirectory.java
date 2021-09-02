@@ -78,6 +78,7 @@ import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryP
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
+import static org.apache.dubbo.rpc.model.ScopeModelUtil.getApplicationModel;
 
 
 /**
@@ -86,7 +87,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 public class RegistryDirectory<T> extends DynamicDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
 
-    private static final ConsumerConfigurationListener CONSUMER_CONFIGURATION_LISTENER = new ConsumerConfigurationListener();
+    private final ConsumerConfigurationListener consumerConfigurationListener;
     private ReferenceConfigurationListener referenceConfigurationListener;
 
     /**
@@ -99,23 +100,26 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      * The initial value is null and the midway may be assigned to null, please use the local variable reference
      */
     protected volatile Set<URL> cachedInvokerUrls;
+    private final ApplicationModel applicationModel;
 
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
+        applicationModel = getApplicationModel(url.getScopeModel());
+        consumerConfigurationListener = new ConsumerConfigurationListener(applicationModel);
     }
 
     @Override
     public void subscribe(URL url) {
         setSubscribeUrl(url);
-        CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
-        referenceConfigurationListener = new ReferenceConfigurationListener(this, url);
+        consumerConfigurationListener.addNotifyListener(this);
+        referenceConfigurationListener = new ReferenceConfigurationListener(applicationModel, this, url);
         registry.subscribe(url, this);
     }
 
     @Override
     public void unSubscribe(URL url) {
         setSubscribeUrl(null);
-        CONSUMER_CONFIGURATION_LISTENER.removeNotifyListener(this);
+        consumerConfigurationListener.removeNotifyListener(this);
         referenceConfigurationListener.stop();
         registry.unsubscribe(url, this);
     }
@@ -412,7 +416,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         providerUrl = overrideWithConfigurators(this.configurators, providerUrl);
 
         // override url with configurator from "app-name.configurators"
-        providerUrl = overrideWithConfigurators(CONSUMER_CONFIGURATION_LISTENER.getConfigurators(), providerUrl);
+        providerUrl = overrideWithConfigurators(consumerConfigurationListener.getConfigurators(), providerUrl);
 
         // override url with configurator from configurators from "service-name.configurators"
         if (referenceConfigurationListener != null) {
@@ -599,7 +603,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         this.overrideDirectoryUrl = directoryUrl;
         List<Configurator> localConfigurators = this.configurators; // local reference
         doOverrideUrl(localConfigurators);
-        List<Configurator> localAppDynamicConfigurators = CONSUMER_CONFIGURATION_LISTENER.getConfigurators(); // local reference
+        List<Configurator> localAppDynamicConfigurators = consumerConfigurationListener.getConfigurators(); // local reference
         doOverrideUrl(localAppDynamicConfigurators);
         if (referenceConfigurationListener != null) {
             List<Configurator> localDynamicConfigurators = referenceConfigurationListener.getConfigurators(); // local reference
@@ -619,7 +623,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         private RegistryDirectory directory;
         private URL url;
 
-        ReferenceConfigurationListener(RegistryDirectory directory, URL url) {
+        ReferenceConfigurationListener(ApplicationModel applicationModel, RegistryDirectory directory, URL url) {
+            super(applicationModel);
             this.directory = directory;
             this.url = url;
             this.initWith(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
@@ -639,8 +644,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
         List<RegistryDirectory> listeners = new ArrayList<>();
 
-        ConsumerConfigurationListener() {
-            this.initWith(ApplicationModel.getName() + CONFIGURATORS_SUFFIX);
+        ConsumerConfigurationListener(ApplicationModel applicationModel) {
+            super(applicationModel);
+            this.initWith(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX);
         }
 
         void addNotifyListener(RegistryDirectory listener) {

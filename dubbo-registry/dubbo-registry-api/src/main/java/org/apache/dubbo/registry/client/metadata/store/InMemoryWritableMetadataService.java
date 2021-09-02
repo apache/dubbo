@@ -32,6 +32,7 @@ import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import com.google.gson.Gson;
@@ -74,7 +75,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  * @see WritableMetadataService
  * @since 2.7.5
  */
-public class InMemoryWritableMetadataService implements WritableMetadataService {
+public class InMemoryWritableMetadataService implements WritableMetadataService, ScopeModelAware {
 
     Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -113,9 +114,25 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
 
     ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private ApplicationModel applicationModel;
 
     public InMemoryWritableMetadataService() {
         this.metadataInfos = new ConcurrentHashMap<>();
+    }
+
+    /**
+     * Gets the current Dubbo Service name
+     *
+     * @return non-null
+     */
+    @Override
+    public String serviceName() {
+        return ApplicationModel.ofNullable(applicationModel).getApplicationName();
+    }
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
     }
 
     @Override
@@ -167,7 +184,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         try {
             String[] clusters = getRegistryCluster(url).split(",");
             for (String cluster : clusters) {
-                MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> new MetadataInfo(ApplicationModel.getName()));
+                MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> new MetadataInfo(applicationModel.getApplicationName()));
                 metadataInfo.addService(new ServiceInfo(url));
             }
             metadataSemaphore.release();
@@ -298,7 +315,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     public void blockUntilUpdated() {
         try {
-            metadataSemaphore.tryAcquire(ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L, TimeUnit.MILLISECONDS);
+            metadataSemaphore.tryAcquire(ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L, TimeUnit.MILLISECONDS);
             metadataSemaphore.drainPermits();
             updateLock.writeLock().lock();
         } catch (InterruptedException e) {

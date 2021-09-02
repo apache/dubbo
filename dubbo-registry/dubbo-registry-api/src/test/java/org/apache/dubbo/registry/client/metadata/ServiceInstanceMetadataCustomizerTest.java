@@ -48,7 +48,7 @@ public class ServiceInstanceMetadataCustomizerTest {
     private InMemoryWritableMetadataService metadataService;
 
     public static DefaultServiceInstance createInstance() {
-        return new DefaultServiceInstance("A", "127.0.0.1", 20880);
+        return new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
     }
 
     @BeforeAll
@@ -81,8 +81,8 @@ public class ServiceInstanceMetadataCustomizerTest {
         ServiceInstanceMetadataCustomizer customizer = new ServiceInstanceMetadataCustomizer();
         try (MockedStatic<ConfigurationUtils> mockedUtils = Mockito.mockStatic(ConfigurationUtils.class)) {
             try (MockedStatic<WritableMetadataService> mockMetadataService = Mockito.mockStatic(WritableMetadataService.class)) {
-                mockMetadataService.when(() -> WritableMetadataService.getDefaultExtension()).thenReturn(metadataService);
-                mockedUtils.when(() -> ConfigurationUtils.getProperty(DUBBO_LABELS)).thenReturn("k1=v1;k2=v2");
+                mockMetadataService.when(() -> WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel())).thenReturn(metadataService);
+                mockedUtils.when(() -> ConfigurationUtils.getProperty(ApplicationModel.defaultModel(), DUBBO_LABELS)).thenReturn("k1=v1;k2=v2");
 //            mockedUtils.when(() -> ConfigurationUtils.getProperty(DUBBO_ENV_KEYS)).thenReturn("ENV_KEY1;ENV_KEY1");
 //            mockedUtils.when(() -> ConfigurationUtils.getProperty(ENV_KEY1)).thenReturn("");
 

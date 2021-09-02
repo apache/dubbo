@@ -19,7 +19,8 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
+import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,14 +31,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.interfaceFromServiceKey;
 import static org.apache.dubbo.common.BaseServiceMetadata.versionFromServiceKey;
 
-public class ServiceRepository extends LifecycleAdapter implements FrameworkExt {
+public class ServiceRepository extends LifecycleAdapter implements FrameworkExt, ExtensionAccessorAware {
 
     public static final String NAME = "repository";
 
@@ -55,10 +55,15 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
 
     // useful to find a url quickly with serviceInterfaceName:version
     private ConcurrentMap<String, Set<URL>> providerUrlsWithoutGroup = new ConcurrentHashMap<>();
+    private ExtensionAccessor extensionAccessor;
 
     public ServiceRepository() {
+    }
+
+    @Override
+    public void initialize() throws IllegalStateException {
         Set<BuiltinServiceDetector> builtinServices
-            = ExtensionLoader.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();
+            = extensionAccessor.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(builtinServices)) {
             for (BuiltinServiceDetector service : builtinServices) {
                 registerService(service.getService());
@@ -104,11 +109,14 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
                                  ServiceDescriptor serviceDescriptor,
                                  ReferenceConfigBase<?> rc,
                                  Object proxy,
-                                 ServiceMetadata serviceMetadata,
-                                 Map<String, AsyncMethodInfo> methodConfigs) {
+                                 ServiceMetadata serviceMetadata) {
         ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
-            serviceMetadata, methodConfigs);
+            serviceMetadata, null);
         consumers.putIfAbsent(serviceKey, consumerModel);
+    }
+
+    public void registerConsumer(ConsumerModel consumerModel) {
+        consumers.putIfAbsent(consumerModel.getServiceKey(), consumerModel);
     }
 
     public void reRegisterConsumer(String newServiceKey, String serviceKey) {
@@ -124,10 +132,15 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
                                  ServiceDescriptor serviceModel,
                                  ServiceConfigBase<?> serviceConfig,
                                  ServiceMetadata serviceMetadata) {
-        ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel, serviceConfig,
-            serviceMetadata);
+        ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel,
+            serviceConfig, serviceMetadata);
         providers.putIfAbsent(serviceKey, providerModel);
         providersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), providerModel);
+    }
+
+    public void registerProvider(ProviderModel providerModel) {
+        providers.putIfAbsent(providerModel.getServiceKey(), providerModel);
+        providersWithoutGroup.putIfAbsent(keyWithoutGroup(providerModel.getServiceKey()), providerModel);
     }
 
     private static String keyWithoutGroup(String serviceKey) {
@@ -212,5 +225,10 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         consumers.clear();
         providers.clear();
         providersWithoutGroup.clear();
+    }
+
+    @Override
+    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
+        this.extensionAccessor = extensionAccessor;
     }
 }

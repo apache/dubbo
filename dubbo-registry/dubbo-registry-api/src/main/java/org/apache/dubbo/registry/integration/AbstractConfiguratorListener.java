@@ -21,13 +21,13 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -48,12 +48,21 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     private static final Logger logger = LoggerFactory.getLogger(AbstractConfiguratorListener.class);
 
     protected List<Configurator> configurators = Collections.emptyList();
-    protected GovernanceRuleRepository ruleRepository = ExtensionLoader.getExtensionLoader(
-            GovernanceRuleRepository.class).getDefaultExtension();
+    protected GovernanceRuleRepository ruleRepository;
 
     protected Set<String> securityKey = new HashSet<>();
+    protected ApplicationModel applicationModel;
 
-    {
+    public AbstractConfiguratorListener(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+
+        ruleRepository = applicationModel.getExtensionLoader(
+            GovernanceRuleRepository.class).getDefaultExtension();
+
+        initSecurityKey();
+    }
+
+    private void initSecurityKey() {
         // accessLogKey and FileRouterFactory key
         securityKey.add(ACCESS_LOG_KEY);
         securityKey.add(ROUTER_KEY);

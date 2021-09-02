@@ -72,7 +72,8 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         GrpcRemotingServer grpcServer = (GrpcRemotingServer) protocolServer.getRemotingServer();
 
-        ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
+        // TODO: fetch from FrameworkModel
+        ServiceRepository serviceRepository = ApplicationModel.defaultModel().getApplicationServiceRepository();
         ProviderModel providerModel = serviceRepository.lookupExportedService(url.getServiceKey());
         if (providerModel == null) {
             throw new IllegalStateException("Service " + url.getServiceKey() + "should have already been stored in service repository, " +
@@ -119,11 +120,17 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         // CallOptions
         try {
+            ReferenceConfigBase<?> referenceConfig;
+            if (url.getServiceModel() != null) {
+                referenceConfig = url.getServiceModel().getReferenceConfig();
+            } else {
+                referenceConfig = ApplicationModel.getConsumerModel(url.getServiceKey()).getReferenceConfig();
+            }
             @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null,
                     channel,
                     GrpcOptionsUtils.buildCallOptions(url),
                     url,
-                    ApplicationModel.getConsumerModel(url.getServiceKey()).getReferenceConfig()
+                    referenceConfig
             );
             final Invoker<T> target = proxyFactory.getInvoker(stub, type, url);
             GrpcInvoker<T> grpcInvoker = new GrpcInvoker<>(type, url, target, channel);

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -31,14 +33,14 @@ public class ConfigurationUtilsTest {
     @Test
     public void testGetServerShutdownTimeout () {
         System.setProperty(SHUTDOWN_WAIT_KEY, " 10000");
-        Assertions.assertEquals(10000, ConfigurationUtils.getServerShutdownTimeout());
+        Assertions.assertEquals(10000, ConfigurationUtils.getServerShutdownTimeout(ApplicationModel.defaultModel()));
         System.clearProperty(SHUTDOWN_WAIT_KEY);
     }
 
     @Test
     public void testGetProperty () {
         System.setProperty(SHUTDOWN_WAIT_KEY, " 10000");
-        Assertions.assertEquals("10000", ConfigurationUtils.getProperty(SHUTDOWN_WAIT_KEY));
+        Assertions.assertEquals("10000", ConfigurationUtils.getProperty(ApplicationModel.defaultModel(), SHUTDOWN_WAIT_KEY));
         System.clearProperty(SHUTDOWN_WAIT_KEY);
     }
 

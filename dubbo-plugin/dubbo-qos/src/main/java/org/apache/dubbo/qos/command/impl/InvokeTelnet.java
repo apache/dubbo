@@ -87,7 +87,7 @@ public class InvokeTelnet implements BaseCommand {
             selectedProvider = channel.attr(INVOKE_METHOD_PROVIDER_KEY).get();
             invokeMethod = channel.attr(SelectTelnet.SELECT_METHOD_KEY).get();
         } else {
-            for (ProviderModel provider : ApplicationModel.allProviderModels()) {
+            for (ProviderModel provider : ApplicationModel.defaultModel().allProviderModels()) {
                 if (!isServiceMatch(service, provider)) {
                     continue;
                 }

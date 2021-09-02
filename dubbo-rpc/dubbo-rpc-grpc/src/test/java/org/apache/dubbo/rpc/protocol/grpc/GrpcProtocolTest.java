@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.grpc;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -27,12 +25,16 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.grpc.support.DubboGreeterGrpc;
 import org.apache.dubbo.rpc.protocol.grpc.support.GrpcGreeterImpl;
 import org.apache.dubbo.rpc.protocol.grpc.support.HelloReply;
 import org.apache.dubbo.rpc.protocol.grpc.support.HelloRequest;
+
+import com.google.common.util.concurrent.ListenableFuture;
+import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -51,8 +53,8 @@ public class GrpcProtocolTest {
 
         URL url = URL.valueOf("grpc://127.0.0.1:" + availablePort + "/" + DubboGreeterGrpc.IGreeter.class.getName());
 
-        ServiceDescriptor serviceDescriptor = ApplicationModel.getServiceRepository().registerService(DubboGreeterGrpc.IGreeter.class);
-        ApplicationModel.getServiceRepository().registerProvider(
+        ServiceDescriptor serviceDescriptor = ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(DubboGreeterGrpc.IGreeter.class);
+        ApplicationModel.defaultModel().getApplicationServiceRepository().registerProvider(
             url.getServiceKey(),
             serviceImpl,
             serviceDescriptor,
@@ -68,13 +70,10 @@ public class GrpcProtocolTest {
         serviceMetadata.setServiceKey(URL.buildKey(DubboGreeterGrpc.IGreeter.class.getName(), null, null));
 
         Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
-        ApplicationModel.getServiceRepository().registerConsumer(
-            url.getServiceKey(),
-            serviceDescriptor,
-            mockReferenceConfig,
-            null,
-            serviceMetadata,
-            methodConfigs);
+        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), null, serviceDescriptor, mockReferenceConfig,
+            serviceMetadata, methodConfigs);
+
+        ApplicationModel.defaultModel().getApplicationServiceRepository().registerConsumer(consumerModel);
 
         protocol.export(proxy.getInvoker(serviceImpl, DubboGreeterGrpc.IGreeter.class, url));
         serviceImpl = proxy.getProxy(protocol.refer(DubboGreeterGrpc.IGreeter.class, url));
@@ -103,7 +102,7 @@ public class GrpcProtocolTest {
             }
         });
         // resource recycle.
-        ApplicationModel.getServiceRepository().destroy();
+        ApplicationModel.defaultModel().getApplicationServiceRepository().destroy();
     }
 
     class MockReferenceConfig extends ReferenceConfigBase {

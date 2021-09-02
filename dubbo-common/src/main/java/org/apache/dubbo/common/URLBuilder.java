@@ -19,11 +19,14 @@ package org.apache.dubbo.common;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.apache.dubbo.common.constants.CommonConstants.SCOPE_MODEL;
 
 public final class URLBuilder extends ServiceConfigURL {
     private String protocol;
@@ -203,6 +206,12 @@ public final class URLBuilder extends ServiceConfigURL {
     @Override
     public URLBuilder setPath(String path) {
         this.path = path;
+        return this;
+    }
+
+    @Override
+    public URLBuilder setScopeModel(ScopeModel scopeModel) {
+        this.attributes.put(SCOPE_MODEL, scopeModel);
         return this;
     }
 

@@ -69,6 +69,7 @@ public class InMemoryMetadataServiceTest {
     @Test
     public void testExport() {
         InMemoryWritableMetadataService metadataService = new InMemoryWritableMetadataService();
+        metadataService.setApplicationModel(ApplicationModel.defaultModel());
         // export normal url
         URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
@@ -155,6 +156,7 @@ public class InMemoryMetadataServiceTest {
     @Test
     public void testUnExport() {
         InMemoryWritableMetadataService metadataService = new InMemoryWritableMetadataService();
+        metadataService.setApplicationModel(ApplicationModel.defaultModel());
         // export normal url
         URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -34,6 +35,11 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -93,7 +99,7 @@ class CallbackServiceCodec {
      * @throws IOException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static String exportOrUnexportCallbackService(Channel channel, URL url, Class clazz, Object inst, Boolean export) throws IOException {
+    private static String exportOrUnexportCallbackService(Channel channel, RpcInvocation inv, URL url, Class clazz, Object inst, Boolean export) throws IOException {
         int instid = System.identityHashCode(inst);
 
         Map<String, String> params = new HashMap<>(3);
@@ -129,7 +135,24 @@ class CallbackServiceCodec {
             // one channel can have multiple callback instances, no need to re-export for different instance.
             if (!channel.hasAttribute(cacheKey)) {
                 if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, false)) {
-                    ApplicationModel.getServiceRepository().registerService(clazz);
+                    ModuleModel moduleModel;
+                    if (inv.getServiceModel() == null) {
+                        moduleModel = ApplicationModel.defaultModel().getDefaultModule();
+                        logger.error("Unable to get Service Model from Invocation. Please check if your invocation failed! " +
+                            "This error only happen in UT cases! Invocation:" + inv);
+                    } else {
+                        moduleModel = inv.getServiceModel().getModuleModel();
+                    }
+                    ServiceDescriptor serviceDescriptor = ScopeModelUtil.getApplicationModel(moduleModel).getApplicationServiceRepository().registerService(clazz);
+                    ProviderModel providerModel = new ProviderModel(BaseServiceMetadata.buildServiceKey(exportUrl.getPath(), group, exportUrl.getVersion()),
+                        inst,
+                        serviceDescriptor,
+                        null,
+                        moduleModel,
+                        new ServiceMetadata(clazz.getName() + "." + instid, exportUrl.getGroup(), exportUrl.getVersion(), clazz));
+                    moduleModel.getApplicationModel().getApplicationServiceRepository().registerProvider(providerModel);
+                    exportUrl = exportUrl.setScopeModel(moduleModel);
+                    exportUrl = exportUrl.setServiceModel(providerModel);
                     Invoker<?> invoker = PROXY_FACTORY.getInvoker(inst, clazz, exportUrl);
                     // should destroy resource?
                     Exporter<?> exporter = PROTOCOL.export(invoker);
@@ -167,7 +190,7 @@ class CallbackServiceCodec {
                 URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + INTERFACE_KEY + "=" + clazz.getName());
                 referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(METHODS_KEY);
                 if (!isInstancesOverLimit(channel, referurl, clazz.getName(), instid, true)) {
-                    ApplicationModel.getServiceRepository().registerService(clazz);
+                    ScopeModelUtil.getApplicationModel(url.getScopeModel()).getApplicationServiceRepository().registerService(clazz);
                     @SuppressWarnings("rawtypes")
                     Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referurl, String.valueOf(instid));
                     proxy = PROXY_FACTORY.getProxy(invoker);
@@ -276,10 +299,10 @@ class CallbackServiceCodec {
         Class<?>[] pts = inv.getParameterTypes();
         switch (callbackStatus) {
             case CallbackServiceCodec.CALLBACK_CREATE:
-                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], true));
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, inv,  url, pts[paraIndex], args[paraIndex], true));
                 return null;
             case CallbackServiceCodec.CALLBACK_DESTROY:
-                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, url, pts[paraIndex], args[paraIndex], false));
+                inv.setAttachment(INV_ATT_CALLBACK_KEY + paraIndex, exportOrUnexportCallbackService(channel, inv,  url, pts[paraIndex], args[paraIndex], false));
                 return null;
             default:
                 return args[paraIndex];

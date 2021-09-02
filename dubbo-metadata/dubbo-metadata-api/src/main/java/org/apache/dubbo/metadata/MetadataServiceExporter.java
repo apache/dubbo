@@ -24,6 +24,7 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 /**
  * The exporter of {@link MetadataService}
@@ -33,7 +34,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @see #unexport()
  * @since 2.7.5
  */
-@SPI(DEFAULT_METADATA_STORAGE_TYPE)
+@SPI(value = DEFAULT_METADATA_STORAGE_TYPE, scope = APPLICATION)
 public interface MetadataServiceExporter extends Prioritized {
 
     /**

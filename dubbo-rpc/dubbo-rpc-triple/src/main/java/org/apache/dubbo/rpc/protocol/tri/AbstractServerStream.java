@@ -91,7 +91,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     }
 
     private static ProviderModel lookupProviderModel(URL url) {
-        ServiceRepository repo = ApplicationModel.getServiceRepository();
+        // TODO: fetch from FrameworkModel
+        ServiceRepository repo = ApplicationModel.defaultModel().getApplicationServiceRepository();
         final ProviderModel model = repo.lookupExportedService(url.getServiceKey());
         if (model != null) {
             ClassLoadUtil.switchContextLoader(model.getServiceInterfaceClass().getClassLoader());
@@ -121,11 +122,10 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     }
 
     protected RpcInvocation buildInvocation(Metadata metadata) {
-        RpcInvocation inv = new RpcInvocation();
-        inv.setServiceName(getServiceDescriptor().getServiceName());
+        RpcInvocation inv = new RpcInvocation(getUrl().getServiceModel(),
+            getMethodName(), getServiceDescriptor().getServiceName(),
+            getUrl().getProtocolServiceKey(), getMethodDescriptor().getParameterClasses(), new Object[0]);
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
-        inv.setMethodName(getMethodDescriptor().getMethodName());
-        inv.setParameterTypes(getMethodDescriptor().getParameterClasses());
         inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
 
         final Map<String, Object> attachments = parseMetadataToAttachmentMap(metadata);
