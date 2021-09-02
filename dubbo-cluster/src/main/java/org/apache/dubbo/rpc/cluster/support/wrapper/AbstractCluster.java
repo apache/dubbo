@@ -123,6 +123,10 @@ public abstract class AbstractCluster implements Cluster {
         protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
            return null;
         }
+
+        public ClusterInvoker<T> getFilterInvoker() {
+            return filterInvoker;
+        }
     }
 
     static class InvocationInterceptorInvoker<T> extends AbstractClusterInvoker<T> {

@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.grpc;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -79,6 +81,26 @@ public class GrpcProtocolTest {
         HelloReply hello = serviceImpl.sayHello(HelloRequest.newBuilder().setName("World").build());
         Assertions.assertEquals("Hello World", hello.getMessage());
 
+        ListenableFuture<HelloReply> future = serviceImpl.sayHelloAsync(HelloRequest.newBuilder().setName("World").build());
+        Assertions.assertEquals("Hello World", future.get().getMessage());
+
+        serviceImpl.sayHello(HelloRequest.newBuilder().setName("World").build(), new StreamObserver<HelloReply>() {
+
+            @Override
+            public void onNext(HelloReply helloReply) {
+                Assertions.assertEquals("Hello World", helloReply.getMessage());
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("onCompleted");
+            }
+        });
         // resource recycle.
         ApplicationModel.defaultModel().getApplicationServiceRepository().destroy();
     }

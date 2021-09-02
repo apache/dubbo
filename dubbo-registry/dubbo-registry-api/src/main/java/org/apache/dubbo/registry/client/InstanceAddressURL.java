@@ -67,10 +67,12 @@ public class InstanceAddressURL extends URL {
         return RpcContext.getServiceContext().getInterfaceName();
     }
 
+    @Override
     public String getGroup() {
         return RpcContext.getServiceContext().getGroup();
     }
 
+    @Override
     public String getVersion() {
         return RpcContext.getServiceContext().getVersion();
     }

@@ -14,8 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata.store;
+package org.apache.dubbo.registry.integration;
 
 
-public class RemoteMetadataServiceImplTest {
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+
+public class CountRegistryProtocolListener implements RegistryProtocolListener {
+
+    private static final AtomicInteger referCounter = new AtomicInteger(0);
+
+    @Override
+    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
+
+    }
+
+    @Override
+    public void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url, URL registryURL) {
+        referCounter.incrementAndGet();
+    }
+
+    @Override
+    public void onDestroy() {
+
+    }
+
+    public static AtomicInteger getReferCounter() {
+        return referCounter;
+    }
 }

@@ -541,7 +541,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         // all attributes of REFER_KEY
-        Map<String, String> parameters = new HashMap<String, String>(directory.getConsumerUrl().getParameters());
+        Map<String, String> parameters = new HashMap<>(directory.getConsumerUrl().getParameters());
         URL urlToRegistry = new ServiceConfigURL(
             parameters.get(PROTOCOL_KEY) == null ? DUBBO : parameters.get(PROTOCOL_KEY),
             parameters.remove(REGISTER_IP_KEY), 0, getPath(parameters, type), parameters);
@@ -607,7 +607,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
         }
 
-        List<Exporter<?>> exporters = new ArrayList<Exporter<?>>(bounds.values());
+        List<Exporter<?>> exporters = new ArrayList<>(bounds.values());
         for (Exporter<?> exporter : exporters) {
             exporter.unexport();
         }
@@ -620,7 +620,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     //Merge the urls of configurators
-    private static URL getConfigedInvokerUrl(List<Configurator> configurators, URL url) {
+    private static URL getConfiguredInvokerUrl(List<Configurator> configurators, URL url) {
         if (configurators != null && configurators.size() > 0) {
             for (Configurator configurator : configurators) {
                 url = configurator.configure(url);
@@ -728,9 +728,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             //The current, may have been merged many times
             URL currentUrl = exporter.getInvoker().getUrl();
             //Merged with this configuration
-            URL newUrl = getConfigedInvokerUrl(configurators, originUrl);
-            newUrl = getConfigedInvokerUrl(getProviderConfigurationListener(originUrl).getConfigurators(), newUrl);
-            newUrl = getConfigedInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
+            URL newUrl = getConfiguredInvokerUrl(configurators, originUrl);
+            newUrl = getConfiguredInvokerUrl(getProviderConfigurationListener(originUrl).getConfigurators(), newUrl);
+            newUrl = getConfiguredInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
                 .getConfigurators(), newUrl);
             if (!currentUrl.equals(newUrl)) {
                 if (newUrl.getParameter(Constants.NEED_REEXPORT, true)) {
@@ -742,7 +742,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
 
         private List<URL> getMatchedUrls(List<URL> configuratorUrls, URL currentSubscribe) {
-            List<URL> result = new ArrayList<URL>();
+            List<URL> result = new ArrayList<>();
             for (URL url : configuratorUrls) {
                 URL overrideUrl = url;
                 // Compatible with the old version
@@ -783,7 +783,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
 
         private <T> URL overrideUrl(URL providerUrl) {
-            return RegistryProtocol.getConfigedInvokerUrl(configurators, providerUrl);
+            return RegistryProtocol.getConfiguredInvokerUrl(configurators, providerUrl);
         }
 
         @Override
@@ -811,7 +811,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
          * @return
          */
         private <T> URL overrideUrl(URL providerUrl) {
-            return RegistryProtocol.getConfigedInvokerUrl(configurators, providerUrl);
+            return RegistryProtocol.getConfiguredInvokerUrl(configurators, providerUrl);
         }
 
         @Override

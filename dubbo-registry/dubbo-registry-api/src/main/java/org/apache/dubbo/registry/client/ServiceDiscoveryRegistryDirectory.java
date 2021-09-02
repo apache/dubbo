@@ -55,12 +55,15 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getApplicationModel;
 public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryDirectory.class);
 
-    // instance address to invoker mapping.
-    private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
+    /**
+     * instance address to invoker mapping.
+     * The initial value is null and the midway may be assigned to null, please use the local variable reference
+     */
+    private volatile Map<String, Invoker<T>> urlInvokerMap;
     private final ConsumerConfigurationListener consumerConfigurationListener;
     private volatile ReferenceConfigurationListener referenceConfigurationListener;
     private volatile boolean enableConfigurationListen = true;
-    private volatile List<URL> originalUrls = null; // initial for null
+    private volatile List<URL> originalUrls = null;
     private volatile Map<String, String> overrideQueryMap;
     private volatile Map<String, String> consumerFirstQueryMap;
     private final ApplicationModel applicationModel;
@@ -138,9 +141,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         // Set the context of the address notification thread.
         RpcServiceContext.setRpcContext(getConsumerUrl());
 
-        /**
-         * 3.x added for extend URL address
-         */
+        //  3.x added for extend URL address
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
@@ -185,7 +186,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private InstanceAddressURL overrideWithConfigurator(InstanceAddressURL providerUrl) {
-        // override url with configurator from configurator from "app-name.configurators"
+        // override url with configurator from "app-name.configurators"
         providerUrl = overrideWithConfigurators(consumerConfigurationListener.getConfigurators(), providerUrl);
 
         // override url with configurator from configurators from "service-name.configurators"
@@ -239,7 +240,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
-            this.forbidden = false; // Allow to access
+            this.forbidden = false; // Allow accessing
             Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
             if (CollectionUtils.isEmpty(invokerUrls)) {
                 return;

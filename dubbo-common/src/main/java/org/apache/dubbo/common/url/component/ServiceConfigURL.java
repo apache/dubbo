@@ -91,6 +91,7 @@ public class ServiceConfigURL extends URL {
         this(new PathURLAddress(protocol, username, password, path, host, port), URLParam.parse(parameters), attributes);
     }
 
+    @Override
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
         return (T) new ServiceConfigURL(urlAddress, urlParam, attributes);
     }
@@ -103,6 +104,7 @@ public class ServiceConfigURL extends URL {
         return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
     }
 
+    @Override
     public ServiceConfigURL putAttribute(String key, Object obj) {
         Map<String, Object> newAttributes = new HashMap<>(attributes);
         newAttributes.put(key, obj);
