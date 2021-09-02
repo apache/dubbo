@@ -229,7 +229,7 @@ public class DubboProtocol extends AbstractProtocol {
         Protocol protocolWrapper = scopeModel.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
 
         try {
-            while (protocolWrapper instanceof DubboProtocol) {
+            while (!(protocolWrapper instanceof DubboProtocol)) {
                 Field protocolField = protocolWrapper.getClass().getDeclaredField("protocol");
                 protocolField.setAccessible(true);
                 protocolWrapper = (Protocol) protocolField.get(protocolWrapper);
