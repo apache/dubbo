@@ -84,6 +84,7 @@ public class ServiceOrientedRegistryTest {
 
     @BeforeEach
     public void init() {
+        ApplicationModel.reset();
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ModuleModel scopeModel = applicationModel.getDefaultModule();
         registryURL.setScopeModel(scopeModel);
