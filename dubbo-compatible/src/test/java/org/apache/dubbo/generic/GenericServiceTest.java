@@ -49,7 +49,6 @@ public class GenericServiceTest {
 
     @BeforeEach
     public void beforeEach() {
-        DubboBootstrap.getInstance();
         DubboBootstrap.reset();
     }
 

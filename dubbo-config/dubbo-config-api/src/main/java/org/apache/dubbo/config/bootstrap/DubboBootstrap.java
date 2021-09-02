@@ -132,7 +132,7 @@ public class DubboBootstrap {
 
     private static final String NAME = DubboBootstrap.class.getSimpleName();
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DubboBootstrap.class);
 
     private static volatile DubboBootstrap instance;
 
@@ -237,6 +237,7 @@ public class DubboBootstrap {
             }
             MetadataReportInstance.reset();
             AbstractRegistryFactory.reset();
+            destroyAllProtocols();
             FrameworkModel.destroyAll();
         } else {
             instance = null;
@@ -1615,7 +1616,7 @@ public class DubboBootstrap {
                     }
 
                     destroyRegistries();
-                    destroyProtocols();
+                    destroyProtocols(applicationModel.getFrameworkModel());
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
                     destroyMetadataReports();
@@ -1678,9 +1679,9 @@ public class DubboBootstrap {
     /**
      * Destroy all the protocols.
      */
-    private void destroyProtocols() {
+    private static void destroyProtocols(FrameworkModel frameworkModel) {
         //TODO destroy protocol in framework scope
-        ExtensionLoader<Protocol> loader = getExtensionLoader(Protocol.class);
+        ExtensionLoader<Protocol> loader = frameworkModel.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {
                 Protocol protocol = loader.getLoadedExtension(protocolName);
@@ -1690,6 +1691,12 @@ public class DubboBootstrap {
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
             }
+        }
+    }
+
+    private static void destroyAllProtocols() {
+        for (FrameworkModel frameworkModel : FrameworkModel.getAllInstances()) {
+            destroyProtocols(frameworkModel);
         }
     }
 
