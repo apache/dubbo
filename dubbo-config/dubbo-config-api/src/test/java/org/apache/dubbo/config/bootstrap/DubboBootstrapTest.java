@@ -331,7 +331,7 @@ public class DubboBootstrapTest {
 
     private void assertMetadataService(DubboBootstrap bootstrap, int availablePort, boolean shouldReport) {
         Assertions.assertTrue(bootstrap.metadataServiceExporter.isExported());
-        DubboProtocol protocol = DubboProtocol.getDubboProtocol();
+        DubboProtocol protocol = DubboProtocol.getDubboProtocol(bootstrap.getApplicationModel());
         Map<String, Exporter<?>> exporters = protocol.getExporterMap();
         Assertions.assertEquals(2, exporters.size());
 
