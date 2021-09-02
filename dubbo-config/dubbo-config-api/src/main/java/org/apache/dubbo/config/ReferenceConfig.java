@@ -421,6 +421,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (StringUtils.isEmpty(url.getPath())) {
                     url = url.setPath(interfaceName);
                 }
+                url = url.setScopeModel(getScopeModel());
                 url = url.setServiceModel(consumerModel);
                 if (UrlUtils.isRegistry(url)) {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
@@ -445,6 +446,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (monitorUrl != null) {
                     u = u.putAttribute(MONITOR_KEY, monitorUrl);
                 }
+                u = u.setScopeModel(getScopeModel());
                 u = u.setServiceModel(consumerModel);
                 urls.add(u.putAttribute(REFER_KEY, referenceParameters));
             }

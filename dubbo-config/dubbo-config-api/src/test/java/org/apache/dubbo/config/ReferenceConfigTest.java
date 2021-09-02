@@ -28,9 +28,6 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
-
-import org.apache.dubbo.metadata.report.MetadataReport;
-import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -480,9 +477,6 @@ public class ReferenceConfigTest {
         Assertions.assertEquals("value2", url.getParameter("key2"));
 
         dubboBootstrap.stop();
-
-        applicationModelMockedStatic.closeOnDemand();
-        metadataReportInstanceMockedStatic.closeOnDemand();
     }
 
     /**
@@ -498,10 +492,7 @@ public class ReferenceConfigTest {
         referenceConfig.setLazy(false);
         referenceConfig.setInjvm(false);
 
-        DubboBootstrap.getInstance()
-            .application("application1")
-            .initialize();
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
@@ -509,35 +500,6 @@ public class ReferenceConfigTest {
         parameters.put("key1", "value1");
         parameters.put("key2", "value2");
         applicationConfig.setParameters(parameters);
-
-        ConfigManager configManager = mock(ConfigManager.class);
-        Environment environment = mock(Environment.class);
-        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-        ServiceRepository serviceRepository = mock(ServiceRepository.class);
-        ConsumerModel consumerModel = mock(ConsumerModel.class);
-
-        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
-
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-        applicationModelMockedStatic.when(ApplicationModel::getServiceRepository).thenReturn(serviceRepository);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
-        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
-            .thenReturn(true);
-
-        MockedStatic<MetadataReportInstance> metadataReportInstanceMockedStatic =
-            Mockito.mockStatic(MetadataReportInstance.class);
-
-        MetadataReport metadataReport = mock(MetadataReport.class);
-        metadataReportInstanceMockedStatic.when(() -> MetadataReportInstance.getMetadataReport("default"))
-            .thenReturn(metadataReport);
-
-
-        when(serviceRepository.lookupReferredService("org.apache.dubbo.config.api.DemoService"))
-            .thenReturn(consumerModel);
 
         referenceConfig.refreshed.set(true);
         referenceConfig.setInterface(DemoService.class);
@@ -550,11 +512,15 @@ public class ReferenceConfigTest {
 
         referenceConfig.setRegistry(registry);
 
+        dubboBootstrap
+            .application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
+
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
 
-        applicationModelMockedStatic.closeOnDemand();
-        metadataReportInstanceMockedStatic.closeOnDemand();
+        dubboBootstrap.destroy();
     }
 
     /**
@@ -570,10 +536,7 @@ public class ReferenceConfigTest {
         referenceConfig.setLazy(false);
         referenceConfig.setInjvm(false);
 
-        DubboBootstrap.getInstance()
-            .application("application1")
-            .initialize();
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
@@ -582,46 +545,22 @@ public class ReferenceConfigTest {
         parameters.put("key2", "value2");
         applicationConfig.setParameters(parameters);
 
-        ConfigManager configManager = mock(ConfigManager.class);
-        Environment environment = mock(Environment.class);
-        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-        ServiceRepository serviceRepository = mock(ServiceRepository.class);
-        ConsumerModel consumerModel = mock(ConsumerModel.class);
-
-        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
-
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-        applicationModelMockedStatic.when(ApplicationModel::getServiceRepository).thenReturn(serviceRepository);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
-        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
-            .thenReturn(true);
-
-        MockedStatic<MetadataReportInstance> metadataReportInstanceMockedStatic =
-            Mockito.mockStatic(MetadataReportInstance.class);
-
-        MetadataReport metadataReport = mock(MetadataReport.class);
-        metadataReportInstanceMockedStatic.when(() -> MetadataReportInstance.getMetadataReport("default"))
-            .thenReturn(metadataReport);
-
-
-        when(serviceRepository.lookupReferredService("org.apache.dubbo.config.api.DemoService"))
-            .thenReturn(consumerModel);
-
         referenceConfig.refreshed.set(true);
         referenceConfig.setInterface(DemoService.class);
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
 
         referenceConfig.setUrl(registryUrl);
+
+        dubboBootstrap
+            .application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
+
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
+        dubboBootstrap.destroy();
 
-        applicationModelMockedStatic.closeOnDemand();
-        metadataReportInstanceMockedStatic.closeOnDemand();
     }
 
 
