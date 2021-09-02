@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.context.FrameworkExt;
-import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
@@ -32,7 +31,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * {@link ExtensionLoader}, {@code DubboBootstrap} and this class are at present designed to be
@@ -54,7 +52,6 @@ public class ApplicationModel extends ScopeModel {
     private static volatile ApplicationModel defaultInstance;
 
     private volatile List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
-    private AtomicBoolean inited = new AtomicBoolean(false);
     private Environment environment;
     private ConfigManager configManager;
     private ServiceRepository serviceRepository;
@@ -152,27 +149,29 @@ public class ApplicationModel extends ScopeModel {
     // ------------- instance methods ---------------//
 
     public ApplicationModel(FrameworkModel frameworkModel) {
-        super(frameworkModel, new ExtensionDirector(frameworkModel.getExtensionDirector(), ExtensionScope.APPLICATION));
+        super(frameworkModel, ExtensionScope.APPLICATION);
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
-        internalModule = new ModuleModel(this);
-        this.serviceRepository = new ServiceRepository(this);
         initialize();
     }
 
-    private void initialize() {
-        if (inited.compareAndSet(false, true)) {
-            ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
-            Set<String> listenerNames = extensionLoader.getSupportedExtensions();
-            for (String listenerName : listenerNames) {
-                extensionLoader.getExtension(listenerName).init();
-            }
+    protected void initialize() {
+        super.initialize();
+        internalModule = new ModuleModel(this);
+        this.serviceRepository = new ServiceRepository(this);
 
-            postProcessAfterCreated();
+        ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
+        Set<String> listenerNames = extensionLoader.getSupportedExtensions();
+        for (String listenerName : listenerNames) {
+            extensionLoader.getExtension(listenerName).init();
         }
+
+        initFrameworkExts();
+
+        postProcessAfterCreated();
     }
 
-    public void initFrameworkExts() {
+    private void initFrameworkExts() {
         Set<FrameworkExt> exts = this.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
         for (FrameworkExt ext : exts) {
             ext.initialize();
@@ -181,6 +180,9 @@ public class ApplicationModel extends ScopeModel {
 
     public void destroy() {
         // TODO destroy application resources
+        for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
+            moduleModel.destroy();
+        }
     }
 
     public FrameworkModel getFrameworkModel() {

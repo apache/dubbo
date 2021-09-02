@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -24,7 +23,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
@@ -41,24 +39,26 @@ public class FrameworkModel extends ScopeModel {
 
     private FrameworkServiceRepository serviceRepository;
 
-    private AtomicBoolean inited = new AtomicBoolean(false);
-
 
     public FrameworkModel() {
-        super(null, new ExtensionDirector(null, ExtensionScope.FRAMEWORK));
-        serviceRepository = new FrameworkServiceRepository(this);
-        allInstances.add(this);
+        super(null, ExtensionScope.FRAMEWORK);
         initialize();
     }
 
-    private void initialize() {
-        if (inited.compareAndSet(false, true)) {
-            postProcessAfterCreated();
-        }
+    protected void initialize() {
+        super.initialize();
+        serviceRepository = new FrameworkServiceRepository(this);
+        allInstances.add(this);
+
+        postProcessAfterCreated();
     }
 
     public void destroy() {
         //TODO destroy framework model
+        for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
+            applicationModel.destroy();
+        }
+
         allInstances.remove(this);
         if (defaultInstance == this) {
             defaultInstance = null;

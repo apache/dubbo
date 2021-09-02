@@ -585,8 +585,6 @@ public class DubboBootstrap {
             return;
         }
 
-        getApplicationModel().initFrameworkExts();
-
         startConfigCenter();
 
         loadConfigsFromProps();

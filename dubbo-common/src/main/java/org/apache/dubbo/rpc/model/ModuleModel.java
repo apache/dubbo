@@ -16,10 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Model of a service module
@@ -29,20 +26,24 @@ public class ModuleModel extends ScopeModel {
     private String id;
     private final ApplicationModel applicationModel;
     private ModuleServiceRepository serviceRepository;
-    private AtomicBoolean inited = new AtomicBoolean(false);
 
     public ModuleModel(ApplicationModel applicationModel) {
-        super(applicationModel, new ExtensionDirector(applicationModel.getExtensionDirector(), ExtensionScope.MODULE));
+        super(applicationModel, ExtensionScope.MODULE);
         this.applicationModel = applicationModel;
         applicationModel.addModule(this);
-        this.serviceRepository = new ModuleServiceRepository(this);
         initialize();
     }
 
-    private void initialize() {
-        if (inited.compareAndSet(false, true)) {
-            postProcessAfterCreated();
-        }
+    protected void initialize() {
+        super.initialize();
+        this.serviceRepository = new ModuleServiceRepository(this);
+        postProcessAfterCreated();
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        // TODO destroy module resources
     }
 
     public ApplicationModel getApplicationModel() {
