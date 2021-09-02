@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -33,6 +35,8 @@ import static org.apache.dubbo.common.BaseServiceMetadata.versionFromServiceKey;
 public class FrameworkServiceRepository {
     private FrameworkModel frameworkModel;
 
+    private static final Logger logger = LoggerFactory.getLogger(FrameworkServiceRepository.class);
+
     // useful to find a provider model quickly with serviceInterfaceName:version
     private ConcurrentMap<String, ProviderModel> providersWithoutGroup = new ConcurrentHashMap<>();
 
@@ -47,7 +51,9 @@ public class FrameworkServiceRepository {
         String key = keyWithoutGroup(providerModel.getServiceKey());
         ProviderModel previous = providersWithoutGroup.putIfAbsent(key, providerModel);
         if (previous != null && previous != providerModel) {
-            throw new IllegalStateException("Register duplicate provider for key: " + key);
+            // TODO process register duplicate provider
+            //throw new IllegalStateException("Register duplicate provider for key: " + key);
+            logger.error("Register duplicate provider for key: " + key);
         }
     }
 
