@@ -37,8 +37,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import static org.apache.dubbo.integration.Constants.MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY;
 
 /**
  * The testcases are only for checking the process of exporting provider using service-discovery-registry protocol.
@@ -51,11 +55,6 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
      * Define the provider application name.
      */
     public static String PROVIDER_APPLICATION_NAME = "multiple-registry-center-provider-for-service-discovery-registry-protocol";
-
-    /**
-     * The name for getting the specified instance, which is loaded using SPI.
-     */
-    private static String SPI_NAME = "multipleConfigCenterServiceDiscoveryRegistry";
 
     /**
      * Define the protocol's name.
@@ -104,12 +103,16 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
         serviceConfig.setRef(new MultipleRegistryCenterServiceDiscoveryRegistryServiceImpl());
         serviceConfig.setAsync(false);
 
-        // initailize bootstrap
+        // initialize bootstrap
         for (RegistryCenter.Instance instance : registryCenter.getRegistryCenterInstance()) {
-            DubboBootstrap.getInstance().registry(new RegistryConfig(String.format("%s://%s:%s",
+            RegistryConfig registryConfig = new RegistryConfig(String.format("%s://%s:%s",
                 instance.getType(),
                 instance.getHostname(),
-                instance.getPort())));
+                instance.getPort()));
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("registry.listeners", MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY);
+            registryConfig.updateParameters(parameters);
+            DubboBootstrap.getInstance().registry(registryConfig);
             ports.add(instance.getPort());
         }
         DubboBootstrap.getInstance()
@@ -118,7 +121,7 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
             .service(serviceConfig);
         // ---------------initialize--------------- //
         registryServiceListener = (MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListener) ExtensionLoader
-            .getExtensionLoader(RegistryServiceListener.class).getExtension(SPI_NAME);
+            .getExtensionLoader(RegistryServiceListener.class).getExtension(MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY);
         // RegistryServiceListener is not null
         Assertions.assertNotNull(registryServiceListener);
         registryServiceListener.getStorage().clear();

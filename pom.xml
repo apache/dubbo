@@ -320,6 +320,7 @@
                                         **/istio/v1/auth/IstioCertificateServiceGrpc.java,
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
+                                        **/grpc/health/**/*,
                                         **/target/**/*,
                                         **/*.json
                                     </excludes>

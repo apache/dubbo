@@ -64,14 +64,18 @@ public class ExceptionUtils {
         return list.toArray(new String[0]);
     }
 
-    public static List<String> getStackFrameList(final Throwable t) {
+    public static List<String> getStackFrameList(final Throwable t, int maxDepth) {
         final String stackTrace = getStackTrace(t);
         final String linebreak = System.lineSeparator();
         final StringTokenizer frames = new StringTokenizer(stackTrace, linebreak);
         final List<String> list = new ArrayList<>();
-        while (frames.hasMoreTokens()) {
+        for (int i = 0; i < maxDepth && frames.hasMoreTokens(); i++) {
             list.add(frames.nextToken());
         }
         return list;
+    }
+
+    public static List<String> getStackFrameList(final Throwable t) {
+        return getStackFrameList(t, Integer.MAX_VALUE);
     }
 }

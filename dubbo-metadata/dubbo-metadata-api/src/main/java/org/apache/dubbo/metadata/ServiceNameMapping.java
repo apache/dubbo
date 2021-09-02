@@ -42,7 +42,7 @@ public interface ServiceNameMapping {
     /**
      * Map the specified Dubbo service interface, group, version and protocol to current Dubbo service name
      */
-    void map(URL url);
+    boolean map(URL url);
 
     /**
      * Get the default extension of {@link ServiceNameMapping}

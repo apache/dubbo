@@ -226,7 +226,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
 
             if (shouldDelay()) {
-                DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
+                doDelayExport();
             } else {
                 doExport();
             }
@@ -237,13 +237,30 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
+    protected void doDelayExport() {
+        DELAY_EXPORT_EXECUTOR.schedule(() -> {
+            try {
+                doExport();
+            } catch (Exception e) {
+                logger.error("Failed to export service config: " + interfaceName, e);
+            }
+        }, getDelay(), TimeUnit.MILLISECONDS);
+    }
+
     protected void exported() {
         exported = true;
         List<URL> exportedURLs = this.getExportedUrls();
         exportedURLs.forEach(url -> {
             if (url.getParameters().containsKey(SERVICE_NAME_MAPPING_KEY)) {
                 ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
-                serviceNameMapping.map(url);
+                try {
+                    boolean succeeded = serviceNameMapping.map(url);
+                    if (succeeded) {
+                        logger.info("Successfully registered interface application mapping for service " + url.getServiceKey());
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed register interface application mapping for service " + url.getServiceKey(), e);
+                }
             }
         });
         onExported();

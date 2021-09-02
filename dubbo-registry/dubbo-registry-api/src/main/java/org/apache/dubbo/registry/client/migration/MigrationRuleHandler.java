@@ -109,12 +109,6 @@ public class MigrationRuleHandler<T> {
         this.migrationInvoker.setMigrationRule(rule);
     }
 
-    private MigrationStep getMigrationStep(MigrationRule rule, MigrationStep step) {
-        MigrationStep configuredStep = rule.getStep(consumerURL);
-        step = configuredStep == null ? step : configuredStep;
-        return step;
-    }
-
     private Float getMigrationThreshold(MigrationRule rule, Float threshold) {
         Float configuredThreshold = rule.getThreshold(consumerURL);
         threshold = configuredThreshold == null ? threshold : configuredThreshold;
@@ -129,5 +123,10 @@ public class MigrationRuleHandler<T> {
             this.currentStep = currentStep;
             this.migrationInvoker.setMigrationStep(currentStep);
         }
+    }
+
+    // for test purpose
+    public MigrationStep getMigrationStep() {
+        return currentStep;
     }
 }
