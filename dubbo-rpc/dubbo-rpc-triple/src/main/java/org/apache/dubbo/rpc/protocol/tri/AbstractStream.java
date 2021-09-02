@@ -29,7 +29,6 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
-import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -186,10 +185,13 @@ public abstract class AbstractStream implements Stream {
         return transportObserver;
     }
 
-    protected void transportError(GrpcStatus status, Map<String, Object> attachments) {
-        // set metadata
-        Metadata metadata = getMetaData(status);
-        getTransportSubscriber().onMetadata(metadata, false);
+    // https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#responses
+    protected void transportError(GrpcStatus status, Map<String, Object> attachments, boolean onlyTrailers) {
+        if (!onlyTrailers) {
+            // set metadata
+            Metadata metadata = new DefaultMetadata();
+            getTransportSubscriber().onMetadata(metadata, false);
+        }
         // set trailers
         Metadata trailers = getTrailers(status);
         if (attachments != null) {
@@ -197,8 +199,13 @@ public abstract class AbstractStream implements Stream {
         }
         getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
-            LOGGER.error("[Triple-Server-Error] " + status.toMessage());
+            LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
+                + " method=" + getMethodName() +" onlyTrailers=" + onlyTrailers, status.cause);
         }
+    }
+
+    protected void transportError(GrpcStatus status, Map<String, Object> attachments) {
+        transportError(status, attachments,false);
     }
 
     protected void transportError(GrpcStatus status) {
@@ -207,21 +214,7 @@ public abstract class AbstractStream implements Stream {
 
     protected void transportError(Throwable throwable) {
         GrpcStatus status = new GrpcStatus(Code.UNKNOWN, throwable, throwable.getMessage());
-        Metadata metadata = getMetaData(status);
-        getTransportSubscriber().onMetadata(metadata, false);
-        Metadata trailers = getTrailers(status);
-        getTransportSubscriber().onMetadata(trailers, true);
-        if (LOGGER.isErrorEnabled()) {
-            LOGGER.error("[Triple-Server-Error] service=" + getServiceDescriptor().getServiceName()
-                    + " method=" + getMethodName(), throwable);
-        }
-    }
-
-    private Metadata getMetaData(GrpcStatus status) {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), getGrpcMessage(status));
-        metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(status.code.code));
-        return metadata;
+        transportError(status, null);
     }
 
     private String getGrpcMessage(GrpcStatus status) {
@@ -235,17 +228,21 @@ public abstract class AbstractStream implements Stream {
     }
 
     private Metadata getTrailers(GrpcStatus grpcStatus) {
-
         Metadata metadata = new DefaultMetadata();
+        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), getGrpcMessage(grpcStatus));
+        metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
         Status.Builder builder = Status.newBuilder()
                 .setCode(grpcStatus.code.code)
                 .setMessage(getGrpcMessage(grpcStatus));
         Throwable throwable = grpcStatus.cause;
         if (throwable == null) {
+            Status status = builder.build();
+            metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
+                TripleUtil.encodeBase64ASCII(status.toByteArray()));
             return metadata;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
-                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable))
+                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable,10))
                 // can not use now
                 // .setDetail(throwable.getMessage())
                 .build();
@@ -253,21 +250,6 @@ public abstract class AbstractStream implements Stream {
         Status status = builder.build();
         metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
                 TripleUtil.encodeBase64ASCII(status.toByteArray()));
-        // only wrapper mode support exception serialization
-        if (getMethodDescriptor() != null && !getMethodDescriptor().isNeedWrap()) {
-            return metadata;
-        }
-        try {
-            TripleWrapper.TripleExceptionWrapper exceptionWrapper = TripleUtil.wrapException(getUrl(), throwable,
-                    getSerializeType(), getMultipleSerialization());
-            String exceptionStr = TripleUtil.encodeBase64ASCII(exceptionWrapper.toByteArray());
-            if (!TripleUtil.overEachHeaderListSize(exceptionStr)) {
-                metadata.put(TripleHeaderEnum.EXCEPTION_TW_BIN.getHeader(), exceptionStr);
-            }
-        } catch (Throwable t) {
-            LOGGER.warn("Encode triple exception to trailers failed", t);
-        }
-
         return metadata;
     }
 

@@ -42,6 +42,7 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
         this.overrideURL = overrideURL;
     }
 
+    @Override
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
         return (T) new DubboServiceAddressURL(urlAddress, urlParam, this.consumerURL, this.overrideURL);
     }

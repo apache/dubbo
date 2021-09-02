@@ -14,33 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.integration.multiple.exportmetadata;
 
-package org.apache.dubbo.registry;
+/**
+ * The simple implementation for {@link MultipleRegistryCenterExportMetadataService}
+ */
+public class MultipleRegistryCenterExportMetadataServiceImpl implements MultipleRegistryCenterExportMetadataService {
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-
-@Activate(order = 1, value = "listener-one")
-public class RegistryServiceListener1 implements RegistryServiceListener {
-    static RegistryServiceListener delegate;
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void onRegister(URL url, Registry registry) {
-        delegate.onRegister(url, registry);
-    }
-
-    @Override
-    public void onUnregister(URL url, Registry registry) {
-        delegate.onUnregister(url, registry);
-    }
-
-    @Override
-    public void onSubscribe(URL url, Registry registry) {
-        delegate.onSubscribe(url, registry);
-    }
-
-    @Override
-    public void onUnsubscribe(URL url, Registry registry) {
-        delegate.onUnsubscribe(url, registry);
+    public String hello(String name) {
+        return "Hello " + name;
     }
 }

@@ -14,33 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.cluster.support.wrapper;
 
-package org.apache.dubbo.registry;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 
-@Activate(order = 1, value = "listener-one")
-public class RegistryServiceListener1 implements RegistryServiceListener {
-    static RegistryServiceListener delegate;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
+@Activate(value = "demo",group = {CONSUMER})
+public class DemoClusterFilter implements ClusterFilter {
     @Override
-    public void onRegister(URL url, Registry registry) {
-        delegate.onRegister(url, registry);
-    }
-
-    @Override
-    public void onUnregister(URL url, Registry registry) {
-        delegate.onUnregister(url, registry);
-    }
-
-    @Override
-    public void onSubscribe(URL url, Registry registry) {
-        delegate.onSubscribe(url, registry);
-    }
-
-    @Override
-    public void onUnsubscribe(URL url, Registry registry) {
-        delegate.onUnsubscribe(url, registry);
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        return invoker.invoke(invocation);
     }
 }

@@ -14,33 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.integration.multiple.exportmetadata;
 
-package org.apache.dubbo.registry;
+/**
+ * This interface is used to check if the exported metadata service works well or not in multiple registry center.
+ */
+public interface MultipleRegistryCenterExportMetadataService {
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-
-@Activate(order = 1, value = "listener-one")
-public class RegistryServiceListener1 implements RegistryServiceListener {
-    static RegistryServiceListener delegate;
-
-    @Override
-    public void onRegister(URL url, Registry registry) {
-        delegate.onRegister(url, registry);
-    }
-
-    @Override
-    public void onUnregister(URL url, Registry registry) {
-        delegate.onUnregister(url, registry);
-    }
-
-    @Override
-    public void onSubscribe(URL url, Registry registry) {
-        delegate.onSubscribe(url, registry);
-    }
-
-    @Override
-    public void onUnsubscribe(URL url, Registry registry) {
-        delegate.onUnsubscribe(url, registry);
-    }
+    /**
+     * The simple method for testing.
+     */
+    String hello(String name);
 }
