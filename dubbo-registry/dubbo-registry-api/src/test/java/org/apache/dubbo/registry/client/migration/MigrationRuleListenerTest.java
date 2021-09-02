@@ -126,6 +126,7 @@ public class MigrationRuleListenerTest {
         MigrationRuleHandler<?> handler = Mockito.mock(MigrationRuleHandler.class, Mockito.withSettings().verboseLogging());
 
         MigrationRuleListener migrationRuleListener = new MigrationRuleListener();
+        migrationRuleListener.setApplicationModel(ApplicationModel.defaultModel());
         MigrationInvoker<?> migrationInvoker = Mockito.mock(MigrationInvoker.class);
         migrationRuleListener.getHandlers().put(migrationInvoker, handler);
         migrationRuleListener.onRefer(null, migrationInvoker, consumerURL, null);
@@ -171,6 +172,7 @@ public class MigrationRuleListenerTest {
         // Both local rule and remote rule are here
         // Local rule with one delayed task started to apply
         MigrationRuleListener migrationRuleListener = new MigrationRuleListener();
+        migrationRuleListener.setApplicationModel(ApplicationModel.defaultModel());
         Assertions.assertNotNull(migrationRuleListener.localRuleMigrationFuture);
         Assertions.assertNull(migrationRuleListener.ruleMigrationFuture);
         MigrationInvoker<?> migrationInvoker = Mockito.mock(MigrationInvoker.class);

@@ -98,63 +98,65 @@ public class ServiceDiscoveryRegistryTest {
         when(serviceDiscovery.createListener(any())).thenReturn(instanceListener);
         when(serviceDiscovery.getInstances(any())).thenReturn(Collections.emptyList());
 
-        spiedMetadataService  = spy(WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel()));
+        spiedMetadataService = spy(WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel()));
         serviceDiscoveryRegistry = new ServiceDiscoveryRegistry(registryURL, serviceDiscovery, spiedMetadataService);
     }
 
     /**
      * Test subscribe
-     *  - Normal case
-     *  - Exception case
-     *    - check=true
-     *    - check=false
+     * - Normal case
+     * - Exception case
+     * - check=true
+     * - check=false
      */
     @Test
     public void testDoSubscribe() {
-        try (MockedStatic<ServiceNameMapping> mockStaticMapping = Mockito.mockStatic(ServiceNameMapping.class, withSettings().defaultAnswer(CALLS_REAL_METHODS))) {
-            mockStaticMapping.when(ServiceNameMapping::getDefaultExtension).thenReturn(mapping);
-            // Exception case, no interface-app mapping found
-            when(mapping.getAndListenServices(any(), any(), any())).thenReturn(Collections.emptySet());
-            // when check = false
-            try {
-                serviceDiscoveryRegistry.doSubscribe(url, testServiceListener);
-            } finally {
-                spiedMetadataService.unsubscribeURL(url);
-            }
-            // when check = true
-            URL checkURL = url.addParameter(CHECK_KEY, true);
-            Exception exceptionShouldHappen = null;
-            try {
-                serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
-            } catch (IllegalStateException e) {
-                exceptionShouldHappen = e;
-            } finally {
-                spiedMetadataService.unsubscribeURL(checkURL);
-            }
-            if (exceptionShouldHappen == null) {
-                fail();
-            }
+        ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
+        when(applicationModel.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
+        // Exception case, no interface-app mapping found
+        when(mapping.getAndListenServices(any(), any(), any())).thenReturn(Collections.emptySet());
+        // when check = false
+        try {
+            registryURL = registryURL.setScopeModel(applicationModel);
+            serviceDiscoveryRegistry = new ServiceDiscoveryRegistry(registryURL, serviceDiscovery, spiedMetadataService);
+            serviceDiscoveryRegistry.doSubscribe(url, testServiceListener);
+        } finally {
+            registryURL = registryURL.setScopeModel(null);
+            spiedMetadataService.unsubscribeURL(url);
+        }
+        // when check = true
+        URL checkURL = url.addParameter(CHECK_KEY, true);
+        Exception exceptionShouldHappen = null;
+        try {
+            serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
+        } catch (IllegalStateException e) {
+            exceptionShouldHappen = e;
+        } finally {
+            spiedMetadataService.unsubscribeURL(checkURL);
+        }
+        if (exceptionShouldHappen == null) {
+            fail();
+        }
 
-            // Normal case
-            Set<String> singleApp = new HashSet<>();
-            singleApp.add(APP_NAME1);
-            when(mapping.getAndListenServices(any(), any(), any())).thenReturn(singleApp);
-            try {
-                serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
-            } finally {
-                spiedMetadataService.unsubscribeURL(checkURL);
-            }
+        // Normal case
+        Set<String> singleApp = new HashSet<>();
+        singleApp.add(APP_NAME1);
+        when(mapping.getAndListenServices(any(), any(), any())).thenReturn(singleApp);
+        try {
+            serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
+        } finally {
+            spiedMetadataService.unsubscribeURL(checkURL);
         }
     }
 
     /**
      * Test instance listener registration
-     *  - one app
-     *  - multi apps
-     *  - repeat same multi apps, instance listener shared
-     *  - protocol included in key
-     *  - instance listener gets notified
-     *  - instance listener and service listener rightly mapped
+     * - one app
+     * - multi apps
+     * - repeat same multi apps, instance listener shared
+     * - protocol included in key
+     * - instance listener gets notified
+     * - instance listener and service listener rightly mapped
      */
     @Test
     public void testSubscribeURLs() {

@@ -45,7 +45,11 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping imple
     private static final List<String> IGNORED_SERVICE_INTERFACES = Collections.singletonList(MetadataService.class.getName());
 
     private static final int CAS_RETRY_TIMES = 6;
-    private MetadataReportInstance metadataReportInstance;
+    protected MetadataReportInstance metadataReportInstance;
+
+    public MetadataServiceNameMapping() {
+        metadataReportInstance = ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataReportInstance.class);
+    }
 
     @Override
     public boolean map(URL url) {
