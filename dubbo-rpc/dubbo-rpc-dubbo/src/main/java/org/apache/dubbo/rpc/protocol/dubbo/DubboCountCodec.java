@@ -26,20 +26,18 @@ import org.apache.dubbo.remoting.exchange.support.MultiMessage;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.io.IOException;
 
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
 import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 
-public final class DubboCountCodec implements Codec2, ScopeModelAware {
+public final class DubboCountCodec implements Codec2 {
 
     private DubboCodec codec;
     private FrameworkModel frameworkModel;
 
-    @Override
-    public void setFrameworkModel(FrameworkModel frameworkModel) {
+    public DubboCountCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         codec = new DubboCodec(frameworkModel);
     }

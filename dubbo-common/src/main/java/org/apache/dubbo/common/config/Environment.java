@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Environment extends LifecycleAdapter implements FrameworkExt, ScopeModelAware {
+public class Environment extends LifecycleAdapter implements FrameworkExt {
     private static final Logger logger = LoggerFactory.getLogger(Environment.class);
 
     public static final String NAME = "environment";
@@ -70,11 +69,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt, Scope
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private ApplicationModel applicationModel;
 
-    public Environment() {
-    }
-
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
+    public Environment(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
     }
 
