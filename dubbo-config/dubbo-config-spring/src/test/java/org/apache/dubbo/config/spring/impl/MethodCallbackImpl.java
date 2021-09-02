@@ -72,7 +72,7 @@ public class MethodCallbackImpl implements MethodCallback {
         try {
             checkInjection();
             checkTranscation();
-            // use getConsumerUrl() at oninvoke: because the correct asyncConsumerUrl is not set yet.
+            // use getConsumerUrl() at oninvoke: because the corresponding asyncConsumerUrl is not set yet.
             switch (RpcContext.getContext().getConsumerUrl().getParameter("refId")) {
             case "ref-1":
                 synchronized (onInvoke1) { 

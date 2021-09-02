@@ -79,7 +79,7 @@ public class RpcContext {
     /**
      * the consumer url of async rpc, it will be set at each callback process beginning.
      */
-    private static ThreadLocal<URL> asyncConsumerUrl = null;
+    private static ThreadLocal<URL> asyncConsumerUrl = new ThreadLocal<URL>();
 
     /**
      * the map that saved async rpc consumer urls,
@@ -878,8 +878,9 @@ public class RpcContext {
      */
     public static RpcContext getContextAndSaveAsyncConsumerUrl(AsyncRpcResult asyncRpcResult) {
         RpcContext rpcContext = LOCAL.get();
-        // don't save at provide side: consumer url is null at provide side
+        // don't save at provider side: consumer url is null at provider side
         if (rpcContext.consumerUrl != null) {
+            // save the async rpc consumer url
             rpcContext.asyncRpcConsumerUrls.put(asyncRpcResult, rpcContext.consumerUrl);
         }
         return rpcContext;
@@ -895,13 +896,8 @@ public class RpcContext {
         LOCAL.set(oldContext);
         // get the corresponding consumer url and remove it from the map
         URL consumerUrl = oldContext.asyncRpcConsumerUrls.remove(asyncRpcResult);
-        // don't set async consumer url at provide side: consumer url is null at provide side
+        // don't set async consumer url at provider side: consumer url is null at provider side
         if (consumerUrl != null) {
-            //  if the current thread's local variable asyncConsumerUrl is not existed
-            if (asyncConsumerUrl == null) {
-                // only create once
-                asyncConsumerUrl = new ThreadLocal<URL>();
-            }
             // set the local variable async consumer url for the current thread
             asyncConsumerUrl.set(consumerUrl);
         }
