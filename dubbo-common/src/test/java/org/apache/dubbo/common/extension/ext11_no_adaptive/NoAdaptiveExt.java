@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.extension.ext11_no_adaptive;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
