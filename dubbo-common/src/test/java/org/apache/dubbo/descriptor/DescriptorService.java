@@ -66,6 +66,16 @@ public interface DescriptorService {
 
     void sayHelloServerStream2(Object request, StreamObserver<Object> reply);
 
+    /***********************grpc******************************/
+
+    java.util.Iterator<HelloReply> iteratorServerStream(HelloReply request);
+
+    reactor.core.publisher.Mono<HelloReply> reactorMethod(HelloReply reactorRequest);
+
+    reactor.core.publisher.Mono<HelloReply> reactorMethod2(reactor.core.publisher.Mono<HelloReply> reactorRequest);
+
+   io.reactivex.Single<HelloReply> rxJavaMethod(io.reactivex.Single<HelloReply> replySingle);
+
     /**********************test error*****************/
     void testMultiProtobufParameters(HelloReply reply1, HelloReply reply2);
 

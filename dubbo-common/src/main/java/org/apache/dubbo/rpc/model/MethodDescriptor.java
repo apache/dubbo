@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -41,6 +42,8 @@ public class MethodDescriptor {
 
     private static final String GRPC_ASYNC_RETURN_CLASS = "com.google.common.util.concurrent.ListenableFuture";
     private static final String TRI_ASYNC_RETURN_CLASS = "java.util.concurrent.CompletableFuture";
+    private static final String REACTOR_RETURN_CLASS = "reactor.core.publisher.Mono";
+    private static final String RX_RETURN_CLASS = "io.reactivex.Single";
     private static final String GRPC_STREAM_CLASS = "io.grpc.stub.StreamObserver";
 
     private static final Logger logger = LoggerFactory.getLogger(MethodDescriptor.class);
@@ -204,10 +207,14 @@ public class MethodDescriptor {
             if (protobufParameterCount > 0 && returnClassProtobuf) {
                 return false;
             }
+            // handler reactor or rxjava only consider gen by proto
+            if (isMono(returnClass) || isRx(returnClass)) {
+                return false;
+            }
             if (protobufParameterCount <= 0 && !returnClassProtobuf) {
                 return true;
             }
-            // handle grpc stub
+            // handle grpc stub only consider gen by proto
             if (GRPC_ASYNC_RETURN_CLASS.equalsIgnoreCase(returnClass.getName()) && protobufParameterCount == 1) {
                 return false;
             }
@@ -223,10 +230,33 @@ public class MethodDescriptor {
                     return true;
                 }
             }
+            // todo remove this in future
+            boolean ignore = checkNeedIgnore();
+            if (ignore) {
+                return protobufParameterCount != 1;
+            }
             throw new IllegalStateException("method params error method=" + methodName);
         }
         // java param should be wrapped
         return javaParameterCount > 0;
+    }
+
+    /**
+     * fixme will produce error on grpc. but is harmless so ignore now
+     */
+    private boolean checkNeedIgnore() {
+        if (Iterator.class.isAssignableFrom(returnClass)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isMono(Class<?> clz) {
+        return REACTOR_RETURN_CLASS.equalsIgnoreCase(clz.getName());
+    }
+
+    private boolean isRx(Class<?> clz) {
+        return RX_RETURN_CLASS.equalsIgnoreCase(clz.getName());
     }
 
 

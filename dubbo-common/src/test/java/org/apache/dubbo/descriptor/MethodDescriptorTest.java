@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.descriptor;
 
+import io.reactivex.Single;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.proto.HelloReply;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
 
 import java.lang.reflect.Method;
 
@@ -127,6 +128,26 @@ public class MethodDescriptorTest {
         Assertions.assertFalse(descriptor.isNeedWrap());
     }
 
+    @Test
+    public void testIgnoreMethod() throws NoSuchMethodException {
+        Method method = DescriptorService.class.getMethod("iteratorServerStream", HelloReply.class);
+        MethodDescriptor descriptor = new MethodDescriptor(method);
+        Assertions.assertFalse(descriptor.isNeedWrap());
+
+        Method method2 = DescriptorService.class.getMethod("reactorMethod", HelloReply.class);
+        MethodDescriptor descriptor2 = new MethodDescriptor(method2);
+        Assertions.assertFalse(descriptor2.isNeedWrap());
+
+        Method method3 = DescriptorService.class.getMethod("reactorMethod2", Mono.class);
+        MethodDescriptor  descriptor3 = new MethodDescriptor(method3);
+        Assertions.assertFalse(descriptor3.isNeedWrap());
+
+
+        Method method4 = DescriptorService.class.getMethod("rxJavaMethod", Single.class);
+        MethodDescriptor  descriptor4 = new MethodDescriptor(method4);
+        Assertions.assertFalse(descriptor4.isNeedWrap());
+    }
+
 
     @Test
     public void testMultiProtoParameter() throws Exception {
@@ -186,8 +207,8 @@ public class MethodDescriptorTest {
 
     @Test
     public void testErrorBiStream() throws Exception {
-        Method method = DescriptorService.class.getMethod("testErrorBiStream",HelloReply.class, StreamObserver
-        .class);
+        Method method = DescriptorService.class.getMethod("testErrorBiStream", HelloReply.class, StreamObserver
+            .class);
         assertThrows(IllegalStateException.class,
             () -> {
                 MethodDescriptor descriptor = new MethodDescriptor(method);
@@ -205,7 +226,7 @@ public class MethodDescriptorTest {
                 MethodDescriptor descriptor = new MethodDescriptor(method3);
             });
 
-        Method method4 = DescriptorService.class.getMethod("testErrorBiStream4", StreamObserver.class,String.class);
+        Method method4 = DescriptorService.class.getMethod("testErrorBiStream4", StreamObserver.class, String.class);
         assertThrows(IllegalStateException.class,
             () -> {
                 MethodDescriptor descriptor = new MethodDescriptor(method4);
