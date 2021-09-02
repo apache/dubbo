@@ -193,10 +193,14 @@ public class ExtensionLoader<T> {
         }
     }
 
-    // only for unit test
+    /**
+     * Try reset dubbo status for new instance.
+     *
+     * @deprecated For testing purposes only
+     */
     @Deprecated
     public static void destroyAll() {
-        EXTENSION_INSTANCES.forEach((_type, instance) -> {
+        EXTENSION_INSTANCES.forEach((type, instance) -> {
             if (instance instanceof Lifecycle) {
                 Lifecycle lifecycle = (Lifecycle) instance;
                 try {
