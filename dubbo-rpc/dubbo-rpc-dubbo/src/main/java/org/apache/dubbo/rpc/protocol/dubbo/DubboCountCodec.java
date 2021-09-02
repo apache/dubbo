@@ -35,13 +35,13 @@ import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 
 public final class DubboCountCodec implements Codec2, ScopeModelAware {
 
-    private DubboCodec codec = new DubboCodec();
+    private DubboCodec codec;
     private FrameworkModel frameworkModel;
 
     @Override
     public void setFrameworkModel(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        codec.setFrameworkModel(frameworkModel);
+        codec = new DubboCodec(frameworkModel);
     }
 
     @Override

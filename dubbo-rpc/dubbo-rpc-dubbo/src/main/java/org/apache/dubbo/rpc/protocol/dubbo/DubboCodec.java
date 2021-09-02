@@ -64,10 +64,14 @@ public class DubboCodec extends ExchangeCodec {
     public static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
     private static final Logger log = LoggerFactory.getLogger(DubboCodec.class);
     private CallbackServiceCodec callbackServiceCodec;
+    private FrameworkModel frameworkModel;
 
-    @Override
-    public void setFrameworkModel(FrameworkModel frameworkModel) {
-        super.setFrameworkModel(frameworkModel);
+    public DubboCodec() {
+        this(FrameworkModel.defaultModel());
+    }
+
+    public DubboCodec(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
         callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
     }
 

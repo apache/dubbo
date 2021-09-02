@@ -36,6 +36,7 @@ import org.apache.dubbo.remoting.transport.netty4.NettyCodecAdapter;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboCodec;
@@ -70,13 +71,12 @@ public class DubboTelnetDecodeTest {
     @BeforeAll
     public static void setup() {
         ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
-        serviceRepository.destroy();
         serviceRepository.registerService(DemoService.class);
     }
 
     @AfterAll
     public static void teardown() {
-        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().destroy();
+        FrameworkModel.defaultModel().destroy();
     }
 
     /**
