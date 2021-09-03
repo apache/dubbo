@@ -17,7 +17,8 @@
 package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
+import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
@@ -27,6 +28,8 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.List;
 import java.util.Map;
@@ -46,12 +49,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REFER_TH
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
-import static org.apache.dubbo.rpc.model.ApplicationModel.getConfigManager;
 
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
  */
-public class DefaultExecutorRepository implements ExecutorRepository {
+public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware, ScopeModelAware {
     private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
 
     private int DEFAULT_SCHEDULER_SIZE = Runtime.getRuntime().availableProcessors();
@@ -79,6 +81,9 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     private static Ring<ExecutorService> executorServiceRing = new Ring<ExecutorService>();
 
     private static final Object LOCK = new Object();
+    private ExtensionAccessor extensionAccessor;
+
+    private ApplicationModel applicationModel;
 
     public DefaultExecutorRepository() {
         for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
@@ -228,7 +233,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     private Integer getExportThreadNum() {
-        List<Integer> threadNum = getConfigManager().getProviders()
+        List<Integer> threadNum = ApplicationModel.ofNullable(applicationModel).getApplicationConfigManager().getProviders()
             .stream()
             .map(ProviderConfig::getExportThreadNum)
             .filter(k -> k != null && k > 0)
@@ -275,7 +280,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     private Integer getReferThreadNum() {
-        List<Integer> threadNum = getConfigManager().getConsumers()
+        List<Integer> threadNum = ApplicationModel.ofNullable(applicationModel).getApplicationConfigManager().getConsumers()
             .stream()
             .map(ConsumerConfig::getReferThreadNum)
             .filter(k -> k != null && k > 0)
@@ -311,7 +316,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     private ExecutorService createExecutor(URL url) {
-        return (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        return (ExecutorService) extensionAccessor.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
     }
 
     @Override
@@ -361,5 +366,15 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        for (ExecutorService executorService : executorServiceRing.listItems()) {
 //            executorService.shutdown();
 //        }
+    }
+
+    @Override
+    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
+        this.extensionAccessor = extensionAccessor;
+    }
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
     }
 }

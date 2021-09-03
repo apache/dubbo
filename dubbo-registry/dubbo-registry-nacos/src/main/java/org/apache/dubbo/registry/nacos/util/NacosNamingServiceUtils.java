@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
@@ -75,8 +76,12 @@ public class NacosNamingServiceUtils {
      * @return non-null
      * @since 2.7.5
      */
-    public static ServiceInstance toServiceInstance(Instance instance) {
-        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(NamingUtils.getServiceName(instance.getServiceName()), instance.getIp(), instance.getPort());
+    public static ServiceInstance toServiceInstance(URL registryUrl, Instance instance) {
+        DefaultServiceInstance serviceInstance =
+            new DefaultServiceInstance(
+                NamingUtils.getServiceName(instance.getServiceName()),
+                instance.getIp(), instance.getPort(),
+                ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
         serviceInstance.setMetadata(instance.getMetadata());
         serviceInstance.setEnabled(instance.isEnabled());
         serviceInstance.setHealthy(instance.isHealthy());

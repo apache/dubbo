@@ -25,8 +25,8 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,6 @@ import java.util.Collection;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.config.context.ConfigManager.DUBBO_CONFIG_MODE;
-import static org.apache.dubbo.rpc.model.ApplicationModel.getConfigManager;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -50,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class ConfigManagerTest {
 
-    private ConfigManager configManager = getConfigManager();
+    private ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
 
     @BeforeEach
     public void init() {
@@ -256,15 +255,16 @@ public class ConfigManagerTest {
         try {
             // test strict mode
             ApplicationModel.reset();
-            Assertions.assertEquals(ConfigMode.STRICT, getConfigManager().getConfigMode());
+            ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+            Assertions.assertEquals(ConfigMode.STRICT, configManager.getConfigMode());
 
             System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.STRICT.name());
             ApplicationModel.reset();
-            Assertions.assertEquals(ConfigMode.STRICT, getConfigManager().getConfigMode());
+            Assertions.assertEquals(ConfigMode.STRICT, configManager.getConfigMode());
 
-            getConfigManager().addConfig(applicationConfig1);
+            configManager.addConfig(applicationConfig1);
             try {
-                getConfigManager().addConfig(applicationConfig2);
+                configManager.addConfig(applicationConfig2);
                 fail("strict mode cannot add two application configs");
             } catch (Exception e) {
                 assertEquals(IllegalStateException.class, e.getClass());
@@ -274,21 +274,23 @@ public class ConfigManagerTest {
             // test override mode
             System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE.name());
             ApplicationModel.reset();
-            Assertions.assertEquals(ConfigMode.OVERRIDE, getConfigManager().getConfigMode());
+            configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+            Assertions.assertEquals(ConfigMode.OVERRIDE, configManager.getConfigMode());
 
-            getConfigManager().addConfig(applicationConfig1);
-            getConfigManager().addConfig(applicationConfig2);
-            assertEquals(applicationConfig2, getConfigManager().getApplicationOrElseThrow());
+            configManager.addConfig(applicationConfig1);
+            configManager.addConfig(applicationConfig2);
+            assertEquals(applicationConfig2, configManager.getApplicationOrElseThrow());
 
 
             // test ignore mode
             System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.IGNORE.name());
             ApplicationModel.reset();
-            Assertions.assertEquals(ConfigMode.IGNORE, getConfigManager().getConfigMode());
+            configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+            Assertions.assertEquals(ConfigMode.IGNORE, configManager.getConfigMode());
 
-            getConfigManager().addConfig(applicationConfig1);
-            getConfigManager().addConfig(applicationConfig2);
-            assertEquals(applicationConfig1, getConfigManager().getApplicationOrElseThrow());
+            configManager.addConfig(applicationConfig1);
+            configManager.addConfig(applicationConfig2);
+            assertEquals(applicationConfig1, configManager.getApplicationOrElseThrow());
         } finally {
             System.clearProperty(DUBBO_CONFIG_MODE);
         }

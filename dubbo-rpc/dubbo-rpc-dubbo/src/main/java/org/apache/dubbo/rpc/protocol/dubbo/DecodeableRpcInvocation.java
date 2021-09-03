@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
@@ -123,7 +122,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         setParameterTypesDesc(desc);
 
         try {
-            if (ConfigurationUtils.getSystemConfiguration().getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
+            if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
                 CodecSupport.checkSerialization(path, version, serializationType);
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
@@ -132,7 +131,8 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 //                if (RpcUtils.isGenericCall(path, getMethodName()) || RpcUtils.isEcho(path, getMethodName())) {
 //                    pts = ReflectUtils.desc2classArray(desc);
 //                } else {
-                ServiceRepository repository = ApplicationModel.getServiceRepository();
+                // TODO: fetch from FrameworkModel
+                ServiceRepository repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
                 ServiceDescriptor serviceDescriptor = repository.lookupService(path);
                 if (serviceDescriptor != null) {
                     MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);

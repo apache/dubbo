@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionFactory;
+import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -189,9 +189,9 @@ final public class MockInvoker<T> implements Invoker<T> {
             mockClass = ReflectUtils.forName(mockService);
         } catch (Exception e) {
             if (!isDefault) {// does not check Spring bean if it is default config.
-                ExtensionFactory extensionFactory =
-                        ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension();
-                Object obj = extensionFactory.getExtension(serviceType, mockService);
+                ExtensionInjector extensionFactory =
+                        ExtensionLoader.getExtensionLoader(ExtensionInjector.class).getAdaptiveExtension();
+                Object obj = extensionFactory.getInstance(serviceType, mockService);
                 if (obj != null) {
                     return obj;
                 }

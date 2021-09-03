@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.common.context;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-@SPI
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface FrameworkExt extends Lifecycle {
 
 }

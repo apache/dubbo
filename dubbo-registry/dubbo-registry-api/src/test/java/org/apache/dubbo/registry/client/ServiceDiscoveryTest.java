@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.Page;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,7 +49,9 @@ public class ServiceDiscoveryTest {
             setServiceDiscovery(new InMemoryServiceDiscovery());
         }
         // test start()
-        serviceDiscovery.initialize(null);
+        URL registryUrl = URL.valueOf("");
+        registryUrl = registryUrl.setScopeModel(ApplicationModel.defaultModel());
+        serviceDiscovery.initialize(registryUrl);
     }
 
     @AfterEach
@@ -64,7 +69,7 @@ public class ServiceDiscoveryTest {
     public void testRegisterAndUpdateAndUnregister() {
 
         // register
-        DefaultServiceInstance serviceInstance = new DefaultServiceInstance("A", "127.0.0.1", 8080);
+        DefaultServiceInstance serviceInstance = new DefaultServiceInstance("A", "127.0.0.1", 8080, ApplicationModel.defaultModel());
         serviceDiscovery.register(serviceInstance);
 
         List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances("A");
@@ -94,9 +99,9 @@ public class ServiceDiscoveryTest {
 
     @Test
     public void testGetServices() {
-        serviceDiscovery.register(new DefaultServiceInstance("A", "127.0.0.1", 8080));
-        serviceDiscovery.register(new DefaultServiceInstance("B", "127.0.0.1", 8080));
-        serviceDiscovery.register(new DefaultServiceInstance("C", "127.0.0.1", 8080));
+        serviceDiscovery.register(new DefaultServiceInstance("A", "127.0.0.1", 8080, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel())));
+        serviceDiscovery.register(new DefaultServiceInstance("B", "127.0.0.1", 8080, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel())));
+        serviceDiscovery.register(new DefaultServiceInstance("C", "127.0.0.1", 8080, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel())));
         assertEquals(new HashSet<>(asList("A", "B", "C")), serviceDiscovery.getServices());
     }
 
@@ -104,17 +109,17 @@ public class ServiceDiscoveryTest {
     public void testGetInstances() {
 
         List<ServiceInstance> instances = asList(
-                new DefaultServiceInstance("A", "127.0.0.1", 8080),
-                new DefaultServiceInstance("A", "127.0.0.1", 8081),
-                new DefaultServiceInstance("A", "127.0.0.1", 8082)
+                new DefaultServiceInstance("A", "127.0.0.1", 8080, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel())),
+                new DefaultServiceInstance("A", "127.0.0.1", 8081, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel())),
+                new DefaultServiceInstance("A", "127.0.0.1", 8082, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel()))
         );
 
         instances.forEach(serviceDiscovery::register);
 
         // Duplicated
-        serviceDiscovery.register(new DefaultServiceInstance("A", "127.0.0.1", 8080));
+        serviceDiscovery.register(new DefaultServiceInstance("A", "127.0.0.1", 8080, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel())));
         // Duplicated
-        serviceDiscovery.register(new DefaultServiceInstance("A", "127.0.0.1", 8081));
+        serviceDiscovery.register(new DefaultServiceInstance("A", "127.0.0.1", 8081, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel())));
 
         // offset starts 0
         int offset = 0;
@@ -187,12 +192,12 @@ public class ServiceDiscoveryTest {
     public void testGetInstancesWithHealthy() {
 
         List<ServiceInstance> instances = new LinkedList<>(asList(
-                new DefaultServiceInstance("A", "127.0.0.1", 8080),
-                new DefaultServiceInstance("A", "127.0.0.1", 8081)
+                new DefaultServiceInstance("A", "127.0.0.1", 8080, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel())),
+                new DefaultServiceInstance("A", "127.0.0.1", 8081, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel()))
         ));
 
 
-        DefaultServiceInstance serviceInstance = new DefaultServiceInstance("A", "127.0.0.1", 8082);
+        DefaultServiceInstance serviceInstance = new DefaultServiceInstance("A", "127.0.0.1", 8082, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel()));
         serviceInstance.setHealthy(false);
         instances.add(serviceInstance);
 

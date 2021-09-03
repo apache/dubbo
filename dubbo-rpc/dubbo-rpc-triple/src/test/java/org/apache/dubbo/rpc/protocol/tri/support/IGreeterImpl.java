@@ -17,10 +17,19 @@
 
 package org.apache.dubbo.rpc.protocol.tri.support;
 
+import org.apache.dubbo.common.stream.StreamObserver;
+
 public class IGreeterImpl implements IGreeter {
 
     @Override
     public String echo(String request) {
         return request;
+    }
+
+    @Override
+    public void serverStream(String str, StreamObserver<String> observer) {
+        System.out.println("srt="+str);
+        observer.onNext(str);
+        observer.onCompleted();
     }
 }

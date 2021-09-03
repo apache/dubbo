@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
@@ -50,7 +49,11 @@ import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -91,11 +94,11 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN;
 import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
@@ -118,11 +121,12 @@ import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WARMUP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
+import static org.apache.dubbo.rpc.model.ScopeModelUtil.getApplicationModel;
 
 /**
  * TODO, replace RegistryProtocol completely in the future.
  */
-public class RegistryProtocol implements Protocol {
+public class RegistryProtocol implements Protocol, ScopeModelAware {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
         APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
         GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
@@ -134,18 +138,17 @@ public class RegistryProtocol implements Protocol {
     };
 
     private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
-    private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
     private final Map<String, ServiceConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
-    private final ProviderConfigurationListener providerConfigurationListener = new ProviderConfigurationListener();
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //provider url <--> exporter
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
     protected Protocol protocol;
-    protected RegistryFactory registryFactory;
     protected ProxyFactory proxyFactory;
+    //protected RegistryFactory registryFactory;
 
     private ConcurrentMap<URL, ReExportTask> reExportFailedTasks = new ConcurrentHashMap<>();
     private HashedWheelTimer retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboReexportTimer", true), DEFAULT_REGISTRY_RETRY_PERIOD, TimeUnit.MILLISECONDS, 128);
+    private FrameworkModel frameworkModel;
 
     //Filter the parameters that do not need to be output in url(Starting with .)
     private static String[] getFilteredKeys(URL url) {
@@ -159,13 +162,19 @@ public class RegistryProtocol implements Protocol {
         }
     }
 
+    @Override
+    public void setFrameworkModel(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
+
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }
 
-    public void setRegistryFactory(RegistryFactory registryFactory) {
-        this.registryFactory = registryFactory;
-    }
+    // Cannot inject registryFactory (application scope) into protocol (framework scope)
+//    public void setRegistryFactory(RegistryFactory registryFactory) {
+//        this.registryFactory = registryFactory;
+//    }
 
     public void setProxyFactory(ProxyFactory proxyFactory) {
         this.proxyFactory = proxyFactory;
@@ -177,7 +186,16 @@ public class RegistryProtocol implements Protocol {
     }
 
     public Map<URL, NotifyListener> getOverrideListeners() {
-        return overrideListeners;
+        Map<URL, NotifyListener> map = new HashMap<>();
+        List<ApplicationModel> applicationModels = frameworkModel.getApplicationModels();
+        if (applicationModels.size() == 1) {
+            return applicationModels.get(0).getBeanFactory().getBean(ProviderConfigurationListener.class).getOverrideListeners();
+        } else {
+            for (ApplicationModel applicationModel : applicationModels) {
+                map.putAll(applicationModel.getBeanFactory().getBean(ProviderConfigurationListener.class).getOverrideListeners());
+            }
+        }
+        return map;
     }
 
     private void register(Registry registry, URL registeredProviderUrl) {
@@ -185,7 +203,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     private void registerStatedUrl(URL registryUrl, URL registeredProviderUrl, boolean registered) {
-        ProviderModel model = ApplicationModel.getProviderModel(registeredProviderUrl.getServiceKey());
+        ProviderModel model = (ProviderModel) registeredProviderUrl.getServiceModel();
         model.addStatedUrl(new ProviderModel.RegisterStatedURL(
             registeredProviderUrl,
             registryUrl,
@@ -204,7 +222,8 @@ public class RegistryProtocol implements Protocol {
         //  subscription information to cover.
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
-        overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
+        Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(providerUrl).getOverrideListeners();
+        overrideListeners.put(registryUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
@@ -236,7 +255,8 @@ public class RegistryProtocol implements Protocol {
     }
 
     private <T> void notifyExport(ExporterChangeableWrapper<T> exporter) {
-        List<RegistryProtocolListener> listeners = ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
+        ScopeModel scopeModel = exporter.getRegisterUrl().getScopeModel();
+        List<RegistryProtocolListener> listeners = ScopeModelUtil.getExtensionLoader(RegistryProtocolListener.class, scopeModel)
             .getActivateExtension(exporter.getOriginInvoker().getUrl(), "registry.protocol.listener");
         if (CollectionUtils.isNotEmpty(listeners)) {
             for (RegistryProtocolListener listener : listeners) {
@@ -246,8 +266,11 @@ public class RegistryProtocol implements Protocol {
     }
 
     private URL overrideUrlWithConfig(URL providerUrl, OverrideListener listener) {
+        ApplicationModel applicationModel = getApplicationModel(providerUrl.getScopeModel());
+        ProviderConfigurationListener providerConfigurationListener = getProviderConfigurationListener(providerUrl);
         providerUrl = providerConfigurationListener.overrideUrl(providerUrl);
-        ServiceConfigurationListener serviceConfigurationListener = new ServiceConfigurationListener(providerUrl, listener);
+
+        ServiceConfigurationListener serviceConfigurationListener = new ServiceConfigurationListener(applicationModel, providerUrl, listener);
         serviceConfigurationListeners.put(providerUrl.getServiceKey(), serviceConfigurationListener);
         return serviceConfigurationListener.overrideUrl(providerUrl);
     }
@@ -339,7 +362,8 @@ public class RegistryProtocol implements Protocol {
     }
 
     private ProviderModel.RegisterStatedURL getStatedUrl(URL registryUrl, URL providerUrl) {
-        ProviderModel providerModel = ApplicationModel.getServiceRepository()
+        ApplicationModel applicationModel = getApplicationModel(registryUrl.getScopeModel());
+        ProviderModel providerModel = applicationModel.getApplicationServiceRepository()
             .lookupExportedService(providerUrl.getServiceKey());
 
         List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
@@ -356,6 +380,7 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     protected Registry getRegistry(final URL registryUrl) {
+        RegistryFactory registryFactory = ScopeModelUtil.getExtensionLoader(RegistryFactory.class, registryUrl.getScopeModel()).getAdaptiveExtension();
         return registryFactory.getRegistry(registryUrl);
     }
 
@@ -435,7 +460,7 @@ public class RegistryProtocol implements Protocol {
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         url = getRegistryUrl(url);
-        Registry registry = registryFactory.getRegistry(url);
+        Registry registry = getRegistry(url);
         if (RegistryService.class.equals(type)) {
             return proxyFactory.getInvoker((T) registry, type, url);
         }
@@ -520,6 +545,8 @@ public class RegistryProtocol implements Protocol {
         URL urlToRegistry = new ServiceConfigURL(
             parameters.get(PROTOCOL_KEY) == null ? DUBBO : parameters.get(PROTOCOL_KEY),
             parameters.remove(REGISTER_IP_KEY), 0, getPath(parameters, type), parameters);
+        urlToRegistry = urlToRegistry.setScopeModel(directory.getConsumerUrl().getScopeModel());
+        urlToRegistry = urlToRegistry.setServiceModel(directory.getConsumerUrl().getServiceModel());
         if (directory.isShouldRegister()) {
             directory.setRegisteredConsumerUrl(urlToRegistry);
             registry.register(directory.getRegisteredConsumerUrl());
@@ -545,7 +572,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     protected List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
-        return ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
+        return ScopeModelUtil.getExtensionLoader(RegistryProtocolListener.class, url.getScopeModel())
             .getActivateExtension(url, "registry.protocol.listener");
     }
 
@@ -560,11 +587,23 @@ public class RegistryProtocol implements Protocol {
 
     @Override
     public void destroy() {
-        List<RegistryProtocolListener> listeners = ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
-            .getLoadedExtensionInstances();
-        if (CollectionUtils.isNotEmpty(listeners)) {
-            for (RegistryProtocolListener listener : listeners) {
-                listener.onDestroy();
+        for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
+            List<RegistryProtocolListener> listeners = applicationModel.getExtensionLoader(RegistryProtocolListener.class)
+                .getLoadedExtensionInstances();
+            if (CollectionUtils.isNotEmpty(listeners)) {
+                for (RegistryProtocolListener listener : listeners) {
+                    listener.onDestroy();
+                }
+            }
+        }
+
+        for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
+            if (applicationModel.isInit()) {
+                if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+                    applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                        .removeListener(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX,
+                            getProviderConfigurationListener(applicationModel));
+                }
             }
         }
 
@@ -573,11 +612,6 @@ public class RegistryProtocol implements Protocol {
             exporter.unexport();
         }
         bounds.clear();
-
-        if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-            ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                .removeListener(ApplicationModel.getName() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
-        }
     }
 
     @Override
@@ -695,7 +729,7 @@ public class RegistryProtocol implements Protocol {
             URL currentUrl = exporter.getInvoker().getUrl();
             //Merged with this configuration
             URL newUrl = getConfiguredInvokerUrl(configurators, originUrl);
-            newUrl = getConfiguredInvokerUrl(providerConfigurationListener.getConfigurators(), newUrl);
+            newUrl = getConfiguredInvokerUrl(getProviderConfigurationListener(originUrl).getConfigurators(), newUrl);
             newUrl = getConfiguredInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
                 .getConfigurators(), newUrl);
             if (!currentUrl.equals(newUrl)) {
@@ -725,14 +759,25 @@ public class RegistryProtocol implements Protocol {
         }
     }
 
+    private ProviderConfigurationListener getProviderConfigurationListener(URL url) {
+        ApplicationModel applicationModel = getApplicationModel(url.getScopeModel());
+        return getProviderConfigurationListener(applicationModel);
+    }
+
+    private ProviderConfigurationListener getProviderConfigurationListener(ApplicationModel applicationModel) {
+        return applicationModel.getBeanFactory().registerBeanIfAbsent(ProviderConfigurationListener.class,
+            type -> new ProviderConfigurationListener(applicationModel) );
+    }
+
     private class ServiceConfigurationListener extends AbstractConfiguratorListener {
         private URL providerUrl;
         private OverrideListener notifyListener;
 
-        public ServiceConfigurationListener(URL providerUrl, OverrideListener notifyListener) {
+        public ServiceConfigurationListener(ApplicationModel applicationModel, URL providerUrl, OverrideListener notifyListener) {
+            super(applicationModel);
             this.providerUrl = providerUrl;
             this.notifyListener = notifyListener;
-            if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                 this.initWith(DynamicConfiguration.getRuleKey(providerUrl) + CONFIGURATORS_SUFFIX);
             }
         }
@@ -749,9 +794,12 @@ public class RegistryProtocol implements Protocol {
 
     private class ProviderConfigurationListener extends AbstractConfiguratorListener {
 
-        public ProviderConfigurationListener() {
-            if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-                this.initWith(ApplicationModel.getName() + CONFIGURATORS_SUFFIX);
+        private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
+
+        public ProviderConfigurationListener(ApplicationModel applicationModel) {
+            super(applicationModel);
+            if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+                this.initWith(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }
 
@@ -769,6 +817,10 @@ public class RegistryProtocol implements Protocol {
         @Override
         protected void notifyOverrides() {
             overrideListeners.values().forEach(listener -> ((OverrideListener) listener).doOverrideIfNecessary());
+        }
+
+        public Map<URL, NotifyListener> getOverrideListeners() {
+            return overrideListeners;
         }
     }
 
@@ -818,12 +870,14 @@ public class RegistryProtocol implements Protocol {
             }
             try {
                 if (subscribeUrl != null) {
-                    NotifyListener listener = RegistryProtocol.this.overrideListeners.remove(subscribeUrl);
+                    Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
+                    NotifyListener listener = overrideListeners.remove(registerUrl);
                     registry.unsubscribe(subscribeUrl, listener);
-                    if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-                        ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                    ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
+                    if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+                        applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
                             .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                                serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));
+                                serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
                     }
                 }
             } catch (Throwable t) {
@@ -832,7 +886,7 @@ public class RegistryProtocol implements Protocol {
 
             executor.submit(() -> {
                 try {
-                    int timeout = ConfigurationUtils.getServerShutdownTimeout();
+                    int timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
                     if (timeout > 0) {
                         logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. " +
                             "Usually, this is called when you use dubbo API");
@@ -858,19 +912,4 @@ public class RegistryProtocol implements Protocol {
         }
     }
 
-    // for unit test
-    private static RegistryProtocol INSTANCE;
-
-    // for unit test
-    public RegistryProtocol() {
-        INSTANCE = this;
-    }
-
-    // for unit test
-    public static RegistryProtocol getRegistryProtocol() {
-        if (INSTANCE == null) {
-            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(REGISTRY_PROTOCOL); // load
-        }
-        return INSTANCE;
-    }
 }

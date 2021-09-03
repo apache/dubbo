@@ -46,8 +46,10 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,6 +120,7 @@ public class DubboProtocol extends AbstractProtocol {
 
             Invocation inv = (Invocation) message;
             Invoker<?> invoker = getInvoker(channel, inv);
+            inv.setServiceModel(invoker.getUrl().getServiceModel());
             // need to consider backward-compatibility if it's a callback
             if (Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
                 String methodsStr = invoker.getUrl().getParameters().get("methods");
@@ -195,7 +198,7 @@ public class DubboProtocol extends AbstractProtocol {
                 return null;
             }
 
-            RpcInvocation invocation = new RpcInvocation(method, url.getParameter(INTERFACE_KEY), "", new Class<?>[0], new Object[0]);
+            RpcInvocation invocation = new RpcInvocation(url.getServiceModel(), method, url.getParameter(INTERFACE_KEY), "", new Class<?>[0], new Object[0]);
             invocation.setAttachment(PATH_KEY, url.getPath());
             invocation.setAttachment(GROUP_KEY, url.getGroup());
             invocation.setAttachment(INTERFACE_KEY, url.getParameter(INTERFACE_KEY));
@@ -219,6 +222,22 @@ public class DubboProtocol extends AbstractProtocol {
         }
 
         return INSTANCE;
+    }
+
+
+    public static DubboProtocol getDubboProtocol(ScopeModel scopeModel) {
+        Protocol protocolWrapper = scopeModel.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
+
+        try {
+            while (!(protocolWrapper instanceof DubboProtocol)) {
+                Field protocolField = protocolWrapper.getClass().getDeclaredField("protocol");
+                protocolField.setAccessible(true);
+                protocolWrapper = (Protocol) protocolField.get(protocolWrapper);
+            }
+        } catch (NoSuchFieldException | IllegalAccessException ignore) {
+        }
+
+        return (DubboProtocol) protocolWrapper;
     }
 
     @Override
@@ -647,7 +666,7 @@ public class DubboProtocol extends AbstractProtocol {
                     logger.info("Close dubbo server: " + server.getLocalAddress());
                 }
 
-                server.close(ConfigurationUtils.getServerShutdownTimeout());
+                server.close(ConfigurationUtils.getServerShutdownTimeout(server.getUrl().getScopeModel()));
 
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
@@ -687,7 +706,7 @@ public class DubboProtocol extends AbstractProtocol {
                 logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
             }
 
-            client.close(ConfigurationUtils.getServerShutdownTimeout());
+            client.close(ConfigurationUtils.getServerShutdownTimeout(client.getUrl().getScopeModel()));
 
             // TODO
             /*

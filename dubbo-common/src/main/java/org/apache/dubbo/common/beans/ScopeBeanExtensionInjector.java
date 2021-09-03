@@ -14,26 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.factory;
+package org.apache.dubbo.common.beans;
 
-import org.apache.dubbo.common.extension.ExtensionFactory;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.extension.ExtensionInjector;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 /**
- * SpiExtensionFactory
+ * Inject scope bean to SPI extension instance
  */
-public class SpiExtensionFactory implements ExtensionFactory {
+public class ScopeBeanExtensionInjector implements ExtensionInjector, ScopeModelAware {
+    private ScopeModel scopeModel;
+    private ScopeBeanFactory beanFactory;
 
     @Override
-    public <T> T getExtension(Class<T> type, String name) {
-        if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
-            ExtensionLoader<T> loader = ExtensionLoader.getExtensionLoader(type);
-            if (!loader.getSupportedExtensions().isEmpty()) {
-                return loader.getAdaptiveExtension();
-            }
-        }
-        return null;
+    public void setScopeModel(ScopeModel scopeModel) {
+        this.scopeModel = scopeModel;
+        this.beanFactory = scopeModel.getBeanFactory();
     }
 
+    @Override
+    public <T> T getInstance(Class<T> type, String name) {
+        return beanFactory.getBean(name, type);
+    }
 }

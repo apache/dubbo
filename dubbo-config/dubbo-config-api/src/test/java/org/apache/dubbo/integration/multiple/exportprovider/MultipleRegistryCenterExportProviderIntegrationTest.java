@@ -19,11 +19,11 @@ package org.apache.dubbo.integration.multiple.exportprovider;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
@@ -34,6 +34,8 @@ import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -218,7 +220,7 @@ public class MultipleRegistryCenterExportProviderIntegrationTest implements Inte
         // registryKey: the registryKey is the default cluster, CommonConstants.DEFAULT_KEY
         // key: The exported interface's name
         // group: the group is "mapping", ServiceNameMapping.DEFAULT_MAPPING_GROUP
-        ConfigItem configItem = MetadataReportInstance.getMetadataReport(CommonConstants.DEFAULT_KEY)
+        ConfigItem configItem = ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReport(CommonConstants.DEFAULT_KEY)
             .getConfigItem(serviceConfig.getInterface()
                 , ServiceNameMapping.DEFAULT_MAPPING_GROUP);
         // Check if the exported service (provider) is registered

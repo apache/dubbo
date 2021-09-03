@@ -44,6 +44,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +67,7 @@ import static org.apache.dubbo.config.AbstractConfig.getTagName;
  * A lock-free config manager (through ConcurrentHashMap), for fast read operation.
  * The Write operation lock with sub configs map of config type, for safely check and add new config.
  */
-public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
+public class ConfigManager extends LifecycleAdapter implements FrameworkExt, ScopeModelAware {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
 
@@ -105,12 +106,19 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         }
     }
 
+    private ApplicationModel applicationModel;
+
     public ConfigManager() {
     }
 
     @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
+    @Override
     public void initialize() throws IllegalStateException {
-        CompositeConfiguration configuration = ApplicationModel.getEnvironment().getConfiguration();
+        CompositeConfiguration configuration = applicationModel.getApplicationEnvironment().getConfiguration();
         String configModeStr = (String) configuration.getProperty(DUBBO_CONFIG_MODE);
         try {
             if (StringUtils.hasText(configModeStr)) {
@@ -367,6 +375,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     // ServiceConfig correlative methods
 
     public void addService(ServiceConfigBase<?> serviceConfig) {
+        if (serviceConfig.getScopeModel() == null) {
+            serviceConfig.setScopeModel(applicationModel.getDefaultModule());
+        }
         addConfig(serviceConfig);
     }
 
@@ -385,6 +396,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     // ReferenceConfig correlative methods
 
     public void addReference(ReferenceConfigBase<?> referenceConfig) {
+        if (referenceConfig.getScopeModel() == null) {
+            referenceConfig.setScopeModel(applicationModel.getDefaultModule());
+        }
         addConfig(referenceConfig);
     }
 
@@ -457,6 +471,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     public void addConfig(AbstractConfig config) {
         if (config == null) {
             return;
+        }
+        if (config.getScopeModel() == null) {
+            config.setScopeModel(applicationModel);
         }
         addConfig(config, isUniqueConfig(config));
     }

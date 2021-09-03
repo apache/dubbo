@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.config.spring.extension;
 
-import org.apache.dubbo.common.extension.ExtensionFactory;
+import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.DemoService;
@@ -34,9 +34,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class SpringExtensionFactoryTest {
+public class SpringExtensionInjectorTest {
 
-    private SpringExtensionFactory springExtensionFactory = new SpringExtensionFactory();
+    private SpringExtensionInjector springExtensionFactory = new SpringExtensionInjector();
     private AnnotationConfigApplicationContext context1;
     private AnnotationConfigApplicationContext context2;
 
@@ -44,8 +44,8 @@ public class SpringExtensionFactoryTest {
     public void init() {
         DubboBootstrap.reset();
 
-        // init SpringExtensionFactory
-        ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getExtension("spring");
+        // init SpringExtensionInjector
+        ExtensionLoader.getExtensionLoader(ExtensionInjector.class).getExtension("spring");
 
         context1 = new AnnotationConfigApplicationContext();
         context1.setDisplayName("Context1");
@@ -55,28 +55,28 @@ public class SpringExtensionFactoryTest {
         context2.setDisplayName("Context2");
         context2.register(BeanForContext2.class);
         context2.refresh();
-        SpringExtensionFactory.addApplicationContext(context1);
-        SpringExtensionFactory.addApplicationContext(context2);
+        SpringExtensionInjector.addApplicationContext(context1);
+        SpringExtensionInjector.addApplicationContext(context2);
     }
 
     @AfterEach
     public void destroy() {
         context1.close();
         context2.close();
-        SpringExtensionFactory.clearContexts();
+        SpringExtensionInjector.clearContexts();
     }
 
     @Test
     public void testGetExtensionBySPI() {
-        Protocol protocol = springExtensionFactory.getExtension(Protocol.class, "protocol");
+        Protocol protocol = springExtensionFactory.getInstance(Protocol.class, "protocol");
         Assertions.assertNull(protocol);
     }
 
     @Test
     public void testGetExtensionByName() {
-        DemoService bean = springExtensionFactory.getExtension(DemoService.class, "bean1");
+        DemoService bean = springExtensionFactory.getInstance(DemoService.class, "bean1");
         Assertions.assertNotNull(bean);
-        HelloService hello = springExtensionFactory.getExtension(HelloService.class, "hello");
+        HelloService hello = springExtensionFactory.getInstance(HelloService.class, "hello");
         Assertions.assertNotNull(hello);
     }
 
