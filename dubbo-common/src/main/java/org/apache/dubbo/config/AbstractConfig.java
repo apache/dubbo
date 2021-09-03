@@ -335,28 +335,50 @@ public abstract class AbstractConfig implements Serializable {
         return scopeModel;
     }
 
-    public void setScopeModel(ScopeModel scopeModel) {
+    public final void setScopeModel(ScopeModel scopeModel) {
         if (this.scopeModel != scopeModel) {
+            checkScopeModel(scopeModel);
+            // remove this config from current ConfigManager
+            getConfigManager().removeConfig(this);
+            // change scope model and add it into new ConfigManager
             this.scopeModel = scopeModel;
-            // reinitialize spi extension here
-            this.initExtensions();
+            getConfigManager().addConfig(this);
+            // reinitialize spi extension and change referenced config's scope model
+            this.postProcessAfterScopeModelChanged();
+        }
+    }
+
+    protected void checkScopeModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            throw new IllegalArgumentException("scopeModel cannot be null");
+        }
+        if (!(scopeModel instanceof ApplicationModel)) {
+            throw new IllegalArgumentException("Invalid scope model, expect to be a ApplicationModel but got: " + scopeModel);
         }
     }
 
     /**
-     * Subclass should override this method to initialize its SPI extensions.
+     * Subclass should override this method to initialize its SPI extensions and change referenced config's scope model.
      * <p>
      * For example:
      * <pre>
-     * this.protocol = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+     * protected void postProcessAfterScopeModelChanged() {
+     *   super.postProcessAfterScopeModelChanged();
+     *   // re-initialize spi extension
+     *   this.protocol = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+     *   // change referenced config's scope model
+     *   if (this.providerConfig != null && this.providerConfig.getScopeModel() != scopeModel) {
+     *     this.providerConfig.setScopeModel(scopeModel);
+     *   }
+     * }
      * </pre>
      */
-    protected void initExtensions() {
+    protected void postProcessAfterScopeModelChanged() {
     }
 
     protected <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (scopeModel == null) {
-            throw new IllegalStateException("owner module is not initialized");
+            throw new IllegalStateException("scopeModel is not initialized");
         }
         return scopeModel.getExtensionLoader(type);
     }

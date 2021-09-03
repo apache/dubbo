@@ -151,8 +151,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @Override
-    protected void initExtensions() {
-        super.initExtensions();
+    protected void postProcessAfterScopeModelChanged() {
+        super.postProcessAfterScopeModelChanged();
 
         protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();

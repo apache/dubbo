@@ -28,7 +28,8 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 
 import java.lang.reflect.Method;
@@ -198,31 +199,33 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     @Override
-    public void setScopeModel(ScopeModel scopeModel) {
-        super.setScopeModel(scopeModel);
-//        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
-//        if (this.configCenter != null && this.configCenter.getScopeModel() != applicationModel) {
-//            this.configCenter.setScopeModel(applicationModel);
-//        }
-//        if (this.metadataReportConfig != null && this.metadataReportConfig.getScopeModel() != applicationModel) {
-//            this.metadataReportConfig.setScopeModel(applicationModel);
-//        }
-//        if (this.metrics != null && this.metrics.getScopeModel() != applicationModel) {
-//            this.metrics.setScopeModel(applicationModel);
-//        }
-//        if (this.monitor != null && this.monitor.getScopeModel() != applicationModel) {
-//            this.monitor.setScopeModel(applicationModel);
-//        }
-//        if (this.metadataReportConfig != null && this.metadataReportConfig.getScopeModel() != applicationModel) {
-//            this.metadataReportConfig.setScopeModel(applicationModel);
-//        }
-//        if (CollectionUtils.isNotEmpty(this.registries)) {
-//            this.registries.forEach(registryConfig -> {
-//                if (registryConfig.getScopeModel() != applicationModel) {
-//                    registryConfig.setScopeModel(applicationModel);
-//                }
-//            });
-//        }
+    protected void postProcessAfterScopeModelChanged() {
+        super.postProcessAfterScopeModelChanged();
+
+        // change referenced config's scope model
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
+        if (this.configCenter != null && this.configCenter.getScopeModel() != applicationModel) {
+            this.configCenter.setScopeModel(applicationModel);
+        }
+        if (this.metadataReportConfig != null && this.metadataReportConfig.getScopeModel() != applicationModel) {
+            this.metadataReportConfig.setScopeModel(applicationModel);
+        }
+        if (this.metrics != null && this.metrics.getScopeModel() != applicationModel) {
+            this.metrics.setScopeModel(applicationModel);
+        }
+        if (this.monitor != null && this.monitor.getScopeModel() != applicationModel) {
+            this.monitor.setScopeModel(applicationModel);
+        }
+        if (this.metadataReportConfig != null && this.metadataReportConfig.getScopeModel() != applicationModel) {
+            this.metadataReportConfig.setScopeModel(applicationModel);
+        }
+        if (CollectionUtils.isNotEmpty(this.registries)) {
+            this.registries.forEach(registryConfig -> {
+                if (registryConfig.getScopeModel() != applicationModel) {
+                    registryConfig.setScopeModel(applicationModel);
+                }
+            });
+        }
     }
 
     /**
