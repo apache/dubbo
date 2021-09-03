@@ -21,10 +21,12 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
-
-import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
+import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,6 +69,7 @@ public class ZookeeperServiceDiscoveryTest {
         zkServer.start();
 
         this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
+        registryUrl.setScopeModel(ApplicationModel.defaultModel());
         this.discovery = new ZookeeperServiceDiscovery();
         this.discovery.initialize(registryUrl);
     }
@@ -108,7 +111,7 @@ public class ZookeeperServiceDiscoveryTest {
     }
 
     private DefaultServiceInstance createServiceInstance(String serviceName, String host, int port) {
-        return new DefaultServiceInstance(serviceName, host, port);
+        return new DefaultServiceInstance(serviceName, host, port, ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
     }
 
     @Test

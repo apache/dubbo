@@ -33,7 +33,7 @@ public class Ready implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         URL url = URL.valueOf("application://")
-                .addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, ApplicationModel.getApplicationConfig().getReadinessProbe());
+                .addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, ApplicationModel.defaultModel().getCurrentConfig().getReadinessProbe());
         List<ReadinessProbe> readinessProbes = ExtensionLoader.getExtensionLoader(ReadinessProbe.class)
                 .getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION);
         if (!readinessProbes.isEmpty()) {

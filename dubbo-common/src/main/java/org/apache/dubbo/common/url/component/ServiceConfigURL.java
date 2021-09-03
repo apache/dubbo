@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ServiceConfigURL extends URL {
-    private final Map<String, Object> attributes;
 
     private volatile transient String full;
     private volatile transient String string;
@@ -31,12 +30,11 @@ public class ServiceConfigURL extends URL {
     private volatile transient String parameter;
 
     public ServiceConfigURL() {
-        this.attributes = null;
+        super();
     }
 
     public ServiceConfigURL(URLAddress urlAddress, URLParam urlParam, Map<String, Object> attributes) {
-        super(urlAddress, urlParam);
-        this.attributes = (attributes != null ? attributes : new HashMap<>());
+        super(urlAddress, urlParam, attributes);
     }
 
 
@@ -93,16 +91,9 @@ public class ServiceConfigURL extends URL {
         this(new PathURLAddress(protocol, username, password, path, host, port), URLParam.parse(parameters), attributes);
     }
 
+    @Override
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
         return (T) new ServiceConfigURL(urlAddress, urlParam, attributes);
-    }
-
-    public Map<String, Object> getAttributes() {
-        return attributes;
-    }
-
-    public Object getAttribute(String key) {
-        return attributes.get(key);
     }
 
     @Override
@@ -110,14 +101,13 @@ public class ServiceConfigURL extends URL {
         Map<String, Object> newAttributes = new HashMap<>();
         newAttributes.putAll(this.attributes);
         newAttributes.putAll(attributes);
-
         return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
     }
 
+    @Override
     public ServiceConfigURL putAttribute(String key, Object obj) {
         Map<String, Object> newAttributes = new HashMap<>(attributes);
         newAttributes.put(key, obj);
-
         return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
     }
 
@@ -125,13 +115,7 @@ public class ServiceConfigURL extends URL {
     public URL removeAttribute(String key) {
         Map<String, Object> newAttributes = new HashMap<>(attributes);
         newAttributes.remove(key);
-
         return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
-    }
-
-    @Override
-    public boolean hasAttribute(String key) {
-        return getAttribute(key) != null;
     }
 
     @Override

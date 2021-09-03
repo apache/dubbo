@@ -19,11 +19,11 @@ package org.apache.dubbo.integration.single.exportprovider;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
@@ -34,6 +34,8 @@ import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +44,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import static org.apache.dubbo.integration.Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
 /**
@@ -56,11 +61,6 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
      * Define the provider application name.
      */
     private static String PROVIDER_APPLICATION_NAME = "single-registry-center-for-export-provider";
-
-    /**
-     * The name for getting the specified instance, which is loaded using SPI.
-     */
-    private static String SPI_NAME = "singleConfigCenterExportProvider";
 
     /**
      * Define the protocol's name.
@@ -113,16 +113,20 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
         serviceConfig.setRef(new SingleRegistryCenterExportProviderServiceImpl());
         serviceConfig.setAsync(false);
 
-        // initailize bootstrap
+        // initialize bootstrap
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
             .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
         RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
+
         RegistryConfig registryConfig = new RegistryConfig(String.format("%s://%s:%s",
             instance.getType(),
             instance.getHostname(),
             instance.getPort()));
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("registry.protocol.listener", "singleConfigCenterExportProvider");
+        registryConfig.updateParameters(parameters);
         DubboBootstrap.getInstance().registry(registryConfig);
     }
 
@@ -138,16 +142,16 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
     private void beforeExport() {
         registryProtocolListener = (SingleRegistryCenterExportProviderRegistryProtocolListener) ExtensionLoader
             .getExtensionLoader(RegistryProtocolListener.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         exporterListener = (SingleRegistryCenterExportProviderExporterListener) ExtensionLoader
             .getExtensionLoader(ExporterListener.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         filter = (SingleRegistryCenterExportProviderFilter) ExtensionLoader
             .getExtensionLoader(Filter.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         serviceListener = (SingleRegistryCenterExportProviderServiceListener) ExtensionLoader
             .getExtensionLoader(ServiceListener.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         // ---------------checkpoints--------------- //
         // ServiceConfig isn't exported
         Assertions.assertFalse(serviceConfig.isExported());
@@ -214,7 +218,7 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
         // registryKey: the registryKey is the default cluster, CommonConstants.DEFAULT_KEY
         // key: The exported interface's name
         // group: the group is "mapping", ServiceNameMapping.DEFAULT_MAPPING_GROUP
-        ConfigItem configItem = MetadataReportInstance.getMetadataReport(CommonConstants.DEFAULT_KEY)
+        ConfigItem configItem = ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReport(CommonConstants.DEFAULT_KEY)
             .getConfigItem(serviceConfig.getInterface()
                 , ServiceNameMapping.DEFAULT_MAPPING_GROUP);
         // Check if the exported service (provider) is registered

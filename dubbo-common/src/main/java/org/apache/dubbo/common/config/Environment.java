@@ -26,6 +26,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,14 +67,16 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     private String localMigrationRule;
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
+    private ApplicationModel applicationModel;
 
-    public Environment() {
+    public Environment(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
     }
 
     @Override
     public void initialize() throws IllegalStateException {
         if (initialized.compareAndSet(false, true)) {
-            this.propertiesConfiguration = new PropertiesConfiguration();
+            this.propertiesConfiguration = new PropertiesConfiguration(applicationModel);
             this.systemConfiguration = new SystemConfiguration();
             this.environmentConfiguration = new EnvironmentConfiguration();
             this.externalConfiguration = new InmemoryConfiguration("ExternalConfig");

@@ -55,22 +55,22 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         }
 
         @Override
-        public void doOnComplete(OperationHandler handler) {
-            if (getData() == null) {
+        public void doOnComplete() {
+            if (getData() != null) {
+                execute(this::invoke);
+            } else {
                 onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                         .withDescription("Missing request data"));
-                return;
             }
-            execute(this::invoke);
         }
 
         public void invoke() {
 
-            final RpcInvocation invocation;
+            RpcInvocation invocation;
             try {
+                invocation = buildInvocation(getHeaders());
                 final Object[] arguments = deserializeRequest(getData());
                 if (arguments != null) {
-                    invocation = buildInvocation(getHeaders());
                     invocation.setArguments(arguments);
                 } else {
                     return;
@@ -108,7 +108,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     }
                     Metadata metadata = new DefaultMetadata();
                     metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
-                    getTransportSubscriber().tryOnMetadata(metadata, false);
+                    getTransportSubscriber().onMetadata(metadata, false);
 
                     final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
                     final byte[] data;
@@ -119,7 +119,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     } finally {
                         ClassLoadUtil.switchContextLoader(tccl);
                     }
-                    getTransportSubscriber().tryOnData(data, false);
+                    getTransportSubscriber().onData(data, false);
 
                     Metadata trailers = new DefaultMetadata()
                             .put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
@@ -127,7 +127,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     if (attachments != null) {
                         convertAttachment(trailers, attachments);
                     }
-                    getTransportSubscriber().tryOnMetadata(trailers, true);
+                    getTransportSubscriber().onMetadata(trailers, true);
                 } catch (Throwable e) {
                     LOGGER.warn("Exception processing triple message", e);
                     if (e instanceof TripleRpcException) {

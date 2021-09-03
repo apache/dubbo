@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.Constants;
+import org.apache.dubbo.registry.ProviderFirstParams;
 import org.apache.dubbo.registry.integration.AbstractConfiguratorListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.rpc.Invoker;
@@ -41,6 +42,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
@@ -48,28 +50,52 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.rpc.model.ScopeModelUtil.getApplicationModel;
 
 public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryDirectory.class);
 
-    // instance address to invoker mapping.
-    private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
-    private final static ConsumerConfigurationListener CONSUMER_CONFIGURATION_LISTENER = new ConsumerConfigurationListener();
+    /**
+     * instance address to invoker mapping.
+     * The initial value is null and the midway may be assigned to null, please use the local variable reference
+     */
+    private volatile Map<String, Invoker<T>> urlInvokerMap;
+    private final ConsumerConfigurationListener consumerConfigurationListener;
     private volatile ReferenceConfigurationListener referenceConfigurationListener;
     private volatile boolean enableConfigurationListen = true;
-    private volatile List<URL> originalUrls = null; // initial for null
+    private volatile List<URL> originalUrls = null;
     private volatile Map<String, String> overrideQueryMap;
+    private volatile Map<String, String> consumerFirstQueryMap;
+    private final ApplicationModel applicationModel;
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
+        applicationModel = getApplicationModel(url.getScopeModel());
+        consumerConfigurationListener = new ConsumerConfigurationListener(applicationModel);
+
+        Set<ProviderFirstParams> providerFirstParams = ExtensionLoader.getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
+        if (CollectionUtils.isEmpty(providerFirstParams)) {
+            consumerFirstQueryMap = queryMap;
+        } else {
+            consumerFirstQueryMap = new HashMap<>(queryMap);
+            for (ProviderFirstParams paramsFilter : providerFirstParams) {
+                if (paramsFilter.params() == null) {
+                    break;
+                }
+                for (String keyToRemove : paramsFilter.params()) {
+                    consumerFirstQueryMap.remove(keyToRemove);
+                }
+            }
+        }
+
     }
 
     @Override
     public void subscribe(URL url) {
-        if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             enableConfigurationListen = true;
-            CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
-            referenceConfigurationListener = new ReferenceConfigurationListener(this, url);
+            consumerConfigurationListener.addNotifyListener(this);
+            referenceConfigurationListener = new ReferenceConfigurationListener(this.applicationModel, this, url);
         } else {
             enableConfigurationListen = false;
         }
@@ -80,8 +106,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     public void unSubscribe(URL url) {
         super.unSubscribe(url);
         this.originalUrls = null;
-        if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-            CONSUMER_CONFIGURATION_LISTENER.removeNotifyListener(this);
+        if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            consumerConfigurationListener.removeNotifyListener(this);
             referenceConfigurationListener.stop();
         }
     }
@@ -115,9 +141,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         // Set the context of the address notification thread.
         RpcServiceContext.setRpcContext(getConsumerUrl());
 
-        /**
-         * 3.x added for extend URL address
-         */
+        //  3.x added for extend URL address
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
@@ -142,7 +166,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private void overrideDirectoryUrl() {
         // merge override parameters
         this.overrideDirectoryUrl = directoryUrl;
-        List<Configurator> localAppDynamicConfigurators = CONSUMER_CONFIGURATION_LISTENER.getConfigurators(); // local reference
+        List<Configurator> localAppDynamicConfigurators = consumerConfigurationListener.getConfigurators(); // local reference
         doOverrideUrl(localAppDynamicConfigurators);
         if (referenceConfigurationListener != null) {
             List<Configurator> localDynamicConfigurators = referenceConfigurationListener.getConfigurators(); // local reference
@@ -162,8 +186,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private InstanceAddressURL overrideWithConfigurator(InstanceAddressURL providerUrl) {
-        // override url with configurator from configurator from "app-name.configurators"
-        providerUrl = overrideWithConfigurators(CONSUMER_CONFIGURATION_LISTENER.getConfigurators(), providerUrl);
+        // override url with configurator from "app-name.configurators"
+        providerUrl = overrideWithConfigurators(consumerConfigurationListener.getConfigurators(), providerUrl);
 
         // override url with configurator from configurators from "service-name.configurators"
         if (referenceConfigurationListener != null) {
@@ -216,7 +240,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
-            this.forbidden = false; // Allow to access
+            this.forbidden = false; // Allow accessing
             Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
             if (CollectionUtils.isEmpty(invokerUrls)) {
                 return;
@@ -273,8 +297,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 continue;
             }
 
-            // FIXME, some keys may need to be removed.
-            instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), queryMap);
+            instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), consumerFirstQueryMap);
 
             // Override provider urls if needed
             if (enableConfigurationListen) {
@@ -387,11 +410,12 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         logger.info(oldUrlInvokerMap.size() + " deprecated invokers deleted.");
     }
 
-    private static class ReferenceConfigurationListener extends AbstractConfiguratorListener {
+    private class ReferenceConfigurationListener extends AbstractConfiguratorListener {
         private final ServiceDiscoveryRegistryDirectory<?> directory;
         private final URL url;
 
-        ReferenceConfigurationListener(ServiceDiscoveryRegistryDirectory<?> directory, URL url) {
+        ReferenceConfigurationListener(ApplicationModel applicationModel, ServiceDiscoveryRegistryDirectory<?> directory, URL url) {
+            super(applicationModel);
             this.directory = directory;
             this.url = url;
             this.initWith(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
@@ -413,15 +437,16 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
-    private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
+    private class ConsumerConfigurationListener extends AbstractConfiguratorListener {
         private final List<ServiceDiscoveryRegistryDirectory<?>> listeners = new ArrayList<>();
 
-        ConsumerConfigurationListener() {
+        ConsumerConfigurationListener(ApplicationModel applicationModel) {
+            super(applicationModel);
         }
 
         void addNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             if (listeners.size() == 0) {
-                this.initWith(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX);
+                this.initWith(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX);
             }
             this.listeners.add(listener);
         }
@@ -429,7 +454,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         void removeNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             this.listeners.remove(listener);
             if (listeners.size() == 0) {
-                this.stopListen(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX);
+                this.stopListen(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }
 

@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
@@ -34,7 +33,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.util.Map;
@@ -44,7 +42,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.status.reporter.FrameworkStatusReporter.createConsumptionReport;
 import static org.apache.dubbo.registry.client.migration.model.MigrationStep.APPLICATION_FIRST;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -58,6 +55,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private Class<T> type;
     private RegistryProtocol registryProtocol;
     private MigrationRuleListener migrationRuleListener;
+    private ConsumerModel consumerModel;
 
     private volatile ClusterInvoker<T> invoker;
     private volatile ClusterInvoker<T> serviceDiscoveryInvoker;
@@ -91,8 +89,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.type = type;
         this.url = url;
         this.consumerUrl = consumerUrl;
+        this.consumerModel = (ConsumerModel) consumerUrl.getServiceModel();
 
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerUrl.getServiceKey());
         if (consumerModel != null) {
             Object object = consumerModel.getServiceMetadata().getAttribute("currentClusterInvoker");
             Map<Registry, MigrationInvoker<?>> invokerMap;
@@ -315,7 +313,6 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (serviceDiscoveryInvoker != null) {
             serviceDiscoveryInvoker.destroy();
         }
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerUrl.getServiceKey());
         if (consumerModel != null) {
             Object object = consumerModel.getServiceMetadata().getAttribute("currentClusterInvoker");
             Map<Registry, MigrationInvoker<?>> invokerMap;
@@ -426,9 +423,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         setListener(serviceDiscoveryInvoker, () -> {
             latch.countDown();
-            FrameworkStatusReporter.reportConsumptionStatus(
-                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app")
-            );
+            //TODO FrameworkStatusReporter
+//            FrameworkStatusReporter.reportConsumptionStatus(
+//                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app")
+//            );
             if (step == APPLICATION_FIRST) {
                 calcPreferredInvoker(rule);
             }
@@ -449,9 +447,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         setListener(invoker, () -> {
             latch.countDown();
-            FrameworkStatusReporter.reportConsumptionStatus(
-                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "interface")
-            );
+            //TODO FrameworkStatusReporter
+//            FrameworkStatusReporter.reportConsumptionStatus(
+//                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "interface")
+//            );
             if (step == APPLICATION_FIRST) {
                 calcPreferredInvoker(rule);
             }
@@ -517,5 +516,13 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     protected void setMigrationRuleListener(MigrationRuleListener migrationRuleListener) {
         this.migrationRuleListener = migrationRuleListener;
+    }
+
+    public Cluster getCluster() {
+        return cluster;
+    }
+
+    public URL getConsumerUrl() {
+        return consumerUrl;
     }
 }

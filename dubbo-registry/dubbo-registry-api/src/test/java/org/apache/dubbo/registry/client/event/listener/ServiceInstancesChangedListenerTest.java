@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.event.listener;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.NotifyListener;
@@ -49,11 +50,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 
 /**
@@ -69,6 +72,7 @@ public class ServiceInstancesChangedListenerTest {
     static List<ServiceInstance> app2Instances;
     static List<ServiceInstance> app1FailedInstances;
     static List<ServiceInstance> app1FailedInstances2;
+    static List<ServiceInstance> app1InstancesWithNoRevision;
 
     static String metadata_111 = "{\"app\":\"app1\",\"revision\":\"111\",\"services\":{"
         + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app1\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
@@ -86,6 +90,8 @@ public class ServiceInstancesChangedListenerTest {
     static String metadata_444 = "{\"app\":\"app1\",\"revision\":\"444\",\"services\":{"
         + "\"org.apache.dubbo.demo.DemoService:dubbo\":{\"name\":\"org.apache.dubbo.demo.DemoService\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.demo.DemoService\",\"params\":{\"side\":\"provider\",\"release\":\"\",\"methods\":\"sayHello,sayHelloAsync\",\"deprecated\":\"false\",\"dubbo\":\"2.0.2\",\"pid\":\"72723\",\"interface\":\"org.apache.dubbo.demo.DemoService\",\"service-name-mapping\":\"true\",\"timeout\":\"3000\",\"generic\":\"false\",\"metadata-type\":\"remote\",\"delay\":\"5000\",\"application\":\"app2\",\"dynamic\":\"true\",\"REGISTRY_CLUSTER\":\"registry1\",\"anyhost\":\"true\",\"timestamp\":\"1625800233446\"}}"
         + "}}";
+
+    static String bad_metadatainfo = "{\"xxx\":\"yyy\"}";
 
     static String service1 = "org.apache.dubbo.demo.DemoService";
     static String service2 = "org.apache.dubbo.demo.DemoService2";
@@ -125,10 +131,14 @@ public class ServiceInstancesChangedListenerTest {
         urlsFailedRevision2.add("30.10.0.1:20880?revision=222");
         urlsFailedRevision2.add("30.10.0.2:20880?revision=222");
 
+        List<Object> urlsWithoutRevision = new ArrayList<>();
+        urlsWithoutRevision.add("30.10.0.1:20880");
+
         app1Instances = buildInstances(urlsSameRevision);
         app2Instances = buildInstances(urlsDifferentRevision);
         app1FailedInstances = buildInstances(urlsFailedRevision);
         app1FailedInstances2 = buildInstances(urlsFailedRevision2);
+        app1InstancesWithNoRevision = buildInstances(urlsWithoutRevision);
 
         metadataInfo_111 = gson.fromJson(metadata_111, MetadataInfo.class);
         metadataInfo_222 = gson.fromJson(metadata_222, MetadataInfo.class);
@@ -197,7 +207,7 @@ public class ServiceInstancesChangedListenerTest {
 
             List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo", consumerURL);
             Assertions.assertEquals(3, serviceUrls.size());
-            Assertions.assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+            assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
 
             assertThat(serviceUrls, Matchers.hasItem(Matchers.hasProperty("instance", Matchers.notNullValue())));
             assertThat(serviceUrls, Matchers.hasItem(Matchers.hasProperty("metadataInfo", Matchers.notNullValue())));
@@ -240,10 +250,10 @@ public class ServiceInstancesChangedListenerTest {
             Assertions.assertEquals(7, serviceUrls.size());
             List<URL> serviceUrls2 = listener.getAddresses(service2 + ":dubbo", consumerURL);
             Assertions.assertEquals(4, serviceUrls2.size());
-            Assertions.assertTrue(serviceUrls2.get(0).getIp().contains("30.10."));
+            assertTrue(serviceUrls2.get(0).getIp().contains("30.10."));
             List<URL> serviceUrls3 = listener.getAddresses(service3 + ":dubbo", consumerURL);
             Assertions.assertEquals(2, serviceUrls3.size());
-            Assertions.assertTrue(serviceUrls3.get(0).getIp().contains("30.10."));
+            assertTrue(serviceUrls3.get(0).getIp().contains("30.10."));
         }
     }
 
@@ -284,13 +294,13 @@ public class ServiceInstancesChangedListenerTest {
 
             List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo", consumerURL);
             Assertions.assertEquals(4, serviceUrls.size());
-            Assertions.assertTrue(serviceUrls.get(0).getIp().contains("30.10."));
+            assertTrue(serviceUrls.get(0).getIp().contains("30.10."));
             List<URL> serviceUrls2 = listener.getAddresses(service2 + ":dubbo", consumerURL);
             Assertions.assertEquals(4, serviceUrls2.size());
-            Assertions.assertTrue(serviceUrls2.get(0).getIp().contains("30.10."));
+            assertTrue(serviceUrls2.get(0).getIp().contains("30.10."));
             List<URL> serviceUrls3 = listener.getAddresses(service3 + ":dubbo", consumerURL);
             Assertions.assertEquals(2, serviceUrls3.size());
-            Assertions.assertTrue(serviceUrls3.get(0).getIp().contains("30.10."));
+            assertTrue(serviceUrls3.get(0).getIp().contains("30.10."));
 
             // app2 empty notification
             ServiceInstancesChangedEvent app2_event_again = new ServiceInstancesChangedEvent("app2", Collections.EMPTY_LIST);
@@ -305,9 +315,9 @@ public class ServiceInstancesChangedListenerTest {
             Map<String, MetadataInfo> revisionToMetadata_app2 = listener.getRevisionToMetadata();
             Assertions.assertEquals(0, revisionToMetadata_app2.size());
 
-            Assertions.assertTrue(isEmpty(listener.getAddresses(service1 + ":dubbo", consumerURL)));
-            Assertions.assertTrue(isEmpty(listener.getAddresses(service2+ ":dubbo", consumerURL)));
-            Assertions.assertTrue(isEmpty(listener.getAddresses(service3 + ":dubbo", consumerURL)));
+            assertTrue(isEmpty(listener.getAddresses(service1 + ":dubbo", consumerURL)));
+            assertTrue(isEmpty(listener.getAddresses(service2+ ":dubbo", consumerURL)));
+            assertTrue(isEmpty(listener.getAddresses(service3 + ":dubbo", consumerURL)));
         }
     }
 
@@ -377,8 +387,8 @@ public class ServiceInstancesChangedListenerTest {
             List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo", consumerURL);
             List<URL> serviceUrls2 = listener.getAddresses(service2 + ":dubbo", consumerURL);
 
-            Assertions.assertTrue(isEmpty(serviceUrls));
-            Assertions.assertTrue(isEmpty(serviceUrls2));
+            assertTrue(isEmpty(serviceUrls));
+            assertTrue(isEmpty(serviceUrls2));
 
             Map<String, MetadataInfo> revisionToMetadata = listener.getRevisionToMetadata();
             Assertions.assertEquals(2, revisionToMetadata.size());
@@ -439,7 +449,7 @@ public class ServiceInstancesChangedListenerTest {
             Assertions.assertEquals(MetadataInfo.EMPTY, revisionToMetadata.get("222"));
 
             Assertions.assertEquals(3, listener.getAddresses(service1 + ":dubbo", consumerURL).size());
-            Assertions.assertTrue(isEmpty(listener.getAddresses(service2 + ":dubbo", consumerURL)));
+            assertTrue(isEmpty(listener.getAddresses(service2 + ":dubbo", consumerURL)));
 
             try {
                 Thread.sleep(15000);
@@ -461,6 +471,29 @@ public class ServiceInstancesChangedListenerTest {
         }
     }
 
+    // Abnormal case. Instance does not has revision
+    @Test
+    public void testInstanceWithoutRevision() {
+        Set<String> serviceNames = new HashSet<>();
+        serviceNames.add("app1");
+        ServiceDiscovery serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
+        ServiceInstancesChangedListener spyListener = Mockito.spy(new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
+        Mockito.doReturn(null).when(spyListener).getRemoteMetadata(eq(null), Mockito.anyMap(), Mockito.any());
+        ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1InstancesWithNoRevision);
+        spyListener.onEvent(event);
+        // notification succeeded
+        assertTrue(true);
+    }
+
+    @Test
+    public void testSelectInstance() {
+        System.out.println(ThreadLocalRandom.current().nextInt(0, 100));
+        System.out.println(ThreadLocalRandom.current().nextInt(0, 100));
+        System.out.println(ThreadLocalRandom.current().nextInt(0, 100));
+        System.out.println(ThreadLocalRandom.current().nextInt(0, 100));
+        System.out.println(ThreadLocalRandom.current().nextInt(0, 100));
+    }
+
     static List<ServiceInstance> buildInstances(List<Object> rawURls) {
         List<ServiceInstance> instances = new ArrayList<>();
 
@@ -477,7 +510,9 @@ public class ServiceInstancesChangedListenerTest {
             instance.setRegistryCluster("default");
 
             Map<String, String> metadata = new HashMap<>();
-            metadata.put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, dubboUrl.getParameter(REVISION_KEY));
+            if (StringUtils.isNotEmpty(dubboUrl.getParameter(REVISION_KEY))) {
+                metadata.put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, dubboUrl.getParameter(REVISION_KEY));
+            }
             instance.setMetadata(metadata);
 
             instances.add(instance);

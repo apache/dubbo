@@ -39,9 +39,10 @@ import java.util.List;
 public class MigrationInvokerTest {
     @BeforeEach
     public void before() {
+        ApplicationModel.reset();
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("Test");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
     }
 
     @AfterEach
@@ -214,5 +215,13 @@ public class MigrationInvokerTest {
         long currentTimeMillis = System.currentTimeMillis();
         migrationInvoker.migrateToForceApplicationInvoker(migrationRule);
         Assertions.assertTrue(System.currentTimeMillis() - currentTimeMillis >= 2000);
+    }
+
+    @Test
+    public void testConcurrency() {
+        // 独立线程
+
+        // 独立线程invoker状态切换
+
     }
 }

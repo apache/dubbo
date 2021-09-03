@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.registry.zookeeper.util;
 
-import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.curator.x.discovery.ServiceDiscoveryBuilder;
@@ -84,17 +85,17 @@ public abstract class CuratorFrameworkUtils {
     }
 
 
-    public static List<ServiceInstance> build(Collection<org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>>
-                                                  instances) {
-        return instances.stream().map(CuratorFrameworkUtils::build).collect(Collectors.toList());
+    public static List<ServiceInstance> build(URL registryUrl, Collection<org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>>
+        instances) {
+        return instances.stream().map((i)->build(registryUrl, i)).collect(Collectors.toList());
     }
 
-    public static ServiceInstance build(org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> instance) {
+    public static ServiceInstance build(URL registryUrl, org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> instance) {
         String name = instance.getName();
         String host = instance.getAddress();
         int port = instance.getPort();
         ZookeeperInstance zookeeperInstance = instance.getPayload();
-        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(name, host, port);
+        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(name, host, port, ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
         serviceInstance.setMetadata(zookeeperInstance.getMetadata());
         return serviceInstance;
     }

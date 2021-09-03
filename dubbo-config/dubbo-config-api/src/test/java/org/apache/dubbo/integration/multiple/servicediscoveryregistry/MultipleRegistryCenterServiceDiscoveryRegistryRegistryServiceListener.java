@@ -24,7 +24,10 @@ import org.apache.dubbo.registry.RegistryServiceListener;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 
-@Activate
+import static org.apache.dubbo.integration.Constants.MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY;
+
+
+@Activate(value = MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY)
 public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListener implements RegistryServiceListener {
 
     private ServiceDiscoveryRegistryStorage storage = new ServiceDiscoveryRegistryStorage();
@@ -33,13 +36,14 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
      * Create an {@link ServiceDiscoveryRegistryInfoWrapper} instance.
      */
     private ServiceDiscoveryRegistryInfoWrapper createServiceDiscoveryRegistryInfoWrapper(ServiceDiscoveryRegistry serviceDiscoveryRegistry){
-        String host = serviceDiscoveryRegistry.getUrl().getHost();
-        int port = serviceDiscoveryRegistry.getUrl().getPort();
+        URL url = serviceDiscoveryRegistry.getUrl();
+        String host = url.getHost();
+        int port = url.getPort();
         ServiceDiscoveryRegistryInfoWrapper serviceDiscoveryRegistryInfoWrapper = new ServiceDiscoveryRegistryInfoWrapper();
         serviceDiscoveryRegistryInfoWrapper.setHost(host);
         serviceDiscoveryRegistryInfoWrapper.setPort(port);
         serviceDiscoveryRegistryInfoWrapper.setServiceDiscoveryRegistry(serviceDiscoveryRegistry);
-        serviceDiscoveryRegistryInfoWrapper.setInMemoryWritableMetadataService((InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension());
+        serviceDiscoveryRegistryInfoWrapper.setInMemoryWritableMetadataService((InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(url.getScopeModel()));
         serviceDiscoveryRegistryInfoWrapper.setRegistered(true);
         return serviceDiscoveryRegistryInfoWrapper;
     }
@@ -55,13 +59,13 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
 
     public void onRegister(URL url, Registry registry) {
         if (registry instanceof ServiceDiscoveryRegistry && isCheckedApplication(registry)) {
-            ServiceDiscoveryRegistry serviceDiscoveryRegistry = (ServiceDiscoveryRegistry)registry;
+            ServiceDiscoveryRegistry serviceDiscoveryRegistry = (ServiceDiscoveryRegistry) registry;
             String host = serviceDiscoveryRegistry.getUrl().getHost();
             int port = serviceDiscoveryRegistry.getUrl().getPort();
-            if (!storage.contains(host,port)){
-                storage.put(host,port,createServiceDiscoveryRegistryInfoWrapper(serviceDiscoveryRegistry));
+            if (!storage.contains(host, port)) {
+                storage.put(host, port, createServiceDiscoveryRegistryInfoWrapper(serviceDiscoveryRegistry));
             }
-            storage.get(host,port).setRegistered(true);
+            storage.get(host, port).setRegistered(true);
         }
     }
 
@@ -69,19 +73,19 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
         if (registry instanceof ServiceDiscoveryRegistry && isCheckedApplication(registry)) {
             String host = registry.getUrl().getHost();
             int port = registry.getUrl().getPort();
-            storage.get(host,port).setRegistered(false);
+            storage.get(host, port).setRegistered(false);
         }
     }
 
     public void onSubscribe(URL url, Registry registry) {
         if (registry instanceof ServiceDiscoveryRegistry && isCheckedApplication(registry)) {
-            ServiceDiscoveryRegistry serviceDiscoveryRegistry = (ServiceDiscoveryRegistry)registry;
+            ServiceDiscoveryRegistry serviceDiscoveryRegistry = (ServiceDiscoveryRegistry) registry;
             String host = serviceDiscoveryRegistry.getUrl().getHost();
             int port = serviceDiscoveryRegistry.getUrl().getPort();
-            if (!storage.contains(host,port)){
-                storage.put(host,port,createServiceDiscoveryRegistryInfoWrapper(serviceDiscoveryRegistry));
+            if (!storage.contains(host, port)) {
+                storage.put(host, port, createServiceDiscoveryRegistryInfoWrapper(serviceDiscoveryRegistry));
             }
-            storage.get(host,port).setSubscribed(true);
+            storage.get(host, port).setSubscribed(true);
         }
     }
 
@@ -89,7 +93,7 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
         if (registry instanceof ServiceDiscoveryRegistry && isCheckedApplication(registry)) {
             String host = registry.getUrl().getHost();
             int port = registry.getUrl().getPort();
-            storage.get(host,port).setSubscribed(false);
+            storage.get(host, port).setSubscribed(false);
         }
     }
 

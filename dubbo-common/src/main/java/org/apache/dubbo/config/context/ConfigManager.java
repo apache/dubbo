@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -87,6 +88,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     private boolean ignoreDuplicatedInterface = false;
 
+    private ApplicationModel applicationModel;
+
+    private AtomicBoolean inited = new AtomicBoolean(false);
+
     private static Map<String, AtomicInteger> configIdIndexes = new ConcurrentHashMap<>();
 
     private static Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
@@ -105,12 +110,16 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         }
     }
 
-    public ConfigManager() {
+    public ConfigManager(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
     }
 
     @Override
     public void initialize() throws IllegalStateException {
-        CompositeConfiguration configuration = ApplicationModel.getEnvironment().getConfiguration();
+        if (!inited.compareAndSet(false, true)) {
+            return;
+        }
+        CompositeConfiguration configuration = applicationModel.getApplicationEnvironment().getConfiguration();
         String configModeStr = (String) configuration.getProperty(DUBBO_CONFIG_MODE);
         try {
             if (StringUtils.hasText(configModeStr)) {
@@ -127,7 +136,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         if (ignoreDuplicatedInterfaceStr != null) {
             this.ignoreDuplicatedInterface = Boolean.parseBoolean(ignoreDuplicatedInterfaceStr);
         }
-        logger.info("Dubbo config mode: " + configMode +", ignore duplicated interface: " + ignoreDuplicatedInterface);
+        logger.info("Dubbo config mode: " + configMode + ", ignore duplicated interface: " + ignoreDuplicatedInterface);
     }
 
 
@@ -135,6 +144,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     /**
      * Set application config
+     *
      * @param application
      * @return current application config instance
      */
@@ -344,13 +354,14 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     /**
      * Get config instance by id or by name
-     * @param cls Config type
-     * @param idOrName  the id or name of the config
+     *
+     * @param cls      Config type
+     * @param idOrName the id or name of the config
      * @return
      */
     public <T extends AbstractConfig> Optional<T> getConfig(Class<T> cls, String idOrName) {
         T config = getConfigById(getTagName(cls), idOrName);
-        if (config == null ) {
+        if (config == null) {
             config = getConfigByName(cls, idOrName);
         }
         return ofNullable(config);
@@ -367,6 +378,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     // ServiceConfig correlative methods
 
     public void addService(ServiceConfigBase<?> serviceConfig) {
+        if (serviceConfig.getScopeModel() == null) {
+            serviceConfig.setScopeModel(applicationModel.getDefaultModule());
+        }
         addConfig(serviceConfig);
     }
 
@@ -385,6 +399,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     // ReferenceConfig correlative methods
 
     public void addReference(ReferenceConfigBase<?> referenceConfig) {
+        if (referenceConfig.getScopeModel() == null) {
+            referenceConfig.setScopeModel(applicationModel.getDefaultModule());
+        }
         addConfig(referenceConfig);
     }
 
@@ -420,16 +437,18 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
      * In some scenario,  we may nee to add and remove ServiceConfig or ReferenceConfig dynamically.
      *
      * @param config the config instance to remove.
+     * @return
      */
-    public void removeConfig(AbstractConfig config) {
+    public boolean removeConfig(AbstractConfig config) {
         if (config == null) {
-            return;
+            return false;
         }
 
         Map<String, AbstractConfig> configs = configsCache.get(getTagName(config.getClass()));
         if (CollectionUtils.isNotEmptyMap(configs)) {
-            configs.values().removeIf(c -> config == c);
+            return configs.values().removeIf(c -> config == c);
         }
+        return false;
     }
 
     public void clear() {
@@ -457,6 +476,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     public void addConfig(AbstractConfig config) {
         if (config == null) {
             return;
+        }
+        if (config.getScopeModel() == null) {
+            config.setScopeModel(applicationModel);
         }
         addConfig(config, isUniqueConfig(config));
     }
@@ -509,6 +531,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     /**
      * Get config by id
+     *
      * @param configType
      * @param id
      * @return
@@ -519,6 +542,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     /**
      * Get config by name if existed
+     *
      * @param cls
      * @param name
      * @return
@@ -559,7 +583,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             return null;
         } else if (size > 1) {
             throw new IllegalStateException("Expected single instance of " + configType + ", but found " + size +
-                " instances, please remove redundant configs. instances: "+configsMap.values());
+                " instances, please remove redundant configs. instances: " + configsMap.values());
         }
         return (C) configsMap.values().iterator().next();
     }
@@ -592,6 +616,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     /**
      * Add config
+     *
      * @param config
      * @param configsMap
      * @param unique
@@ -599,7 +624,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
      * @throws IllegalStateException
      */
     private <C extends AbstractConfig> C addIfAbsent(C config, Map<String, C> configsMap, boolean unique)
-            throws IllegalStateException {
+        throws IllegalStateException {
 
         if (config == null || configsMap == null) {
             return config;
@@ -697,6 +722,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     /**
      * check duplicated ReferenceConfig/ServiceConfig
+     *
      * @param config
      */
     private AbstractInterfaceConfig checkDuplicatedInterfaceConfig(AbstractInterfaceConfig config) {
@@ -723,7 +749,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             if (prevConfig.equals(config)) {
                 // TODO Is there any problem with ignoring duplicate and equivalent but different ReferenceConfig instances?
                 if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-                    logger.warn("Ignore duplicated and equal config: "+config);
+                    logger.warn("Ignore duplicated and equal config: " + config);
                 }
                 return prevConfig;
             }
@@ -762,18 +788,18 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     static <C extends AbstractConfig> List<C> getDefaultConfigs(Map<String, C> configsMap) {
         // find isDefault() == true
         List<C> list = configsMap.values()
-                .stream()
-                .filter(c -> TRUE.equals(ConfigManager.isDefaultConfig(c)))
-                .collect(Collectors.toList());
+            .stream()
+            .filter(c -> TRUE.equals(ConfigManager.isDefaultConfig(c)))
+            .collect(Collectors.toList());
         if (list.size() > 0) {
             return list;
         }
 
         // find isDefault() == null
         list = configsMap.values()
-                .stream()
-                .filter(c -> ConfigManager.isDefaultConfig(c) == null)
-                .collect(Collectors.toList());
+            .stream()
+            .filter(c -> ConfigManager.isDefaultConfig(c) == null)
+            .collect(Collectors.toList());
         return list;
 
         // exclude isDefault() == false
