@@ -183,6 +183,7 @@ public class ApplicationModel extends ScopeModel {
         for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
             moduleModel.destroy();
         }
+        frameworkModel.removeApplication(this);
     }
 
     public FrameworkModel getFrameworkModel() {

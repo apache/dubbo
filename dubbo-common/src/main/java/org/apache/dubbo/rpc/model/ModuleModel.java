@@ -44,6 +44,7 @@ public class ModuleModel extends ScopeModel {
     public void destroy() {
         super.destroy();
         // TODO destroy module resources
+        applicationModel.removeModule(this);
     }
 
     public ApplicationModel getApplicationModel() {
