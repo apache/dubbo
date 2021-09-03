@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.bytecode.Wrapper;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
@@ -35,6 +34,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
@@ -65,12 +65,20 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
 class CallbackServiceCodec {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceCodec.class);
 
-    private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private static final Protocol PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DUBBO_PROTOCOL);
     private static final byte CALLBACK_NONE = 0x0;
     private static final byte CALLBACK_CREATE = 0x1;
     private static final byte CALLBACK_DESTROY = 0x2;
     private static final String INV_ATT_CALLBACK_KEY = "sys_callback_arg-";
+
+    private final ProxyFactory proxyFactory;
+    private final Protocol protocolSPI;
+    private final FrameworkModel frameworkModel;
+
+    public CallbackServiceCodec(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+        proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        protocolSPI = frameworkModel.getExtensionLoader(Protocol.class).getExtension(DUBBO_PROTOCOL);
+    }
 
     private static byte isCallBack(URL url, String protocolServiceKey, String methodName, int argIndex) {
         // parameter callback rule: method-name.parameter-index(starting from 0).callback
@@ -99,7 +107,7 @@ class CallbackServiceCodec {
      * @throws IOException
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static String exportOrUnexportCallbackService(Channel channel, RpcInvocation inv, URL url, Class clazz, Object inst, Boolean export) throws IOException {
+    private String exportOrUnexportCallbackService(Channel channel, RpcInvocation inv, URL url, Class clazz, Object inst, Boolean export) throws IOException {
         int instid = System.identityHashCode(inst);
 
         Map<String, String> params = new HashMap<>(3);
@@ -122,11 +130,12 @@ class CallbackServiceCodec {
             }
         }
         tmpMap.putAll(params);
-        
+
         tmpMap.remove(VERSION_KEY);// doesn't need to distinguish version for callback
         tmpMap.remove(Constants.BIND_PORT_KEY); //callback doesn't needs bind.port
         tmpMap.put(INTERFACE_KEY, clazz.getName());
-        URL exportUrl = new ServiceConfigURL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(), channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpMap);
+        URL exportUrl = new ServiceConfigURL(DubboProtocol.NAME, channel.getLocalAddress().getAddress().getHostAddress(),
+            channel.getLocalAddress().getPort(), clazz.getName() + "." + instid, tmpMap);
 
         // no need to generate multiple exporters for different channel in the same JVM, cache key cannot collide.
         String cacheKey = getClientSideCallbackServiceCacheKey(instid);
@@ -137,25 +146,25 @@ class CallbackServiceCodec {
                 if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, false)) {
                     ModuleModel moduleModel;
                     if (inv.getServiceModel() == null) {
+                        //TODO should get scope model from url?
                         moduleModel = ApplicationModel.defaultModel().getDefaultModule();
                         logger.error("Unable to get Service Model from Invocation. Please check if your invocation failed! " +
                             "This error only happen in UT cases! Invocation:" + inv);
                     } else {
                         moduleModel = inv.getServiceModel().getModuleModel();
                     }
-                    ServiceDescriptor serviceDescriptor = ScopeModelUtil.getApplicationModel(moduleModel).getApplicationServiceRepository().registerService(clazz);
-                    ProviderModel providerModel = new ProviderModel(BaseServiceMetadata.buildServiceKey(exportUrl.getPath(), group, exportUrl.getVersion()),
-                        inst,
-                        serviceDescriptor,
-                        null,
-                        moduleModel,
-                        new ServiceMetadata(clazz.getName() + "." + instid, exportUrl.getGroup(), exportUrl.getVersion(), clazz));
-                    moduleModel.getApplicationModel().getApplicationServiceRepository().registerProvider(providerModel);
+
+                    ServiceDescriptor serviceDescriptor = moduleModel.getServiceRepository().registerService(clazz);
+                    ServiceMetadata serviceMetadata = new ServiceMetadata(clazz.getName() + "." + instid, exportUrl.getGroup(), exportUrl.getVersion(), clazz);
+                    String serviceKey = BaseServiceMetadata.buildServiceKey(exportUrl.getPath(), group, exportUrl.getVersion());
+                    ProviderModel providerModel = new ProviderModel(serviceKey, inst, serviceDescriptor, null, moduleModel, serviceMetadata);
+                    moduleModel.getServiceRepository().registerProvider(providerModel);
+
                     exportUrl = exportUrl.setScopeModel(moduleModel);
                     exportUrl = exportUrl.setServiceModel(providerModel);
-                    Invoker<?> invoker = PROXY_FACTORY.getInvoker(inst, clazz, exportUrl);
+                    Invoker<?> invoker = proxyFactory.getInvoker(inst, clazz, exportUrl);
                     // should destroy resource?
-                    Exporter<?> exporter = PROTOCOL.export(invoker);
+                    Exporter<?> exporter = protocolSPI.export(invoker);
                     // this is used for tracing if instid has published service or not.
                     channel.setAttribute(cacheKey, exporter);
                     logger.info("Export a callback service :" + exportUrl + ", on " + channel + ", url is: " + url);
@@ -179,7 +188,7 @@ class CallbackServiceCodec {
      * @param url
      */
     @SuppressWarnings("unchecked")
-    private static Object referOrDestroyCallbackService(Channel channel, URL url, Class<?> clazz, Invocation inv, int instid, boolean isRefer) {
+    private Object referOrDestroyCallbackService(Channel channel, URL url, Class<?> clazz, Invocation inv, int instid, boolean isRefer) {
         Object proxy;
         String invokerCacheKey = getServerSideCallbackInvokerCacheKey(channel, clazz.getName(), instid);
         String proxyCacheKey = getServerSideCallbackServiceCacheKey(channel, clazz.getName(), instid);
@@ -190,10 +199,10 @@ class CallbackServiceCodec {
                 URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + INTERFACE_KEY + "=" + clazz.getName());
                 referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(METHODS_KEY);
                 if (!isInstancesOverLimit(channel, referurl, clazz.getName(), instid, true)) {
-                    ScopeModelUtil.getApplicationModel(url.getScopeModel()).getApplicationServiceRepository().registerService(clazz);
+                    ScopeModelUtil.getApplicationModel(url.getScopeModel()).getDefaultModule().getServiceRepository().registerService(clazz);
                     @SuppressWarnings("rawtypes")
                     Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referurl, String.valueOf(instid));
-                    proxy = PROXY_FACTORY.getProxy(invoker);
+                    proxy = proxyFactory.getProxy(invoker);
                     channel.setAttribute(proxyCacheKey, proxy);
                     channel.setAttribute(invokerCacheKey, invoker);
                     increaseInstanceCount(channel, countkey);
@@ -291,7 +300,7 @@ class CallbackServiceCodec {
         }
     }
 
-    public static Object encodeInvocationArgument(Channel channel, RpcInvocation inv, int paraIndex) throws IOException {
+    public Object encodeInvocationArgument(Channel channel, RpcInvocation inv, int paraIndex) throws IOException {
         // get URL directly
         URL url = inv.getInvoker() == null ? null : inv.getInvoker().getUrl();
         byte callbackStatus = isCallBack(url, inv.getProtocolServiceKey(), inv.getMethodName(), paraIndex);
@@ -309,7 +318,7 @@ class CallbackServiceCodec {
         }
     }
 
-    public static Object decodeInvocationArgument(Channel channel, RpcInvocation inv, Class<?>[] pts, int paraIndex, Object inObject) throws IOException {
+    public Object decodeInvocationArgument(Channel channel, RpcInvocation inv, Class<?>[] pts, int paraIndex, Object inObject) throws IOException {
         // if it's a callback, create proxy on client side, callback interface on client side can be invoked through channel
         // need get URL from channel and env when decode
         URL url = null;

@@ -21,6 +21,29 @@ import org.apache.dubbo.common.extension.SPI;
 
 public class ScopeModelUtil {
 
+    public static ScopeModel getOrDefault(ScopeModel scopeModel, Class type) {
+        if (scopeModel != null) {
+            return scopeModel;
+        }
+        return getDefaultScopeModel(type);
+    }
+
+    private static ScopeModel getDefaultScopeModel(Class type) {
+        SPI spi = (SPI) type.getAnnotation(SPI.class);
+        if (spi == null) {
+            throw new IllegalArgumentException("SPI annotation not found for class: " + type.getName());
+        }
+        switch (spi.scope()) {
+            case FRAMEWORK:
+                return FrameworkModel.defaultModel();
+            case APPLICATION:
+                return ApplicationModel.defaultModel();
+            case MODULE:
+                return ApplicationModel.defaultModel().getDefaultModule();
+        }
+        throw new IllegalStateException("Unable to get default scope model for type: " + type.getName());
+    }
+
     public static ModuleModel getModuleModel(ScopeModel scopeModel) {
         if (scopeModel == null) {
             return ApplicationModel.defaultModel().getDefaultModule();
@@ -28,7 +51,7 @@ public class ScopeModelUtil {
         if (scopeModel instanceof ModuleModel) {
             return (ModuleModel) scopeModel;
         } else {
-            throw new IllegalArgumentException("Unable to get ModuleModel from" + scopeModel);
+            throw new IllegalArgumentException("Unable to get ModuleModel from " + scopeModel);
         }
     }
 
@@ -42,7 +65,7 @@ public class ScopeModelUtil {
             ModuleModel moduleModel = (ModuleModel) scopeModel;
             return moduleModel.getApplicationModel();
         } else {
-            throw new IllegalArgumentException("Unable to get ApplicationModel from" + scopeModel);
+            throw new IllegalArgumentException("Unable to get ApplicationModel from " + scopeModel);
         }
     }
 
@@ -58,22 +81,27 @@ public class ScopeModelUtil {
         } else if (scopeModel instanceof FrameworkModel) {
             return (FrameworkModel) scopeModel;
         } else {
-            throw new IllegalArgumentException("Unable to get FrameworkModel from" + scopeModel);
+            throw new IllegalArgumentException("Unable to get FrameworkModel from " + scopeModel);
         }
     }
 
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type, ScopeModel scopeModel) {
-        if(scopeModel != null) {
+        if (scopeModel != null) {
             return scopeModel.getExtensionLoader(type);
         } else {
             SPI spi = type.getAnnotation(SPI.class);
+            if (spi == null) {
+                throw new IllegalArgumentException("SPI annotation not found for class: " + type.getName());
+            }
             switch (spi.scope()) {
                 case FRAMEWORK:
                     return FrameworkModel.defaultModel().getExtensionLoader(type);
                 case APPLICATION:
                     return ApplicationModel.defaultModel().getExtensionLoader(type);
-                default:
+                case MODULE:
                     return ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(type);
+                default:
+                    throw new IllegalArgumentException("Unable to get ExtensionLoader for type: " + type.getName());
             }
         }
     }

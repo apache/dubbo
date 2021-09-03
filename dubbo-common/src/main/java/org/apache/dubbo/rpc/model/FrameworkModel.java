@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,11 +33,36 @@ public class FrameworkModel extends ScopeModel {
 
     private volatile static FrameworkModel defaultInstance;
 
+    private static List<FrameworkModel> allInstances = Collections.synchronizedList(new ArrayList<>());
+
     private List<ApplicationModel> applicationModels = Collections.synchronizedList(new ArrayList<>());
 
+    private FrameworkServiceRepository serviceRepository;
+
+
     public FrameworkModel() {
-        super(null, new ExtensionDirector(null, ExtensionScope.FRAMEWORK));
+        super(null, ExtensionScope.FRAMEWORK);
+        initialize();
+    }
+
+    protected void initialize() {
+        super.initialize();
+        serviceRepository = new FrameworkServiceRepository(this);
+        allInstances.add(this);
+
         postProcessAfterCreated();
+    }
+
+    public void destroy() {
+        //TODO destroy framework model
+        for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
+            applicationModel.destroy();
+        }
+
+        allInstances.remove(this);
+        if (defaultInstance == this) {
+            defaultInstance = null;
+        }
     }
 
     public static FrameworkModel defaultModel() {
@@ -50,6 +74,16 @@ public class FrameworkModel extends ScopeModel {
             }
         }
         return defaultInstance;
+    }
+
+    public static List<FrameworkModel> getAllInstances() {
+        return Collections.unmodifiableList(allInstances);
+    }
+
+    public static void destroyAll() {
+        for (FrameworkModel frameworkModel : new ArrayList<>(allInstances)) {
+            frameworkModel.destroy();
+        }
     }
 
     public void addApplication(ApplicationModel model) {
@@ -64,6 +98,10 @@ public class FrameworkModel extends ScopeModel {
 
     public List<ApplicationModel> getApplicationModels() {
         return applicationModels;
+    }
+
+    public FrameworkServiceRepository getServiceRepository() {
+        return serviceRepository;
     }
 
     @Override

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import io.netty.channel.Channel;
+import io.netty.util.DefaultAttributeMap;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
@@ -24,11 +26,8 @@ import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
-
-import io.netty.channel.Channel;
-import io.netty.util.DefaultAttributeMap;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +45,7 @@ public class InvokeTelnetTest {
     private Channel mockChannel;
     private CommandContext mockCommandContext;
     private final DefaultAttributeMap defaultAttributeMap = new DefaultAttributeMap();
-    private ServiceRepository repository;
+    private ModuleServiceRepository repository;
 
     @BeforeEach
     public void setup() {
@@ -54,7 +53,7 @@ public class InvokeTelnetTest {
         mockChannel = mock(Channel.class);
         mockCommandContext = mock(CommandContext.class);
         given(mockCommandContext.getRemote()).willReturn(mockChannel);
-        repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
+        repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
     }
 
     @AfterEach

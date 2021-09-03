@@ -103,16 +103,18 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     }
 
     @Override
-    public void setScopeModel(ScopeModel scopeModel) {
-        if (!(scopeModel instanceof ModuleModel)) {
-            throw new IllegalArgumentException("Invalid scope model, expect to be a ModuleModel but got: " + scopeModel);
-        }
-        super.setScopeModel(scopeModel);
+    public ModuleModel getScopeModel() {
+        return (ModuleModel) scopeModel;
     }
 
     @Override
-    public ModuleModel getScopeModel() {
-        return (ModuleModel) scopeModel;
+    protected void checkScopeModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            throw new IllegalArgumentException("scopeModel cannot be null");
+        }
+        if (!(scopeModel instanceof ModuleModel)) {
+            throw new IllegalArgumentException("Invalid scope model, expect to be a ModuleModel but got: " + scopeModel);
+        }
     }
 
     public Integer getForks() {

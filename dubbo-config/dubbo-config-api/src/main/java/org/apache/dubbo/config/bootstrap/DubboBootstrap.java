@@ -131,21 +131,9 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
  */
 public final class DubboBootstrap {
 
-    public static final String DEFAULT_REGISTRY_ID = "REGISTRY#DEFAULT";
-
-    public static final String DEFAULT_PROTOCOL_ID = "PROTOCOL#DEFAULT";
-
-    public static final String DEFAULT_SERVICE_ID = "SERVICE#DEFAULT";
-
-    public static final String DEFAULT_REFERENCE_ID = "REFERENCE#DEFAULT";
-
-    public static final String DEFAULT_PROVIDER_ID = "PROVIDER#DEFAULT";
-
-    public static final String DEFAULT_CONSUMER_ID = "CONSUMER#DEFAULT";
-
     private static final String NAME = DubboBootstrap.class.getSimpleName();
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DubboBootstrap.class);
 
     private static volatile DubboBootstrap instance;
 
@@ -253,6 +241,8 @@ public final class DubboBootstrap {
             }
             MetadataReportInstance.reset();
             AbstractRegistryFactory.reset();
+            destroyAllProtocols();
+            FrameworkModel.destroyAll();
         } else {
             instance = null;
         }
@@ -379,13 +369,13 @@ public final class DubboBootstrap {
     // {@link RegistryConfig} correlative methods
 
     /**
-     * Add an instance of {@link RegistryConfig} with {@link #DEFAULT_REGISTRY_ID default ID}
+     * Add an instance of {@link RegistryConfig}
      *
      * @param consumerBuilder the {@link Consumer} of {@link RegistryBuilder}
      * @return current {@link DubboBootstrap} instance
      */
     public DubboBootstrap registry(Consumer<RegistryBuilder> consumerBuilder) {
-        return registry(DEFAULT_REGISTRY_ID, consumerBuilder);
+        return registry(null, consumerBuilder);
     }
 
     /**
@@ -430,7 +420,7 @@ public final class DubboBootstrap {
 
     // {@link ProtocolConfig} correlative methods
     public DubboBootstrap protocol(Consumer<ProtocolBuilder> consumerBuilder) {
-        return protocol(DEFAULT_PROTOCOL_ID, consumerBuilder);
+        return protocol(null, consumerBuilder);
     }
 
     public DubboBootstrap protocol(String id, Consumer<ProtocolBuilder> consumerBuilder) {
@@ -598,8 +588,6 @@ public final class DubboBootstrap {
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
-
-        getApplicationModel().initFrameworkExts();
 
         startConfigCenter();
 
@@ -1652,7 +1640,7 @@ public final class DubboBootstrap {
                     }
 
                     destroyRegistries();
-                    destroyProtocols();
+                    destroyProtocols(applicationModel.getFrameworkModel());
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
                     destroyMetadataReports();
@@ -1677,6 +1665,8 @@ public final class DubboBootstrap {
                 startup.set(false);
                 destroyLock.unlock();
             }
+
+            applicationModel.destroy();
         }
     }
 
@@ -1713,8 +1703,9 @@ public final class DubboBootstrap {
     /**
      * Destroy all the protocols.
      */
-    private void destroyProtocols() {
-        ExtensionLoader<Protocol> loader = getExtensionLoader(Protocol.class);
+    private static void destroyProtocols(FrameworkModel frameworkModel) {
+        //TODO destroy protocol in framework scope
+        ExtensionLoader<Protocol> loader = frameworkModel.getExtensionLoader(Protocol.class);
         for (String protocolName : loader.getLoadedExtensions()) {
             try {
                 Protocol protocol = loader.getLoadedExtension(protocolName);
@@ -1724,6 +1715,12 @@ public final class DubboBootstrap {
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
             }
+        }
+    }
+
+    private static void destroyAllProtocols() {
+        for (FrameworkModel frameworkModel : FrameworkModel.getAllInstances()) {
+            destroyProtocols(frameworkModel);
         }
     }
 
@@ -1818,6 +1815,10 @@ public final class DubboBootstrap {
         return currentModule;
     }
 
+    public Module addModule() {
+        return this.addModule(new ModuleModel(applicationModel));
+    }
+
     public DubboBootstrap endModule() {
         currentModule = new Module(applicationModel.getDefaultModule());
         return this;
@@ -1838,7 +1839,7 @@ public final class DubboBootstrap {
 
         // {@link ServiceConfig} correlative methods
         public <S> Module service(Consumer<ServiceBuilder<S>> consumerBuilder) {
-            return service(DEFAULT_SERVICE_ID, consumerBuilder);
+            return service(null, consumerBuilder);
         }
 
         public <S> Module service(String id, Consumer<ServiceBuilder<S>> consumerBuilder) {
@@ -1864,7 +1865,7 @@ public final class DubboBootstrap {
 
         // {@link Reference} correlative methods
         public <S> Module reference(Consumer<ReferenceBuilder<S>> consumerBuilder) {
-            return reference(DEFAULT_REFERENCE_ID, consumerBuilder);
+            return reference(null, consumerBuilder);
         }
 
         public <S> Module reference(String id, Consumer<ReferenceBuilder<S>> consumerBuilder) {
@@ -1891,7 +1892,7 @@ public final class DubboBootstrap {
 
         // {@link ProviderConfig} correlative methods
         public Module provider(Consumer<ProviderBuilder> builderConsumer) {
-            return provider(DEFAULT_PROVIDER_ID, builderConsumer);
+            return provider(null, builderConsumer);
         }
 
         public Module provider(String id, Consumer<ProviderBuilder> builderConsumer) {
@@ -1917,7 +1918,7 @@ public final class DubboBootstrap {
 
         // {@link ConsumerConfig} correlative methods
         public Module consumer(Consumer<ConsumerBuilder> builderConsumer) {
-            return consumer(DEFAULT_CONSUMER_ID, builderConsumer);
+            return consumer(null, builderConsumer);
         }
 
         public Module consumer(String id, Consumer<ConsumerBuilder> builderConsumer) {
