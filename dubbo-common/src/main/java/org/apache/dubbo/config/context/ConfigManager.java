@@ -437,16 +437,18 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
      * In some scenario,  we may nee to add and remove ServiceConfig or ReferenceConfig dynamically.
      *
      * @param config the config instance to remove.
+     * @return
      */
-    public void removeConfig(AbstractConfig config) {
+    public boolean removeConfig(AbstractConfig config) {
         if (config == null) {
-            return;
+            return false;
         }
 
         Map<String, AbstractConfig> configs = configsCache.get(getTagName(config.getClass()));
         if (CollectionUtils.isNotEmptyMap(configs)) {
-            configs.values().removeIf(c -> config == c);
+            return configs.values().removeIf(c -> config == c);
         }
+        return false;
     }
 
     public void clear() {
