@@ -34,6 +34,7 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -339,7 +340,7 @@ public abstract class AbstractConfig implements Serializable {
         if (this.scopeModel != scopeModel) {
             checkScopeModel(scopeModel);
             // remove this config from current ConfigManager
-            getConfigManager().removeConfig(this);
+            ScopeModelUtil.getApplicationModel(this.scopeModel).getApplicationConfigManager().removeConfig(this);
             // change scope model and add it into new ConfigManager
             this.scopeModel = scopeModel;
             getConfigManager().addConfig(this);
