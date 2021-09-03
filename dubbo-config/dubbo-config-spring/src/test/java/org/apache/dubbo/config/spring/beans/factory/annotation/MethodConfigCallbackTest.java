@@ -91,21 +91,18 @@ public class MethodConfigCallbackTest {
 
     @Test
     public void testMethodAnnotationCallBack() {
-        int callCntForEachService = 5;
-        new Thread(() -> {
-            for (int i = 0; i < callCntForEachService; i++) {
-                helloServiceMethodCallBack.sayHello("dubbo");
-                helloServiceMethodCallBack2.sayHello("dubbo(2)");
-            }
-        }).start();
-        new Thread(() -> {
-            for (int i = 0; i < callCntForEachService; i++) {
-                helloServiceMethodCallBack.sayHello("dubbo");
-                helloServiceMethodCallBack2.sayHello("dubbo(2)");
-            }
-        }).start();
+        int threadCnt = Runtime.getRuntime().availableProcessors();
+        int callCnt = 2 * threadCnt;
+        for (int i = 0; i < threadCnt; i++) {
+            new Thread(() -> {
+                for (int j = 0; j < callCnt; j++) {
+                    helloServiceMethodCallBack.sayHello("dubbo");
+                    helloServiceMethodCallBack2.sayHello("dubbo(2)");
+                }
+            }).start();
+        }
         int i = 0;
-        while (MethodCallbackImpl.cnt.get() < (4 * callCntForEachService) && i < 50){
+        while (MethodCallbackImpl.cnt.get() < ( 2 * threadCnt * callCnt) && i < 50){
             // wait for async callback finished
             try {
                 i++;
@@ -118,7 +115,7 @@ public class MethodConfigCallbackTest {
         StringBuilder invoke2Builder = new StringBuilder();
         StringBuilder return1Builder = new StringBuilder();
         StringBuilder return2Builder = new StringBuilder();
-        for (i = 0; i < 2 * callCntForEachService; i++) {
+        for (i = 0; i < threadCnt * callCnt; i++) {
             invoke1Builder.append("dubbo invoke success!");
             invoke2Builder.append("dubbo invoke success(2)!");
             return1Builder.append("dubbo return success!");
