@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.reference.localcallam;
 
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
@@ -54,7 +53,7 @@ public class LocalCallMultipleReferenceAnnotationsTest {
     @BeforeAll
     public static void setUp() {
         DubboBootstrap.reset();
-        registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
+        registryCenter = new ZookeeperSingleRegistryCenter();
         registryCenter.startup();
     }
 
