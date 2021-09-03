@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;
 
 /**
@@ -24,17 +23,44 @@ import org.apache.dubbo.common.extension.ExtensionScope;
  */
 public class ModuleModel extends ScopeModel {
 
+    private String id;
     private final ApplicationModel applicationModel;
+    private ModuleServiceRepository serviceRepository;
 
     public ModuleModel(ApplicationModel applicationModel) {
-        super(applicationModel, new ExtensionDirector(applicationModel.getExtensionDirector(), ExtensionScope.MODULE));
+        super(applicationModel, ExtensionScope.MODULE);
         this.applicationModel = applicationModel;
         applicationModel.addModule(this);
+        initialize();
+    }
+
+    protected void initialize() {
+        super.initialize();
+        this.serviceRepository = new ModuleServiceRepository(this);
         postProcessAfterCreated();
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        // TODO destroy module resources
+        applicationModel.removeModule(this);
     }
 
     public ApplicationModel getApplicationModel() {
         return applicationModel;
+    }
+
+    public ModuleServiceRepository getServiceRepository() {
+        return serviceRepository;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Override

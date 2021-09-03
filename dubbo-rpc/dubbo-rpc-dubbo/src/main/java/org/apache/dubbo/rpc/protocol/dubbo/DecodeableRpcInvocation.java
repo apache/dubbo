@@ -30,10 +30,10 @@ import org.apache.dubbo.remoting.Decodeable;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
@@ -49,7 +49,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeInvocationArgument;
 
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
 
@@ -65,7 +64,12 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     private volatile boolean hasDecoded;
 
-    public DecodeableRpcInvocation(Channel channel, Request request, InputStream is, byte id) {
+    protected final FrameworkModel frameworkModel;
+
+    private CallbackServiceCodec callbackServiceCodec;
+
+    public DecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {
+        this.frameworkModel = frameworkModel;
         Assert.notNull(channel, "channel == null");
         Assert.notNull(request, "request == null");
         Assert.notNull(is, "inputStream == null");
@@ -73,6 +77,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         this.request = request;
         this.inputStream = is;
         this.serializationType = id;
+        callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
     }
 
     @Override
@@ -123,7 +128,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         try {
             if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
-                CodecSupport.checkSerialization(path, version, serializationType);
+                CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
@@ -132,7 +137,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 //                    pts = ReflectUtils.desc2classArray(desc);
 //                } else {
                 // TODO: fetch from FrameworkModel
-                ServiceRepository repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
+                FrameworkServiceRepository repository = frameworkModel.getServiceRepository();
                 ServiceDescriptor serviceDescriptor = repository.lookupService(path);
                 if (serviceDescriptor != null) {
                     MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);
@@ -174,7 +179,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
             //decode argument ,may be callback
             for (int i = 0; i < args.length; i++) {
-                args[i] = decodeInvocationArgument(channel, this, pts, i, args[i]);
+                args[i] = callbackServiceCodec.decodeInvocationArgument(channel, this, pts, i, args[i]);
             }
 
             setArguments(args);

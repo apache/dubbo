@@ -31,7 +31,7 @@ public class ProviderReadinessProbe implements ReadinessProbe {
 
     @Override
     public boolean check() {
-        Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
+        Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
         if (providerModelList.isEmpty()) {
             return true;
         }

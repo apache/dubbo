@@ -49,7 +49,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
-import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,7 +96,6 @@ public class DubboProtocol extends AbstractProtocol {
 
     public static final int DEFAULT_PORT = 20880;
     private static final String IS_CALLBACK_SERVICE_INVOKE = "_isCallBackServiceInvoke";
-    private static DubboProtocol INSTANCE;
 
     /**
      * <host:port,Exchanger>
@@ -212,32 +210,18 @@ public class DubboProtocol extends AbstractProtocol {
     };
 
     public DubboProtocol() {
-        INSTANCE = this;
     }
 
+    /**
+     * @deprecated Use {@link DubboProtocol#getDubboProtocol(ScopeModel)} instead
+     */
+    @Deprecated
     public static DubboProtocol getDubboProtocol() {
-        if (INSTANCE == null) {
-            // load
-            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
-        }
-
-        return INSTANCE;
+        return (DubboProtocol) ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME, false);
     }
-
 
     public static DubboProtocol getDubboProtocol(ScopeModel scopeModel) {
-        Protocol protocolWrapper = scopeModel.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
-
-        try {
-            while (!(protocolWrapper instanceof DubboProtocol)) {
-                Field protocolField = protocolWrapper.getClass().getDeclaredField("protocol");
-                protocolField.setAccessible(true);
-                protocolWrapper = (Protocol) protocolField.get(protocolWrapper);
-            }
-        } catch (NoSuchFieldException | IllegalAccessException ignore) {
-        }
-
-        return (DubboProtocol) protocolWrapper;
+        return (DubboProtocol) scopeModel.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME, false);
     }
 
     @Override

@@ -17,10 +17,12 @@
 package org.apache.dubbo.common.beans.factory;
 
 import org.apache.dubbo.common.beans.ScopeBeanException;
+import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.extension.ExtensionPostProcessor;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,11 +43,25 @@ public class ScopeBeanFactory {
     private List<ExtensionPostProcessor> extensionPostProcessors;
     private Map<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
     private List<BeanInfo> registeredBeanInfos = Collections.synchronizedList(new ArrayList<>());
+    private InstantiationStrategy instantiationStrategy;
 
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
         this.extensionAccessor = extensionAccessor;
         extensionPostProcessors = extensionAccessor.getExtensionDirector().getExtensionPostProcessors();
+        initInstantiationStrategy();
+    }
+
+    private void initInstantiationStrategy() {
+        for (ExtensionPostProcessor extensionPostProcessor : extensionPostProcessors) {
+            if (extensionPostProcessor instanceof ScopeModelAccessor) {
+                instantiationStrategy = new InstantiationStrategy((ScopeModelAccessor) extensionPostProcessor);
+                break;
+            }
+        }
+        if (instantiationStrategy == null) {
+            instantiationStrategy = new InstantiationStrategy();
+        }
     }
 
     public <T> T registerBean(Class<T> bean) throws ScopeBeanException {
@@ -58,7 +74,7 @@ public class ScopeBeanFactory {
             throw new ScopeBeanException("already exists bean with same name and type, name=" + name + ", type=" + clazz.getName());
         }
         try {
-            instance = clazz.newInstance();
+            instance = instantiationStrategy.instantiate(clazz);
         } catch (Throwable e) {
             throw new ScopeBeanException("create bean instance failed, type=" + clazz.getName());
         }
@@ -104,7 +120,7 @@ public class ScopeBeanFactory {
     public <T> T registerBeanIfAbsent(String name, Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
         T bean = getBean(name, type);
         if (bean == null) {
-            //TODO add lock
+            //TODO add lock for type
             bean = mappingFunction.apply(type);
             registerBean(name, bean);
         }
@@ -156,6 +172,10 @@ public class ScopeBeanFactory {
     }
 
     private <T> T getBeanInternal(String name, Class<T> type) {
+        // All classes are derived from java.lang.Object, cannot filter bean by it
+        if (type == Object.class) {
+            return null;
+        }
         List<BeanInfo> candidates = null;
         for (BeanInfo beanInfo : registeredBeanInfos) {
             // if required bean type is same class/superclass/interface of the registered bean

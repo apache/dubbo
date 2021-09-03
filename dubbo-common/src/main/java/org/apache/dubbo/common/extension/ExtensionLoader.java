@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.Lifecycle;
@@ -36,6 +37,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -125,6 +127,7 @@ public class ExtensionLoader<T> {
     private Set<String> unacceptableExceptions = new ConcurrentHashSet<>();
     private ExtensionDirector extensionDirector;
     private List<ExtensionPostProcessor> extensionPostProcessors;
+    private InstantiationStrategy instantiationStrategy;
     private Environment environment;
 
     public static void setLoadingStrategies(LoadingStrategy... strategies) {
@@ -158,11 +161,24 @@ public class ExtensionLoader<T> {
     }
 
     ExtensionLoader(Class<?> type, ExtensionDirector extensionDirector) {
+        this.type = type;
         this.extensionDirector = extensionDirector;
         this.extensionPostProcessors = extensionDirector.getExtensionPostProcessors();
-        this.type = type;
+        initInstantiationStrategy();
         this.injector = (type == ExtensionInjector.class ? null : extensionDirector.getExtensionLoader(ExtensionInjector.class)
             .getAdaptiveExtension());
+    }
+
+    private void initInstantiationStrategy() {
+        for (ExtensionPostProcessor extensionPostProcessor : extensionPostProcessors) {
+            if (extensionPostProcessor instanceof ScopeModelAccessor) {
+                instantiationStrategy = new InstantiationStrategy((ScopeModelAccessor) extensionPostProcessor);
+                break;
+            }
+        }
+        if (instantiationStrategy == null) {
+            instantiationStrategy = new InstantiationStrategy();
+        }
     }
 
     /**
@@ -192,7 +208,7 @@ public class ExtensionLoader<T> {
     }
 
     public void destroy() {
-        extensionInstances.forEach((_type, instance) -> {
+        extensionInstances.forEach((type, instance) -> {
             if (instance instanceof Lifecycle) {
                 Lifecycle lifecycle = (Lifecycle) instance;
                 try {
@@ -477,7 +493,11 @@ public class ExtensionLoader<T> {
         if ("true".equals(name)) {
             return getDefaultExtension();
         }
-        final Holder<Object> holder = getOrCreateHolder(name);
+        String cacheKey = name;
+        if (!wrap) {
+            cacheKey += "_origin";
+        }
+        final Holder<Object> holder = getOrCreateHolder(cacheKey);
         Object instance = holder.get();
         if (instance == null) {
             synchronized (holder) {
@@ -688,12 +708,12 @@ public class ExtensionLoader<T> {
         try {
             T instance = (T) extensionInstances.get(clazz);
             if (instance == null) {
-                extensionInstances.putIfAbsent(clazz, clazz.getDeclaredConstructor().newInstance());
+                extensionInstances.putIfAbsent(clazz, createExtensionInstance(clazz));
                 instance = (T) extensionInstances.get(clazz);
+                instance = postProcessBeforeInitialization(instance, name);
+                injectExtension(instance);
+                instance = postProcessAfterInitialization(instance, name);
             }
-            instance = postProcessBeforeInitialization(instance, name);
-            injectExtension(instance);
-            instance = postProcessAfterInitialization(instance, name);
 
             if (wrap) {
                 List<Class<?>> wrapperClassesList = new ArrayList<>();
@@ -722,6 +742,10 @@ public class ExtensionLoader<T> {
             throw new IllegalStateException("Extension instance (name: " + name + ", class: " +
                 type + ") couldn't be instantiated: " + t.getMessage(), t);
         }
+    }
+
+    private Object createExtensionInstance(Class<?> type) throws ReflectiveOperationException {
+        return instantiationStrategy.instantiate(type);
     }
 
     private T postProcessBeforeInitialization(T instance, String name) throws Exception {
@@ -995,7 +1019,6 @@ public class ExtensionLoader<T> {
         } else if (isWrapperClass(clazz)) {
             cacheWrapperClass(clazz);
         } else {
-            clazz.getConstructor();
             if (StringUtils.isEmpty(name)) {
                 name = findAnnotationName(clazz);
                 if (name.length() == 0) {

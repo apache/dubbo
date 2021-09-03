@@ -18,6 +18,8 @@
 package org.apache.dubbo.generic;
 
 
+import com.alibaba.dubbo.config.ReferenceConfig;
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
@@ -33,9 +35,6 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.service.ComplexObject;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
-
-import com.alibaba.dubbo.config.ReferenceConfig;
-import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
