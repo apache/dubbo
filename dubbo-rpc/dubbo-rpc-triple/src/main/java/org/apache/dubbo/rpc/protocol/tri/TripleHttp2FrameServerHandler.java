@@ -159,7 +159,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
                     GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
-        ServiceRepository repo = ApplicationModel.getServiceRepository();
+        ServiceRepository repo = ApplicationModel.defaultModel().getApplicationServiceRepository();
         final ServiceDescriptor serviceDescriptor = repo.lookupService(invoker.getUrl().getServiceKey());
         if (serviceDescriptor == null) {
             responseErr(ctx,

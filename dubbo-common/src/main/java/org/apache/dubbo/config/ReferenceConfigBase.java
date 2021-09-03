@@ -22,7 +22,6 @@ import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -115,7 +114,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     protected void preProcessRefresh() {
         super.preProcessRefresh();
         if (consumer == null) {
-            consumer = ApplicationModel.getConfigManager()
+            consumer = getConfigManager()
                     .getDefaultConsumer()
                     .orElseThrow(() -> new IllegalArgumentException("Default consumer is not initialized"));
         }
@@ -198,6 +197,14 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             throw new IllegalStateException(t.getMessage(), t);
         }
         return null;
+    }
+
+    @Override
+    protected void postProcessAfterScopeModelChanged() {
+        super.postProcessAfterScopeModelChanged();
+        if (this.consumer != null && this.consumer.getScopeModel() != scopeModel) {
+            this.consumer.setScopeModel(scopeModel);
+        }
     }
 
     @Override

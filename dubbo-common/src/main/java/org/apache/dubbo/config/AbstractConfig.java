@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
@@ -28,8 +29,11 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -93,6 +97,21 @@ public abstract class AbstractConfig implements Serializable {
      */
     protected Boolean isDefault;
 
+    /**
+     * The scope model of this config instance.
+     * <p>
+     * <b>NOTE:</b> the model maybe changed during config processing,
+     * the extension spi instance needs to be reinitialized after changing the model!
+     */
+    protected ScopeModel scopeModel;
+
+    public AbstractConfig() {
+        this(ApplicationModel.defaultModel());
+    }
+
+    public AbstractConfig(ScopeModel scopeModel) {
+        this.setScopeModel(scopeModel);
+    }
 
     public static String getTagName(Class<?> cls) {
         return tagNameCache.computeIfAbsent(cls, (key) -> {
@@ -302,6 +321,75 @@ public abstract class AbstractConfig implements Serializable {
         return result;
     }
 
+    public ApplicationModel getApplicationModel() {
+        if (scopeModel instanceof ApplicationModel) {
+            return (ApplicationModel) scopeModel;
+        } else if (scopeModel instanceof ModuleModel) {
+            return ((ModuleModel) scopeModel).getApplicationModel();
+        } else {
+            throw new IllegalStateException("scope model is invalid: " + scopeModel);
+        }
+    }
+
+    public ScopeModel getScopeModel() {
+        return scopeModel;
+    }
+
+    public final void setScopeModel(ScopeModel scopeModel) {
+        if (this.scopeModel != scopeModel) {
+            checkScopeModel(scopeModel);
+            // remove this config from current ConfigManager
+            ScopeModel oldScopeModel = this.scopeModel;
+            if (oldScopeModel != null) {
+                boolean removed = getConfigManager().removeConfig(this);
+                // change scope model and add it into new ConfigManager
+                this.scopeModel = scopeModel;
+                if (removed) {
+                    getConfigManager().addConfig(this);
+                }
+            }else {
+                this.scopeModel = scopeModel;
+            }
+            // reinitialize spi extension and change referenced config's scope model
+            this.postProcessAfterScopeModelChanged();
+        }
+    }
+
+    protected void checkScopeModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            throw new IllegalArgumentException("scopeModel cannot be null");
+        }
+        if (!(scopeModel instanceof ApplicationModel)) {
+            throw new IllegalArgumentException("Invalid scope model, expect to be a ApplicationModel but got: " + scopeModel);
+        }
+    }
+
+    /**
+     * Subclass should override this method to initialize its SPI extensions and change referenced config's scope model.
+     * <p>
+     * For example:
+     * <pre>
+     * protected void postProcessAfterScopeModelChanged() {
+     *   super.postProcessAfterScopeModelChanged();
+     *   // re-initialize spi extension
+     *   this.protocol = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+     *   // change referenced config's scope model
+     *   if (this.providerConfig != null && this.providerConfig.getScopeModel() != scopeModel) {
+     *     this.providerConfig.setScopeModel(scopeModel);
+     *   }
+     * }
+     * </pre>
+     */
+    protected void postProcessAfterScopeModelChanged() {
+    }
+
+    protected <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        if (scopeModel == null) {
+            throw new IllegalStateException("scopeModel is not initialized");
+        }
+        return scopeModel.getExtensionLoader(type);
+    }
+
     @Parameter(excluded = true, attribute = true)
     public String getId() {
         return id;
@@ -443,7 +531,7 @@ public abstract class AbstractConfig implements Serializable {
             // check and init before do refresh
             preProcessRefresh();
 
-            Environment environment = ApplicationModel.getEnvironment();
+            Environment environment = getApplicationModel().getApplicationEnvironment();
             List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
 
             // Search props starts with PREFIX in order
@@ -729,4 +817,7 @@ public abstract class AbstractConfig implements Serializable {
         return methods;
     }
 
+    protected ConfigManager getConfigManager() {
+        return getApplicationModel().getApplicationConfigManager();
+    }
 }

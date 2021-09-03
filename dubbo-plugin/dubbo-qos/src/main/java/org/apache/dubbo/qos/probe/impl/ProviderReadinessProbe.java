@@ -27,11 +27,11 @@ import java.util.List;
 
 @Activate
 public class ProviderReadinessProbe implements ReadinessProbe {
-    private static ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
+    private static ServiceRepository serviceRepository = ApplicationModel.defaultModel().getApplicationServiceRepository();
 
     @Override
     public boolean check() {
-        Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
+        Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
         if (providerModelList.isEmpty()) {
             return true;
         }

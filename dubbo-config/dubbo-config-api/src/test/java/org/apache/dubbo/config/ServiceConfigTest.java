@@ -18,11 +18,11 @@
 package org.apache.dubbo.config;
 
 import com.google.common.collect.Lists;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.MockServiceListener;
@@ -32,9 +32,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,24 +67,29 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.withSettings;
 
 public class ServiceConfigTest {
     private Protocol protocolDelegate = Mockito.mock(Protocol.class);
     private Registry registryDelegate = Mockito.mock(Registry.class);
     private Exporter exporter = Mockito.mock(Exporter.class);
-    private ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
-    private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<>();
-    private ServiceConfig<DemoServiceImpl> serviceWithoutRegistryConfig = new ServiceConfig<>();
-    private ServiceConfig<DemoServiceImpl> delayService = new ServiceConfig<>();
+    private ServiceConfig<DemoServiceImpl> service;
+    private ServiceConfig<DemoServiceImpl> service2;
+    private ServiceConfig<DemoServiceImpl> serviceWithoutRegistryConfig;
+    private ServiceConfig<DemoServiceImpl> delayService;
 
     @BeforeEach
     public void setUp() throws Exception {
-        ApplicationModel.getConfigManager().clear();
+        DubboBootstrap.reset();
+
+        service = new ServiceConfig<>();
+        service2 = new ServiceConfig<>();
+        serviceWithoutRegistryConfig = new ServiceConfig<>();
+        delayService = new ServiceConfig<>();
 
         MockProtocol2.delegate = protocolDelegate;
         MockRegistryFactory2.registry = registryDelegate;
@@ -149,7 +152,6 @@ public class ServiceConfigTest {
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.getConfigManager().clear();
     }
 
     @Test

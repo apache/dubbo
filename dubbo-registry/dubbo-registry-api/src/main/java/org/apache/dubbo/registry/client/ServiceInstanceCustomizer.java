@@ -19,13 +19,15 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 
+import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
+
 /**
  * The interface to customize {@link ServiceInstance the service instance}
  *
  * @see ServiceInstance#getMetadata()
  * @since 2.7.5
  */
-@SPI
+@SPI(scope = APPLICATION)
 public interface ServiceInstanceCustomizer extends Prioritized {
 
     /**

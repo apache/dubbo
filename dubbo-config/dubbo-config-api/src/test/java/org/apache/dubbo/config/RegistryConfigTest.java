@@ -17,10 +17,10 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -227,7 +227,7 @@ public class RegistryConfigTest {
         DubboBootstrap.getInstance()
             .application("demo-app")
             .initialize();
-        Collection<RegistryConfig> registries = ApplicationModel.getConfigManager().getRegistries();
+        Collection<RegistryConfig> registries = ApplicationModel.defaultModel().getApplicationConfigManager().getRegistries();
         Assertions.assertEquals(1, registries.size());
         RegistryConfig registryConfig = registries.iterator().next();
         Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());

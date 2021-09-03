@@ -33,6 +33,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.ProviderFirstParams;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,32 +69,29 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     private static final Logger logger = LoggerFactory.getLogger(CacheableFailbackRegistry.class);
     private static String[] VARIABLE_KEYS = new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
 
-    protected final static Map<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
-    protected final static Map<String, URLParam> stringParam = new ConcurrentHashMap<>();
-    private static final ScheduledExecutorService cacheRemovalScheduler;
-    private static final int cacheRemovalTaskIntervalInMillis;
-    private static final int cacheClearWaitingThresholdInMillis;
-    private final static Map<ServiceAddressURL, Long> waitForRemove = new ConcurrentHashMap<>();
-    private static final Semaphore semaphore = new Semaphore(1);
+    protected Map<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
+    protected Map<String, URLParam> stringParam = new ConcurrentHashMap<>();
+    private ScheduledExecutorService cacheRemovalScheduler;
+    private int cacheRemovalTaskIntervalInMillis;
+    private int cacheClearWaitingThresholdInMillis;
+    private Map<ServiceAddressURL, Long> waitForRemove = new ConcurrentHashMap<>();
+    private Semaphore semaphore = new Semaphore(1);
 
     private final Map<String, String> extraParameters;
     protected final Map<URL, Map<String, ServiceAddressURL>> stringUrls = new HashMap<>();
-
-    static {
-        ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-        cacheRemovalScheduler = executorRepository.nextScheduledExecutor();
-        cacheRemovalTaskIntervalInMillis = getIntConfig(CACHE_CLEAR_TASK_INTERVAL, 2 * 60 * 1000);
-        cacheClearWaitingThresholdInMillis = getIntConfig(CACHE_CLEAR_WAITING_THRESHOLD, 5 * 60 * 1000);
-    }
 
     public CacheableFailbackRegistry(URL url) {
         super(url);
         extraParameters = new HashMap<>(8);
         extraParameters.put(CHECK_KEY, String.valueOf(false));
+
+        cacheRemovalScheduler = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getExtensionLoader(ExecutorRepository.class).getDefaultExtension().nextScheduledExecutor();
+        cacheRemovalTaskIntervalInMillis = getIntConfig(url.getScopeModel(), CACHE_CLEAR_TASK_INTERVAL, 2 * 60 * 1000);
+        cacheClearWaitingThresholdInMillis = getIntConfig(url.getScopeModel(), CACHE_CLEAR_WAITING_THRESHOLD, 5 * 60 * 1000);
     }
 
-    protected static int getIntConfig(String key, int def) {
-        String str = ConfigurationUtils.getProperty(key);
+    protected static int getIntConfig(ScopeModel scopeModel, String key, int def) {
+        String str = ConfigurationUtils.getProperty(scopeModel, key);
         int result = def;
         if (StringUtils.isNotEmpty(str)) {
             try {
@@ -314,7 +313,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected abstract boolean isMatch(URL subscribeUrl, URL providerUrl);
 
 
-    private static class RemovalTask implements Runnable {
+    private class RemovalTask implements Runnable {
         @Override
         public void run() {
             logger.info("Clearing cached URLs, waiting to clear size " + waitForRemove.size());

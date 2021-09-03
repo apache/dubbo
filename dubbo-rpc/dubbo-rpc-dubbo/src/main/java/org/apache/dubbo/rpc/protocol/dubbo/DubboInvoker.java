@@ -69,6 +69,8 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final Set<Invoker<?>> invokers;
 
+    private final int serverShutdownTimeout;
+
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {
         this(serviceType, url, clients, null);
     }
@@ -79,6 +81,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         // get version.
         this.version = url.getVersion(DEFAULT_VERSION);
         this.invokers = invokers;
+        this.serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(getUrl().getScopeModel());
     }
 
     @Override
@@ -151,7 +154,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 }
                 for (ExchangeClient client : clients) {
                     try {
-                        client.close(ConfigurationUtils.getServerShutdownTimeout());
+                        client.close(serverShutdownTimeout);
                     } catch (Throwable t) {
                         logger.warn(t.getMessage(), t);
                     }

@@ -24,9 +24,9 @@ import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.PathResolver;
 
 import java.util.HashMap;
@@ -46,7 +46,7 @@ public class TriBuiltinService {
     private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
         .getDefaultExtension();
 
-    private static final ServiceRepository repository = ApplicationModel.getServiceRepository();
+    private static final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
     private static final Map<Class<?>, Object> TRI_SERVICES = new HashMap<>();
 

@@ -18,13 +18,13 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Map;
 import java.util.Set;
-
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * Local {@link MetadataService} that extends {@link MetadataService} and provides the modification, which is used for
@@ -32,17 +32,8 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  *
  * @since 2.7.5
  */
-@SPI("default")
+@SPI(value = "default", scope = ExtensionScope.APPLICATION)
 public interface WritableMetadataService extends MetadataService {
-    /**
-     * Gets the current Dubbo Service name
-     *
-     * @return non-null
-     */
-    @Override
-    default String serviceName() {
-        return ApplicationModel.getName();
-    }
 
     /**
      * Exports a {@link URL}
@@ -103,7 +94,7 @@ public interface WritableMetadataService extends MetadataService {
      *
      * @return non-null
      */
-    static WritableMetadataService getDefaultExtension() {
-        return getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
+    static WritableMetadataService getDefaultExtension(ScopeModel scopeModel) {
+        return ScopeModelUtil.getExtensionLoader(WritableMetadataService.class, scopeModel).getDefaultExtension();
     }
 }

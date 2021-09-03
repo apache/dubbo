@@ -151,7 +151,7 @@ public class MigrationRule {
         }
 
         if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
             Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
@@ -171,7 +171,7 @@ public class MigrationRule {
             step = MigrationStep.APPLICATION_FIRST;
             step = Enum.valueOf(MigrationStep.class,
                 consumerURL.getParameter(MIGRATION_STEP_KEY,
-                    ConfigurationUtils.getCachedDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name())));
+                    ConfigurationUtils.getCachedDynamicProperty(consumerURL.getScopeModel(), DUBBO_SERVICEDISCOVERY_MIGRATION, step.name())));
         }
 
         return step;
@@ -192,7 +192,7 @@ public class MigrationRule {
         }
 
         if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
             Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
@@ -232,7 +232,7 @@ public class MigrationRule {
         }
 
         if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
             Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
@@ -268,7 +268,7 @@ public class MigrationRule {
         }
 
         if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
             Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
@@ -308,7 +308,7 @@ public class MigrationRule {
         }
 
         if (applications != null) {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
             Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {

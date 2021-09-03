@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.ProviderFirstParams;
 import org.apache.dubbo.rpc.RpcServiceContext;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,7 +65,7 @@ public class InstanceAddressURLTest {
         "&version=1.0.0&timeout=9000&a.timeout=8888&dubbo.tag=consumer&protocol=dubbo");
 
     private DefaultServiceInstance createInstance() {
-        DefaultServiceInstance instance = new DefaultServiceInstance("demo-provider", "127.0.0.1", 8080);
+        DefaultServiceInstance instance = new DefaultServiceInstance("demo-provider", "127.0.0.1", 8080, ApplicationModel.defaultModel());
         Map<String, String> metadata = instance.getMetadata();
         metadata.put("key1", "value1");
         metadata.put("key2", "value2");

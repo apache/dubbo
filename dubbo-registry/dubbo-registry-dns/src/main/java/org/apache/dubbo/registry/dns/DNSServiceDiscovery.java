@@ -27,6 +27,7 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.dns.util.DNSClientConst;
 import org.apache.dubbo.registry.dns.util.DNSResolver;
 import org.apache.dubbo.registry.dns.util.ResolveResult;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -142,7 +143,7 @@ public class DNSServiceDiscovery extends SelfHostMetaServiceDiscovery {
         List<ServiceInstance> instanceList = new LinkedList<>();
 
         for (String host : resolveResult.getHostnameList()) {
-            DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, host, port);
+            DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, host, port, ScopeModelUtil.getApplicationModel(getUrl().getScopeModel()));
             fillServiceInstance(serviceInstance);
             instanceList.add(serviceInstance);
         }

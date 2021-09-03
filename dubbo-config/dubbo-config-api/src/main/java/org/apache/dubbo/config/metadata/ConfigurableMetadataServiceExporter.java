@@ -26,10 +26,12 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Collections;
 import java.util.List;
@@ -52,15 +54,24 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
  * @see ConfigManager
  * @since 2.7.5
  */
-public class ConfigurableMetadataServiceExporter implements MetadataServiceExporter {
+public class ConfigurableMetadataServiceExporter implements MetadataServiceExporter, ScopeModelAware {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final MetadataService metadataService;
+    private MetadataService metadataService;
 
     private volatile ServiceConfig<MetadataService> serviceConfig;
+    private ApplicationModel applicationModel;
 
-    public ConfigurableMetadataServiceExporter(MetadataService metadataService) {
+    public ConfigurableMetadataServiceExporter() {
+    }
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
+    public void setMetadataService(MetadataService metadataService) {
         this.metadataService = metadataService;
     }
 
@@ -69,14 +80,17 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
         if (!isExported()) {
 
+            ApplicationConfig applicationConfig = getApplicationConfig();
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
-            serviceConfig.setApplication(getApplicationConfig());
+            serviceConfig.setScopeModel(applicationModel.getInternalModule());
+            serviceConfig.setBootstrap(applicationModel.getBeanFactory().getBean(DubboBootstrap.class));
+            serviceConfig.setApplication(applicationConfig);
             serviceConfig.setRegistry(new RegistryConfig("N/A"));
             serviceConfig.setProtocol(generateMetadataProtocol());
             serviceConfig.setInterface(MetadataService.class);
             serviceConfig.setDelay(0);
             serviceConfig.setRef(metadataService);
-            serviceConfig.setGroup(getApplicationConfig().getName());
+            serviceConfig.setGroup(applicationConfig.getName());
             serviceConfig.setVersion(metadataService.version());
             serviceConfig.setMethods(generateMethodConfig());
 
@@ -138,7 +152,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     }
 
     private ApplicationConfig getApplicationConfig() {
-        return ApplicationModel.getConfigManager().getApplication().get();
+        return applicationModel.getApplicationConfigManager().getApplication().get();
     }
 
     private ProtocolConfig generateMetadataProtocol() {
@@ -149,7 +163,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             if (logger.isInfoEnabled()) {
                 logger.info("Metadata Service Port hasn't been set will use default protocol defined in protocols.");
             }
-            List<ProtocolConfig> defaultProtocols = ApplicationModel.getConfigManager().getDefaultProtocols();
+            List<ProtocolConfig> defaultProtocols = applicationModel.getApplicationConfigManager().getDefaultProtocols();
 
             ProtocolConfig dubboProtocol = findDubboProtocol(defaultProtocols);
             if (dubboProtocol != null) {

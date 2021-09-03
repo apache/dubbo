@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Set;
 import java.util.TreeSet;
@@ -33,8 +35,16 @@ import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SER
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
-public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
+public abstract class AbstractServiceNameMapping implements ServiceNameMapping, ScopeModelAware {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected ApplicationModel applicationModel;
+    private WritableMetadataService metadataService;
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        metadataService = WritableMetadataService.getDefaultExtension(applicationModel);
+    }
 
     /**
      * Get the service names from the specified Dubbo service interface, group, version and protocol
@@ -61,7 +71,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
         }
 
         if (isEmpty(subscribedServices)) {
-            Set<String> cachedServices = WritableMetadataService.getDefaultExtension().getCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL));
+            Set<String> cachedServices = metadataService.getCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL));
             if(!isEmpty(cachedServices)) {
                 subscribedServices.addAll(cachedServices);
             }
@@ -71,7 +81,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
             Set<String> mappedServices = get(subscribedURL);
             logger.info(subscribedURL.getServiceInterface() + " mapping to " + mappedServices + " instructed by remote metadata center.");
             subscribedServices.addAll(mappedServices);
-            WritableMetadataService.getDefaultExtension().putCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL), subscribedServices);
+            metadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL), subscribedServices);
         }
         return subscribedServices;
     }
@@ -97,7 +107,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
             }
         }
 
-        WritableMetadataService.getDefaultExtension().putCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL), subscribedServices);
+        metadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL), subscribedServices);
 
         return subscribedServices;
     }

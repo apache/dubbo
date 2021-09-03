@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 
 import org.springframework.context.ApplicationContext;
 
@@ -45,7 +45,7 @@ public class DataSourceStatusChecker implements StatusChecker {
     @Override
     public Status check() {
         Optional<ApplicationContext> context =
-                SpringExtensionFactory.getContexts().stream().filter(Objects::nonNull).findFirst();
+                SpringExtensionInjector.getContexts().stream().filter(Objects::nonNull).findFirst();
 
         if (!context.isPresent()) {
             return new Status(Status.Level.UNKNOWN);

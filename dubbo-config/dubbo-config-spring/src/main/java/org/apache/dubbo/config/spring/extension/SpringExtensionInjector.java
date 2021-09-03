@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.spring.extension;
 
 import org.apache.dubbo.common.context.Lifecycle;
-import org.apache.dubbo.common.extension.ExtensionFactory;
+import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,10 +31,10 @@ import org.springframework.context.ConfigurableApplicationContext;
 import java.util.Set;
 
 /**
- * SpringExtensionFactory
+ * SpringExtensionInjector
  */
-public class SpringExtensionFactory implements ExtensionFactory, Lifecycle {
-    private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
+public class SpringExtensionInjector implements ExtensionInjector, Lifecycle {
+    private static final Logger logger = LoggerFactory.getLogger(SpringExtensionInjector.class);
 
     private static final Set<ApplicationContext> CONTEXTS = new ConcurrentHashSet<ApplicationContext>();
 
@@ -45,10 +45,6 @@ public class SpringExtensionFactory implements ExtensionFactory, Lifecycle {
             // see https://github.com/apache/dubbo/issues/7093
             DubboShutdownHook.getDubboShutdownHook().unregister();
         }
-    }
-
-    public static void removeApplicationContext(ApplicationContext context) {
-        CONTEXTS.remove(context);
     }
 
     public static Set<ApplicationContext> getContexts() {
@@ -62,9 +58,9 @@ public class SpringExtensionFactory implements ExtensionFactory, Lifecycle {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getExtension(Class<T> type, String name) {
+    public <T> T getInstance(Class<T> type, String name) {
 
-        //SPI should be get from SpiExtensionFactory
+        //SPI should be get from SpiExtensionInjector
         if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
             return null;
         }

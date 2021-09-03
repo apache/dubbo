@@ -19,10 +19,12 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
@@ -43,8 +45,9 @@ public class TripleProtocolTest {
 
         URL url = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
 
-        ServiceDescriptor serviceDescriptor = ApplicationModel.getServiceRepository().registerService(IGreeter.class);
-        ApplicationModel.getServiceRepository().registerProvider(
+        ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        ServiceDescriptor serviceDescriptor = serviceRepository.registerService(IGreeter.class);
+        serviceRepository.registerProvider(
             url.getServiceKey(),
             serviceImpl,
             serviceDescriptor,
@@ -54,10 +57,28 @@ public class TripleProtocolTest {
 
         protocol.export(proxy.getInvoker(serviceImpl, IGreeter.class, url));
         serviceImpl = proxy.getProxy(protocol.refer(IGreeter.class, url));
-         Thread.sleep(1000);
+        Thread.sleep(1000);
         Assertions.assertEquals("hello world", serviceImpl.echo("hello world"));
+        // fixme will throw exception
+        // Assertions.assertEquals("hello world", serviceImpl.echoAsync("hello world").get());
+        serviceImpl.serverStream("hello world", new StreamObserver<String>() {
+            @Override
+            public void onNext(String data) {
+                Assertions.assertEquals("hello world",data);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("onCompleted");
+            }
+        });
 
         // resource recycle.
-        ApplicationModel.getServiceRepository().destroy();
+        serviceRepository.destroy();
     }
 }

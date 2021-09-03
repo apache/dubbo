@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 import org.apache.dubbo.rpc.service.EchoService;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -45,7 +44,7 @@ public class RpcFilterTest {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.support.DemoService?service.filter=echo");
-        ApplicationModel.getServiceRepository().registerService(DemoService.class);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService(DemoService.class);
         protocol.export(proxy.getInvoker(service, DemoService.class, url));
         service = proxy.getProxy(protocol.refer(DemoService.class, url));
         Assertions.assertEquals("123", service.echo("123"));

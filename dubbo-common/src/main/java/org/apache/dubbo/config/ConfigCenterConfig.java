@@ -149,7 +149,9 @@ public class ConfigCenterConfig extends AbstractConfig {
         if (StringUtils.isEmpty(map.get(PROTOCOL_KEY))) {
             map.put(PROTOCOL_KEY, ZOOKEEPER_PROTOCOL);
         }
-        return UrlUtils.parseURL(address, map);
+        URL url = UrlUtils.parseURL(address, map);
+        url.setScopeModel(getScopeModel());
+        return url;
     }
 
     public boolean checkOrUpdateInitialized(boolean update) {
