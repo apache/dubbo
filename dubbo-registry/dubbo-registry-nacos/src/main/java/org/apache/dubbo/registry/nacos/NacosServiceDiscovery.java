@@ -111,14 +111,14 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
             service.selectInstances(serviceName, Constants.DEFAULT_GROUP, true)
-                .stream().map((i)->NacosNamingServiceUtils.toServiceInstance(registryURL, i))
-                        .collect(Collectors.toList())
+                .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+                .collect(Collectors.toList())
         );
     }
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
-            throws NullPointerException, IllegalArgumentException {
+        throws NullPointerException, IllegalArgumentException {
         execute(namingService, service -> listener.getServiceNames().forEach(serviceName -> {
             try {
                 service.subscribe(serviceName, Constants.DEFAULT_GROUP, e -> { // Register Nacos EventListener
@@ -141,9 +141,9 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
         String serviceName = event.getServiceName();
         List<ServiceInstance> serviceInstances = event.getInstances()
-                .stream()
-                .map((i)->NacosNamingServiceUtils.toServiceInstance(registryURL, i))
-                .collect(Collectors.toList());
+            .stream()
+            .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+            .collect(Collectors.toList());
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
 }
