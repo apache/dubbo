@@ -172,6 +172,10 @@ public class ScopeBeanFactory {
     }
 
     private <T> T getBeanInternal(String name, Class<T> type) {
+        // All classes are derived from java.lang.Object, cannot filter bean by it
+        if (type == Object.class) {
+            return null;
+        }
         List<BeanInfo> candidates = null;
         for (BeanInfo beanInfo : registeredBeanInfos) {
             // if required bean type is same class/superclass/interface of the registered bean

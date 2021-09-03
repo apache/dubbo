@@ -60,6 +60,7 @@ import org.apache.dubbo.common.extension.ext9_empty.Ext9Empty;
 import org.apache.dubbo.common.extension.ext9_empty.impl.Ext9EmptyImpl;
 import org.apache.dubbo.common.extension.injection.InjectExt;
 import org.apache.dubbo.common.extension.injection.impl.InjectExtImpl;
+import org.apache.dubbo.common.extension.wrapper.impl.DemoImpl;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -480,12 +481,16 @@ public class ExtensionLoaderTest {
 
     @Test
     public void testInjectExtension() {
+        // register bean for test ScopeBeanExtensionInjector
+        DemoImpl demoBean = new DemoImpl();
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(demoBean);
         // test default
         InjectExt injectExt = getExtensionLoader(InjectExt.class).getExtension("injection");
         InjectExtImpl injectExtImpl = (InjectExtImpl) injectExt;
         Assertions.assertNotNull(injectExtImpl.getSimpleExt());
         Assertions.assertNull(injectExtImpl.getSimpleExt1());
         Assertions.assertNull(injectExtImpl.getGenericType());
+        Assertions.assertSame(demoBean, injectExtImpl.getDemo());
     }
 
     @Test

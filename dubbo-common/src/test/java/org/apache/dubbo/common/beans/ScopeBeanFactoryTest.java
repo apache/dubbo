@@ -42,5 +42,7 @@ public class ScopeBeanFactoryTest {
         FooBeanWithFrameworkModel beanWithFrameworkModelFromApp = applicationModel.getBeanFactory().getBean(FooBeanWithFrameworkModel.class);
         Assertions.assertSame(beanWithFrameworkModel, beanWithFrameworkModelFromApp);
 
+        Object objectBean = applicationModel.getBeanFactory().getBean(Object.class);
+        Assertions.assertNull(objectBean);
     }
 }
