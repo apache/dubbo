@@ -249,7 +249,8 @@ public class MetricsFilterTest {
             }
         }
         Protocol protocol = new DubboProtocol();
-        url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":" + port + "/" + MetricsService.class.getName());
+        // using host name might cause connection failure because multiple addresses might be configured to the same name!  
+        url = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":" + port + "/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
         invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
         try {
@@ -306,7 +307,8 @@ public class MetricsFilterTest {
         }
 
         Protocol protocol = new DubboProtocol();
-        url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":" + port + "/" + MetricsService.class.getName());
+        // using host name might cause connection failure because multiple addresses might be configured to the same name!
+        url = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":" + port + "/" + MetricsService.class.getName());
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
         Invocation invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
         try {
