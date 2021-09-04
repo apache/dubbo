@@ -107,6 +107,19 @@ public class ModuleServiceRepository {
         return serviceDescriptor;
     }
 
+    public void reRegisterProvider(String newServiceKey, String serviceKey) {
+        ProviderModel providerModel = this.providers.get(serviceKey);
+        providerModel.setServiceKey(newServiceKey);
+        this.providers.putIfAbsent(newServiceKey, providerModel);
+        this.providers.remove(serviceKey);
+    }
+
+    public void reRegisterConsumer(String newServiceKey, String serviceKey) {
+        ConsumerModel consumerModel = this.consumers.get(serviceKey);
+        consumerModel.setServiceKey(newServiceKey);
+        this.consumers.putIfAbsent(newServiceKey, consumerModel);
+        this.consumers.remove(serviceKey);
+    }
 
     public void unregisterService(Class<?> interfaceClazz) {
         unregisterService(interfaceClazz.getName());
