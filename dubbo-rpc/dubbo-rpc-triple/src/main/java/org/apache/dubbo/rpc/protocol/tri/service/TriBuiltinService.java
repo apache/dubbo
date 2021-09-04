@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.service;
 
-import grpc.health.v1.Health;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -28,6 +27,8 @@ import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.PathResolver;
+
+import grpc.health.v1.Health;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,12 +64,17 @@ public class TriBuiltinService {
         if (init.compareAndSet(false, true)) {
             TRI_SERVICES.forEach((clz, impl) -> {
                 ServiceDescriptor serviceDescriptor = repository.registerService(clz);
+                ServiceMetadata serviceMetadata = new ServiceMetadata();
+                serviceMetadata.setServiceType(clz);
+                serviceMetadata.setTarget(impl);
+                serviceMetadata.setServiceInterfaceName(clz.getName());
+                serviceMetadata.generateServiceKey();
                 repository.registerProvider(
                     clz.getName(),
                     impl,
                     serviceDescriptor,
                     null,
-                    new ServiceMetadata()
+                    serviceMetadata
                 );
                 int port = 0;
                 URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null,
