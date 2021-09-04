@@ -53,17 +53,17 @@ public class JavaConfigReferenceBeanTest {
 
     @BeforeEach
     public void setUp() {
+        DubboBootstrap.reset();
         multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
         multipleRegistryCenter.startup();
-        DubboBootstrap.reset();
         SpringExtensionInjector.clearContexts();
     }
 
     @AfterEach
     public void tearDown() {
-        DubboBootstrap.reset();
         multipleRegistryCenter.shutdown();
         SpringExtensionInjector.clearContexts();
+        DubboBootstrap.reset();
     }
 
     @Test
