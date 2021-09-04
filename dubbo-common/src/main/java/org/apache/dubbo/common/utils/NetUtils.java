@@ -406,8 +406,7 @@ public class NetUtils {
                     if (addressOp.isPresent()) {
                         try {
                             if (addressOp.get().isReachable(100)) {
-                                result = networkInterface;
-                                break;
+                                return networkInterface;
                             }
                         } catch (IOException e) {
                             // ignore
