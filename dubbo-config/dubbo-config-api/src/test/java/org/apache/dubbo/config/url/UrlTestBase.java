@@ -51,7 +51,7 @@ public class UrlTestBase {
     private static final int TESTVALUE5 = 8;
     private static final int TESTVALUE6 = 9;
     private static final int TESTVALUE7 = 10;
-    protected ApplicationConfig application = new ApplicationConfig();
+    protected ApplicationConfig application;
     protected RegistryConfig regConfForProvider;
     protected RegistryConfig regConfForService;
     protected ProviderConfig provConf;
@@ -144,6 +144,7 @@ public class UrlTestBase {
         servConf = new ServiceConfig<DemoService>();
 
 //        provConf.setApplication(appConfForProvider);
+        application = new ApplicationConfig();
         application.setMetadataServicePort(20881);
         servConf.setApplication(application);
 
