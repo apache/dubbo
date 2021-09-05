@@ -115,8 +115,8 @@ public class InstanceAddressURLTest {
         RpcServiceContext.setRpcContext(consumerURL);
         assertEquals("1000", instanceURL.getParameter("delay"));
         assertEquals("1000", instanceURL.getServiceParameter(consumerURL.getProtocolServiceKey(), "delay"));
-        assertEquals("7000", instanceURL.getMethodParameter("sayHello", "timeout"));
-        assertEquals("7000", instanceURL.getServiceMethodParameter(consumerURL.getProtocolServiceKey(), "sayHello", "timeout"));
+        assertEquals("9000", instanceURL.getMethodParameter("sayHello", "timeout"));
+        assertEquals("9000", instanceURL.getServiceMethodParameter(consumerURL.getProtocolServiceKey(), "sayHello", "timeout"));
         assertNull(instanceURL.getParameter("uniqueKey"));
         assertNull(instanceURL.getServiceParameter(consumerURL.getProtocolServiceKey(), "uniqueKey"));
         assertEquals("unique", instanceURL.getServiceParameter(url2.getProtocolServiceKey(), "uniqueKey"));
@@ -127,7 +127,7 @@ public class InstanceAddressURLTest {
         assertEquals("9000", instanceURL.getParameter("timeout"));
 
         // test some provider keys have higher priority
-        assertEquals("provider", instanceURL.getParameter(TAG_KEY));
+        assertEquals("consumer", instanceURL.getParameter(TAG_KEY));
 
         assertEquals(instanceURL.getVersion(), instanceURL.getParameter(VERSION_KEY));
         assertEquals(instanceURL.getGroup(), instanceURL.getParameter(GROUP_KEY));
@@ -142,12 +142,13 @@ public class InstanceAddressURLTest {
         expectedAllParams.putAll(instanceURL.getInstance().getMetadata());
         expectedAllParams.putAll(instanceURL.getMetadataInfo().getServiceInfo(consumerURL.getProtocolServiceKey()).getAllParams());
         assertEquals(expectedAllParams.size(), instanceURL.getParameters().size());
-        assertEquals(url.getParameter(TAG_KEY), instanceURL.getParameters().get(TAG_KEY));
+        assertEquals(consumerURL.getParameter(TAG_KEY), instanceURL.getParameters().get(TAG_KEY));
         assertEquals(consumerURL.getParameter(TIMEOUT_KEY), instanceURL.getParameters().get(TIMEOUT_KEY));
         assertTrue(instanceURL.hasServiceMethodParameter(url.getProtocolServiceKey(), "a"));
         assertTrue(instanceURL.hasServiceMethodParameter(url.getProtocolServiceKey(), "sayHello"));
         assertTrue(instanceURL.hasMethodParameter("a", TIMEOUT_KEY));
         assertTrue(instanceURL.hasMethodParameter(null, TIMEOUT_KEY));
+        assertEquals("8888", instanceURL.getMethodParameter("a", TIMEOUT_KEY));
         assertTrue(instanceURL.hasMethodParameter("a", null));
         assertFalse(instanceURL.hasMethodParameter("notExistMethod", null));
 
