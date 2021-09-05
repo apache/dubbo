@@ -145,6 +145,14 @@ public class InstanceAddressURL extends URL {
             return getSide();
         }
 
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+        if (consumerUrl != null) {
+            String v = consumerUrl.getParameter(key);
+            if (v != null) {
+                return v;
+            }
+        }
+
         String protocolServiceKey = getProtocolServiceKey();
         if (protocolServiceKey == null) {
             return getInstanceParameter(key);
@@ -154,6 +162,14 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getServiceParameter(String service, String key) {
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+        if (consumerUrl != null) {
+            String v = consumerUrl.getServiceParameter(service, key);
+            if (v != null) {
+                return v;
+            }
+        }
+
         if (metadataInfo != null) {
             String value = metadataInfo.getParameter(key, service);
             if (StringUtils.isNotEmpty(value)) {
@@ -173,6 +189,14 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public String getServiceMethodParameter(String protocolServiceKey, String method, String key) {
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+        if (consumerUrl != null) {
+            String v = consumerUrl.getServiceMethodParameter(protocolServiceKey, method, key);
+            if (v != null) {
+                return v;
+            }
+        }
+
         MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(protocolServiceKey);
         String value = serviceInfo.getMethodParameter(method, key, null);
         if (StringUtils.isNotEmpty(value)) {
@@ -183,6 +207,14 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getMethodParameter(String method, String key) {
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+        if (consumerUrl != null) {
+            String v = consumerUrl.getMethodParameter(method, key);
+            if (v != null) {
+                return v;
+            }
+        }
+
         String protocolServiceKey = getProtocolServiceKey();
         if (protocolServiceKey == null) {
             return null;
@@ -199,6 +231,13 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public boolean hasServiceMethodParameter(String protocolServiceKey, String method, String key) {
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+        if (consumerUrl != null) {
+            if (consumerUrl.hasServiceMethodParameter(protocolServiceKey, method, key)) {
+                return true;
+            }
+        }
+
         MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(protocolServiceKey);
 
         if (method == null) {
@@ -225,6 +264,13 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public boolean hasMethodParameter(String method, String key) {
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+        if (consumerUrl != null) {
+            if (consumerUrl.hasMethodParameter(method, key)) {
+                return true;
+            }
+        }
+
         String protocolServiceKey = getProtocolServiceKey();
         if (protocolServiceKey == null) {
             return false;
@@ -240,12 +286,26 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public boolean hasServiceMethodParameter(String protocolServiceKey, String method) {
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+        if (consumerUrl != null) {
+            if (consumerUrl.hasServiceMethodParameter(protocolServiceKey, method)) {
+                return true;
+            }
+        }
+
         MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(protocolServiceKey);
         return serviceInfo.hasMethodParameter(method);
     }
 
     @Override
     public boolean hasMethodParameter(String method) {
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+        if (consumerUrl != null) {
+            if (consumerUrl.hasMethodParameter(method)) {
+                return true;
+            }
+        }
+
         String protocolServiceKey = getProtocolServiceKey();
         if (protocolServiceKey == null) {
             return false;
@@ -270,6 +330,11 @@ public class InstanceAddressURL extends URL {
         }
         if (metadataParams != null) {
             params.putAll(metadataParams);
+        }
+
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+        if (consumerUrl != null) {
+            params.putAll(consumerUrl.getParameters());
         }
         return params;
     }
