@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -37,7 +38,7 @@ public class ModuleServiceRepository {
     private ModuleModel moduleModel;
 
     // services
-    private ConcurrentMap<String, ServiceDescriptor> services = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, List<ServiceDescriptor>> services = new ConcurrentHashMap<>();
 
     // consumers ( key - group/interface:version value - consumerModel list)
     private ConcurrentMap<String, List<ConsumerModel>> consumers = new ConcurrentHashMap<>();
@@ -87,8 +88,19 @@ public class ModuleServiceRepository {
     }
 
     public ServiceDescriptor registerService(Class<?> interfaceClazz) {
-        return services.computeIfAbsent(interfaceClazz.getName(),
-            _k -> new ServiceDescriptor(interfaceClazz));
+        ServiceDescriptor serviceDescriptor = new ServiceDescriptor(interfaceClazz);
+        List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(interfaceClazz.getName(),
+            _k -> new CopyOnWriteArrayList<>());
+        synchronized (serviceDescriptors) {
+            Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
+                .filter(s -> s.getServiceInterfaceClass().equals(interfaceClazz)).findFirst();
+            if (previous.isPresent()) {
+                return previous.get();
+            } else {
+                serviceDescriptors.add(serviceDescriptor);
+                return serviceDescriptor;
+            }
+        }
     }
 
     /**
@@ -107,7 +119,18 @@ public class ModuleServiceRepository {
         ServiceDescriptor serviceDescriptor = registerService(interfaceClass);
         // if path is different with interface name, add extra path mapping
         if (!interfaceClass.getName().equals(path)) {
-            services.putIfAbsent(path, serviceDescriptor);
+            List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(path,
+                _k -> new CopyOnWriteArrayList<>());
+            synchronized (serviceDescriptors) {
+                Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
+                    .filter(s -> s.getServiceInterfaceClass().equals(serviceDescriptor.getServiceInterfaceClass())).findFirst();
+                if (previous.isPresent()) {
+                    return previous.get();
+                } else {
+                    serviceDescriptors.add(serviceDescriptor);
+                    return serviceDescriptor;
+                }
+            }
         }
         return serviceDescriptor;
     }
@@ -129,6 +152,7 @@ public class ModuleServiceRepository {
     }
 
     public void unregisterService(Class<?> interfaceClazz) {
+        // TODO remove
         unregisterService(interfaceClazz.getName());
     }
 
@@ -146,11 +170,17 @@ public class ModuleServiceRepository {
     }
 
     public List<ServiceDescriptor> getAllServices() {
-        return Collections.unmodifiableList(new ArrayList<>(services.values()));
+        List<ServiceDescriptor> serviceDescriptors = services.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        return Collections.unmodifiableList(serviceDescriptors);
     }
 
     public ServiceDescriptor lookupService(String interfaceName) {
-        return services.get(interfaceName);
+        if (services.containsKey(interfaceName)) {
+            List<ServiceDescriptor> serviceDescriptors = services.get(interfaceName);
+            return serviceDescriptors.size() > 0 ? serviceDescriptors.get(0) : null;
+        } else {
+            return null;
+        }
     }
 
     public MethodDescriptor lookupMethod(String interfaceName, String methodName) {

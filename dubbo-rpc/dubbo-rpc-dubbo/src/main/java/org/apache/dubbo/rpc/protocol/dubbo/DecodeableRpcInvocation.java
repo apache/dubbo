@@ -154,6 +154,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     }
                 }
                 if (serviceDescriptor == null) {
+                    // Unable to find ProviderModel from Exported Services
                     for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
                         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
                             serviceDescriptor = moduleModel.getServiceRepository().lookupService(path);
