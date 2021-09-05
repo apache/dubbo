@@ -709,6 +709,7 @@ public class ReferenceConfigTest {
         testInitReferences(0, amount, applicationConfig, metadataReportConfig, configCenterConfig);
         ApplicationModel.defaultModel().getApplicationConfigManager().clear();
         testInitReferences(0, 1, applicationConfig, metadataReportConfig, configCenterConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().clear();
 
         long t1 = System.currentTimeMillis();
         int nThreads = 8;
