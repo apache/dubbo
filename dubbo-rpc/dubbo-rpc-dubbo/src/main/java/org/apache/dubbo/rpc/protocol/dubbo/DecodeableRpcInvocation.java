@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -40,8 +41,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
 import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -136,14 +139,17 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 //                if (RpcUtils.isGenericCall(path, getMethodName()) || RpcUtils.isEcho(path, getMethodName())) {
 //                    pts = ReflectUtils.desc2classArray(desc);
 //                } else {
-                // TODO: fetch from FrameworkModel
                 FrameworkServiceRepository repository = frameworkModel.getServiceRepository();
-                ServiceDescriptor serviceDescriptor = repository.lookupService(path);
-                if (serviceDescriptor != null) {
-                    MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);
-                    if (methodDescriptor != null) {
-                        pts = methodDescriptor.getParameterClasses();
-                        this.setReturnTypes(methodDescriptor.getReturnTypes());
+                List<ProviderModel> providerModels = repository.lookupExportedServicesWithoutGroup(keyWithoutGroup(path, version));
+                for (ProviderModel providerModel : providerModels) {
+                    ServiceDescriptor serviceDescriptor = providerModel.getServiceModel();
+                    if (serviceDescriptor != null) {
+                        MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);
+                        if (methodDescriptor != null) {
+                            pts = methodDescriptor.getParameterClasses();
+                            this.setReturnTypes(methodDescriptor.getReturnTypes());
+                            break;
+                        }
                     }
                 }
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {

@@ -21,10 +21,13 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Service repository for module
@@ -36,8 +39,8 @@ public class ModuleServiceRepository {
     // services
     private ConcurrentMap<String, ServiceDescriptor> services = new ConcurrentHashMap<>();
 
-    // consumers
-    private ConcurrentMap<String, ConsumerModel> consumers = new ConcurrentHashMap<>();
+    // consumers ( key - group/interface:version value - consumerModel list)
+    private ConcurrentMap<String, List<ConsumerModel>> consumers = new ConcurrentHashMap<>();
 
     // providers
     private ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
@@ -63,7 +66,7 @@ public class ModuleServiceRepository {
     }
 
     public void registerConsumer(ConsumerModel consumerModel) {
-        consumers.putIfAbsent(consumerModel.getServiceKey(), consumerModel);
+        consumers.computeIfAbsent(consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>()).add(consumerModel);
     }
 
     public void registerProvider(String serviceKey,
@@ -107,6 +110,7 @@ public class ModuleServiceRepository {
         return serviceDescriptor;
     }
 
+    @Deprecated
     public void reRegisterProvider(String newServiceKey, String serviceKey) {
         ProviderModel providerModel = this.providers.get(serviceKey);
         providerModel.setServiceKey(newServiceKey);
@@ -114,10 +118,11 @@ public class ModuleServiceRepository {
         this.providers.remove(serviceKey);
     }
 
+    @Deprecated
     public void reRegisterConsumer(String newServiceKey, String serviceKey) {
-        ConsumerModel consumerModel = this.consumers.get(serviceKey);
-        consumerModel.setServiceKey(newServiceKey);
-        this.consumers.putIfAbsent(newServiceKey, consumerModel);
+        List<ConsumerModel> consumerModel = this.consumers.get(serviceKey);
+        consumerModel.forEach(c -> c.setServiceKey(newServiceKey));
+        this.consumers.computeIfAbsent(newServiceKey, (k) -> new CopyOnWriteArrayList<>()).addAll(consumerModel);
         this.consumers.remove(serviceKey);
     }
 
@@ -129,14 +134,25 @@ public class ModuleServiceRepository {
         services.remove(path);
     }
 
+    public void unregisterProvider(ProviderModel providerModel) {
+        frameworkServiceRepository.unregisterProvider(providerModel);
+        providers.remove(providerModel.getServiceKey());
+    }
+
+    public void unregisterConsumer(ConsumerModel consumerModel) {
+        consumers.get(consumerModel.getServiceKey()).remove(consumerModel);
+    }
+
     public List<ServiceDescriptor> getAllServices() {
         return Collections.unmodifiableList(new ArrayList<>(services.values()));
     }
 
+    @Deprecated
     public ServiceDescriptor lookupService(String interfaceName) {
         return services.get(interfaceName);
     }
 
+    @Deprecated
     public MethodDescriptor lookupMethod(String interfaceName, String methodName) {
         ServiceDescriptor serviceDescriptor = lookupService(interfaceName);
         if (serviceDescriptor == null) {
@@ -154,15 +170,28 @@ public class ModuleServiceRepository {
         return Collections.unmodifiableList(new ArrayList<>(providers.values()));
     }
 
+    @Deprecated
     public ProviderModel lookupExportedService(String serviceKey) {
         return providers.get(serviceKey);
     }
 
     public List<ConsumerModel> getReferredServices() {
-        return Collections.unmodifiableList(new ArrayList<>(consumers.values()));
+        List<ConsumerModel> consumerModels = consumers.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        return Collections.unmodifiableList(consumerModels);
     }
 
+    @Deprecated
     public ConsumerModel lookupReferredService(String serviceKey) {
+        if (consumers.containsKey(serviceKey)) {
+            List<ConsumerModel> consumerModels = consumers.get(serviceKey);
+            return consumerModels.size() > 0 ? consumerModels.get(0) : null;
+        } else {
+            return null;
+        }
+    }
+
+    @Deprecated
+    public List<ConsumerModel> lookupReferredServices(String serviceKey) {
         return consumers.get(serviceKey);
     }
 
@@ -170,5 +199,8 @@ public class ModuleServiceRepository {
         for (ProviderModel providerModel : providers.values()) {
             frameworkServiceRepository.unregisterProvider(providerModel);
         }
+        providers.clear();
+        consumers.clear();
+        services.clear();
     }
 }

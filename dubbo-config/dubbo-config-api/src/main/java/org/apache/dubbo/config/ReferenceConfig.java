@@ -222,6 +222,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         invoker = null;
         ref = null;
+        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+        repository.unregisterConsumer(consumerModel);
     }
 
     protected synchronized void init() {

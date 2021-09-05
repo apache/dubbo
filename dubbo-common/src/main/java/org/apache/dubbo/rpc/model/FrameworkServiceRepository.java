@@ -19,12 +19,14 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.apache.dubbo.common.BaseServiceMetadata.interfaceFromServiceKey;
 import static org.apache.dubbo.common.BaseServiceMetadata.versionFromServiceKey;
@@ -37,52 +39,63 @@ public class FrameworkServiceRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(FrameworkServiceRepository.class);
 
+    // useful to find a provider model quickly with group/serviceInterfaceName:version
+    private ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
+
     // useful to find a provider model quickly with serviceInterfaceName:version
-    private ConcurrentMap<String, ProviderModel> providersWithoutGroup = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, List<ProviderModel>> providersWithoutGroup = new ConcurrentHashMap<>();
 
     // useful to find a url quickly with serviceInterfaceName:version
-    private ConcurrentMap<String, Set<URL>> providerUrlsWithoutGroup = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, List<URL>> providerUrlsWithoutGroup = new ConcurrentHashMap<>();
 
     public FrameworkServiceRepository(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
     }
 
     public void registerProvider(ProviderModel providerModel) {
-        String key = keyWithoutGroup(providerModel.getServiceKey());
-        ProviderModel previous = providersWithoutGroup.putIfAbsent(key, providerModel);
+        String key = providerModel.getServiceKey();
+        ProviderModel previous = providers.putIfAbsent(key, providerModel);
         if (previous != null && previous != providerModel) {
-            // TODO process register duplicate provider
-            //throw new IllegalStateException("Register duplicate provider for key: " + key);
-            logger.error("Register duplicate provider for key: " + key);
+            throw new IllegalStateException("Register duplicate provider for key: " + key);
         }
+        String keyWithoutGroup = keyWithoutGroup(key);
+        providersWithoutGroup.computeIfAbsent(keyWithoutGroup, (k) -> new CopyOnWriteArrayList<>()).add(providerModel);
     }
 
     public void unregisterProvider(ProviderModel providerModel) {
         String key = keyWithoutGroup(providerModel.getServiceKey());
+        providers.remove(key);
         providersWithoutGroup.remove(key);
         providerUrlsWithoutGroup.remove(key);
     }
 
     public ProviderModel lookupExportedServiceWithoutGroup(String key) {
+        if (providersWithoutGroup.containsKey(key)) {
+            List<ProviderModel> providerModels = providersWithoutGroup.get(key);
+            return providerModels.size() > 0 ? providerModels.get(0) : null;
+        } else {
+            return null;
+        }
+    }
+
+    public List<ProviderModel> lookupExportedServicesWithoutGroup(String key) {
         return providersWithoutGroup.get(key);
     }
 
     public void registerProviderUrl(URL url) {
-        providerUrlsWithoutGroup.computeIfAbsent(keyWithoutGroup(url.getServiceKey()), (k) -> new ConcurrentHashSet<>()).add(url);
+        providerUrlsWithoutGroup.computeIfAbsent(keyWithoutGroup(url.getServiceKey()), (k) -> new CopyOnWriteArrayList<>()).add(url);
     }
 
-    public Set<URL> lookupRegisteredProviderUrlsWithoutGroup(String key) {
+    public ProviderModel lookupExportedService(String serviceKey) {
+        return providers.get(serviceKey);
+    }
+
+    public List<URL> lookupRegisteredProviderUrlsWithoutGroup(String key) {
         return providerUrlsWithoutGroup.get(key);
     }
 
-    public ServiceDescriptor lookupService(String interfaceName) {
-        for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
-            ServiceDescriptor serviceDescriptor = applicationModel.getApplicationServiceRepository().lookupService(interfaceName);
-            if (serviceDescriptor != null) {
-                return serviceDescriptor;
-            }
-        }
-        return null;
+    public List<ProviderModel> allProviderModels() {
+        return Collections.unmodifiableList(new ArrayList<>(providers.values()));
     }
 
     private static String keyWithoutGroup(String serviceKey) {
