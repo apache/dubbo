@@ -56,7 +56,8 @@ public class FrameworkServiceRepository {
         String key = providerModel.getServiceKey();
         ProviderModel previous = providers.putIfAbsent(key, providerModel);
         if (previous != null && previous != providerModel) {
-            throw new IllegalStateException("Register duplicate provider for key: " + key);
+            // TODO callback service multi instances
+            // throw new IllegalStateException("Register duplicate provider for key: " + key);
         }
         String keyWithoutGroup = keyWithoutGroup(key);
         providersWithoutGroup.computeIfAbsent(keyWithoutGroup, (k) -> new CopyOnWriteArrayList<>()).add(providerModel);

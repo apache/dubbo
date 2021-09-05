@@ -147,12 +147,10 @@ public class ModuleServiceRepository {
         return Collections.unmodifiableList(new ArrayList<>(services.values()));
     }
 
-    @Deprecated
     public ServiceDescriptor lookupService(String interfaceName) {
         return services.get(interfaceName);
     }
 
-    @Deprecated
     public MethodDescriptor lookupMethod(String interfaceName, String methodName) {
         ServiceDescriptor serviceDescriptor = lookupService(interfaceName);
         if (serviceDescriptor == null) {
