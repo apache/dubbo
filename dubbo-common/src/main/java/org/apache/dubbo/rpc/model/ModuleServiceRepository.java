@@ -55,6 +55,7 @@ public class ModuleServiceRepository {
         return moduleModel;
     }
 
+    @Deprecated
     public void registerConsumer(String serviceKey,
                                  ServiceDescriptor serviceDescriptor,
                                  ReferenceConfigBase<?> rc,
@@ -69,6 +70,7 @@ public class ModuleServiceRepository {
         consumers.computeIfAbsent(consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>()).add(consumerModel);
     }
 
+    @Deprecated
     public void registerProvider(String serviceKey,
                                  Object serviceInstance,
                                  ServiceDescriptor serviceModel,

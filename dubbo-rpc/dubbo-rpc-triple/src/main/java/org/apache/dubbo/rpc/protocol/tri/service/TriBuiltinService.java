@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.PathResolver;
@@ -69,16 +70,18 @@ public class TriBuiltinService {
                 serviceMetadata.setTarget(impl);
                 serviceMetadata.setServiceInterfaceName(clz.getName());
                 serviceMetadata.generateServiceKey();
-                repository.registerProvider(
+                ProviderModel providerModel = new ProviderModel(
                     clz.getName(),
                     impl,
                     serviceDescriptor,
                     null,
-                    serviceMetadata
-                );
+                    serviceMetadata);
+                repository.registerProvider(providerModel);
                 int port = 0;
                 URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null,
                     null, ANYHOST_VALUE, port, clz.getName());
+                url.setServiceModel(providerModel);
+                url.setScopeModel(ApplicationModel.defaultModel().getInternalModule());
                 Invoker<?> invoker = PROXY_FACTORY.getInvoker(impl, (Class) clz, url);
                 PATH_RESOLVER.add(url.getServiceKey(), invoker);
                 PATH_RESOLVER.add(url.getServiceInterface(), invoker);
