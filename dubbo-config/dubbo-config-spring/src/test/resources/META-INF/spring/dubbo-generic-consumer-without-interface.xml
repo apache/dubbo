@@ -22,15 +22,15 @@
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
     <!-- 当前应用信息配置 -->
-    <dubbo:application name="dubbo-generic-consumer"/>
+    <dubbo:application name="dubbo-generic-consumer-without-interface"/>
 
     <!-- 连接注册中心配置 -->
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
-    <dubbo:reference id="demoServiceRef" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true" init="false"/>
-
     <bean id="genericService" class="org.apache.dubbo.config.spring.schema.MyGenericService"/>
 
-    <dubbo:service id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true"
+    <!-- generic service without interface class -->
+    <dubbo:reference id="genericServiceWithoutInterfaceRef" interface="org.apache.dubbo.config.spring.api.LocalMissClass" generic="true" init="false"/>
+    <dubbo:service id="genericServiceWithoutInterface" interface="org.apache.dubbo.config.spring.api.LocalMissClass" generic="true"
                    ref="genericService"/>
 </beans>

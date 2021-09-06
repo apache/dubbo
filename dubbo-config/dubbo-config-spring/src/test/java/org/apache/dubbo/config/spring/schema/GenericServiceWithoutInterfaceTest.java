@@ -14,19 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.reference.localcall;
+package org.apache.dubbo.config.spring.schema;
 
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.api.HelloService;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.ImportResource;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -34,10 +37,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(locations = {"classpath:/org/apache/dubbo/config/spring/reference/localcall/local-call-provider.xml",
-        "classpath:/org/apache/dubbo/config/spring/reference/localcall/local-call-consumer.xml"})
+@ContextConfiguration(classes = GenericServiceWithoutInterfaceTest.class)
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
-public class LocalCallTest {
+@ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer-without-interface.xml")
+public class GenericServiceWithoutInterfaceTest {
 
     private static RegistryCenter singleRegistryCenter;
 
@@ -55,22 +58,19 @@ public class LocalCallTest {
     }
 
     @Autowired
-    private HelloService helloService;
-
-    @Autowired
-    //@Qualifier("localHelloService")
-    private HelloService localHelloService;
+    @Qualifier("genericServiceWithoutInterfaceRef")
+    private GenericService genericServiceWithoutInterfaceRef;
 
     @Test
-    public void testLocalCall() {
-        // see also: org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker.doInvoke
-        // InjvmInvoker set remote address to 127.0.0.1:0
-        String result = helloService.sayHello("world");
-        Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", result);
+    public void testGenericWithoutInterface() {
 
-        // direct call local service, the remote address is null
-        String originResult = localHelloService.sayHello("world");
-        Assertions.assertEquals("Hello world, response from provider: null", originResult);
+        // Test generic service without interface class locally
+        Object result = genericServiceWithoutInterfaceRef.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"generic"});
+        Assertions.assertEquals("Welcome generic", result);
+
+        ReferenceConfigBase<Object> reference = DubboBootstrap.getInstance().getConfigManager().getReference("genericServiceWithoutInterfaceRef");
+        Assertions.assertNull(reference.getServiceInterfaceClass());
+        Assertions.assertEquals("org.apache.dubbo.config.spring.api.LocalMissClass", reference.getInterface());
+        Assertions.assertThrows(ClassNotFoundException.class, () -> ClassUtils.forName(reference.getInterface()));
     }
-
 }

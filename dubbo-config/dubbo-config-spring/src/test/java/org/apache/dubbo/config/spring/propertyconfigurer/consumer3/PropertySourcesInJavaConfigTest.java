@@ -72,11 +72,6 @@ public class PropertySourcesInJavaConfigTest {
         try {
             providerContext.start();
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
-
             // reset ConfigManager of provider context
             ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
             //ApplicationModel.defaultModel().getApplicationServiceRepository().setProviderUrlsWithoutGroup(tmp);
@@ -108,11 +103,6 @@ public class PropertySourcesInJavaConfigTest {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(PROVIDER_CONFIG_PATH);
         try {
             providerContext.start();
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
 
             // reset ConfigManager of provider context
             ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
