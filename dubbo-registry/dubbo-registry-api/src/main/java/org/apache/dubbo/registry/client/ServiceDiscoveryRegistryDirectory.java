@@ -241,12 +241,17 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow accessing
-            Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
             if (CollectionUtils.isEmpty(invokerUrls)) {
                 return;
             }
 
-            Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
+            // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
+            Map<String, Invoker<T>> oldUrlInvokerMap = null;
+            if (this.urlInvokerMap != null) {
+                oldUrlInvokerMap = new HashMap<>();
+                this.urlInvokerMap.forEach(oldUrlInvokerMap::put);
+            }
+            Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
             logger.info("Refreshed invoker size " + newUrlInvokerMap.size());
 
             if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
@@ -275,11 +280,13 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
     /**
      * Turn urls into invokers, and if url has been refer, will not re-reference.
+     * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
+     * @param oldUrlInvokerMap
      * @param urls
      * @return invokers
      */
-    private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
+    private Map<String, Invoker<T>> toInvokers(Map<String, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
         Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
@@ -304,7 +311,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 instanceAddressURL = overrideWithConfigurator(instanceAddressURL);
             }
 
-            Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.get(instanceAddressURL.getAddress());
+            Invoker<T> invoker = oldUrlInvokerMap == null ? null : oldUrlInvokerMap.get(instanceAddressURL.getAddress());
             if (invoker == null || urlChanged(invoker, instanceAddressURL)) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
@@ -324,7 +331,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 }
             } else {
                 newUrlInvokerMap.put(instanceAddressURL.getAddress(), invoker);
-                urlInvokerMap.remove(instanceAddressURL.getAddress(), invoker);
+                oldUrlInvokerMap.remove(instanceAddressURL.getAddress(), invoker);
             }
         }
         return newUrlInvokerMap;
