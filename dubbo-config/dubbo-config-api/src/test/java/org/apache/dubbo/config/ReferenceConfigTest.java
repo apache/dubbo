@@ -29,6 +29,8 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+import org.apache.dubbo.registrycenter.RegistryCenter;
+import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
@@ -38,7 +40,6 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 
-import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -100,16 +101,16 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 public class ReferenceConfigTest {
-    private TestingServer zkServer;
     private String zkUrl;
     private String registryUrl;
+    private RegistryCenter registryCenter;
 
     @BeforeEach
     public void setUp() throws Exception {
         DubboBootstrap.reset();
         int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
-        this.zkServer = new TestingServer(zkServerPort, true);
-        this.zkServer.start();
+        registryCenter = new ZookeeperSingleRegistryCenter(zkServerPort);
+        registryCenter.startup();
         this.zkUrl = "zookeeper://localhost:" + zkServerPort;
         this.registryUrl = "registry://localhost:" + zkServerPort+"?registry=zookeeper";
 
@@ -122,7 +123,7 @@ public class ReferenceConfigTest {
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
-        zkServer.stop();
+        registryCenter.shutdown();
         Mockito.framework().clearInlineMocks();
 
     }

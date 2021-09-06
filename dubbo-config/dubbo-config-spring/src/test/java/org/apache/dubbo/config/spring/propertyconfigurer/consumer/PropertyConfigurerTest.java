@@ -59,11 +59,6 @@ public class PropertyConfigurerTest {
             // reset ConfigManager of provider context
             DubboBootstrap.reset(false);
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
-
             // Resolve placeholder by PropertyPlaceholderConfigurer in dubbo-consumer.xml, without import property source.
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
             context.start();

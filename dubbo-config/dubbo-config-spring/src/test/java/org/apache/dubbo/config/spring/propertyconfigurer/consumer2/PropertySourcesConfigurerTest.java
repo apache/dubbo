@@ -57,11 +57,6 @@ public class PropertySourcesConfigurerTest {
         try {
             providerContext.start();
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
-
             // reset ConfigManager of provider context
             DubboBootstrap.reset(false);
 

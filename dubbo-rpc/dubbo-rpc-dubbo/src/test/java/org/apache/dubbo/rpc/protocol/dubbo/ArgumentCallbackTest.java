@@ -113,7 +113,7 @@ public class ArgumentCallbackTest {
     
     @Test
     public void TestCallbackNormalWithBindPort() throws Exception {
-        initOrResetUrl(1, 10000000);
+        initOrResetUrl(1, 1000);
         consumerUrl = serviceURL.addParameter(Constants.BIND_PORT_KEY,"7653");
         initOrResetService();
        
@@ -125,9 +125,9 @@ public class ArgumentCallbackTest {
                 count.incrementAndGet();
                 return "ok";
             }
-        }, "other custom args", 10, 100);
+        }, "other custom args", 10, 10);
         System.out.println("Async...");
-        assertCallbackCount(10, 100, count);
+        assertCallbackCount(10, 10, count);
         destroyService();
 
     }
@@ -174,18 +174,18 @@ public class ArgumentCallbackTest {
         {
             demoProxy.xxx2(callback);
             Assertions.assertEquals(1, demoProxy.getCallbackCount());
-            Thread.sleep(500);
+            //Thread.sleep(500);
             demoProxy.unxxx2(callback);
             Assertions.assertEquals(0, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback2);
             Assertions.assertEquals(1, demoProxy.getCallbackCount());
-            Thread.sleep(500);
+            //Thread.sleep(500);
             demoProxy.unxxx2(callback2);
             Assertions.assertEquals(0, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback);
-            Thread.sleep(500);
+            //Thread.sleep(500);
             Assertions.assertEquals(1, demoProxy.getCallbackCount());
             demoProxy.unxxx2(callback);
             Assertions.assertEquals(0, demoProxy.getCallbackCount());
@@ -364,7 +364,7 @@ public class ArgumentCallbackTest {
                                             callbacks.remove(callback);
                                         }
                                     }
-                                    Thread.sleep(100);
+                                    Thread.sleep(10);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
