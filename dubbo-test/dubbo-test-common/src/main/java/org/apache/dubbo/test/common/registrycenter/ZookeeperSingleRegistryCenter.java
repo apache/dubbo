@@ -14,28 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.test.common.registrycenter;
 
-import org.apache.dubbo.rpc.model.FrameworkModel;
+/**
+ * The default zookeeper single registry center.
+ */
+public class ZookeeperSingleRegistryCenter extends ZookeeperRegistryCenter {
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-
-public class TripleServerInitializer extends ChannelInitializer<Channel> {
-
-    private FrameworkModel frameworkModel;
-
-    public TripleServerInitializer(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
+    /**
+     * Initialize {@link ZookeeperSingleRegistryCenter} instance.
+     */
+    public ZookeeperSingleRegistryCenter() {
+        this(DEFAULT_PORT);
     }
 
-    @Override
-    protected void initChannel(Channel ch) throws Exception {
-        final ChannelPipeline p = ch.pipeline();
-        p.addLast(new TripleHttp2FrameServerHandler(frameworkModel));
-        // TODO constraint MAX DATA_SIZE
-        p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE));
-        p.addLast(new TripleServerInboundHandler());
+    /**
+     * Initialize {@link RegistryCenter} instance.
+     *
+     * @param port the zookeeper server's port.
+     */
+    public ZookeeperSingleRegistryCenter(int port) {
+        super(port);
     }
+
+    /**
+     * The zookeeper server's default port.
+     */
+    private static final int DEFAULT_PORT = 2181;
 }

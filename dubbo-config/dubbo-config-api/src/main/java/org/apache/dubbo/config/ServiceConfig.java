@@ -197,6 +197,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
         unexported = true;
         onUnexpoted();
+        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+        repository.unregisterProvider(providerModel);
     }
 
     public void init() {

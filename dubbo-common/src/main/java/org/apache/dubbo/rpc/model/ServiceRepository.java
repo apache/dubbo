@@ -70,47 +70,4 @@ public class ServiceRepository {
         return allProviderModels;
     }
 
-    public ServiceDescriptor lookupService(String interfaceName) {
-        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ServiceDescriptor serviceDescriptor = moduleModel.getServiceRepository().lookupService(interfaceName);
-            if (serviceDescriptor != null) {
-                return serviceDescriptor;
-            }
-        }
-        return null;
-    }
-
-    public MethodDescriptor lookupMethod(String interfaceName, String methodName) {
-        ServiceDescriptor serviceDescriptor = lookupService(interfaceName);
-        if (serviceDescriptor == null) {
-            return null;
-        }
-
-        List<MethodDescriptor> methods = serviceDescriptor.getMethods(methodName);
-        if (CollectionUtils.isEmpty(methods)) {
-            return null;
-        }
-        return methods.iterator().next();
-    }
-
-    public ProviderModel lookupExportedService(String serviceKey) {
-        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ProviderModel providerModel = moduleModel.getServiceRepository().lookupExportedService(serviceKey);
-            if (providerModel != null) {
-                return providerModel;
-            }
-        }
-        return null;
-    }
-
-    public ConsumerModel lookupReferredService(String serviceKey) {
-        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ConsumerModel consumerModel = moduleModel.getServiceRepository().lookupReferredService(serviceKey);
-            if (consumerModel != null) {
-                return consumerModel;
-            }
-        }
-        return null;
-    }
-
 }

@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -53,17 +54,17 @@ public class JavaConfigReferenceBeanTest {
 
     @BeforeEach
     public void setUp() {
+        DubboBootstrap.reset();
         multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
         multipleRegistryCenter.startup();
-        DubboBootstrap.reset();
         SpringExtensionInjector.clearContexts();
     }
 
     @AfterEach
     public void tearDown() {
-        DubboBootstrap.reset();
         multipleRegistryCenter.shutdown();
         SpringExtensionInjector.clearContexts();
+        DubboBootstrap.reset();
     }
 
     @Test
@@ -89,6 +90,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
+    @Disabled("support multi reference config")
     public void testAnnotationAtField2() {
         AnnotationConfigApplicationContext context = null;
         try {

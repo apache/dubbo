@@ -155,6 +155,7 @@ public class ApplicationModel extends ScopeModel {
         initialize();
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         internalModule = new ModuleModel(this);
@@ -178,12 +179,33 @@ public class ApplicationModel extends ScopeModel {
         }
     }
 
+    @Override
     public void destroy() {
         // TODO destroy application resources
         for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
             moduleModel.destroy();
         }
-        frameworkModel.removeApplication(this);
+        if (defaultInstance == this) {
+            synchronized (ApplicationModel.class) {
+                frameworkModel.removeApplication(this);
+                defaultInstance = null;
+            }
+        } else {
+            frameworkModel.removeApplication(this);
+        }
+        if (environment != null) {
+            environment.destroy();
+            environment = null;
+        }
+        if (configManager != null) {
+            configManager.destroy();
+            configManager = null;
+        }
+        if (serviceRepository != null) {
+            serviceRepository.destroy();
+            serviceRepository = null;
+        }
+
     }
 
     public FrameworkModel getFrameworkModel() {
@@ -230,6 +252,10 @@ public class ApplicationModel extends ScopeModel {
 
     public synchronized void removeModule(ModuleModel model) {
         this.moduleModels.remove(model);
+        if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
+            this.internalModule.destroy();
+        }
+        destroy();
     }
 
     public List<ModuleModel> getModuleModels() {
@@ -249,6 +275,21 @@ public class ApplicationModel extends ScopeModel {
 
     public ModuleModel getInternalModule() {
         return internalModule;
+    }
+
+    @Deprecated
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
+
+    @Deprecated
+    public void setConfigManager(ConfigManager configManager) {
+        this.configManager = configManager;
+    }
+
+    @Deprecated
+    public void setServiceRepository(ServiceRepository serviceRepository) {
+        this.serviceRepository = serviceRepository;
     }
 
     @Override

@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config.spring.schema;
 
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -27,7 +25,6 @@ import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCent
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
@@ -59,21 +56,13 @@ public class GenericServiceTest {
 
     @AfterAll
     public static void afterAll() {
-        singleRegistryCenter.shutdown();
-    }
-
-    @AfterEach
-    public void tearDown() {
         DubboBootstrap.reset();
+        singleRegistryCenter.shutdown();
     }
 
     @Autowired
     @Qualifier("demoServiceRef")
     private GenericService demoServiceRef;
-
-    @Autowired
-    @Qualifier("genericServiceWithoutInterfaceRef")
-    private GenericService genericServiceWithoutInterfaceRef;
 
     @Autowired
     @Qualifier("demoService")
@@ -91,16 +80,6 @@ public class GenericServiceTest {
 
         Object result = demoServiceRef.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"dubbo"});
         Assertions.assertEquals("Welcome dubbo", result);
-
-
-        // Test generic service without interface class locally
-        result = genericServiceWithoutInterfaceRef.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"generic"});
-        Assertions.assertEquals("Welcome generic", result);
-
-        ReferenceConfigBase<Object> reference = configManager.getReference("genericServiceWithoutInterfaceRef");
-        Assertions.assertNull(reference.getServiceInterfaceClass());
-        Assertions.assertEquals("org.apache.dubbo.config.spring.api.LocalMissClass", reference.getInterface());
-        Assertions.assertThrows(ClassNotFoundException.class, () -> ClassUtils.forName(reference.getInterface()));
 
     }
 }

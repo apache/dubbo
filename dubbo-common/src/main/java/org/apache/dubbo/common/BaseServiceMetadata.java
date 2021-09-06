@@ -102,6 +102,13 @@ public class BaseServiceMetadata {
         return serviceDescriptor;
     }
 
+    public static String keyWithoutGroup(String interfaceName, String version) {
+        if (StringUtils.isEmpty(version)) {
+            return interfaceName + ":0.0.0";
+        }
+        return interfaceName + ":" + version;
+    }
+
     public String getServiceKey() {
         return serviceKey;
     }

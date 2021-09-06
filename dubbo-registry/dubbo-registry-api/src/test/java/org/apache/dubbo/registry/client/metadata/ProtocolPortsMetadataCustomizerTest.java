@@ -59,7 +59,7 @@ public class ProtocolPortsMetadataCustomizerTest {
     @BeforeAll
     public static void setUp() {
         ApplicationConfig applicationConfig = new ApplicationConfig("test");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
     }
 
     @AfterAll

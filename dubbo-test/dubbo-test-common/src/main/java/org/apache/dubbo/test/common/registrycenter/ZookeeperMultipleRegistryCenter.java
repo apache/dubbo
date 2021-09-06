@@ -14,28 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.test.common.registrycenter;
 
-import org.apache.dubbo.rpc.model.FrameworkModel;
+/**
+ * The default zookeeper multiple registry center.
+ */
+public class ZookeeperMultipleRegistryCenter extends ZookeeperRegistryCenter {
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-
-public class TripleServerInitializer extends ChannelInitializer<Channel> {
-
-    private FrameworkModel frameworkModel;
-
-    public TripleServerInitializer(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
+    /**
+     * Initialize {@link ZookeeperMultipleRegistryCenter} instance.
+     *
+     * @param port1 the zookeeper server's port.
+     * @param port2 the zookeeper server's port.
+     */
+    public ZookeeperMultipleRegistryCenter(int port1, int port2) {
+        super(port1, port2);
     }
 
-    @Override
-    protected void initChannel(Channel ch) throws Exception {
-        final ChannelPipeline p = ch.pipeline();
-        p.addLast(new TripleHttp2FrameServerHandler(frameworkModel));
-        // TODO constraint MAX DATA_SIZE
-        p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE));
-        p.addLast(new TripleServerInboundHandler());
+    /**
+     * Initialize {@link ZookeeperMultipleRegistryCenter} instance.
+     */
+    public ZookeeperMultipleRegistryCenter() {
+        this(DEFAULT_PORT1, DEFAULT_PORT2);
     }
+
+    private static final int DEFAULT_PORT1 = 2181;
+    private static final int DEFAULT_PORT2 = 2182;
 }
