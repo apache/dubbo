@@ -174,18 +174,18 @@ public class ArgumentCallbackTest {
         {
             demoProxy.xxx2(callback);
             Assertions.assertEquals(1, demoProxy.getCallbackCount());
-            //Thread.sleep(500);
+            Thread.sleep(500);
             demoProxy.unxxx2(callback);
             Assertions.assertEquals(0, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback2);
             Assertions.assertEquals(1, demoProxy.getCallbackCount());
-            //Thread.sleep(500);
+            Thread.sleep(500);
             demoProxy.unxxx2(callback2);
             Assertions.assertEquals(0, demoProxy.getCallbackCount());
 
             demoProxy.xxx2(callback);
-            //Thread.sleep(500);
+            Thread.sleep(500);
             Assertions.assertEquals(1, demoProxy.getCallbackCount());
             demoProxy.unxxx2(callback);
             Assertions.assertEquals(0, demoProxy.getCallbackCount());
@@ -364,7 +364,7 @@ public class ArgumentCallbackTest {
                                             callbacks.remove(callback);
                                         }
                                     }
-                                    Thread.sleep(10);
+                                    Thread.sleep(100);
                                 } catch (InterruptedException e) {
                                     e.printStackTrace();
                                 }
