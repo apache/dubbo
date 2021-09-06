@@ -45,6 +45,7 @@ public class FrameworkModel extends ScopeModel {
         initialize();
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         serviceRepository = new FrameworkServiceRepository(this);
@@ -53,6 +54,7 @@ public class FrameworkModel extends ScopeModel {
         postProcessAfterCreated();
     }
 
+    @Override
     public void destroy() {
         //TODO destroy framework model
         for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
@@ -61,7 +63,9 @@ public class FrameworkModel extends ScopeModel {
 
         allInstances.remove(this);
         if (defaultInstance == this) {
-            defaultInstance = null;
+            synchronized (FrameworkModel.class) {
+                defaultInstance = null;
+            }
         }
     }
 
@@ -94,6 +98,9 @@ public class FrameworkModel extends ScopeModel {
 
     public void removeApplication(ApplicationModel model) {
         this.applicationModels.remove(model);
+        if (applicationModels.size() == 0) {
+            destroy();
+        }
     }
 
     public List<ApplicationModel> getApplicationModels() {

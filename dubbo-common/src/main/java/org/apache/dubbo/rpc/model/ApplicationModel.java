@@ -155,6 +155,7 @@ public class ApplicationModel extends ScopeModel {
         initialize();
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         internalModule = new ModuleModel(this);
@@ -184,7 +185,14 @@ public class ApplicationModel extends ScopeModel {
         for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
             moduleModel.destroy();
         }
-        frameworkModel.removeApplication(this);
+        if (defaultInstance == this) {
+            synchronized (ApplicationModel.class) {
+                frameworkModel.removeApplication(this);
+                defaultInstance = null;
+            }
+        } else {
+            frameworkModel.removeApplication(this);
+        }
         if (environment != null) {
             environment.destroy();
             environment = null;
@@ -197,6 +205,7 @@ public class ApplicationModel extends ScopeModel {
             serviceRepository.destroy();
             serviceRepository = null;
         }
+
     }
 
     public FrameworkModel getFrameworkModel() {
@@ -243,6 +252,10 @@ public class ApplicationModel extends ScopeModel {
 
     public synchronized void removeModule(ModuleModel model) {
         this.moduleModels.remove(model);
+        if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
+            this.internalModule.destroy();
+        }
+        destroy();
     }
 
     public List<ModuleModel> getModuleModels() {

@@ -24,11 +24,14 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -47,15 +50,21 @@ public class TripleProtocolTest {
 
         ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
         ServiceDescriptor serviceDescriptor = serviceRepository.registerService(IGreeter.class);
-        serviceRepository.registerProvider(
+
+        ProviderModel providerModel = new ProviderModel(
             url.getServiceKey(),
             serviceImpl,
             serviceDescriptor,
             null,
-            new ServiceMetadata()
-        );
+            new ServiceMetadata());
+        serviceRepository.registerProvider(providerModel);
+        url = url.setServiceModel(providerModel);
 
         protocol.export(proxy.getInvoker(serviceImpl, IGreeter.class, url));
+
+        ConsumerModel consumerModel = new ConsumerModel(url.getServiceKey(), null, serviceDescriptor, null,
+            new ServiceMetadata(), null);
+        url = url.setServiceModel(consumerModel);
         serviceImpl = proxy.getProxy(protocol.refer(IGreeter.class, url));
         Thread.sleep(1000);
         Assertions.assertEquals("hello world", serviceImpl.echo("hello world"));

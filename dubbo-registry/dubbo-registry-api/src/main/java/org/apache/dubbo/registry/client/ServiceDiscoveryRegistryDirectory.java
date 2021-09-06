@@ -36,10 +36,12 @@ import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,7 +67,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private volatile boolean enableConfigurationListen = true;
     private volatile List<URL> originalUrls = null;
     private volatile Map<String, String> overrideQueryMap;
-    private volatile Map<String, String> consumerFirstQueryMap;
+    private final Set<String> providerFirstParams;
     private final ApplicationModel applicationModel;
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
@@ -73,18 +75,21 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         applicationModel = getApplicationModel(url.getScopeModel());
         consumerConfigurationListener = new ConsumerConfigurationListener(applicationModel);
 
-        Set<ProviderFirstParams> providerFirstParams = ExtensionLoader.getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
+        Set<ProviderFirstParams> providerFirstParams = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
         if (CollectionUtils.isEmpty(providerFirstParams)) {
-            consumerFirstQueryMap = queryMap;
+            this.providerFirstParams = null;
         } else {
-            consumerFirstQueryMap = new HashMap<>(queryMap);
-            for (ProviderFirstParams paramsFilter : providerFirstParams) {
-                if (paramsFilter.params() == null) {
-                    break;
+            if (providerFirstParams.size() == 1) {
+                this.providerFirstParams = Collections.unmodifiableSet(providerFirstParams.iterator().next().params());
+            } else {
+                Set<String> params = new HashSet<>();
+                for (ProviderFirstParams paramsFilter : providerFirstParams) {
+                    if (paramsFilter.params() == null) {
+                        break;
+                    }
+                    params.addAll(paramsFilter.params());
                 }
-                for (String keyToRemove : paramsFilter.params()) {
-                    consumerFirstQueryMap.remove(keyToRemove);
-                }
+                this.providerFirstParams = Collections.unmodifiableSet(params);
             }
         }
 
@@ -297,7 +302,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 continue;
             }
 
-            instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), consumerFirstQueryMap);
+            instanceAddressURL.setProviderFirstParams(providerFirstParams);
 
             // Override provider urls if needed
             if (enableConfigurationListen) {

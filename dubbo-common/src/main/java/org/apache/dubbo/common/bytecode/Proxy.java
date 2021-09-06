@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.ref.Reference;
@@ -24,6 +23,7 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,24 +61,19 @@ public abstract class Proxy {
     /**
      * Get proxy.
      *
-     * @param ics interface class array.
-     * @return Proxy instance.
-     */
-    public static Proxy getProxy(Class<?>... ics) {
-        return getProxy(ClassUtils.getClassLoader(Proxy.class), ics);
-    }
-
-    /**
-     * Get proxy.
-     *
      * @param cl  class loader.
      * @param ics interface class array.
      * @return Proxy instance.
      */
-    public static Proxy getProxy(ClassLoader cl, Class<?>... ics) {
+    public static Proxy getProxy(Class<?>... ics) {
         if (ics.length > MAX_PROXY_COUNT) {
             throw new IllegalArgumentException("interface limit exceeded");
         }
+
+        // ClassLoader from App Interface should support load some class from Dubbo
+        ClassLoader cl = ics[0].getClassLoader();
+        ClassLoader appClassLoader = ics[0].getClassLoader();
+        ProtectionDomain domain = ics[0].getProtectionDomain();
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < ics.length; i++) {
@@ -218,7 +213,7 @@ public abstract class Proxy {
             ccp.addField("private " + InvocationHandler.class.getName() + " handler;");
             ccp.addConstructor(Modifier.PUBLIC, new Class<?>[] {InvocationHandler.class}, new Class<?>[0], "handler=$1;");
             ccp.addDefaultConstructor();
-            Class<?> clazz = ccp.toClass();
+            Class<?> clazz = ccp.toClass(appClassLoader, domain);
             clazz.getField("methods").set(null, methods.toArray(new Method[0]));
 
             // create Proxy class.
@@ -228,7 +223,7 @@ public abstract class Proxy {
             ccm.addDefaultConstructor();
             ccm.setSuperClass(Proxy.class);
             ccm.addMethod("public Object newInstance(" + InvocationHandler.class.getName() + " h){ return new " + pcn + "($1); }");
-            Class<?> pc = ccm.toClass();
+            Class<?> pc = ccm.toClass(appClassLoader, domain);
             proxy = (Proxy) pc.newInstance();
 
             synchronized (classCache) {
