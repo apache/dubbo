@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.ProviderFirstParams;
@@ -28,7 +27,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -81,30 +82,31 @@ public class InstanceAddressURLTest {
     }
 
     private InstanceAddressURL instanceURL;
+    private volatile transient Set<String> providerFirstParams;
 
     @BeforeEach
     public void setUp() {
         DefaultServiceInstance instance = createInstance();
         MetadataInfo metadataInfo = createMetaDataInfo();
         instanceURL = new InstanceAddressURL(instance, metadataInfo);
-
-        Map<String, String> consumerFirstQueryMap;
-        Map<String, String> queryMap = consumerURL.getParameters();
-        Set<ProviderFirstParams> providerFirstParams = ExtensionLoader.getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
+        Set<ProviderFirstParams> providerFirstParams = ApplicationModel.defaultModel().getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
         if (CollectionUtils.isEmpty(providerFirstParams)) {
-            consumerFirstQueryMap = queryMap;
+            this.providerFirstParams = null;
         } else {
-            consumerFirstQueryMap = new HashMap<>(queryMap);
-            for (ProviderFirstParams paramsFilter : providerFirstParams) {
-                if (paramsFilter.params() == null) {
-                    break;
+            if (providerFirstParams.size() == 1) {
+                this.providerFirstParams = Collections.unmodifiableSet(providerFirstParams.iterator().next().params());
+            } else {
+                Set<String> params = new HashSet<>();
+                for (ProviderFirstParams paramsFilter : providerFirstParams) {
+                    if (paramsFilter.params() == null) {
+                        break;
+                    }
+                    params.addAll(paramsFilter.params());
                 }
-                for (String keyToRemove : paramsFilter.params()) {
-                    consumerFirstQueryMap.remove(keyToRemove);
-                }
+                this.providerFirstParams = Collections.unmodifiableSet(params);
             }
         }
-        instanceURL.addConsumerParams(consumerURL.getProtocolServiceKey(), consumerFirstQueryMap);
+        instanceURL.setProviderFirstParams(this.providerFirstParams);
     }
 
     @Test
@@ -127,7 +129,7 @@ public class InstanceAddressURLTest {
         assertEquals("9000", instanceURL.getParameter("timeout"));
 
         // test some provider keys have higher priority
-        assertEquals("consumer", instanceURL.getParameter(TAG_KEY));
+        assertEquals("provider", instanceURL.getParameter(TAG_KEY));
 
         assertEquals(instanceURL.getVersion(), instanceURL.getParameter(VERSION_KEY));
         assertEquals(instanceURL.getGroup(), instanceURL.getParameter(GROUP_KEY));
@@ -141,8 +143,12 @@ public class InstanceAddressURLTest {
         Map<String, String> expectedAllParams = new HashMap<>();
         expectedAllParams.putAll(instanceURL.getInstance().getMetadata());
         expectedAllParams.putAll(instanceURL.getMetadataInfo().getServiceInfo(consumerURL.getProtocolServiceKey()).getAllParams());
+        Map<String, String> consumerURLParameters = consumerURL.getParameters();
+        providerFirstParams.forEach(consumerURLParameters::remove);
+        expectedAllParams.putAll(consumerURLParameters);
+
         assertEquals(expectedAllParams.size(), instanceURL.getParameters().size());
-        assertEquals(consumerURL.getParameter(TAG_KEY), instanceURL.getParameters().get(TAG_KEY));
+        assertEquals(url.getParameter(TAG_KEY), instanceURL.getParameters().get(TAG_KEY));
         assertEquals(consumerURL.getParameter(TIMEOUT_KEY), instanceURL.getParameters().get(TIMEOUT_KEY));
         assertTrue(instanceURL.hasServiceMethodParameter(url.getProtocolServiceKey(), "a"));
         assertTrue(instanceURL.hasServiceMethodParameter(url.getProtocolServiceKey(), "sayHello"));
