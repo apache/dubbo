@@ -66,12 +66,12 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
                 ClassLoader classLoader = getClassLoader(invoker);
                 interfaces.add(ReflectUtils.forName(classLoader, realInterface));
-
-                if (GenericService.class.equals(invoker.getInterface()) || !GenericService.class.isAssignableFrom(invoker.getInterface())) {
-                    interfaces.add(com.alibaba.dubbo.rpc.service.GenericService.class);
-                }
             } catch (Throwable e) {
                 // ignore
+            }
+
+            if (GenericService.class.equals(invoker.getInterface()) || !GenericService.class.isAssignableFrom(invoker.getInterface())) {
+                interfaces.add(com.alibaba.dubbo.rpc.service.GenericService.class);
             }
         }
 
