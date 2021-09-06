@@ -65,6 +65,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * The interface name of the exported service
      */
     protected String interfaceName;
+
+    /**
+     * The classLoader of interface belong to
+     */
+    protected ClassLoader interfaceClassLoader;
+
     /**
      * The remote service version the customer/provider side will reference
      */
@@ -844,5 +850,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
+    }
+
+    public ClassLoader getInterfaceClassLoader() {
+        return interfaceClassLoader;
+    }
+
+    public void setInterfaceClassLoader(ClassLoader interfaceClassLoader) {
+        this.interfaceClassLoader = interfaceClassLoader;
     }
 }

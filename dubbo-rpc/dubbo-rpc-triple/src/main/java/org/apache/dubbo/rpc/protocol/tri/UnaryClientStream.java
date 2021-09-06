@@ -75,20 +75,27 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
         @Override
         protected void onError(GrpcStatus status) {
-            Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-            response.setErrorMessage(status.description);
-            final AppResponse result = new AppResponse();
-            result.setException(getThrowable(this.getTrailers()));
-            result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(this.getTrailers()));
-            response.setResult(result);
-            if (!result.hasException()) {
-                final byte code = GrpcStatus.toDubboStatus(status.code);
-                response.setStatus(code);
-            }
-            DefaultFuture2.received(getConnection(), response);
+            // run in callback executor will truncate exception stack and avoid blocking netty's event loop
+            execute(()-> {
+                Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
+                response.setErrorMessage(status.description);
+                final AppResponse result = new AppResponse();
+                final Metadata trailers = getTrailers() == null ? getHeaders() : getTrailers();
+                result.setException(getThrowable(trailers));
+                result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(trailers));
+                response.setResult(result);
+                if (!result.hasException()) {
+                    final byte code = GrpcStatus.toDubboStatus(status.code);
+                    response.setStatus(code);
+                }
+                DefaultFuture2.received(getConnection(), response);
+            });
         }
 
         private Throwable getThrowable(Metadata metadata) {
+            if (null == metadata) {
+                return null;
+            }
             // second get status detail
             if (!metadata.contains(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
                 return null;

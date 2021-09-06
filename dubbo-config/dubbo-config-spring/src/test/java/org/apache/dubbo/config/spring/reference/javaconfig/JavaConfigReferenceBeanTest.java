@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -89,6 +90,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
+    @Disabled("support multi reference config")
     public void testAnnotationAtField2() {
         AnnotationConfigApplicationContext context = null;
         try {

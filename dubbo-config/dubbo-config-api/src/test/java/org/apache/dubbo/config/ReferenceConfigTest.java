@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
@@ -47,7 +48,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -112,7 +116,7 @@ public class ReferenceConfigTest {
         registryCenter = new ZookeeperSingleRegistryCenter(zkServerPort);
         registryCenter.startup();
         this.zkUrl = "zookeeper://localhost:" + zkServerPort;
-        this.registryUrl = "registry://localhost:" + zkServerPort+"?registry=zookeeper";
+        this.registryUrl = "registry://localhost:" + zkServerPort + "?registry=zookeeper";
 
         // preload
         ReferenceConfig preloadReferenceConfig = new ReferenceConfig();
@@ -484,7 +488,7 @@ public class ReferenceConfigTest {
      * Verify the configuration of the registry protocol for remote reference
      */
     @Test
-    public  void testCreateInvokerForRemoteRefer(){
+    public void testCreateInvokerForRemoteRefer() {
 
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setGeneric(Boolean.FALSE.toString());
@@ -528,7 +532,7 @@ public class ReferenceConfigTest {
      * Verify that the registry url is directly configured for remote reference
      */
     @Test
-    public  void testCreateInvokerWithRegistryUrlForRemoteRefer(){
+    public void testCreateInvokerWithRegistryUrlForRemoteRefer() {
 
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setGeneric(Boolean.FALSE.toString());
@@ -710,6 +714,7 @@ public class ReferenceConfigTest {
         testInitReferences(0, amount, applicationConfig, metadataReportConfig, configCenterConfig);
         ApplicationModel.defaultModel().getApplicationConfigManager().clear();
         testInitReferences(0, 1, applicationConfig, metadataReportConfig, configCenterConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().clear();
 
         long t1 = System.currentTimeMillis();
         int nThreads = 8;
@@ -782,16 +787,83 @@ public class ReferenceConfigTest {
         Assertions.assertEquals((referenceConfig.getMethods().get(0)).getName(), "sayHello");
         Assertions.assertEquals(1300, (int) (referenceConfig.getMethods().get(0)).getTimeout());
         Assertions.assertEquals(4, (int) (referenceConfig.getMethods().get(0)).getRetries());
-        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
         Assertions.assertEquals(3, (int) (referenceConfig.getMethods().get(0)).getActives());
         Assertions.assertEquals(5, (int) (referenceConfig.getMethods().get(0)).getExecutes());
         Assertions.assertTrue((referenceConfig.getMethods().get(0)).isAsync());
-        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getOninvokeMethod(), "i");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getOninvokeMethod(), "i");
         Assertions.assertEquals((referenceConfig.getMethods().get(0)).getOnreturnMethod(), "r");
-        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getOnthrowMethod(), "t");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getOnthrowMethod(), "t");
         Assertions.assertEquals((referenceConfig.getMethods().get(0)).getCache(), "c");
     }
 
+    @Test
+    public void testDifferentClassLoader() throws Exception {
+        ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
+        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        applicationConfig.getConfigManager().setApplication(applicationConfig);
+        ModuleModel moduleModel = new ModuleModel(applicationModel);
+
+        DemoService demoService = new DemoServiceImpl();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRegistry(new RegistryConfig(zkUrl));
+        serviceConfig.setScopeModel(moduleModel);
+        serviceConfig.setRef(demoService);
+        serviceConfig.export();
+
+        String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
+        TestClassLoader classLoader1 = new TestClassLoader(basePath);
+        TestClassLoader classLoader2 = new TestClassLoader(basePath);
+
+        Class<?> class1 = classLoader1.loadClass(DemoService.class.getName(), false);
+        Class<?> class2 = classLoader2.loadClass(DemoService.class.getName(), false);
+
+        Assertions.assertNotEquals(class1, class2);
+
+        ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
+        referenceConfig1.setInterface(class1);
+        referenceConfig1.setRegistry(new RegistryConfig(zkUrl));
+        referenceConfig1.setScopeModel(moduleModel);
+        referenceConfig1.setScope("remote");
+        Object demoService1 = referenceConfig1.get();
+
+        for (Class<?> anInterface : demoService1.getClass().getInterfaces()) {
+            Assertions.assertNotEquals(DemoService.class, anInterface);
+        }
+        Assertions.assertTrue(Arrays.stream(demoService1.getClass().getInterfaces()).anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader1)));
+
+        java.lang.reflect.Method callBean1 = demoService1.getClass().getDeclaredMethod("callInnerClass");
+        callBean1.setAccessible(true);
+        Object result1 = callBean1.invoke(demoService1);
+
+        Assertions.assertNotEquals(result1.getClass(), DemoService.InnerClass.class);
+        Assertions.assertEquals(classLoader1, result1.getClass().getClassLoader());
+
+        ReferenceConfig<DemoService> referenceConfig2 = new ReferenceConfig<>();
+        referenceConfig2.setInterface(class2);
+        referenceConfig2.setRegistry(new RegistryConfig(zkUrl));
+        referenceConfig2.setScopeModel(moduleModel);
+        referenceConfig2.setScope("remote");
+        Object demoService2 = referenceConfig2.get();
+
+        for (Class<?> anInterface : demoService2.getClass().getInterfaces()) {
+            Assertions.assertNotEquals(DemoService.class, anInterface);
+        }
+        Assertions.assertTrue(Arrays.stream(demoService2.getClass().getInterfaces()).anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader2)));
+
+        java.lang.reflect.Method callBean2 = demoService2.getClass().getDeclaredMethod("callInnerClass");
+        callBean2.setAccessible(true);
+        Object result2 = callBean2.invoke(demoService2);
+
+        Assertions.assertNotEquals(callBean1, callBean2);
+        Assertions.assertNotEquals(result2.getClass(), DemoService.InnerClass.class);
+        Assertions.assertEquals(classLoader2, result2.getClass().getClassLoader());
+        Assertions.assertNotEquals(result1.getClass(), result2.getClass());
+
+        applicationModel.destroy();
+    }
 
     @Reference(methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
         actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "instance.i", onthrow = "instance.t", onreturn = "instance.r", cache = "c", validation = "v",
@@ -801,4 +873,59 @@ public class ReferenceConfigTest {
     private class InnerTest {
 
     }
+
+    private static class TestClassLoader extends ClassLoader {
+        private String basePath;
+
+        public TestClassLoader(String basePath) {
+            this.basePath = basePath;
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                byte[] bytes = loadClassData(name);
+                return defineClass(name, bytes, 0, bytes.length);
+            } catch (Exception e) {
+                throw new ClassNotFoundException();
+            }
+        }
+
+        @Override
+        public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            Class<?> loadedClass = this.findLoadedClass(name);
+            if (loadedClass != null) {
+                return loadedClass;
+            } else {
+                try {
+                    if (name.startsWith("org.apache.dubbo.config")) {
+                        Class<?> aClass = this.findClass(name);
+                        if (resolve) {
+                            this.resolveClass(aClass);
+                        }
+                        return aClass;
+                    } else {
+                        return super.loadClass(name, resolve);
+                    }
+                } catch (Exception e) {
+                    return super.loadClass(name, resolve);
+                }
+            }
+        }
+
+
+        public byte[] loadClassData(String className) throws IOException {
+            className = className.replaceAll("\\.", "/");
+            String path = basePath + File.separator + className + ".class";
+            FileInputStream fileInputStream;
+            byte[] classBytes;
+            fileInputStream = new FileInputStream(path);
+            int length = fileInputStream.available();
+            classBytes = new byte[length];
+            fileInputStream.read(classBytes);
+            fileInputStream.close();
+            return classBytes;
+        }
+    }
+
 }
