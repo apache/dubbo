@@ -53,14 +53,14 @@ abstract class AbstractRegistryCenter implements RegistryCenter {
     private static final int DEFAULT_SERVER_ID = -1;
 
     /**
-     * The default tick time is 10000
+     * The default tick time is 5000
      */
-    private static final int DEFAULT_TICK_TIME = 10 * 1000;
+    private static final int DEFAULT_TICK_TIME = 5 * 1000;
 
     /**
-     * The default value is -1.
+     * The default value is 60.
      */
-    private static final int DEFAULT_MAX_CLIENT_CNXNS = -1;
+    private static final int DEFAULT_MAX_CLIENT_CNXNS = 60;
 
     /**
      * The minimum session timeout.
