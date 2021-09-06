@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.decode;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.embedded.EmbeddedChannel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
@@ -33,13 +36,11 @@ import org.apache.dubbo.remoting.transport.netty4.NettyCodecAdapter;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboCodec;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
-
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -69,13 +70,13 @@ public class DubboTelnetDecodeTest {
 
     @BeforeAll
     public static void setup() {
-        ApplicationModel.getServiceRepository().destroy();
-        ApplicationModel.getServiceRepository().registerService(DemoService.class);
+        ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        serviceRepository.registerService(DemoService.class);
     }
 
     @AfterAll
     public static void teardown() {
-        ApplicationModel.getServiceRepository().destroy();
+        FrameworkModel.defaultModel().destroy();
     }
 
     /**

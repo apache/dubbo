@@ -119,7 +119,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
                 if (invocation != null) {
-                    if (ConfigurationUtils.getSystemConfiguration().getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
+                    if (ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel()).getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
                         Object serializationTypeObj = invocation.get(SERIALIZATION_ID_KEY);
                         if (serializationTypeObj != null) {
                             if ((byte) serializationTypeObj != serializationType) {
@@ -128,6 +128,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
                         }
                     }
                 }
+
                 decode(channel, inputStream);
             } catch (Throwable e) {
                 if (log.isWarnEnabled()) {

@@ -53,13 +53,13 @@ public class ProtocolPortsMetadataCustomizerTest {
     private InMemoryWritableMetadataService metadataService;
 
     public static DefaultServiceInstance createInstance() {
-        return new DefaultServiceInstance("A", "127.0.0.1", 20880);
+        return new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
     }
 
     @BeforeAll
     public static void setUp() {
         ApplicationConfig applicationConfig = new ApplicationConfig("test");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
     }
 
     @AfterAll
@@ -86,7 +86,7 @@ public class ProtocolPortsMetadataCustomizerTest {
     public void test() {
         ProtocolPortsMetadataCustomizer customizer = new ProtocolPortsMetadataCustomizer();
         try (MockedStatic<WritableMetadataService> mockMetadataService = Mockito.mockStatic(WritableMetadataService.class)) {
-            mockMetadataService.when(() -> WritableMetadataService.getDefaultExtension()).thenReturn(metadataService);
+            mockMetadataService.when(() -> WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel())).thenReturn(metadataService);
             customizer.customize(instance);
             String endpoints = instance.getMetadata().get(ENDPOINTS);
             assertNotNull(endpoints);

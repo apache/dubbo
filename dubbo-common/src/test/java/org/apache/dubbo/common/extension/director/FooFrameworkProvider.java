@@ -14,8 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata.store;
+package org.apache.dubbo.common.extension.director;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-public class RemoteMetadataServiceImplTest {
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface FooFrameworkProvider {
+
+    @Adaptive
+    void process(URL url);
+
 }

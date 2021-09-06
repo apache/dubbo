@@ -48,7 +48,7 @@ public abstract class AbstractCluster implements Cluster {
 //        AbstractClusterInvoker<T> last = clusterInvoker;
         AbstractClusterInvoker<T> last = buildInterceptorInvoker(new ClusterFilterInvoker<>(clusterInvoker));
 
-        if (Boolean.parseBoolean(ConfigurationUtils.getProperty(CLUSTER_INTERCEPTOR_COMPATIBLE_KEY, "false"))) {
+        if (Boolean.parseBoolean(ConfigurationUtils.getProperty(clusterInvoker.getDirectory().getConsumerUrl().getScopeModel(), CLUSTER_INTERCEPTOR_COMPATIBLE_KEY, "false"))) {
             return build27xCompatibleClusterInterceptors(clusterInvoker, last);
         }
         return last;
@@ -122,6 +122,10 @@ public abstract class AbstractCluster implements Cluster {
         @Override
         protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
            return null;
+        }
+
+        public ClusterInvoker<T> getFilterInvoker() {
+            return filterInvoker;
         }
     }
 

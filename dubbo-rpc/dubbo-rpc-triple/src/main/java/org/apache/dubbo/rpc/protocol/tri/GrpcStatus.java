@@ -142,7 +142,7 @@ public class GrpcStatus {
         return encoder.toString().substring(2);
     }
 
-    enum Code {
+    public enum Code {
         OK(0),
         CANCELLED(1),
         UNKNOWN(2),
@@ -158,7 +158,12 @@ public class GrpcStatus {
         UNIMPLEMENTED(12),
         INTERNAL(13),
         UNAVAILABLE(14),
-        DATA_LOSS(15);
+        DATA_LOSS(15),
+        /**
+         * The request does not have valid authentication credentials for the
+         * operation.
+         */
+        UNAUTHENTICATED(16);
 
         final int code;
 

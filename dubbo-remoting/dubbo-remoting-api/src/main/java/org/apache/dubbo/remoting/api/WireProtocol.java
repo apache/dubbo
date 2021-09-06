@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.remoting.api;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslContext;
 
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface WireProtocol {
 
     ProtocolDetector detector();

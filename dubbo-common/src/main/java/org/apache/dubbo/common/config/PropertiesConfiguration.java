@@ -18,6 +18,7 @@ package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +31,9 @@ import java.util.Set;
  */
 public class PropertiesConfiguration implements Configuration {
 
-    public PropertiesConfiguration() {
+    public PropertiesConfiguration(ApplicationModel applicationModel) {
 
-        ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = ExtensionLoader.getExtensionLoader(OrderedPropertiesProvider.class);
+        ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = applicationModel.getExtensionLoader(OrderedPropertiesProvider.class);
         Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
         if (propertiesProviderNames == null || propertiesProviderNames.isEmpty()) {
             return;

@@ -47,8 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -132,12 +130,6 @@ public final class ReflectUtils {
     public static final Pattern SETTER_METHOD_DESC_PATTERN = Pattern.compile("set([A-Z][_a-zA-Z0-9]*)\\((" + DESC_REGEX + ")\\)V");
 
     public static final Pattern IS_HAS_CAN_METHOD_DESC_PATTERN = Pattern.compile("(?:is|has|can)([A-Z][_a-zA-Z0-9]*)\\(\\)Z");
-
-    private static final ConcurrentMap<String, Class<?>> DESC_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
-
-    private static final ConcurrentMap<String, Class<?>> NAME_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
-
-    private static final ConcurrentMap<String, Method> SIGNATURE_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
 
     private static Map<Class<?>, Object> primitiveDefaults = new HashMap<>();
 
@@ -791,12 +783,7 @@ public final class ReflectUtils {
         if (cl == null) {
             cl = ClassUtils.getClassLoader();
         }
-        Class<?> clazz = NAME_CLASS_CACHE.get(name);
-        if (clazz == null) {
-            clazz = Class.forName(name, true, cl);
-            NAME_CLASS_CACHE.put(name, clazz);
-        }
-        return clazz;
+        return Class.forName(name, true, cl);
     }
 
     /**
@@ -857,12 +844,7 @@ public final class ReflectUtils {
         if (cl == null) {
             cl = ClassUtils.getClassLoader();
         }
-        Class<?> clazz = DESC_CLASS_CACHE.get(desc);
-        if (clazz == null) {
-            clazz = Class.forName(desc, true, cl);
-            DESC_CLASS_CACHE.put(desc, clazz);
-        }
-        return clazz;
+        return Class.forName(desc, true, cl);
     }
 
     /**
@@ -916,10 +898,7 @@ public final class ReflectUtils {
         if (parameterTypes != null && parameterTypes.length > 0) {
             signature += StringUtils.join(parameterTypes);
         }
-        Method method = SIGNATURE_METHODS_CACHE.get(signature);
-        if (method != null) {
-            return method;
-        }
+        Method method;
         if (parameterTypes == null) {
             List<Method> finded = new ArrayList<Method>();
             for (Method m : clazz.getMethods()) {
@@ -944,7 +923,6 @@ public final class ReflectUtils {
             method = clazz.getMethod(methodName, types);
 
         }
-        SIGNATURE_METHODS_CACHE.put(signature, method);
         return method;
     }
 

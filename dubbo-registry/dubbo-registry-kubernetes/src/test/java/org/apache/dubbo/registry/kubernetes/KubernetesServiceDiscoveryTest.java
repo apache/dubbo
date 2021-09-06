@@ -22,6 +22,8 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.EndpointsBuilder;
@@ -66,6 +68,7 @@ public class KubernetesServiceDiscoveryTest {
                 .setProtocol("kubernetes")
                 .addParameter(KubernetesClientConst.USE_HTTPS, "false")
                 .addParameter(KubernetesClientConst.HTTP2_DISABLE, "true");
+        serverUrl.setScopeModel(ApplicationModel.defaultModel());
 
         System.setProperty(Config.KUBERNETES_AUTH_TRYKUBECONFIG_SYSTEM_PROPERTY, "false");
         System.setProperty(Config.KUBERNETES_AUTH_TRYSERVICEACCOUNT_SYSTEM_PROPERTY, "false");
@@ -107,7 +110,7 @@ public class KubernetesServiceDiscoveryTest {
         serviceDiscovery.setCurrentHostname("TestServer");
         serviceDiscovery.setKubernetesClient(mockClient);
 
-        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "Test", 12345);
+        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "Test", 12345, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel()));
         serviceDiscovery.register(serviceInstance);
 
         HashSet<String> serviceList = new HashSet<>(4);
@@ -146,7 +149,7 @@ public class KubernetesServiceDiscoveryTest {
         serviceDiscovery.setCurrentHostname("TestServer");
         serviceDiscovery.setKubernetesClient(mockClient);
 
-        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "Test", 12345);
+        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "Test", 12345, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel()));
         serviceDiscovery.register(serviceInstance);
 
         HashSet<String> serviceList = new HashSet<>(4);
@@ -156,7 +159,7 @@ public class KubernetesServiceDiscoveryTest {
 
         serviceDiscovery.addServiceInstancesChangedListener(mockListener);
 
-        serviceInstance = new DefaultServiceInstance("TestService", "Test12345", 12345);
+        serviceInstance = new DefaultServiceInstance("TestService", "Test12345", 12345, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel()));
         serviceDiscovery.update(serviceInstance);
 
         Thread.sleep(5000);
@@ -178,7 +181,7 @@ public class KubernetesServiceDiscoveryTest {
         serviceDiscovery.setCurrentHostname("TestServer");
         serviceDiscovery.setKubernetesClient(mockClient);
 
-        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "Test", 12345);
+        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "Test", 12345, ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl().getScopeModel()));
         serviceDiscovery.register(serviceInstance);
 
         serviceDiscovery.update(serviceInstance);

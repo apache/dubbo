@@ -44,7 +44,8 @@ public final class DubboGreeterGrpc {
         protected GreeterGrpc.GreeterFutureStub futureStub;
         protected GreeterGrpc.GreeterStub stub;
 
-        public DubboGreeterStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url, ReferenceConfigBase<?> referenceConfig) {
+        public DubboGreeterStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions, URL url,
+                                ReferenceConfigBase<?> referenceConfig) {
             this.url = url;
             this.referenceConfig = referenceConfig;
 

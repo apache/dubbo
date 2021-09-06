@@ -27,6 +27,9 @@ import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -39,44 +42,20 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 
 public class MetadataUtils {
 
-    private static final Object REMOTE_LOCK = new Object();
-
     public static ConcurrentMap<String, MetadataService> metadataServiceProxies = new ConcurrentHashMap<>();
 
     public static ConcurrentMap<String, Invoker<?>> metadataServiceInvokers = new ConcurrentHashMap<>();
 
-    private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-
-    private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-
-    public static RemoteMetadataServiceImpl remoteMetadataService;
-
-    public static WritableMetadataService localMetadataService;
-
-    public static WritableMetadataService getLocalMetadataService() {
-        if (localMetadataService == null) {
-            localMetadataService = WritableMetadataService.getDefaultExtension();
-        }
-        return localMetadataService;
-    }
-
-    public static RemoteMetadataServiceImpl getRemoteMetadataService() {
-        if (remoteMetadataService == null) {
-            synchronized (REMOTE_LOCK) {
-                if (remoteMetadataService == null) {
-                    remoteMetadataService = new RemoteMetadataServiceImpl(getLocalMetadataService());
-                }
-            }
-        }
-        return remoteMetadataService;
+    public static RemoteMetadataServiceImpl getRemoteMetadataService(ScopeModel scopeModel) {
+        return scopeModel.getBeanFactory().getBean(RemoteMetadataServiceImpl.class);
     }
 
     public static void publishServiceDefinition(URL url) {
         // store in local
-        WritableMetadataService.getDefaultExtension().publishServiceDefinition(url);
+        WritableMetadataService.getDefaultExtension(url.getScopeModel()).publishServiceDefinition(url);
         // send to remote
         if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(url.getParameter(METADATA_KEY))) {
-            getRemoteMetadataService().publishServiceDefinition(url);
+            getRemoteMetadataService(ScopeModelUtil.getApplicationModel(url.getScopeModel())).publishServiceDefinition(url);
         }
     }
 
@@ -119,14 +98,13 @@ public class MetadataUtils {
         }
 
         // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(instance.getApplicationModel());
+        Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, urls.get(0));
         metadataServiceInvokers.put(key, invoker);
 
+        ProxyFactory proxyFactory = applicationModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         return proxyFactory.getProxy(invoker);
     }
 
-    public static void saveMetadataURL(URL url) {
-        // store in local
-        getLocalMetadataService().setMetadataServiceURL(url);
-    }
 }

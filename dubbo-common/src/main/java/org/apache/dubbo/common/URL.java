@@ -18,6 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.url.component.PathURLAddress;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
@@ -29,6 +30,8 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -122,15 +125,22 @@ class URL implements Serializable {
 
     private transient String serviceKey;
     private transient String protocolServiceKey;
+    protected final Map<String, Object> attributes;
 
     protected URL() {
         this.urlAddress = null;
         this.urlParam = null;
+        this.attributes = new HashMap<>();
     }
 
     public URL(URLAddress urlAddress, URLParam urlParam) {
+        this(urlAddress, urlParam, null);
+    }
+
+    public URL(URLAddress urlAddress, URLParam urlParam, Map<String, Object> attributes) {
         this.urlAddress = urlAddress;
         this.urlParam = urlParam;
+        this.attributes = (attributes != null ? attributes : new HashMap<>());
     }
 
     public URL(String protocol, String host, int port) {
@@ -179,6 +189,7 @@ class URL implements Serializable {
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
         this.urlParam = URLParam.parse(parameters);
+        this.attributes = new HashMap<>();
     }
 
     protected URL(String protocol,
@@ -196,6 +207,7 @@ class URL implements Serializable {
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
         this.urlParam = URLParam.parse(parameters);
+        this.attributes = new HashMap<>();
     }
 
     public static URL cacheableValueOf(String url) {
@@ -216,6 +228,10 @@ class URL implements Serializable {
      */
     public static URL valueOf(String url) {
         return valueOf(url, false);
+    }
+
+    public static URL valueOf(String url, ScopeModel scopeModel) {
+        return valueOf(url).setScopeModel(scopeModel);
     }
 
     /**
@@ -271,8 +287,8 @@ class URL implements Serializable {
                 }
             }
         }
-        return newMap.isEmpty() ? new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), (Map<String, String>) null)
-                : new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), newMap);
+        return newMap.isEmpty() ? new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), (Map<String, String>) null, url.getAttributes())
+                : new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), newMap, url.getAttributes());
     }
 
     public static String encode(String value) {
@@ -530,6 +546,22 @@ class URL implements Serializable {
             result = defaultValue;
         }
         return result;
+    }
+
+    public URL setScopeModel(ScopeModel scopeModel) {
+        return putAttribute(CommonConstants.SCOPE_MODEL, scopeModel);
+    }
+
+    public ScopeModel getScopeModel() {
+        return (ScopeModel) getAttribute(CommonConstants.SCOPE_MODEL);
+    }
+
+    public URL setServiceModel(ServiceModel serviceModel) {
+        return putAttribute(CommonConstants.SERVICE_MODEL, serviceModel);
+    }
+
+    public ServiceModel getServiceModel() {
+        return (ServiceModel) getAttribute(CommonConstants.SERVICE_MODEL);
     }
 
     protected Map<String, Number> getNumbers() {
@@ -1449,7 +1481,7 @@ class URL implements Serializable {
     }
 
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
-        return (T) new ServiceConfigURL(urlAddress, urlParam, null);
+        return (T) new ServiceConfigURL(urlAddress, urlParam, attributes);
     }
 
     /* methods introduced for CompositeURL, CompositeURL must override to make the implementations meaningful */
@@ -1517,27 +1549,30 @@ class URL implements Serializable {
 
     /* Service Config URL, START*/
     public Map<String, Object> getAttributes() {
-        return new HashMap<>();
+        return attributes;
     }
 
     public URL addAttributes(Map<String, Object> attributes) {
+        attributes.putAll(attributes);
         return this;
     }
 
     public Object getAttribute(String key) {
-        return null;
+        return attributes.get(key);
     }
 
     public URL putAttribute(String key, Object obj) {
+        attributes.put(key, obj);
         return this;
     }
 
     public URL removeAttribute(String key) {
+        attributes.remove(key);
         return this;
     }
 
     public boolean hasAttribute(String key) {
-        return true;
+        return attributes.containsKey(key);
     }
 
     /* Service Config URL, END*/

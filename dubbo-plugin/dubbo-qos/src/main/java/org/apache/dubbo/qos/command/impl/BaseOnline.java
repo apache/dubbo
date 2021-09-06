@@ -24,10 +24,10 @@ import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,7 +35,7 @@ import java.util.List;
 public class BaseOnline implements BaseCommand {
     private static final Logger logger = LoggerFactory.getLogger(Online.class);
     public static RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
-    public static ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
+    public static FrameworkServiceRepository serviceRepository = FrameworkModel.defaultModel().getServiceRepository();
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
@@ -56,7 +56,7 @@ public class BaseOnline implements BaseCommand {
     public boolean online(String servicePattern) {
         boolean hasService = false;
 
-        Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
+        Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
             ServiceMetadata metadata = providerModel.getServiceMetadata();
             if (metadata.getServiceKey().matches(servicePattern) || metadata.getDisplayServiceKey().matches(servicePattern)) {

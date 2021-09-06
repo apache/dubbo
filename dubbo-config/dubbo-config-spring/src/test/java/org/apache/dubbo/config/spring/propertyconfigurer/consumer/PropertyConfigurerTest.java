@@ -16,12 +16,11 @@
  */
 package org.apache.dubbo.config.spring.propertyconfigurer.consumer;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterAll;
@@ -34,9 +33,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 public class PropertyConfigurerTest {
 
@@ -62,10 +58,8 @@ public class PropertyConfigurerTest {
         try {
             providerContext.start();
 
-            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.getServiceRepository().getProviderUrlsWithoutGroup();
             // reset ConfigManager of provider context
-            DubboBootstrap.reset(false);
-            ApplicationModel.getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+            ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
 
             try {
                 Thread.sleep(1000);

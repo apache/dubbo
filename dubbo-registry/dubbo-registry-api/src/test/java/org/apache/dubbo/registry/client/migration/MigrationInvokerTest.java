@@ -39,9 +39,10 @@ import java.util.List;
 public class MigrationInvokerTest {
     @BeforeEach
     public void before() {
+        ApplicationModel.reset();
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("Test");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
     }
 
     @AfterEach

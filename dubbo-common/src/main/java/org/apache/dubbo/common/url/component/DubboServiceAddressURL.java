@@ -18,6 +18,8 @@ package org.apache.dubbo.common.url.component;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Map;
 import java.util.Objects;
@@ -42,6 +44,7 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
         this.overrideURL = overrideURL;
     }
 
+    @Override
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
         return (T) new DubboServiceAddressURL(urlAddress, urlParam, this.consumerURL, this.overrideURL);
     }
@@ -93,6 +96,16 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
 
     public void setOverrideURL(ServiceConfigURL overrideURL) {
         this.overrideURL = overrideURL;
+    }
+
+    @Override
+    public ScopeModel getScopeModel() {
+        return consumerURL.getScopeModel();
+    }
+
+    @Override
+    public ServiceModel getServiceModel() {
+        return consumerURL.getServiceModel();
     }
 
     @Override

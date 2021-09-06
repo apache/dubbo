@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -42,6 +44,7 @@ public class ShortestResponseLoadBalanceTest extends LoadBalanceBaseTest {
         int loop = 10000;
 
         ShortestResponseLoadBalance lb = new ShortestResponseLoadBalance();
+        lb.setApplicationModel(ApplicationModel.defaultModel());
         for (int i = 0; i < loop; i++) {
             Invoker selected = lb.select(weightInvokersSR, null, weightTestInvocation);
 
@@ -74,6 +77,7 @@ public class ShortestResponseLoadBalanceTest extends LoadBalanceBaseTest {
         //active -> 0
         RpcStatus.endCount(weightInvoker5.getUrl(), weightTestInvocation.getMethodName(), 5000L, true);
         ShortestResponseLoadBalance lb = new ShortestResponseLoadBalance();
+        lb.setApplicationModel(ApplicationModel.defaultModel());
 
         //reset slideWindow
         Field lastUpdateTimeField = ReflectUtils.forName(ShortestResponseLoadBalance.class.getName()).getDeclaredField("lastUpdateTime");
