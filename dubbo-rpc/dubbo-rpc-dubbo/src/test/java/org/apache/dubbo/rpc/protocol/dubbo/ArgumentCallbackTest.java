@@ -113,7 +113,7 @@ public class ArgumentCallbackTest {
     
     @Test
     public void TestCallbackNormalWithBindPort() throws Exception {
-        initOrResetUrl(1, 1000);
+        initOrResetUrl(1, 10000000);
         consumerUrl = serviceURL.addParameter(Constants.BIND_PORT_KEY,"7653");
         initOrResetService();
        
@@ -125,9 +125,9 @@ public class ArgumentCallbackTest {
                 count.incrementAndGet();
                 return "ok";
             }
-        }, "other custom args", 10, 10);
+        }, "other custom args", 10, 100);
         System.out.println("Async...");
-        assertCallbackCount(10, 10, count);
+        assertCallbackCount(10, 100, count);
         destroyService();
 
     }
