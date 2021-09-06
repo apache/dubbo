@@ -124,7 +124,7 @@ public class NacosNamingServiceUtils {
 
         // Append backup parameter as other servers
         String backup = url.getParameter(BACKUP_KEY);
-        if (backup != null) {
+        if (StringUtils.isNotEmpty(backup)) {
             serverAddrBuilder.append(',').append(backup);
         }
 
@@ -149,7 +149,10 @@ public class NacosNamingServiceUtils {
         if (StringUtils.isNotEmpty(propertyValue)) {
             properties.setProperty(propertyName, propertyValue);
         } else {
-            properties.setProperty(propertyName, defaultValue);
+            // when defaultValue is empty, we should not set empty value
+            if (StringUtils.isNotEmpty(defaultValue)) {
+                properties.setProperty(propertyName, defaultValue);
+            }
         }
     }
 }
