@@ -82,7 +82,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
             ApplicationConfig applicationConfig = getApplicationConfig();
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
-            serviceConfig.setScopeModel(applicationModel.getDefaultModule());
+            serviceConfig.setScopeModel(applicationModel.getInternalModule());
             serviceConfig.setBootstrap(applicationModel.getBeanFactory().getBean(DubboBootstrap.class));
             serviceConfig.setApplication(applicationConfig);
             serviceConfig.setRegistry(new RegistryConfig("N/A"));

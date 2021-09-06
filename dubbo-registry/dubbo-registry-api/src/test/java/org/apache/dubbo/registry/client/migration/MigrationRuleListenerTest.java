@@ -112,11 +112,11 @@ public class MigrationRuleListenerTest {
      */
     @Test
     public void testWithInitAndNoLocalRule() throws InterruptedException {
-        ApplicationModel.getEnvironment().setDynamicConfiguration(null);
-        ApplicationModel.getEnvironment().setLocalMigrationRule("");
+        ApplicationModel.defaultModel().getApplicationEnvironment().setDynamicConfiguration(null);
+        ApplicationModel.defaultModel().getApplicationEnvironment().setLocalMigrationRule("");
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
 
         URL consumerURL = Mockito.mock(URL.class);
         Mockito.when(consumerURL.getServiceKey()).thenReturn("Test");
@@ -151,11 +151,11 @@ public class MigrationRuleListenerTest {
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
         Mockito.doReturn(remoteRule).when(dynamicConfiguration).getConfig(Mockito.anyString(), Mockito.anyString());
 
-        ApplicationModel.getEnvironment().setDynamicConfiguration(dynamicConfiguration);
-        ApplicationModel.getEnvironment().setLocalMigrationRule(localRule);
+        ApplicationModel.defaultModel().getApplicationEnvironment().setDynamicConfiguration(dynamicConfiguration);
+        ApplicationModel.defaultModel().getApplicationEnvironment().setLocalMigrationRule(localRule);
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
 
         URL consumerURL = Mockito.mock(URL.class);
         Mockito.when(consumerURL.getServiceKey()).thenReturn("Test");

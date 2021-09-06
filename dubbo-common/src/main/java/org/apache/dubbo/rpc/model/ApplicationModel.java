@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.context.FrameworkExt;
-import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
@@ -32,7 +31,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * {@link ExtensionLoader}, {@code DubboBootstrap} and this class are at present designed to be
@@ -54,19 +52,16 @@ public class ApplicationModel extends ScopeModel {
     private static volatile ApplicationModel defaultInstance;
 
     private volatile List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
-    private AtomicBoolean initFlag = new AtomicBoolean(false);
     private Environment environment;
     private ConfigManager configManager;
     private ServiceRepository serviceRepository;
 
     private FrameworkModel frameworkModel;
 
-    public ApplicationModel(FrameworkModel frameworkModel) {
-        super(frameworkModel, new ExtensionDirector(frameworkModel.getExtensionDirector(), ExtensionScope.APPLICATION));
-        this.frameworkModel = frameworkModel;
-        frameworkModel.addApplication(this);
-        postProcessAfterCreated();
-    }
+    private ModuleModel internalModule;
+
+
+    // --------- static methods ----------//
 
     public static ApplicationModel ofNullable(ApplicationModel applicationModel) {
         if (applicationModel != null) {
@@ -87,64 +82,24 @@ public class ApplicationModel extends ScopeModel {
         return defaultInstance;
     }
 
-    public void init() {
-        if (initFlag.compareAndSet(false, true)) {
-            ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
-            Set<String> listenerNames = extensionLoader.getSupportedExtensions();
-            for (String listenerName : listenerNames) {
-                extensionLoader.getExtension(listenerName).init();
-            }
-        }
-    }
-
-    public void destroy() {
-        // TODO destroy application resources
-    }
-
-    public boolean isInit() {
-        return initFlag.get();
-    }
-
-    public FrameworkModel getFrameworkModel() {
-        return frameworkModel;
-    }
-
     @Deprecated
     public static Collection<ConsumerModel> allConsumerModels() {
-        return defaultModel().getApplicationServiceRepository().getReferredServices();
+        return defaultModel().getApplicationServiceRepository().allConsumerModels();
     }
-
-    public Collection<ConsumerModel> allApplicationConsumerModels() {
-        // TODO: aggregate from sub modules
-        return defaultModel().getApplicationServiceRepository().getReferredServices();
-    }
-
 
     @Deprecated
     public static Collection<ProviderModel> allProviderModels() {
-        return defaultModel().getApplicationServiceRepository().getExportedServices();
-    }
-
-    public Collection<ProviderModel> allApplicationProviderModels() {
-        // TODO: aggregate from sub modules
-        return defaultModel().getApplicationServiceRepository().getExportedServices();
+        return defaultModel().getApplicationServiceRepository().allProviderModels();
     }
 
     @Deprecated
     public static ProviderModel getProviderModel(String serviceKey) {
-        return defaultModel().getApplicationServiceRepository().lookupExportedService(serviceKey);
+        return defaultModel().getDefaultModule().getServiceRepository().lookupExportedService(serviceKey);
     }
 
     @Deprecated
     public static ConsumerModel getConsumerModel(String serviceKey) {
-        return defaultModel().getApplicationServiceRepository().lookupReferredService(serviceKey);
-    }
-
-    public void initFrameworkExts() {
-        Set<FrameworkExt> exts = this.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
-        for (FrameworkExt ext : exts) {
-            ext.initialize();
-        }
+        return defaultModel().getDefaultModule().getServiceRepository().lookupReferredService(serviceKey);
     }
 
     @Deprecated
@@ -152,25 +107,9 @@ public class ApplicationModel extends ScopeModel {
         return defaultModel().getApplicationEnvironment();
     }
 
-    public Environment getApplicationEnvironment() {
-        if (environment == null) {
-            environment = (Environment) this.getExtensionLoader(FrameworkExt.class)
-                .getExtension(Environment.NAME);
-        }
-        return environment;
-    }
-
     @Deprecated
     public static ConfigManager getConfigManager() {
         return defaultModel().getApplicationConfigManager();
-    }
-
-    public ConfigManager getApplicationConfigManager() {
-        if (configManager == null) {
-            configManager = (ConfigManager) this.getExtensionLoader(FrameworkExt.class)
-                .getExtension(ConfigManager.NAME);
-        }
-        return configManager;
     }
 
     @Deprecated
@@ -178,30 +117,14 @@ public class ApplicationModel extends ScopeModel {
         return defaultModel().getApplicationServiceRepository();
     }
 
-    public ServiceRepository getApplicationServiceRepository() {
-        if (serviceRepository == null) {
-            serviceRepository = (ServiceRepository) this.getExtensionLoader(FrameworkExt.class)
-                .getExtension(ServiceRepository.NAME);
-        }
-        return serviceRepository;
-    }
-
     @Deprecated
     public static ExecutorRepository getExecutorRepository() {
         return defaultModel().getApplicationExecutorRepository();
     }
 
-    public ExecutorRepository getApplicationExecutorRepository() {
-        return this.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-    }
-
     @Deprecated
     public static ApplicationConfig getApplicationConfig() {
         return defaultModel().getCurrentConfig();
-    }
-
-    public ApplicationConfig getCurrentConfig() {
-        return getApplicationConfigManager().getApplicationOrElseThrow();
     }
 
     @Deprecated
@@ -214,31 +137,6 @@ public class ApplicationModel extends ScopeModel {
         return getName();
     }
 
-    public String getApplicationName() {
-        return getCurrentConfig().getName();
-    }
-
-    public void addModule(ModuleModel model) {
-        if (!this.moduleModels.contains(model)) {
-            this.moduleModels.add(model);
-        }
-    }
-
-    public void removeModule(ModuleModel model) {
-        this.moduleModels.remove(model);
-    }
-
-    public List<ModuleModel> getModuleModels() {
-        return moduleModels;
-    }
-
-    public synchronized ModuleModel getDefaultModule() {
-        if (moduleModels.isEmpty()) {
-            this.addModule(new ModuleModel(this));
-        }
-        return moduleModels.get(0);
-    }
-
     // only for unit test
     @Deprecated
     public static void reset() {
@@ -246,6 +144,152 @@ public class ApplicationModel extends ScopeModel {
             defaultInstance.destroy();
             defaultInstance = null;
         }
+    }
+
+    // ------------- instance methods ---------------//
+
+    public ApplicationModel(FrameworkModel frameworkModel) {
+        super(frameworkModel, ExtensionScope.APPLICATION);
+        this.frameworkModel = frameworkModel;
+        frameworkModel.addApplication(this);
+        initialize();
+    }
+
+    @Override
+    protected void initialize() {
+        super.initialize();
+        internalModule = new ModuleModel(this);
+        this.serviceRepository = new ServiceRepository(this);
+
+        ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
+        Set<String> listenerNames = extensionLoader.getSupportedExtensions();
+        for (String listenerName : listenerNames) {
+            extensionLoader.getExtension(listenerName).init();
+        }
+
+        initFrameworkExts();
+
+        postProcessAfterCreated();
+    }
+
+    private void initFrameworkExts() {
+        Set<FrameworkExt> exts = this.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
+        for (FrameworkExt ext : exts) {
+            ext.initialize();
+        }
+    }
+
+    @Override
+    public void destroy() {
+        // TODO destroy application resources
+        for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
+            moduleModel.destroy();
+        }
+        if (defaultInstance == this) {
+            synchronized (ApplicationModel.class) {
+                frameworkModel.removeApplication(this);
+                defaultInstance = null;
+            }
+        } else {
+            frameworkModel.removeApplication(this);
+        }
+        if (environment != null) {
+            environment.destroy();
+            environment = null;
+        }
+        if (configManager != null) {
+            configManager.destroy();
+            configManager = null;
+        }
+        if (serviceRepository != null) {
+            serviceRepository.destroy();
+            serviceRepository = null;
+        }
+
+    }
+
+    public FrameworkModel getFrameworkModel() {
+        return frameworkModel;
+    }
+
+    public Environment getApplicationEnvironment() {
+        if (environment == null) {
+            environment = (Environment) this.getExtensionLoader(FrameworkExt.class)
+                .getExtension(Environment.NAME);
+        }
+        return environment;
+    }
+
+    public ConfigManager getApplicationConfigManager() {
+        if (configManager == null) {
+            configManager = (ConfigManager) this.getExtensionLoader(FrameworkExt.class)
+                .getExtension(ConfigManager.NAME);
+        }
+        return configManager;
+    }
+
+    public ServiceRepository getApplicationServiceRepository() {
+        return serviceRepository;
+    }
+
+    public ExecutorRepository getApplicationExecutorRepository() {
+        return this.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+    }
+
+    public ApplicationConfig getCurrentConfig() {
+        return getApplicationConfigManager().getApplicationOrElseThrow();
+    }
+
+    public String getApplicationName() {
+        return getCurrentConfig().getName();
+    }
+
+    public synchronized void addModule(ModuleModel model) {
+        if (!this.moduleModels.contains(model)) {
+            this.moduleModels.add(model);
+        }
+    }
+
+    public synchronized void removeModule(ModuleModel model) {
+        this.moduleModels.remove(model);
+        if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
+            this.internalModule.destroy();
+        }
+        destroy();
+    }
+
+    public List<ModuleModel> getModuleModels() {
+        return moduleModels;
+    }
+
+    public synchronized ModuleModel getDefaultModule() {
+        for (ModuleModel moduleModel : moduleModels) {
+            if (moduleModel != internalModule) {
+                return moduleModel;
+            }
+        }
+        ModuleModel moduleModel = new ModuleModel(this);
+        this.addModule(moduleModel);
+        return moduleModel;
+    }
+
+    public ModuleModel getInternalModule() {
+        return internalModule;
+    }
+
+    @Deprecated
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
+
+    @Deprecated
+    public void setConfigManager(ConfigManager configManager) {
+        this.configManager = configManager;
+    }
+
+    @Deprecated
+    public void setServiceRepository(ServiceRepository serviceRepository) {
+        this.serviceRepository = serviceRepository;
     }
 
     @Override

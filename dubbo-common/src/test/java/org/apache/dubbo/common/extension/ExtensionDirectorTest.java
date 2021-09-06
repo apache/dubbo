@@ -18,7 +18,6 @@ package org.apache.dubbo.common.extension;
 
 import org.apache.dubbo.common.extension.director.FooAppService;
 import org.apache.dubbo.common.extension.director.FooFrameworkService;
-import org.apache.dubbo.common.extension.director.FooModuleProvider;
 import org.apache.dubbo.common.extension.director.FooModuleService;
 import org.apache.dubbo.common.extension.director.impl.TestAppService;
 import org.apache.dubbo.common.extension.director.impl.TestFrameworkService;
@@ -175,7 +174,6 @@ public class ExtensionDirectorTest {
         Assertions.assertFalse(applicationsOfFw1.contains(applicationModel21));
 
         Collection<ModuleModel> modulesOfApp11 = applicationModel11.getModuleModels();
-        Assertions.assertEquals(2, modulesOfApp11.size());
         Assertions.assertTrue(modulesOfApp11.contains(moduleModel111));
         Assertions.assertTrue(modulesOfApp11.contains(moduleModel112));
 

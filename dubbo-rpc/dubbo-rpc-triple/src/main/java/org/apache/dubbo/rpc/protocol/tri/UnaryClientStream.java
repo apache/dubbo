@@ -78,8 +78,9 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
             response.setErrorMessage(status.description);
             final AppResponse result = new AppResponse();
-            result.setException(getThrowable(this.getTrailers()));
-            result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(this.getTrailers()));
+            final Metadata trailers = getTrailers() == null ? getHeaders() : getTrailers();
+            result.setException(getThrowable(trailers));
+            result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(trailers));
             response.setResult(result);
             if (!result.hasException()) {
                 final byte code = GrpcStatus.toDubboStatus(status.code);
@@ -89,6 +90,9 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
         }
 
         private Throwable getThrowable(Metadata metadata) {
+            if (null == metadata) {
+                return null;
+            }
             // second get status detail
             if (!metadata.contains(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
                 return null;

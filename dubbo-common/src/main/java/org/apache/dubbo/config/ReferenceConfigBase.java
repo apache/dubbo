@@ -22,7 +22,6 @@ import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -153,7 +152,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         Class<?> actualInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
             try {
-                actualInterface = Class.forName(interfaceName);
+                if(getInterfaceClassLoader() != null) {
+                    actualInterface = Class.forName(interfaceName, false, getInterfaceClassLoader());
+                } else {
+                    actualInterface = Class.forName(interfaceName);
+                }
             } catch (ClassNotFoundException e) {
                 return null;
             }
@@ -175,8 +178,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (StringUtils.isBlank(generic) && getConsumer() != null) {
             generic = getConsumer().getGeneric();
         }
-        interfaceClass = determineInterfaceClass(generic, interfaceName);
-
+        if(getInterfaceClassLoader() != null) {
+            interfaceClass = determineInterfaceClass(generic, interfaceName, getInterfaceClassLoader());
+        } else {
+            interfaceClass = determineInterfaceClass(generic, interfaceName);
+        }
         return interfaceClass;
     }
 
@@ -187,12 +193,16 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      * @return
      */
     public static Class<?> determineInterfaceClass(String generic, String interfaceName) {
+        return determineInterfaceClass(generic, interfaceName, ClassUtils.getClassLoader());
+    }
+
+    public static Class<?> determineInterfaceClass(String generic, String interfaceName, ClassLoader classLoader) {
         if (ProtocolUtils.isGeneric(generic)) {
             return GenericService.class;
         }
         try {
             if (interfaceName != null && interfaceName.length() > 0) {
-                return Class.forName(interfaceName, true, ClassUtils.getClassLoader());
+                return Class.forName(interfaceName, true, classLoader);
             }
         } catch (ClassNotFoundException t) {
             throw new IllegalStateException(t.getMessage(), t);
@@ -201,8 +211,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     @Override
-    public void setScopeModel(ScopeModel scopeModel) {
-        super.setScopeModel(scopeModel);
+    protected void postProcessAfterScopeModelChanged() {
+        super.postProcessAfterScopeModelChanged();
         if (this.consumer != null && this.consumer.getScopeModel() != scopeModel) {
             this.consumer.setScopeModel(scopeModel);
         }
@@ -223,6 +233,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
+        setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
     }
 
     public String getClient() {

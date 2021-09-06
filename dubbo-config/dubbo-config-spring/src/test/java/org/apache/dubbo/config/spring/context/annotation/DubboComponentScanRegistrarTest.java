@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.consumer.ConsumerConfiguration;
@@ -31,9 +30,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
 
@@ -76,10 +72,8 @@ public class DubboComponentScanRegistrarTest {
         // Test @Transactional is present or not
         Assertions.assertNotNull(findAnnotation(beanClass, Transactional.class));
 
-        ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getApplicationServiceRepository().getProviderUrlsWithoutGroup();
         // reset ConfigManager of provider context
-        DubboBootstrap.reset(false);
-        ApplicationModel.defaultModel().getApplicationServiceRepository().setProviderUrlsWithoutGroup(tmp);
+        ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
 
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
 

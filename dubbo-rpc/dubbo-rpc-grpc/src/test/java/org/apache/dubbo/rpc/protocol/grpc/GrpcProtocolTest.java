@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.grpc.support.DubboGreeterGrpc;
@@ -53,8 +54,9 @@ public class GrpcProtocolTest {
 
         URL url = URL.valueOf("grpc://127.0.0.1:" + availablePort + "/" + DubboGreeterGrpc.IGreeter.class.getName());
 
-        ServiceDescriptor serviceDescriptor = ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(DubboGreeterGrpc.IGreeter.class);
-        ApplicationModel.defaultModel().getApplicationServiceRepository().registerProvider(
+        ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        ServiceDescriptor serviceDescriptor = serviceRepository.registerService(DubboGreeterGrpc.IGreeter.class);
+        serviceRepository.registerProvider(
             url.getServiceKey(),
             serviceImpl,
             serviceDescriptor,
@@ -73,8 +75,9 @@ public class GrpcProtocolTest {
         ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), null, serviceDescriptor, mockReferenceConfig,
             serviceMetadata, methodConfigs);
 
-        ApplicationModel.defaultModel().getApplicationServiceRepository().registerConsumer(consumerModel);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerConsumer(consumerModel);
 
+        url = url.setServiceModel(consumerModel);
         protocol.export(proxy.getInvoker(serviceImpl, DubboGreeterGrpc.IGreeter.class, url));
         serviceImpl = proxy.getProxy(protocol.refer(DubboGreeterGrpc.IGreeter.class, url));
 
@@ -102,7 +105,7 @@ public class GrpcProtocolTest {
             }
         });
         // resource recycle.
-        ApplicationModel.defaultModel().getApplicationServiceRepository().destroy();
+        serviceRepository.destroy();
     }
 
     class MockReferenceConfig extends ReferenceConfigBase {

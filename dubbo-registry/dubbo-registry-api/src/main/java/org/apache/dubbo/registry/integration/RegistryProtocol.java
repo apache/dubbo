@@ -162,6 +162,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
     }
 
+    public RegistryProtocol() {
+    }
+
     @Override
     public void setFrameworkModel(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -362,8 +365,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     private ProviderModel.RegisterStatedURL getStatedUrl(URL registryUrl, URL providerUrl) {
-        ApplicationModel applicationModel = getApplicationModel(registryUrl.getScopeModel());
-        ProviderModel providerModel = applicationModel.getApplicationServiceRepository()
+        ProviderModel providerModel = frameworkModel.getServiceRepository()
             .lookupExportedService(providerUrl.getServiceKey());
 
         List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
@@ -504,14 +506,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     /**
      * This method tries to load all RegistryProtocolListener definitions, which are used to control the behaviour of invoker by interacting with defined, then uses those listeners to
      * change the status and behaviour of the MigrationInvoker.
-     *
+     * <p>
      * Currently available Listener is MigrationRuleListener, one used to control the Migration behaviour with dynamically changing rules.
      *
-     * @param invoker MigrationInvoker that determines which type of invoker list to use
-     * @param url The original url generated during refer, more like a registry:// style url
+     * @param invoker     MigrationInvoker that determines which type of invoker list to use
+     * @param url         The original url generated during refer, more like a registry:// style url
      * @param consumerUrl Consumer url representing current interface and its config
      * @param registryURL The actual registry url, zookeeper:// for example
-     * @param <T> The service definition
+     * @param <T>         The service definition
      * @return The @param MigrationInvoker passed in
      */
     protected <T> Invoker<T> interceptInvoker(ClusterInvoker<T> invoker, URL url, URL consumerUrl, URL registryURL) {
@@ -598,12 +600,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         }
 
         for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
-            if (applicationModel.isInit()) {
-                if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-                    applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                        .removeListener(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX,
-                            getProviderConfigurationListener(applicationModel));
-                }
+            if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+                applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                    .removeListener(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX,
+                        getProviderConfigurationListener(applicationModel));
             }
         }
 
@@ -766,7 +766,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private ProviderConfigurationListener getProviderConfigurationListener(ApplicationModel applicationModel) {
         return applicationModel.getBeanFactory().registerBeanIfAbsent(ProviderConfigurationListener.class,
-            type -> new ProviderConfigurationListener(applicationModel) );
+            type -> new ProviderConfigurationListener(applicationModel));
     }
 
     private class ServiceConfigurationListener extends AbstractConfiguratorListener {
