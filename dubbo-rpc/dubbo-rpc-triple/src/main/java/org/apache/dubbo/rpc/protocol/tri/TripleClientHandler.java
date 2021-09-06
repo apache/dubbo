@@ -28,10 +28,9 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -41,6 +40,12 @@ import io.netty.handler.codec.http2.Http2SettingsFrame;
 import io.netty.util.ReferenceCountUtil;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
+
+    private FrameworkModel frameworkModel;
+
+    public TripleClientHandler(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
@@ -67,17 +72,15 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     private void writeRequest(ChannelHandlerContext ctx, final Request req, final ChannelPromise promise) {
         final RpcInvocation inv = (RpcInvocation) req.getData();
         final URL url = inv.getInvoker().getUrl();
-        ServiceRepository repo = ApplicationModel.defaultModel().getApplicationServiceRepository();
-        MethodDescriptor methodDescriptor = repo.lookupMethod(inv.getServiceName(), inv.getMethodName());
+        ConsumerModel consumerModel = (ConsumerModel) url.getServiceModel();
+
+        MethodDescriptor methodDescriptor = consumerModel.getServiceModel().getMethod(inv.getMethodName(), inv.getParameterTypes());
         String serviceKey = url.getServiceKey();
         // If it is InstanceAddressURL, the serviceKey may not be obtained.
         if (null == serviceKey) {
             serviceKey = inv.getTargetServiceUniqueName();
         }
-        final ConsumerModel service = repo.lookupReferredService(serviceKey);
-        if (service != null) {
-            ClassLoadUtil.switchContextLoader(service.getServiceInterfaceClass().getClassLoader());
-        }
+        ClassLoadUtil.switchContextLoader(consumerModel.getServiceInterfaceClass().getClassLoader());
         AbstractClientStream stream;
         if (methodDescriptor.isUnary()) {
             stream = AbstractClientStream.unary(url);
@@ -88,7 +91,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         if (StringUtils.isNotEmpty(ssl)) {
             ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(Boolean.parseBoolean(ssl));
         }
-        stream.service(service)
+        stream.service(consumerModel)
                 .connection(Connection.getConnectionFromChannel(ctx.channel()))
                 .method(methodDescriptor)
                 .methodName(methodDescriptor.getMethodName())

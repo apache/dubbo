@@ -51,7 +51,7 @@ public class InMemoryMetadataServiceTest {
     public static void setUp() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-provider2");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
     }
 
     @AfterAll
