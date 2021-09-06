@@ -152,7 +152,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         Class<?> actualInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
             try {
-                actualInterface = Class.forName(interfaceName);
+                if(getInterfaceClassLoader() != null) {
+                    actualInterface = Class.forName(interfaceName, false, getInterfaceClassLoader());
+                } else {
+                    actualInterface = Class.forName(interfaceName);
+                }
             } catch (ClassNotFoundException e) {
                 return null;
             }
@@ -174,8 +178,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (StringUtils.isBlank(generic) && getConsumer() != null) {
             generic = getConsumer().getGeneric();
         }
-        interfaceClass = determineInterfaceClass(generic, interfaceName);
-
+        if(getInterfaceClassLoader() != null) {
+            interfaceClass = determineInterfaceClass(generic, interfaceName, getInterfaceClassLoader());
+        } else {
+            interfaceClass = determineInterfaceClass(generic, interfaceName);
+        }
         return interfaceClass;
     }
 
@@ -186,12 +193,16 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      * @return
      */
     public static Class<?> determineInterfaceClass(String generic, String interfaceName) {
+        return determineInterfaceClass(generic, interfaceName, ClassUtils.getClassLoader());
+    }
+
+    public static Class<?> determineInterfaceClass(String generic, String interfaceName, ClassLoader classLoader) {
         if (ProtocolUtils.isGeneric(generic)) {
             return GenericService.class;
         }
         try {
             if (interfaceName != null && interfaceName.length() > 0) {
-                return Class.forName(interfaceName, true, ClassUtils.getClassLoader());
+                return Class.forName(interfaceName, true, classLoader);
             }
         } catch (ClassNotFoundException t) {
             throw new IllegalStateException(t.getMessage(), t);
@@ -222,6 +233,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
+        setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
     }
 
     public String getClient() {

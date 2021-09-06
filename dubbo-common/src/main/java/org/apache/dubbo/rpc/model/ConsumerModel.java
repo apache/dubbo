@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -157,5 +158,25 @@ public class ConsumerModel extends ServiceModel {
      */
     public List<ConsumerMethodModel> getAllMethodModels() {
         return new ArrayList<>(methodModels.values());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ConsumerModel that = (ConsumerModel) o;
+        return Objects.equals(apps, that.apps) && Objects.equals(methodConfigs, that.methodConfigs) && Objects.equals(methodModels, that.methodModels);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), apps, methodConfigs, methodModels);
     }
 }

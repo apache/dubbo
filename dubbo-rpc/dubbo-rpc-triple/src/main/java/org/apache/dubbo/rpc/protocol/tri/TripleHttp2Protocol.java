@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.api.Http2WireProtocol;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -29,7 +31,13 @@ import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.ssl.SslContext;
 
 @Activate
-public class TripleHttp2Protocol extends Http2WireProtocol {
+public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModelAware {
+    private FrameworkModel frameworkModel;
+
+    @Override
+    public void setFrameworkModel(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public void close() {
@@ -47,7 +55,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
                         .initialWindowSize(1048576))
                 .frameLogger(SERVER_LOGGER)
                 .build();
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleServerInitializer());
+        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleServerInitializer(frameworkModel));
         pipeline.addLast(codec, new TripleServerConnectionHandler(), handler,
                 new SimpleChannelInboundHandler<Object>() {
                     @Override
@@ -74,6 +82,6 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
                 // empty
             }
         });
-        pipeline.addLast(codec, handler, new TripleClientHandler());
+        pipeline.addLast(codec, handler, new TripleClientHandler(frameworkModel));
     }
 }

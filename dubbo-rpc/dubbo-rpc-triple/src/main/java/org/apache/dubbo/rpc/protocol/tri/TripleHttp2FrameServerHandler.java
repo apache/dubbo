@@ -18,17 +18,15 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
-import org.apache.dubbo.rpc.service.EchoService;
-import org.apache.dubbo.rpc.service.GenericService;
+import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -49,9 +47,13 @@ import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responsePlainTextErro
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
-    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
-            .getDefaultExtension();
+    private final PathResolver PATH_RESOLVER;
+    private FrameworkModel frameworkModel;
 
+    public TripleHttp2FrameServerHandler(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+        PATH_RESOLVER = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -159,9 +161,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
                     GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
-        ServiceRepository repo = ApplicationModel.defaultModel().getApplicationServiceRepository();
-        final ServiceDescriptor serviceDescriptor = repo.lookupService(invoker.getUrl().getServiceKey());
-        if (serviceDescriptor == null) {
+        FrameworkServiceRepository repo = frameworkModel.getServiceRepository();
+        ProviderModel providerModel = repo.lookupExportedService(invoker.getUrl().getServiceKey());
+        if (providerModel == null || providerModel.getServiceModel() == null) {
             responseErr(ctx,
                     GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
@@ -171,11 +173,11 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         List<MethodDescriptor> methodDescriptors = null;
 
         if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
-            methodDescriptor = repo.lookupMethod(GenericService.class.getName(), methodName);
+            methodDescriptor = ServiceDescriptorInternalCache.genericService().getMethods(methodName).get(0);
         } else if (CommonConstants.$ECHO.equals(methodName)) {
-            methodDescriptor = repo.lookupMethod(EchoService.class.getName(), methodName);
+            methodDescriptor = ServiceDescriptorInternalCache.echoService().getMethods(methodName).get(0);
         } else {
-            methodDescriptors = serviceDescriptor.getMethods(methodName);
+            methodDescriptors = providerModel.getServiceModel().getMethods(methodName);
             if (methodDescriptors == null || methodDescriptors.isEmpty()) {
                 responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
                         .withDescription("Method :" + methodName + " not found of service:" + serviceName));
@@ -191,7 +193,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         } else {
             stream = AbstractServerStream.unary(invoker.getUrl());
         }
-        stream.service(serviceDescriptor)
+        stream.service(providerModel.getServiceModel())
                 .invoker(invoker)
                 .methodName(methodName)
                 .subscribe(new ServerTransportObserver(ctx));

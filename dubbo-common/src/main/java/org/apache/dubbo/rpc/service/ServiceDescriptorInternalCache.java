@@ -14,28 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.service;
 
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
+public class ServiceDescriptorInternalCache {
+    private static final ServiceDescriptor genericServiceDescriptor = new ServiceDescriptor(GenericService.class);
+    private static final ServiceDescriptor echoServiceDescriptor = new ServiceDescriptor(EchoService.class);
 
-public class TripleServerInitializer extends ChannelInitializer<Channel> {
-
-    private FrameworkModel frameworkModel;
-
-    public TripleServerInitializer(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
+    public static ServiceDescriptor genericService() {
+        return genericServiceDescriptor;
     }
 
-    @Override
-    protected void initChannel(Channel ch) throws Exception {
-        final ChannelPipeline p = ch.pipeline();
-        p.addLast(new TripleHttp2FrameServerHandler(frameworkModel));
-        // TODO constraint MAX DATA_SIZE
-        p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE));
-        p.addLast(new TripleServerInboundHandler());
+    public static ServiceDescriptor echoService() {
+        return echoServiceDescriptor;
     }
 }

@@ -52,7 +52,14 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.warn(String.format("Channel:%s Error", ctx.channel()), cause);
+        // this may be change in future follow https://github.com/apache/dubbo/pull/8644
+        if (TripleUtil.isQuiteException(cause)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Channel:%s Error", ctx.channel()), cause);
+            }
+        } else {
+            logger.warn(String.format("Channel:%s Error", ctx.channel()), cause);
+        }
         ctx.close();
     }
 
