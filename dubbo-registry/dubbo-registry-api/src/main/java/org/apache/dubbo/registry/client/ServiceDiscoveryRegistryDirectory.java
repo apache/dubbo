@@ -124,7 +124,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public boolean isAvailable() {
-        if (isDestroyed()) {
+        if (isDestroyed() || this.forbidden) {
             return false;
         }
         Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
