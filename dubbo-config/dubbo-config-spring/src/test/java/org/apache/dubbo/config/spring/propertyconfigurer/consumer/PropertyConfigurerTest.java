@@ -21,6 +21,8 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -57,7 +59,7 @@ public class PropertyConfigurerTest {
             providerContext.start();
 
             // reset ConfigManager of provider context
-            DubboBootstrap.reset(false);
+            ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
 
             try {
                 Thread.sleep(1000);

@@ -460,6 +460,17 @@ public class RegistryProtocolTest {
             consumerAttribute);
         url = url.putAttribute(CONSUMER_URL_KEY, consumerUrl);
 
+        List<RegistryProtocolListener> registryProtocolListeners = new ArrayList<>();
+        registryProtocolListeners.add(new CountRegistryProtocolListener());
+
+        ApplicationModel applicationModel = Mockito.spy(ApplicationModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
+        ExtensionLoader<RegistryProtocolListener> extensionLoaderMock = mock(ExtensionLoader.class);
+        Mockito.when(applicationModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
+        Mockito.when(extensionLoaderMock.getActivateExtension(url, "registry.protocol.listener"))
+            .thenReturn(registryProtocolListeners);
+        url = url.setScopeModel(applicationModel);
+
         registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl, url);
 
         Assertions.assertEquals(1, CountRegistryProtocolListener.getReferCounter().get());
