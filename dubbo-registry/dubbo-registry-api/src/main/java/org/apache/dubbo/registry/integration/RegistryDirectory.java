@@ -316,7 +316,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      * Turn urls into invokers, and if url has been refer, will not re-reference.
      * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
-     * @param oldUrlInvokerMap     * @param urls
+     * @param oldUrlInvokerMap     
+     * @param urls
      * @return invokers
      */
     private Map<URL, Invoker<T>> toInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
