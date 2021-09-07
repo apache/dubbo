@@ -801,7 +801,7 @@ public class ReferenceConfigTest {
     public void testDifferentClassLoader() throws Exception {
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
         ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
-        applicationConfig.getConfigManager().setApplication(applicationConfig);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
         ModuleModel moduleModel = new ModuleModel(applicationModel);
 
         DemoService demoService = new DemoServiceImpl();
