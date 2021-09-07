@@ -70,8 +70,8 @@ public class DubboBootstrapMultiInstanceTest {
     @Test
     public void testIsolatedApplications() {
 
-        DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance();
-        DubboBootstrap dubboBootstrap2 = DubboBootstrap.newInstance();
+        DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance(new FrameworkModel());
+        DubboBootstrap dubboBootstrap2 = DubboBootstrap.newInstance(new FrameworkModel());
         try {
             ApplicationModel applicationModel1 = dubboBootstrap1.getApplicationModel();
             ApplicationModel applicationModel2 = dubboBootstrap2.getApplicationModel();
@@ -182,10 +182,10 @@ public class DubboBootstrapMultiInstanceTest {
                 .application("provider-app")
                 .registry(registryConfig)
                 .protocol(new ProtocolConfig("dubbo", 2002))
-                .addModule()
+                .newModule()
                 .service(serviceConfig1)
                 .endModule()
-                .addModule()
+                .newModule()
                 .service(serviceConfig2)
                 .endModule();
 
@@ -208,7 +208,7 @@ public class DubboBootstrapMultiInstanceTest {
                     .interfaceClass(DemoService.class)
                     .version(version1)
                     .injvm(false))
-                .addModule()
+                .newModule()
                 .reference(builder -> builder
                     .interfaceClass(DemoService.class)
                     .version(version2)

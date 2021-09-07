@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -30,15 +32,12 @@ import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -60,6 +59,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private ConfigurableListableBeanFactory beanFactory;
     private ReferenceBeanManager referenceBeanManager;
+    @Autowired
     private ConfigManager configManager;
 
     @Override
@@ -74,7 +74,6 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
 
     private void init() {
         if (initialized.compareAndSet(false, true)) {
-            configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
             referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
             try {
                 prepareDubboConfigBeans();

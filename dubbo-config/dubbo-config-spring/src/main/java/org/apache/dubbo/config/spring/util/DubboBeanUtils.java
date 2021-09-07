@@ -18,14 +18,18 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.dubbo.config.spring.beans.factory.annotation.ServicePackagesHolder;
-import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
-import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServicePackagesHolder;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
+import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor;
+import org.apache.dubbo.config.spring.context.DubboSpringInitializationContext;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -172,4 +176,17 @@ public interface DubboBeanUtils {
     static ReferenceAnnotationBeanPostProcessor getReferenceAnnotationBeanPostProcessor(ApplicationContext applicationContext) {
         return getReferenceAnnotationBeanPostProcessor((AbstractBeanFactory) applicationContext.getAutowireCapableBeanFactory());
     }
+
+    static DubboSpringInitializationContext getInitializationContext(BeanFactory beanFactory) {
+        return beanFactory.getBean(DubboSpringInitializationContext.class.getName(), DubboSpringInitializationContext.class);
+    }
+
+    static DubboBootstrap getBootstrap(BeanFactory beanFactory) {
+        return beanFactory.getBean(DubboBootstrap.class.getName(), DubboBootstrap.class);
+    }
+
+    static ApplicationModel getApplicationModel(BeanFactory beanFactory) {
+        return beanFactory.getBean(ApplicationModel.class.getName(), ApplicationModel.class);
+    }
+
 }

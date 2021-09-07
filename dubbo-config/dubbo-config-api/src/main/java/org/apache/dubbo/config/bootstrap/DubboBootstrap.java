@@ -190,8 +190,8 @@ public final class DubboBootstrap {
     protected volatile boolean asyncReferFinish = true;
 
     protected static boolean ignoreConfigState;
+    private final ModuleModel defaultModule;
 
-    private Module currentModule;
 
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
@@ -208,11 +208,15 @@ public final class DubboBootstrap {
     }
 
     public static DubboBootstrap newInstance() {
-        return new DubboBootstrap(new FrameworkModel());
+        return new DubboBootstrap(FrameworkModel.defaultModel());
     }
 
     public static DubboBootstrap newInstance(FrameworkModel frameworkModel) {
         return new DubboBootstrap(frameworkModel);
+    }
+
+    public static DubboBootstrap newInstance(ApplicationModel applicationModel) {
+        return new DubboBootstrap(applicationModel);
     }
 
     /**
@@ -259,6 +263,7 @@ public final class DubboBootstrap {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
         environment = applicationModel.getApplicationEnvironment();
+        defaultModule = applicationModel.getDefaultModule();
 
         executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         DubboShutdownHook.getDubboShutdownHook().register();
@@ -444,93 +449,146 @@ public final class DubboBootstrap {
         return this;
     }
 
-    private Module getCurrentModule() {
-        if (currentModule == null) {
-            currentModule = new Module(applicationModel.getDefaultModule());
-        }
-        return currentModule;
-    }
-
     // {@link ServiceConfig} correlative methods
     public <S> DubboBootstrap service(Consumer<ServiceBuilder<S>> consumerBuilder) {
-        getCurrentModule().service(consumerBuilder);
-        return this;
+        return service(null, consumerBuilder);
     }
 
     public <S> DubboBootstrap service(String id, Consumer<ServiceBuilder<S>> consumerBuilder) {
-        getCurrentModule().service(id, consumerBuilder);
+        return service(createServiceConfig(id, consumerBuilder));
+    }
+
+    private <S> ServiceConfig createServiceConfig(String id, Consumer<ServiceBuilder<S>> consumerBuilder) {
+        ServiceBuilder builder = createServiceBuilder(id);
+        consumerBuilder.accept(builder);
+        ServiceConfig serviceConfig = builder.build();
+        return serviceConfig;
+    }
+
+    public DubboBootstrap services(List<ServiceConfig> serviceConfigs) {
+        if (CollectionUtils.isEmpty(serviceConfigs)) {
+            return this;
+        }
+        for (ServiceConfig serviceConfig : serviceConfigs) {
+            this.service(serviceConfig);
+        }
         return this;
     }
 
     public DubboBootstrap service(ServiceConfig<?> serviceConfig) {
-        getCurrentModule().service(serviceConfig);
+        this.service(serviceConfig, defaultModule);
         return this;
     }
 
-    public DubboBootstrap services(List<ServiceConfig> serviceConfigs) {
-        getCurrentModule().services(serviceConfigs);
+    public DubboBootstrap service(ServiceConfig<?> serviceConfig, ModuleModel moduleModel) {
+        serviceConfig.setBootstrap(this);
+        serviceConfig.setScopeModel(moduleModel);
+        configManager.addService(serviceConfig);
         return this;
     }
 
     // {@link Reference} correlative methods
     public <S> DubboBootstrap reference(Consumer<ReferenceBuilder<S>> consumerBuilder) {
-        getCurrentModule().reference(consumerBuilder);
-        return this;
+        return reference(null, consumerBuilder);
     }
 
     public <S> DubboBootstrap reference(String id, Consumer<ReferenceBuilder<S>> consumerBuilder) {
-        getCurrentModule().reference(id, consumerBuilder);
+        return reference(createReferenceConfig(id, consumerBuilder));
+    }
+
+    private <S> ReferenceConfig createReferenceConfig(String id, Consumer<ReferenceBuilder<S>> consumerBuilder) {
+        ReferenceBuilder builder = createReferenceBuilder(id);
+        consumerBuilder.accept(builder);
+        ReferenceConfig referenceConfig = builder.build();
+        return referenceConfig;
+    }
+
+    public DubboBootstrap references(List<ReferenceConfig> referenceConfigs) {
+        if (CollectionUtils.isEmpty(referenceConfigs)) {
+            return this;
+        }
+        for (ReferenceConfig referenceConfig : referenceConfigs) {
+            this.reference(referenceConfig);
+        }
         return this;
     }
 
     public DubboBootstrap reference(ReferenceConfig<?> referenceConfig) {
-        getCurrentModule().reference(referenceConfig);
-        return this;
+        return reference(referenceConfig, defaultModule);
     }
 
-    public DubboBootstrap references(List<ReferenceConfig> referenceConfigs) {
-        getCurrentModule().references(referenceConfigs);
+    public DubboBootstrap reference(ReferenceConfig<?> referenceConfig, ModuleModel moduleModel) {
+        referenceConfig.setBootstrap(this);
+        referenceConfig.setScopeModel(moduleModel);
+        configManager.addReference(referenceConfig);
         return this;
     }
 
     // {@link ProviderConfig} correlative methods
     public DubboBootstrap provider(Consumer<ProviderBuilder> builderConsumer) {
-        getCurrentModule().provider(builderConsumer);
+        provider(null, builderConsumer);
         return this;
     }
 
     public DubboBootstrap provider(String id, Consumer<ProviderBuilder> builderConsumer) {
-        getCurrentModule().provider(id, builderConsumer);
+        this.provider(createProviderConfig(id, builderConsumer));
         return this;
     }
 
+    private ProviderConfig createProviderConfig(String id, Consumer<ProviderBuilder> builderConsumer) {
+        ProviderBuilder builder = createProviderBuilder(id);
+        builderConsumer.accept(builder);
+        ProviderConfig providerConfig = builder.build();
+        return providerConfig;
+    }
+
     public DubboBootstrap provider(ProviderConfig providerConfig) {
-        return providers(singletonList(providerConfig));
+        return this.provider(providerConfig, defaultModule);
     }
 
     public DubboBootstrap providers(List<ProviderConfig> providerConfigs) {
-        getCurrentModule().providers(providerConfigs);
+        for (ProviderConfig providerConfig : providerConfigs) {
+            this.provider(providerConfig, defaultModule);
+        }
+        return this;
+    }
+
+    public DubboBootstrap provider(ProviderConfig providerConfig, ModuleModel moduleModel) {
+        providerConfig.setScopeModel(moduleModel);
+        configManager.addProvider(providerConfig);
         return this;
     }
 
     // {@link ConsumerConfig} correlative methods
     public DubboBootstrap consumer(Consumer<ConsumerBuilder> builderConsumer) {
-        getCurrentModule().consumer(builderConsumer);
-        return this;
+        return consumer(null, builderConsumer);
     }
 
     public DubboBootstrap consumer(String id, Consumer<ConsumerBuilder> builderConsumer) {
-        getCurrentModule().consumer(id, builderConsumer);
-        return this;
+        return consumer(createConsumerConfig(id, builderConsumer));
+    }
+
+    private ConsumerConfig createConsumerConfig(String id, Consumer<ConsumerBuilder> builderConsumer) {
+        ConsumerBuilder builder = createConsumerBuilder(id);
+        builderConsumer.accept(builder);
+        ConsumerConfig consumerConfig = builder.build();
+        return consumerConfig;
     }
 
     public DubboBootstrap consumer(ConsumerConfig consumerConfig) {
-        getCurrentModule().consumer(consumerConfig);
-        return this;
+        return this.consumer(consumerConfig, defaultModule);
     }
 
     public DubboBootstrap consumers(List<ConsumerConfig> consumerConfigs) {
-        getCurrentModule().consumers(consumerConfigs);
+        for (ConsumerConfig consumerConfig : consumerConfigs) {
+            this.consumer(consumerConfig, defaultModule);
+        }
+        return this;
+    }
+
+    public DubboBootstrap consumer(ConsumerConfig consumerConfig, ModuleModel moduleModel) {
+        consumerConfig.setScopeModel(moduleModel);
+        configManager.addConsumer(consumerConfig);
         return this;
     }
     // module configs end
@@ -1099,7 +1157,7 @@ public final class DubboBootstrap {
         T config = cls.newInstance();
         if (config instanceof ProviderConfig || config instanceof ConsumerConfig || config instanceof ReferenceConfigBase
             || config instanceof ServiceConfigBase) {
-            config.setScopeModel(getCurrentModule().moduleModel);
+            config.setScopeModel(defaultModule);
         } else {
             config.setScopeModel(applicationModel);
         }
@@ -1811,18 +1869,17 @@ public final class DubboBootstrap {
 
     public Module addModule(ModuleModel moduleModel) {
         applicationModel.addModule(moduleModel);
-        currentModule = new Module(moduleModel);
-        return currentModule;
+        return new Module(moduleModel);
     }
 
-    public Module addModule() {
+    public Module newModule() {
         return this.addModule(new ModuleModel(applicationModel));
     }
 
     public DubboBootstrap endModule() {
-        currentModule = new Module(applicationModel.getDefaultModule());
         return this;
     }
+
 
     public class Module {
         private ModuleModel moduleModel;
@@ -1837,29 +1894,31 @@ public final class DubboBootstrap {
             return this.bootstrap.endModule();
         }
 
+        public ModuleModel getModuleModel() {
+            return moduleModel;
+        }
+
         // {@link ServiceConfig} correlative methods
         public <S> Module service(Consumer<ServiceBuilder<S>> consumerBuilder) {
             return service(null, consumerBuilder);
         }
 
         public <S> Module service(String id, Consumer<ServiceBuilder<S>> consumerBuilder) {
-            ServiceBuilder builder = createServiceBuilder(id);
-            consumerBuilder.accept(builder);
-            return service(builder.build());
-        }
-
-        public Module service(ServiceConfig<?> serviceConfig) {
-            serviceConfig.setBootstrap(this.bootstrap);
-            serviceConfig.setScopeModel(moduleModel);
-            configManager.addService(serviceConfig);
-            return this;
+            return service(createServiceConfig(id, consumerBuilder));
         }
 
         public Module services(List<ServiceConfig> serviceConfigs) {
             if (CollectionUtils.isEmpty(serviceConfigs)) {
                 return this;
             }
-            serviceConfigs.forEach(configManager::addService);
+            for (ServiceConfig serviceConfig : serviceConfigs) {
+                this.service(serviceConfig);
+            }
+            return this;
+        }
+
+        public Module service(ServiceConfig<?> serviceConfig) {
+            DubboBootstrap.this.service(serviceConfig, moduleModel);
             return this;
         }
 
@@ -1869,15 +1928,11 @@ public final class DubboBootstrap {
         }
 
         public <S> Module reference(String id, Consumer<ReferenceBuilder<S>> consumerBuilder) {
-            ReferenceBuilder builder = createReferenceBuilder(id);
-            consumerBuilder.accept(builder);
-            return reference(builder.build());
+            return reference(createReferenceConfig(id, consumerBuilder));
         }
 
         public Module reference(ReferenceConfig<?> referenceConfig) {
-            referenceConfig.setBootstrap(this.bootstrap);
-            referenceConfig.setScopeModel(moduleModel);
-            configManager.addReference(referenceConfig);
+            DubboBootstrap.this.reference(referenceConfig, moduleModel);
             return this;
         }
 
@@ -1885,8 +1940,9 @@ public final class DubboBootstrap {
             if (CollectionUtils.isEmpty(referenceConfigs)) {
                 return this;
             }
-
-            referenceConfigs.forEach(configManager::addReference);
+            for (ReferenceConfig referenceConfig : referenceConfigs) {
+                this.reference(referenceConfig);
+            }
             return this;
         }
 
@@ -1896,13 +1952,12 @@ public final class DubboBootstrap {
         }
 
         public Module provider(String id, Consumer<ProviderBuilder> builderConsumer) {
-            ProviderBuilder builder = createProviderBuilder(id);
-            builderConsumer.accept(builder);
-            return provider(builder.build());
+            return provider(createProviderConfig(id, builderConsumer));
         }
 
         public Module provider(ProviderConfig providerConfig) {
-            return providers(singletonList(providerConfig));
+            DubboBootstrap.this.provider(providerConfig, moduleModel);
+            return this;
         }
 
         public Module providers(List<ProviderConfig> providerConfigs) {
@@ -1910,8 +1965,7 @@ public final class DubboBootstrap {
                 return this;
             }
             for (ProviderConfig providerConfig : providerConfigs) {
-                providerConfig.setScopeModel(moduleModel);
-                configManager.addProvider(providerConfig);
+                DubboBootstrap.this.provider(providerConfig, moduleModel);
             }
             return this;
         }
@@ -1922,13 +1976,12 @@ public final class DubboBootstrap {
         }
 
         public Module consumer(String id, Consumer<ConsumerBuilder> builderConsumer) {
-            ConsumerBuilder builder = createConsumerBuilder(id);
-            builderConsumer.accept(builder);
-            return consumer(builder.build());
+            return consumer(createConsumerConfig(id, builderConsumer));
         }
 
         public Module consumer(ConsumerConfig consumerConfig) {
-            return consumers(singletonList(consumerConfig));
+            DubboBootstrap.this.consumer(consumerConfig, moduleModel);
+            return this;
         }
 
         public Module consumers(List<ConsumerConfig> consumerConfigs) {
@@ -1936,10 +1989,10 @@ public final class DubboBootstrap {
                 return this;
             }
             for (ConsumerConfig consumerConfig : consumerConfigs) {
-                consumerConfig.setScopeModel(moduleModel);
-                configManager.addConsumer(consumerConfig);
+                DubboBootstrap.this.consumer(consumerConfig, moduleModel);
             }
             return this;
         }
     }
+
 }

@@ -90,6 +90,10 @@ public class FrameworkModel extends ScopeModel {
         }
     }
 
+    public ApplicationModel newApplication() {
+        return new ApplicationModel(this);
+    }
+
     public void addApplication(ApplicationModel model) {
         if (!this.applicationModels.contains(model)) {
             this.applicationModels.add(model);

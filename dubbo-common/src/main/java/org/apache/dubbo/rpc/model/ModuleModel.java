@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class ModuleModel extends ScopeModel {
 
     public ModuleModel(ApplicationModel applicationModel) {
         super(applicationModel, ExtensionScope.MODULE);
+        Assert.notNull(applicationModel, "ApplicationModel can not be null");
         this.applicationModel = applicationModel;
         applicationModel.addModule(this);
         initialize();

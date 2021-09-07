@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 
 /**
@@ -25,12 +28,50 @@ public class DubboSpringInitializationContext {
 
     private BeanDefinitionRegistry registry;
 
+    private ModuleModel moduleModel;
+
+    private DubboBootstrap dubboBootstrap;
+
+    private volatile boolean bound;
+
+    public void markAsBound() {
+        bound = true;
+    }
+
     public BeanDefinitionRegistry getRegistry() {
         return registry;
     }
 
     void setRegistry(BeanDefinitionRegistry registry) {
+        if (bound) {
+            throw new IllegalStateException("Cannot change DubboBootstrap after bound context");
+        }
         this.registry = registry;
     }
 
+    public ApplicationModel getApplicationModel() {
+        return (moduleModel == null) ? null : moduleModel.getApplicationModel();
+    }
+
+    public ModuleModel getModuleModel() {
+        return moduleModel;
+    }
+
+    public void setModuleModel(ModuleModel moduleModel) {
+        if (bound) {
+            throw new IllegalStateException("Cannot change ModuleModel after bound context");
+        }
+        this.moduleModel = moduleModel;
+    }
+
+    public DubboBootstrap getDubboBootstrap() {
+        return dubboBootstrap;
+    }
+
+    public void setDubboBootstrap(DubboBootstrap dubboBootstrap) {
+        if (bound) {
+            throw new IllegalStateException("Cannot change DubboBootstrap after bound context");
+        }
+        this.dubboBootstrap = dubboBootstrap;
+    }
 }

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
@@ -150,6 +151,7 @@ public class ApplicationModel extends ScopeModel {
 
     public ApplicationModel(FrameworkModel frameworkModel) {
         super(frameworkModel, ExtensionScope.APPLICATION);
+        Assert.notNull(frameworkModel, "FrameworkModel can not be null");
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
         initialize();
@@ -210,6 +212,10 @@ public class ApplicationModel extends ScopeModel {
 
     public FrameworkModel getFrameworkModel() {
         return frameworkModel;
+    }
+
+    public ModuleModel newModule() {
+        return new ModuleModel(this);
     }
 
     public Environment getApplicationEnvironment() {

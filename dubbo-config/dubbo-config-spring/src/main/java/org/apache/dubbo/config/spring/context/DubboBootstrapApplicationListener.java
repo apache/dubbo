@@ -21,8 +21,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
 import org.apache.dubbo.config.spring.context.event.DubboAnnotationInitedEvent;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -52,25 +52,23 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
 
     private final Log logger = LogFactory.getLog(getClass());
 
-    private final DubboBootstrap dubboBootstrap;
     private ApplicationContext applicationContext;
+    private DubboBootstrap bootstrap;
     private boolean shouldInitConfigBeans;
 
     public DubboBootstrapApplicationListener() {
-        this.dubboBootstrap = initBootstrap();
     }
 
     public DubboBootstrapApplicationListener(boolean shouldInitConfigBeans) {
-        this.dubboBootstrap = initBootstrap();
+        // maybe register DubboBootstrapApplicationListener manual during spring context starting
         this.shouldInitConfigBeans = shouldInitConfigBeans;
     }
 
-    private DubboBootstrap initBootstrap() {
-        DubboBootstrap dubboBootstrap = DubboBootstrap.getInstance();
-        if (dubboBootstrap.getTakeoverMode() != BootstrapTakeoverMode.MANUAL) {
-            dubboBootstrap.setTakeoverMode(BootstrapTakeoverMode.SPRING);
+    private void setBootstrap(DubboBootstrap bootstrap) {
+        this.bootstrap = bootstrap;
+        if (bootstrap.getTakeoverMode() != BootstrapTakeoverMode.MANUAL) {
+            bootstrap.setTakeoverMode(BootstrapTakeoverMode.SPRING);
         }
-        return dubboBootstrap;
     }
 
     @Override
@@ -95,7 +93,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
         }
 
         // All infrastructure config beans are loaded, initialize dubbo here
-        DubboBootstrap.getInstance().initialize();
+        bootstrap.initialize();
     }
 
     private void onApplicationContextEvent(ApplicationContextEvent event) {
@@ -111,13 +109,13 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     }
 
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
-        if (dubboBootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
-            dubboBootstrap.start();
+        if (bootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
+            bootstrap.start();
         }
     }
 
     private void onContextClosedEvent(ContextClosedEvent event) {
-        if (dubboBootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
+        if (bootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
             // will call dubboBootstrap.stop() through shutdown callback.
             DubboShutdownHook.getDubboShutdownHook().run();
         }
@@ -147,7 +145,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-
+        this.setBootstrap(DubboBeanUtils.getBootstrap(applicationContext));
         if (shouldInitConfigBeans) {
             checkCallStackAndInit();
         }
