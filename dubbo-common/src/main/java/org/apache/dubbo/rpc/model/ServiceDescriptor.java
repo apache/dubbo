@@ -102,8 +102,12 @@ public class ServiceDescriptor {
     public MethodDescriptor getMethod(String methodName, Class<?>[] paramTypes) {
         List<MethodDescriptor> methodModels = methods.get(methodName);
         if (CollectionUtils.isNotEmpty(methodModels)) {
-            for (int i = 0; i < methodModels.size(); i++) {
-                MethodDescriptor descriptor = methodModels.get(i);
+            // fix tri stream mode can not find md
+            // todo change methods map key
+            if (methodModels.size() == 1) {
+                return methodModels.get(0);
+            }
+            for (MethodDescriptor descriptor : methodModels) {
                 if (Arrays.equals(paramTypes, descriptor.getParameterClasses())) {
                     return descriptor;
                 }
