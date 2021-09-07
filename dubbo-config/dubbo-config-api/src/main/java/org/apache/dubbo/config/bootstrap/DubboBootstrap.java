@@ -1273,7 +1273,7 @@ public final class DubboBootstrap {
         try {
             logger.info(NAME + " waiting services exporting asynchronously...");
             CompletableFuture<?> future = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
-            future.get();
+            future.get(3, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.warn(NAME + " asynchronous export occurred an exception.");
         } finally {
@@ -1308,7 +1308,7 @@ public final class DubboBootstrap {
         try {
             logger.info(NAME + " waiting services referring asynchronously...");
             CompletableFuture<?> future = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
-            future.get();
+            future.get(3, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.warn(NAME + " asynchronous refer occurred an exception.");
         } finally {
