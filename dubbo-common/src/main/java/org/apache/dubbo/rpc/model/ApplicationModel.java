@@ -214,7 +214,7 @@ public class ApplicationModel extends ScopeModel {
         return frameworkModel;
     }
 
-    public ModuleModel newModule() {
+    public synchronized ModuleModel newModule() {
         return new ModuleModel(this);
     }
 
@@ -274,9 +274,7 @@ public class ApplicationModel extends ScopeModel {
                 return moduleModel;
             }
         }
-        ModuleModel moduleModel = new ModuleModel(this);
-        this.addModule(moduleModel);
-        return moduleModel;
+        return this.newModule();
     }
 
     public ModuleModel getInternalModule() {
