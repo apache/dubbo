@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.RpcException;
 
+@Deprecated
 public class TripleRpcException extends RpcException {
     private final GrpcStatus status;
     private final Metadata trailers;

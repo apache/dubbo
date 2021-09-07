@@ -20,10 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.TimeoutException;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.*;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
 
@@ -31,6 +28,8 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.rpcExceptionCodeToGrpc;
 
 public class UnaryServerStream extends AbstractServerStream implements Stream {
 
@@ -98,8 +97,8 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                 try {
                     if (response.hasException()) {
                         final Throwable exception = response.getException();
-                        if (exception instanceof TripleRpcException) {
-                            transportError(((TripleRpcException) exception).getStatus(), response.getObjectAttachments());
+                        if (exception instanceof RpcException) {
+                            transportError(rpcExceptionCodeToGrpc(((RpcException) exception).getCode()), response.getObjectAttachments());
                         } else {
                             transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
                                     .withCause(exception), response.getObjectAttachments());
@@ -130,8 +129,8 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     getTransportSubscriber().onMetadata(trailers, true);
                 } catch (Throwable e) {
                     LOGGER.warn("Exception processing triple message", e);
-                    if (e instanceof TripleRpcException) {
-                        transportError(((TripleRpcException) e).getStatus(), response.getObjectAttachments());
+                    if (e instanceof RpcException) {
+                        transportError(rpcExceptionCodeToGrpc(((RpcException) e).getCode()), response.getObjectAttachments());
                     } else {
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
                                 .withDescription("Exception occurred in provider's execution:" + e.getMessage())

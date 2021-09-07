@@ -21,8 +21,9 @@ import org.apache.dubbo.remoting.exchange.Response;
 
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
+import org.apache.dubbo.rpc.RpcException;
 
-import static io.netty.util.internal.ObjectUtil.checkNotNull;
+import static org.apache.dubbo.rpc.RpcException.*;
 
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
@@ -82,6 +83,28 @@ public class GrpcStatus {
         return status;
     }
 
+    public static GrpcStatus rpcExceptionCodeToGrpc(int rpcExceptionCode) {
+        Code code;
+        switch (rpcExceptionCode) {
+            case TIMEOUT_EXCEPTION:
+                code = Code.DEADLINE_EXCEEDED;
+                break;
+            case FORBIDDEN_EXCEPTION:
+                code = Code.PERMISSION_DENIED;
+                break;
+            case LIMIT_EXCEEDED_EXCEPTION:
+                code = Code.ABORTED;
+                break;
+            case TIMEOUT_TERMINATE:
+                code = Code.OUT_OF_RANGE;
+                break;
+            default:
+                code = Code.UNKNOWN;
+                break;
+        }
+        return fromCode(code);
+    }
+
     public static String limitSizeTo4KB(String desc) {
         if (desc.length() < 4096) {
             return desc;
@@ -97,17 +120,6 @@ public class GrpcStatus {
         return QueryStringDecoder.decodeComponent(raw);
     }
 
-    public static Metadata trailersFromThrowable(Throwable t) {
-        Throwable cause = checkNotNull(t, "t");
-        while (cause != null) {
-            if (cause instanceof TripleRpcException) {
-                return ((TripleRpcException) cause).getTrailers();
-            }
-            cause = cause.getCause();
-        }
-        return null;
-    }
-
     public GrpcStatus withCause(Throwable cause) {
         return new GrpcStatus(this.code, cause, this.description);
     }
@@ -116,12 +128,8 @@ public class GrpcStatus {
         return new GrpcStatus(this.code, this.cause, description);
     }
 
-    public TripleRpcException asException() {
-        return new TripleRpcException(this);
-    }
-
-    public TripleRpcException asException(Metadata trailers) {
-        return new TripleRpcException(this, trailers);
+    public RpcException asException() {
+        return new RpcException(this.code.code, this.description, this.cause);
     }
 
     public String toMessage() {

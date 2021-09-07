@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.AppResponse;
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
 import java.util.Map;
@@ -104,11 +105,11 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                 // get common exception from DebugInfo
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo == null) {
-                    return new TripleRpcException(statusDetail.getCode(),
-                            statusDetail.getMessage(), metadata);
+                    return new RpcException(statusDetail.getCode(),
+                            statusDetail.getMessage());
                 }
                 String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
-                return new TripleRpcException(statusDetail.getCode(), msg, metadata);
+                return new RpcException(statusDetail.getCode(), msg);
             } finally {
                 ClassLoadUtil.switchContextLoader(tccl);
             }
