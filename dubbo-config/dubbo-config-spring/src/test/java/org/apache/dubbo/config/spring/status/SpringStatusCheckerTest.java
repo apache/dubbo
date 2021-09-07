@@ -18,12 +18,11 @@ package org.apache.dubbo.config.spring.status;
 
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.config.spring.ServiceBean;
-import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -52,7 +51,7 @@ public class SpringStatusCheckerTest {
 
     @AfterEach
     public void tearDown() throws Exception {
-        SpringExtensionFactory.clearContexts();
+        SpringExtensionInjector.clearContexts();
         Mockito.reset(applicationContext);
     }
 
@@ -65,7 +64,7 @@ public class SpringStatusCheckerTest {
 
     @Test
     public void testWithLifeCycleRunning() {
-        SpringExtensionFactory.clearContexts();
+        SpringExtensionInjector.clearContexts();
         ApplicationLifeCycle applicationLifeCycle = mock(ApplicationLifeCycle.class);
         new ServiceBean<Object>().setApplicationContext(applicationLifeCycle);
         given(applicationLifeCycle.getConfigLocations()).willReturn(new String[]{"test1", "test2"});
@@ -79,7 +78,7 @@ public class SpringStatusCheckerTest {
 
     @Test
     public void testWithoutLifeCycleRunning() {
-        SpringExtensionFactory.clearContexts();
+        SpringExtensionInjector.clearContexts();
         ApplicationLifeCycle applicationLifeCycle = mock(ApplicationLifeCycle.class);
         new ServiceBean<Object>().setApplicationContext(applicationLifeCycle);
         given(applicationLifeCycle.isRunning()).willReturn(false);
@@ -95,9 +94,9 @@ public class SpringStatusCheckerTest {
 
     @Test
     public void testGenericWebApplicationContext() {
-        SpringExtensionFactory.clearContexts();
+        SpringExtensionInjector.clearContexts();
         GenericWebApplicationContext context = new GenericWebApplicationContext();
-        SpringExtensionFactory.addApplicationContext(context);
+        SpringExtensionInjector.addApplicationContext(context);
         SpringStatusChecker checker = new SpringStatusChecker();
         Status status = checker.check();
         Assertions.assertEquals(Status.Level.UNKNOWN, status.getLevel());

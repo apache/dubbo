@@ -24,7 +24,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -62,6 +62,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.net.InetAddress;
@@ -79,6 +80,7 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_ADDRESS;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.FILTER_KEY;
@@ -86,6 +88,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
@@ -106,7 +109,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-import static org.apache.dubbo.common.status.reporter.FrameworkStatusReporter.createRegistrationReport;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
@@ -208,10 +210,10 @@ public class ConfigValidationUtils {
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
-
                         url = URLBuilder.from(url)
                             .addParameter(REGISTRY_KEY, url.getProtocol())
                             .setProtocol(extractRegistryType(url))
+                            .setScopeModel(interfaceConfig.getScopeModel())
                             .build();
                         if ((provider && url.getParameter(REGISTER_KEY, true))
                             || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
@@ -221,17 +223,17 @@ public class ConfigValidationUtils {
                 }
             }
         }
-        return genCompatibleRegistries(registryList, provider);
+        return genCompatibleRegistries(interfaceConfig.getApplicationModel(), registryList, provider);
     }
 
-    private static List<URL> genCompatibleRegistries(List<URL> registryList, boolean provider) {
+    private static List<URL> genCompatibleRegistries(ApplicationModel applicationModel, List<URL> registryList, boolean provider) {
         List<URL> result = new ArrayList<>(registryList.size());
         registryList.forEach(registryURL -> {
             if (provider) {
                 // for registries enabled service discovery, automatically register interface compatible addresses.
                 String registerMode;
                 if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
-                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(applicationModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
                     if (!isValidRegisterMode(registerMode)) {
                         registerMode = DEFAULT_REGISTER_MODE_INSTANCE;
                     }
@@ -245,7 +247,7 @@ public class ConfigValidationUtils {
                         result.add(interfaceCompatibleRegistryURL);
                     }
                 } else {
-                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_ALL));
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(applicationModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_ALL));
                     if (!isValidRegisterMode(registerMode)) {
                         registerMode = DEFAULT_REGISTER_MODE_INTERFACE;
                     }
@@ -263,7 +265,8 @@ public class ConfigValidationUtils {
                     }
                 }
 
-                FrameworkStatusReporter.reportRegistrationStatus(createRegistrationReport(registerMode));
+                FrameworkStatusReportService reportService = applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
+                reportService.reportRegistrationStatus(reportService.createRegistrationReport(registerMode));
             } else {
                 result.add(registryURL);
             }
@@ -305,29 +308,35 @@ public class ConfigValidationUtils {
         AbstractConfig.appendParameters(map, monitor);
         AbstractConfig.appendParameters(map, application);
         String address = null;
-        String sysaddress = System.getProperty("dubbo.monitor.address");
-        if (sysaddress != null && sysaddress.length() > 0) {
-            address = sysaddress;
+        String sysAddress = System.getProperty(DUBBO_MONITOR_ADDRESS);
+        if (sysAddress != null && sysAddress.length() > 0) {
+            address = sysAddress;
         } else if (monitor != null) {
             address = monitor.getAddress();
         }
-        if (ConfigUtils.isNotEmpty(address)) {
+        String protocol = monitor == null ? null : monitor.getProtocol();
+        if (monitor != null &&
+            (REGISTRY_PROTOCOL.equals(protocol) || SERVICE_REGISTRY_PROTOCOL.equals(protocol))
+            && registryURL != null) {
+            return URLBuilder.from(registryURL)
+                .setProtocol(DUBBO_PROTOCOL)
+                .addParameter(PROTOCOL_KEY, protocol)
+                .putAttribute(REFER_KEY, map)
+                .build();
+        } else if (ConfigUtils.isNotEmpty(address) || ConfigUtils.isNotEmpty(protocol)) {
             if (!map.containsKey(PROTOCOL_KEY)) {
                 if (getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
                     map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
+                } else if (ConfigUtils.isNotEmpty(protocol)) {
+                    map.put(PROTOCOL_KEY, protocol);
                 } else {
                     map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                 }
             }
+            if (ConfigUtils.isEmpty(address)) {
+                address = LOCALHOST_VALUE;
+            }
             return UrlUtils.parseURL(address, map);
-        } else if (monitor != null &&
-            (REGISTRY_PROTOCOL.equals(monitor.getProtocol()) || SERVICE_REGISTRY_PROTOCOL.equals(monitor.getProtocol()))
-            && registryURL != null) {
-            return URLBuilder.from(registryURL)
-                .setProtocol(DUBBO_PROTOCOL)
-                .addParameter(PROTOCOL_KEY, monitor.getProtocol())
-                .putAttribute(REFER_KEY, map)
-                .build();
         }
         return null;
     }
@@ -703,12 +712,12 @@ public class ConfigValidationUtils {
             return;
         }
         if (value.length() > maxlength) {
-            throw new IllegalStateException("Invalid " + property + "=\"" + value + "\" is longer than " + maxlength);
+            logger.error("Invalid " + property + "=\"" + value + "\" is longer than " + maxlength);
         }
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);
             if (!matcher.matches()) {
-                throw new IllegalStateException("Invalid " + property + "=\"" + value + "\" contains illegal " +
+                logger.error("Invalid " + property + "=\"" + value + "\" contains illegal " +
                     "character, only digit, letter, '-', '_' or '.' is legal.");
             }
         }

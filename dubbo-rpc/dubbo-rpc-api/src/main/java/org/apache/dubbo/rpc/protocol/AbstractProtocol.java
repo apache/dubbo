@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
@@ -39,19 +41,26 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * abstract ProtocolSupport.
  */
-public abstract class AbstractProtocol implements Protocol {
+public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
+    protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<>();
 
     /**
      * <host:port, ProtocolServer>
      */
     protected final Map<String, ProtocolServer> serverMap = new ConcurrentHashMap<>();
 
-    //TODO SoftReference
-    protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<Invoker<?>>();
+    // TODO SoftReference
+    protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<>();
+
+    protected FrameworkModel frameworkModel;
+
+    @Override
+    public void setFrameworkModel(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     protected static String serviceKey(URL url) {
         int port = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
@@ -62,6 +71,7 @@ public abstract class AbstractProtocol implements Protocol {
         return ProtocolUtils.serviceKey(port, serviceName, serviceVersion, serviceGroup);
     }
 
+    @Override
     public List<ProtocolServer> getServers() {
         return Collections.unmodifiableList(new ArrayList<>(serverMap.values()));
     }
@@ -81,7 +91,7 @@ public abstract class AbstractProtocol implements Protocol {
                 }
             }
         }
-        for (String key : new ArrayList<String>(exporterMap.keySet())) {
+        for (String key : new ArrayList<>(exporterMap.keySet())) {
             Exporter<?> exporter = exporterMap.remove(key);
             if (exporter != null) {
                 try {

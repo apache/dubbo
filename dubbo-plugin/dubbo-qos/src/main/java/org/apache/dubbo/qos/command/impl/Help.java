@@ -68,7 +68,7 @@ public class Help implements BaseCommand {
     private String drawExample(Cmd cmd) {
         final StringBuilder drawExampleStringBuilder = new StringBuilder();
         for (String example : cmd.example()) {
-            drawExampleStringBuilder.append(example).append("\n");
+            drawExampleStringBuilder.append(example).append('\n');
         }
         return drawExampleStringBuilder.toString();
     }

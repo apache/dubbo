@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.compiler.support.ClassUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -25,15 +24,12 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,6 +37,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
@@ -72,8 +70,8 @@ public class MetadataInfo implements Serializable {
     public MetadataInfo(String app, String revision, Map<String, ServiceInfo> services) {
         this.app = app;
         this.revision = revision;
-        this.services = services == null ? new HashMap<>() : services;
-        this.extendParams = new HashMap<>();
+        this.services = services == null ? new ConcurrentHashMap<>() : services;
+        this.extendParams = new ConcurrentHashMap<>();
     }
 
     public void addService(ServiceInfo serviceInfo) {
@@ -100,6 +98,9 @@ public class MetadataInfo implements Serializable {
         markChanged();
     }
 
+    /**
+     * Reported status and metadata modification must be synchronized if used in multiple threads.
+     */
     public String calAndGetRevision() {
         if (revision != null && hasReported()) {
             return revision;
@@ -122,14 +123,23 @@ public class MetadataInfo implements Serializable {
         this.revision = revision;
     }
 
+    /**
+     * Reported status and metadata modification must be synchronized if used in multiple threads.
+     */
     public boolean hasReported() {
         return reported.get();
     }
 
+    /**
+     * Reported status and metadata modification must be synchronized if used in multiple threads.
+     */
     public void markReported() {
         reported.compareAndSet(false, true);
     }
 
+    /**
+     * Reported status and metadata modification must be synchronized if used in multiple threads.
+     */
     public void markChanged() {
         reported.compareAndSet(true, false);
     }
@@ -150,8 +160,8 @@ public class MetadataInfo implements Serializable {
         this.services = services;
     }
 
-    public ServiceInfo getServiceInfo(String serviceKey) {
-        return services.get(serviceKey);
+    public ServiceInfo getServiceInfo(String protocolServiceKey) {
+        return services.get(protocolServiceKey);
     }
 
     public Map<String, String> getExtendParams() {
@@ -187,12 +197,34 @@ public class MetadataInfo implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(app, services);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (!(obj instanceof MetadataInfo)) {
+            return false;
+        }
+
+        MetadataInfo other = (MetadataInfo)obj;
+
+        return Objects.equals(app, other.getApp())
+            && ((services == null && other.getServices() == null)
+                || (services != null && services.equals(other.getServices())));
+    }
+
+    @Override
     public String toString() {
         return "metadata{" +
-                "app='" + app + "'," +
-                "revision='" + revision + "'," +
-                "services=" + services +
-                "}";
+            "app='" + app + "'," +
+            "revision='" + revision + "'," +
+            "services=" + services +
+            "}";
     }
 
     public static class ServiceInfo implements Serializable {
@@ -219,8 +251,10 @@ public class MetadataInfo implements Serializable {
 
         private transient URL url;
 
-        public ServiceInfo() {
-        }
+        private final static String[] KEYS_TO_REMOVE = {MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
+            QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
+
+        public ServiceInfo() {}
 
         public ServiceInfo(URL url) {
             this(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getProtocol(), url.getPath(), null);
@@ -229,11 +263,10 @@ public class MetadataInfo implements Serializable {
             Map<String, String> params = new HashMap<>();
             List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
             if (filters.size() == 0) {
-                params.putAll(
-                        url.removeParameters(
-                                MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
-                                QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES)
-                                .getParameters());
+                params.putAll(url.getParameters());
+                for (String key : KEYS_TO_REMOVE) {
+                    params.remove(key);
+                }
             }
             for (MetadataParamsFilter filter : filters) {
                 String[] paramsIncluded = filter.serviceParamsIncluded();
@@ -264,7 +297,7 @@ public class MetadataInfo implements Serializable {
             this.version = version;
             this.protocol = protocol;
             this.path = path;
-            this.params = params == null ? new HashMap<>() : params;
+            this.params = params == null ? new ConcurrentHashMap<>() : params;
 
             this.serviceKey = URL.buildKey(name, group, version);
             this.matchKey = buildMatchKey();
@@ -405,17 +438,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String toDescString() {
-            return this.getMatchKey() + getMethodSignaturesString() + new TreeMap<>(getParams());
-        }
-
-        private String getMethodSignaturesString() {
-            SortedSet<String> methodStrings = new TreeSet();
-
-            Method[] methods = ClassUtils.forName(name).getMethods();
-            for (Method method : methods) {
-                methodStrings.add(method.toString());
-            }
-            return methodStrings.toString();
+            return this.getMatchKey() + path + new TreeMap<>(getParams());
         }
 
         public void addParameter(String key, String value) {
@@ -433,7 +456,7 @@ public class MetadataInfo implements Serializable {
         public void addConsumerParams(Map<String, String> params) {
             // copy once for one service subscription
             if (consumerParams == null) {
-                consumerParams = new HashMap<>(params);
+                consumerParams = new ConcurrentHashMap<>(params);
             }
         }
 
@@ -466,28 +489,33 @@ public class MetadataInfo implements Serializable {
             }
 
             ServiceInfo serviceInfo = (ServiceInfo) obj;
-//            return this.getMatchKey().equals(serviceInfo.getMatchKey()) && this.getParams().equals(serviceInfo.getParams());
-            // Please check ServiceInstancesChangedListener.localServiceToRevisions before change this behaviour.
-            return this.getMatchKey().equals(serviceInfo.getMatchKey());
+            /**
+             * Equals to Objects.equals(this.getMatchKey(), serviceInfo.getMatchKey()), but match key will not get initialized
+             * on json deserialization.
+             */
+            return Objects.equals(this.getVersion(), serviceInfo.getVersion())
+                && Objects.equals(this.getGroup(), serviceInfo.getGroup())
+                && Objects.equals(this.getName(), serviceInfo.getName())
+                && Objects.equals(this.getProtocol(), serviceInfo.getProtocol())
+                && this.getParams().equals(serviceInfo.getParams());
         }
 
         @Override
         public int hashCode() {
-//            return Objects.hash(getMatchKey(), getParams());
-            return Objects.hash(getMatchKey());
+            return Objects.hash(getVersion(), getGroup(), getName(), getProtocol(), getParams());
 
         }
 
         @Override
         public String toString() {
             return "service{" +
-                    "name='" + name + "'," +
-                    "group='" + group + "'," +
-                    "version='" + version + "'," +
-                    "protocol='" + protocol + "'," +
-                    "params=" + params + "," +
-                    "consumerParams=" + consumerParams +
-                    "}";
+                "name='" + name + "'," +
+                "group='" + group + "'," +
+                "version='" + version + "'," +
+                "protocol='" + protocol + "'," +
+                "params=" + params + "," +
+                "consumerParams=" + consumerParams +
+                "}";
         }
     }
 }

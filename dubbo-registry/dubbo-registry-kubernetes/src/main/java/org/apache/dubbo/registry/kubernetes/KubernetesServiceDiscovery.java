@@ -27,6 +27,7 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst;
 import org.apache.dubbo.registry.kubernetes.util.KubernetesConfigUtils;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import com.alibaba.fastjson.JSONObject;
 import io.fabric8.kubernetes.api.model.EndpointAddress;
@@ -96,6 +97,8 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                     " Master URL: " + config.getMasterUrl() +
                     " Hostname: " + currentHostname;
             logger.error(message);
+        } else {
+            KubernetesMeshEnvListener.injectKubernetesEnv(kubernetesClient, namespace);
         }
     }
 
@@ -360,7 +363,7 @@ public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
                 }
 
                 instancePorts.forEach(port -> {
-                    ServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, ip, port);
+                    ServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, ip, port, ScopeModelUtil.getApplicationModel(getUrl().getScopeModel()));
 
                     String properties = pod.getMetadata().getAnnotations().get(KUBERNETES_PROPERTIES_KEY);
                     if (StringUtils.isNotEmpty(properties)) {

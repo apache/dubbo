@@ -39,7 +39,7 @@ public class MockInvokersSelector extends AbstractRouter {
     private static final int MOCK_INVOKERS_DEFAULT_PRIORITY = -100;
 
     public MockInvokersSelector() {
-        this.priority = MOCK_INVOKERS_DEFAULT_PRIORITY;
+        this.setPriority(MOCK_INVOKERS_DEFAULT_PRIORITY);
     }
 
     @Override

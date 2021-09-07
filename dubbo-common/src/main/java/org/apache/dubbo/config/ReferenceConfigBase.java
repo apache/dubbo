@@ -18,10 +18,10 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -114,7 +114,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     protected void preProcessRefresh() {
         super.preProcessRefresh();
         if (consumer == null) {
-            consumer = ApplicationModel.getConfigManager()
+            consumer = getConfigManager()
                     .getDefaultConsumer()
                     .orElseThrow(() -> new IllegalArgumentException("Default consumer is not initialized"));
         }
@@ -133,7 +133,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     public Map<String, String> getMetaData() {
         Map<String, String> metaData = new HashMap<>();
         ConsumerConfig consumer = this.getConsumer();
-        // consumer should be inited at preProcessRefresh()
+        // consumer should be initialized at preProcessRefresh()
         if (isRefreshed() && consumer == null) {
             throw new IllegalStateException("Consumer is not initialized");
         }
@@ -149,10 +149,14 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      * @return
      */
     public Class<?> getServiceInterfaceClass() {
-        Class actualInterface = interfaceClass;
+        Class<?> actualInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
             try {
-                actualInterface = Class.forName(interfaceName);
+                if(getInterfaceClassLoader() != null) {
+                    actualInterface = Class.forName(interfaceName, false, getInterfaceClassLoader());
+                } else {
+                    actualInterface = Class.forName(interfaceName);
+                }
             } catch (ClassNotFoundException e) {
                 return null;
             }
@@ -174,8 +178,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (StringUtils.isBlank(generic) && getConsumer() != null) {
             generic = getConsumer().getGeneric();
         }
-        interfaceClass = determineInterfaceClass(generic, interfaceName);
-
+        if(getInterfaceClassLoader() != null) {
+            interfaceClass = determineInterfaceClass(generic, interfaceName, getInterfaceClassLoader());
+        } else {
+            interfaceClass = determineInterfaceClass(generic, interfaceName);
+        }
         return interfaceClass;
     }
 
@@ -186,12 +193,16 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      * @return
      */
     public static Class<?> determineInterfaceClass(String generic, String interfaceName) {
+        return determineInterfaceClass(generic, interfaceName, ClassUtils.getClassLoader());
+    }
+
+    public static Class<?> determineInterfaceClass(String generic, String interfaceName, ClassLoader classLoader) {
         if (ProtocolUtils.isGeneric(generic)) {
             return GenericService.class;
         }
         try {
             if (interfaceName != null && interfaceName.length() > 0) {
-                return Class.forName(interfaceName, true, ClassUtils.getClassLoader());
+                return Class.forName(interfaceName, true, classLoader);
             }
         } catch (ClassNotFoundException t) {
             throw new IllegalStateException(t.getMessage(), t);
@@ -199,10 +210,20 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return null;
     }
 
+    @Override
+    protected void postProcessAfterScopeModelChanged() {
+        super.postProcessAfterScopeModelChanged();
+        if (this.consumer != null && this.consumer.getScopeModel() != scopeModel) {
+            this.consumer.setScopeModel(scopeModel);
+        }
+    }
+
+    @Override
     public String getInterface() {
         return interfaceName;
     }
 
+    @Override
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
     }
@@ -212,6 +233,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
+        setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
     }
 
     public String getClient() {
@@ -263,7 +285,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                 }
             }
             if (resolveFile != null && resolveFile.length() > 0) {
-                Properties properties = new Properties();
+                Properties properties = new RegexProperties();
                 try (FileInputStream fis = new FileInputStream(new File(resolveFile))) {
                     properties.load(fis);
                 } catch (IOException e) {

@@ -16,20 +16,35 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcStatus;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 
-public class ShortestResponseLoadBalanceTest extends LoadBalanceBaseTest{
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+public class ShortestResponseLoadBalanceTest extends LoadBalanceBaseTest {
 
     @Test
+    @Order(0)
     public void testSelectByWeight() {
         int sumInvoker1 = 0;
         int sumInvoker2 = 0;
         int loop = 10000;
 
         ShortestResponseLoadBalance lb = new ShortestResponseLoadBalance();
+        lb.setApplicationModel(ApplicationModel.defaultModel());
         for (int i = 0; i < loop; i++) {
             Invoker selected = lb.select(weightInvokersSR, null, weightTestInvocation);
 
@@ -49,5 +64,51 @@ public class ShortestResponseLoadBalanceTest extends LoadBalanceBaseTest{
         System.out.println(sumInvoker2);
 
         Assertions.assertEquals(sumInvoker1 + sumInvoker2, loop, "select failed!");
+    }
+
+    @Test
+    @Order(1)
+    public void testSelectByResponse() throws NoSuchFieldException, IllegalAccessException {
+        int sumInvoker1 = 0;
+        int sumInvoker2 = 0;
+        int sumInvoker5 = 0;
+        int loop = 10000;
+
+        //active -> 0
+        RpcStatus.endCount(weightInvoker5.getUrl(), weightTestInvocation.getMethodName(), 5000L, true);
+        ShortestResponseLoadBalance lb = new ShortestResponseLoadBalance();
+        lb.setApplicationModel(ApplicationModel.defaultModel());
+
+        //reset slideWindow
+        Field lastUpdateTimeField = ReflectUtils.forName(ShortestResponseLoadBalance.class.getName()).getDeclaredField("lastUpdateTime");
+        lastUpdateTimeField.setAccessible(true);
+        lastUpdateTimeField.setLong(lb, System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(31));
+        lb.select(weightInvokersSR, null, weightTestInvocation);
+
+        for (int i = 0; i < loop; i++) {
+            Invoker selected = lb.select(weightInvokersSR, null, weightTestInvocation);
+
+            if (selected.getUrl().getProtocol().equals("test1")) {
+                sumInvoker1++;
+            }
+
+            if (selected.getUrl().getProtocol().equals("test2")) {
+                sumInvoker2++;
+            }
+
+            if (selected.getUrl().getProtocol().equals("test5")) {
+                sumInvoker5++;
+            }
+        }
+        Map<Invoker<LoadBalanceBaseTest>, Integer> weightMap = weightInvokersSR.stream()
+            .collect(Collectors.toMap(Function.identity(), e -> Integer.valueOf(e.getUrl().getParameter("weight"))));
+        Integer totalWeight = weightMap.values().stream().reduce(0, Integer::sum);
+        // max deviation = expectWeightValue * 2
+        int expectWeightValue = loop / totalWeight;
+        int maxDeviation = expectWeightValue * 2;
+
+        Assertions.assertEquals(sumInvoker1 + sumInvoker2 + sumInvoker5, loop, "select failed!");
+        Assertions.assertTrue(Math.abs(sumInvoker2 / weightMap.get(weightInvoker2) - expectWeightValue) < maxDeviation, "select failed!");
+        Assertions.assertTrue(Math.abs(sumInvoker5 / weightMap.get(weightInvoker5) - expectWeightValue) < maxDeviation, "select failed!");
     }
 }

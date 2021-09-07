@@ -63,7 +63,7 @@ public class DefaultDubboConfigBinder extends AbstractDubboConfigBinder {
                 builder.append(", " + errors.get(i).getField());
             });
         }
-        builder.append("]");
+        builder.append(']');
         return builder.toString();
     }
 }

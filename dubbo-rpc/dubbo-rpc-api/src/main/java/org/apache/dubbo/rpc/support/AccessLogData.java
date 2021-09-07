@@ -30,9 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-
 /**
  * AccessLogData is a container for log event data. In internally uses map and store each filed of log as value. It
  * does not generate any dynamic value e.g. time stamp, local jmv machine host address etc. It does not allow any null
@@ -196,41 +193,41 @@ public final class AccessLogData {
     public String getLogMessage() {
         StringBuilder sn = new StringBuilder();
 
-        sn.append("[")
+        sn.append('[')
                 .append(MESSAGE_DATE_FORMATTER.format(getInvocationTime()))
                 .append("] ")
                 .append(get(REMOTE_HOST))
-                .append(":")
+                .append(':')
                 .append(get(REMOTE_PORT))
                 .append(" -> ")
                 .append(get(LOCAL_HOST))
-                .append(":")
+                .append(':')
                 .append(get(LOCAL_PORT))
                 .append(" - ");
 
         String group = get(GROUP) != null ? get(GROUP).toString() : "";
         if (StringUtils.isNotEmpty(group)) {
-            sn.append(group).append("/");
+            sn.append(group).append('/');
         }
 
         sn.append(get(SERVICE));
 
         String version = get(VERSION) != null ? get(VERSION).toString() : "";
         if (StringUtils.isNotEmpty(version)) {
-            sn.append(":").append(version);
+            sn.append(':').append(version);
         }
 
-        sn.append(" ");
+        sn.append(' ');
         sn.append(get(METHOD_NAME));
 
-        sn.append("(");
+        sn.append('(');
         Class<?>[] types = get(TYPES) != null ? (Class<?>[]) get(TYPES) : new Class[0];
         boolean first = true;
         for (Class<?> type : types) {
             if (first) {
                 first = false;
             } else {
-                sn.append(",");
+                sn.append(',');
             }
             sn.append(type.getName());
         }
@@ -271,8 +268,8 @@ public final class AccessLogData {
     public void buildAccessLogData(Invoker<?> invoker, Invocation inv) {
         setServiceName(invoker.getInterface().getName());
         setMethodName(inv.getMethodName());
-        setVersion(invoker.getUrl().getParameter(VERSION_KEY));
-        setGroup(invoker.getUrl().getParameter(GROUP_KEY));
+        setVersion(invoker.getUrl().getVersion());
+        setGroup(invoker.getUrl().getGroup());
         setInvocationTime(new Date());
         setTypes(inv.getParameterTypes());
         setArguments(inv.getArguments());

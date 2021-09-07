@@ -226,13 +226,13 @@ public class TelnetCodec extends TransportCodec {
                     String ov = history.get(old);
                     StringBuilder buf = new StringBuilder();
                     for (int i = 0; i < ov.length(); i++) {
-                        buf.append("\b");
+                        buf.append('\b');
                     }
                     for (int i = 0; i < ov.length(); i++) {
-                        buf.append(" ");
+                        buf.append(' ');
                     }
                     for (int i = 0; i < ov.length(); i++) {
-                        buf.append("\b");
+                        buf.append('\b');
                     }
                     value = buf.toString() + value;
                 }

@@ -48,4 +48,18 @@ public class ClusterUtils {
         return providerURLMergeProcessor.mergeUrl(remoteUrl, localMap);
     }
 
+    public static Map<String, String> mergeLocalParams(Map<String, String> localMap) {
+        String ump = localMap.get(URL_MERGE_PROCESSOR_KEY);
+        ProviderURLMergeProcessor providerURLMergeProcessor;
+
+        if (StringUtils.isNotEmpty(ump)) {
+            providerURLMergeProcessor = ExtensionLoader.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
+        } else {
+            providerURLMergeProcessor = ExtensionLoader.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
+        }
+
+        return providerURLMergeProcessor.mergeLocalParams(localMap);
+
+    }
+
 }

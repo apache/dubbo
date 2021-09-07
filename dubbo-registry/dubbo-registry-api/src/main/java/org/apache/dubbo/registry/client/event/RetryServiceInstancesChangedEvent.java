@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.client.event;
 
+import java.util.Collections;
+
 /**
  * A retry task when is failed.
  */
@@ -23,8 +25,8 @@ public class RetryServiceInstancesChangedEvent extends ServiceInstancesChangedEv
 
     private volatile long failureRecordTime;
 
-    public RetryServiceInstancesChangedEvent() {
-        super();
+    public RetryServiceInstancesChangedEvent(String serviceName) {
+        super(serviceName, Collections.emptyList());// instance list has been stored by ServiceInstancesChangedListener
         this.failureRecordTime = System.currentTimeMillis();
     }
 

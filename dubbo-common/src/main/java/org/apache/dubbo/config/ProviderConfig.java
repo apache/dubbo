@@ -21,7 +21,8 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static org.apache.dubbo.common.constants.CommonConstants.ASYNC_THREAD_NUM_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_BACKGROUND_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_THREAD_NUM_KEY;
 
 /**
  * The service provider default configuration
@@ -157,9 +158,14 @@ public class ProviderConfig extends AbstractServiceConfig {
     private Integer wait;
 
     /**
-     * Thread num for asynchronous export-refer pool size
+     * Thread num for asynchronous export pool size
      */
-    private Integer asyncThreadNum;
+    private Integer exportThreadNum;
+
+    /**
+     * Whether export should run in background or not
+     */
+    private Boolean exportBackground;
 
     @Deprecated
     public void setProtocol(String protocol) {
@@ -430,13 +436,22 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.wait = wait;
     }
 
-    @Parameter(key = ASYNC_THREAD_NUM_KEY)
-    public Integer getAsyncThreadNum() {
-        return asyncThreadNum;
+    @Parameter(key = EXPORT_THREAD_NUM_KEY, excluded = true)
+    public Integer getExportThreadNum() {
+        return exportThreadNum;
     }
 
-    public void setAsyncThreadNum(Integer asyncThreadNum) {
-        this.asyncThreadNum = asyncThreadNum;
+    public void setExportThreadNum(Integer exportThreadNum) {
+        this.exportThreadNum = exportThreadNum;
+    }
+
+    @Parameter(key = EXPORT_BACKGROUND_KEY, excluded = true)
+    public Boolean getExportBackground() {
+        return exportBackground;
+    }
+
+    public void setExportBackground(Boolean exportBackground) {
+        this.exportBackground = exportBackground;
     }
 
     @Override

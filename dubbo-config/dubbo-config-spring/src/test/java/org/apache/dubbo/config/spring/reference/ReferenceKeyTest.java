@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.reference;
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
@@ -26,8 +25,15 @@ import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+
+import com.alibaba.spring.util.AnnotationUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +49,20 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 public class ReferenceKeyTest {
+
+    private static RegistryCenter singleRegistryCenter;
+
+    @BeforeAll
+    public static void beforeAll() {
+        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
+        singleRegistryCenter.startup();
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        singleRegistryCenter.shutdown();
+    }
+
 
     @BeforeEach
     protected void setUp() {
@@ -109,6 +129,7 @@ public class ReferenceKeyTest {
     }
 
     @Test
+    @Disabled("support multi reference config")
     public void testConfig2() {
         try {
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration2.class);
@@ -116,9 +137,10 @@ public class ReferenceKeyTest {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
-            String s = e.toString();
-            Assertions.assertTrue(s.contains("Already exists another reference bean with the same bean name and type but difference attributes"), getStackTrace(e));
-            Assertions.assertTrue(s.contains("ConsumerConfiguration2.demoService"), getStackTrace(e));
+            String msg = getStackTrace(e);
+            Assertions.assertTrue(msg.contains("Found multiple ReferenceConfigs with unique service name [demo/org.apache.dubbo.config.spring.api.DemoService:1.2.3]"), msg);
+//            Assertions.assertTrue(msg.contains("Already exists another reference bean with the same bean name and type but difference attributes"), msg);
+//            Assertions.assertTrue(msg.contains("ConsumerConfiguration2.demoService"), msg);
         }
     }
 
@@ -143,7 +165,8 @@ public class ReferenceKeyTest {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
-            Assertions.assertTrue(e.getMessage().contains("Duplicate spring bean name: demoService"), getStackTrace(e));
+            String msg = getStackTrace(e);
+            Assertions.assertTrue(msg.contains("Duplicate spring bean name: demoService"), msg);
         } finally {
             if (context != null) {
                 context.close();
@@ -171,9 +194,10 @@ public class ReferenceKeyTest {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
-            String checkString = "Already exists another bean definition with the same bean name, but cannot rename the reference bean name";
-            Assertions.assertTrue(e.getMessage().contains(checkString), getStackTrace(e));
-            Assertions.assertTrue(e.getMessage().contains("ConsumerConfiguration6.demoService"), getStackTrace(e));
+            String checkString = "Already exists another bean definition with the same bean name [demoService], but cannot rename the reference bean name";
+            String msg = getStackTrace(e);
+            Assertions.assertTrue(msg.contains(checkString), msg);
+            Assertions.assertTrue(msg.contains("ConsumerConfiguration6.demoService"), msg);
         }
     }
 

@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionFactory;
+import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -161,14 +161,15 @@ final public class MockInvoker<T> implements Invoker<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private Invoker<T> getInvoker(String mockService) {
+    private Invoker<T> getInvoker(String mock) {
+        Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
+        String mockService = ConfigUtils.isDefault(mock) ? serviceType.getName() + "Mock" : mock;
         Invoker<T> invoker = (Invoker<T>) MOCK_MAP.get(mockService);
         if (invoker != null) {
             return invoker;
         }
 
-        Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
-        T mockObject = (T) getMockObject(mockService, serviceType);
+        T mockObject = (T) getMockObject(mock, serviceType);
         invoker = PROXY_FACTORY.getInvoker(mockObject, serviceType, url);
         if (MOCK_MAP.size() < 10000) {
             MOCK_MAP.put(mockService, invoker);
@@ -188,9 +189,9 @@ final public class MockInvoker<T> implements Invoker<T> {
             mockClass = ReflectUtils.forName(mockService);
         } catch (Exception e) {
             if (!isDefault) {// does not check Spring bean if it is default config.
-                ExtensionFactory extensionFactory =
-                        ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension();
-                Object obj = extensionFactory.getExtension(serviceType, mockService);
+                ExtensionInjector extensionFactory =
+                        ExtensionLoader.getExtensionLoader(ExtensionInjector.class).getAdaptiveExtension();
+                Object obj = extensionFactory.getInstance(serviceType, mockService);
                 if (obj != null) {
                     return obj;
                 }

@@ -40,6 +40,8 @@ import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl2;
 import org.apache.dubbo.common.extension.ext10_multi_names.Ext10MultiNames;
 import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
+import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Impl1;
 import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper1;
 import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper2;
 import org.apache.dubbo.common.extension.ext7.InitErrorExt;
@@ -58,9 +60,10 @@ import org.apache.dubbo.common.extension.ext9_empty.Ext9Empty;
 import org.apache.dubbo.common.extension.ext9_empty.impl.Ext9EmptyImpl;
 import org.apache.dubbo.common.extension.injection.InjectExt;
 import org.apache.dubbo.common.extension.injection.impl.InjectExtImpl;
+import org.apache.dubbo.common.extension.wrapper.impl.DemoImpl;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -70,7 +73,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getLoadingStrategies;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
@@ -79,11 +81,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class ExtensionLoaderTest {
+
+    private <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        return ApplicationModel.defaultModel().getExtensionDirector().getExtensionLoader(type);
+    }
+
     @Test
     public void test_getExtensionLoader_Null() throws Exception {
         try {
@@ -147,6 +156,19 @@ public class ExtensionLoaderTest {
     public void test_getExtension_WithWrapper() throws Exception {
         WrappedExt impl1 = getExtensionLoader(WrappedExt.class).getExtension("impl1");
         assertThat(impl1, anyOf(instanceOf(Ext5Wrapper1.class), instanceOf(Ext5Wrapper2.class)));
+        assertThat(impl1, instanceOf(WrappedExtWrapper.class));
+        // get origin instance from wrapper
+        WrappedExt originImpl1 = impl1;
+        while (originImpl1 instanceof WrappedExtWrapper) {
+            originImpl1 = ((WrappedExtWrapper)originImpl1).getOrigin();
+        }
+
+        // test unwrapped instance
+        WrappedExt unwrappedImpl1 = getExtensionLoader(WrappedExt.class).getExtension("impl1", false);
+        assertThat(unwrappedImpl1, instanceOf(Ext5Impl1.class));
+        assertNotSame(unwrappedImpl1, impl1);
+        assertSame(unwrappedImpl1, originImpl1);
+
 
         WrappedExt impl2 = getExtensionLoader(WrappedExt.class).getExtension("impl2");
         assertThat(impl2, anyOf(instanceOf(Ext5Wrapper1.class), instanceOf(Ext5Wrapper2.class)));
@@ -266,7 +288,6 @@ public class ExtensionLoaderTest {
 
         assertThat(ext, instanceOf(AddExt1_ManualAdd1.class));
         assertEquals("Manual1", getExtensionLoader(AddExt1.class).getExtensionName(AddExt1_ManualAdd1.class));
-        ExtensionLoader.resetExtensionLoader(AddExt1.class);
     }
 
     @Test
@@ -336,7 +357,6 @@ public class ExtensionLoaderTest {
             assertThat(ext, instanceOf(AddExt1_ManualAdd2.class));
             assertEquals("impl1", getExtensionLoader(AddExt1.class).getExtensionName(AddExt1_ManualAdd2.class));
         }
-        ExtensionLoader.resetExtensionLoader(AddExt1.class);
     }
 
     @Test
@@ -350,7 +370,6 @@ public class ExtensionLoaderTest {
 
         adaptive = loader.getAdaptiveExtension();
         assertTrue(adaptive instanceof AddExt3_ManualAdaptive);
-        ExtensionLoader.resetExtensionLoader(AddExt3.class);
     }
 
     @Test
@@ -399,14 +418,14 @@ public class ExtensionLoaderTest {
         List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "default_group");
         Assertions.assertEquals(1, list.size());
-        Assertions.assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
+        assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
 
         // test group
         url = url.addParameter(GROUP_KEY, "group1");
         list = getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "group1");
         Assertions.assertEquals(1, list.size());
-        Assertions.assertSame(list.get(0).getClass(), GroupActivateExtImpl.class);
+        assertSame(list.get(0).getClass(), GroupActivateExtImpl.class);
 
         // test old @Activate group
         url = url.addParameter(GROUP_KEY, "old_group");
@@ -423,7 +442,7 @@ public class ExtensionLoaderTest {
         list = getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "value");
         Assertions.assertEquals(1, list.size());
-        Assertions.assertSame(list.get(0).getClass(), ValueActivateExtImpl.class);
+        assertSame(list.get(0).getClass(), ValueActivateExtImpl.class);
 
         // test order
         url = URL.valueOf("test://localhost/test");
@@ -431,8 +450,8 @@ public class ExtensionLoaderTest {
         list = getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, new String[]{}, "order");
         Assertions.assertEquals(2, list.size());
-        Assertions.assertSame(list.get(0).getClass(), OrderActivateExtImpl1.class);
-        Assertions.assertSame(list.get(1).getClass(), OrderActivateExtImpl2.class);
+        assertSame(list.get(0).getClass(), OrderActivateExtImpl1.class);
+        assertSame(list.get(1).getClass(), OrderActivateExtImpl2.class);
     }
 
     @Test
@@ -442,25 +461,36 @@ public class ExtensionLoaderTest {
         List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, "ext", "default_group");
         Assertions.assertEquals(2, list.size());
-        Assertions.assertSame(list.get(0).getClass(), OrderActivateExtImpl1.class);
-        Assertions.assertSame(list.get(1).getClass(), ActivateExt1Impl1.class);
+        assertSame(list.get(0).getClass(), OrderActivateExtImpl1.class);
+        assertSame(list.get(1).getClass(), ActivateExt1Impl1.class);
 
         url = URL.valueOf("test://localhost/test?ext=default,order1");
         list = getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, "ext", "default_group");
         Assertions.assertEquals(2, list.size());
-        Assertions.assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
-        Assertions.assertSame(list.get(1).getClass(), OrderActivateExtImpl1.class);
+        assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
+        assertSame(list.get(1).getClass(), OrderActivateExtImpl1.class);
+
+        url = URL.valueOf("test://localhost/test?ext=order1");
+        list = getExtensionLoader(ActivateExt1.class)
+            .getActivateExtension(url, "ext", "default_group");
+        Assertions.assertEquals(2, list.size());
+        assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
+        assertSame(list.get(1).getClass(), OrderActivateExtImpl1.class);
     }
 
     @Test
     public void testInjectExtension() {
+        // register bean for test ScopeBeanExtensionInjector
+        DemoImpl demoBean = new DemoImpl();
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(demoBean);
         // test default
         InjectExt injectExt = getExtensionLoader(InjectExt.class).getExtension("injection");
         InjectExtImpl injectExtImpl = (InjectExtImpl) injectExt;
         Assertions.assertNotNull(injectExtImpl.getSimpleExt());
         Assertions.assertNull(injectExtImpl.getSimpleExt1());
         Assertions.assertNull(injectExtImpl.getGenericType());
+        Assertions.assertSame(demoBean, injectExtImpl.getDemo());
     }
 
     @Test
@@ -550,7 +580,7 @@ public class ExtensionLoaderTest {
         List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
         ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(false),
                 new DubboInternalLoadingStrategyTest(false));
-        ExtensionLoader<DuplicatedWithoutOverriddenExt> extensionLoader = ExtensionLoader.getExtensionLoader(DuplicatedWithoutOverriddenExt.class);
+        ExtensionLoader<DuplicatedWithoutOverriddenExt> extensionLoader = getExtensionLoader(DuplicatedWithoutOverriddenExt.class);
         try {
             extensionLoader.getExtension("duplicated");
             fail();
@@ -568,7 +598,7 @@ public class ExtensionLoaderTest {
         List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
         ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(true),
                 new DubboInternalLoadingStrategyTest(true));
-        ExtensionLoader<DuplicatedOverriddenExt> extensionLoader = ExtensionLoader.getExtensionLoader(DuplicatedOverriddenExt.class);
+        ExtensionLoader<DuplicatedOverriddenExt> extensionLoader = getExtensionLoader(DuplicatedOverriddenExt.class);
         DuplicatedOverriddenExt duplicatedOverriddenExt = extensionLoader.getExtension("duplicated");
         assertEquals("DuplicatedOverriddenExt1", duplicatedOverriddenExt.echo());
         //recover the loading strategies

@@ -128,7 +128,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.0.2-SNAPSHOT</revision>
+        <revision>3.0.3-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -152,6 +152,8 @@
         <module>dubbo-metadata</module>
         <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
+        <module>dubbo-native</module>
+        <module>dubbo-test</module>
     </modules>
 
     <dependencyManagement>
@@ -189,6 +191,12 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <version>${mockito_version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
             <version>${mockito_version}</version>
             <scope>test</scope>
         </dependency>
@@ -310,8 +318,11 @@
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
                                         **/istio/v1/auth/Ca.java,
                                         **/istio/v1/auth/IstioCertificateServiceGrpc.java,
+                                        **/com/google/rpc/*,
                                         **/generated/**/*,
+                                        **/grpc/health/**/*,
                                         **/target/**/*,
+                                        **/*.json
                                     </excludes>
                                 </configuration>
                                 <goals>
@@ -683,6 +694,7 @@
             <plugins>
                 <!-- keep surefire and failsafe in sync -->
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven_surefire_version}</version>
                 </plugin>

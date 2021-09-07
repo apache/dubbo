@@ -17,10 +17,10 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -211,7 +211,7 @@ public class RegistryConfigTest {
     public void testMetaData() {
         RegistryConfig config = new RegistryConfig();
         Map<String, String> metaData = config.getMetaData();
-        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
     }
 
     @Test
@@ -223,18 +223,15 @@ public class RegistryConfigTest {
         SysProps.setProperty("zookeeper.address", "localhost");
         SysProps.setProperty("zookeeper.port", "2188");
 
-        try {
 
-            DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .initialize();
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .initialize();
+        Collection<RegistryConfig> registries = ApplicationModel.defaultModel().getApplicationConfigManager().getRegistries();
+        Assertions.assertEquals(1, registries.size());
+        RegistryConfig registryConfig = registries.iterator().next();
+        Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());
 
-            Collection<RegistryConfig> registries = ApplicationModel.getConfigManager().getRegistries();
-            Assertions.assertEquals(1, registries.size());
-            RegistryConfig registryConfig = registries.iterator().next();
-            Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());
-        } finally {
-        }
     }
 
     public void testPreferredWithTrueValue() {

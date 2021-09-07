@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -52,14 +53,20 @@ import static org.apache.dubbo.rpc.cluster.Constants.STATE_ROUTER_KEY;
 public class RouterChain<T> {
     private static final Logger logger = LoggerFactory.getLogger(RouterChain.class);
 
-    // full list of addresses from registry, classified by method name.
+    /**
+     * full list of addresses from registry, classified by method name.
+     */
     private volatile List<Invoker<T>> invokers = Collections.emptyList();
 
-    // containing all routers, reconstruct every time 'route://' urls change.
+    /**
+     * containing all routers, reconstruct every time 'route://' urls change.
+     */
     private volatile List<Router> routers = Collections.emptyList();
 
-    // Fixed router instances: ConfigConditionRouter, TagRouter, e.g., the rule for each instance may change but the
-    // instance will never delete or recreate.
+    /**
+     * Fixed router instances: ConfigConditionRouter, TagRouter, e.g.,
+     * the rule for each instance may change but the instance will never delete or recreate.
+     */
     private List<Router> builtinRouters = Collections.emptyList();
 
     private List<StateRouter> builtinStateRouters = Collections.emptyList();
@@ -76,7 +83,7 @@ public class RouterChain<T> {
 
     private final ExecutorService loopPool;
 
-    private boolean firstBuildCache = true;
+    private AtomicBoolean firstBuildCache = new AtomicBoolean(true);
 
     public static <T> RouterChain<T> buildChain(URL url) {
         return new RouterChain<>(url);
@@ -235,18 +242,18 @@ public class RouterChain<T> {
     /**
      * Cache the address list for each StateRouter.
      * @param router router
-     * @param orign The original address cache
+     * @param origin The original address cache
      * @param invokers The full address list
      * @param notify Whether the addresses in registry has changed.
      * @return
      */
-    private RouterCache poolRouter(StateRouter router, AddrCache<T> orign, List<Invoker<T>> invokers, boolean notify) {
+    private RouterCache poolRouter(StateRouter router, AddrCache<T> origin, List<Invoker<T>> invokers, boolean notify) {
         String routerName = router.getName();
         RouterCache routerCache;
-        if (isCacheMiss(orign, routerName) || router.shouldRePool() || notify) {
+        if (isCacheMiss(origin, routerName) || router.shouldRePool() || notify) {
             return router.pool(invokers);
         } else {
-            routerCache = orign.getCache().get(routerName);
+            routerCache = origin.getCache().get(routerName);
         }
         if (routerCache == null) {
             return new RouterCache();
@@ -265,8 +272,8 @@ public class RouterChain<T> {
      * @param notify Whether the addresses in registry has changed.
      */
     public void loop(boolean notify) {
-        if (firstBuildCache) {
-            firstBuildCache = false;
+        if (firstBuildCache.get()) {
+            firstBuildCache.compareAndSet(true,false);
             buildCache(notify);
         }
         if (notify) {
@@ -292,8 +299,8 @@ public class RouterChain<T> {
 
         @Override
         public void run() {
-            loopPermit.release();
             buildCache(notify);
+            loopPermit.release();
         }
     }
 

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
@@ -36,7 +37,6 @@ import java.util.Properties;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
-import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
@@ -49,6 +49,7 @@ import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of
 public class NacosNamingServiceUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(NacosNamingServiceUtils.class);
+    private static String NACOS_GROUP_KEY = "nacos.group";
 
     /**
      * Convert the {@link ServiceInstance} to {@link Instance}
@@ -75,23 +76,16 @@ public class NacosNamingServiceUtils {
      * @return non-null
      * @since 2.7.5
      */
-    public static ServiceInstance toServiceInstance(Instance instance) {
-        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(NamingUtils.getServiceName(instance.getServiceName()), instance.getIp(), instance.getPort());
+    public static ServiceInstance toServiceInstance(URL registryUrl, Instance instance) {
+        DefaultServiceInstance serviceInstance =
+            new DefaultServiceInstance(
+                NamingUtils.getServiceName(instance.getServiceName()),
+                instance.getIp(), instance.getPort(),
+                ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
         serviceInstance.setMetadata(instance.getMetadata());
         serviceInstance.setEnabled(instance.isEnabled());
         serviceInstance.setHealthy(instance.isHealthy());
         return serviceInstance;
-    }
-
-    /**
-     * The group of {@link NamingService} to register
-     *
-     * @param connectionURL {@link URL connection url}
-     * @return non-null, "default" as default
-     * @since 2.7.5
-     */
-    public static String getGroup(URL connectionURL) {
-        return connectionURL.getParameter("nacos.group", DEFAULT_GROUP);
     }
 
     /**
@@ -125,13 +119,13 @@ public class NacosNamingServiceUtils {
     private static void setServerAddr(URL url, Properties properties) {
         StringBuilder serverAddrBuilder =
                 new StringBuilder(url.getHost()) // Host
-                        .append(":")
+                        .append(':')
                         .append(url.getPort()); // Port
 
         // Append backup parameter as other servers
         String backup = url.getParameter(BACKUP_KEY);
         if (backup != null) {
-            serverAddrBuilder.append(",").append(backup);
+            serverAddrBuilder.append(',').append(backup);
         }
 
         String serverAddr = serverAddrBuilder.toString();

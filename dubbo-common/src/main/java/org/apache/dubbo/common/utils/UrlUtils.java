@@ -69,7 +69,7 @@ public class UrlUtils {
 
     public static URL parseURL(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
-            return null;
+            throw new IllegalArgumentException("Address is not allowed to be empty, please re-enter.");
         }
         String url;
         if (address.contains("://") || address.contains(URL_PARAM_STARTING_SYMBOL)) {
@@ -166,11 +166,11 @@ public class UrlUtils {
 
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
-            return null;
+            throw new IllegalArgumentException("Address is not allowed to be empty, please re-enter.");
         }
         String[] addresses = REGISTRY_SPLIT_PATTERN.split(address);
         if (addresses == null || addresses.length == 0) {
-            return null; //here won't be empty
+            throw new IllegalArgumentException("Addresses is not allowed to be empty, please re-enter."); //here won't be empty
         }
         List<URL> registries = new ArrayList<URL>();
         for (String addr : addresses) {

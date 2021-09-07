@@ -69,7 +69,7 @@ public class ConditionRouter extends AbstractRouter {
     private boolean enabled;
 
     public ConditionRouter(String rule, boolean force, boolean enabled) {
-        this.force = force;
+        this.setForce(force);
         this.enabled = enabled;
         if (enabled) {
             this.init(rule);
@@ -77,9 +77,9 @@ public class ConditionRouter extends AbstractRouter {
     }
 
     public ConditionRouter(URL url) {
-        this.url = url;
-        this.priority = url.getParameter(PRIORITY_KEY, 0);
-        this.force = url.getParameter(FORCE_KEY, false);
+        this.setUrl(url);
+        this.setPriority(url.getParameter(PRIORITY_KEY, 0));
+        this.setForce(url.getParameter(FORCE_KEY, false));
         this.enabled = url.getParameter(ENABLED_KEY, true);
         if (enabled) {
             init(url.getParameterAndDecoded(RULE_KEY));
@@ -201,7 +201,7 @@ public class ConditionRouter extends AbstractRouter {
             }
             if (!result.isEmpty()) {
                 return result;
-            } else if (force) {
+            } else if (this.isForce()) {
                 logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
                 return result;
             }
@@ -215,12 +215,7 @@ public class ConditionRouter extends AbstractRouter {
     public boolean isRuntime() {
         // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
 //        return true;
-        return this.url.getParameter(RUNTIME_KEY, false);
-    }
-
-    @Override
-    public URL getUrl() {
-        return url;
+        return this.getUrl().getParameter(RUNTIME_KEY, false);
     }
 
     boolean matchWhen(URL url, Invocation invocation) {
@@ -256,9 +251,6 @@ public class ConditionRouter extends AbstractRouter {
                 sampleValue = url.getHost();
             } else {
                 sampleValue = sample.get(key);
-                if (sampleValue == null) {
-                    sampleValue = sample.get(key);
-                }
             }
             if (sampleValue != null) {
                 if (!matchPair.getValue().isMatch(sampleValue, param)) {

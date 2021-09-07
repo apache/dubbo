@@ -18,19 +18,15 @@ package org.apache.dubbo.common.url.component;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Map;
 import java.util.Objects;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 
 public class DubboServiceAddressURL extends ServiceAddressURL {
-    public static final String[] PROVIDER_FIRST_KEYS = new String[]{RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY};
 
     public static DubboServiceAddressURL valueOf(String rawURL, URL consumerURL) {
         return valueOf(rawURL, consumerURL, null);
@@ -48,6 +44,7 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
         this.overrideURL = overrideURL;
     }
 
+    @Override
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
         return (T) new DubboServiceAddressURL(urlAddress, urlParam, this.consumerURL, this.overrideURL);
     }
@@ -99,6 +96,16 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
 
     public void setOverrideURL(ServiceConfigURL overrideURL) {
         this.overrideURL = overrideURL;
+    }
+
+    @Override
+    public ScopeModel getScopeModel() {
+        return consumerURL.getScopeModel();
+    }
+
+    @Override
+    public ServiceModel getServiceModel() {
+        return consumerURL.getServiceModel();
     }
 
     @Override

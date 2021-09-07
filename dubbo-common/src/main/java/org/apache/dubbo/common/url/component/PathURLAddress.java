@@ -162,13 +162,13 @@ public class PathURLAddress extends URLAddress {
         if (StringUtils.isNotEmpty(host)) {
             buf.append(host);
             if (port > 0) {
-                buf.append(":");
+                buf.append(':');
                 buf.append(port);
             }
         }
 
         if (StringUtils.isNotEmpty(path)) {
-            buf.append("/");
+            buf.append('/');
             buf.append(path);
         }
 

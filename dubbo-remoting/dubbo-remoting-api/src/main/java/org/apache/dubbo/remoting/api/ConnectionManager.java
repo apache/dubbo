@@ -17,12 +17,13 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.RemotingException;
 
 import java.util.function.Consumer;
 
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface ConnectionManager {
 
     Connection connect(URL url) throws RemotingException;

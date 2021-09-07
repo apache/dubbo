@@ -495,6 +495,11 @@ public interface AnnotationUtils {
                 filteredAttributes.put(key, val);
             }
         });
+        // remove void class, compatible with spring 3.x
+        Object interfaceClassValue = filteredAttributes.get("interfaceClass");
+        if (interfaceClassValue instanceof String && StringUtils.isEquals((String) interfaceClassValue, "void")) {
+            filteredAttributes.remove("interfaceClass");
+        }
         return filteredAttributes;
     }
 

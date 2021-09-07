@@ -44,8 +44,8 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         super(url, executor);
     }
 
-    public static UnaryClientStream unary(URL url, Executor executor) {
-        return new UnaryClientStream(url, executor);
+    public static UnaryClientStream unary(URL url) {
+        return new UnaryClientStream(url);
     }
 
     public static AbstractClientStream stream(URL url) {
@@ -77,13 +77,13 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         } catch (RejectedExecutionException e) {
             LOGGER.error("Consumer's thread pool is full", e);
             getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
-                .withDescription("Consumer's thread pool is full").asException());
+                    .withDescription("Consumer's thread pool is full").asException());
         } catch (Throwable t) {
             LOGGER.error("Consumer submit request to thread pool error ", t);
             getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withCause(t)
-                .withDescription("Consumer's error")
-                .asException());
+                    .withCause(t)
+                    .withDescription("Consumer's error")
+                    .asException());
         }
     }
 
@@ -128,11 +128,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             }
             if (getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleResponseWrapper wrapper = TripleUtil.unpack(data,
-                    TripleWrapper.TripleResponseWrapper.class);
+                        TripleWrapper.TripleResponseWrapper.class);
                 if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
                     throw new UnsupportedOperationException("Received inconsistent serialization type from server, " +
-                        "reject to deserialize! Expected:" + getSerializeType() +
-                        " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()));
+                            "reject to deserialize! Expected:" + getSerializeType() +
+                            " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()));
                 }
                 return TripleUtil.unwrapResp(getUrl(), wrapper, getMultipleSerialization());
             } else {
@@ -145,22 +145,18 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
     protected Metadata createRequestMeta(RpcInvocation inv) {
         Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleConstant.PATH_KEY, "/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName())
-            .put(TripleConstant.AUTHORITY_KEY, getUrl().getAddress())
-            .put(TripleConstant.CONTENT_TYPE_KEY, TripleConstant.CONTENT_PROTO)
-            .put(TripleConstant.TIMEOUT, inv.get(CommonConstants.TIMEOUT_KEY) + "m")
-            .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+        metadata.put(TripleHeaderEnum.PATH_KEY.getHeader(), "/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName())
+                .put(TripleHeaderEnum.AUTHORITY_KEY.getHeader(), getUrl().getAddress())
+                .put(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+                .put(TripleHeaderEnum.TIMEOUT.getHeader(), inv.get(CommonConstants.TIMEOUT_KEY) + "m")
+                .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
-        metadata.putIfNotNull(TripleConstant.SERVICE_VERSION, inv.getInvoker().getUrl().getVersion())
-            .putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
-                (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
-            .putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
-                (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
-            .putIfNotNull(TripleConstant.SERVICE_GROUP, inv.getInvoker().getUrl().getGroup());
-        inv.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
-        inv.getObjectAttachments().remove(CommonConstants.INTERFACE_KEY);
-        inv.getObjectAttachments().remove(CommonConstants.PATH_KEY);
-        metadata.forEach(e -> metadata.put(e.getKey(), e.getValue()));
+        metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), inv.getInvoker().getUrl().getVersion())
+                .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
+                        (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
+                .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
+                        (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
+                .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), inv.getInvoker().getUrl().getGroup());
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {
             convertAttachment(metadata, attachments);
@@ -173,9 +169,9 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         public void onNext(Object data) {
             RpcInvocation invocation = (RpcInvocation) data;
             final Metadata metadata = createRequestMeta(invocation);
-            getTransportSubscriber().tryOnMetadata(metadata, false);
+            getTransportSubscriber().onMetadata(metadata, false);
             final byte[] bytes = encodeRequest(invocation);
-            getTransportSubscriber().tryOnData(bytes, false);
+            getTransportSubscriber().onData(bytes, false);
         }
 
         @Override
@@ -185,7 +181,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
         @Override
         public void onCompleted() {
-            getTransportSubscriber().tryOnComplete();
+            getTransportSubscriber().onComplete();
         }
     }
 

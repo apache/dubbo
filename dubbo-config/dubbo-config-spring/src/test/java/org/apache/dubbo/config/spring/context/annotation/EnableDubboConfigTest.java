@@ -23,11 +23,12 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.spring.ZooKeeperServer;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,13 +48,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  */
 public class EnableDubboConfigTest {
 
+    private RegistryCenter multipleRegistryCenter;
+
     @BeforeEach
     public void setUp() {
+        multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
+        multipleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterEach
     public void tearDown() {
+        DubboBootstrap.reset();
+        multipleRegistryCenter.shutdown();
     }
 
     //@Test
@@ -101,8 +108,6 @@ public class EnableDubboConfigTest {
     //@Test
     public void testMultiple() {
 
-        ZooKeeperServer.start();
-
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(TestMultipleConfig.class);
         context.refresh();
@@ -113,7 +118,7 @@ public class EnableDubboConfigTest {
         RegistryConfig registry2 = context.getBean("registry2", RegistryConfig.class);
         Assertions.assertEquals(2182, registry2.getPort());
 
-        ConfigManager configManager = ApplicationModel.getConfigManager();
+        ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
         Collection<ProtocolConfig> protocolConfigs = configManager.getProtocols();
         Assertions.assertEquals(3, protocolConfigs.size());
 

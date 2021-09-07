@@ -70,7 +70,7 @@ public class ReplierDispatcherTest {
         for (int i = 5; i < 100; i++) {
             StringBuilder sb = new StringBuilder();
             for (int j = 0; j < i * 100; j++)
-                sb.append("(").append(random.nextLong()).append(")");
+                sb.append('(').append(random.nextLong()).append(')');
             Data d = new Data();
             d.setData(sb.toString());
             Assertions.assertEquals(client.request(d).get().toString(), "hello world");

@@ -94,4 +94,11 @@ public interface Constants {
     String SERIALIZATION_SECURITY_CHECK_KEY = "serialization.security.check";
     String INVOCATION_KEY = "invocation";
     String SERIALIZATION_ID_KEY = "serialization_id";
+
+    String H2_SETTINGS_HEADER_TABLE_SIZE_KEY = "h2.settings.header-table-size";
+    String H2_SETTINGS_ENABLE_PUSH_KEY = "h2.settings.enable-push";
+    String H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY = "h2.settings.max-concurrent-streams";
+    String H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY = "h2.settings.initial-window-size";
+    String H2_SETTINGS_MAX_FRAME_SIZE_KEY = "h2.settings.max-frame-size";
+    String H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY = "h2.settings.max-header-list-size";
 }

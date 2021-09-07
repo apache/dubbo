@@ -22,13 +22,14 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.Message;
@@ -40,6 +41,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
+
 public abstract class AbstractServerStream extends AbstractStream implements Stream {
 
     protected static final ExecutorRepository EXECUTOR_REPOSITORY =
@@ -47,6 +50,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     private final ProviderModel providerModel;
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
+    private List<HeaderFilter> headerFilters;
 
     protected AbstractServerStream(URL url) {
         this(url, lookupProviderModel(url));
@@ -60,6 +64,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         super(url, executor);
         this.providerModel = providerModel;
         this.serialize(getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+        this.headerFilters = ExtensionLoader.getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
     }
 
     private static Executor lookupExecutor(URL url, ProviderModel providerModel) {
@@ -86,7 +91,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     }
 
     private static ProviderModel lookupProviderModel(URL url) {
-        ServiceRepository repo = ApplicationModel.getServiceRepository();
+        FrameworkServiceRepository repo = ScopeModelUtil.getFrameworkModel(url.getScopeModel()).getServiceRepository();
         final ProviderModel model = repo.lookupExportedService(url.getServiceKey());
         if (model != null) {
             ClassLoadUtil.switchContextLoader(model.getServiceInterfaceClass().getClassLoader());
@@ -107,31 +112,27 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return invoker;
     }
 
+    public List<HeaderFilter> getHeaderFilters() {
+        return headerFilters;
+    }
+
     public ProviderModel getProviderModel() {
         return providerModel;
     }
 
     protected RpcInvocation buildInvocation(Metadata metadata) {
-        RpcInvocation inv = new RpcInvocation();
-        inv.setServiceName(getServiceDescriptor().getServiceName());
+        RpcInvocation inv = new RpcInvocation(getUrl().getServiceModel(),
+            getMethodName(), getServiceDescriptor().getServiceName(),
+            getUrl().getProtocolServiceKey(), getMethodDescriptor().getParameterClasses(), new Object[0]);
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
-        inv.setMethodName(getMethodDescriptor().getMethodName());
-        inv.setParameterTypes(getMethodDescriptor().getParameterClasses());
         inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
 
-        final Map<String, Object> attachments = parseMetadataToMap(metadata);
-        attachments.remove("interface");
-        attachments.remove("serialization");
-        attachments.remove("te");
-        attachments.remove("path");
-        attachments.remove(TripleConstant.CONTENT_TYPE_KEY);
-        attachments.remove(TripleConstant.SERVICE_GROUP);
-        attachments.remove(TripleConstant.SERVICE_VERSION);
-        attachments.remove(TripleConstant.MESSAGE_KEY);
-        attachments.remove(TripleConstant.STATUS_KEY);
-        attachments.remove(TripleConstant.TIMEOUT);
+        final Map<String, Object> attachments = parseMetadataToAttachmentMap(metadata);
         inv.setObjectAttachments(attachments);
 
+        for (HeaderFilter headerFilter : getHeaderFilters()) {
+            inv = headerFilter.invoke(getInvoker(), inv);
+        }
         return inv;
     }
 
@@ -146,9 +147,9 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                         TripleWrapper.TripleRequestWrapper.class);
                 if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
                     transportError(GrpcStatus.fromCode(GrpcStatus.Code.INVALID_ARGUMENT)
-                        .withDescription("Received inconsistent serialization type from client, " +
-                            "reject to deserialize! Expected:" + getSerializeType() +
-                            " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType())));
+                            .withDescription("Received inconsistent serialization type from client, " +
+                                    "reject to deserialize! Expected:" + getSerializeType() +
+                                    " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType())));
                     return null;
                 }
                 if (getMethodDescriptor() == null) {
@@ -193,7 +194,16 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     @Override
     public void execute(Runnable runnable) {
         try {
-            super.execute(runnable);
+            super.execute(() -> {
+                try {
+                    runnable.run();
+                } catch (Throwable t) {
+                    LOGGER.error("Exception processing triple message", t);
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("Exception in invoker chain :" + t.getMessage())
+                            .withCause(t));
+                }
+            });
         } catch (RejectedExecutionException e) {
             LOGGER.error("Provider's thread pool is full", e);
             transportError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)

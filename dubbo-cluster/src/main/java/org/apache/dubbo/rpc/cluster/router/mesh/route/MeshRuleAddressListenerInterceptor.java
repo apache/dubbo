@@ -19,7 +19,9 @@ package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.rpc.cluster.Directory;
 
@@ -34,11 +36,11 @@ public class MeshRuleAddressListenerInterceptor implements AddressListener {
     @Override
     public List<URL> notify(List<URL> addresses, URL consumerUrl, Directory registryDirectory) {
 
-        if (addresses != null && !addresses.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(addresses)) {
             for (URL url : addresses) {
 
                 String app = url.getRemoteApplication();
-                if (app != null && !app.isEmpty()) {
+                if (StringUtils.isNotEmpty(app)) {
                     if (APP_SET.add(app)) {
                         MeshRuleManager.subscribeAppRule(app);
                     }

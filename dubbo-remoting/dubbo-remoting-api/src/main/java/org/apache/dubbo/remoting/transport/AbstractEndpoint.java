@@ -18,7 +18,6 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.Resetable;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -26,6 +25,9 @@ import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.codec.CodecAdapter;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
 
 /**
  * AbstractEndpoint
@@ -46,10 +48,11 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
 
     protected static Codec2 getChannelCodec(URL url) {
         String codecName = url.getProtocol(); // codec extension name must stay the same with protocol name
-        if (ExtensionLoader.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
-            return ExtensionLoader.getExtensionLoader(Codec2.class).getExtension(codecName);
+        FrameworkModel frameworkModel = getFrameworkModel(url.getScopeModel());
+        if (frameworkModel.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
+            return frameworkModel.getExtensionLoader(Codec2.class).getExtension(codecName);
         } else {
-            return new CodecAdapter(ExtensionLoader.getExtensionLoader(Codec.class)
+            return new CodecAdapter(frameworkModel.getExtensionLoader(Codec.class)
                     .getExtension(codecName));
         }
     }

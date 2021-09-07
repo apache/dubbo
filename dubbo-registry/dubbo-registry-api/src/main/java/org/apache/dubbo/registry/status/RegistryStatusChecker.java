@@ -41,7 +41,7 @@ public class RegistryStatusChecker implements StatusChecker {
         StringBuilder buf = new StringBuilder();
         for (Registry registry : registries) {
             if (buf.length() > 0) {
-                buf.append(",");
+                buf.append(',');
             }
             buf.append(registry.getUrl().getAddress());
             if (!registry.isAvailable()) {

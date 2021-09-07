@@ -23,13 +23,18 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 
-import java.util.concurrent.Executor;
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
+
+import java.util.List;
+import java.util.Map;
 
 public class UnaryClientStream extends AbstractClientStream implements Stream {
 
 
-    protected UnaryClientStream(URL url, Executor executor) {
-        super(url, executor);
+    protected UnaryClientStream(URL url) {
+        super(url);
     }
 
     @Override
@@ -45,13 +50,18 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
     private class UnaryClientTransportObserver extends UnaryTransportObserver implements TransportObserver {
 
         @Override
-        public void doOnComplete(OperationHandler handler) {
+        public void doOnComplete() {
             execute(() -> {
                 try {
-                    final Object resp = deserializeResponse(getData());
+                    AppResponse result;
+                    if (!Void.TYPE.equals(getMethodDescriptor().getReturnClass())) {
+                        final Object resp = deserializeResponse(getData());
+                        result = new AppResponse(resp);
+                    } else {
+                        result = new AppResponse();
+                    }
                     Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-                    final AppResponse result = new AppResponse(resp);
-                    result.setObjectAttachments(parseMetadataToMap(getTrailers()));
+                    result.setObjectAttachments(parseMetadataToAttachmentMap(getTrailers()));
                     response.setResult(result);
                     DefaultFuture2.received(getConnection(), response);
                 } catch (Exception e) {
@@ -63,16 +73,52 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             });
         }
 
+        @Override
         protected void onError(GrpcStatus status) {
-            Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-            if (status.description != null) {
+            // run in callback executor will truncate exception stack and avoid blocking netty's event loop
+            execute(()-> {
+                Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
                 response.setErrorMessage(status.description);
-            } else {
-                response.setErrorMessage(status.cause.getMessage());
+                final AppResponse result = new AppResponse();
+                final Metadata trailers = getTrailers() == null ? getHeaders() : getTrailers();
+                result.setException(getThrowable(trailers));
+                result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(trailers));
+                response.setResult(result);
+                if (!result.hasException()) {
+                    final byte code = GrpcStatus.toDubboStatus(status.code);
+                    response.setStatus(code);
+                }
+                DefaultFuture2.received(getConnection(), response);
+            });
+        }
+
+        private Throwable getThrowable(Metadata metadata) {
+            if (null == metadata) {
+                return null;
             }
-            final byte code = GrpcStatus.toDubboStatus(status.code);
-            response.setStatus(code);
-            DefaultFuture2.received(getConnection(), response);
+            // second get status detail
+            if (!metadata.contains(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
+                return null;
+            }
+            final CharSequence raw = metadata.get(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader());
+            byte[] statusDetailBin = TripleUtil.decodeASCIIByte(raw);
+            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+            try {
+                final Status statusDetail = TripleUtil.unpack(statusDetailBin, Status.class);
+                List<Any> detailList = statusDetail.getDetailsList();
+                Map<Class<?>, Object> classObjectMap = TripleUtil.tranFromStatusDetails(detailList);
+
+                // get common exception from DebugInfo
+                DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
+                if (debugInfo == null) {
+                    return new TripleRpcException(statusDetail.getCode(),
+                            statusDetail.getMessage(), metadata);
+                }
+                String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
+                return new TripleRpcException(statusDetail.getCode(), msg, metadata);
+            } finally {
+                ClassLoadUtil.switchContextLoader(tccl);
+            }
         }
     }
 }

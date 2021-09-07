@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.SortedMap;
@@ -88,6 +90,12 @@ public interface ServiceInstance extends Serializable {
 
     Map<String, String> getAllParams();
 
+    Map<String, Object> getAttributes();
+
+    void setApplicationModel(ApplicationModel applicationModel);
+
+    ApplicationModel getApplicationModel();
+
     /**
      * Get the value of metadata by the specified name
      *
@@ -109,17 +117,6 @@ public interface ServiceInstance extends Serializable {
     default String getMetadata(String name, String defaultValue) {
         return getMetadata().getOrDefault(name, defaultValue);
     }
-
-    /**
-     * @return the hash code of current instance.
-     */
-    int hashCode();
-
-    /**
-     * @param another another {@link ServiceInstance}
-     * @return if equals , return <code>true</code>, or <code>false</code>
-     */
-    boolean equals(Object another);
 
     InstanceAddressURL toURL();
 

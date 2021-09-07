@@ -55,22 +55,22 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         }
 
         @Override
-        public void doOnComplete(OperationHandler handler) {
-            if (getData() == null) {
+        public void doOnComplete() {
+            if (getData() != null) {
+                execute(this::invoke);
+            } else {
                 onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                         .withDescription("Missing request data"));
-                return;
             }
-            execute(this::invoke);
         }
 
         public void invoke() {
 
-            final RpcInvocation invocation;
+            RpcInvocation invocation;
             try {
+                invocation = buildInvocation(getHeaders());
                 final Object[] arguments = deserializeRequest(getData());
                 if (arguments != null) {
-                    invocation = buildInvocation(getHeaders());
                     invocation.setArguments(arguments);
                 } else {
                     return;
@@ -86,29 +86,29 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
             CompletionStage<Object> future = result.thenApply(Function.identity());
 
             BiConsumer<Object, Throwable> onComplete = (appResult, t) -> {
-                try {
-                    if (t != null) {
-                        if (t instanceof TimeoutException) {
-                            transportError(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED).withCause(t));
-                        } else {
-                            transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(t));
-                        }
-                        return;
+                if (t != null) {
+                    if (t instanceof TimeoutException) {
+                        transportError(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED).withCause(t));
+                    } else {
+                        transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(t));
                     }
-                    AppResponse response = (AppResponse) appResult;
+                    return;
+                }
+                AppResponse response = (AppResponse) appResult;
+                try {
                     if (response.hasException()) {
                         final Throwable exception = response.getException();
                         if (exception instanceof TripleRpcException) {
-                            transportError(((TripleRpcException) exception).getStatus());
+                            transportError(((TripleRpcException) exception).getStatus(), response.getObjectAttachments());
                         } else {
                             transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
-                                    .withCause(exception));
+                                    .withCause(exception), response.getObjectAttachments());
                         }
                         return;
                     }
                     Metadata metadata = new DefaultMetadata();
                     metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
-                    getTransportSubscriber().tryOnMetadata(metadata, false);
+                    getTransportSubscriber().onMetadata(metadata, false);
 
                     final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
                     final byte[] data;
@@ -119,23 +119,23 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     } finally {
                         ClassLoadUtil.switchContextLoader(tccl);
                     }
-                    getTransportSubscriber().tryOnData(data, false);
+                    getTransportSubscriber().onData(data, false);
 
                     Metadata trailers = new DefaultMetadata()
-                            .put(TripleConstant.STATUS_KEY, Integer.toString(GrpcStatus.Code.OK.code));
+                            .put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
                     final Map<String, Object> attachments = response.getObjectAttachments();
                     if (attachments != null) {
                         convertAttachment(trailers, attachments);
                     }
-                    getTransportSubscriber().tryOnMetadata(trailers, true);
+                    getTransportSubscriber().onMetadata(trailers, true);
                 } catch (Throwable e) {
                     LOGGER.warn("Exception processing triple message", e);
                     if (e instanceof TripleRpcException) {
-                        transportError(((TripleRpcException) e).getStatus());
+                        transportError(((TripleRpcException) e).getStatus(), response.getObjectAttachments());
                     } else {
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
                                 .withDescription("Exception occurred in provider's execution:" + e.getMessage())
-                                .withCause(e));
+                                .withCause(e), response.getObjectAttachments());
                     }
                 }
             };

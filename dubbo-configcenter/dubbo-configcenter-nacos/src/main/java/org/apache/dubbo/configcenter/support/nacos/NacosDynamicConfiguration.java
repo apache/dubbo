@@ -128,13 +128,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     private void setServerAddr(URL url, Properties properties) {
         StringBuilder serverAddrBuilder =
                 new StringBuilder(url.getHost()) // Host
-                        .append(":")
+                        .append(':')
                         .append(url.getPort()); // Port
 
         // Append backup parameter as other servers
         String backup = url.getParameter(BACKUP_KEY);
         if (backup != null) {
-            serverAddrBuilder.append(",").append(backup);
+            serverAddrBuilder.append(',').append(backup);
         }
         String serverAddr = serverAddrBuilder.toString();
         properties.put(SERVER_ADDR, serverAddr);
@@ -284,7 +284,9 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
             HttpRestResult<String> result = httpAgent.httpGet(GET_CONFIG_KEYS_PATH, emptyMap(), paramsValues, encoding, 5 * 1000);
             Stream<String> keysStream = toKeysStream(result.getData());
-            keysStream.forEach(keys::add);
+            if (keysStream != null) {
+                keysStream.forEach(keys::add);
+            }
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
                 logger.error(e.getMessage(), e);
@@ -309,7 +311,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private Stream<String> toKeysStream(String content) {
         JSONObject jsonObject = JSON.parseObject(content);
+        if (jsonObject == null) {
+            return null;
+        }
         JSONArray pageItems = jsonObject.getJSONArray("pageItems");
+        if (pageItems == null) {
+            return null;
+        }
         return pageItems.stream()
                 .map(object -> (JSONObject) object)
                 .map(json -> json.getString("dataId"));

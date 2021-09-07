@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -83,9 +84,10 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             final AtomicInteger count = new AtomicInteger();
             final BlockingQueue<Object> ref = new LinkedBlockingQueue<>();
             for (final Invoker<T> invoker : selected) {
+                URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
                 executor.execute(() -> {
                     try {
-                        Result result = invokeWithContext(invoker, invocation);
+                        Result result = invokeWithContextAsync(invoker, invocation, consumerUrl);
                         ref.offer(result);
                     } catch (Throwable e) {
                         int value = count.incrementAndGet();

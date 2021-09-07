@@ -23,16 +23,18 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
 import io.netty.handler.codec.http2.Http2Headers;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,15 +48,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractStream implements Stream {
-    public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(
-            ConfigUtils.getProperty("triple.attachment", "false"));
     protected static final String DUPLICATED_DATA = "Duplicated data";
     private static final List<Executor> CALLBACK_EXECUTORS = new ArrayList<>(4);
 
     static {
-        ThreadFactory tripleTF = new NamedInternalThreadFactory("tri-callbcak", true);
+        ThreadFactory tripleTF = new NamedInternalThreadFactory("tri-callback", true);
         for (int i = 0; i < 4; i++) {
-            final ThreadPoolExecutor tp = new ThreadPoolExecutor(1, 1, 0, TimeUnit.DAYS, new LinkedBlockingQueue<>(1024),
+            final ThreadPoolExecutor tp = new ThreadPoolExecutor(1, 1, 0, TimeUnit.DAYS,
+                    new LinkedBlockingQueue<>(1024),
                     tripleTF, new ThreadPoolExecutor.AbortPolicy());
             CALLBACK_EXECUTORS.add(tp);
         }
@@ -99,10 +100,6 @@ public abstract class AbstractStream implements Stream {
     public AbstractStream request(Request request) {
         this.request = request;
         return this;
-    }
-
-    public Executor getExecutor() {
-        return executor;
     }
 
     @Override
@@ -188,44 +185,84 @@ public abstract class AbstractStream implements Stream {
         return transportObserver;
     }
 
-    protected void transportError(GrpcStatus status) {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleConstant.STATUS_KEY, Integer.toString(status.code.code));
-        metadata.put(TripleConstant.MESSAGE_KEY, status.toMessage());
-        getTransportSubscriber().tryOnMetadata(metadata, true);
-        if (LOGGER.isErrorEnabled()) {
-            LOGGER.error("[Triple-Server-Error] " + status.toMessage());
+    // https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#responses
+    protected void transportError(GrpcStatus status, Map<String, Object> attachments, boolean onlyTrailers) {
+        if (!onlyTrailers) {
+            // set metadata
+            Metadata metadata = new DefaultMetadata();
+            getTransportSubscriber().onMetadata(metadata, false);
         }
+        // set trailers
+        Metadata trailers = getTrailers(status);
+        if (attachments != null) {
+            convertAttachment(trailers, attachments);
+        }
+        getTransportSubscriber().onMetadata(trailers, true);
+        if (LOGGER.isErrorEnabled()) {
+            LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
+                + " method=" + getMethodName() +" onlyTrailers=" + onlyTrailers, status.cause);
+        }
+    }
+
+    protected void transportError(GrpcStatus status, Map<String, Object> attachments) {
+        transportError(status, attachments,false);
+    }
+
+    protected void transportError(GrpcStatus status) {
+        transportError(status, null);
     }
 
     protected void transportError(Throwable throwable) {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleConstant.STATUS_KEY, Integer.toString(Code.UNKNOWN.code));
-        metadata.put(TripleConstant.MESSAGE_KEY, throwable.getMessage());
-        getTransportSubscriber().tryOnMetadata(metadata, true);
-        if (LOGGER.isErrorEnabled()) {
-            LOGGER.error("[Triple-Server-Error] service=" + getServiceDescriptor().getServiceName()
-                    + " method=" + getMethodName(), throwable);
-        }
+        GrpcStatus status = new GrpcStatus(Code.UNKNOWN, throwable, throwable.getMessage());
+        transportError(status, null);
     }
 
-    protected Map<String, Object> parseMetadataToMap(Metadata metadata) {
+    private String getGrpcMessage(GrpcStatus status) {
+        if (StringUtils.isNotEmpty(status.description)) {
+            return status.description;
+        }
+        if (status.cause != null) {
+            return status.cause.getMessage();
+        }
+        return "unknown";
+    }
+
+    private Metadata getTrailers(GrpcStatus grpcStatus) {
+        Metadata metadata = new DefaultMetadata();
+        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), getGrpcMessage(grpcStatus));
+        metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
+        Status.Builder builder = Status.newBuilder()
+                .setCode(grpcStatus.code.code)
+                .setMessage(getGrpcMessage(grpcStatus));
+        Throwable throwable = grpcStatus.cause;
+        if (throwable == null) {
+            Status status = builder.build();
+            metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
+                TripleUtil.encodeBase64ASCII(status.toByteArray()));
+            return metadata;
+        }
+        DebugInfo debugInfo = DebugInfo.newBuilder()
+                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable,10))
+                // can not use now
+                // .setDetail(throwable.getMessage())
+                .build();
+        builder.addDetails(Any.pack(debugInfo));
+        Status status = builder.build();
+        metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
+                TripleUtil.encodeBase64ASCII(status.toByteArray()));
+        return metadata;
+    }
+
+    protected Map<String, Object> parseMetadataToAttachmentMap(Metadata metadata) {
         Map<String, Object> attachments = new LinkedHashMap<>();
         for (Map.Entry<CharSequence, CharSequence> header : metadata) {
             String key = header.getKey().toString();
             if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
                 continue;
             }
-
-            if (ENABLE_ATTACHMENT_WRAP) {
-                if (key.endsWith("-tw-bin") && key.length() > 7) {
-                    try {
-                        attachments.put(key.substring(0, key.length() - 7),
-                                TripleUtil.decodeObjFromHeader(url, header.getValue(), multipleSerialization));
-                    } catch (Exception e) {
-                        LOGGER.error("Failed to parse response attachment key=" + key, e);
-                    }
-                }
+            // avoid subsequent parse protocol header
+            if (TripleHeaderEnum.containsExcludeAttachments(key)) {
+                continue;
             }
             if (key.endsWith("-bin") && key.length() > 4) {
                 try {
@@ -246,6 +283,9 @@ public abstract class AbstractStream implements Stream {
             if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
                 continue;
             }
+            if (TripleHeaderEnum.containsExcludeAttachments(key)) {
+                continue;
+            }
             final Object v = entry.getValue();
             convertSingleAttachment(metadata, key, v);
         }
@@ -253,22 +293,21 @@ public abstract class AbstractStream implements Stream {
 
     private void convertSingleAttachment(Metadata metadata, String key, Object v) {
         try {
-            if (!ENABLE_ATTACHMENT_WRAP) {
-                if (v instanceof String) {
-                    metadata.put(key, (String) v);
-                } else if (v instanceof byte[]) {
-                    metadata.put(key + "-bin", TripleUtil.encodeBase64ASCII((byte[]) v));
+            if (v instanceof String) {
+                String str = (String) v;
+                if (TripleUtil.overEachHeaderListSize(str)) {
+                    return;
                 }
-            } else {
-                if (v instanceof String || serializeType == null) {
-                    metadata.put(key, v.toString());
-                } else {
-                    String encoded = TripleUtil.encodeWrapper(url, v, this.serializeType, getMultipleSerialization());
-                    metadata.put(key + "-tw-bin", encoded);
+                metadata.put(key, str);
+            } else if (v instanceof byte[]) {
+                String str = TripleUtil.encodeBase64ASCII((byte[]) v);
+                if (TripleUtil.overEachHeaderListSize(str)) {
+                    return;
                 }
+                metadata.put(key + "-bin", str);
             }
-        } catch (IOException e) {
-            LOGGER.warn("Meet exception when convert single attachment key:" + key, e);
+        } catch (Throwable t) {
+            LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v, t);
         }
     }
 
@@ -285,7 +324,7 @@ public abstract class AbstractStream implements Stream {
         }
 
         @Override
-        public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
+        public void onMetadata(Metadata metadata, boolean endStream) {
             if (headers == null) {
                 headers = metadata;
             } else {
@@ -294,13 +333,13 @@ public abstract class AbstractStream implements Stream {
         }
 
         protected GrpcStatus extractStatusFromMeta(Metadata metadata) {
-            if (metadata.contains(TripleConstant.STATUS_KEY)) {
-                final int code = Integer.parseInt(metadata.get(TripleConstant.STATUS_KEY).toString());
+            if (metadata.contains(TripleHeaderEnum.STATUS_KEY.getHeader())) {
+                final int code = Integer.parseInt(metadata.get(TripleHeaderEnum.STATUS_KEY.getHeader()).toString());
 
                 if (!GrpcStatus.Code.isOk(code)) {
                     GrpcStatus status = GrpcStatus.fromCode(code);
-                    if (metadata.contains(TripleConstant.MESSAGE_KEY)) {
-                        final String raw = metadata.get(TripleConstant.MESSAGE_KEY).toString();
+                    if (metadata.contains(TripleHeaderEnum.MESSAGE_KEY.getHeader())) {
+                        final String raw = metadata.get(TripleHeaderEnum.MESSAGE_KEY.getHeader()).toString();
                         status = status.withDescription(GrpcStatus.fromMessage(raw));
                     }
                     return status;
@@ -322,31 +361,25 @@ public abstract class AbstractStream implements Stream {
         protected abstract void onError(GrpcStatus status);
 
         @Override
-        public void onComplete(OperationHandler handler) {
-            Metadata metadata;
-            if (getTrailers() == null) {
-                metadata = getHeaders();
-            } else {
-                metadata = getTrailers();
-            }
-
-            final GrpcStatus status = extractStatusFromMeta(metadata);
-            if (GrpcStatus.Code.isOk(status.code.code)) {
-                doOnComplete(handler);
+        public void onComplete() {
+            final GrpcStatus status = extractStatusFromMeta(getHeaders());
+            if (Code.isOk(status.code.code)) {
+                doOnComplete();
             } else {
                 onError(status);
             }
         }
 
-        protected abstract void doOnComplete(OperationHandler handler);
+        protected abstract void doOnComplete() ;
+
 
         @Override
-        public void onData(byte[] in, boolean endStream, OperationHandler handler) {
+        public void onData(byte[] in, boolean endStream) {
             if (data == null) {
                 this.data = in;
             } else {
-                handler.operationDone(OperationResult.FAILURE, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription(DUPLICATED_DATA).asException());
+                onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription(DUPLICATED_DATA));
             }
         }
     }

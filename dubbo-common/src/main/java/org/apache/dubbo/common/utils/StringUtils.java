@@ -870,12 +870,12 @@ public final class StringUtils {
         StringBuilder buf = new StringBuilder();
         String group = ps.get(GROUP_KEY);
         if (isNotEmpty(group)) {
-            buf.append(group).append("/");
+            buf.append(group).append('/');
         }
         buf.append(ps.get(INTERFACE_KEY));
         String version = ps.get(VERSION_KEY);
         if (isNotEmpty(group)) {
-            buf.append(":").append(version);
+            buf.append(':').append(version);
         }
         return buf.toString();
     }
@@ -888,10 +888,10 @@ public final class StringUtils {
                 String value = entry.getValue();
                 if (isNoneEmpty(key, value)) {
                     if (buf.length() > 0) {
-                        buf.append("&");
+                        buf.append('&');
                     }
                     buf.append(key);
-                    buf.append("=");
+                    buf.append('=');
                     buf.append(value);
                 }
             }
@@ -1163,18 +1163,18 @@ public final class StringUtils {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("[");
+        sb.append('[');
         params.forEach((key,value) -> {
             // {key:value},
             if (hasText(value)) {
-                sb.append("{").append(key).append(":").append(value).append("},");
+                sb.append('{').append(key).append(':').append(value).append("},");
             }
         });
         // delete last separator ','
         if (sb.charAt(sb.length() - 1) == ',') {
             sb.deleteCharAt(sb.length()-1);
         }
-        sb.append("]");
+        sb.append(']');
         return sb.toString();
     }
 

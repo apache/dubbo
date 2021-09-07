@@ -43,9 +43,9 @@ public class MetadataServiceExporterTest {
     @BeforeAll
     public static void init() {
         DubboBootstrap.reset();
-        ApplicationModel.getConfigManager().setApplication(new ApplicationConfig("Test"));
-        ApplicationModel.getConfigManager().addRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
-        ApplicationModel.getConfigManager().addProtocol(new ProtocolConfig("injvm"));
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
+        ApplicationModel.defaultModel().getApplicationConfigManager().addRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
+        ApplicationModel.defaultModel().getApplicationConfigManager().addProtocol(new ProtocolConfig("injvm"));
     }
 
     @AfterAll
@@ -56,7 +56,9 @@ public class MetadataServiceExporterTest {
     @Test
     public void test() {
         MetadataService metadataService = Mockito.mock(MetadataService.class);
-        MetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter(metadataService);
+        ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
+        exporter.setMetadataService(metadataService);
+        exporter.setApplicationModel(ApplicationModel.defaultModel());
 
         exporter.export();
         assertTrue(exporter.isExported());

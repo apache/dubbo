@@ -106,7 +106,7 @@ public abstract class Mixin {
 
                 ccp.addField("private " + dcs[i].getName() + " d" + i + ";");
 
-                code.append("d").append(i).append(" = (").append(dcs[i].getName()).append(")$1[").append(i).append("];\n");
+                code.append('d').append(i).append(" = (").append(dcs[i].getName()).append(")$1[").append(i).append("];\n");
                 if (MixinAware.class.isAssignableFrom(dcs[i])) {
                     code.append("d").append(i).append(".setMixinInstance(this);\n");
                 }

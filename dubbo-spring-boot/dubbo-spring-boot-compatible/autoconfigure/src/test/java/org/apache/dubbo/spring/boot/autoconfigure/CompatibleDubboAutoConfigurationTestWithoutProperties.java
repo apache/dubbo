@@ -20,6 +20,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
@@ -46,7 +48,7 @@ public class CompatibleDubboAutoConfigurationTestWithoutProperties {
     private ServiceAnnotationPostProcessor serviceAnnotationPostProcessor;
 
     @Autowired
-    private ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor;
+    private ApplicationContext applicationContext;
 
     @Before
     public void init() {
@@ -61,6 +63,8 @@ public class CompatibleDubboAutoConfigurationTestWithoutProperties {
     @Test
     public void testBeans() {
         Assert.assertNull(serviceAnnotationPostProcessor);
+
+        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor =  DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);
         Assert.assertNotNull(referenceAnnotationBeanPostProcessor);
     }
 }

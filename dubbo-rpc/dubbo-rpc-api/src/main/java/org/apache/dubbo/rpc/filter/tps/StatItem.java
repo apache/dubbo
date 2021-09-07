@@ -79,7 +79,7 @@ class StatItem {
         return new StringBuilder(32).append("StatItem ")
                 .append("[name=").append(name).append(", ")
                 .append("rate = ").append(rate).append(", ")
-                .append("interval = ").append(interval).append("]")
+                .append("interval = ").append(interval).append(']')
                 .toString();
     }
 

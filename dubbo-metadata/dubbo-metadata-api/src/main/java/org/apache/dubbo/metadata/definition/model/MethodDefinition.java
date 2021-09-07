@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.definition.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,6 +41,8 @@ public class MethodDefinition implements Serializable {
      */
     @Deprecated
     private List<TypeDefinition> parameters;
+
+    private List<String> annotations;
 
     public String getName() {
         return name;
@@ -74,6 +77,17 @@ public class MethodDefinition implements Serializable {
 
     public void setReturnType(String returnType) {
         this.returnType = formatType(returnType);
+    }
+
+    public List<String> getAnnotations() {
+        if (annotations == null) {
+            annotations = Collections.emptyList();
+        }
+        return annotations;
+    }
+
+    public void setAnnotations(List<String> annotations) {
+        this.annotations = annotations;
     }
 
     @Override

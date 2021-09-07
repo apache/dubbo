@@ -407,6 +407,63 @@ public class MethodConfigTest {
     }
 
     @Test
+    public void testVerifyMethodConfigOfService() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayHello.timeout", "1234");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".group", "demo");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setInterface(interfaceName);
+        serviceConfig.setRef(new DemoServiceImpl());
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayHello");
+        methodConfig.setTimeout(1000);
+        serviceConfig.setMethods(Arrays.asList(methodConfig));
+
+        try {
+            DubboBootstrap.getInstance()
+                .application("demo-app")
+                .service(serviceConfig)
+                .initialize();
+            Assertions.fail("Method config verification should failed");
+        } catch (Exception e) {
+            // ignore
+            Throwable cause = e.getCause();
+            Assertions.assertEquals(IllegalStateException.class, cause.getClass());
+            Assertions.assertTrue(cause.getMessage().contains("not found method"), cause.toString());
+        }
+    }
+
+    @Test
+    public void testIgnoreInvalidMethodConfigOfService() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayHello.timeout", "1234");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.timeout", "1234");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+        SysProps.setProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_INVALID_METHOD_CONFIG, "true");
+
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setInterface(interfaceName);
+        serviceConfig.setRef(new DemoServiceImpl());
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayHello");
+        methodConfig.setTimeout(1000);
+        serviceConfig.setMethods(Arrays.asList(methodConfig));
+
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .service(serviceConfig)
+            .initialize();
+
+        // expect sayHello method config will be ignore, and sayName method config will be create.
+        Assertions.assertEquals(1, serviceConfig.getMethods().size());
+        Assertions.assertEquals("sayName", serviceConfig.getMethods().get(0).getName());
+    }
+
+    @Test
     public void testMetaData() {
         MethodConfig methodConfig = new MethodConfig();
         Map<String, String> metaData = methodConfig.getMetaData();

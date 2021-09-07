@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.metadata.definition.model;
 
-import org.apache.dubbo.metadata.definition.util.ClassUtils;
-
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import org.apache.dubbo.metadata.definition.util.ClassUtils;
 
 /**
  * 2015/1/27.
@@ -48,6 +49,11 @@ public class ServiceDefinition implements Serializable {
      * the definitions of type
      */
     private List<TypeDefinition> types;
+
+    /**
+     * the definitions of annotations
+     */
+    private List<String> annotations;
 
     public String getCanonicalName() {
         return canonicalName;
@@ -89,6 +95,17 @@ public class ServiceDefinition implements Serializable {
 
     public void setTypes(List<TypeDefinition> types) {
         this.types = types;
+    }
+
+    public List<String> getAnnotations() {
+        if (annotations == null) {
+            annotations = Collections.emptyList();
+        }
+        return annotations;
+    }
+
+    public void setAnnotations(List<String> annotations) {
+        this.annotations = annotations;
     }
 
     @Override

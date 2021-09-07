@@ -23,9 +23,11 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
+import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
@@ -38,7 +40,6 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
-import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.getGroup;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toInstance;
 
 /**
@@ -51,8 +52,6 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private String group;
-
     private NacosNamingServiceWrapper namingService;
 
     private URL registryURL;
@@ -60,7 +59,6 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void doInitialize(URL registryURL) throws Exception {
         this.namingService = createNamingService(registryURL);
-        this.group = getGroup(registryURL);
         this.registryURL = registryURL;
     }
 
@@ -73,7 +71,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     public void doRegister(ServiceInstance serviceInstance) {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
-            service.registerInstance(instance.getServiceName(), group, instance);
+            // Should not register real group for ServiceInstance
+            // Or will cause consumer unable to fetch all of the providers from every group
+            // Provider's group is invisible for consumer
+            service.registerInstance(instance.getServiceName(), Constants.DEFAULT_GROUP, instance);
         });
     }
 
@@ -88,14 +89,20 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
-            service.deregisterInstance(instance.getServiceName(), group, instance);
+            // Should not register real group for ServiceInstance
+            // Or will cause consumer unable to fetch all of the providers from every group
+            // Provider's group is invisible for consumer
+            service.deregisterInstance(instance.getServiceName(), Constants.DEFAULT_GROUP, instance);
         });
     }
 
     @Override
     public Set<String> getServices() {
         return ThrowableFunction.execute(namingService, service -> {
-            ListView<String> view = service.getServicesOfServer(0, Integer.MAX_VALUE, group);
+            // Should not register real group for ServiceInstance
+            // Or will cause consumer unable to fetch all of the providers from every group
+            // Provider's group is invisible for consumer
+            ListView<String> view = service.getServicesOfServer(0, Integer.MAX_VALUE, Constants.DEFAULT_GROUP);
             return new LinkedHashSet<>(view.getData());
         });
     }
@@ -103,29 +110,27 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
-                service.selectInstances(serviceName, true)
-                        .stream().map(NacosNamingServiceUtils::toServiceInstance)
-                        .collect(Collectors.toList())
+            service.selectInstances(serviceName, Constants.DEFAULT_GROUP, true)
+                .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+                .collect(Collectors.toList())
         );
     }
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
-            throws NullPointerException, IllegalArgumentException {
-        execute(namingService, service -> {
-            listener.getServiceNames().forEach(serviceName -> {
-                try {
-                    service.subscribe(serviceName, e -> { // Register Nacos EventListener
-                        if (e instanceof NamingEvent) {
-                            NamingEvent event = (NamingEvent) e;
-                            handleEvent(event, listener);
-                        }
-                    });
-                } catch (NacosException e) {
-                    e.printStackTrace();
-                }
-            });
-        });
+        throws NullPointerException, IllegalArgumentException {
+        execute(namingService, service -> listener.getServiceNames().forEach(serviceName -> {
+            try {
+                service.subscribe(serviceName, Constants.DEFAULT_GROUP, e -> { // Register Nacos EventListener
+                    if (e instanceof NamingEvent) {
+                        NamingEvent event = (NamingEvent) e;
+                        handleEvent(event, listener);
+                    }
+                });
+            } catch (NacosException e) {
+                logger.error("add nacos service instances changed listener fail ", e);
+            }
+        }));
     }
 
     @Override
@@ -136,9 +141,9 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
         String serviceName = event.getServiceName();
         List<ServiceInstance> serviceInstances = event.getInstances()
-                .stream()
-                .map(NacosNamingServiceUtils::toServiceInstance)
-                .collect(Collectors.toList());
-        dispatchServiceInstancesChangedEvent(serviceName, serviceInstances);
+            .stream()
+            .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+            .collect(Collectors.toList());
+        listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
 }

@@ -521,8 +521,9 @@ public class URLParam {
         }
 
         boolean hasAndEqual = true;
+        Map<String, String> urlParamMap = getParameters();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            String value = getParameters().get(entry.getKey());
+            String value = urlParamMap.get(entry.getKey());
             if (value == null) {
                 if (entry.getValue() != null) {
                     hasAndEqual = false;
@@ -1024,10 +1025,11 @@ public class URLParam {
     public static URLParam parse(String rawParam) {
         String[] parts = rawParam.split("&");
 
-        BitSet keyBit = new BitSet((int) (parts.length / .75f) + 1);
-        Map<Integer, Integer> valueMap = new HashMap<>((int) (parts.length / .75f) + 1);
-        Map<String, String> extraParam = new HashMap<>((int) (parts.length / .75f) + 1);
-        Map<String, Map<String, String>> methodParameters = new HashMap<>((int) (parts.length / .75f) + 1);
+        int capacity = (int) (parts.length / .75f) + 1;
+        BitSet keyBit = new BitSet(capacity);
+        Map<Integer, Integer> valueMap = new HashMap<>(capacity);
+        Map<String, String> extraParam = new HashMap<>(capacity);
+        Map<String, Map<String, String>> methodParameters = new HashMap<>(capacity);
 
         for (String part : parts) {
             part = part.trim();
@@ -1064,10 +1066,11 @@ public class URLParam {
      */
     public static URLParam parse(Map<String, String> params, String rawParam) {
         if (CollectionUtils.isNotEmptyMap(params)) {
-            BitSet keyBit = new BitSet((int) (params.size() / .75f) + 1);
-            Map<Integer, Integer> valueMap = new HashMap<>((int) (params.size() / .75f) + 1);
-            Map<String, String> extraParam = new HashMap<>((int) (params.size() / .75f) + 1);
-            Map<String, Map<String, String>> methodParameters = new HashMap<>((int) (params.size() / .75f) + 1);
+            int capacity = (int) (params.size() / .75f) + 1;
+            BitSet keyBit = new BitSet(capacity);
+            Map<Integer, Integer> valueMap = new HashMap<>(capacity);
+            Map<String, String> extraParam = new HashMap<>(capacity);
+            Map<String, Map<String, String>> methodParameters = new HashMap<>(capacity);
 
             for (Map.Entry<String, String> entry : params.entrySet()) {
                 addParameter(keyBit, valueMap, extraParam, methodParameters, entry.getKey(), entry.getValue(), false);

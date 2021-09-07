@@ -19,7 +19,7 @@ package org.apache.dubbo.config.utils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
 
 import java.util.ArrayList;
@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A simple util class for cache {@link ReferenceConfigBase}.
@@ -56,14 +57,16 @@ public class ReferenceConfigCache {
 
         StringBuilder ret = new StringBuilder();
         if (!StringUtils.isBlank(referenceConfig.getGroup())) {
-            ret.append(referenceConfig.getGroup()).append("/");
+            ret.append(referenceConfig.getGroup()).append('/');
         }
         ret.append(iName);
         if (!StringUtils.isBlank(referenceConfig.getVersion())) {
-            ret.append(":").append(referenceConfig.getVersion());
+            ret.append(':').append(referenceConfig.getVersion());
         }
         return ret.toString();
     };
+
+    private static final AtomicInteger nameIndex = new AtomicInteger();
 
     static final ConcurrentMap<String, ReferenceConfigCache> CACHE_HOLDER = new ConcurrentHashMap<String, ReferenceConfigCache>();
     private final String name;
@@ -84,6 +87,10 @@ public class ReferenceConfigCache {
      */
     public static ReferenceConfigCache getCache() {
         return getCache(DEFAULT_NAME);
+    }
+
+    public static ReferenceConfigCache newCache() {
+        return getCache(DEFAULT_NAME + "#" + nameIndex.incrementAndGet());
     }
 
     /**
@@ -107,16 +114,13 @@ public class ReferenceConfigCache {
         String key = generator.generateKey(referenceConfig);
         Class<?> type = referenceConfig.getInterfaceClass();
 
-        proxies.computeIfAbsent(type, _t -> new ConcurrentHashMap<>());
+        ConcurrentMap<String, Object> proxiesOfType = proxies.computeIfAbsent(type, _t -> new ConcurrentHashMap<>());
 
-        ConcurrentMap<String, Object> proxiesOfType = proxies.get(type);
-        proxiesOfType.computeIfAbsent(key, _k -> {
+        return (T) proxiesOfType.computeIfAbsent(key, _k -> {
             Object proxy = referenceConfig.get();
             referredReferences.put(key, referenceConfig);
             return proxy;
         });
-
-        return (T) proxiesOfType.get(key);
     }
 
     /**
@@ -176,7 +180,7 @@ public class ReferenceConfigCache {
             return;
         }
 
-        ApplicationModel.getConfigManager().removeConfig(rc);
+        ScopeModelUtil.getApplicationModel(rc.getScopeModel()).getApplicationConfigManager().removeConfig(rc);
         rc.destroy();
 
         Map<String, Object> proxiesOftype = proxies.get(type);
@@ -218,7 +222,7 @@ public class ReferenceConfigCache {
 
         referredReferences.forEach((_k, referenceConfig) -> {
             referenceConfig.destroy();
-            ApplicationModel.getConfigManager().removeConfig(referenceConfig);
+            ScopeModelUtil.getApplicationModel(referenceConfig.getScopeModel()).getApplicationConfigManager().removeConfig(referenceConfig);
         });
 
         proxies.forEach((_type, proxiesOfType) -> {
@@ -243,7 +247,7 @@ public class ReferenceConfigCache {
     @Override
     public String toString() {
         return "ReferenceConfigCache(name: " + name
-                + ")";
+            + ")";
     }
 
     public interface KeyGenerator {

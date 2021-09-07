@@ -27,13 +27,25 @@ import java.util.regex.Pattern;
 public interface CommonConstants {
     String DUBBO = "dubbo";
 
-    String TRIPLE= "tri";
+    String TRIPLE = "tri";
 
     String PROVIDER = "provider";
 
     String CONSUMER = "consumer";
 
     String APPLICATION_KEY = "application";
+
+    String APPLICATION_VERSION_KEY = "application.version";
+
+    String APPLICATION_PROTOCOL_KEY = "application-protocol";
+
+    String METADATA_SERVICE_PORT_KEY = "metadata-service-port";
+
+    String LIVENESS_PROBE_KEY = "liveness-probe";
+
+    String READINESS_PROBE_KEY = "readiness-probe";
+
+    String STARTUP_PROBE = "startup-probe";
 
     String REMOTE_APPLICATION_KEY = "remote.application";
 
@@ -286,6 +298,8 @@ public interface CommonConstants {
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
+    String HEADER_FILTER_KEY = "header.filter";
+
     String INVOCATION_INTERCEPTOR_KEY = "invocation.interceptor";
 
     String INVOKER_LISTENER_KEY = "invoker.listener";
@@ -413,7 +427,9 @@ public interface CommonConstants {
 
     String UTF8ENCODE = "UTF-8";
 
-    /** Pseudo URL prefix for loading from the class path: "classpath:". */
+    /**
+     * Pseudo URL prefix for loading from the class path: "classpath:".
+     */
     String CLASSPATH_URL_PREFIX = "classpath:";
 
     String DEFAULT_VERSION = "0.0.0";
@@ -422,14 +438,42 @@ public interface CommonConstants {
 
     String REFER_ASYNC_KEY = "refer-async";
 
-    String ASYNC_THREAD_NUM_KEY = "async-thread-num";
+    String EXPORT_BACKGROUND_KEY = "export-background";
 
-    int DEFAULT_ASYNC_THREAD_NUM = 10;
+    String REFER_BACKGROUND_KEY = "refer-background";
+
+    String EXPORT_THREAD_NUM_KEY = "export-thread-num";
+
+    String REFER_THREAD_NUM_KEY = "refer-thread-num";
+
+    int DEFAULT_EXPORT_THREAD_NUM = 10;
+
+    int DEFAULT_REFER_THREAD_NUM = 10;
 
     /**
      * Url merge processor key
      */
     String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 
+    /**
+     * use native image to compile dubbo's identifier
+     */
+    String NATIVE = "native";
+
+    String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
+
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
+
+    String SCOPE_MODEL = "scopeModel";
+
+    String SERVICE_MODEL = "serviceModel";
+
+    /**
+     * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
+     * the Dubbo application will be ignored
+     *
+     * @since 2.7.6
+     */
+    String DUBBO_NETWORK_IGNORED_INTERFACE = "dubbo.network.interface.ignored";
+
 }

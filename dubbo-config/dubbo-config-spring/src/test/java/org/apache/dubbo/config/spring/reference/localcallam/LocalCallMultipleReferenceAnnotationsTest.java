@@ -22,7 +22,10 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.RpcContext;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -46,9 +49,18 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 public class LocalCallMultipleReferenceAnnotationsTest {
 
+    private static RegistryCenter registryCenter;
+
     @BeforeAll
     public static void setUp() {
         DubboBootstrap.reset();
+        registryCenter = new ZookeeperSingleRegistryCenter();
+        registryCenter.startup();
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        registryCenter.shutdown();
     }
 
     @Autowired
@@ -71,15 +83,14 @@ public class LocalCallMultipleReferenceAnnotationsTest {
         Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", demoResult);
 
         Map<String, ReferenceBean> referenceBeanMap = applicationContext.getBeansOfType(ReferenceBean.class);
-        Assertions.assertEquals(3, referenceBeanMap.size());
+        Assertions.assertEquals(2, referenceBeanMap.size());
         Assertions.assertTrue(referenceBeanMap.containsKey("&helloService"));
         Assertions.assertTrue(referenceBeanMap.containsKey("&demoHelloService"));
-        Assertions.assertTrue(referenceBeanMap.containsKey("&helloService3"));
 
         //helloService3 and demoHelloService share the same ReferenceConfig instance
-        ReferenceBean helloService3ReferenceBean = referenceBeanMap.get("&helloService3");
-        ReferenceBean demoHelloServiceReferenceBean = referenceBeanMap.get("&demoHelloService");
-        Assertions.assertTrue(helloService3ReferenceBean.getReferenceConfig() == demoHelloServiceReferenceBean.getReferenceConfig());
+        ReferenceBean helloService3ReferenceBean = applicationContext.getBean("&helloService3", ReferenceBean.class);
+        ReferenceBean demoHelloServiceReferenceBean = applicationContext.getBean("&demoHelloService", ReferenceBean.class);
+        Assertions.assertSame(helloService3ReferenceBean, demoHelloServiceReferenceBean);
 
     }
 
@@ -88,10 +99,10 @@ public class LocalCallMultipleReferenceAnnotationsTest {
         @DubboReference
         private HelloService helloService;
 
-        @DubboReference(group = "demo")
+        @DubboReference(group = "demo", version = "2.0.0")
         private HelloService demoHelloService;
 
-        @DubboReference(group = "${biz.group}")
+        @DubboReference(group = "${biz.group}", version = "${biz.version}")
         private HelloService helloService3;
 
     }
@@ -102,7 +113,7 @@ public class LocalCallMultipleReferenceAnnotationsTest {
         @DubboReference
         private HelloService helloService;
 
-        @DubboReference(group = "${biz.group}")
+        @DubboReference(group = "${biz.group}", version = "2.0.0")
         private HelloService demoHelloService;
 
     }
@@ -123,7 +134,7 @@ public class LocalCallMultipleReferenceAnnotationsTest {
         }
     }
 
-    @DubboService(group = "demo")
+    @DubboService(group = "demo", version = "2.0.0")
     public static class DemoHelloServiceImpl implements HelloService {
         @Override
         public String sayHello(String name) {

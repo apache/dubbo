@@ -52,6 +52,7 @@ public class EnumTypeBuilder implements TypeBuilder {
 
         try {
             Method methodValues = clazz.getDeclaredMethod("values");
+            methodValues.setAccessible(true);
             Object[] values = (Object[]) methodValues.invoke(clazz, new Object[0]);
             int length = values.length;
             for (int i = 0; i < length; i++) {
@@ -62,7 +63,7 @@ public class EnumTypeBuilder implements TypeBuilder {
         } catch (Throwable t) {
             logger.error("There is an error while process class " + clazz, t);
         }
-        return null;
+        return td;
     }
 
 }

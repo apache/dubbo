@@ -18,15 +18,11 @@ package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 
-import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory.getDynamicConfigurationFactory;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * Dynamic Configuration
@@ -221,31 +217,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     @Override
     default void close() throws Exception {
         throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Find DynamicConfiguration instance
-     *
-     * @return DynamicConfiguration instance
-     */
-    static DynamicConfiguration getDynamicConfiguration() {
-        Optional<DynamicConfiguration> optional = ApplicationModel.getEnvironment().getDynamicConfiguration();
-        return optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
-                .getDefaultExtension()
-                .getDynamicConfiguration(null));
-    }
-
-    /**
-     * Get the instance of {@link DynamicConfiguration} by the specified connection {@link URL}
-     *
-     * @param connectionURL
-     * @return non-null
-     * @since 2.7.5
-     */
-    static DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
-        String protocol = connectionURL.getProtocol();
-        DynamicConfigurationFactory factory = getDynamicConfigurationFactory(protocol);
-        return factory.getDynamicConfiguration(connectionURL);
     }
 
     /**

@@ -38,11 +38,11 @@ public class BaseServiceMetadata {
         length += 3;
         StringBuilder buf = new StringBuilder(length);
         if (group != null && group.length() > 0) {
-            buf.append(group).append("/");
+            buf.append(group).append('/');
         }
         buf.append(path);
         if (version != null && version.length() > 0) {
-            buf.append(":").append(version);
+            buf.append(':').append(version);
         }
         return buf.toString().intern();
     }
@@ -100,6 +100,13 @@ public class BaseServiceMetadata {
             serviceDescriptor.setVersion(eles[1]);
         }
         return serviceDescriptor;
+    }
+
+    public static String keyWithoutGroup(String interfaceName, String version) {
+        if (StringUtils.isEmpty(version)) {
+            return interfaceName + ":0.0.0";
+        }
+        return interfaceName + ":" + version;
     }
 
     public String getServiceKey() {

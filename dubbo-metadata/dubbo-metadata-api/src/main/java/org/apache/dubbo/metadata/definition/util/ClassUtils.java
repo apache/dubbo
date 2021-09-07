@@ -121,7 +121,7 @@ public final class ClassUtils {
                 sb.append(ownerType.toString());
             }
 
-            sb.append(".");
+            sb.append('.');
 
             if (ownerType instanceof ParameterizedType) {
                 // Find simple name of nested type by removing the
@@ -137,7 +137,7 @@ public final class ClassUtils {
 
         if (actualTypeArguments != null &&
                 actualTypeArguments.length > 0) {
-            sb.append("<");
+            sb.append('<');
             boolean first = true;
             for (Type t : actualTypeArguments) {
                 if (!first) {
@@ -153,7 +153,7 @@ public final class ClassUtils {
                 }
                 first = false;
             }
-            sb.append(">");
+            sb.append('>');
         }
 
         return sb.toString();

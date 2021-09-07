@@ -21,9 +21,6 @@ import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 {{#deprecated}}
     @java.lang.Deprecated
 {{/deprecated}}
-@javax.annotation.Generated(
-value = "by DubboGrpc generator",
-comments = "Source: {{protoName}}")
 public final class {{className}} {
 private {{className}}() {}
 
@@ -176,7 +173,7 @@ public interface I{{serviceName}} {
 {{#javaDoc}}
     {{{javaDoc}}}
 {{/javaDoc}}
-public static abstract class {{serviceName}}ImplBase implements io.grpc.BindableService, I{{serviceName}} {
+public static abstract class {{serviceName}}ImplBase implements I{{serviceName}}, io.grpc.BindableService {
 
 private I{{serviceName}} proxiedImpl;
 

@@ -22,6 +22,18 @@ public class MyExtensionFactory implements ExtensionFactory {
 
     @Override
     public <T> T getExtension(Class<T> type, String name) {
+        if (type == InjectObject.class) {
+            return (T) new InjectObject(name);
+        }
         return null;
+    }
+
+
+    public static class InjectObject {
+        private String name;
+
+        public InjectObject(String name) {
+            this.name = name;
+        }
     }
 }

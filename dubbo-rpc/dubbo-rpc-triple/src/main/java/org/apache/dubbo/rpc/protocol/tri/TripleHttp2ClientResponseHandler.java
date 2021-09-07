@@ -60,9 +60,9 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         Http2Headers headers = msg.headers();
         AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
         final TransportObserver observer = clientStream.asTransportObserver();
-        observer.tryOnMetadata(new Http2HeaderMeta(headers), false);
+        observer.onMetadata(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {
-            observer.tryOnComplete();
+            observer.onComplete();
         }
     }
 
@@ -72,8 +72,8 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withCause(cause);
         Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleConstant.STATUS_KEY, Integer.toString(status.code.code));
-        metadata.put(TripleConstant.MESSAGE_KEY, status.toMessage());
+        metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(status.code.code));
+        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
         logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code, cause);
         clientStream.asStreamObserver().onError(status.asException());
         ctx.close();
@@ -85,7 +85,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
             final AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
             // stream already closed;
             if (clientStream != null) {
-                clientStream.asTransportObserver().tryOnComplete();
+                clientStream.asTransportObserver().onComplete();
             }
         }
     }

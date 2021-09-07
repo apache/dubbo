@@ -30,7 +30,7 @@ import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.AsciiString;
 
 public class ClientTransportObserver implements TransportObserver {
-    private static final AsciiString SCHEME = AsciiString.of("http");
+    private final AsciiString SCHEME;
     private final ChannelHandlerContext ctx;
     private final Http2StreamChannel streamChannel;
     private final ChannelPromise promise;
@@ -41,6 +41,12 @@ public class ClientTransportObserver implements TransportObserver {
     public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream, ChannelPromise promise) {
         this.ctx = ctx;
         this.promise = promise;
+        Boolean ssl = ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).get();
+        if (ssl != null && ssl) {
+            SCHEME = TripleConstant.HTTPS_SCHEME;
+        } else {
+            SCHEME = TripleConstant.HTTP_SCHEME;
+        }
 
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
         streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
@@ -53,11 +59,11 @@ public class ClientTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler) {
+    public void onMetadata(Metadata metadata, boolean endStream) {
         if (!headerSent) {
             final Http2Headers headers = new DefaultHttp2Headers(true)
-                    .path(metadata.get(TripleConstant.PATH_KEY))
-                    .authority(metadata.get(TripleConstant.AUTHORITY_KEY))
+                    .path(metadata.get(TripleHeaderEnum.PATH_KEY.getHeader()))
+                    .authority(metadata.get(TripleHeaderEnum.AUTHORITY_KEY.getHeader()))
                     .scheme(SCHEME)
                     .method(HttpMethod.POST.asciiName());
             metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
@@ -72,7 +78,7 @@ public class ClientTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onData(byte[] data, boolean endStream, Stream.OperationHandler handler) {
+    public void onData(byte[] data, boolean endStream) {
         ByteBuf buf = ctx.alloc().buffer();
         buf.writeByte(0);
         buf.writeInt(data.length);
@@ -86,7 +92,7 @@ public class ClientTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onComplete(Stream.OperationHandler handler) {
+    public void onComplete() {
         if (!endStreamSent) {
             endStreamSent = true;
             streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true))

@@ -134,18 +134,22 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         }
     }
 
+    @Override
     public String getVersion() {
         return version;
     }
 
+    @Override
     public void setVersion(String version) {
         this.version = version;
     }
 
+    @Override
     public String getGroup() {
         return group;
     }
 
+    @Override
     public void setGroup(String group) {
         this.group = group;
     }

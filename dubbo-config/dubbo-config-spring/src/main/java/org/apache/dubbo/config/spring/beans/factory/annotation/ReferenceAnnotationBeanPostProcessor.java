@@ -25,10 +25,12 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.Constants;
+import org.apache.dubbo.config.spring.context.event.DubboAnnotationInitedEvent;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
+import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
@@ -39,7 +41,9 @@ import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.AbstractBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -62,6 +66,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
+import static org.apache.dubbo.config.spring.util.SpringCompatUtils.getPropertyValue;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -150,9 +155,29 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 } catch (BeansException e) {
                     throw e;
                 } catch (Exception e) {
-                    throw new RuntimeException("Prepare dubbo reference injection element failed", e);
+                    throw new IllegalStateException("Prepare dubbo reference injection element failed", e);
                 }
             }
+        }
+
+        if (beanFactory instanceof AbstractBeanFactory) {
+            List<BeanPostProcessor> beanPostProcessors = ((AbstractBeanFactory) beanFactory).getBeanPostProcessors();
+            for (BeanPostProcessor beanPostProcessor : beanPostProcessors) {
+                if (beanPostProcessor == this) {
+                    // This bean has been registered as BeanPostProcessor at org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor.postProcessBeanFactory()
+                    // so destroy this bean here, prevent register it as BeanPostProcessor again, avoid cause BeanPostProcessorChecker detection error
+                    beanDefinitionRegistry.removeBeanDefinition(BEAN_NAME);
+                    break;
+                }
+            }
+        }
+
+        try {
+            // this is an early event, it will be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners()
+            applicationContext.publishEvent(new DubboAnnotationInitedEvent(applicationContext));
+        } catch (Exception e) {
+            // if spring version is less then 4.2, it does not support early application event
+            logger.warn("publish early application event failed, please upgrade spring version to 4.2.x or later: " + e);
         }
     }
 
@@ -162,11 +187,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     private boolean isAnnotatedReferenceBean(BeanDefinition beanDefinition) {
         if (beanDefinition instanceof AnnotatedBeanDefinition) {
             AnnotatedBeanDefinition annotatedBeanDefinition = (AnnotatedBeanDefinition) beanDefinition;
-            if (annotatedBeanDefinition.getFactoryMethodMetadata() == null) {
-                return false;
-            }
-            String beanClassName = annotatedBeanDefinition.getFactoryMethodMetadata().getReturnTypeName();
-            if (ReferenceBean.class.getName().equals(beanClassName)) {
+            String beanClassName = SpringCompatUtils.getFactoryMethodReturnType(annotatedBeanDefinition);
+            if (beanClassName != null && ReferenceBean.class.getName().equals(beanClassName)) {
                 return true;
             }
         }
@@ -192,10 +214,19 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      */
     private void processReferenceAnnotatedBeanDefinition(String beanName, AnnotatedBeanDefinition beanDefinition) {
 
+        MethodMetadata factoryMethodMetadata = SpringCompatUtils.getFactoryMethodMetadata(beanDefinition);
+
         // Extract beanClass from generic return type of java-config bean method: ReferenceBean<DemoService>
         // see org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.getTypeForFactoryBeanFromMethod
         Class beanClass = getBeanFactory().getType(beanName);
-        MethodMetadata factoryMethodMetadata = beanDefinition.getFactoryMethodMetadata();
+        if (beanClass == Object.class) {
+            beanClass = SpringCompatUtils.getGenericTypeOfReturnType(factoryMethodMetadata);
+        }
+        if (beanClass == Object.class) {
+            // bean class is invalid, ignore it
+            return;
+        }
+
         if (beanClass == null) {
             String beanMethodSignature = factoryMethodMetadata.getDeclaringClassName()+"#"+factoryMethodMetadata.getMethodName()+"()";
             throw new BeanCreationException("The ReferenceBean is missing necessary generic type, which returned by the @Bean method of Java-config class. " +
@@ -226,6 +257,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
             // get interface
             String interfaceName = (String) attributes.get(ReferenceAttributes.INTERFACE);
+
             // check beanClass and reference interface class
             if (!StringUtils.isEquals(interfaceName, beanClass.getName()) && beanClass != GenericService.class) {
                 String beanMethodSignature = factoryMethodMetadata.getDeclaringClassName()+"#"+factoryMethodMetadata.getMethodName()+"()";
@@ -273,15 +305,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 try {
                     prepareInjection(metadata);
                 } catch (Exception e) {
-                    throw new RuntimeException("Prepare dubbo reference injection element failed", e);
+                    throw new IllegalStateException("Prepare dubbo reference injection element failed", e);
                 }
             }
         }
-    }
-
-    @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        return super.postProcessBeforeInitialization(bean, beanName);
     }
 
     @Override
@@ -307,7 +334,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     protected void prepareInjection(AnnotatedInjectionMetadata metadata) throws BeansException {
         try {
-            //find and registry bean definition for @DubboReference/@Reference
+            //find and register bean definition for @DubboReference/@Reference
             for (AnnotatedFieldElement fieldElement : metadata.getFieldElements()) {
                 if (fieldElement.injectedObject != null) {
                     continue;
@@ -362,12 +389,20 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         }
 
         // check reference key
-        String referenceKey = ReferenceBeanSupport.generateReferenceKey(attributes, applicationContext.getEnvironment());
+        String referenceKey = ReferenceBeanSupport.generateReferenceKey(attributes, applicationContext);
 
-        // check registered reference beans in referenceBeanManager
-        List<String> registeredReferenceBeanNames = referenceBeanManager.getByKey(referenceKey);
-        if (registeredReferenceBeanNames.contains(referenceBeanName)) {
-            return referenceBeanName;
+        // find reference bean name by reference key
+        List<String> registeredReferenceBeanNames = referenceBeanManager.getBeanNamesByKey(referenceKey);
+        if (registeredReferenceBeanNames.size() > 0) {
+            // found same name and reference key
+            if (registeredReferenceBeanNames.contains(referenceBeanName)) {
+                return referenceBeanName;
+            }
+//            else if (renameable) {
+//                // reference key matched, but difference bean name
+//                return registeredReferenceBeanNames.get(0);
+//            }
+            // specify bean name by id attribute, it will register alias later
         }
 
         //check bean definition
@@ -379,7 +414,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
             if (isReferenceBean(prevBeanDefinition)) {
                 //check reference key
-                String prevReferenceKey = ReferenceBeanSupport.generateReferenceKey(prevBeanDefinition, applicationContext.getEnvironment());
+                String prevReferenceKey = ReferenceBeanSupport.generateReferenceKey(prevBeanDefinition, applicationContext);
                 if (StringUtils.isEquals(prevReferenceKey, referenceKey)) {
                     //found matched dubbo reference bean, ignore register
                     return referenceBeanName;
@@ -389,27 +424,23 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 Assert.notNull(prevBeanDefinition, "The interface class of ReferenceBean is not initialized");
                 prevBeanType = prevInterfaceClass.getName();
                 prevBeanDesc = referenceBeanName + "[" + prevReferenceKey + "]";
+
                 //check bean type
-                if (StringUtils.isEquals(prevBeanType, interfaceName)) {
-                    throw new BeanCreationException("Already exists another reference bean with the same bean name and type but difference attributes. " +
-                            "In order to avoid injection confusion, please modify the name of one of the beans: " +
-                            "prev: " + prevBeanDesc + ", new: " + newBeanDesc+". "+checkLocation);
-                }
-            } else {
-                //check bean type
-                if (StringUtils.isEquals(prevBeanType, interfaceName)) {
-                    throw new BeanCreationException("Already exists another bean definition with the same bean name and type. " +
-                            "In order to avoid injection confusion, please modify the name of one of the beans: " +
-                            "prev: " + prevBeanDesc + ", new: " + newBeanDesc+". "+checkLocation);
-                }
+                // If two reference beans are the same type and name, then other class injection them by type or name are confusion.
+                // Let it go, Spring find candidate bean will check it
+//                if (StringUtils.isEquals(prevBeanType, interfaceName)) {
+//                    throw new BeanCreationException("Already exists another reference bean with the same bean name and type but difference attributes. " +
+//                        "In order to avoid injection confusion later, please modify the name of one of the beans: " +
+//                        "prev: " + prevBeanDesc + ", new: " + newBeanDesc+". "+checkLocation);
+//                }
             }
 
             // bean name from attribute 'id' or java-config bean, cannot be renamed
             if (!renameable) {
-                throw new BeanCreationException("Already exists another bean definition with the same bean name, " +
-                        "but cannot rename the reference bean name (specify the id attribute or java-config bean), " +
-                        "please modify the name of one of the beans: " +
-                        "prev: " + prevBeanDesc + ", new: " + newBeanDesc+". "+checkLocation);
+                throw new BeanCreationException("Already exists another bean definition with the same bean name [" + referenceBeanName + "], " +
+                    "but cannot rename the reference bean name (specify the id attribute or java-config bean), " +
+                    "please modify the name of one of the beans: " +
+                    "prev: " + prevBeanDesc + ", new: " + newBeanDesc + ". " + checkLocation);
             }
 
             // the prev bean type is different, rename the new reference bean
@@ -421,17 +452,18 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             }
             newBeanDesc = newReferenceBeanName + "[" + referenceKey + "]";
 
-            logger.warn("Already exists another bean definition with the same bean name but difference type, " +
-                    "rename dubbo reference bean to: " + newReferenceBeanName + ". " +
-                    "It is recommended to modify the name of one of the beans to avoid injection problems. " +
-                    "prev: " + prevBeanDesc + ", new: " + newBeanDesc+". "+checkLocation);
+            logger.warn("Already exists another bean definition with the same bean name [" + referenceBeanName + "], " +
+                "rename dubbo reference bean to [" + newReferenceBeanName + "]. " +
+                "It is recommended to modify the name of one of the beans to avoid injection problems. " +
+                "prev: " + prevBeanDesc + ", new: " + newBeanDesc + ". " + checkLocation);
             referenceBeanName = newReferenceBeanName;
         }
         attributes.put(ReferenceAttributes.ID, referenceBeanName);
 
-        // If registered matched reference before, add alias
+        // If registered matched reference before, just register alias
         if (registeredReferenceBeanNames.size() > 0) {
             beanDefinitionRegistry.registerAlias(registeredReferenceBeanNames.get(0), referenceBeanName);
+            referenceBeanManager.registerReferenceKeyAndBeanName(referenceKey, referenceBeanName);
             return referenceBeanName;
         }
 
@@ -453,13 +485,15 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()
         GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
         targetDefinition.setBeanClass(interfaceClass);
-        String id = (String) beanDefinition.getPropertyValues().get(ReferenceAttributes.ID);
+        String id = getPropertyValue(beanDefinition.getPropertyValues(), ReferenceAttributes.ID);
+
         beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
 
         // signal object type since Spring 5.2
         beanDefinition.setAttribute(Constants.OBJECT_TYPE_ATTRIBUTE, interfaceClass);
 
         beanDefinitionRegistry.registerBeanDefinition(referenceBeanName, beanDefinition);
+        referenceBeanManager.registerReferenceKeyAndBeanName(referenceKey, referenceBeanName);
         logger.info("Register dubbo reference bean: "+referenceBeanName+" = "+referenceKey+" at "+member);
         return referenceBeanName;
     }

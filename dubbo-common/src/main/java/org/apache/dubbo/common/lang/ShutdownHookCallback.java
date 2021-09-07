@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.lang;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
@@ -23,7 +24,7 @@ import org.apache.dubbo.common.extension.SPI;
  *
  * @since 2.7.5
  */
-@SPI
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface ShutdownHookCallback extends Prioritized {
 
     /**

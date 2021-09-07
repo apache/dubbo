@@ -85,6 +85,7 @@ public class ExecuteLimitFilterTest {
             executeLimitFilter.onError(e, invoker, invocation);
         }
         Assertions.assertEquals(1, RpcStatus.getStatus(url, invocation.getMethodName()).getFailed());
+        RpcStatus.removeStatus(url, invocation.getMethodName());
     }
 
     @Test

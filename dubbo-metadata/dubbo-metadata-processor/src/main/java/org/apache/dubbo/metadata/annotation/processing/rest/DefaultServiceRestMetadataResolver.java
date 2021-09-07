@@ -112,7 +112,7 @@ public class DefaultServiceRestMetadataResolver extends AbstractServiceRestMetad
             // If "-parameters" option is enabled, take the parameter name as the path variable name,
             // or use the index of parameter
             String pathVariableName = isEnabledParametersCompilerOption(parameterName) ? parameterName : valueOf(i);
-            requestPathBuilder.append(PATH_SEPARATOR).append("{").append(pathVariableName).append("}");
+            requestPathBuilder.append(PATH_SEPARATOR).append('{').append(pathVariableName).append('}');
         }
 
         return requestPathBuilder.toString();

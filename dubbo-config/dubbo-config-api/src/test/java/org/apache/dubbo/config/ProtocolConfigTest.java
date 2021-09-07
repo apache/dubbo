@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.junit.jupiter.api.AfterEach;
@@ -30,9 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 public class ProtocolConfigTest {
 
@@ -71,10 +70,11 @@ public class ProtocolConfigTest {
     @Test
     public void testPort() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setPort(8080);
+        int port = NetUtils.getAvailablePort();
+        protocol.setPort(port);
         Map<String, String> parameters = new HashMap<String, String>();
         ProtocolConfig.appendParameters(parameters, protocol);
-        assertThat(protocol.getPort(), equalTo(8080));
+        assertThat(protocol.getPort(), equalTo(port));
         assertThat(parameters.isEmpty(), is(true));
     }
 
@@ -228,10 +228,11 @@ public class ProtocolConfigTest {
 
     @Test
     public void testOverrideEmptyConfig() {
+        int port = NetUtils.getAvailablePort();
         //dubbo.protocol.name=rest
-        //dubbo.protocol.port=1234
+        //dubbo.protocol.port=port
         SysProps.setProperty("dubbo.protocol.name", "rest");
-        SysProps.setProperty("dubbo.protocol.port", "1234");
+        SysProps.setProperty("dubbo.protocol.port", String.valueOf(port));
 
         try {
             ProtocolConfig protocolConfig = new ProtocolConfig();
@@ -242,14 +243,15 @@ public class ProtocolConfigTest {
                     .initialize();
 
             Assertions.assertEquals("rest", protocolConfig.getName());
-            Assertions.assertEquals(1234, protocolConfig.getPort());
+            Assertions.assertEquals(port, protocolConfig.getPort());
         } finally {
         }
     }
 
     @Test
     public void testOverrideConfigByName() {
-        SysProps.setProperty("dubbo.protocols.rest.port", "1234");
+        int port = NetUtils.getAvailablePort();
+        SysProps.setProperty("dubbo.protocols.rest.port", String.valueOf(port));
 
         try {
             ProtocolConfig protocolConfig = new ProtocolConfig();
@@ -261,15 +263,16 @@ public class ProtocolConfigTest {
                     .initialize();
 
             Assertions.assertEquals("rest", protocolConfig.getName());
-            Assertions.assertEquals(1234, protocolConfig.getPort());
+            Assertions.assertEquals(port, protocolConfig.getPort());
         } finally {
         }
     }
 
     @Test
     public void testOverrideConfigById() {
+        int port = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocols.rest1.name", "rest");
-        SysProps.setProperty("dubbo.protocols.rest1.port", "1234");
+        SysProps.setProperty("dubbo.protocols.rest1.port",  String.valueOf(port));
 
         try {
             ProtocolConfig protocolConfig = new ProtocolConfig();
@@ -282,17 +285,19 @@ public class ProtocolConfigTest {
                     .initialize();
 
             Assertions.assertEquals("rest", protocolConfig.getName());
-            Assertions.assertEquals(1234, protocolConfig.getPort());
+            Assertions.assertEquals(port, protocolConfig.getPort());
         } finally {
         }
     }
 
     @Test
     public void testCreateConfigFromPropsWithId() {
+        int port1 = NetUtils.getAvailablePort();
+        int port2 = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocols.rest1.name", "rest");
-        SysProps.setProperty("dubbo.protocols.rest1.port", "1234");
+        SysProps.setProperty("dubbo.protocols.rest1.port", String.valueOf(port1));
         SysProps.setProperty("dubbo.protocol.name", "dubbo"); // ignore
-        SysProps.setProperty("dubbo.protocol.port", "2346");
+        SysProps.setProperty("dubbo.protocol.port", String.valueOf(port2));
 
         try {
 
@@ -307,16 +312,18 @@ public class ProtocolConfigTest {
             ProtocolConfig protocol = configManager.getProtocol("rest1").get();
 
             Assertions.assertEquals("rest", protocol.getName());
-            Assertions.assertEquals(1234, protocol.getPort());
+            Assertions.assertEquals(port1, protocol.getPort());
         } finally {
         }
     }
 
     @Test
     public void testCreateConfigFromPropsWithName() {
-        SysProps.setProperty("dubbo.protocols.rest.port", "1234");
+        int port1 = NetUtils.getAvailablePort();
+        int port2 = NetUtils.getAvailablePort();
+        SysProps.setProperty("dubbo.protocols.rest.port", String.valueOf(port1));
         SysProps.setProperty("dubbo.protocol.name", "dubbo"); // ignore
-        SysProps.setProperty("dubbo.protocol.port", "2346");
+        SysProps.setProperty("dubbo.protocol.port", String.valueOf(port2));
 
         try {
 
@@ -331,15 +338,16 @@ public class ProtocolConfigTest {
             ProtocolConfig protocol = configManager.getProtocol("rest").get();
 
             Assertions.assertEquals("rest", protocol.getName());
-            Assertions.assertEquals(1234, protocol.getPort());
+            Assertions.assertEquals(port1, protocol.getPort());
         } finally {
         }
     }
 
     @Test
     public void testCreateDefaultConfigFromProps() {
+        int port = NetUtils.getAvailablePort();
         SysProps.setProperty("dubbo.protocol.name", "rest");
-        SysProps.setProperty("dubbo.protocol.port", "2346");
+        SysProps.setProperty("dubbo.protocol.port", String.valueOf(port));
         String protocolId = "rest-protocol";
         SysProps.setProperty("dubbo.protocol.id", protocolId); // Allow override config id from props
 
@@ -355,7 +363,7 @@ public class ProtocolConfigTest {
 
             ProtocolConfig protocol = configManager.getProtocol("rest").get();
             Assertions.assertEquals("rest", protocol.getName());
-            Assertions.assertEquals(2346, protocol.getPort());
+            Assertions.assertEquals(port, protocol.getPort());
             Assertions.assertEquals(protocolId, protocol.getId());
 
             ProtocolConfig protocolConfig = configManager.getProtocol(protocolId).get();
