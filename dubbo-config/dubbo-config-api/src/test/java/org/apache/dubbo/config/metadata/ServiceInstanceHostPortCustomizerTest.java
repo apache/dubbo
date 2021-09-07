@@ -22,6 +22,7 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,8 +41,9 @@ class ServiceInstanceHostPortCustomizerTest {
     
     @Test
     void customizePreferredProtocol() {
-        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ApplicationModel applicationModel= new ApplicationModel(new FrameworkModel());
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("service-preferredProtocol"));
+        
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(applicationModel);
         
         // Only have tri protocol
