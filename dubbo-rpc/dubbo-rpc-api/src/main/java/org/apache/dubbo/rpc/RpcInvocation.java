@@ -57,7 +57,12 @@ public class RpcInvocation implements Invocation, Serializable {
     private String protocolServiceKey;
 
     private ServiceModel serviceModel;
+
     private String methodName;
+
+    // the same as ServiceDescriptor methodWithParams
+    private String methodWithParamsName;
+
     private String serviceName;
 
     private transient Class<?>[] parameterTypes;
@@ -169,6 +174,7 @@ public class RpcInvocation implements Invocation, Serializable {
                          Map<String, Object> attachments, Invoker<?> invoker, Map<Object, Object> attributes) {
         this.serviceModel = serviceModel;
         this.methodName = methodName;
+        this.methodWithParamsName = ServiceDescriptor.getMethodWithParamName(methodName, parameterTypes);
         this.serviceName = serviceName;
         this.protocolServiceKey = protocolServiceKey;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
@@ -467,6 +473,10 @@ public class RpcInvocation implements Invocation, Serializable {
             return null;
         }
         return attachments.get(key);
+    }
+
+    public String getMethodWithParamsName() {
+        return methodWithParamsName;
     }
 
     public Class<?> getReturnType() {
