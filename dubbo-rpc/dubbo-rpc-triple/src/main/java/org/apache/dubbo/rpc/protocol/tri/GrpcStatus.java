@@ -24,7 +24,11 @@ import io.netty.handler.codec.http.QueryStringEncoder;
 
 import org.apache.dubbo.rpc.RpcException;
 
-import static org.apache.dubbo.rpc.RpcException.*;
+import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
+import static org.apache.dubbo.rpc.RpcException.LIMIT_EXCEEDED_EXCEPTION;
+import static org.apache.dubbo.rpc.RpcException.METHOD_NOT_FOUND;
+import static org.apache.dubbo.rpc.RpcException.TIMEOUT_EXCEPTION;
+import static org.apache.dubbo.rpc.RpcException.TIMEOUT_TERMINATE;
 
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
@@ -101,6 +105,7 @@ public class GrpcStatus {
                 break;
             case METHOD_NOT_FOUND:
                 code = Code.NOT_FOUND;
+                break;
             default:
                 code = Code.UNKNOWN;
                 break;
