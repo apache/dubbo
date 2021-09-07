@@ -17,17 +17,19 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.ProviderFirstParams;
 import org.apache.dubbo.rpc.RpcServiceContext;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,7 +66,7 @@ public class InstanceAddressURLTest {
         "&version=1.0.0&timeout=9000&a.timeout=8888&dubbo.tag=consumer&protocol=dubbo");
 
     private DefaultServiceInstance createInstance() {
-        DefaultServiceInstance instance = new DefaultServiceInstance("demo-provider", "127.0.0.1", 8080);
+        DefaultServiceInstance instance = new DefaultServiceInstance("demo-provider", "127.0.0.1", 8080, ApplicationModel.defaultModel());
         Map<String, String> metadata = instance.getMetadata();
         metadata.put("key1", "value1");
         metadata.put("key2", "value2");
@@ -80,30 +82,31 @@ public class InstanceAddressURLTest {
     }
 
     private InstanceAddressURL instanceURL;
+    private volatile transient Set<String> providerFirstParams;
 
     @BeforeEach
     public void setUp() {
         DefaultServiceInstance instance = createInstance();
         MetadataInfo metadataInfo = createMetaDataInfo();
         instanceURL = new InstanceAddressURL(instance, metadataInfo);
-
-        Map<String, String> consumerFirstQueryMap;
-        Map<String, String> queryMap = consumerURL.getParameters();
-        Set<ProviderFirstParams> providerFirstParams = ExtensionLoader.getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
+        Set<ProviderFirstParams> providerFirstParams = ApplicationModel.defaultModel().getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
         if (CollectionUtils.isEmpty(providerFirstParams)) {
-            consumerFirstQueryMap = queryMap;
+            this.providerFirstParams = null;
         } else {
-            consumerFirstQueryMap = new HashMap<>(queryMap);
-            for (ProviderFirstParams paramsFilter : providerFirstParams) {
-                if (paramsFilter.params() == null) {
-                    break;
+            if (providerFirstParams.size() == 1) {
+                this.providerFirstParams = Collections.unmodifiableSet(providerFirstParams.iterator().next().params());
+            } else {
+                Set<String> params = new HashSet<>();
+                for (ProviderFirstParams paramsFilter : providerFirstParams) {
+                    if (paramsFilter.params() == null) {
+                        break;
+                    }
+                    params.addAll(paramsFilter.params());
                 }
-                for (String keyToRemove : paramsFilter.params()) {
-                    consumerFirstQueryMap.remove(keyToRemove);
-                }
+                this.providerFirstParams = Collections.unmodifiableSet(params);
             }
         }
-        instanceURL.addConsumerParams(consumerURL.getProtocolServiceKey(), consumerFirstQueryMap);
+        instanceURL.setProviderFirstParams(this.providerFirstParams);
     }
 
     @Test
@@ -114,8 +117,8 @@ public class InstanceAddressURLTest {
         RpcServiceContext.setRpcContext(consumerURL);
         assertEquals("1000", instanceURL.getParameter("delay"));
         assertEquals("1000", instanceURL.getServiceParameter(consumerURL.getProtocolServiceKey(), "delay"));
-        assertEquals("7000", instanceURL.getMethodParameter("sayHello", "timeout"));
-        assertEquals("7000", instanceURL.getServiceMethodParameter(consumerURL.getProtocolServiceKey(), "sayHello", "timeout"));
+        assertEquals("9000", instanceURL.getMethodParameter("sayHello", "timeout"));
+        assertEquals("9000", instanceURL.getServiceMethodParameter(consumerURL.getProtocolServiceKey(), "sayHello", "timeout"));
         assertNull(instanceURL.getParameter("uniqueKey"));
         assertNull(instanceURL.getServiceParameter(consumerURL.getProtocolServiceKey(), "uniqueKey"));
         assertEquals("unique", instanceURL.getServiceParameter(url2.getProtocolServiceKey(), "uniqueKey"));
@@ -140,6 +143,10 @@ public class InstanceAddressURLTest {
         Map<String, String> expectedAllParams = new HashMap<>();
         expectedAllParams.putAll(instanceURL.getInstance().getMetadata());
         expectedAllParams.putAll(instanceURL.getMetadataInfo().getServiceInfo(consumerURL.getProtocolServiceKey()).getAllParams());
+        Map<String, String> consumerURLParameters = consumerURL.getParameters();
+        providerFirstParams.forEach(consumerURLParameters::remove);
+        expectedAllParams.putAll(consumerURLParameters);
+
         assertEquals(expectedAllParams.size(), instanceURL.getParameters().size());
         assertEquals(url.getParameter(TAG_KEY), instanceURL.getParameters().get(TAG_KEY));
         assertEquals(consumerURL.getParameter(TIMEOUT_KEY), instanceURL.getParameters().get(TIMEOUT_KEY));
@@ -147,6 +154,7 @@ public class InstanceAddressURLTest {
         assertTrue(instanceURL.hasServiceMethodParameter(url.getProtocolServiceKey(), "sayHello"));
         assertTrue(instanceURL.hasMethodParameter("a", TIMEOUT_KEY));
         assertTrue(instanceURL.hasMethodParameter(null, TIMEOUT_KEY));
+        assertEquals("8888", instanceURL.getMethodParameter("a", TIMEOUT_KEY));
         assertTrue(instanceURL.hasMethodParameter("a", null));
         assertFalse(instanceURL.hasMethodParameter("notExistMethod", null));
 

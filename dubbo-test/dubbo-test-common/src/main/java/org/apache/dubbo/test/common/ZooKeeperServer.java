@@ -16,28 +16,42 @@
  */
 package org.apache.dubbo.test.common;
 
+/**
+ * Using this class as registry center is not very well because of time-consuming.
+ * <p>The alternative is to use {@link org.apache.dubbo.test.common.registrycenter.ZookeeperSingleRegistryCenter}</p> or
+ * {@link org.apache.dubbo.test.common.registrycenter.ZookeeperMultipleRegistryCenter}
+ * @deprecated
+ * @see org.apache.dubbo.test.common.registrycenter.ZookeeperSingleRegistryCenter
+ * @see org.apache.dubbo.test.common.registrycenter.ZookeeperMultipleRegistryCenter
+ */
+@Deprecated
 public class ZooKeeperServer {
 
     private static EmbeddedZooKeeper zookeeper1;
     private static EmbeddedZooKeeper zookeeper2;
 
     public static void start() {
-            if (zookeeper1 == null) {
-                zookeeper1 = new EmbeddedZooKeeper(2181, true);
-                zookeeper1.start();
-            }
-            if (zookeeper2 == null) {
-                zookeeper2 = new EmbeddedZooKeeper(2182, true);
-                zookeeper2.start();
-            }
+        if (zookeeper1 == null) {
+            zookeeper1 = new EmbeddedZooKeeper(2181, true);
+            zookeeper1.start();
+        }
+        if (zookeeper2 == null) {
+            zookeeper2 = new EmbeddedZooKeeper(2182, true);
+            zookeeper2.start();
+        }
     }
 
     public static void stop() {
-        if (zookeeper1 != null) {
-            zookeeper1.stop();
-        }
-        if (zookeeper2 != null) {
-            zookeeper2.stop();
+        try {
+            if (zookeeper1 != null) {
+                zookeeper1.stop();
+            }
+            if (zookeeper2 != null) {
+                zookeeper2.stop();
+            }
+        } finally {
+            zookeeper1 = null;
+            zookeeper2 = null;
         }
     }
 }

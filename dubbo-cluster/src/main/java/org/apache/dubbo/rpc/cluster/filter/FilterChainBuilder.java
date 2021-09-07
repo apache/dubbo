@@ -28,7 +28,9 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 
-@SPI("default")
+import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
+
+@SPI(value = "default", scope = APPLICATION)
 public interface FilterChainBuilder {
     /**
      * build consumer/provider filter chain

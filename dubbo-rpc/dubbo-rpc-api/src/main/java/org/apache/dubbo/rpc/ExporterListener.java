@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
  * ExporterListener. (SPI, Singleton, ThreadSafe)
  */
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface ExporterListener {
 
     /**

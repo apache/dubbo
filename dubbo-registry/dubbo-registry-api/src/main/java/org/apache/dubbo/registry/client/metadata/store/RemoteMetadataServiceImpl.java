@@ -31,6 +31,8 @@ import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,16 +46,19 @@ import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 
-public class RemoteMetadataServiceImpl {
+public class RemoteMetadataServiceImpl implements ScopeModelAware {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private WritableMetadataService localMetadataService;
+    private MetadataReportInstance metadataReportInstance;
 
-    public RemoteMetadataServiceImpl(WritableMetadataService writableMetadataService) {
-        this.localMetadataService = writableMetadataService;
+    @Override
+    public void setScopeModel(ScopeModel scopeModel) {
+        metadataReportInstance = scopeModel.getBeanFactory().getBean(MetadataReportInstance.class);
+        localMetadataService = scopeModel.getDefaultExtension(WritableMetadataService.class);
     }
 
     public Map<String, MetadataReport> getMetadataReports() {
-        return MetadataReportInstance.getMetadataReports(false);
+        return metadataReportInstance.getMetadataReports(false);
     }
 
     public void publishMetadata(String serviceName) {

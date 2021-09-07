@@ -40,11 +40,10 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -104,13 +103,15 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
      * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
-    private static final Protocol REF_PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private Protocol protocolSPI;
 
     /**
      * A {@link ProxyFactory} implementation that will generate a reference service's proxy,the JavassistProxyFactory is
      * its default implementation
      */
-    private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private ProxyFactory proxyFactory;
+
+    private ConsumerModel consumerModel;
 
     /**
      * The interface proxy reference
@@ -147,6 +148,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     public ReferenceConfig(Reference reference) {
         super(reference);
+    }
+
+    @Override
+    protected void postProcessAfterScopeModelChanged() {
+        super.postProcessAfterScopeModelChanged();
+
+        protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     }
 
     /**
@@ -213,6 +222,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         invoker = null;
         ref = null;
+        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+        repository.unregisterConsumer(consumerModel);
     }
 
     protected synchronized void init() {
@@ -247,15 +258,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         Map<String, String> referenceParameters = appendConfig();
 
 
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        repository.registerConsumer(
-            serviceMetadata.getServiceKey(),
-            serviceDescriptor,
-            this,
-            null,
-            serviceMetadata,
-            createAsyncMethodInfo());
+        consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
+            getScopeModel(), serviceMetadata, createAsyncMethodInfo());
+
+        repository.registerConsumer(consumerModel);
 
         serviceMetadata.getAttachments().putAll(referenceParameters);
 
@@ -264,7 +272,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
 
-        ConsumerModel consumerModel = repository.lookupReferredService(serviceMetadata.getServiceKey());
         consumerModel.setProxyObject(ref);
         consumerModel.initMethodModels();
 
@@ -382,10 +389,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         URL consumerUrl = new ServiceConfigURL(CONSUMER_PROTOCOL, referenceParameters.get(REGISTER_IP_KEY), 0,
             referenceParameters.get(INTERFACE_KEY), referenceParameters);
+        consumerUrl = consumerUrl.setScopeModel(getScopeModel());
+        consumerUrl = consumerUrl.setServiceModel(consumerModel);
         MetadataUtils.publishServiceDefinition(consumerUrl);
 
         // create service proxy
-        return (T) PROXY_FACTORY.getProxy(invoker, ProtocolUtils.isGeneric(generic));
+        return (T) proxyFactory.getProxy(invoker, ProtocolUtils.isGeneric(generic));
     }
 
     /**
@@ -395,7 +404,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private void createInvokerForLocal(Map<String, String> referenceParameters) {
         URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(referenceParameters);
-        invoker = REF_PROTOCOL.refer(interfaceClass, url);
+        url = url.setScopeModel(getScopeModel());
+        url = url.setServiceModel(consumerModel);
+        invoker = protocolSPI.refer(interfaceClass, url);
         if (logger.isInfoEnabled()) {
             logger.info("Using in jvm service " + interfaceClass.getName());
         }
@@ -412,6 +423,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (StringUtils.isEmpty(url.getPath())) {
                     url = url.setPath(interfaceName);
                 }
+                url = url.setScopeModel(getScopeModel());
+                url = url.setServiceModel(consumerModel);
                 if (UrlUtils.isRegistry(url)) {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
                 } else {
@@ -435,6 +448,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (monitorUrl != null) {
                     u = u.putAttribute(MONITOR_KEY, monitorUrl);
                 }
+                u = u.setScopeModel(getScopeModel());
+                u = u.setServiceModel(consumerModel);
                 urls.add(u.putAttribute(REFER_KEY, referenceParameters));
             }
         }
@@ -453,14 +468,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void createInvokerForRemote() {
         if (urls.size() == 1) {
-            invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
+            invoker = protocolSPI.refer(interfaceClass, urls.get(0));
         } else {
             List<Invoker<?>> invokers = new ArrayList<>();
             URL registryUrl = null;
             for (URL url : urls) {
                 // For multi-registry scenarios, it is not checked whether each referInvoker is available.
                 // Because this invoker may become available later.
-                invokers.add(REF_PROTOCOL.refer(interfaceClass, url));
+                invokers.add(protocolSPI.refer(interfaceClass, url));
 
                 if (UrlUtils.isRegistry(url)) {
                     // use last registry url
@@ -515,7 +530,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         completeCompoundConfigs();
 
         // init some null configuration.
-        List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
+        List<ConfigInitializer> configInitializers = this.getExtensionLoader(ConfigInitializer.class)
             .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
         configInitializers.forEach(e -> e.initReferConfig(this));
 
@@ -526,8 +541,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             interfaceClass = GenericService.class;
         } else {
             try {
-                interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
-                    .getContextClassLoader());
+                if (getInterfaceClassLoader() != null) {
+                    interfaceClass = Class.forName(interfaceName, true, getInterfaceClassLoader());
+                } else {
+                    interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
+                        .getContextClassLoader());
+                }
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -591,7 +610,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     private void postProcessConfig() {
-        List<ConfigPostProcessor> configPostProcessors = ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
+        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
             .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
     }

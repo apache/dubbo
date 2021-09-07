@@ -17,6 +17,9 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.Map;
 
@@ -94,6 +97,25 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
      * Forks for forking cluster
      */
     protected Integer forks;
+
+    public AbstractMethodConfig() {
+        super(ApplicationModel.defaultModel().getDefaultModule());
+    }
+
+    @Override
+    public ModuleModel getScopeModel() {
+        return (ModuleModel) scopeModel;
+    }
+
+    @Override
+    protected void checkScopeModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            throw new IllegalArgumentException("scopeModel cannot be null");
+        }
+        if (!(scopeModel instanceof ModuleModel)) {
+            throw new IllegalArgumentException("Invalid scope model, expect to be a ModuleModel but got: " + scopeModel);
+        }
+    }
 
     public Integer getForks() {
         return forks;

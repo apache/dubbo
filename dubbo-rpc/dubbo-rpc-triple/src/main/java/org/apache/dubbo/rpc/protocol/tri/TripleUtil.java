@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.triple.TripleWrapper;
-
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -37,17 +30,26 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AttributeKey;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -57,6 +59,27 @@ public class TripleUtil {
             "tri_server_stream");
     public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
             "tri_client_stream");
+
+    // Some exceptions are not very useful and add too much noise to the log
+    private static final Set<String> QUIET_EXCEPTIONS = new HashSet<>();
+    private static final Set<Class<?>> QUIET_EXCEPTIONS_CLASS = new HashSet<>();
+
+    static {
+        QUIET_EXCEPTIONS.add("NativeIoException");
+        QUIET_EXCEPTIONS_CLASS.add(IOException.class);
+        QUIET_EXCEPTIONS_CLASS.add(SocketException.class);
+    }
+
+    public static boolean isQuiteException(Throwable t) {
+        if (QUIET_EXCEPTIONS_CLASS.contains(t.getClass())) {
+            return true;
+        }
+        if (QUIET_EXCEPTIONS.contains(t.getClass().getSimpleName())) {
+            return true;
+        }
+        return false;
+    }
+
 
     public static final String LANGUAGE = "java";
 

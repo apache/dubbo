@@ -25,18 +25,19 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
 
 public class CodecSupport {
     private static final Logger logger = LoggerFactory.getLogger(CodecSupport.class);
@@ -157,9 +158,8 @@ public class CodecSupport {
         return Arrays.equals(payload, getNullBytesOf(getSerializationById(proto)));
     }
 
-    public static void checkSerialization(String path, String version, Byte id) throws IOException {
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
-        Set<URL> urls = repository.lookupRegisteredProviderUrlsWithoutGroup(keyWithoutGroup(path, version));
+    public static void checkSerialization(FrameworkServiceRepository serviceRepository, String path, String version, Byte id) throws IOException {
+        List<URL> urls = serviceRepository.lookupRegisteredProviderUrlsWithoutGroup(keyWithoutGroup(path, version));
         if (CollectionUtils.isEmpty(urls)) {
             throw new IOException("Service " + path + " with version " + version + " not found, invocation rejected.");
         } else {
@@ -178,10 +178,5 @@ public class CodecSupport {
 
     }
 
-    private static String keyWithoutGroup(String interfaceName, String version) {
-        if (StringUtils.isEmpty(version)) {
-            return interfaceName + ":0.0.0";
-        }
-        return interfaceName + ":" + version;
-    }
+
 }

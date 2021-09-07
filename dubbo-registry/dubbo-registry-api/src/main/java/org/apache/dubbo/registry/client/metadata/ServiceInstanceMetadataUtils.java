@@ -222,7 +222,7 @@ public class ServiceInstanceMetadataUtils {
         if (registryCluster == null) {
             registryCluster = DEFAULT_KEY;
         }
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(instance.getApplicationModel());
         MetadataInfo metadataInfo = writableMetadataService.getMetadataInfos().get(registryCluster);
         if (metadataInfo == null) {
             metadataInfo = ((InMemoryWritableMetadataService) writableMetadataService).getDefaultMetadataInfo();
@@ -294,8 +294,8 @@ public class ServiceInstanceMetadataUtils {
 
     private static void reportMetadataToRemote(ServiceInstance serviceInstance) {
         if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(getMetadataStorageType(serviceInstance))) {
-            RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
-            remoteMetadataService.publishMetadata(serviceInstance.getServiceName());
+            RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService(serviceInstance.getApplicationModel());
+            remoteMetadataService.publishMetadata(serviceInstance.getApplicationModel().getApplicationName());
         }
     }
 

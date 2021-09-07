@@ -24,7 +24,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -62,6 +62,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.net.InetAddress;
@@ -108,7 +109,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-import static org.apache.dubbo.common.status.reporter.FrameworkStatusReporter.createRegistrationReport;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
@@ -213,6 +213,7 @@ public class ConfigValidationUtils {
                         url = URLBuilder.from(url)
                             .addParameter(REGISTRY_KEY, url.getProtocol())
                             .setProtocol(extractRegistryType(url))
+                            .setScopeModel(interfaceConfig.getScopeModel())
                             .build();
                         if ((provider && url.getParameter(REGISTER_KEY, true))
                             || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
@@ -222,17 +223,17 @@ public class ConfigValidationUtils {
                 }
             }
         }
-        return genCompatibleRegistries(registryList, provider);
+        return genCompatibleRegistries(interfaceConfig.getApplicationModel(), registryList, provider);
     }
 
-    private static List<URL> genCompatibleRegistries(List<URL> registryList, boolean provider) {
+    private static List<URL> genCompatibleRegistries(ApplicationModel applicationModel, List<URL> registryList, boolean provider) {
         List<URL> result = new ArrayList<>(registryList.size());
         registryList.forEach(registryURL -> {
             if (provider) {
                 // for registries enabled service discovery, automatically register interface compatible addresses.
                 String registerMode;
                 if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
-                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(applicationModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
                     if (!isValidRegisterMode(registerMode)) {
                         registerMode = DEFAULT_REGISTER_MODE_INSTANCE;
                     }
@@ -246,7 +247,7 @@ public class ConfigValidationUtils {
                         result.add(interfaceCompatibleRegistryURL);
                     }
                 } else {
-                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_ALL));
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(applicationModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_ALL));
                     if (!isValidRegisterMode(registerMode)) {
                         registerMode = DEFAULT_REGISTER_MODE_INTERFACE;
                     }
@@ -264,7 +265,8 @@ public class ConfigValidationUtils {
                     }
                 }
 
-                FrameworkStatusReporter.reportRegistrationStatus(createRegistrationReport(registerMode));
+                FrameworkStatusReportService reportService = applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
+                reportService.reportRegistrationStatus(reportService.createRegistrationReport(registerMode));
             } else {
                 result.add(registryURL);
             }

@@ -429,7 +429,7 @@ public class ExchangeCodec extends TelnetCodec {
         try {
             if (eventBytes != null) {
                 int dataLen = eventBytes.length;
-                int threshold = ConfigurationUtils.getSystemConfiguration().getInt("deserialization.event.size", 50);
+                int threshold = ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel()).getInt("deserialization.event.size", 50);
                 if (dataLen > threshold) {
                     throw new IllegalArgumentException("Event data too long, actual size " + threshold + ", threshold " + threshold + " rejected for security consideration.");
                 }

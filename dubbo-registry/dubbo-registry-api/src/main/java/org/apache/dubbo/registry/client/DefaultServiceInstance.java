@@ -17,9 +17,11 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSON;
 
+import java.beans.Transient;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,7 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SCOPE_MODEL;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.ENDPOINTS;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 
@@ -59,6 +62,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     private transient String registryCluster; // extendParams can be more flexiable, but one single property uses less space
     private transient Map<String, String> extendParams;
     private transient List<Endpoint> endpoints;
+    private transient Map<String, Object> attributes = new HashMap<>();
 
     public DefaultServiceInstance() {
     }
@@ -75,24 +79,28 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.extendParams = other.extendParams;
         this.endpoints = other.endpoints;
         this.address = null;
+        this.attributes = other.attributes;
     }
 
-    public DefaultServiceInstance(String serviceName, String host, Integer port) {
+    public DefaultServiceInstance(String serviceName, String host, Integer port, ApplicationModel applicationModel) {
         if (port == null || port < 1) {
             throw new IllegalArgumentException("The port value is illegal, the value is " + port);
         }
         this.serviceName = serviceName;
         this.host = host;
         this.port = port;
+        setApplicationModel(applicationModel);
+    }
+
+    public DefaultServiceInstance(String serviceName, ApplicationModel applicationModel) {
+        this.serviceName = serviceName;
+        setApplicationModel(applicationModel);
     }
 
     public void setRawAddress(String rawAddress) {
         this.rawAddress = rawAddress;
     }
 
-    public DefaultServiceInstance(String serviceName) {
-        this.serviceName = serviceName;
-    }
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
@@ -201,6 +209,22 @@ public class DefaultServiceInstance implements ServiceInstance {
             allParams.putAll(extendParams);
             return allParams;
         }
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.attributes.put(SCOPE_MODEL, applicationModel);
+    }
+
+    @Override
+    @Transient
+    public ApplicationModel getApplicationModel() {
+        return (ApplicationModel) this.attributes.get(SCOPE_MODEL);
     }
 
     public void setMetadata(Map<String, String> metadata) {

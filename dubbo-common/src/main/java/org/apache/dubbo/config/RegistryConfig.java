@@ -327,7 +327,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setTransporter(String transporter) {
-        /*if(transporter != null && transporter.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(transporter)){
+        /*if(transporter != null && transporter.length() > 0 && ! this.getExtensionLoader(Transporter.class).hasExtension(transporter)){
             throw new IllegalStateException("No such transporter type : " + transporter);
         }*/
         this.transporter = transporter;
@@ -338,7 +338,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setServer(String server) {
-        /*if(server != null && server.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(server)){
+        /*if(server != null && server.length() > 0 && ! this.getExtensionLoader(Transporter.class).hasExtension(server)){
             throw new IllegalStateException("No such server type : " + server);
         }*/
         this.server = server;
@@ -349,7 +349,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public void setClient(String client) {
-        /*if(client != null && client.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(client)){
+        /*if(client != null && client.length() > 0 && ! this.getExtensionLoader(Transporter.class).hasExtension(client)){
             throw new IllegalStateException("No such client type : " + client);
         }*/
         this.client = client;

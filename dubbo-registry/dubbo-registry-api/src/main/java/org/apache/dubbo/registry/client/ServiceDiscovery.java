@@ -35,13 +35,14 @@ import java.util.stream.Stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
+import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 /**
  * The common operations of Service Discovery
  *
  * @since 2.7.5
  */
-@SPI("zookeeper")
+@SPI(value = "zookeeper", scope = APPLICATION)
 public interface ServiceDiscovery extends Prioritized {
 
     // ==================================== Lifecycle ==================================== //

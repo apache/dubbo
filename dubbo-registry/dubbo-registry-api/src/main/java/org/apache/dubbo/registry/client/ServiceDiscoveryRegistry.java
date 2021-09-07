@@ -87,7 +87,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     public ServiceDiscoveryRegistry(URL registryURL) {
         this.registryURL = registryURL;
         this.serviceDiscovery = createServiceDiscovery(registryURL);
-        this.writableMetadataService = WritableMetadataService.getDefaultExtension();
+        this.writableMetadataService = WritableMetadataService.getDefaultExtension(registryURL.getScopeModel());
     }
 
     // Currently for test purpose
@@ -208,7 +208,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
         Set<String> subscribedServices = Collections.emptySet();
         try {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
             subscribedServices = serviceNameMapping.getAndListenServices(registryURL, url, new DefaultMappingListener(url, subscribedServices, listener));
         } catch (Exception e) {
             logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
@@ -369,14 +369,14 @@ public class ServiceDiscoveryRegistry implements Registry {
             }
 
             if (CollectionUtils.isEmpty(tempOldApps) && newApps.size() > 0) {
-                WritableMetadataService.getDefaultExtension().putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
+                writableMetadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
                 subscribeURLs(url, listener, newApps);
                 return;
             }
 
             for (String newAppName : newApps) {
                 if (!tempOldApps.contains(newAppName)) {
-                    WritableMetadataService.getDefaultExtension().putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
+                    writableMetadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
                     subscribeURLs(url, listener, newApps);
                     return;
                 }

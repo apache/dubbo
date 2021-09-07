@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.service;
 
-import grpc.health.v1.Health;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -24,10 +23,13 @@ import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.PathResolver;
+
+import grpc.health.v1.Health;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +48,7 @@ public class TriBuiltinService {
     private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
         .getDefaultExtension();
 
-    private static final ServiceRepository repository = ApplicationModel.getServiceRepository();
+    private static final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
 
     private static final Map<Class<?>, Object> TRI_SERVICES = new HashMap<>();
 
@@ -63,16 +65,23 @@ public class TriBuiltinService {
         if (init.compareAndSet(false, true)) {
             TRI_SERVICES.forEach((clz, impl) -> {
                 ServiceDescriptor serviceDescriptor = repository.registerService(clz);
-                repository.registerProvider(
+                ServiceMetadata serviceMetadata = new ServiceMetadata();
+                serviceMetadata.setServiceType(clz);
+                serviceMetadata.setTarget(impl);
+                serviceMetadata.setServiceInterfaceName(clz.getName());
+                serviceMetadata.generateServiceKey();
+                ProviderModel providerModel = new ProviderModel(
                     clz.getName(),
                     impl,
                     serviceDescriptor,
                     null,
-                    new ServiceMetadata()
-                );
+                    serviceMetadata);
+                repository.registerProvider(providerModel);
                 int port = 0;
                 URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null,
                     null, ANYHOST_VALUE, port, clz.getName());
+                url.setServiceModel(providerModel);
+                url.setScopeModel(ApplicationModel.defaultModel().getInternalModule());
                 Invoker<?> invoker = PROXY_FACTORY.getInvoker(impl, (Class) clz, url);
                 PATH_RESOLVER.add(url.getServiceKey(), invoker);
                 PATH_RESOLVER.add(url.getServiceInterface(), invoker);

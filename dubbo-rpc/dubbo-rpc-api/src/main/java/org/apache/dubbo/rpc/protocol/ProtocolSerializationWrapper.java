@@ -23,9 +23,10 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
+
+import static org.apache.dubbo.rpc.model.ScopeModelUtil.getFrameworkModel;
 
 @Activate
 public class ProtocolSerializationWrapper implements Protocol {
@@ -42,7 +43,7 @@ public class ProtocolSerializationWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        ApplicationModel.getServiceRepository().registerProviderUrl(invoker.getUrl());
+        getFrameworkModel(invoker.getUrl().getScopeModel()).getServiceRepository().registerProviderUrl(invoker.getUrl());
         return protocol.export(invoker);
     }
 

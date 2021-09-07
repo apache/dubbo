@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
@@ -39,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * abstract ProtocolSupport.
  */
-public abstract class AbstractProtocol implements Protocol {
+public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -52,6 +54,13 @@ public abstract class AbstractProtocol implements Protocol {
 
     // TODO SoftReference
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<>();
+
+    protected FrameworkModel frameworkModel;
+
+    @Override
+    public void setFrameworkModel(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     protected static String serviceKey(URL url) {
         int port = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());

@@ -35,14 +35,15 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
     /**
      * Create an {@link ServiceDiscoveryRegistryInfoWrapper} instance.
      */
-    private ServiceDiscoveryRegistryInfoWrapper createServiceDiscoveryRegistryInfoWrapper(ServiceDiscoveryRegistry serviceDiscoveryRegistry) {
-        String host = serviceDiscoveryRegistry.getUrl().getHost();
-        int port = serviceDiscoveryRegistry.getUrl().getPort();
+    private ServiceDiscoveryRegistryInfoWrapper createServiceDiscoveryRegistryInfoWrapper(ServiceDiscoveryRegistry serviceDiscoveryRegistry){
+        URL url = serviceDiscoveryRegistry.getUrl();
+        String host = url.getHost();
+        int port = url.getPort();
         ServiceDiscoveryRegistryInfoWrapper serviceDiscoveryRegistryInfoWrapper = new ServiceDiscoveryRegistryInfoWrapper();
         serviceDiscoveryRegistryInfoWrapper.setHost(host);
         serviceDiscoveryRegistryInfoWrapper.setPort(port);
         serviceDiscoveryRegistryInfoWrapper.setServiceDiscoveryRegistry(serviceDiscoveryRegistry);
-        serviceDiscoveryRegistryInfoWrapper.setInMemoryWritableMetadataService((InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension());
+        serviceDiscoveryRegistryInfoWrapper.setInMemoryWritableMetadataService((InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(url.getScopeModel()));
         serviceDiscoveryRegistryInfoWrapper.setRegistered(true);
         return serviceDiscoveryRegistryInfoWrapper;
     }
