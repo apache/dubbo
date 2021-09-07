@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
+
 import org.apache.dubbo.rpc.RpcException;
 
 import static org.apache.dubbo.rpc.RpcException.*;
@@ -98,6 +99,8 @@ public class GrpcStatus {
             case TIMEOUT_TERMINATE:
                 code = Code.OUT_OF_RANGE;
                 break;
+            case METHOD_NOT_FOUND:
+                code = Code.NOT_FOUND;
             default:
                 code = Code.UNKNOWN;
                 break;

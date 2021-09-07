@@ -59,7 +59,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                 execute(this::invoke);
             } else {
                 onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Missing request data"));
+                    .withDescription("Missing request data"));
             }
         }
 
@@ -77,7 +77,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
             } catch (Throwable t) {
                 LOGGER.warn("Exception processing triple message", t);
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Decode request failed:" + t.getMessage()));
+                    .withDescription("Decode request failed:" + t.getMessage()));
                 return;
             }
 
@@ -101,7 +101,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                             transportError(rpcExceptionCodeToGrpc(((RpcException) exception).getCode()), response.getObjectAttachments());
                         } else {
                             transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
-                                    .withCause(exception), response.getObjectAttachments());
+                                .withCause(exception), response.getObjectAttachments());
                         }
                         return;
                     }
@@ -113,7 +113,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     final byte[] data;
                     try {
                         ClassLoadUtil.switchContextLoader(
-                                getProviderModel().getServiceInterfaceClass().getClassLoader());
+                            getProviderModel().getServiceInterfaceClass().getClassLoader());
                         data = encodeResponse(response.getValue());
                     } finally {
                         ClassLoadUtil.switchContextLoader(tccl);
@@ -121,7 +121,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     getTransportSubscriber().onData(data, false);
 
                     Metadata trailers = new DefaultMetadata()
-                            .put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
+                        .put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
                     final Map<String, Object> attachments = response.getObjectAttachments();
                     if (attachments != null) {
                         convertAttachment(trailers, attachments);
@@ -133,8 +133,8 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                         transportError(rpcExceptionCodeToGrpc(((RpcException) e).getCode()), response.getObjectAttachments());
                     } else {
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
-                                .withDescription("Exception occurred in provider's execution:" + e.getMessage())
-                                .withCause(e), response.getObjectAttachments());
+                            .withDescription("Exception occurred in provider's execution:" + e.getMessage())
+                            .withCause(e), response.getObjectAttachments());
                     }
                 }
             };

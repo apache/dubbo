@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.AppResponse;
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
+
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
@@ -67,8 +68,8 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                     DefaultFuture2.received(getConnection(), response);
                 } catch (Exception e) {
                     final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                            .withCause(e)
-                            .withDescription("Failed to deserialize response");
+                        .withCause(e)
+                        .withDescription("Failed to deserialize response");
                     onError(status);
                 }
             });
@@ -77,7 +78,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
         @Override
         protected void onError(GrpcStatus status) {
             // run in callback executor will truncate exception stack and avoid blocking netty's event loop
-            execute(()-> {
+            execute(() -> {
                 Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
                 response.setErrorMessage(status.description);
                 final AppResponse result = new AppResponse();
@@ -113,7 +114,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo == null) {
                     return new RpcException(statusDetail.getCode(),
-                            statusDetail.getMessage());
+                        statusDetail.getMessage());
                 }
                 String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
                 return new RpcException(statusDetail.getCode(), msg);
