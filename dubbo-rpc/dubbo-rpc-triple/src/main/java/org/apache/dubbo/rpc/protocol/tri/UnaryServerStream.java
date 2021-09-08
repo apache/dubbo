@@ -102,7 +102,9 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     if (response.hasException()) {
                         final Throwable exception = response.getException();
                         if (exception instanceof RpcException) {
-                            transportError(rpcExceptionCodeToGrpc(((RpcException) exception).getCode()), response.getObjectAttachments());
+                            final GrpcStatus status = rpcExceptionCodeToGrpc(((RpcException) exception).getCode())
+                                    .withCause(exception);
+                            transportError(status, response.getObjectAttachments());
                         } else {
                             transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
                                 .withCause(exception), response.getObjectAttachments());
@@ -134,7 +136,9 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                 } catch (Throwable e) {
                     LOGGER.warn("Exception processing triple message", e);
                     if (e instanceof RpcException) {
-                        transportError(rpcExceptionCodeToGrpc(((RpcException) e).getCode()), response.getObjectAttachments());
+                        final GrpcStatus status = rpcExceptionCodeToGrpc(((RpcException) e).getCode())
+                                .withCause(e);
+                        transportError(status, response.getObjectAttachments());
                     } else {
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
                             .withDescription("Exception occurred in provider's execution:" + e.getMessage())
