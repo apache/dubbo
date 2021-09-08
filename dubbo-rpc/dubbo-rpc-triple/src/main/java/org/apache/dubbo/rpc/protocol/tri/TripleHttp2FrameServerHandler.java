@@ -173,7 +173,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         MethodDescriptor methodDescriptor = null;
         List<MethodDescriptor> methodDescriptors = null;
 
-        if (isINVOKE(methodName)) {
+        if (isGeneric(methodName)) {
             // There should be one and only one
             methodDescriptor = ServiceDescriptorInternalCache.genericService().getMethods(methodName).get(0);
         } else if (isEcho(methodName)) {
@@ -221,7 +221,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         return CommonConstants.$ECHO.equals(methodName);
     }
 
-    private boolean isINVOKE(String methodName) {
+    private boolean isGeneric(String methodName) {
         return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName);
     }
 
