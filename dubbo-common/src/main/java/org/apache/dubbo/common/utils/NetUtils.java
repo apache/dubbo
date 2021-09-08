@@ -244,9 +244,7 @@ public class NetUtils {
             return configIp;
         }
 
-        InetAddress localAddress = getLocalAddress();
-        String hostName = localAddress == null ? LOCALHOST_VALUE : localAddress.getHostName();
-        return getIpByHost(hostName);
+        return getLocalHost();
     }
 
     /**
@@ -417,8 +415,7 @@ public class NetUtils {
                     if (addressOp.isPresent()) {
                         try {
                             if (addressOp.get().isReachable(100)) {
-                                result = networkInterface;
-                                break;
+                                return networkInterface;
                             }
                         } catch (IOException e) {
                             // ignore
