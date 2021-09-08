@@ -94,13 +94,13 @@ public class FrameworkModel extends ScopeModel {
         return new ApplicationModel(this);
     }
 
-    public void addApplication(ApplicationModel model) {
+    synchronized void addApplication(ApplicationModel model) {
         if (!this.applicationModels.contains(model)) {
             this.applicationModels.add(model);
         }
     }
 
-    public void removeApplication(ApplicationModel model) {
+    synchronized void removeApplication(ApplicationModel model) {
         this.applicationModels.remove(model);
         if (applicationModels.size() == 0) {
             destroy();
@@ -108,15 +108,11 @@ public class FrameworkModel extends ScopeModel {
     }
 
     public List<ApplicationModel> getApplicationModels() {
-        return applicationModels;
+        return Collections.unmodifiableList(applicationModels);
     }
 
     public FrameworkServiceRepository getServiceRepository() {
         return serviceRepository;
     }
 
-    @Override
-    public String toString() {
-        return "FrameworkModel";
-    }
 }

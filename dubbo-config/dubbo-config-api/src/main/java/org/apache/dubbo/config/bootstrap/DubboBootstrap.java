@@ -190,7 +190,6 @@ public final class DubboBootstrap {
     protected volatile boolean asyncReferFinish = true;
 
     protected static boolean ignoreConfigState;
-    private final ModuleModel defaultModule;
 
 
     /**
@@ -263,7 +262,6 @@ public final class DubboBootstrap {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
         environment = applicationModel.getApplicationEnvironment();
-        defaultModule = applicationModel.getDefaultModule();
 
         executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         DubboShutdownHook.getDubboShutdownHook().register();
@@ -476,7 +474,7 @@ public final class DubboBootstrap {
     }
 
     public DubboBootstrap service(ServiceConfig<?> serviceConfig) {
-        this.service(serviceConfig, defaultModule);
+        this.service(serviceConfig, applicationModel.getDefaultModule());
         return this;
     }
 
@@ -514,7 +512,7 @@ public final class DubboBootstrap {
     }
 
     public DubboBootstrap reference(ReferenceConfig<?> referenceConfig) {
-        return reference(referenceConfig, defaultModule);
+        return reference(referenceConfig, applicationModel.getDefaultModule());
     }
 
     public DubboBootstrap reference(ReferenceConfig<?> referenceConfig, ModuleModel moduleModel) {
@@ -543,12 +541,12 @@ public final class DubboBootstrap {
     }
 
     public DubboBootstrap provider(ProviderConfig providerConfig) {
-        return this.provider(providerConfig, defaultModule);
+        return this.provider(providerConfig, applicationModel.getDefaultModule());
     }
 
     public DubboBootstrap providers(List<ProviderConfig> providerConfigs) {
         for (ProviderConfig providerConfig : providerConfigs) {
-            this.provider(providerConfig, defaultModule);
+            this.provider(providerConfig, applicationModel.getDefaultModule());
         }
         return this;
     }
@@ -576,12 +574,12 @@ public final class DubboBootstrap {
     }
 
     public DubboBootstrap consumer(ConsumerConfig consumerConfig) {
-        return this.consumer(consumerConfig, defaultModule);
+        return this.consumer(consumerConfig, applicationModel.getDefaultModule());
     }
 
     public DubboBootstrap consumers(List<ConsumerConfig> consumerConfigs) {
         for (ConsumerConfig consumerConfig : consumerConfigs) {
-            this.consumer(consumerConfig, defaultModule);
+            this.consumer(consumerConfig, applicationModel.getDefaultModule());
         }
         return this;
     }
@@ -1157,7 +1155,7 @@ public final class DubboBootstrap {
         T config = cls.newInstance();
         if (config instanceof ProviderConfig || config instanceof ConsumerConfig || config instanceof ReferenceConfigBase
             || config instanceof ServiceConfigBase) {
-            config.setScopeModel(defaultModule);
+            config.setScopeModel(applicationModel.getDefaultModule());
         } else {
             config.setScopeModel(applicationModel);
         }
@@ -1867,13 +1865,8 @@ public final class DubboBootstrap {
         return takeoverMode;
     }
 
-    public Module addModule(ModuleModel moduleModel) {
-        applicationModel.addModule(moduleModel);
-        return new Module(moduleModel);
-    }
-
     public Module newModule() {
-        return this.addModule(new ModuleModel(applicationModel));
+        return new Module(applicationModel.newModule());
     }
 
     public DubboBootstrap endModule() {

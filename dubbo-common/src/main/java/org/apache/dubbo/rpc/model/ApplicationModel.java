@@ -61,6 +61,8 @@ public class ApplicationModel extends ScopeModel {
 
     private ModuleModel internalModule;
 
+    private volatile ModuleModel defaultModule;
+
 
     // --------- static methods ----------//
 
@@ -250,14 +252,17 @@ public class ApplicationModel extends ScopeModel {
         return getCurrentConfig().getName();
     }
 
-    public synchronized void addModule(ModuleModel model) {
+    synchronized void addModule(ModuleModel model) {
         if (!this.moduleModels.contains(model)) {
             this.moduleModels.add(model);
         }
     }
 
-    public synchronized void removeModule(ModuleModel model) {
+    synchronized void removeModule(ModuleModel model) {
         this.moduleModels.remove(model);
+        if (model == defaultModule) {
+            defaultModule = findDefaultModule();
+        }
         if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
             this.internalModule.destroy();
         }
@@ -265,16 +270,26 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public List<ModuleModel> getModuleModels() {
-        return moduleModels;
+        return Collections.unmodifiableList(moduleModels);
     }
 
     public synchronized ModuleModel getDefaultModule() {
+        if (defaultModule == null) {
+            defaultModule = findDefaultModule();
+            if (defaultModule == null) {
+                defaultModule = this.newModule();
+            }
+        }
+        return defaultModule;
+    }
+
+    private ModuleModel findDefaultModule() {
         for (ModuleModel moduleModel : moduleModels) {
             if (moduleModel != internalModule) {
                 return moduleModel;
             }
         }
-        return this.newModule();
+        return null;
     }
 
     public ModuleModel getInternalModule() {
@@ -296,8 +311,4 @@ public class ApplicationModel extends ScopeModel {
         this.serviceRepository = serviceRepository;
     }
 
-    @Override
-    public String toString() {
-        return "ApplicationModel";
-    }
 }

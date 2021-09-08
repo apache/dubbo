@@ -102,8 +102,4 @@ public class ModuleModel extends ScopeModel {
         this.id = id;
     }
 
-    @Override
-    public String toString() {
-        return "ModuleModel";
-    }
 }

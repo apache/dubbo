@@ -160,6 +160,7 @@ public class DubboBootstrapMultiInstanceTest {
 
         String version1 = "1.0";
         String version2 = "2.0";
+        String version3 = "3.0";
 
         DubboBootstrap providerBootstrap = null;
         DubboBootstrap consumerBootstrap = null;
@@ -178,15 +179,21 @@ public class DubboBootstrapMultiInstanceTest {
             serviceConfig2.setRef(new DemoServiceImpl());
             serviceConfig2.setVersion(version2);
 
+            ServiceConfig serviceConfig3 = new ServiceConfig();
+            serviceConfig3.setInterface(DemoService.class);
+            serviceConfig3.setRef(new DemoServiceImpl());
+            serviceConfig3.setVersion(version3);
+
             providerBootstrap
                 .application("provider-app")
                 .registry(registryConfig)
                 .protocol(new ProtocolConfig("dubbo", 2002))
-                .newModule()
                 .service(serviceConfig1)
-                .endModule()
                 .newModule()
                 .service(serviceConfig2)
+                .endModule()
+                .newModule()
+                .service(serviceConfig3)
                 .endModule();
 
             ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
@@ -194,8 +201,9 @@ public class DubboBootstrapMultiInstanceTest {
             Assertions.assertEquals(4, moduleModels.size());
             Assertions.assertSame(moduleModels.get(0), applicationModel.getInternalModule());
             Assertions.assertSame(moduleModels.get(1), applicationModel.getDefaultModule());
-            Assertions.assertSame(moduleModels.get(2), serviceConfig1.getScopeModel());
-            Assertions.assertSame(moduleModels.get(3), serviceConfig2.getScopeModel());
+            Assertions.assertSame(applicationModel.getDefaultModule(), serviceConfig1.getScopeModel());
+            Assertions.assertSame(moduleModels.get(2), serviceConfig2.getScopeModel());
+            Assertions.assertSame(moduleModels.get(3), serviceConfig3.getScopeModel());
             Assertions.assertNotSame(applicationModel.getDefaultModule(), applicationModel.getInternalModule());
 
             providerBootstrap.start();
