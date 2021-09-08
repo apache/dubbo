@@ -41,6 +41,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import static java.lang.String.format;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
@@ -69,7 +70,7 @@ import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtens
  *   - Maps interface to applications depending on ServiceNameMapping.
  *   - Starts the new service discovery listener (InstanceListener) and makes NotifierListeners part of the InstanceListener.
  */
-public class ServiceDiscoveryRegistry implements Registry {
+public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -77,22 +78,18 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     private final WritableMetadataService writableMetadataService;
 
-    private final Set<String> registeredListeners = new LinkedHashSet<>();
-
     /* apps - listener */
     private final Map<String, ServiceInstancesChangedListener> serviceListeners = new ConcurrentHashMap<>();
 
-    private URL registryURL;
-
     public ServiceDiscoveryRegistry(URL registryURL) {
-        this.registryURL = registryURL;
+        super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.writableMetadataService = WritableMetadataService.getDefaultExtension(registryURL.getScopeModel());
     }
 
     // Currently for test purpose
     protected ServiceDiscoveryRegistry(URL registryURL, ServiceDiscovery serviceDiscovery, WritableMetadataService writableMetadataService) {
-        this.registryURL = registryURL;
+        super(registryURL);
         this.serviceDiscovery = serviceDiscovery;
         this.writableMetadataService = writableMetadataService;
     }
@@ -158,6 +155,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         doRegister(url);
     }
 
+    @Override
     public void doRegister(URL url) {
         url = addRegistryClusterKey(url);
         if (writableMetadataService.exportURL(url)) {
@@ -179,6 +177,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         doUnregister(url);
     }
 
+    @Override
     public void doUnregister(URL url) {
         url = addRegistryClusterKey(url);
         if (writableMetadataService.unexportURL(url)) {
@@ -201,6 +200,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         doSubscribe(url, listener);
     }
 
+    @Override
     public void doSubscribe(URL url, NotifyListener listener) {
         writableMetadataService.subscribeURL(url);
 
@@ -208,8 +208,8 @@ public class ServiceDiscoveryRegistry implements Registry {
 
         Set<String> subscribedServices = Collections.emptySet();
         try {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
-            subscribedServices = serviceNameMapping.getAndListenServices(registryURL, url, new DefaultMappingListener(url, subscribedServices, listener));
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(this.getUrl().getScopeModel());
+            subscribedServices = serviceNameMapping.getAndListenServices(this.getUrl(), url, new DefaultMappingListener(url, subscribedServices, listener));
         } catch (Exception e) {
             logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
         }
@@ -241,6 +241,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         return url;
     }
 
+    @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
         // TODO: remove service name mapping listener
         writableMetadataService.unsubscribeURL(url);
@@ -261,11 +262,6 @@ public class ServiceDiscoveryRegistry implements Registry {
     @Override
     public List<URL> lookup(URL url) {
         throw new UnsupportedOperationException("");
-    }
-
-    @Override
-    public URL getUrl() {
-        return registryURL;
     }
 
     @Override
