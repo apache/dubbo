@@ -266,7 +266,9 @@ public class ApplicationModel extends ScopeModel {
         if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
             this.internalModule.destroy();
         }
-        destroy();
+        if (this.moduleModels.isEmpty()) {
+            destroy();
+        }
     }
 
     public List<ModuleModel> getModuleModels() {
