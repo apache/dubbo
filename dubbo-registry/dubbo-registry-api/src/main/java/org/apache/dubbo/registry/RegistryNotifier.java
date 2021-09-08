@@ -17,6 +17,8 @@
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -26,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class RegistryNotifier {
 
+    private static final Logger logger = LoggerFactory.getLogger(RegistryNotifier.class);
     private volatile long lastExecuteTime;
     private volatile long lastEventTime;
 
@@ -90,14 +93,18 @@ public abstract class RegistryNotifier {
 
         @Override
         public void run() {
-            if (this.time == listener.lastEventTime) {
-                listener.doNotify(listener.rawAddresses);
-                listener.lastExecuteTime = System.currentTimeMillis();
-                synchronized (listener) {
-                    if (this.time == listener.lastEventTime) {
-                        listener.rawAddresses = null;
+            try {
+                if (this.time == listener.lastEventTime) {
+                    listener.doNotify(listener.rawAddresses);
+                    listener.lastExecuteTime = System.currentTimeMillis();
+                    synchronized (listener) {
+                        if (this.time == listener.lastEventTime) {
+                            listener.rawAddresses = null;
+                        }
                     }
                 }
+            } catch (Throwable t) {
+                logger.error("Error occurred when notify directory. ", t);
             }
         }
     }
