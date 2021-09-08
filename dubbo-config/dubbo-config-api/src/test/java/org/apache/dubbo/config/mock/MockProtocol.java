@@ -38,6 +38,14 @@ public class MockProtocol implements Protocol {
     }
 
     /* (non-Javadoc)
+     * @see org.apache.dubbo.rpc.Protocol#getDynamicPort()
+     */
+    @Override
+    public int getDynamicPort() {
+        return 0;
+    }
+
+    /* (non-Javadoc)
      * @see org.apache.dubbo.rpc.Protocol#export(org.apache.dubbo.rpc.Invoker)
      */
     @Override

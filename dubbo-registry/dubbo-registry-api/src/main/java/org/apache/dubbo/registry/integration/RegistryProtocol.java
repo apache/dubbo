@@ -57,6 +57,10 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.channels.ServerSocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -186,6 +190,32 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     @Override
     public int getDefaultPort() {
         return 9090;
+    }
+
+    /**
+     * Get dynamic port when user config the port 0.
+     *
+     * @return
+     */
+    @Override
+    public int getDynamicPort() {
+        int portWithOffset = 0;
+        int acceptCount = 100;
+
+        SocketAddress localAddress;
+        try {
+            ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+            InetSocketAddress address = new InetSocketAddress(portWithOffset);
+            serverSocketChannel.socket().bind(address, acceptCount);
+            serverSocketChannel.configureBlocking(true);
+
+            localAddress = serverSocketChannel.getLocalAddress();
+        } catch (IOException e) {
+            throw new RpcException("Opens a server-socket channel exception " + e.getMessage(), e);
+        }
+
+        InetSocketAddress socketAddress = (InetSocketAddress) localAddress;
+        return socketAddress.getPort();
     }
 
     public Map<URL, NotifyListener> getOverrideListeners() {

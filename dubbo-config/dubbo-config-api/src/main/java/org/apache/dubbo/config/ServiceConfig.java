@@ -695,7 +695,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 if (logger.isDebugEnabled()) {
                     logger.info("No valid ip found from environment, try to get local host.");
                 }
-                hostToBind = getLocalHost();                
+                hostToBind = getLocalHost();
             }
         }
 
@@ -741,9 +741,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 portToBind = provider.getPort();
             }
             final int defaultPort = this.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
-            if (portToBind == null || portToBind == 0) {
+            if (portToBind == null) {
                 portToBind = defaultPort;
             }
+
+            final int dynamicPort = this.getExtensionLoader(Protocol.class).getExtension(name).getDynamicPort();
+            if (portToBind == 0){
+                portToBind = dynamicPort;
+            }
+
             if (portToBind <= 0) {
                 portToBind = getRandomPort(name);
                 if (portToBind == null || portToBind < 0) {

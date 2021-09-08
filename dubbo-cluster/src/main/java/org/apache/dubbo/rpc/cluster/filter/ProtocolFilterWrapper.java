@@ -53,6 +53,11 @@ public class ProtocolFilterWrapper implements Protocol {
     }
 
     @Override
+    public int getDynamicPort() {
+        return protocol.getDynamicPort();
+    }
+
+    @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         if (UrlUtils.isRegistry(invoker.getUrl())) {
             return protocol.export(invoker);

@@ -33,6 +33,10 @@ import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.channels.ServerSocketChannel;
 import java.util.ArrayList;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
@@ -56,6 +60,32 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
     @Override
     public int getDefaultPort() {
         return 50051;
+    }
+
+    /**
+     * Get dynamic port when user config the port 0.
+     *
+     * @return
+     */
+    @Override
+    public int getDynamicPort() {
+        int portWithOffset = 0;
+        int acceptCount = 100;
+
+        SocketAddress localAddress;
+        try {
+            ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+            InetSocketAddress address = new InetSocketAddress(portWithOffset);
+            serverSocketChannel.socket().bind(address, acceptCount);
+            serverSocketChannel.configureBlocking(true);
+
+            localAddress = serverSocketChannel.getLocalAddress();
+        } catch (IOException e) {
+            throw new RpcException("Opens a server-socket channel exception " + e.getMessage(), e);
+        }
+
+        InetSocketAddress socketAddress = (InetSocketAddress) localAddress;
+        return socketAddress.getPort();
     }
 
     @Override

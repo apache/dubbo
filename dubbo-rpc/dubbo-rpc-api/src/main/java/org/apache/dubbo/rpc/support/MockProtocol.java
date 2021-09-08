@@ -33,6 +33,11 @@ final public class MockProtocol extends AbstractProtocol {
     }
 
     @Override
+    public int getDynamicPort() {
+        return 0;
+    }
+
+    @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         throw new UnsupportedOperationException();
     }
