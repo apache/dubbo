@@ -14,30 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.api;
+package org.apache.dubbo.test.common.registrycenter;
 
-public interface MethodCallback {
-    void oninvoke1(String request);
+/**
+ * The default zookeeper single registry center.
+ */
+public class ZookeeperSingleRegistryCenter extends ZookeeperRegistryCenter {
 
-    void onreturn1(String response, String request);
+    /**
+     * Initialize {@link ZookeeperSingleRegistryCenter} instance.
+     */
+    public ZookeeperSingleRegistryCenter() {
+        this(DEFAULT_PORT);
+    }
 
-    void onthrow1(Throwable ex, String request);
+    /**
+     * Initialize {@link RegistryCenter} instance.
+     *
+     * @param port the zookeeper server's port.
+     */
+    public ZookeeperSingleRegistryCenter(int port) {
+        super(port);
+    }
 
-    void oninvoke2(String request);
-
-    void onreturn2(String response, String request);
-
-    void onthrow2(Throwable ex, String request);
-
-    String getOnInvoke1();
-
-    String getOnReturn1();
-
-    String getOnThrow1();
-
-    String getOnInvoke2();
-
-    String getOnReturn2();
-
-    String getOnThrow2();
+    /**
+     * The zookeeper server's default port.
+     */
+    private static final int DEFAULT_PORT = 2181;
 }

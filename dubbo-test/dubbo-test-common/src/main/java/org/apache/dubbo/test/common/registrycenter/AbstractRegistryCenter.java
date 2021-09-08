@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registrycenter;
+package org.apache.dubbo.test.common.registrycenter;
 
 import org.apache.curator.test.InstanceSpec;
 
@@ -58,7 +58,7 @@ abstract class AbstractRegistryCenter implements RegistryCenter {
     private static final int DEFAULT_TICK_TIME = 5 * 1000;
 
     /**
-     * The default value is -1.
+     * The default value is 60.
      */
     private static final int DEFAULT_MAX_CLIENT_CNXNS = 200;
 
