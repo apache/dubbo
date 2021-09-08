@@ -112,19 +112,6 @@ public class ServiceDescriptor {
         return null;
     }
 
-
-    // public MethodDescriptor getMethodByMethodParams(String methodParamsName) {
-    //     return methodWithParams.get(methodParamsName);
-    // }
-    //
-    // public MethodDescriptor getMethodByMethodParams(Method method) {
-    //     return methodWithParams.get(getMethodWithParamName(method));
-    // }
-    //
-    // public MethodDescriptor getMethodByMethodParams(String methodName, Class<?>[] paramTypes) {
-    //     return methodWithParams.get(getMethodWithParamName(methodName,paramTypes));
-    // }
-
     public List<MethodDescriptor> getMethods(String methodName) {
         return methods.get(methodName);
     }
