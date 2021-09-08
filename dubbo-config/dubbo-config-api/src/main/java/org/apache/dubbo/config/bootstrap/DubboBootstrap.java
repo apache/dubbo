@@ -75,6 +75,8 @@ import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataS
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.cluster.merger.MergerFactory;
+import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -295,6 +297,8 @@ public final class DubboBootstrap {
         beanFactory.registerBean(MetadataReportInstance.class);
         beanFactory.registerBean(RemoteMetadataServiceImpl.class);
         beanFactory.registerBean(FrameworkStatusReportService.class);
+        beanFactory.registerBean(MergerFactory.class);
+        beanFactory.registerBean(ClusterUtils.class);
     }
 
     public ApplicationModel getApplicationModel() {

@@ -381,7 +381,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         if (providerUrl instanceof ServiceAddressURL) {
             providerUrl = overrideWithConfigurator(providerUrl);
         } else {
-            providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
+            providerUrl = applicationModel.getBeanFactory().getBean(ClusterUtils.class).mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
             providerUrl = overrideWithConfigurator(providerUrl);
             providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
         }

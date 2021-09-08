@@ -430,7 +430,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (UrlUtils.isRegistry(url)) {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
                 } else {
-                    URL peerUrl = ClusterUtils.mergeUrl(url, referenceParameters);
+                    URL peerUrl = getScopeModel().getApplicationModel().getBeanFactory().getBean(ClusterUtils.class).mergeUrl(url, referenceParameters);
                     peerUrl = peerUrl.putAttribute(PEER_KEY, true);
                     urls.add(peerUrl);
                 }

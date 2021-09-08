@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.rpc.cluster.router.state;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 /***
  * The abstract class of StateRoute.
@@ -42,7 +42,7 @@ public abstract class AbstractStateRouter implements StateRouter {
     protected GovernanceRuleRepository ruleRepository;
 
     public AbstractStateRouter(URL url, RouterChain chain) {
-        this.ruleRepository = ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        this.ruleRepository = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.chain = chain;
         this.url = url;
     }
