@@ -42,6 +42,11 @@ public class ProtocolSerializationWrapper implements Protocol {
     }
 
     @Override
+    public int getDynamicPort() {
+        return protocol.getDynamicPort();
+    }
+
+    @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         getFrameworkModel(invoker.getUrl().getScopeModel()).getServiceRepository().registerProviderUrl(invoker.getUrl());
         return protocol.export(invoker);

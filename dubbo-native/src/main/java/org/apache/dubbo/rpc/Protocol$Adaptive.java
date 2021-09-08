@@ -17,6 +17,12 @@
 package org.apache.dubbo.rpc;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.channels.ServerSocketChannel;
+
 public class Protocol$Adaptive implements org.apache.dubbo.rpc.Protocol {
 public void destroy()  {
 throw new UnsupportedOperationException("The method public abstract void org.apache.dubbo.rpc.Protocol.destroy() of interface org.apache.dubbo.rpc.Protocol is not adaptive method!");
@@ -24,7 +30,34 @@ throw new UnsupportedOperationException("The method public abstract void org.apa
 public int getDefaultPort()  {
 throw new UnsupportedOperationException("The method public abstract int org.apache.dubbo.rpc.Protocol.getDefaultPort() of interface org.apache.dubbo.rpc.Protocol is not adaptive method!");
 }
-public org.apache.dubbo.rpc.Exporter export(org.apache.dubbo.rpc.Invoker arg0) throws org.apache.dubbo.rpc.RpcException {
+
+    /**
+     * Get dynamic port when user config the port 0.
+     *
+     * @return
+     */
+    @Override
+    public int getDynamicPort() {
+        int portWithOffset = 0;
+        int acceptCount = 100;
+
+        SocketAddress localAddress;
+        try {
+            ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+            InetSocketAddress address = new InetSocketAddress(portWithOffset);
+            serverSocketChannel.socket().bind(address, acceptCount);
+            serverSocketChannel.configureBlocking(true);
+
+            localAddress = serverSocketChannel.getLocalAddress();
+        } catch (IOException e) {
+            throw new RpcException("Opens a server-socket channel exception " + e.getMessage(), e);
+        }
+
+        InetSocketAddress socketAddress = (InetSocketAddress) localAddress;
+        return socketAddress.getPort();
+    }
+
+    public org.apache.dubbo.rpc.Exporter export(org.apache.dubbo.rpc.Invoker arg0) throws org.apache.dubbo.rpc.RpcException {
 if (arg0 == null) throw new IllegalArgumentException("org.apache.dubbo.rpc.Invoker argument == null");
 if (arg0.getUrl() == null) throw new IllegalArgumentException("org.apache.dubbo.rpc.Invoker argument getUrl() == null");
 org.apache.dubbo.common.URL url = arg0.getUrl();

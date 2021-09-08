@@ -38,6 +38,13 @@ public interface Protocol {
     int getDefaultPort();
 
     /**
+     * Get dynamic port when user config the port 0.
+     *
+     * @return dynamic port
+     */
+    int getDynamicPort();
+
+    /**
      * Export service for remote invocation: <br>
      * 1. Protocol should record request source address after receive a request:
      * RpcContext.getServerAttachment().setRemoteAddress();<br>

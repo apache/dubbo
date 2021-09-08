@@ -32,6 +32,11 @@ public class MockProtocol2 implements Protocol {
     }
 
     @Override
+    public int getDynamicPort() {
+        return delegate.getDynamicPort();
+    }
+
+    @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         return delegate.export(invoker);
     }
