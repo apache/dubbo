@@ -75,7 +75,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     private void writeRequest(ChannelHandlerContext ctx, final Request req, final ChannelPromise promise) {
         final RpcInvocation inv = (RpcInvocation) req.getData();
         final URL url = inv.getInvoker().getUrl();
-        ConsumerModel consumerModel = (ConsumerModel) url.getServiceModel();
+        ConsumerModel consumerModel = inv.getServiceModel() != null ? (ConsumerModel) inv.getServiceModel() : (ConsumerModel) url.getServiceModel();
 
         MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel,inv);
 
