@@ -255,4 +255,10 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         }
     }
 
+    @Override
+    public void stop() {
+        if (StringUtils.isNotEmpty(application)) {
+            this.getRuleRepository().removeListener(application + RULE_SUFFIX, this);
+        }
+    }
 }
