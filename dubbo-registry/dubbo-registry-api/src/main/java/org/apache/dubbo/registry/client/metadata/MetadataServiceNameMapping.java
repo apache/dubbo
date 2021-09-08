@@ -78,7 +78,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping imple
             if (StringUtils.isNotEmpty(oldConfigContent)) {
                 boolean contains = StringUtils.isContains(oldConfigContent, appName);
                 if (contains) {
-                    // From user's perspective, it means successful when the oldConfigContent has contained the current appName. So we should not throw an Exception to user, it will confused user.
+                    // From the user's perspective, it means successful when the oldConfigContent has contained the current appName. So we should not throw an Exception to user, it will confuse the user.
                     succeeded = true;
                     break;
                 }
