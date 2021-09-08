@@ -102,7 +102,8 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     if (response.hasException()) {
                         final Throwable exception = response.getException();
                         if (exception instanceof RpcException) {
-                            transportError(rpcExceptionCodeToGrpc(((RpcException) exception).getCode()), response.getObjectAttachments());
+                            transportError(rpcExceptionCodeToGrpc(((RpcException) exception).getCode())
+                                .withCause(exception), response.getObjectAttachments());
                         } else {
                             transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
                                 .withCause(exception), response.getObjectAttachments());
