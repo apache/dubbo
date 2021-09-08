@@ -50,4 +50,11 @@ public class MeshRuleAddressListenerInterceptor implements AddressListener {
 
         return addresses;
     }
+
+    @Override
+    public void destroy(URL consumerUrl, Directory registryDirectory) {
+        for (String app : APP_SET) {
+            MeshRuleManager.unsubscribeAppRule(app);
+        }
+    }
 }

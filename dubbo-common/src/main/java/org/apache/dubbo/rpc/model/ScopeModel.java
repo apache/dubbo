@@ -21,7 +21,11 @@ import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class ScopeModel implements ExtensionAccessor {
 
@@ -31,6 +35,9 @@ public abstract class ScopeModel implements ExtensionAccessor {
     private ExtensionDirector extensionDirector;
 
     private ScopeBeanFactory beanFactory;
+    private List<ScopeModelDestroyListener> destroyListeners;
+
+    private Map<String, Object> attribute;
 
     public ScopeModel(ScopeModel parent, ExtensionScope scope) {
         this.parent = parent;
@@ -50,9 +57,22 @@ public abstract class ScopeModel implements ExtensionAccessor {
         this.extensionDirector = new ExtensionDirector(parent != null ? parent.getExtensionDirector() : null, scope);
         this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
         this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
+        this.destroyListeners = new LinkedList<>();
+        this.attribute = new ConcurrentHashMap<>();
     }
 
     public void destroy() {
+        for (ScopeModelDestroyListener destroyListener : destroyListeners) {
+            destroyListener.onDestroy(this);
+        }
+    }
+
+    public final void addDestroyListener(ScopeModelDestroyListener listener) {
+        destroyListeners.add(listener);
+    }
+
+    public Map<String, Object> getAttribute() {
+        return attribute;
     }
 
     public ExtensionDirector getExtensionDirector() {

@@ -154,8 +154,9 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                 }
                 if (getMethodDescriptor() == null) {
                     final String[] paramTypes = wrapper.getArgTypesList().toArray(new String[wrapper.getArgsCount()]);
-
+                    // wrapper mode the method can overload so maybe list
                     for (MethodDescriptor descriptor : getMethodDescriptors()) {
+                        // params type is array
                         if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
                             method(descriptor);
                             break;

@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -31,6 +32,8 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.rpcExceptionCodeToGrpc;
 
 public class UnaryServerStream extends AbstractServerStream implements Stream {
 
@@ -60,7 +63,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                 execute(this::invoke);
             } else {
                 onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Missing request data"));
+                    .withDescription("Missing request data"));
             }
         }
 
@@ -78,7 +81,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
             } catch (Throwable t) {
                 LOGGER.warn("Exception processing triple message", t);
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Decode request failed:" + t.getMessage()));
+                    .withDescription("Decode request failed:" + t.getMessage()));
                 return;
             }
 
@@ -98,11 +101,15 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                 try {
                     if (response.hasException()) {
                         final Throwable exception = response.getException();
-                        if (exception instanceof TripleRpcException) {
-                            transportError(((TripleRpcException) exception).getStatus(), response.getObjectAttachments());
+                        if (exception instanceof RpcException) {
+                            transportError(rpcExceptionCodeToGrpc(((RpcException) exception).getCode())
+                                .withCause(exception), response.getObjectAttachments());
+                            final GrpcStatus status = rpcExceptionCodeToGrpc(((RpcException) exception).getCode())
+                                    .withCause(exception);
+                            transportError(status, response.getObjectAttachments());
                         } else {
                             transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
-                                    .withCause(exception), response.getObjectAttachments());
+                                .withCause(exception), response.getObjectAttachments());
                         }
                         return;
                     }
@@ -114,7 +121,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     final byte[] data;
                     try {
                         ClassLoadUtil.switchContextLoader(
-                                getProviderModel().getServiceInterfaceClass().getClassLoader());
+                            getProviderModel().getServiceInterfaceClass().getClassLoader());
                         data = encodeResponse(response.getValue());
                     } finally {
                         ClassLoadUtil.switchContextLoader(tccl);
@@ -122,7 +129,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     getTransportSubscriber().onData(data, false);
 
                     Metadata trailers = new DefaultMetadata()
-                            .put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
+                        .put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
                     final Map<String, Object> attachments = response.getObjectAttachments();
                     if (attachments != null) {
                         convertAttachment(trailers, attachments);
@@ -130,12 +137,14 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     getTransportSubscriber().onMetadata(trailers, true);
                 } catch (Throwable e) {
                     LOGGER.warn("Exception processing triple message", e);
-                    if (e instanceof TripleRpcException) {
-                        transportError(((TripleRpcException) e).getStatus(), response.getObjectAttachments());
+                    if (e instanceof RpcException) {
+                        final GrpcStatus status = rpcExceptionCodeToGrpc(((RpcException) e).getCode())
+                                .withCause(e);
+                        transportError(status, response.getObjectAttachments());
                     } else {
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
-                                .withDescription("Exception occurred in provider's execution:" + e.getMessage())
-                                .withCause(e), response.getObjectAttachments());
+                            .withDescription("Exception occurred in provider's execution:" + e.getMessage())
+                            .withCause(e), response.getObjectAttachments());
                     }
                 }
             };

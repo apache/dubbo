@@ -255,4 +255,10 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
         pool(invokers);
     }
 
+    @Override
+    public void stop() {
+        if (StringUtils.isNotEmpty(application)) {
+            ruleRepository.removeListener(application + RULE_SUFFIX, this);
+        }
+    }
 }
