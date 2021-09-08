@@ -14,30 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.api;
+package org.apache.dubbo.common.extension.ext11_no_adaptive;
 
-public interface MethodCallback {
-    void oninvoke1(String request);
+public class NoAdaptiveExtImpl implements NoAdaptiveExt {
 
-    void onreturn1(String response, String request);
-
-    void onthrow1(Throwable ex, String request);
-
-    void oninvoke2(String request);
-
-    void onreturn2(String response, String request);
-
-    void onthrow2(Throwable ex, String request);
-
-    String getOnInvoke1();
-
-    String getOnReturn1();
-
-    String getOnThrow1();
-
-    String getOnInvoke2();
-
-    String getOnReturn2();
-
-    String getOnThrow2();
+    public String echo(String s) {
+        return "NoAdaptiveExtImpl-echo";
+    }
 }

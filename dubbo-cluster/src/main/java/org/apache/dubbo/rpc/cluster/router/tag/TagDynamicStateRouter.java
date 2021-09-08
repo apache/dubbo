@@ -121,7 +121,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
     @Override
     public boolean isEnable() {
-        return true;
+        return tagRouterRule != null && tagRouterRule.isEnabled();
     }
 
     @Override
@@ -240,7 +240,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
         synchronized (this) {
             if (!providerApplication.equals(application)) {
-                if (!StringUtils.isEmpty(application)) {
+                if (StringUtils.isNotEmpty(application)) {
                     ruleRepository.removeListener(application + RULE_SUFFIX, this);
                 }
                 String key = providerApplication + RULE_SUFFIX;
@@ -255,4 +255,10 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
         pool(invokers);
     }
 
+    @Override
+    public void stop() {
+        if (StringUtils.isNotEmpty(application)) {
+            ruleRepository.removeListener(application + RULE_SUFFIX, this);
+        }
+    }
 }

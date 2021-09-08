@@ -53,38 +53,40 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping imple
 
     @Override
     public boolean map(URL url) {
-            if (CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
-                return false;
-            }
-            String serviceInterface = url.getServiceInterface();
-            if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
-                return false;
-            }
-            String registryCluster = getRegistryCluster(url);
-            MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
+        if (CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
+            return false;
+        }
+        String serviceInterface = url.getServiceInterface();
+        if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
+            return false;
+        }
+        String registryCluster = getRegistryCluster(url);
+        MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
 
-            String appName = applicationModel.getApplicationName();
-            if (metadataReport.registerServiceAppMapping(serviceInterface, appName, url)) {
-                // MetadataReport support directly register service-app mapping
-                return true;
-            }
+        String appName = applicationModel.getApplicationName();
+        if (metadataReport.registerServiceAppMapping(serviceInterface, appName, url)) {
+            // MetadataReport support directly register service-app mapping
+            return true;
+        }
 
-            int currentRetryTimes = 1;
-            boolean succeeded = false;
-            String newConfigContent = appName;
-            do {
-                ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
-                String oldConfigContent = configItem.getContent();
-                if (StringUtils.isNotEmpty(oldConfigContent)) {
-                    boolean contains = StringUtils.isContains(oldConfigContent, appName);
-                    if (contains) {
-                        break;
-                    }
-                    newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;
+        int currentRetryTimes = 1;
+        boolean succeeded = false;
+        String newConfigContent = appName;
+        do {
+            ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
+            String oldConfigContent = configItem.getContent();
+            if (StringUtils.isNotEmpty(oldConfigContent)) {
+                boolean contains = StringUtils.isContains(oldConfigContent, appName);
+                if (contains) {
+                    // From the user's perspective, it means successful when the oldConfigContent has contained the current appName. So we should not throw an Exception to user, it will confuse the user.
+                    succeeded = true;
+                    break;
                 }
-                succeeded = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
-            } while (!succeeded && currentRetryTimes++ <= CAS_RETRY_TIMES);
-            if (!succeeded) {
+                newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;
+            }
+            succeeded = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
+        } while (!succeeded && currentRetryTimes++ <= CAS_RETRY_TIMES);
+        if (!succeeded) {
             throw new RuntimeException();
         }
 
