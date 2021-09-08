@@ -200,7 +200,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     public void init() {
         if (this.initialized.compareAndSet(false, true)) {
             if (this.bootstrap == null) {
-                this.bootstrap = DubboBootstrap.getInstance();
+                this.bootstrap = DubboBootstrap.getInstance(getScopeModel().getApplicationModel());
                 this.bootstrap.initialize();
             }
             this.bootstrap.service(this);

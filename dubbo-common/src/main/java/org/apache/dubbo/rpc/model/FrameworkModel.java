@@ -67,6 +67,7 @@ public class FrameworkModel extends ScopeModel {
                 defaultInstance = null;
             }
         }
+        super.destroy();
     }
 
     public static FrameworkModel defaultModel() {

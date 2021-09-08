@@ -39,6 +39,7 @@ public class ModuleModel extends ScopeModel {
         initialize();
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         this.serviceRepository = new ModuleServiceRepository(this);
@@ -79,9 +80,9 @@ public class ModuleModel extends ScopeModel {
             serviceRepository = null;
         }
 
-        super.destroy();
         // TODO destroy module resources
         applicationModel.removeModule(this);
+        super.destroy();
     }
 
     public ApplicationModel getApplicationModel() {

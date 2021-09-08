@@ -205,7 +205,7 @@ public class ApplicationModel extends ScopeModel {
             serviceRepository.destroy();
             serviceRepository = null;
         }
-
+        super.destroy();
     }
 
     public FrameworkModel getFrameworkModel() {

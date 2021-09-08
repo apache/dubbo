@@ -207,6 +207,23 @@ public final class DubboBootstrap {
         return instance;
     }
 
+    public static DubboBootstrap getInstance(ApplicationModel applicationModel) {
+        Map<String, Object> attribute = applicationModel.getAttribute();
+        Object cached = attribute.get(NAME);
+        if (cached instanceof DubboBootstrap) {
+            return (DubboBootstrap) cached;
+        } else {
+            synchronized (applicationModel) {
+                cached = attribute.get(NAME);
+                if (cached instanceof DubboBootstrap) {
+                    return (DubboBootstrap) cached;
+                } else {
+                    return new DubboBootstrap(applicationModel);
+                }
+            }
+        }
+    }
+
     public static DubboBootstrap newInstance() {
         return new DubboBootstrap(new FrameworkModel());
     }
@@ -257,6 +274,7 @@ public final class DubboBootstrap {
 
     private DubboBootstrap(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
+        applicationModel.getAttribute().put(NAME, this);
         configManager = applicationModel.getApplicationConfigManager();
         environment = applicationModel.getApplicationEnvironment();
 
