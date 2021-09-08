@@ -27,8 +27,11 @@ import org.apache.dubbo.rpc.RpcException;
 import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.LIMIT_EXCEEDED_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.METHOD_NOT_FOUND;
+import static org.apache.dubbo.rpc.RpcException.NETWORK_EXCEPTION;
+import static org.apache.dubbo.rpc.RpcException.SERIALIZATION_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.TIMEOUT_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.TIMEOUT_TERMINATE;
+import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code.UNAVAILABLE;
 
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
@@ -92,19 +95,21 @@ public class GrpcStatus {
         Code code;
         switch (rpcExceptionCode) {
             case TIMEOUT_EXCEPTION:
+            case TIMEOUT_TERMINATE:
                 code = Code.DEADLINE_EXCEEDED;
                 break;
             case FORBIDDEN_EXCEPTION:
                 code = Code.PERMISSION_DENIED;
                 break;
             case LIMIT_EXCEEDED_EXCEPTION:
-                code = Code.ABORTED;
-                break;
-            case TIMEOUT_TERMINATE:
-                code = Code.OUT_OF_RANGE;
+            case NETWORK_EXCEPTION:
+                code = UNAVAILABLE;
                 break;
             case METHOD_NOT_FOUND:
                 code = Code.NOT_FOUND;
+                break;
+            case SERIALIZATION_EXCEPTION:
+                code = Code.INTERNAL;
                 break;
             default:
                 code = Code.UNKNOWN;
