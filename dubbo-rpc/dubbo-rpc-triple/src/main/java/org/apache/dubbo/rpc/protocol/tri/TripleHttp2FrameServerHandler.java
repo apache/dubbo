@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -174,17 +175,20 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         MethodDescriptor methodDescriptor = null;
         List<MethodDescriptor> methodDescriptors = null;
 
-        if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
+        if (isGeneric(methodName)) {
+            // There should be one and only one
             methodDescriptor = ServiceDescriptorInternalCache.genericService().getMethods(methodName).get(0);
-        } else if (CommonConstants.$ECHO.equals(methodName)) {
+        } else if (isEcho(methodName)) {
+            // There should be one and only one
             methodDescriptor = ServiceDescriptorInternalCache.echoService().getMethods(methodName).get(0);
         } else {
             methodDescriptors = providerModel.getServiceModel().getMethods(methodName);
-            if (methodDescriptors == null || methodDescriptors.isEmpty()) {
+            if (CollectionUtils.isEmpty(methodDescriptors)) {
                 responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
                     .withDescription("Method :" + methodName + " not found of service:" + serviceName));
                 return;
             }
+            // In most cases there is only one method
             if (methodDescriptors.size() == 1) {
                 methodDescriptor = methodDescriptors.get(0);
             }
@@ -202,6 +206,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (methodDescriptor != null) {
             stream.method(methodDescriptor);
         } else {
+            // Then you need to find the corresponding parameter according to the request body
             stream.methods(methodDescriptors);
         }
         final TransportObserver observer = stream.asTransportObserver();
@@ -212,4 +217,14 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
         ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(stream);
     }
+
+
+    private boolean isEcho(String methodName) {
+        return CommonConstants.$ECHO.equals(methodName);
+    }
+
+    private boolean isGeneric(String methodName) {
+        return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName);
+    }
+
 }
