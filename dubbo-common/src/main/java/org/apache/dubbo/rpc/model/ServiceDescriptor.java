@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.lang.reflect.Method;
@@ -39,11 +38,6 @@ public class ServiceDescriptor {
     private final Map<String, List<MethodDescriptor>> methods = new HashMap<>();
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
 
-    // method#params#params2
-    private final Map<String, MethodDescriptor> methodWithParams = new HashMap<>();
-
-    public static final String METHOD_PARAMS_SEPARATOR = "#";
-
     public ServiceDescriptor(Class<?> interfaceClass) {
         this.serviceInterfaceClass = interfaceClass;
         this.serviceName = interfaceClass.getName();
@@ -56,7 +50,6 @@ public class ServiceDescriptor {
             method.setAccessible(true);
 
             MethodDescriptor methodDescriptor = new MethodDescriptor(method);
-            methodWithParams.put(getMethodWithParamName(method), methodDescriptor);
 
             List<MethodDescriptor> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
             methodModels.add(methodDescriptor);
@@ -120,17 +113,17 @@ public class ServiceDescriptor {
     }
 
 
-    public MethodDescriptor getMethodByMethodParams(String methodParamsName) {
-        return methodWithParams.get(methodParamsName);
-    }
-
-    public MethodDescriptor getMethodByMethodParams(Method method) {
-        return methodWithParams.get(getMethodWithParamName(method));
-    }
-
-    public MethodDescriptor getMethodByMethodParams(String methodName, Class<?>[] paramTypes) {
-        return methodWithParams.get(getMethodWithParamName(methodName,paramTypes));
-    }
+    // public MethodDescriptor getMethodByMethodParams(String methodParamsName) {
+    //     return methodWithParams.get(methodParamsName);
+    // }
+    //
+    // public MethodDescriptor getMethodByMethodParams(Method method) {
+    //     return methodWithParams.get(getMethodWithParamName(method));
+    // }
+    //
+    // public MethodDescriptor getMethodByMethodParams(String methodName, Class<?>[] paramTypes) {
+    //     return methodWithParams.get(getMethodWithParamName(methodName,paramTypes));
+    // }
 
     public List<MethodDescriptor> getMethods(String methodName) {
         return methods.get(methodName);
@@ -154,23 +147,5 @@ public class ServiceDescriptor {
     @Override
     public int hashCode() {
         return Objects.hash(serviceName, serviceInterfaceClass, methods, descToMethods);
-    }
-
-    public static String getMethodWithParamName(Method method) {
-        return getMethodWithParamName(method.getName(), method.getParameterTypes());
-    }
-
-    public static String getMethodWithParamName(String methodName, Class<?>[] paramsClass) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(methodName);
-        sb.append(METHOD_PARAMS_SEPARATOR);
-        if (ArrayUtils.isEmpty(paramsClass)) {
-            return sb.deleteCharAt(sb.length() - 1).toString();
-        }
-        for (Class<?> aClass : paramsClass) {
-            sb.append(aClass.getName());
-            sb.append(METHOD_PARAMS_SEPARATOR);
-        }
-        return sb.deleteCharAt(sb.length() - 1).toString();
     }
 }

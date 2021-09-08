@@ -16,9 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.Http2GoAwayFrame;
+import io.netty.handler.codec.http2.Http2SettingsFrame;
+import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.Connection;
@@ -32,12 +39,8 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2GoAwayFrame;
-import io.netty.handler.codec.http2.Http2SettingsFrame;
-import io.netty.util.ReferenceCountUtil;
+import java.util.Arrays;
+import java.util.List;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
@@ -74,7 +77,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final URL url = inv.getInvoker().getUrl();
         ConsumerModel consumerModel = (ConsumerModel) url.getServiceModel();
 
-        MethodDescriptor methodDescriptor = inv.getMethodDescriptor();
+        MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel,inv);
 
         ClassLoadUtil.switchContextLoader(consumerModel.getServiceInterfaceClass().getClassLoader());
         AbstractClientStream stream;
@@ -88,12 +91,12 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(Boolean.parseBoolean(ssl));
         }
         stream.service(consumerModel)
-                .connection(Connection.getConnectionFromChannel(ctx.channel()))
-                .method(methodDescriptor)
-                .methodName(methodDescriptor.getMethodName())
-                .request(req)
-                .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
-                .subscribe(new ClientTransportObserver(ctx, stream, promise));
+            .connection(Connection.getConnectionFromChannel(ctx.channel()))
+            .method(methodDescriptor)
+            .methodName(methodDescriptor.getMethodName())
+            .request(req)
+            .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
+            .subscribe(new ClientTransportObserver(ctx, stream, promise));
 
         if (methodDescriptor.isUnary()) {
             stream.asStreamObserver().onNext(inv);
@@ -101,8 +104,9 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         } else {
             Response response = new Response(req.getId(), req.getVersion());
             AppResponse result;
+            // the stream method params is fixed
             if (methodDescriptor.getRpcType() == MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM
-                    || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
+                || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
                 final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[0];
                 stream.subscribe(streamObserver);
                 result = new AppResponse(stream.asStreamObserver());
@@ -116,5 +120,21 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             response.setResult(result);
             DefaultFuture2.received(stream.getConnection(), response);
         }
+    }
+
+    /**
+     * Get the trI protocol special MethodDescriptor
+     */
+    private MethodDescriptor getTriMethodDescriptor(ConsumerModel consumerModel, RpcInvocation inv) {
+        List<MethodDescriptor> methodDescriptors = consumerModel.getServiceModel().getMethods(inv.getMethodName());
+        if (CollectionUtils.isEmpty(methodDescriptors)) {
+            throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+        }
+        for (MethodDescriptor methodDescriptor : methodDescriptors) {
+            if (Arrays.equals(inv.getParameterTypes(), methodDescriptor.getRealParameterClasses())) {
+                return methodDescriptor;
+            }
+        }
+        throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
     }
 }

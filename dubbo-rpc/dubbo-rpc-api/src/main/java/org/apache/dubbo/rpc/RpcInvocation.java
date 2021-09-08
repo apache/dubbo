@@ -58,13 +58,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private ServiceModel serviceModel;
 
-    // Convenient for subsequent use
-    private MethodDescriptor methodDescriptor;
-
     private String methodName;
-
-    // the same as ServiceDescriptor methodWithParams
-    private String methodWithParamsName;
 
     private String serviceName;
 
@@ -177,8 +171,6 @@ public class RpcInvocation implements Invocation, Serializable {
                          Map<String, Object> attachments, Invoker<?> invoker, Map<Object, Object> attributes) {
         this.serviceModel = serviceModel;
         this.methodName = methodName;
-        String methodWithParamsName = ServiceDescriptor.getMethodWithParamName(methodName, parameterTypes);
-        this.methodWithParamsName = methodWithParamsName;
         this.serviceName = serviceName;
         this.protocolServiceKey = protocolServiceKey;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
@@ -206,13 +198,12 @@ public class RpcInvocation implements Invocation, Serializable {
         }
 
         if (serviceDescriptor.get() != null) {
-            MethodDescriptor methodDescriptor = serviceDescriptor.get().getMethodByMethodParams(methodWithParamsName);
+            MethodDescriptor methodDescriptor = serviceDescriptor.get().getMethod(methodName, parameterTypes);
             if (methodDescriptor != null) {
                 this.parameterTypesDesc = methodDescriptor.getParamDesc();
                 this.compatibleParamSignatures = methodDescriptor.getCompatibleParamSignatures();
                 this.returnTypes = methodDescriptor.getReturnTypes();
                 this.returnType = methodDescriptor.getReturnClass();
-                this.methodDescriptor = methodDescriptor;
             }
         }
 
@@ -478,14 +469,6 @@ public class RpcInvocation implements Invocation, Serializable {
             return null;
         }
         return attachments.get(key);
-    }
-
-    public String getMethodWithParamsName() {
-        return methodWithParamsName;
-    }
-
-    public MethodDescriptor getMethodDescriptor() {
-        return methodDescriptor;
     }
 
     public Class<?> getReturnType() {
