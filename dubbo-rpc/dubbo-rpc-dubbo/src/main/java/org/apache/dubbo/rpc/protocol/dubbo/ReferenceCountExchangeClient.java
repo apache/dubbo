@@ -158,7 +158,27 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     @Override
     public void close(int timeout) {
-        if (referenceCount.decrementAndGet() <= 0) {
+        closeInternal(timeout, false);
+    }
+
+    @Override
+    public void closeAll(int timeout) {
+        closeInternal(timeout, true);
+    }
+
+    @Override
+    public void startClose() {
+        client.startClose();
+    }
+
+    /**
+     * when destroy unused invoker, closeAll should be true
+     * 
+     * @param timeout
+     * @param closeAll  
+     */
+    private void closeInternal(int timeout, boolean closeAll) {
+        if (closeAll || referenceCount.decrementAndGet() <= 0) {
             if (timeout == 0) {
                 client.close();
 
@@ -168,11 +188,6 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
             replaceWithLazyClient();
         }
-    }
-
-    @Override
-    public void startClose() {
-        client.startClose();
     }
 
     /**
