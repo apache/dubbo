@@ -34,6 +34,7 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,8 +90,8 @@ public class ServiceInstancesChangedListener {
         this.serviceUrls = new HashMap<>();
         this.revisionToMetadata = new HashMap<>();
         retryPermission = new Semaphore(1);
-        this.scheduler = serviceDiscovery.getUrl().getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension().getMetadataRetryExecutor();
+        this.scheduler = ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel())
+            .getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
     }
 
     /**

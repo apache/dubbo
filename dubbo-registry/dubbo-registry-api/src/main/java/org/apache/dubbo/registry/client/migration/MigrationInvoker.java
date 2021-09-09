@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Map;
 import java.util.Set;
@@ -177,7 +178,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             return true;
         }
 
-        Set<MigrationAddressComparator> detectors = consumerUrl.getOrDefaultApplicationModel().getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
+        Set<MigrationAddressComparator> detectors = ScopeModelUtil.getApplicationModel(consumerUrl == null ? null : consumerUrl.getScopeModel())
+            .getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(detectors)) {
             if (detectors.stream().allMatch(comparator -> comparator.shouldMigrate(invoker, serviceDiscoveryInvoker, newRule))) {
                 this.currentAvailableInvoker = invoker;
@@ -214,7 +216,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             return true;
         }
 
-        Set<MigrationAddressComparator> detectors = consumerUrl.getOrDefaultApplicationModel().getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
+        Set<MigrationAddressComparator> detectors = ScopeModelUtil.getApplicationModel(consumerUrl == null ? null : consumerUrl.getScopeModel())
+            .getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(detectors)) {
             if (detectors.stream().allMatch(comparator -> comparator.shouldMigrate(serviceDiscoveryInvoker, invoker, newRule))) {
                 this.currentAvailableInvoker = serviceDiscoveryInvoker;
@@ -460,7 +463,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (serviceDiscoveryInvoker == null || invoker == null) {
             return;
         }
-        Set<MigrationAddressComparator> detectors = consumerUrl.getOrDefaultApplicationModel().getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
+        Set<MigrationAddressComparator> detectors = ScopeModelUtil.getApplicationModel(consumerUrl == null ? null : consumerUrl.getScopeModel())
+            .getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(detectors)) {
             // pick preferred invoker
             // the real invoker choice in invocation will be affected by promotion
