@@ -222,6 +222,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         invoker = null;
         ref = null;
+        if (consumerModel != null) {
+            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+            repository.unregisterConsumer(consumerModel);
+        }
     }
 
     protected synchronized void init() {
@@ -233,7 +237,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         // Loading by Spring context will associate bootstrap in afterPropertiesSet() method.
         // Initializing bootstrap here only for compatible with old API usages.
         if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
+            bootstrap = DubboBootstrap.getInstance(getScopeModel().getApplicationModel());
             bootstrap.initialize();
             bootstrap.reference(this);
         }
@@ -539,8 +543,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             interfaceClass = GenericService.class;
         } else {
             try {
-                interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
-                    .getContextClassLoader());
+                if (getInterfaceClassLoader() != null) {
+                    interfaceClass = Class.forName(interfaceName, true, getInterfaceClassLoader());
+                } else {
+                    interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
+                        .getContextClassLoader());
+                }
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -611,6 +619,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     /**
      * just for test
+     *
      * @return
      */
     @Deprecated

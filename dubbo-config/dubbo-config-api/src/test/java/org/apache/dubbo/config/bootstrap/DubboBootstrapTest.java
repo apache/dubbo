@@ -63,7 +63,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_AD
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
-import static org.apache.dubbo.rpc.model.ApplicationModel.getApplicationConfig;
 import static org.hamcrest.CoreMatchers.anything;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
@@ -338,7 +337,7 @@ public class DubboBootstrapTest {
         ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setRegistry(new RegistryConfig("N/A"));
         serviceConfig.setInterface(MetadataService.class);
-        serviceConfig.setGroup(getApplicationConfig().getName());
+        serviceConfig.setGroup(ApplicationModel.defaultModel().getCurrentConfig().getName());
         serviceConfig.setVersion(MetadataService.VERSION);
         assertThat(exporters, hasEntry(is(serviceConfig.getUniqueServiceName() + ":" + availablePort), anything()));
 

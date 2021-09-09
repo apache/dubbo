@@ -72,7 +72,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
      * @param invocation the invocation of this invoker
      * @return weight
      */
-    int getWeight(Invoker<?> invoker, Invocation invocation) {
+    protected int getWeight(Invoker<?> invoker, Invocation invocation) {
         int weight;
         URL url = invoker.getUrl();
         // Multiple registry scenario, load balance among multiple registries.

@@ -62,10 +62,17 @@ public class MethodDescriptor {
     private final RpcType rpcType;
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
+    // only for tri protocol
+    // support StreamObserver ...
+    private final Class<?>[] realParameterClasses;
+    private final Class<?> realReturnClass;
+
     public MethodDescriptor(Method method) {
         this.method = method;
         this.methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
+        realParameterClasses = parameterTypes;
+        realReturnClass = method.getReturnType();
         // bidirectional-stream: StreamObserver<Request> foo(StreamObserver<Response>)
         if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
             this.parameterClasses = new Class<?>[]{
@@ -317,6 +324,15 @@ public class MethodDescriptor {
 
     public Object getAttribute(String key) {
         return this.attributeMap.get(key);
+    }
+
+
+    public Class<?>[] getRealParameterClasses() {
+        return realParameterClasses;
+    }
+
+    public Class<?> getRealReturnClass() {
+        return realReturnClass;
     }
 
     public enum RpcType {

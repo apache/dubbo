@@ -118,13 +118,13 @@ public class NacosNamingServiceUtils {
 
     private static void setServerAddr(URL url, Properties properties) {
         StringBuilder serverAddrBuilder =
-                new StringBuilder(url.getHost()) // Host
-                        .append(':')
-                        .append(url.getPort()); // Port
+            new StringBuilder(url.getHost()) // Host
+                .append(':')
+                .append(url.getPort()); // Port
 
         // Append backup parameter as other servers
         String backup = url.getParameter(BACKUP_KEY);
-        if (backup != null) {
+        if (StringUtils.isNotEmpty(backup)) {
             serverAddrBuilder.append(',').append(backup);
         }
 
@@ -133,7 +133,7 @@ public class NacosNamingServiceUtils {
     }
 
     private static void setProperties(URL url, Properties properties) {
-        putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
+        putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME, null);
 
         // @since 2.7.8 : Refactoring
         // Get the parameters from constants
@@ -144,19 +144,15 @@ public class NacosNamingServiceUtils {
         putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
     }
 
-    private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
-        String propertyValue = url.getParameter(propertyName);
-        if (StringUtils.isNotEmpty(propertyValue)) {
-            properties.setProperty(propertyName, propertyValue);
-        }
-    }
-
     private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName, String defaultValue) {
         String propertyValue = url.getParameter(propertyName);
         if (StringUtils.isNotEmpty(propertyValue)) {
             properties.setProperty(propertyName, propertyValue);
         } else {
-            properties.setProperty(propertyName, defaultValue);
+            // when defaultValue is empty, we should not set empty value
+            if (StringUtils.isNotEmpty(defaultValue)) {
+                properties.setProperty(propertyName, defaultValue);
+            }
         }
     }
 }

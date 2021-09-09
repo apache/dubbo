@@ -365,8 +365,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     private ProviderModel.RegisterStatedURL getStatedUrl(URL registryUrl, URL providerUrl) {
-        ApplicationModel applicationModel = getApplicationModel(registryUrl.getScopeModel());
-        ProviderModel providerModel = applicationModel.getApplicationServiceRepository()
+        ProviderModel providerModel = frameworkModel.getServiceRepository()
             .lookupExportedService(providerUrl.getServiceKey());
 
         List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
@@ -873,12 +872,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 if (subscribeUrl != null) {
                     Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
                     NotifyListener listener = overrideListeners.remove(registerUrl);
-                    registry.unsubscribe(subscribeUrl, listener);
-                    ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
-                    if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
-                        applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                            .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                                serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                    if (listener != null) {
+                        registry.unsubscribe(subscribeUrl, listener);
+                        ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
+                        if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+                            applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                                .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
+                                        serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                        }
                     }
                 }
             } catch (Throwable t) {

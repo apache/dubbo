@@ -96,6 +96,7 @@ public class RouterChain<T> {
 
         List<Router> routers = extensionFactories.stream()
             .map(factory -> factory.getRouter(url))
+            .sorted(Router::compareTo)
             .collect(Collectors.toList());
 
         initWithRouters(routers);
@@ -120,7 +121,6 @@ public class RouterChain<T> {
     public void initWithRouters(List<Router> builtinRouters) {
         this.builtinRouters = builtinRouters;
         this.routers = new ArrayList<>(builtinRouters);
-        this.sort();
     }
 
     private void initWithStateRouters(List<StateRouter> builtinRouters) {
@@ -158,10 +158,6 @@ public class RouterChain<T> {
 
     public List<StateRouter> getStateRouters() {
         return stateRouters;
-    }
-
-    private void sort() {
-        Collections.sort(routers);
     }
 
     /**
@@ -213,10 +209,10 @@ public class RouterChain<T> {
 
     /**
      * Build the asynchronous address cache for stateRouter.
-     * @param notify Whether the addresses in registry has changed.
+     * @param notify Whether the addresses in registry have changed.
      */
     private void buildCache(boolean notify) {
-        if (invokers == null || invokers.size() <= 0) {
+        if (CollectionUtils.isEmpty(invokers)) {
             return;
         }
         AddrCache<T> origin = cache.get();
@@ -272,8 +268,7 @@ public class RouterChain<T> {
      * @param notify Whether the addresses in registry has changed.
      */
     public void loop(boolean notify) {
-        if (firstBuildCache.get()) {
-            firstBuildCache.compareAndSet(true,false);
+        if (firstBuildCache.compareAndSet(true,false)) {
             buildCache(notify);
         }
         if (notify) {

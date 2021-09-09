@@ -18,11 +18,13 @@ package org.apache.dubbo.test.spring;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.test.common.SysProps;
-import org.apache.dubbo.test.common.ZooKeeperServer;
 import org.apache.dubbo.test.common.api.DemoService;
 import org.apache.dubbo.test.common.api.GreetingService;
 import org.apache.dubbo.test.common.api.RestDemoService;
+import org.apache.dubbo.test.common.registrycenter.RegistryCenter;
+import org.apache.dubbo.test.common.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.test.spring.context.MockSpringInitializationCustomizer;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,10 +34,19 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KE
 
 public class SpringXmlConfigTest {
 
+    private static RegistryCenter registryCenter;
+
     @BeforeAll
     public static void beforeAll() {
-        ZooKeeperServer.start();
+        registryCenter = new ZookeeperSingleRegistryCenter();
+        registryCenter.startup();
         DubboBootstrap.reset();
+    }
+
+    @AfterAll
+    public static void afterAll(){
+        DubboBootstrap.reset();
+        registryCenter.shutdown();
     }
 
     @Test

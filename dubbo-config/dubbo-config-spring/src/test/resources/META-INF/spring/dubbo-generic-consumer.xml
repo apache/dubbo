@@ -33,9 +33,4 @@
 
     <dubbo:service id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true"
                    ref="genericService"/>
-
-    <!-- generic service without interface class -->
-    <dubbo:reference id="genericServiceWithoutInterfaceRef" interface="org.apache.dubbo.config.spring.api.LocalMissClass" generic="true" init="false"/>
-    <dubbo:service id="genericServiceWithoutInterface" interface="org.apache.dubbo.config.spring.api.LocalMissClass" generic="true"
-                   ref="genericService"/>
 </beans>
