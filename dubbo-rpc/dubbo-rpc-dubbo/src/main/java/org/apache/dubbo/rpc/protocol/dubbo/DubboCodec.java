@@ -66,10 +66,6 @@ public class DubboCodec extends ExchangeCodec {
     private CallbackServiceCodec callbackServiceCodec;
     private FrameworkModel frameworkModel;
 
-    public DubboCodec() {
-        this(FrameworkModel.defaultModel());
-    }
-
     public DubboCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
