@@ -151,7 +151,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         } else {
             Merger resultMerger;
-            ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(invocation.getServiceModel().getModuleModel().getApplicationModel());
+            ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(invocation.getModuleModel().getApplicationModel());
 
             if (ConfigUtils.isDefault(merger)) {
                 resultMerger = applicationModel.getBeanFactory().getBean(MergerFactory.class).getMerger(returnType);

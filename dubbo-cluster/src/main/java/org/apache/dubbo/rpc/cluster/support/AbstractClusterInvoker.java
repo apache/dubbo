@@ -339,7 +339,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
      * @return LoadBalance instance. if not need init, return null.
      */
     protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
-        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(invocation.getServiceModel().getModuleModel());
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(invocation.getModuleModel());
         if (CollectionUtils.isNotEmpty(invokers)) {
             return applicationModel.getExtensionLoader(LoadBalance.class).getExtension(
                     invokers.get(0).getUrl().getMethodParameter(
