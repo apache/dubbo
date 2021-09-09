@@ -18,6 +18,8 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.compiler.support.CtClassBuilder;
+import org.apache.dubbo.common.compiler.support.JavassistCompiler;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -41,6 +43,13 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 
+import demo.MultiClassLoaderService;
+import demo.MultiClassLoaderServiceImpl;
+import demo.MultiClassLoaderServiceRequest;
+import demo.MultiClassLoaderServiceResult;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,15 +60,18 @@ import org.mockito.Mockito;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -865,6 +877,79 @@ public class ReferenceConfigTest {
         applicationModel.destroy();
     }
 
+    @Test
+    public void testDifferentClassLoaderRequest() throws Exception {
+        String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
+        TestClassLoader classLoader1 = new TestClassLoader(basePath);
+        TestClassLoader classLoader2 = new TestClassLoader(basePath);
+        TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
+
+        ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
+        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ModuleModel moduleModel = new ModuleModel(applicationModel);
+
+        Class<?> clazz1 = classLoader1.loadClass(MultiClassLoaderService.class.getName(), false);
+        Class<?> clazz1impl = classLoader1.loadClass(MultiClassLoaderServiceImpl.class.getName(), false);
+        Class<?> requestClazzCustom1 = compileCustomRequest(classLoader1);
+        Class<?> resultClazzCustom1 = compileCustomResult(classLoader1);
+        classLoader1.loadedClass.put(requestClazzCustom1.getName(), requestClazzCustom1);
+        classLoader1.loadedClass.put(resultClazzCustom1.getName(), resultClazzCustom1);
+        AtomicReference innerRequestReference = new AtomicReference();
+        AtomicReference innerResultReference = new AtomicReference();
+        innerResultReference.set(resultClazzCustom1.newInstance());
+        Constructor<?> declaredConstructor = clazz1impl.getDeclaredConstructor(AtomicReference.class, AtomicReference.class);
+
+        ServiceConfig serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterfaceClassLoader(classLoader1);
+        serviceConfig.setInterface(clazz1);
+        serviceConfig.setRegistry(new RegistryConfig(zkUrl));
+        serviceConfig.setScopeModel(moduleModel);
+        serviceConfig.setRef(declaredConstructor.newInstance(innerRequestReference, innerResultReference));
+        serviceConfig.export();
+
+        Class<?> clazz2 = classLoader2.loadClass(MultiClassLoaderService.class.getName(), false);
+        Class<?> requestClazzOrigin = classLoader2.loadClass(MultiClassLoaderServiceRequest.class.getName(), false);
+        Class<?> requestClazzCustom2 = compileCustomRequest(classLoader2);
+        Class<?> resultClazzCustom3 = compileCustomResult(classLoader3);
+        classLoader2.loadedClass.put(requestClazzCustom2.getName(), requestClazzCustom2);
+        classLoader3.loadedClass.put(resultClazzCustom3.getName(), resultClazzCustom3);
+
+        ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
+        referenceConfig1.setInterface(clazz2);
+        referenceConfig1.setInterfaceClassLoader(classLoader3);
+        referenceConfig1.setRegistry(new RegistryConfig(zkUrl));
+        referenceConfig1.setScopeModel(moduleModel);
+        referenceConfig1.setScope("remote");
+        Object object1 = referenceConfig1.get();
+
+        java.lang.reflect.Method callBean1 = object1.getClass().getDeclaredMethod("call", requestClazzOrigin);
+        callBean1.setAccessible(true);
+        Object result1 = callBean1.invoke(object1, requestClazzCustom2.newInstance());
+
+        Assertions.assertEquals(resultClazzCustom3, result1.getClass());
+        Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
+
+        applicationModel.destroy();
+    }
+
+    private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
+        CtClassBuilder builder = new CtClassBuilder();
+        builder.setClassName(MultiClassLoaderServiceRequest.class.getName() + "A");
+        builder.setSuperClassName(MultiClassLoaderServiceRequest.class.getName());
+        CtClass cls = builder.build(classLoader);
+        return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
+    }
+
+    private Class<?> compileCustomResult(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
+        CtClassBuilder builder = new CtClassBuilder();
+        builder.setClassName(MultiClassLoaderServiceResult.class.getName() + "A");
+        builder.setSuperClassName(MultiClassLoaderServiceResult.class.getName());
+        CtClass cls = builder.build(classLoader);
+        return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
+    }
+
     @Reference(methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
         actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "instance.i", onthrow = "instance.t", onreturn = "instance.r", cache = "c", validation = "v",
         arguments = {@Argument(index = 24, callback = true, type = "sss")})})
@@ -881,6 +966,8 @@ public class ReferenceConfigTest {
             this.basePath = basePath;
         }
 
+        Map<String, Class<?>> loadedClass = new ConcurrentHashMap<>();
+
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
             try {
@@ -893,23 +980,76 @@ public class ReferenceConfigTest {
 
         @Override
         public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            Class<?> loadedClass = this.findLoadedClass(name);
-            if (loadedClass != null) {
-                return loadedClass;
+            if (loadedClass.containsKey(name)) {
+                return loadedClass.get(name);
+            }
+            if (name.startsWith("demo")) {
+                Class<?> aClass = this.findClass(name);
+                this.loadedClass.put(name, aClass);
+                if (resolve) {
+                    this.resolveClass(aClass);
+                }
+                return aClass;
             } else {
-                try {
-                    if (name.startsWith("org.apache.dubbo.config")) {
-                        Class<?> aClass = this.findClass(name);
-                        if (resolve) {
-                            this.resolveClass(aClass);
-                        }
-                        return aClass;
-                    } else {
-                        return super.loadClass(name, resolve);
-                    }
-                } catch (Exception e) {
+                Class<?> loadedClass = this.findLoadedClass(name);
+                if (loadedClass != null) {
+                    return loadedClass;
+                } else {
                     return super.loadClass(name, resolve);
                 }
+            }
+        }
+
+
+        public byte[] loadClassData(String className) throws IOException {
+            className = className.replaceAll("\\.", "/");
+            String path = basePath + File.separator + className + ".class";
+            FileInputStream fileInputStream;
+            byte[] classBytes;
+            fileInputStream = new FileInputStream(path);
+            int length = fileInputStream.available();
+            classBytes = new byte[length];
+            fileInputStream.read(classBytes);
+            fileInputStream.close();
+            return classBytes;
+        }
+    }
+
+    private static class TestClassLoader2 extends ClassLoader {
+        private String basePath;
+        private TestClassLoader testClassLoader;
+
+        Map<String, Class<?>> loadedClass = new ConcurrentHashMap<>();
+
+        public TestClassLoader2(TestClassLoader testClassLoader, String basePath) {
+            this.testClassLoader = testClassLoader;
+            this.basePath = basePath;
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                byte[] bytes = loadClassData(name);
+                return defineClass(name, bytes, 0, bytes.length);
+            } catch (Exception e) {
+                throw new ClassNotFoundException();
+            }
+        }
+
+        @Override
+        public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (loadedClass.containsKey(name)) {
+                return loadedClass.get(name);
+            }
+            if (name.startsWith("demo.MultiClassLoaderServiceRe")) {
+                Class<?> aClass = this.findClass(name);
+                this.loadedClass.put(name, aClass);
+                if (resolve) {
+                    this.resolveClass(aClass);
+                }
+                return aClass;
+            } else {
+                return testClassLoader.loadClass(name, resolve);
             }
         }
 

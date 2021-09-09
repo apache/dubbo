@@ -14,13 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2;
+package demo;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class Hessian2SerializerFactory extends SerializerFactory {
+public class MultiClassLoaderServiceImpl implements MultiClassLoaderService {
+    private AtomicReference<MultiClassLoaderServiceRequest> innerRequestReference;
+    private AtomicReference<MultiClassLoaderServiceResult> innerResultReference;
 
-    public Hessian2SerializerFactory() {
+    public MultiClassLoaderServiceImpl(AtomicReference<MultiClassLoaderServiceRequest> innerRequestReference, AtomicReference<MultiClassLoaderServiceResult> innerResultReference) {
+        this.innerRequestReference = innerRequestReference;
+        this.innerResultReference = innerResultReference;
     }
 
+    @Override
+    public MultiClassLoaderServiceResult call(MultiClassLoaderServiceRequest innerRequest) {
+        innerRequestReference.set(innerRequest);
+        return innerResultReference.get();
+    }
 }

@@ -14,13 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2;
+package demo;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+public interface MultiClassLoaderService {
 
-public class Hessian2SerializerFactory extends SerializerFactory {
-
-    public Hessian2SerializerFactory() {
-    }
-
+    Object call(MultiClassLoaderServiceRequest innerRequest);
 }
