@@ -169,9 +169,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 for (ExchangeClient client : clients) {
                     try {
                         if (closeAll) {
-                            client.close(serverShutdownTimeout);
-                        } else {
                             client.closeAll(serverShutdownTimeout);
+                        } else {
+                            client.close(serverShutdownTimeout);
                         }
                     } catch (Throwable t) {
                         logger.warn(t.getMessage(), t);
