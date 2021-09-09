@@ -158,7 +158,8 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     @Override
     public void close(int timeout) {
-        if (referenceCount.decrementAndGet() <= 0) {
+        // ignore MetadataService destroy
+        if (referenceCount.decrementAndGet() <= 1) {
             if (timeout == 0) {
                 client.close();
 
