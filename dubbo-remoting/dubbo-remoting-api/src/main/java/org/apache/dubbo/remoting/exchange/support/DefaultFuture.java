@@ -147,7 +147,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
                     disconnectResponse.setErrorMessage("Channel " +
                             channel +
                             " is inactive. Directly return the unFinished request : " +
-                            future.getRequest());
+                            getRequestWithoutData(future.getRequest()));
                     DefaultFuture.received(channel, disconnectResponse);
                 }
             }
@@ -251,11 +251,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
                 + (sent > 0 ? " client elapsed: " + (sent - start)
                 + " ms, server elapsed: " + (nowTimestamp - sent)
                 : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
-                + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : getRequestWithoutData()) + ", channel: " + channel.getLocalAddress()
+                + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : getRequestWithoutData(request)) + ", channel: " + channel.getLocalAddress()
                 + " -> " + channel.getRemoteAddress();
     }
 
-    private Request getRequestWithoutData() {
+    private static Request getRequestWithoutData(Request request) {
         Request newRequest = request.copy();
         newRequest.setData(null);
         return newRequest;
