@@ -228,7 +228,6 @@ public class MetadataInfo implements Serializable {
     }
 
     public static class ServiceInfo implements Serializable {
-        private ExtensionLoader<MetadataParamsFilter> loader;
         private String name;
         private String group;
         private String version;
@@ -250,6 +249,7 @@ public class MetadataInfo implements Serializable {
         private transient String matchKey;
 
         private transient URL url;
+        private transient ExtensionLoader<MetadataParamsFilter> loader;
 
         private final static String[] KEYS_TO_REMOVE = {MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
             QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
