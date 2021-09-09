@@ -198,13 +198,13 @@ public class AbstractConfigTest {
     @Test
     public void checkMultiExtension1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class,
-                () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,world"));
+                () -> ConfigValidationUtils.checkMultiExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "default,world"));
     }
 
     @Test
     public void checkMultiExtension2() throws Exception {
         Assertions.assertThrows(IllegalStateException.class,
-                () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,-world"));
+                () -> ConfigValidationUtils.checkMultiExtension(ApplicationModel.defaultModel(), Greeting.class, "hello", "default,-world"));
     }
 
     @Test
