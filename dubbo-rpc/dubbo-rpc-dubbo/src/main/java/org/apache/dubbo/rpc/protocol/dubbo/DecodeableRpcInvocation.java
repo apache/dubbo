@@ -170,6 +170,32 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
                     if (methodDescriptor != null) {
                         pts = methodDescriptor.getParameterClasses();
                         this.setReturnTypes(methodDescriptor.getReturnTypes());
+
+                        // switch TCCL
+                        if (CollectionUtils.isNotEmpty(providerModels)) {
+                            if (providerModels.size() == 1) {
+                                Thread.currentThread().setContextClassLoader(providerModels.get(0).getClassLoader());
+                            } else {
+                                // try all providerModels' classLoader can load pts, use the first one
+                                for (ProviderModel providerModel : providerModels) {
+                                    ClassLoader classLoader = providerModel.getClassLoader();
+                                    boolean match = true;
+                                    for (Class<?> pt : pts) {
+                                        try {
+                                            if (!pt.equals(classLoader.loadClass(pt.getName()))) {
+                                                match = false;
+                                            }
+                                        } catch (ClassNotFoundException e) {
+                                            match = false;
+                                        }
+                                    }
+                                    if (match) {
+                                        Thread.currentThread().setContextClassLoader(classLoader);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
