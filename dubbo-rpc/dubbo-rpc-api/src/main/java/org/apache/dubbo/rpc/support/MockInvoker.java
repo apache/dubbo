@@ -170,7 +170,7 @@ final public class MockInvoker<T> implements Invoker<T> {
             return invoker;
         }
 
-        T mockObject = (T) getMockObject(url.getScopeModel().getExtensionDirector(), mock, serviceType);
+        T mockObject = (T) getMockObject(url.getOrDefaultApplicationModel().getExtensionDirector(), mock, serviceType);
         invoker = proxyFactory.getInvoker(mockObject, serviceType, url);
         if (MOCK_MAP.size() < 10000) {
             MOCK_MAP.put(mockService, invoker);
