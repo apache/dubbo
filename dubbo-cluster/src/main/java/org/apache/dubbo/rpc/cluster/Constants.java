@@ -139,4 +139,9 @@ public interface Constants {
      * The key of shortestResponseSlidePeriod
      */
     String SHORTEST_RESPONSE_SLIDE_PERIOD = "shortestResponseSlidePeriod";
+
+    /**
+     * The key of peakEwmaDecayTime
+     */
+    String PEAK_EWMA_DECAY_TIME = "peakEwmaDecayTime";
 }
