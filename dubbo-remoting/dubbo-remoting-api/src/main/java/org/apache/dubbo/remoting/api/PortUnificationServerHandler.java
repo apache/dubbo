@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.remoting.api;
 
+import org.apache.dubbo.common.URL;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -28,14 +30,16 @@ import java.util.List;
 public class PortUnificationServerHandler extends ByteToMessageDecoder {
 
     private final SslContext sslCtx;
+    private final URL url;
     private final List<WireProtocol> protocols;
     private final DefaultChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-    public PortUnificationServerHandler(List<WireProtocol> protocols) {
-        this(null,protocols);
+    public PortUnificationServerHandler(URL url, List<WireProtocol> protocols) {
+        this(url, null,protocols);
     }
 
-    public PortUnificationServerHandler(SslContext sslCtx, List<WireProtocol> protocols) {
+    public PortUnificationServerHandler(URL url, SslContext sslCtx, List<WireProtocol> protocols) {
+        this.url = url;
         this.sslCtx = sslCtx;
         this.protocols = protocols;
     }
@@ -76,7 +80,7 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
                 case UNRECOGNIZED:
                     continue;
                 case RECOGNIZED:
-                    protocol.configServerPipeline(ctx.pipeline(), sslCtx);
+                    protocol.configServerPipeline(url, ctx.pipeline(), sslCtx);
                     ctx.pipeline().remove(this);
                 case NEED_MORE_DATA:
                     return;
