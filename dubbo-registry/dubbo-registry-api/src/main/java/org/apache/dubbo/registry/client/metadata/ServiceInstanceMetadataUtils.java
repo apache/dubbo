@@ -225,7 +225,7 @@ public class ServiceInstanceMetadataUtils {
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(instance.getApplicationModel());
         MetadataInfo metadataInfo = writableMetadataService.getMetadataInfos().get(registryCluster);
         if (metadataInfo == null) {
-            metadataInfo = ((InMemoryWritableMetadataService) writableMetadataService).getDefaultMetadataInfo();
+            metadataInfo = writableMetadataService.getDefaultMetadataInfo();
         }
         if (metadataInfo != null) {
             String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
