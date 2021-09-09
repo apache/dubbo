@@ -881,8 +881,8 @@ public class ReferenceConfigTest {
     public void testDifferentClassLoaderRequest() throws Exception {
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
-        TestClassLoader classLoader1 = new TestClassLoader(basePath);
-        TestClassLoader classLoader2 = new TestClassLoader(basePath);
+        TestClassLoader1 classLoader1 = new TestClassLoader1(basePath);
+        TestClassLoader1 classLoader2 = new TestClassLoader1(basePath);
         TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
 
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
@@ -958,11 +958,64 @@ public class ReferenceConfigTest {
     private class InnerTest {
 
     }
-
     private static class TestClassLoader extends ClassLoader {
         private String basePath;
 
         public TestClassLoader(String basePath) {
+            this.basePath = basePath;
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                byte[] bytes = loadClassData(name);
+                return defineClass(name, bytes, 0, bytes.length);
+            } catch (Exception e) {
+                throw new ClassNotFoundException();
+            }
+        }
+
+        @Override
+        public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            Class<?> loadedClass = this.findLoadedClass(name);
+            if (loadedClass != null) {
+                return loadedClass;
+            } else {
+                try {
+                    if (name.startsWith("org.apache.dubbo.config")) {
+                        Class<?> aClass = this.findClass(name);
+                        if (resolve) {
+                            this.resolveClass(aClass);
+                        }
+                        return aClass;
+                    } else {
+                        return super.loadClass(name, resolve);
+                    }
+                } catch (Exception e) {
+                    return super.loadClass(name, resolve);
+                }
+            }
+        }
+
+
+        public byte[] loadClassData(String className) throws IOException {
+            className = className.replaceAll("\\.", "/");
+            String path = basePath + File.separator + className + ".class";
+            FileInputStream fileInputStream;
+            byte[] classBytes;
+            fileInputStream = new FileInputStream(path);
+            int length = fileInputStream.available();
+            classBytes = new byte[length];
+            fileInputStream.read(classBytes);
+            fileInputStream.close();
+            return classBytes;
+        }
+    }
+
+    private static class TestClassLoader1 extends ClassLoader {
+        private String basePath;
+
+        public TestClassLoader1(String basePath) {
             this.basePath = basePath;
         }
 
@@ -1017,11 +1070,11 @@ public class ReferenceConfigTest {
 
     private static class TestClassLoader2 extends ClassLoader {
         private String basePath;
-        private TestClassLoader testClassLoader;
+        private TestClassLoader1 testClassLoader;
 
         Map<String, Class<?>> loadedClass = new ConcurrentHashMap<>();
 
-        public TestClassLoader2(TestClassLoader testClassLoader, String basePath) {
+        public TestClassLoader2(TestClassLoader1 testClassLoader, String basePath) {
             this.testClassLoader = testClassLoader;
             this.basePath = basePath;
         }
