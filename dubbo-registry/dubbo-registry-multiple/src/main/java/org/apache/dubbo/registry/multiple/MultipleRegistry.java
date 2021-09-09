@@ -69,6 +69,8 @@ public class MultipleRegistry extends AbstractRegistry {
         super(url);
         this.registryUrl = url;
         this.applicationName = url.getApplication();
+        this.registryFactory = url.getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
+
         init();
         checkApplicationName(this.applicationName);
         // This urls contain parameter and it donot inherit from the parameter of url in MultipleRegistry
