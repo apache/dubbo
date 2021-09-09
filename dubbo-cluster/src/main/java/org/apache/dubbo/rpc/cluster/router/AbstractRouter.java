@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.router;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 public abstract class AbstractRouter implements Router {
     private int priority = DEFAULT_PRIORITY;
@@ -29,7 +28,7 @@ public abstract class AbstractRouter implements Router {
     private GovernanceRuleRepository ruleRepository;
 
     public AbstractRouter(URL url) {
-        this.ruleRepository = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        this.ruleRepository = url.getOrDefaultApplicationModel().getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
     }
 

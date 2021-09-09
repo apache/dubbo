@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -86,7 +85,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         // remove some local only parameters
-        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(url.getScopeModel());
+        ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
         this.queryMap = applicationModel.getBeanFactory().getBean(ClusterUtils.class).mergeLocalParams(queryMap);
 
         if (consumerUrl == null) {

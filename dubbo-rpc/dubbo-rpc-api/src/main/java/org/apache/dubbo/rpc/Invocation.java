@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Map;
@@ -146,7 +147,7 @@ public interface Invocation {
     ServiceModel getServiceModel();
 
     default ModuleModel getModuleModel() {
-        return getServiceModel() == null ? null : getServiceModel().getModuleModel();
+        return ScopeModelUtil.getModuleModel(getServiceModel() == null ? null : getServiceModel().getModuleModel());
     }
 
     Object put(Object key, Object value);

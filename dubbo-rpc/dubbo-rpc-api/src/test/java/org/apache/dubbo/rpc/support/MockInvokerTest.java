@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -132,16 +133,16 @@ public class MockInvokerTest {
     @Test
     public void testGetMockObject() {
         Assertions.assertEquals("",
-                MockInvoker.getMockObject("java.lang.String", String.class));
+                MockInvoker.getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "java.lang.String", String.class));
 
         Assertions.assertThrows(IllegalStateException.class, () -> MockInvoker
-                .getMockObject("true", String.class));
+                .getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "true", String.class));
         Assertions.assertThrows(IllegalStateException.class, () -> MockInvoker
-                .getMockObject("default", String.class));
+                .getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "default", String.class));
         Assertions.assertThrows(IllegalStateException.class, () -> MockInvoker
-                .getMockObject("java.lang.String", Integer.class));
+                .getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "java.lang.String", Integer.class));
         Assertions.assertThrows(IllegalStateException.class, () -> MockInvoker
-                .getMockObject("java.io.Serializable", Serializable.class));
+                .getMockObject(ApplicationModel.defaultModel().getExtensionDirector(), "java.io.Serializable", Serializable.class));
     }
 
     @Test

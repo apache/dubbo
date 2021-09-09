@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -95,6 +96,10 @@ public interface ServiceInstance extends Serializable {
     void setApplicationModel(ApplicationModel applicationModel);
 
     ApplicationModel getApplicationModel();
+
+    default ApplicationModel getOrDefaultApplicationModel() {
+        return ScopeModelUtil.getApplicationModel(getApplicationModel());
+    }
 
     /**
      * Get the value of metadata by the specified name

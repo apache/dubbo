@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.client.event.listener;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -80,7 +79,7 @@ public class ServiceInstancesChangedListener {
     private volatile long lastRefreshTime;
     private Semaphore retryPermission;
     private volatile ScheduledFuture<?> retryFuture;
-    private static ScheduledExecutorService scheduler = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
+    private ScheduledExecutorService scheduler;
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
@@ -90,6 +89,8 @@ public class ServiceInstancesChangedListener {
         this.serviceUrls = new HashMap<>();
         this.revisionToMetadata = new HashMap<>();
         retryPermission = new Semaphore(1);
+        this.scheduler = serviceDiscovery.getUrl().getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension().getMetadataRetryExecutor();
     }
 
     /**

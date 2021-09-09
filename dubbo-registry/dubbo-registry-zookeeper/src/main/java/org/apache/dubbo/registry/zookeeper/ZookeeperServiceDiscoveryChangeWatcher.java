@@ -65,7 +65,7 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
         this.serviceName = serviceName;
         this.path = path;
         this.latch = latch;
-        this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getDelay(),
+        this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getUrl(), zookeeperServiceDiscovery.getDelay(),
             ScopeModelUtil.getApplicationModel(zookeeperServiceDiscovery.getUrl().getScopeModel()).getApplicationExecutorRepository().getServiceDiscoveryAddressNotificationExecutor()) {
             @Override
             protected void doNotify(Object rawAddresses) {
