@@ -272,6 +272,7 @@ public final class DubboBootstrap {
 
     private DubboBootstrap(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
+        applicationModel.getAttribute().put(NAME, this);
         configManager = applicationModel.getApplicationConfigManager();
         environment = applicationModel.getApplicationEnvironment();
 
