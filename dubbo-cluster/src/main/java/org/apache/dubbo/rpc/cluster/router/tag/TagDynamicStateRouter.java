@@ -85,10 +85,10 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
     @Override
     public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url,
-        Invocation invocation) throws RpcException {
+                                         Invocation invocation) throws RpcException {
 
 
-        final TagRouterRule tagRouterRuleCopy = (TagRouterRule)cache.getAddrMetadata();
+        final TagRouterRule tagRouterRuleCopy = (TagRouterRule) cache.getAddrMetadata();
 
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
             invocation.getAttachment(TAG_KEY);
@@ -209,8 +209,6 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
                 if ((ANYHOST_VALUE + ":" + port).equals(address)) {
                     return true;
                 }
-            } catch (UnknownHostException e) {
-                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
             } catch (Exception e) {
                 logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
             }
