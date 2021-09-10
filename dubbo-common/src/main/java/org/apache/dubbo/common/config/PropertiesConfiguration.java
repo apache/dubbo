@@ -66,8 +66,21 @@ public class PropertiesConfiguration implements Configuration {
     }
 
     @Override
+    public String getProperty(String key) {
+        return properties.getProperty(key);
+    }
+
+    @Override
     public Object getInternalProperty(String key) {
         return properties.getProperty(key);
+    }
+
+    public void setProperty(String key, String value) {
+        properties.setProperty(key, value);
+    }
+
+    public String remove(String key) {
+        return (String) properties.remove(key);
     }
 
     public Map<String, String> getProperties() {
