@@ -60,7 +60,7 @@ public class MetadataServiceNameMappingTest {
         applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
         configManager = mock(ConfigManager.class);
         metadataReport = mock(MetadataReport.class);
-        mapping = new MetadataServiceNameMapping();
+        mapping = new MetadataServiceNameMapping(ApplicationModel.defaultModel());
         mapping.setApplicationModel(applicationModel);
         url = URL.valueOf("dubbo://127.0.0.1:20880/TestService?version=1.0.0");
     }

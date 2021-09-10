@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.logger;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -35,7 +37,7 @@ public class LoggerFactoryTest {
 
     @Test
     public void testGetLogFile() {
-        LoggerFactory.setLoggerAdapter("slf4j");
+        LoggerFactory.setLoggerAdapter(FrameworkModel.defaultModel(), "slf4j");
         File file = LoggerFactory.getFile();
 
         assertThat(file, is(nullValue()));

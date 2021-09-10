@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Model of a service module
@@ -43,6 +45,13 @@ public class ModuleModel extends ScopeModel {
     protected void initialize() {
         super.initialize();
         this.serviceRepository = new ModuleServiceRepository(this);
+
+        ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+        Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+        for (ScopeModelInitializer initializer : initializers) {
+            initializer.initializeModuleModel(this);
+        }
+
         postProcessAfterCreated();
     }
 

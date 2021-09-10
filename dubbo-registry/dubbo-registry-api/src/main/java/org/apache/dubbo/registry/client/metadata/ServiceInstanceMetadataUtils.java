@@ -284,7 +284,7 @@ public class ServiceInstanceMetadataUtils {
 
     public static void customizeInstance(ServiceInstance instance) {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
-                ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
+                instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customizes

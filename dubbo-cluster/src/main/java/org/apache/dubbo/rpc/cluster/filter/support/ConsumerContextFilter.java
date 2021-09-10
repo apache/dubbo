@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +50,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_K
 @Activate(group = CONSUMER, order = -10000)
 public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Listener {
 
+    private ApplicationModel applicationModel;
+
+    public ConsumerContextFilter(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         RpcContext.getServiceContext()
@@ -61,7 +68,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
 
-        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = ExtensionLoader.getExtensionLoader(PenetrateAttachmentSelector.class);
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = applicationModel.getExtensionLoader(PenetrateAttachmentSelector.class);
         Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
         if (CollectionUtils.isNotEmpty(supportedSelectors)) {
             for (String supportedSelector : supportedSelectors) {

@@ -212,6 +212,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     @Override
+    @Transient
     public Map<String, Object> getAttributes() {
         return attributes;
     }
