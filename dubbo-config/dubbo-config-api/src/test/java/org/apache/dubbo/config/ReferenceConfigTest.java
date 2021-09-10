@@ -962,7 +962,7 @@ public class ReferenceConfigTest {
         ServiceConfig serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterfaceClassLoader(classLoader1);
         serviceConfig.setInterface(clazz1);
-        serviceConfig.setRegistry(new RegistryConfig(zkUrl));
+        serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
         serviceConfig.setScopeModel(moduleModel);
         serviceConfig.setRef(declaredConstructor.newInstance(innerRequestReference, innerResultReference));
         serviceConfig.export();
@@ -977,7 +977,7 @@ public class ReferenceConfigTest {
         ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
         referenceConfig1.setInterface(clazz2);
         referenceConfig1.setInterfaceClassLoader(classLoader3);
-        referenceConfig1.setRegistry(new RegistryConfig(zkUrl));
+        referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
         referenceConfig1.setScopeModel(moduleModel);
         referenceConfig1.setScope("remote");
         Object object1 = referenceConfig1.get();
