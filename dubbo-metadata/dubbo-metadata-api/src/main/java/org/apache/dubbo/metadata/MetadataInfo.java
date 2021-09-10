@@ -228,7 +228,6 @@ public class MetadataInfo implements Serializable {
     }
 
     public static class ServiceInfo implements Serializable {
-        private static ExtensionLoader<MetadataParamsFilter> loader = ExtensionLoader.getExtensionLoader(MetadataParamsFilter.class);
         private String name;
         private String group;
         private String version;
@@ -250,6 +249,7 @@ public class MetadataInfo implements Serializable {
         private transient String matchKey;
 
         private transient URL url;
+        private transient ExtensionLoader<MetadataParamsFilter> loader;
 
         private final static String[] KEYS_TO_REMOVE = {MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
             QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
@@ -258,7 +258,7 @@ public class MetadataInfo implements Serializable {
 
         public ServiceInfo(URL url) {
             this(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getProtocol(), url.getPath(), null);
-
+            this.loader = url.getOrDefaultApplicationModel().getExtensionLoader(MetadataParamsFilter.class);
             this.url = url;
             Map<String, String> params = new HashMap<>();
             List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");

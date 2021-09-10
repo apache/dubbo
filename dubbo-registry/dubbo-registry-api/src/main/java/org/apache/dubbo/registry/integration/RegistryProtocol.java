@@ -472,11 +472,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         String group = qs.get(GROUP_KEY);
         if (group != null && group.length() > 0) {
             if ((COMMA_SPLIT_PATTERN.split(group)).length > 1 || "*".equals(group)) {
-                return doRefer(Cluster.getCluster(MergeableCluster.NAME), registry, type, url, qs);
+                return doRefer(Cluster.getCluster(url.getScopeModel(), MergeableCluster.NAME), registry, type, url, qs);
             }
         }
 
-        Cluster cluster = Cluster.getCluster(qs.get(CLUSTER_KEY));
+        Cluster cluster = Cluster.getCluster(url.getScopeModel(), qs.get(CLUSTER_KEY));
         return doRefer(cluster, registry, type, url, qs);
     }
 

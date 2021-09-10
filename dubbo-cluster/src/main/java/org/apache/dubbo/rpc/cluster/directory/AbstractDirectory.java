@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.List;
@@ -84,7 +85,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         // remove some local only parameters
-        this.queryMap = ClusterUtils.mergeLocalParams(queryMap);
+        ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
+        this.queryMap = applicationModel.getBeanFactory().getBean(ClusterUtils.class).mergeLocalParams(queryMap);
 
         if (consumerUrl == null) {
             String host = StringUtils.isNotEmpty(queryMap.get("register.ip")) ? queryMap.get("register.ip") : this.url.getHost();
@@ -98,7 +100,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                     .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
             if (isUrlFromRegistry) {
                 // reserve parameters if url is already a consumer url
-                consumerUrlFrom = consumerUrlFrom.clearParameters();
+                consumerUrlFrom = consumerUrlFrom.clearParameters().setServiceModel(url.getServiceModel()).setScopeModel(url.getScopeModel());
             }
             this.consumerUrl = consumerUrlFrom.addParameters(queryMap).removeAttribute(MONITOR_KEY);
         }

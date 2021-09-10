@@ -115,7 +115,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     }
 
     private List<SubscribedURLsSynthesizer> initSubscribedURLsSynthesizers() {
-        ExtensionLoader<SubscribedURLsSynthesizer> loader = ExtensionLoader.getExtensionLoader(SubscribedURLsSynthesizer.class);
+        ExtensionLoader<SubscribedURLsSynthesizer> loader = getUrl().getOrDefaultApplicationModel().getExtensionLoader(SubscribedURLsSynthesizer.class);
         return Collections.unmodifiableList(new ArrayList<>(loader.getSupportedExtensionInstances()));
     }
 

@@ -22,7 +22,6 @@ import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ClientInterceptor;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.GrpcConfigurator;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerInterceptor;
@@ -90,14 +89,14 @@ public class GrpcOptionsUtils {
         }
 
         // server interceptors
-        List<ServerInterceptor> serverInterceptors = ExtensionLoader.getExtensionLoader(ServerInterceptor.class)
+        List<ServerInterceptor> serverInterceptors = url.getOrDefaultFrameworkModel().getExtensionLoader(ServerInterceptor.class)
                 .getActivateExtension(url, SERVER_INTERCEPTORS, PROVIDER_SIDE);
         for (ServerInterceptor serverInterceptor : serverInterceptors) {
             builder.intercept(serverInterceptor);
         }
 
         // server filters
-        List<ServerTransportFilter> transportFilters = ExtensionLoader.getExtensionLoader(ServerTransportFilter.class)
+        List<ServerTransportFilter> transportFilters = url.getOrDefaultFrameworkModel().getExtensionLoader(ServerTransportFilter.class)
                 .getActivateExtension(url, TRANSPORT_FILTERS, PROVIDER_SIDE);
         for (ServerTransportFilter transportFilter : transportFilters) {
             builder.addTransportFilter(transportFilter.grpcTransportFilter());
@@ -107,7 +106,7 @@ public class GrpcOptionsUtils {
         if ("direct".equals(thread)) {
             builder.directExecutor();
         } else {
-            builder.executor(ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
+            builder.executor(url.getOrDefaultFrameworkModel().getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url));
         }
 
         // Give users the chance to customize ServerBuilder
@@ -130,7 +129,7 @@ public class GrpcOptionsUtils {
 
         // client interceptors
         List<io.grpc.ClientInterceptor> interceptors = new ArrayList<>(
-                ExtensionLoader.getExtensionLoader(ClientInterceptor.class)
+            url.getOrDefaultFrameworkModel().getExtensionLoader(ClientInterceptor.class)
                         .getActivateExtension(url, CLIENT_INTERCEPTORS, CONSUMER_SIDE)
         );
 
@@ -153,7 +152,7 @@ public class GrpcOptionsUtils {
     }
 
     private static SslContext buildServerSslContext(URL url) {
-        ConfigManager globalConfigManager = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getApplicationConfigManager();
+        ConfigManager globalConfigManager = url.getOrDefaultApplicationModel().getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder sslClientContextBuilder = null;
@@ -183,7 +182,7 @@ public class GrpcOptionsUtils {
     }
 
     private static SslContext buildClientSslContext(URL url) {
-        ConfigManager globalConfigManager = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getApplicationConfigManager();
+        ConfigManager globalConfigManager = url.getOrDefaultApplicationModel().getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
 

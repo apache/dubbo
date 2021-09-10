@@ -28,8 +28,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +48,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -59,7 +56,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.withSettings;
 
 public class ServiceDiscoveryRegistryTest {
     public static final String APP_NAME1 = "app1";
@@ -97,6 +93,9 @@ public class ServiceDiscoveryRegistryTest {
         doNothing().when(instanceListener).onEvent(any());
         when(serviceDiscovery.createListener(any())).thenReturn(instanceListener);
         when(serviceDiscovery.getInstances(any())).thenReturn(Collections.emptyList());
+        ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
+        when(applicationModel.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
+        registryURL = registryURL.setScopeModel(applicationModel);
 
         spiedMetadataService = spy(WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel()));
         serviceDiscoveryRegistry = new ServiceDiscoveryRegistry(registryURL, serviceDiscovery, spiedMetadataService);
@@ -160,59 +159,56 @@ public class ServiceDiscoveryRegistryTest {
      */
     @Test
     public void testSubscribeURLs() {
-        try (MockedStatic<ServiceNameMapping> mockStaticMapping = Mockito.mockStatic(ServiceNameMapping.class, withSettings().defaultAnswer(CALLS_REAL_METHODS))) {
-            mockStaticMapping.when(ServiceNameMapping::getDefaultExtension).thenReturn(mapping);
-            // interface to single app mapping
-            Set<String> singleApp = new TreeSet<>();
-            singleApp.add(APP_NAME1);
-            serviceDiscoveryRegistry.subscribeURLs(url, testServiceListener, singleApp);
+        // interface to single app mapping
+        Set<String> singleApp = new TreeSet<>();
+        singleApp.add(APP_NAME1);
+        serviceDiscoveryRegistry.subscribeURLs(url, testServiceListener, singleApp);
 
-            assertEquals(1, serviceDiscoveryRegistry.getServiceListeners().size());
-            verify(testServiceListener, times(1)).addServiceListener(instanceListener);
-            verify(instanceListener, never()).onEvent(any());
-            verify(serviceDiscovery, times(1)).addServiceInstancesChangedListener(instanceListener);
+        assertEquals(1, serviceDiscoveryRegistry.getServiceListeners().size());
+        verify(testServiceListener, times(1)).addServiceListener(instanceListener);
+        verify(instanceListener, never()).onEvent(any());
+        verify(serviceDiscovery, times(1)).addServiceInstancesChangedListener(instanceListener);
 
-            // interface to multiple apps mapping
-            Set<String> multiApps = new TreeSet<>();
-            multiApps.add(APP_NAME1);
-            multiApps.add(APP_NAME2);
-            MockServiceInstancesChangedListener multiAppsInstanceListener = spy(new MockServiceInstancesChangedListener(multiApps, serviceDiscovery));
-            doNothing().when(multiAppsInstanceListener).onEvent(any());
-            List<URL> urls = new ArrayList<>();
-            urls.add(URL.valueOf("dubbo://127.0.0.1:20880/TestService"));
-            doReturn(urls).when(multiAppsInstanceListener).getAddresses(any(), any());
-            when(serviceDiscovery.createListener(multiApps)).thenReturn(multiAppsInstanceListener);
-            when(serviceDiscovery.getInstances(APP_NAME1)).thenReturn(instanceList1);
-            when(serviceDiscovery.getInstances(APP_NAME2)).thenReturn(instanceList2);
-            serviceDiscoveryRegistry.subscribeURLs(url, testServiceListener, multiApps);
+        // interface to multiple apps mapping
+        Set<String> multiApps = new TreeSet<>();
+        multiApps.add(APP_NAME1);
+        multiApps.add(APP_NAME2);
+        MockServiceInstancesChangedListener multiAppsInstanceListener = spy(new MockServiceInstancesChangedListener(multiApps, serviceDiscovery));
+        doNothing().when(multiAppsInstanceListener).onEvent(any());
+        List<URL> urls = new ArrayList<>();
+        urls.add(URL.valueOf("dubbo://127.0.0.1:20880/TestService"));
+        doReturn(urls).when(multiAppsInstanceListener).getAddresses(any(), any());
+        when(serviceDiscovery.createListener(multiApps)).thenReturn(multiAppsInstanceListener);
+        when(serviceDiscovery.getInstances(APP_NAME1)).thenReturn(instanceList1);
+        when(serviceDiscovery.getInstances(APP_NAME2)).thenReturn(instanceList2);
+        serviceDiscoveryRegistry.subscribeURLs(url, testServiceListener, multiApps);
 
-            assertEquals(2, serviceDiscoveryRegistry.getServiceListeners().size());
-            assertEquals(instanceListener, serviceDiscoveryRegistry.getServiceListeners().get(toStringKeys(singleApp)));
-            assertEquals(multiAppsInstanceListener, serviceDiscoveryRegistry.getServiceListeners().get(toStringKeys(multiApps)));
-            verify(testServiceListener, times(1)).addServiceListener(multiAppsInstanceListener);
-            verify(multiAppsInstanceListener, times(2)).onEvent(any());
-            verify(multiAppsInstanceListener, times(1)).addListenerAndNotify(any(), eq(testServiceListener));
-            verify(serviceDiscovery, times(1)).addServiceInstancesChangedListener(multiAppsInstanceListener);
-            ArgumentCaptor<List<URL>> captor = ArgumentCaptor.forClass(List.class);
-            verify(testServiceListener).notify(captor.capture());
-            assertEquals(urls, captor.getValue());
+        assertEquals(2, serviceDiscoveryRegistry.getServiceListeners().size());
+        assertEquals(instanceListener, serviceDiscoveryRegistry.getServiceListeners().get(toStringKeys(singleApp)));
+        assertEquals(multiAppsInstanceListener, serviceDiscoveryRegistry.getServiceListeners().get(toStringKeys(multiApps)));
+        verify(testServiceListener, times(1)).addServiceListener(multiAppsInstanceListener);
+        verify(multiAppsInstanceListener, times(2)).onEvent(any());
+        verify(multiAppsInstanceListener, times(1)).addListenerAndNotify(any(), eq(testServiceListener));
+        verify(serviceDiscovery, times(1)).addServiceInstancesChangedListener(multiAppsInstanceListener);
+        ArgumentCaptor<List<URL>> captor = ArgumentCaptor.forClass(List.class);
+        verify(testServiceListener).notify(captor.capture());
+        assertEquals(urls, captor.getValue());
 
-            // different interface mapping to the same apps
-            NotifyListener testServiceListener2 = mock(NotifyListener.class);
-            URL url2 = URL.valueOf("consumer://127.0.0.1/TestService2?interface=TestService1&check=false&protocol=tri");
-            serviceDiscoveryRegistry.subscribeURLs(url2, testServiceListener2, multiApps);
-            // check instance listeners not changed, methods not called
-            assertEquals(2, serviceDiscoveryRegistry.getServiceListeners().size());
-            assertEquals(multiAppsInstanceListener, serviceDiscoveryRegistry.getServiceListeners().get(toStringKeys(multiApps)));
-            verify(multiAppsInstanceListener, times(1)).addListenerAndNotify(any(), eq(testServiceListener));
-            // still called once, not executed this time
-            verify(serviceDiscovery, times(1)).addServiceInstancesChangedListener(multiAppsInstanceListener);
-            // check different protocol
-            Map<String, NotifyListener> serviceListeners = multiAppsInstanceListener.getServiceListeners();
-            assertEquals(2, serviceListeners.size());
-            String protocolServiceKey = url2.getServiceKey() + GROUP_CHAR_SEPARATOR + url2.getParameter(PROTOCOL_KEY, DUBBO);
-            assertEquals(testServiceListener2, serviceListeners.get(protocolServiceKey));
-        }
+        // different interface mapping to the same apps
+        NotifyListener testServiceListener2 = mock(NotifyListener.class);
+        URL url2 = URL.valueOf("consumer://127.0.0.1/TestService2?interface=TestService1&check=false&protocol=tri");
+        serviceDiscoveryRegistry.subscribeURLs(url2, testServiceListener2, multiApps);
+        // check instance listeners not changed, methods not called
+        assertEquals(2, serviceDiscoveryRegistry.getServiceListeners().size());
+        assertEquals(multiAppsInstanceListener, serviceDiscoveryRegistry.getServiceListeners().get(toStringKeys(multiApps)));
+        verify(multiAppsInstanceListener, times(1)).addListenerAndNotify(any(), eq(testServiceListener));
+        // still called once, not executed this time
+        verify(serviceDiscovery, times(1)).addServiceInstancesChangedListener(multiAppsInstanceListener);
+        // check different protocol
+        Map<String, NotifyListener> serviceListeners = multiAppsInstanceListener.getServiceListeners();
+        assertEquals(2, serviceListeners.size());
+        String protocolServiceKey = url2.getServiceKey() + GROUP_CHAR_SEPARATOR + url2.getParameter(PROTOCOL_KEY, DUBBO);
+        assertEquals(testServiceListener2, serviceListeners.get(protocolServiceKey));
     }
 
     /**
