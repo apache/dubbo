@@ -93,4 +93,8 @@ public interface Constants {
     String REGISTRY_RETRY_PERIOD_KEY = "retry.period";
 
     String SESSION_TIMEOUT_KEY = "session";
+
+    String NEED_REEXPORT = "need-reexport";
+
+    String ENABLE_CONFIGURATION_LISTEN = "enable-configuration-listen";
 }

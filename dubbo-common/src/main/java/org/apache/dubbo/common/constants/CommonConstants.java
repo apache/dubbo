@@ -389,6 +389,8 @@ public interface CommonConstants {
 
     String DEFAULT_VERSION = "0.0.0";
 
+    String CLASS_DESERIALIZE_OPEN_CHECK = "dubbo.security.serialize.openCheckClass";
+
     String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
 
     String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";

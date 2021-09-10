@@ -66,6 +66,31 @@ public class MockInvokerTest {
     }
 
     @Test
+    public void testGetDefaultObject() {
+        // test methodA in DemoServiceAMock
+        final Class<DemoServiceA> demoServiceAClass = DemoServiceA.class;
+        URL url = URL.valueOf("remote://1.2.3.4/" + demoServiceAClass.getName());
+        url = url.addParameter(MOCK_KEY, "force:true");
+        MockInvoker mockInvoker = new MockInvoker(url, demoServiceAClass);
+
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("methodA");
+        Assertions.assertEquals(new HashMap<>(),
+                mockInvoker.invoke(invocation).getObjectAttachments());
+
+        // test methodB in DemoServiceBMock
+        final Class<DemoServiceB> demoServiceBClass = DemoServiceB.class;
+        url = URL.valueOf("remote://1.2.3.4/" + demoServiceBClass.getName());
+        url = url.addParameter(MOCK_KEY, "force:true");
+        mockInvoker = new MockInvoker(url, demoServiceBClass);
+        invocation = new RpcInvocation();
+        invocation.setMethodName("methodB");
+        Assertions.assertEquals(new HashMap<>(),
+                mockInvoker.invoke(invocation).getObjectAttachments());
+    }
+
+
+    @Test
     public void testInvokeThrowsRpcException1() {
         URL url = URL.valueOf("remote://1.2.3.4/" + String.class.getName());
         MockInvoker mockInvoker = new MockInvoker(url, null);

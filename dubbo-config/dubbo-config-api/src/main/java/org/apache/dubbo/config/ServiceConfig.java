@@ -50,11 +50,6 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -83,7 +78,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_NAME_MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
@@ -92,8 +86,6 @@ import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
-import static org.apache.dubbo.config.Constants.MULTICAST;
-import static org.apache.dubbo.config.Constants.MULTIPLE;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
@@ -107,6 +99,8 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 
 public class ServiceConfig<T> extends ServiceConfigBase<T> {
+
+    private static final long serialVersionUID = -412700146501624375L;
 
     public static final Logger logger = LoggerFactory.getLogger(ServiceConfig.class);
 
@@ -596,37 +590,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
             if (isInvalidLocalHost(hostToBind)) {
                 anyhost = true;
-                try {
-                    logger.info("No valid ip found from environment, try to find valid host from DNS.");
-                    hostToBind = InetAddress.getLocalHost().getHostAddress();
-                } catch (UnknownHostException e) {
-                    logger.warn(e.getMessage(), e);
-                }
-                if (isInvalidLocalHost(hostToBind)) {
-                    if (CollectionUtils.isNotEmpty(registryURLs)) {
-                        for (URL registryURL : registryURLs) {
-                            if (MULTICAST.equalsIgnoreCase(registryURL.getParameter(REGISTRY_KEY))) {
-                                // skip multicast registry since we cannot connect to it via Socket
-                                continue;
-                            }
-                            if (MULTIPLE.equalsIgnoreCase(registryURL.getParameter("registry"))) {
-                                // skip, multiple-registry address is a fake ip
-                                continue;
-                            }
-                            try (Socket socket = new Socket()) {
-                                SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
-                                socket.connect(addr, 1000);
-                                hostToBind = socket.getLocalAddress().getHostAddress();
-                                break;
-                            } catch (Exception e) {
-                                logger.warn(e.getMessage(), e);
-                            }
-                        }
-                    }
-                    if (isInvalidLocalHost(hostToBind)) {
-                        hostToBind = getLocalHost();
-                    }
-                }
+                logger.info("No valid ip found from environment, try to get local host.");
+                hostToBind = getLocalHost();
             }
         }
 
