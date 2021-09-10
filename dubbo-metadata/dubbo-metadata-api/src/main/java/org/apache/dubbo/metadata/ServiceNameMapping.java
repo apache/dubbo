@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,7 +28,6 @@ import java.util.Set;
 
 import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 
@@ -51,16 +51,8 @@ public interface ServiceNameMapping {
      *
      * @return non-null {@link ServiceNameMapping}
      */
-    static ServiceNameMapping getDefaultExtension() {
-        return getExtensionLoader(ServiceNameMapping.class).getDefaultExtension();
-    }
-
     static ServiceNameMapping getDefaultExtension(ScopeModel scopeModel) {
-        if (scopeModel != null) {
-            return scopeModel.getDefaultExtension(ServiceNameMapping.class);
-        } else {
-            return getExtensionLoader(ServiceNameMapping.class).getDefaultExtension();
-        }
+        return ScopeModelUtil.getApplicationModel(scopeModel).getDefaultExtension(ServiceNameMapping.class);
     }
 
     static String buildMappingKey(URL url) {

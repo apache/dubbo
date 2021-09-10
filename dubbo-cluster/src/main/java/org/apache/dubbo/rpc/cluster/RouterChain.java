@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -71,8 +70,7 @@ public class RouterChain<T> {
 
     private List<StateRouter> builtinStateRouters = Collections.emptyList();
     private List<StateRouter> stateRouters = Collections.emptyList();
-    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-        .getDefaultExtension();
+    private final ExecutorRepository executorRepository;
 
     protected URL url;
 
@@ -90,8 +88,10 @@ public class RouterChain<T> {
     }
 
     private RouterChain(URL url) {
+        executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension();
         loopPool = executorRepository.nextExecutorExecutor();
-        List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class)
+        List<RouterFactory> extensionFactories = url.getOrDefaultApplicationModel().getExtensionLoader(RouterFactory.class)
             .getActivateExtension(url, ROUTER_KEY);
 
         List<Router> routers = extensionFactories.stream()
@@ -101,8 +101,8 @@ public class RouterChain<T> {
 
         initWithRouters(routers);
 
-        List<StateRouterFactory> extensionStateRouterFactories = ExtensionLoader.getExtensionLoader(
-            StateRouterFactory.class)
+        List<StateRouterFactory> extensionStateRouterFactories = url.getOrDefaultApplicationModel()
+            .getExtensionLoader(StateRouterFactory.class)
             .getActivateExtension(url, STATE_ROUTER_KEY);
 
         List<StateRouter> stateRouters = extensionStateRouterFactories.stream()

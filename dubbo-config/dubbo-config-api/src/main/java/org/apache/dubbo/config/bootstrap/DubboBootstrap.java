@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
@@ -29,7 +28,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -282,19 +280,6 @@ public final class DubboBootstrap {
         DubboShutdownHook.getDubboShutdownHook().register();
         ShutdownHookCallbacks.INSTANCE.addCallback(DubboBootstrap.this::destroy);
         cache = ReferenceConfigCache.newCache();
-
-        initInternalBeans();
-    }
-
-    /**
-     * TODO init beans module-self
-     */
-    private void initInternalBeans() {
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        beanFactory.registerBean(this);
-        beanFactory.registerBean(MetadataReportInstance.class);
-        beanFactory.registerBean(RemoteMetadataServiceImpl.class);
-        beanFactory.registerBean(FrameworkStatusReportService.class);
     }
 
     public ApplicationModel getApplicationModel() {
