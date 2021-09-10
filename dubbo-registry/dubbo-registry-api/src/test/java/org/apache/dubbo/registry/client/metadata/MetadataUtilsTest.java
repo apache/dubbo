@@ -27,10 +27,13 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +45,11 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
 
 public class MetadataUtilsTest {
+
+    @AfterEach
+    public void tearDown() throws IOException {
+        Mockito.framework().clearInlineMocks();
+    }
 
     @Test
     public void testComputeKey() {
