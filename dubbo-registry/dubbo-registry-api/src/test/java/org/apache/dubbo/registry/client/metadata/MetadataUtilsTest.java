@@ -95,6 +95,8 @@ public class MetadataUtilsTest {
         Invoker<Object> invoker = mock(Invoker.class);
         MetadataService metadataService = mock(MetadataService.class);
 
+        when(serviceInstance.getOrDefaultApplicationModel()).thenReturn(applicationModel);
+
         ExtensionLoader<Protocol> protocolExtensionLoader = mock(ExtensionLoader.class);
         when(protocolExtensionLoader.getAdaptiveExtension()).thenReturn(protocol);
 
@@ -119,6 +121,7 @@ public class MetadataUtilsTest {
         }
 
         MetadataUtils.destroyMetadataServiceProxy(serviceInstance);
+        applicationModel.destroy();
     }
 
 
@@ -173,6 +176,7 @@ public class MetadataUtilsTest {
 
         Assertions.assertEquals(0, MetadataUtils.getMetadataServiceProxies().size());
         Assertions.assertEquals(0, MetadataUtils.getMetadataServiceInvokers().size());
+        applicationModel.destroy();
     }
 
 
