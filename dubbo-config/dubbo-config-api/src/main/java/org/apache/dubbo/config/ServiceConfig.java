@@ -773,7 +773,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         Integer port = null;
         if (configPort != null && configPort.length() > 0) {
             try {
-                Integer intPort = Integer.parseInt(configPort);
+                int intPort = Integer.parseInt(configPort);
                 if (isInvalidPort(intPort)) {
                     throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
                 }
@@ -823,10 +823,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     public void addServiceListener(ServiceListener listener) {
         this.serviceListeners.add(listener);
-    }
-
-    public boolean removeServiceListener(ServiceListener listener) {
-        return this.serviceListeners.remove(listener);
     }
 
     protected void onExported() {
