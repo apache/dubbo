@@ -929,6 +929,7 @@ public class ReferenceConfigTest {
         Object result1 = callBean1.invoke(object1, requestClazzCustom2.newInstance());
 
         Assertions.assertEquals(resultClazzCustom3, result1.getClass());
+        Assertions.assertNotEquals(classLoader2, result1.getClass().getClassLoader());
         Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
 
         applicationModel.destroy();

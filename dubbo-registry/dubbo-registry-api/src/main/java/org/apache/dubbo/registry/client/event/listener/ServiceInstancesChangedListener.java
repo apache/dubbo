@@ -90,7 +90,7 @@ public class ServiceInstancesChangedListener {
         this.serviceUrls = new HashMap<>();
         this.revisionToMetadata = new HashMap<>();
         retryPermission = new Semaphore(1);
-        this.scheduler = ScopeModelUtil.getApplicationModel(serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel())
+        this.scheduler = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel())
             .getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
     }
 

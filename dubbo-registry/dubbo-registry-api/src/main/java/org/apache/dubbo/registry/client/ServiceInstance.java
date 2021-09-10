@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.SortedMap;
@@ -97,6 +98,7 @@ public interface ServiceInstance extends Serializable {
 
     ApplicationModel getApplicationModel();
 
+    @Transient
     default ApplicationModel getOrDefaultApplicationModel() {
         return ScopeModelUtil.getApplicationModel(getApplicationModel());
     }

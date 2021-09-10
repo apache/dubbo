@@ -132,6 +132,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         String desc = in.readUTF();
         setParameterTypesDesc(desc);
 
+        ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
                 CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
@@ -243,6 +244,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
         } finally {
+            Thread.currentThread().setContextClassLoader(originClassLoader);
             if (in instanceof Cleanable) {
                 ((Cleanable) in).cleanup();
             }
