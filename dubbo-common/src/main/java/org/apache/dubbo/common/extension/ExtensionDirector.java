@@ -130,6 +130,6 @@ public class ExtensionDirector implements ExtensionAccessor {
     }
 
     public void removeAllCachedLoader() {
-        extensionLoadersMap.clear();
+        // extensionLoadersMap.clear();
     }
 }
