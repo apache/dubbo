@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.report.identifier;
 
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.utils.PathUtils.buildPath;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_PATH_TAG;
 
 /**
