@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.filter.InvocationInterceptorBuilder;
 import org.apache.dubbo.rpc.cluster.interceptor.ClusterInterceptor;
@@ -54,9 +55,9 @@ public abstract class AbstractCluster implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-        // if (directory instanceof StaticDirectory) {
-        //     return doJoin(directory);
-        // }
+        if (directory instanceof StaticDirectory) {
+            return doJoin(directory);
+        }
         return buildClusterInterceptors(doJoin(directory));
     }
 

@@ -38,6 +38,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.directory.UrlStaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
@@ -469,48 +470,50 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void createInvokerForRemote() {
-        // if (urls.size() == 1) {
-        //     URL curUrl= urls.get(0);
-        //     invoker = protocolSPI.refer(interfaceClass,curUrl);
-        //     List<Invoker<?>> invokers = new ArrayList<>();
-        //     invokers.add(invoker);
-        //     invoker = Cluster.getCluster(Cluster.DEFAULT).join(new StaticDirectory(curUrl,invokers));
-        // } else {
-        List<Invoker<?>> invokers = new ArrayList<>();
-        URL registryUrl = null;
-        for (URL url : urls) {
-            // For multi-registry scenarios, it is not checked whether each referInvoker is available.
-            // Because this invoker may become available later.
-            invokers.add(protocolSPI.refer(interfaceClass, url));
-
-            if (UrlUtils.isRegistry(url)) {
-                // use last registry url
-                registryUrl = url;
+        if (urls.size() == 1) {
+            URL curUrl = urls.get(0);
+            invoker = protocolSPI.refer(interfaceClass,curUrl);
+            if (!UrlUtils.isRegistry(curUrl)){
+                List<Invoker<?>> invokers = new ArrayList<>();
+                invokers.add(invoker);
+                invoker = Cluster.getCluster(Cluster.DEFAULT).join(new UrlStaticDirectory(curUrl,invokers));
             }
-        }
-
-        if (registryUrl != null) {
-            // registry url is available
-            // for multi-subscription scenario, use 'zone-aware' policy by default
-            String cluster = registryUrl.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
-            // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker
-            // (RegistryDirectory, routing happens here) -> Invoker
-            invoker = Cluster.getCluster(cluster, false).join(new StaticDirectory(registryUrl, invokers));
         } else {
-            // not a registry url, must be direct invoke.
-            if (CollectionUtils.isEmpty(invokers)) {
-                throw new IllegalArgumentException("invokers == null");
+            List<Invoker<?>> invokers = new ArrayList<>();
+            URL registryUrl = null;
+            for (URL url : urls) {
+                // For multi-registry scenarios, it is not checked whether each referInvoker is available.
+                // Because this invoker may become available later.
+                invokers.add(protocolSPI.refer(interfaceClass, url));
+
+                if (UrlUtils.isRegistry(url)) {
+                    // use last registry url
+                    registryUrl = url;
+                }
             }
-            URL curUrl = invokers.get(0).getUrl();
-            String cluster = curUrl.getParameter(CLUSTER_KEY, Cluster.DEFAULT);
-            // ?
-            // (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY,
-            // ZoneAwareCluster.NAME) :
-            //     Cluster.DEFAULT)
-            // : Cluster.DEFAULT;
-            invoker = Cluster.getCluster(cluster, false).join(new StaticDirectory(curUrl, invokers));
+
+            if (registryUrl != null) {
+                // registry url is available
+                // for multi-subscription scenario, use 'zone-aware' policy by default
+                String cluster = registryUrl.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
+                // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker
+                // (RegistryDirectory, routing happens here) -> Invoker
+                invoker = Cluster.getCluster(cluster, false).join(new StaticDirectory(registryUrl, invokers));
+            } else {
+                // not a registry url, must be direct invoke.
+                if (CollectionUtils.isEmpty(invokers)) {
+                    throw new IllegalArgumentException("invokers == null");
+                }
+                URL curUrl = invokers.get(0).getUrl();
+                String cluster = curUrl.getParameter(CLUSTER_KEY, Cluster.DEFAULT);
+                // ?
+                // (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY,
+                // ZoneAwareCluster.NAME) :
+                //     Cluster.DEFAULT)
+                // : Cluster.DEFAULT;
+                invoker = Cluster.getCluster(cluster, false).join(new UrlStaticDirectory(curUrl, invokers));
+            }
         }
-        // }
     }
 
     private void checkInvokerAvailable() throws IllegalStateException {
