@@ -304,12 +304,16 @@ public class ApplicationModel extends ScopeModel {
     @Override
     public void addClassLoader(ClassLoader classLoader) {
         super.addClassLoader(classLoader);
-        environment.refreshClassLoaders();
+        if (environment != null) {
+            environment.refreshClassLoaders();
+        }
     }
 
     @Override
     public void removeClassLoader(ClassLoader classLoader) {
         super.removeClassLoader(classLoader);
-        environment.refreshClassLoaders();
+        if (environment != null) {
+            environment.refreshClassLoaders();
+        }
     }
 }

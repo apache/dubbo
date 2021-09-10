@@ -86,7 +86,7 @@ public class ConfigUtils {
      * @param def  Default extension list
      * @return result extension list
      */
-    public List<String> mergeValues(ExtensionDirector extensionDirector, Class<?> type, String cfg, List<String> def) {
+    public static List<String> mergeValues(ExtensionDirector extensionDirector, Class<?> type, String cfg, List<String> def) {
         List<String> defaults = new ArrayList<String>();
         if (def != null) {
             for (String name : def) {
