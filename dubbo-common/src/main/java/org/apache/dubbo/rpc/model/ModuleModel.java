@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Model of a service module
@@ -30,15 +31,22 @@ import java.util.Set;
 public class ModuleModel extends ScopeModel {
     private static final Logger logger = LoggerFactory.getLogger(ModuleModel.class);
 
-    private String id;
+    private static final AtomicLong index = new AtomicLong(0);
+    public static final String NAME = "ModuleModel";
+
     private final ApplicationModel applicationModel;
     private ModuleServiceRepository serviceRepository;
 
     public ModuleModel(ApplicationModel applicationModel) {
+        this(NAME + "-" + index.getAndIncrement(), applicationModel);
+    }
+
+    public ModuleModel(String name, ApplicationModel applicationModel) {
         super(applicationModel, ExtensionScope.MODULE);
         this.applicationModel = applicationModel;
         applicationModel.addModule(this);
         initialize();
+        this.modelName = name;
     }
 
     @Override
@@ -100,18 +108,5 @@ public class ModuleModel extends ScopeModel {
 
     public ModuleServiceRepository getServiceRepository() {
         return serviceRepository;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    @Override
-    public String toString() {
-        return "ModuleModel";
     }
 }

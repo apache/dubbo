@@ -31,8 +31,15 @@ import java.util.Set;
  */
 public class PropertiesConfiguration implements Configuration {
 
-    public PropertiesConfiguration(ApplicationModel applicationModel) {
+    private Properties properties;
+    private final ApplicationModel applicationModel;
 
+    public PropertiesConfiguration(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        refresh();
+    }
+
+    public void refresh() {
         ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = applicationModel.getExtensionLoader(OrderedPropertiesProvider.class);
         Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
         if (propertiesProviderNames == null || propertiesProviderNames.isEmpty()) {
@@ -49,22 +56,21 @@ public class PropertiesConfiguration implements Configuration {
         });
 
         //load the default properties
-        Properties properties = ConfigUtils.getProperties();
+        properties = ConfigUtils.getProperties(applicationModel.getClassLoaders());
 
         //override the properties.
         for (OrderedPropertiesProvider orderedPropertiesProvider :
-                orderedPropertiesProviders) {
+            orderedPropertiesProviders) {
             properties.putAll(orderedPropertiesProvider.initProperties());
         }
-
     }
 
     @Override
     public Object getInternalProperty(String key) {
-        return ConfigUtils.getProperty(key);
+        return properties.getProperty(key);
     }
 
     public Map<String, String> getProperties() {
-        return (Map) ConfigUtils.getProperties();
+        return (Map) ConfigUtils.getProperties(applicationModel.getClassLoaders());
     }
 }

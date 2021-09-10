@@ -51,6 +51,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
@@ -269,7 +270,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
              * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
              */
-            asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+            Object timeout = invocation.get(TIMEOUT_KEY);
+            if (timeout instanceof Integer) {
+                asyncResult.get((Integer) timeout, TimeUnit.MILLISECONDS);
+            } else {
+                asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+            }
         } catch (InterruptedException e) {
             throw new RpcException("Interrupted unexpectedly while waiting for remote result to return! method: " +
                     invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);

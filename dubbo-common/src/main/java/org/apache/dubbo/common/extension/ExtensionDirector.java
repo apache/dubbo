@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.extension;
 
+import org.apache.dubbo.rpc.model.ScopeModel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,10 +36,12 @@ public class ExtensionDirector implements ExtensionAccessor {
     private ExtensionDirector parent;
     private final ExtensionScope scope;
     private List<ExtensionPostProcessor> extensionPostProcessors = new ArrayList<>();
+    private ScopeModel scopeModel;
 
-    public ExtensionDirector(ExtensionDirector parent, ExtensionScope scope) {
+    public ExtensionDirector(ExtensionDirector parent, ExtensionScope scope, ScopeModel scopeModel) {
         this.parent = parent;
         this.scope = scope;
+        this.scopeModel = scopeModel;
     }
 
     public void addExtensionPostProcessor(ExtensionPostProcessor processor) {
@@ -107,7 +111,7 @@ public class ExtensionDirector implements ExtensionAccessor {
 
     private <T> ExtensionLoader<T> createExtensionLoader0(Class<T> type) {
         ExtensionLoader<T> loader;
-        extensionLoadersMap.putIfAbsent(type, new ExtensionLoader<T>(type, this));
+        extensionLoadersMap.putIfAbsent(type, new ExtensionLoader<T>(type, this, scopeModel));
         loader = (ExtensionLoader<T>) extensionLoadersMap.get(type);
         return loader;
     }
@@ -123,5 +127,9 @@ public class ExtensionDirector implements ExtensionAccessor {
 
     public ExtensionDirector getParent() {
         return parent;
+    }
+
+    public void removeAllCachedLoader() {
+        extensionLoadersMap.clear();
     }
 }
