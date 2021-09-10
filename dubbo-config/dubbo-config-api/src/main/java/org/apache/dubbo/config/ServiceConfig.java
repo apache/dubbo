@@ -303,8 +303,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         } else {
             try {
-                interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
-                        .getContextClassLoader());
+                if (getInterfaceClassLoader() != null) {
+                    interfaceClass = Class.forName(interfaceName, true, getInterfaceClassLoader());
+                } else {
+                    interfaceClass = Class.forName(interfaceName, true, Thread.currentThread().getContextClassLoader());
+                }
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
