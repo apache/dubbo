@@ -601,8 +601,13 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
             if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+                String applicationName = applicationModel.tryGetApplicationName();
+                if (applicationName == null) {
+                    // already removed
+                    continue;
+                }
                 applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                    .removeListener(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX,
+                    .removeListener(applicationName + CONFIGURATORS_SUFFIX,
                         getProviderConfigurationListener(applicationModel));
             }
         }
@@ -726,7 +731,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 return;
             }
             //The current, may have been merged many times
-            URL currentUrl = exporter.getInvoker().getUrl();
+            Invoker<?> exporterInvoker = exporter.getInvoker();
+            URL currentUrl = exporterInvoker == null ? null : exporterInvoker.getUrl();
             //Merged with this configuration
             URL newUrl = getConfiguredInvokerUrl(configurators, originUrl);
             newUrl = getConfiguredInvokerUrl(getProviderConfigurationListener(originUrl).getConfigurators(), newUrl);
