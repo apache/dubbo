@@ -147,6 +147,7 @@ public class MetadataUtilsTest {
 
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        when(serviceInstance.getOrDefaultApplicationModel()).thenReturn(applicationModel);
 
         Protocol protocol = mock(Protocol.class);
         ProxyFactory proxyFactory = mock(ProxyFactory.class);
