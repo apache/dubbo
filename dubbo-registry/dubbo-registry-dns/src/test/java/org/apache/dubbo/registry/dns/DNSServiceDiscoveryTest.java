@@ -154,8 +154,8 @@ public class DNSServiceDiscoveryTest {
         serviceInstances = dnsServiceDiscovery.getInstances("Test.Service.");
         assertEquals("c", serviceInstances.get(0).getMetadata("a"));
 
-        dnsServiceDiscovery.addServiceInstancesChangedListener(changedListener);
         ArgumentCaptor<ServiceInstancesChangedEvent> argument = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+        dnsServiceDiscovery.addServiceInstancesChangedListener(changedListener);
         Thread.sleep(1000);
         Mockito.verify(changedListener, Mockito.timeout(1000)).onEvent(argument.capture());
         assertEquals("c", argument.getValue().getServiceInstances().get(0).getMetadata("a"));

@@ -29,7 +29,6 @@ import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +37,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 
-public class MetadataServiceNameMapping extends AbstractServiceNameMapping implements ScopeModelAware {
+public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -47,8 +46,8 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping imple
     private static final int CAS_RETRY_TIMES = 6;
     protected MetadataReportInstance metadataReportInstance;
 
-    public MetadataServiceNameMapping() {
-        metadataReportInstance = ApplicationModel.defaultModel().getBeanFactory().getBean(MetadataReportInstance.class);
+    public MetadataServiceNameMapping(ApplicationModel applicationModel) {
+        metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
     }
 
     @Override
@@ -107,12 +106,6 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping imple
         String registryCluster = getRegistryCluster(url);
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
         return metadataReport.getServiceAppMapping(serviceInterface, mappingListener, url);
-    }
-
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
-        super.setApplicationModel(applicationModel);
-        metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
     }
 
     protected String getRegistryCluster(URL url) {

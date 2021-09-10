@@ -169,6 +169,12 @@ public class ApplicationModel extends ScopeModel {
 
         initFrameworkExts();
 
+        ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+        Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+        for (ScopeModelInitializer initializer : initializers) {
+            initializer.initializeApplicationModel(this);
+        }
+
         postProcessAfterCreated();
     }
 

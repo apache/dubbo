@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.xds.util;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.XdsCertificateSigner;
@@ -45,7 +44,7 @@ public class XdsChannel {
     protected XdsChannel(URL url) {
         ManagedChannel channel1 = null;
         try {
-            XdsCertificateSigner signer = ExtensionLoader.getExtensionLoader(XdsCertificateSigner.class).getExtension(url.getParameter("Signer","istio"));
+            XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class).getExtension(url.getParameter("Signer","istio"));
             XdsCertificateSigner.CertPair certPair = signer.request(url);
             SslContext context = GrpcSslContexts.forClient()
                     .trustManager(InsecureTrustManagerFactory.INSTANCE)

@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -34,6 +33,7 @@ import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.filter.InvocationInterceptorBuilder;
 import org.apache.dubbo.rpc.cluster.interceptor.ClusterInterceptor;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.List;
 
@@ -62,7 +62,7 @@ public abstract class AbstractCluster implements Cluster {
     }
 
     private <T> AbstractClusterInvoker<T> buildInterceptorInvoker(AbstractClusterInvoker<T> invoker) {
-        List<InvocationInterceptorBuilder> builders = ExtensionLoader.getExtensionLoader(InvocationInterceptorBuilder.class).getActivateExtensions();
+        List<InvocationInterceptorBuilder> builders = ScopeModelUtil.getApplicationModel(invoker.getUrl().getScopeModel()).getExtensionLoader(InvocationInterceptorBuilder.class).getActivateExtensions();
         if (CollectionUtils.isEmpty(builders)) {
             return invoker;
         }
@@ -75,7 +75,7 @@ public abstract class AbstractCluster implements Cluster {
         private ClusterInvoker<T> filterInvoker;
 
         public ClusterFilterInvoker(AbstractClusterInvoker<T> invoker) {
-            List<FilterChainBuilder> builders = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class).getActivateExtensions();
+            List<FilterChainBuilder> builders = ScopeModelUtil.getApplicationModel(invoker.getUrl().getScopeModel()).getExtensionLoader(FilterChainBuilder.class).getActivateExtensions();
             if (CollectionUtils.isEmpty(builders)) {
                 filterInvoker = invoker;
             } else {
@@ -176,7 +176,7 @@ public abstract class AbstractCluster implements Cluster {
 
     @Deprecated
     private <T> ClusterInvoker<T> build27xCompatibleClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker, AbstractClusterInvoker<T> last) {
-        List<ClusterInterceptor> interceptors = ExtensionLoader.getExtensionLoader(ClusterInterceptor.class).getActivateExtensions();
+        List<ClusterInterceptor> interceptors = ScopeModelUtil.getApplicationModel(clusterInvoker.getUrl().getScopeModel()).getExtensionLoader(ClusterInterceptor.class).getActivateExtensions();
 
         if (!interceptors.isEmpty()) {
             for (int i = interceptors.size() - 1; i >= 0; i--) {

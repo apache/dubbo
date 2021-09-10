@@ -55,7 +55,7 @@ public class MetadataUtils {
         WritableMetadataService.getDefaultExtension(url.getScopeModel()).publishServiceDefinition(url);
         // send to remote
         if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(url.getParameter(METADATA_KEY))) {
-            getRemoteMetadataService(ScopeModelUtil.getApplicationModel(url.getScopeModel())).publishServiceDefinition(url);
+            getRemoteMetadataService(url.getOrDefaultApplicationModel()).publishServiceDefinition(url);
         }
     }
 
@@ -79,8 +79,8 @@ public class MetadataUtils {
 
     private static MetadataService referProxy(String key, ServiceInstance instance) {
         MetadataServiceURLBuilder builder = null;
-        ExtensionLoader<MetadataServiceURLBuilder> loader
-                = ExtensionLoader.getExtensionLoader(MetadataServiceURLBuilder.class);
+        ExtensionLoader<MetadataServiceURLBuilder> loader = instance.getOrDefaultApplicationModel()
+            .getExtensionLoader(MetadataServiceURLBuilder.class);
 
         Map<String, String> metadata = instance.getMetadata();
         // METADATA_SERVICE_URLS_PROPERTY_NAME is a unique key exists only on instances of spring-cloud-alibaba.

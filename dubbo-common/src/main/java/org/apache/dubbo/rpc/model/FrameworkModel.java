@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -23,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
@@ -50,6 +52,13 @@ public class FrameworkModel extends ScopeModel {
         super.initialize();
         serviceRepository = new FrameworkServiceRepository(this);
         allInstances.add(this);
+
+        ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+        Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+        for (ScopeModelInitializer initializer : initializers) {
+            initializer.initializeFrameworkModel(this);
+        }
+
 
         postProcessAfterCreated();
     }

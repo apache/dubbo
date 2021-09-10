@@ -129,6 +129,7 @@ public class ExtensionLoader<T> {
     private List<ExtensionPostProcessor> extensionPostProcessors;
     private InstantiationStrategy instantiationStrategy;
     private Environment environment;
+    private ActivateComparator activateComparator;
 
     public static void setLoadingStrategies(LoadingStrategy... strategies) {
         if (ArrayUtils.isNotEmpty(strategies)) {
@@ -167,6 +168,7 @@ public class ExtensionLoader<T> {
         initInstantiationStrategy();
         this.injector = (type == ExtensionInjector.class ? null : extensionDirector.getExtensionLoader(ExtensionInjector.class)
             .getAdaptiveExtension());
+        this.activateComparator = new ActivateComparator(extensionDirector);
     }
 
     private void initInstantiationStrategy() {
@@ -285,7 +287,7 @@ public class ExtensionLoader<T> {
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
         // solve the bug of using @SPI's wrapper method to report a null pointer exception.
-        Map<Class<?>, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
+        Map<Class<?>, T> activateExtensionsMap = new TreeMap<>(activateComparator);
         List<String> names = values == null ? new ArrayList<>(0) : asList(values);
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             if (cachedActivateGroups.size() == 0) {
@@ -364,7 +366,7 @@ public class ExtensionLoader<T> {
 
     public List<T> getActivateExtensions() {
         List<T> activateExtensions = new ArrayList<>();
-        TreeMap<Class<?>, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
+        TreeMap<Class<?>, T> activateExtensionsMap = new TreeMap<>(activateComparator);
         getExtensionClasses();
         for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
             String name = entry.getKey();

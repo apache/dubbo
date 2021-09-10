@@ -119,7 +119,7 @@ public class PortUnificationServer {
                         p.addLast("negotiation-ssl", new SslServerTlsHandler(getUrl()));
                     }
 
-                    final PortUnificationServerHandler puHandler = new PortUnificationServerHandler(protocols);
+                    final PortUnificationServerHandler puHandler = new PortUnificationServerHandler(url, protocols);
                     p.addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
                     p.addLast("negotiation-protocol", puHandler);
                     channelGroup = puHandler.getChannels();

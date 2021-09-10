@@ -211,7 +211,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
 
         // server context attachment
-        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = ExtensionLoader.getExtensionLoader(PenetrateAttachmentSelector.class);
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = invocation.getModuleModel().getExtensionLoader(PenetrateAttachmentSelector.class);
         Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
         if (CollectionUtils.isNotEmpty(supportedSelectors)) {
             // custom context attachment
@@ -293,7 +293,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     // -- Protected api
 
     protected ExecutorService getCallbackExecutor(URL url, Invocation inv) {
-        ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
+        ExecutorService sharedExecutor = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
                 .getDefaultExtension()
                 .getExecutor(url);
         if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
