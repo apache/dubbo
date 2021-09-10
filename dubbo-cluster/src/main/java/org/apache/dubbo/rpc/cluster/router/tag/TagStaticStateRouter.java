@@ -55,7 +55,8 @@ public class TagStaticStateRouter extends AbstractStateRouter {
     public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> routerCache, URL url, Invocation invocation)
         throws RpcException {
 
-        String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
+        // TagDynamicStateRouter route first, add noTag into invocation.
+        String tag = isNoTag(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
             invocation.getAttachment(TAG_KEY);
         if (StringUtils.isEmpty(tag)) {
             tag = NO_TAG;
@@ -67,6 +68,10 @@ public class TagStaticStateRouter extends AbstractStateRouter {
             return invokers;
         }
         return invokers.intersect(res, invokers.getUnmodifiableList());
+    }
+
+    private boolean isNoTag(String tag) {
+        return StringUtils.isEmpty(tag) || NO_TAG.equals(tag);
     }
 
     @Override
