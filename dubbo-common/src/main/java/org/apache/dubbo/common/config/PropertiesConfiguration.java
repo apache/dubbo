@@ -40,6 +40,9 @@ public class PropertiesConfiguration implements Configuration {
     }
 
     public void refresh() {
+        //load the default properties
+        properties = ConfigUtils.getProperties(applicationModel.getClassLoaders());
+
         ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = applicationModel.getExtensionLoader(OrderedPropertiesProvider.class);
         Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
         if (propertiesProviderNames == null || propertiesProviderNames.isEmpty()) {
@@ -55,8 +58,6 @@ public class PropertiesConfiguration implements Configuration {
             return b.priority() - a.priority();
         });
 
-        //load the default properties
-        properties = ConfigUtils.getProperties(applicationModel.getClassLoaders());
 
         //override the properties.
         for (OrderedPropertiesProvider orderedPropertiesProvider :
@@ -83,7 +84,12 @@ public class PropertiesConfiguration implements Configuration {
         return (String) properties.remove(key);
     }
 
+    @Deprecated
+    public void setProperties(Properties properties) {
+        this.properties = properties;
+    }
+
     public Map<String, String> getProperties() {
-        return (Map) ConfigUtils.getProperties(applicationModel.getClassLoaders());
+        return (Map) properties;
     }
 }
