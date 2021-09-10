@@ -187,7 +187,7 @@ public class ServiceDiscoveryRegistry implements Registry {
             }
         } else {
             if (logger.isWarnEnabled()) {
-                logger.info(format("The URL[%s] has been deregistered.", url.toString()));
+                logger.warn(format("The URL[%s] has been deregistered.", url.toString()));
             }
         }
     }
