@@ -549,7 +549,8 @@ public class RpcContext {
     /**
      * get String type attachments.
      *
-     * @apiNote Best to use {{@link #getObjectAttachments()}}
+     * Best to use {{@link #getObjectAttachments()}}
+     *
      * @return attachments
      */
     @Deprecated
@@ -797,7 +798,7 @@ public class RpcContext {
         return asyncContext.stop();
     }
 
-    public AsyncContext getAsyncContext() {
+    public AsyncContext getcontgetAsyncContext() {
         return asyncContext;
     }
 

@@ -11,9 +11,10 @@ public class MapUtils {
     /**
      * switch Map<String, Object> to Map<String, String>
      *
+     * If the value of the original Map is not of type String, then toString() of value will be called
+     *
      * @param originMap
      * @return
-     * @apiNote If the value of the original Map is not of type String, then toString() of value will be called
      */
     public static Map<String, String> objectToStringMap(Map<String, Object> originMap) {
         Map<String, String> newStrMap = new HashMap<>();
