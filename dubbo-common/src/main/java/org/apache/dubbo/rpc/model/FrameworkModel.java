@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
@@ -33,6 +34,8 @@ public class FrameworkModel extends ScopeModel {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(FrameworkModel.class);
 
+    private static final AtomicLong index = new AtomicLong(0);
+    public static final String NAME = "FrameworkModel";
     private volatile static FrameworkModel defaultInstance;
 
     private static List<FrameworkModel> allInstances = Collections.synchronizedList(new ArrayList<>());
@@ -45,6 +48,7 @@ public class FrameworkModel extends ScopeModel {
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
         initialize();
+        this.modelName = NAME + "-" + index.getAndIncrement();
     }
 
     @Override
@@ -119,10 +123,5 @@ public class FrameworkModel extends ScopeModel {
 
     public FrameworkServiceRepository getServiceRepository() {
         return serviceRepository;
-    }
-
-    @Override
-    public String toString() {
-        return "FrameworkModel";
     }
 }

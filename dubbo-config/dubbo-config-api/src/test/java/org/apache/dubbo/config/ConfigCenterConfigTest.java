@@ -18,7 +18,6 @@
 package org.apache.dubbo.config;
 
 
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -30,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -164,11 +162,10 @@ public class ConfigCenterConfigTest {
     @Test
     public void testOverrideConfigByDubboProps() {
 
+        ApplicationModel.defaultModel().getDefaultModule();
         // Config instance has id, dubbo props has no id
-        Map props = new HashMap();
-        props.put("dubbo.config-center.check", "false");
-        props.put("dubbo.config-center.timeout", "1234");
-        ConfigUtils.getProperties().putAll(props);
+        ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-center.check", "false");
+        ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-center.timeout", "1234");
 
         try {
             // Config instance has id
@@ -186,7 +183,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(3000L, configCenter.getTimeout());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
-            props.keySet().forEach(ConfigUtils.getProperties()::remove);
+            ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().refresh();
         }
     }
 
@@ -221,11 +218,10 @@ public class ConfigCenterConfigTest {
     @Test
     public void testOverrideConfigByDubboPropsWithId() {
 
+        ApplicationModel.defaultModel().getDefaultModule();
         // Config instance has id, dubbo props has id
-        Map props = new HashMap();
-        props.put("dubbo.config-centers.configcenterA.check", "false");
-        props.put("dubbo.config-centers.configcenterA.timeout", "1234");
-        ConfigUtils.getProperties().putAll(props);
+        ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-centers.configcenterA.check", "false");
+        ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-centers.configcenterA.timeout", "1234");
 
         try {
             // Config instance has id
@@ -244,7 +240,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(3000L, configCenter.getTimeout());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
-            props.keySet().forEach(ConfigUtils.getProperties()::remove);
+            ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().refresh();
         }
     }
 

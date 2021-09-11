@@ -31,7 +31,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -247,7 +246,6 @@ public final class DubboBootstrap {
      */
     @Deprecated
     public static void reset(boolean destroy) {
-        ConfigUtils.setProperties(null);
         DubboBootstrap.ignoreConfigState = true;
         if (destroy) {
             if (instance != null) {
@@ -1061,8 +1059,8 @@ public final class DubboBootstrap {
                 try {
                     // add default name config (same as id), e.g. dubbo.protocols.rest.port=1234
                     key = DUBBO + "." + AbstractConfig.getPluralTagName(cls) + "." + id + ".name";
-                    if (ConfigUtils.getProperties().getProperty(key) == null) {
-                        ConfigUtils.getProperties().setProperty(key, id);
+                    if (applicationModel.getApplicationEnvironment().getPropertiesConfiguration().getProperty(key) == null) {
+                        applicationModel.getApplicationEnvironment().getPropertiesConfiguration().setProperty(key, id);
                         addDefaultNameConfig = true;
                     }
 
@@ -1073,7 +1071,7 @@ public final class DubboBootstrap {
                     throw new IllegalStateException("load config failed, id: " + id + ", type:" + cls.getSimpleName());
                 } finally {
                     if (addDefaultNameConfig && key != null) {
-                        ConfigUtils.getProperties().remove(key);
+                        applicationModel.getApplicationEnvironment().getPropertiesConfiguration().remove(key);
                     }
                 }
             }
