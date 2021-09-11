@@ -135,14 +135,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private DubboBootstrap bootstrap;
 
-    private transient volatile AtomicBoolean initialized = new AtomicBoolean(false);
+    private final transient AtomicBoolean initialized = new AtomicBoolean(false);
 
     /**
      * The exported services
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
-    private List<ServiceListener> serviceListeners = new ArrayList<>();
+    private final List<ServiceListener> serviceListeners = new ArrayList<>();
     private WritableMetadataService localMetadataService;
 
     public ServiceConfig() {
