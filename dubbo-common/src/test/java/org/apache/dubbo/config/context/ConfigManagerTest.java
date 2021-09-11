@@ -216,8 +216,8 @@ public class ConfigManagerTest {
     @Test
     public void testAddConfig() {
         configManager.addConfig(new ApplicationConfig("ConfigManagerTest"));
-        configManager.addConfig(new ProviderConfig());
         configManager.addConfig(new ProtocolConfig());
+        moduleConfigManager.addConfig(new ProviderConfig());
 
         assertTrue(configManager.getApplication().isPresent());
         assertFalse(configManager.getProtocols().isEmpty());
