@@ -547,8 +547,9 @@ public class RpcContext {
     }
 
     /**
-     * get attachments.
+     * get String type attachments.
      *
+     * @apiNote Best to use {{@link #getObjectAttachments()}}
      * @return attachments
      */
     @Deprecated
