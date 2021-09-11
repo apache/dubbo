@@ -29,7 +29,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.bootstrap.ModuleDeployer;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
@@ -40,9 +40,11 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -133,8 +135,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private transient volatile boolean destroyed;
 
-    private DubboBootstrap bootstrap;
-
     /**
      * The service names that the Dubbo interface subscribed.
      *
@@ -151,8 +151,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @Override
-    protected void postProcessAfterScopeModelChanged() {
-        super.postProcessAfterScopeModelChanged();
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
 
         protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -209,6 +209,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @Override
     public synchronized void destroy() {
+        super.destroy();
         if (destroyed) {
             return;
         }
@@ -224,6 +225,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         ref = null;
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         repository.unregisterConsumer(consumerModel);
+        getScopeModel().getConfigManager().removeConfig(this);
     }
 
     protected synchronized void init() {
@@ -231,19 +233,17 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             return;
         }
 
-        // Using DubboBootstrap API will associate bootstrap when registering reference.
-        // Loading by Spring context will associate bootstrap in afterPropertiesSet() method.
-        // Initializing bootstrap here only for compatible with old API usages.
-        if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
-            bootstrap.initialize();
-            bootstrap.reference(this);
+        if (getScopeModel() == null) {
+            setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
         }
 
-        // check bootstrap state
-        if (!bootstrap.isInitialized()) {
-            throw new IllegalStateException("DubboBootstrap is not initialized");
-        }
+        // prepare application for reference
+        ModuleDeployer.get(getScopeModel()).prepare();
+
+        // check state
+//        if (!bootstrap.isInitialized()) {
+//            throw new IllegalStateException("DubboBootstrap is not initialized");
+//        }
 
         if (!this.isRefreshed()) {
             this.refresh();
@@ -599,14 +599,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             isJvmRefer = isInjvm();
         }
         return isJvmRefer;
-    }
-
-    public DubboBootstrap getBootstrap() {
-        return bootstrap;
-    }
-
-    public void setBootstrap(DubboBootstrap bootstrap) {
-        this.bootstrap = bootstrap;
     }
 
     private void postProcessConfig() {

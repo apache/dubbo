@@ -19,7 +19,9 @@ package org.apache.dubbo.config.spring.context;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Dubbo spring initialization context object
@@ -27,6 +29,10 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 public class DubboSpringInitializationContext {
 
     private BeanDefinitionRegistry registry;
+
+    private ConfigurableListableBeanFactory beanFactory;
+
+    private ApplicationContext applicationContext;
 
     private ModuleModel moduleModel;
 
@@ -43,10 +49,23 @@ public class DubboSpringInitializationContext {
     }
 
     void setRegistry(BeanDefinitionRegistry registry) {
-        if (bound) {
-            throw new IllegalStateException("Cannot change DubboBootstrap after bound context");
-        }
         this.registry = registry;
+    }
+
+    public ConfigurableListableBeanFactory getBeanFactory() {
+        return beanFactory;
+    }
+
+    void setBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
+
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+
+    void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
     public ApplicationModel getApplicationModel() {
@@ -57,6 +76,12 @@ public class DubboSpringInitializationContext {
         return moduleModel;
     }
 
+    /**
+     * Change the binding ModuleModel, the ModuleModel and DubboBootstrap must be matched.
+     *
+     * @see #setDubboBootstrap(DubboBootstrap)
+     * @param moduleModel
+     */
     public void setModuleModel(ModuleModel moduleModel) {
         if (bound) {
             throw new IllegalStateException("Cannot change ModuleModel after bound context");
@@ -68,6 +93,14 @@ public class DubboSpringInitializationContext {
         return dubboBootstrap;
     }
 
+    /**
+     * Change the binding DubboBootstrap instance, the ModuleModel and DubboBootstrap must be matched.
+     * <p></p>
+     * By default, DubboBoostrap is created using the ApplicationModel in which the ModuleModel resides.
+     *
+     * @see #setModuleModel(ModuleModel)
+     * @param dubboBootstrap
+     */
     public void setDubboBootstrap(DubboBootstrap dubboBootstrap) {
         if (bound) {
             throw new IllegalStateException("Cannot change DubboBootstrap after bound context");

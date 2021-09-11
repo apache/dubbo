@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -119,7 +118,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getApplicationConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -149,7 +148,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getApplicationConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -182,7 +181,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getApplicationConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(true, consumerConfig.isCheck());
@@ -212,7 +211,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getApplicationConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(false, consumerConfig.isCheck());

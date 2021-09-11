@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
@@ -40,8 +41,6 @@ import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
-import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -155,7 +154,7 @@ public class DubboBootstrapTest {
 
         // load configs from props
         DubboBootstrap.getInstance()
-                .initialize();
+            .initialize();
 
         serviceConfig.refresh();
 
@@ -260,9 +259,15 @@ public class DubboBootstrapTest {
         Assertions.assertTrue(bootstrap.isStarted());
         Assertions.assertFalse(bootstrap.isShutdown());
 
-        Assertions.assertNotNull(bootstrap.serviceInstance);
-        Assertions.assertTrue(bootstrap.exportedServices.size() > 0);
-        Assertions.assertNotNull(bootstrap.asyncMetadataFuture);
+        ApplicationModel applicationModel = bootstrap.getApplicationModel();
+        ApplicationDeployer applicationDeployer = getApplicationDeployer(applicationModel);
+        Assertions.assertNotNull(applicationDeployer.serviceInstance);
+        Assertions.assertNotNull(applicationDeployer.asyncMetadataFuture);
+        Assertions.assertTrue(applicationModel.getDefaultModule().getServiceRepository().getExportedServices().size() > 0);
+    }
+
+    private ApplicationDeployer getApplicationDeployer(ApplicationModel applicationModel) {
+        return ApplicationDeployer.get(applicationModel);
     }
 
     @Test
@@ -329,7 +334,8 @@ public class DubboBootstrapTest {
     }
 
     private void assertMetadataService(DubboBootstrap bootstrap, int availablePort, boolean shouldReport) {
-        Assertions.assertTrue(bootstrap.metadataServiceExporter.isExported());
+        ApplicationDeployer applicationDeployer = getApplicationDeployer(bootstrap.getApplicationModel());
+        Assertions.assertTrue(applicationDeployer.metadataServiceExporter.isExported());
         DubboProtocol protocol = DubboProtocol.getDubboProtocol(bootstrap.getApplicationModel());
         Map<String, Exporter<?>> exporters = protocol.getExporterMap();
         Assertions.assertEquals(2, exporters.size());

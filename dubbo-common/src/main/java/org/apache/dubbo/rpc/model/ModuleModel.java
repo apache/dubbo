@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 
 import java.util.List;
 
@@ -32,6 +33,8 @@ public class ModuleModel extends ScopeModel {
     private String id;
     private final ApplicationModel applicationModel;
     private ModuleServiceRepository serviceRepository;
+    private ModuleConfigManager moduleConfigManager;
+
 
     public ModuleModel(ApplicationModel applicationModel) {
         super(applicationModel, ExtensionScope.MODULE);
@@ -44,6 +47,8 @@ public class ModuleModel extends ScopeModel {
     protected void initialize() {
         super.initialize();
         this.serviceRepository = new ModuleServiceRepository(this);
+        this.moduleConfigManager = new ModuleConfigManager(this);
+        this.moduleConfigManager.initialize();
         postProcessAfterCreated();
     }
 
@@ -92,6 +97,10 @@ public class ModuleModel extends ScopeModel {
 
     public ModuleServiceRepository getServiceRepository() {
         return serviceRepository;
+    }
+
+    public ModuleConfigManager getConfigManager() {
+        return moduleConfigManager;
     }
 
     public String getId() {

@@ -27,6 +27,7 @@ import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registrycenter.RegistryCenter;
@@ -40,7 +41,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -704,6 +704,8 @@ public class ReferenceConfigTest {
     @Test
     public void testLargeReferences() throws InterruptedException {
         int amount = 10000;
+        ModuleConfigManager configManager = DubboBootstrap.getInstance().getApplicationModel().getDefaultModule().getConfigManager();
+
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("test-app");
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
@@ -712,9 +714,9 @@ public class ReferenceConfigTest {
         configCenterConfig.setAddress("diamond://");
 
         testInitReferences(0, amount, applicationConfig, metadataReportConfig, configCenterConfig);
-        ApplicationModel.defaultModel().getApplicationConfigManager().clear();
+        configManager.clear();
         testInitReferences(0, 1, applicationConfig, metadataReportConfig, configCenterConfig);
-        ApplicationModel.defaultModel().getApplicationConfigManager().clear();
+        configManager.clear();
 
         long t1 = System.currentTimeMillis();
         int nThreads = 8;
@@ -738,7 +740,7 @@ public class ReferenceConfigTest {
         long t2 = System.currentTimeMillis();
         long cost = t2 - t1;
         System.out.println("Init large references cost: " + cost + "ms");
-        Assertions.assertEquals(amount, DubboBootstrap.getInstance().getConfigManager().getReferences().size());
+        Assertions.assertEquals(amount, configManager.getReferences().size());
         Assertions.assertTrue(cost < 1000, "Init large references too slowly: " + cost);
 
         //test equals
@@ -748,7 +750,7 @@ public class ReferenceConfigTest {
 
     private void testSearchReferences() {
         long t1 = System.currentTimeMillis();
-        Collection<ReferenceConfigBase<?>> references = DubboBootstrap.getInstance().getConfigManager().getReferences();
+        Collection<ReferenceConfigBase<?>> references = DubboBootstrap.getInstance().getApplicationModel().getDefaultModule().getConfigManager().getReferences();
         List<ReferenceConfigBase<?>> results = references.stream().filter(rc -> rc.equals(references.iterator().next()))
             .collect(Collectors.toList());
         long t2 = System.currentTimeMillis();
@@ -801,7 +803,7 @@ public class ReferenceConfigTest {
     public void testDifferentClassLoader() throws Exception {
         ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
         ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
-        applicationConfig.getConfigManager().setApplication(applicationConfig);
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
         ModuleModel moduleModel = new ModuleModel(applicationModel);
 
         DemoService demoService = new DemoServiceImpl();

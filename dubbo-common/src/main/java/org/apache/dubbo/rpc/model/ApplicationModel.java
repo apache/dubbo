@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * {@link ExtensionLoader}, {@code DubboBootstrap} and this class are at present designed to be
@@ -63,6 +64,10 @@ public class ApplicationModel extends ScopeModel {
 
     private volatile ModuleModel defaultModule;
 
+    // internal module index is 0, default module index is 1
+    private AtomicInteger moduleIndex = new AtomicInteger(-1);
+
+    private String id;
 
     // --------- static methods ----------//
 
@@ -252,15 +257,16 @@ public class ApplicationModel extends ScopeModel {
         return getCurrentConfig().getName();
     }
 
-    synchronized void addModule(ModuleModel model) {
-        if (!this.moduleModels.contains(model)) {
-            this.moduleModels.add(model);
+    synchronized void addModule(ModuleModel moduleModel) {
+        if (!this.moduleModels.contains(moduleModel)) {
+            this.moduleModels.add(moduleModel);
+            moduleModel.setId(this.getId() + "-" + moduleIndex.incrementAndGet());
         }
     }
 
-    synchronized void removeModule(ModuleModel model) {
-        this.moduleModels.remove(model);
-        if (model == defaultModule) {
+    synchronized void removeModule(ModuleModel moduleModel) {
+        this.moduleModels.remove(moduleModel);
+        if (moduleModel == defaultModule) {
             defaultModule = findDefaultModule();
         }
         if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
@@ -311,6 +317,14 @@ public class ApplicationModel extends ScopeModel {
     @Deprecated
     public void setServiceRepository(ServiceRepository serviceRepository) {
         this.serviceRepository = serviceRepository;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
 }

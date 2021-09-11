@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -115,6 +116,10 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         if (!(scopeModel instanceof ModuleModel)) {
             throw new IllegalArgumentException("Invalid scope model, expect to be a ModuleModel but got: " + scopeModel);
         }
+    }
+
+    protected ModuleConfigManager getModuleConfigManager() {
+        return getScopeModel().getConfigManager();
     }
 
     public Integer getForks() {

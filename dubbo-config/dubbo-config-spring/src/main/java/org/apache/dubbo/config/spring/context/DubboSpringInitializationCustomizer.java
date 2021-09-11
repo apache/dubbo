@@ -21,12 +21,12 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
-import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
+import static org.apache.dubbo.common.extension.ExtensionScope.FRAMEWORK;
 
 /**
  * Custom dubbo spring initialization
  */
-@SPI(scope = APPLICATION)
+@SPI(scope = FRAMEWORK)
 public interface DubboSpringInitializationCustomizer {
 
     /**

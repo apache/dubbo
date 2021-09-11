@@ -30,6 +30,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.action.DemoActionByAnnotation;
 import org.apache.dubbo.config.spring.action.DemoActionBySetter;
 import org.apache.dubbo.config.spring.annotation.consumer.AnnotationAction;
@@ -824,7 +825,8 @@ public class ConfigTest {
             // set default value of check
             assertEquals(false, reference.shouldCheck());
 
-            ConsumerConfig defaultConsumer = ApplicationModel.defaultModel().getApplicationConfigManager().getDefaultConsumer().get();
+            ModuleConfigManager moduleConfigManager = ApplicationModel.defaultModel().getDefaultModule().getConfigManager();
+            ConsumerConfig defaultConsumer = moduleConfigManager.getDefaultConsumer().get();
             assertEquals(1234, defaultConsumer.getTimeout());
             assertEquals(false, defaultConsumer.isCheck());
         } finally {

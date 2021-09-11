@@ -14,17 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.bootstrap;
+package org.apache.dubbo.config.context;
 
-import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.AbstractConfig;
 
-/**
- * Mode of which of DubboBootstrap lifecycle being takeover
- * SPRING: will be controlled by spring context
- * MANUAL: will be controlled by users, after all services init, should call {@link DubboBootstrap#start()} to init app-level env
- * AUTO: env will be init once {@link ServiceConfig#export()} finished
- * SERVLET: will be controlled by java servlet container
- */
-public enum BootstrapTakeoverMode {
-    SPRING, MANUAL, AUTO, SERVLET
+public interface ConfigValidator {
+
+    void validate(AbstractConfig config);
+
 }

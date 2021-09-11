@@ -14,17 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.bootstrap;
+package org.apache.dubbo.config.utils;
 
-import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
 
-/**
- * Mode of which of DubboBootstrap lifecycle being takeover
- * SPRING: will be controlled by spring context
- * MANUAL: will be controlled by users, after all services init, should call {@link DubboBootstrap#start()} to init app-level env
- * AUTO: env will be init once {@link ServiceConfig#export()} finished
- * SERVLET: will be controlled by java servlet container
- */
-public enum BootstrapTakeoverMode {
-    SPRING, MANUAL, AUTO, SERVLET
+import java.util.List;
+
+public interface ReferenceCache {
+    @SuppressWarnings("unchecked")
+    <T> T get(ReferenceConfigBase<T> referenceConfig);
+
+    @SuppressWarnings("unchecked")
+    <T> T get(String key, Class<T> type);
+
+    @SuppressWarnings("unchecked")
+    <T> T get(String key);
+
+    @SuppressWarnings("unchecked")
+    <T> List<T> getAll(Class<T> type);
+
+    @SuppressWarnings("unchecked")
+    <T> T get(Class<T> type);
+
+    void destroy(String key, Class<?> type);
+
+    void destroy(Class<?> type);
+
+    <T> void destroy(ReferenceConfigBase<T> referenceConfig);
+
+    void destroyAll();
 }

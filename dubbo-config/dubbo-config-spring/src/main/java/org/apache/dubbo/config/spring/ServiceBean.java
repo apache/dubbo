@@ -21,7 +21,6 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.context.DubboSpringInitializationContext;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
-import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.springframework.aop.support.AopUtils;
@@ -65,8 +64,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        //TODO remove SpringExtensionInjector.addApplicationContext();
-        SpringExtensionInjector.addApplicationContext(applicationContext);
     }
 
     @Override

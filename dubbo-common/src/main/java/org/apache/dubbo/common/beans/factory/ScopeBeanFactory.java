@@ -76,7 +76,7 @@ public class ScopeBeanFactory {
         try {
             instance = instantiationStrategy.instantiate(clazz);
         } catch (Throwable e) {
-            throw new ScopeBeanException("create bean instance failed, type=" + clazz.getName());
+            throw new ScopeBeanException("create bean instance failed, type=" + clazz.getName(), e);
         }
         registerBean(name, instance);
         return instance;
@@ -101,11 +101,11 @@ public class ScopeBeanFactory {
         registeredBeanInfos.add(new BeanInfo(name, bean));
     }
 
-    public <T> T registerBeanIfAbsent(Class<T> type) {
-        return registerBeanIfAbsent(null, type);
+    public <T> T getOrRegisterBean(Class<T> type) {
+        return getOrRegisterBean(null, type);
     }
 
-    public <T> T registerBeanIfAbsent(String name, Class<T> type) {
+    public <T> T getOrRegisterBean(String name, Class<T> type) {
         T bean = getBean(name, type);
         if (bean == null) {
             bean = registerBean(name, type);
@@ -113,11 +113,11 @@ public class ScopeBeanFactory {
         return bean;
     }
 
-    public <T> T registerBeanIfAbsent(Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
-        return registerBeanIfAbsent(null, type, mappingFunction);
+    public <T> T getOrRegisterBean(Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
+        return getOrRegisterBean(null, type, mappingFunction);
     }
 
-    public <T> T registerBeanIfAbsent(String name, Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
+    public <T> T getOrRegisterBean(String name, Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
         T bean = getBean(name, type);
         if (bean == null) {
             //TODO add lock for type
@@ -177,16 +177,23 @@ public class ScopeBeanFactory {
             return null;
         }
         List<BeanInfo> candidates = null;
+        BeanInfo firstCandidate = null;
         for (BeanInfo beanInfo : registeredBeanInfos) {
             // if required bean type is same class/superclass/interface of the registered bean
             if (type.isAssignableFrom(beanInfo.instance.getClass())) {
                 if (StringUtils.isEquals(beanInfo.name, name)) {
                     return (T) beanInfo.instance;
                 } else {
-                    if (candidates == null) {
-                        candidates = new ArrayList<>();
+                    // optimize for only one matched bean
+                    if (firstCandidate == null) {
+                        firstCandidate = beanInfo;
+                    } else {
+                        if (candidates == null) {
+                            candidates = new ArrayList<>();
+                            candidates.add(firstCandidate);
+                        }
+                        candidates.add(beanInfo);
                     }
-                    candidates.add(beanInfo);
                 }
             }
         }
@@ -199,6 +206,8 @@ public class ScopeBeanFactory {
                 List<String> candidateBeanNames = candidates.stream().map(beanInfo -> beanInfo.name).collect(Collectors.toList());
                 throw new ScopeBeanException("expected single matching bean but found " + candidates.size() + " candidates for type [" + type.getName() + "]: " + candidateBeanNames);
             }
+        } else if (firstCandidate != null) {
+            return (T) firstCandidate.instance;
         }
         return null;
     }

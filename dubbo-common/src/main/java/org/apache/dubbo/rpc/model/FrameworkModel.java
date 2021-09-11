@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
@@ -38,6 +39,8 @@ public class FrameworkModel extends ScopeModel {
     private List<ApplicationModel> applicationModels = Collections.synchronizedList(new ArrayList<>());
 
     private FrameworkServiceRepository serviceRepository;
+
+    private static AtomicInteger appIndex = new AtomicInteger();
 
 
     public FrameworkModel() {
@@ -67,6 +70,9 @@ public class FrameworkModel extends ScopeModel {
                 defaultInstance = null;
             }
         }
+        if (allInstances.isEmpty()) {
+            appIndex.set(0);
+        }
     }
 
     public static FrameworkModel defaultModel() {
@@ -88,15 +94,17 @@ public class FrameworkModel extends ScopeModel {
         for (FrameworkModel frameworkModel : new ArrayList<>(allInstances)) {
             frameworkModel.destroy();
         }
+        appIndex.set(0);
     }
 
     public ApplicationModel newApplication() {
         return new ApplicationModel(this);
     }
 
-    synchronized void addApplication(ApplicationModel model) {
-        if (!this.applicationModels.contains(model)) {
-            this.applicationModels.add(model);
+    synchronized void addApplication(ApplicationModel applicationModel) {
+        if (!this.applicationModels.contains(applicationModel)) {
+            this.applicationModels.add(applicationModel);
+            applicationModel.setId(appIndex.incrementAndGet()+"");
         }
     }
 

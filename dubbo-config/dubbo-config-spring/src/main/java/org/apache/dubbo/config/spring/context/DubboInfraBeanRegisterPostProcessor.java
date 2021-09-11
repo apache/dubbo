@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.config.spring.util.EnvironmentUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -85,6 +84,5 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        SpringExtensionInjector.addApplicationContext(applicationContext);
     }
 }

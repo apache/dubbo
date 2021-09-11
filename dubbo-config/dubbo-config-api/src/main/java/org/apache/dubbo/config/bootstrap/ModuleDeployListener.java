@@ -16,15 +16,26 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 /**
- * Mode of which of DubboBootstrap lifecycle being takeover
- * SPRING: will be controlled by spring context
- * MANUAL: will be controlled by users, after all services init, should call {@link DubboBootstrap#start()} to init app-level env
- * AUTO: env will be init once {@link ServiceConfig#export()} finished
- * SERVLET: will be controlled by java servlet container
+ * Module deploy listener
  */
-public enum BootstrapTakeoverMode {
-    SPRING, MANUAL, AUTO, SERVLET
+@SPI(scope = ExtensionScope.MODULE)
+public interface ModuleDeployListener {
+
+    /**
+     * Notify after module is started (export/refer services)
+     * @param moduleModel
+     */
+    void onModuleStarted(ModuleModel moduleModel);
+
+    /**
+     * Notify after module is stopped
+     * @param moduleModel
+     */
+    void onModuleStopped(ModuleModel moduleModel);
+
 }

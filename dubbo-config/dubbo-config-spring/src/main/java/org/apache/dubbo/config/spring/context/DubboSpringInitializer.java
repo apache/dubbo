@@ -16,14 +16,19 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.beans.factory.xml.XmlReaderContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.GenericApplicationContext;
 
 import java.util.Map;
@@ -37,7 +42,18 @@ public class DubboSpringInitializer {
 
     private static Map<BeanDefinitionRegistry, DubboSpringInitializationContext> contextMap = new ConcurrentHashMap<>();
 
-    public synchronized static void initialize(BeanDefinitionRegistry registry) {
+    private DubboSpringInitializer() {
+    }
+
+    public static void initialize(ParserContext parserContext) {
+        initialize(parserContext.getRegistry(), parserContext.getReaderContext());
+    }
+
+    public static void initialize(BeanDefinitionRegistry registry) {
+        initialize(registry, null);
+    }
+
+    public synchronized static void initialize(BeanDefinitionRegistry registry, XmlReaderContext readerContext) {
 
         if (contextMap.putIfAbsent(registry, new DubboSpringInitializationContext()) != null) {
             return;
@@ -45,34 +61,67 @@ public class DubboSpringInitializer {
 
         // prepare context and do customize
         DubboSpringInitializationContext context = contextMap.get(registry);
-        initContext(registry, context);
+
+        // find beanFactory and applicationContext
+        ConfigurableListableBeanFactory beanFactory = findBeanFactory(registry);
+        ApplicationContext applicationContext = findApplicationContext(registry, beanFactory);
+
+        // find applicationContext in XMLReaderContext (maybe load by ClassPathXmlApplicationContext)
+        if (applicationContext == null && readerContext != null) {
+            if (readerContext.getResourceLoader() instanceof ApplicationContext) {
+                applicationContext = (ApplicationContext) readerContext.getResourceLoader();
+            }
+        }
+
+        if (applicationContext == null) {
+            throw new IllegalStateException("Failed to initialize the Dubbo context, can not find Spring ApplicationContext from registry: " +
+                registry.getClass().getName() + ", readerContext: " + readerContext);
+        }
+
+        initContext(context, registry, beanFactory, applicationContext);
     }
 
-    private static void initContext(BeanDefinitionRegistry registry, DubboSpringInitializationContext context) {
-        context.setRegistry(registry);
 
-        DubboBootstrap bootstrap;
-        if (findContextForApplication(ApplicationModel.defaultModel()) == null) {
-            // first spring context use default application instance
-            bootstrap = DubboBootstrap.getInstance();
-        } else {
-            // create an new application instance for later spring context
-            bootstrap = DubboBootstrap.newInstance();
-        }
-        ModuleModel defaultModule = bootstrap.getApplicationModel().getDefaultModule();
-        context.setDubboBootstrap(bootstrap);
-        context.setModuleModel(defaultModule);
+    private static void initContext(DubboSpringInitializationContext context, BeanDefinitionRegistry registry,
+                                    ConfigurableListableBeanFactory beanFactory, ApplicationContext applicationContext) {
+        context.setRegistry(registry);
+        context.setApplicationContext(applicationContext);
 
         // customize context, you can change the bind module model via DubboSpringInitializationCustomizer SPI
         customize(context);
 
-        // update module
-        if (context.getModuleModel() != defaultModule) {
+        // init ApplicationModel
+        ApplicationModel applicationModel = context.getApplicationModel();
+        if (applicationModel == null) {
+            if (findContextForApplication(ApplicationModel.defaultModel()) == null) {
+                // first spring context use default application instance
+                applicationModel = ApplicationModel.defaultModel();
+            } else {
+                // create an new application instance for later spring context
+                applicationModel = FrameworkModel.defaultModel().newApplication();
+            }
 
+            // init ModuleModel
+            ModuleModel moduleModel = applicationModel.getDefaultModule();
+            context.setModuleModel(moduleModel);
+        }
+
+        // init SpringExtensionInjector
+        SpringExtensionInjector.get(context.getApplicationModel()).init(applicationContext);
+
+        // create DubboBootstrap
+        DubboBootstrap bootstrap = context.getDubboBootstrap();
+        if (bootstrap == null) {
+            if (applicationModel == ApplicationModel.defaultModel()) {
+                bootstrap = DubboBootstrap.getInstance();
+            } else {
+                bootstrap = DubboBootstrap.newInstance(applicationModel);
+            }
+            context.setDubboBootstrap(bootstrap);
         }
 
         // bind dubbo initialization context to spring context
-        bind(registry, context);
+        registerContextBeans(beanFactory, context);
 
         // mark context as bound
         context.markAsBound();
@@ -81,17 +130,31 @@ public class DubboSpringInitializer {
         DubboBeanUtils.registerCommonBeans(registry);
     }
 
-    private static void bind(BeanDefinitionRegistry registry, DubboSpringInitializationContext context) {
+    private static ConfigurableListableBeanFactory findBeanFactory(BeanDefinitionRegistry registry) {
         ConfigurableListableBeanFactory beanFactory = null;
-        if (registry instanceof DefaultListableBeanFactory) {
-            beanFactory = (DefaultListableBeanFactory) registry;
+        if (registry instanceof ConfigurableListableBeanFactory) {
+            beanFactory = (ConfigurableListableBeanFactory) registry;
         } else if (registry instanceof GenericApplicationContext) {
             GenericApplicationContext genericApplicationContext = (GenericApplicationContext) registry;
             beanFactory = genericApplicationContext.getBeanFactory();
         } else {
-            throw new IllegalStateException("Does not support binding to BeanDefinitionRegistry: " + registry.getClass().getName());
+            throw new IllegalStateException("Can not find Spring BeanFactory from registry: " + registry.getClass().getName());
         }
+        return beanFactory;
+    }
 
+    private static ApplicationContext findApplicationContext(BeanDefinitionRegistry registry, ConfigurableListableBeanFactory beanFactory) {
+        // GenericApplicationContext
+        if (registry instanceof ApplicationContext) {
+            return (ApplicationContext) registry;
+        }
+        // find by ApplicationContextAware
+        ApplicationContextAwareBean contextBean = new ApplicationContextAwareBean();
+        beanFactory.initializeBean(contextBean, ApplicationContextAwareBean.class.getSimpleName());
+        return contextBean.applicationContext;
+    }
+
+    private static void registerContextBeans(ConfigurableListableBeanFactory beanFactory, DubboSpringInitializationContext context) {
         // register singleton
         registerSingleton(beanFactory, context);
         registerSingleton(beanFactory, context.getApplicationModel());
@@ -112,18 +175,25 @@ public class DubboSpringInitializer {
         return null;
     }
 
-    private DubboSpringInitializer() {
-    }
-
     private static void customize(DubboSpringInitializationContext context) {
 
         // find initialization customizers
-        Set<DubboSpringInitializationCustomizer> customizers = ExtensionLoader
+        Set<DubboSpringInitializationCustomizer> customizers = FrameworkModel.defaultModel()
             .getExtensionLoader(DubboSpringInitializationCustomizer.class)
             .getSupportedExtensionInstances();
 
         for (DubboSpringInitializationCustomizer customizer : customizers) {
             customizer.customize(context);
+        }
+    }
+
+    static class ApplicationContextAwareBean implements ApplicationContextAware {
+
+        private ApplicationContext applicationContext;
+
+        @Override
+        public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+            this.applicationContext = applicationContext;
         }
     }
 }

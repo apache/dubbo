@@ -29,8 +29,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.bootstrap.ModuleDeployer;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -45,6 +44,7 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -137,8 +137,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private transient volatile boolean unexported;
 
-    private DubboBootstrap bootstrap;
-
     private transient volatile AtomicBoolean initialized = new AtomicBoolean(false);
 
     /**
@@ -157,8 +155,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     @Override
-    protected void postProcessAfterScopeModelChanged() {
-        super.postProcessAfterScopeModelChanged();
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
         protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         localMetadataService = this.getScopeModel().getDefaultExtension(WritableMetadataService.class);
@@ -201,42 +199,34 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         repository.unregisterProvider(providerModel);
     }
 
-    public void init() {
+    private void init() {
         if (this.initialized.compareAndSet(false, true)) {
-            if (this.bootstrap == null) {
-                this.bootstrap = DubboBootstrap.getInstance();
-                this.bootstrap.initialize();
-            }
-            this.bootstrap.service(this);
+
+            initServiceMetadata(provider);
+            serviceMetadata.setServiceType(getInterfaceClass());
+            serviceMetadata.setTarget(getRef());
+            serviceMetadata.generateServiceKey();
 
             // load ServiceListeners from extension
             ExtensionLoader<ServiceListener> extensionLoader = this.getExtensionLoader(ServiceListener.class);
             this.serviceListeners.addAll(extensionLoader.getSupportedExtensionInstances());
         }
-
-        initServiceMetadata(provider);
-        serviceMetadata.setServiceType(getInterfaceClass());
-        serviceMetadata.setTarget(getRef());
-        serviceMetadata.generateServiceKey();
     }
 
     @Override
     public synchronized void export() {
-        if (this.shouldExport() && !this.exported) {
+        if (this.exported) {
+            return;
+        }
+        // prepare for export
+        ModuleDeployer moduleDeployer = ModuleDeployer.get(getScopeModel());
+        moduleDeployer.prepare();
+
+        if (!this.isRefreshed()) {
+            this.refresh();
+        }
+        if (this.shouldExport()) {
             this.init();
-
-            // check bootstrap state
-            if (!bootstrap.isInitialized()) {
-                throw new IllegalStateException("DubboBootstrap is not initialized");
-            }
-
-            if (!this.isRefreshed()) {
-                this.refresh();
-            }
-
-            if (!shouldExport()) {
-                return;
-            }
 
             if (shouldDelay()) {
                 doDelayExport();
@@ -244,9 +234,27 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 doExport();
             }
 
-            if (this.bootstrap.getTakeoverMode() == BootstrapTakeoverMode.AUTO) {
-                this.bootstrap.start();
-            }
+            // notify export this service
+            moduleDeployer.afterExportService(this);
+        }
+    }
+
+    /**
+     * export service only, do not register application instance, for exporting services in batches by module
+     */
+    @Override
+    public synchronized void exportOnly() {
+        if (this.exported) {
+            return;
+        }
+        if (!this.isRefreshed()) {
+            this.refresh();
+        }
+        if (this.shouldExport()) {
+            this.init();
+
+            // just do export, delay export is done by caller
+            doExport();
         }
     }
 
@@ -837,14 +845,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
-    }
-
-    public DubboBootstrap getBootstrap() {
-        return bootstrap;
-    }
-
-    public void setBootstrap(DubboBootstrap bootstrap) {
-        this.bootstrap = bootstrap;
     }
 
     public void addServiceListener(ServiceListener listener) {
