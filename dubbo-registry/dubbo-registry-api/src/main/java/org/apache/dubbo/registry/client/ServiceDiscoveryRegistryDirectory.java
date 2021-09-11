@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -253,7 +254,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
             Map<String, Invoker<T>> oldUrlInvokerMap = null;
             if (this.urlInvokerMap != null) {
-                oldUrlInvokerMap = new HashMap<>();
+                oldUrlInvokerMap = new LinkedHashMap<>(this.urlInvokerMap.size());
                 this.urlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
