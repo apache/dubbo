@@ -33,6 +33,11 @@ public class MapUtils {
         return newStrMap;
     }
 
+    /**
+     * use {@link Object#toString()} switch Obj to String
+     * @param obj
+     * @return
+     */
     private static String convertToString(Object obj) {
         if (obj == null) {
             return null;
