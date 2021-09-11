@@ -73,10 +73,10 @@ public class DubboSpringInitializer {
             }
         }
 
-        if (applicationContext == null) {
-            throw new IllegalStateException("Failed to initialize the Dubbo context, can not find Spring ApplicationContext from registry: " +
-                registry.getClass().getName() + ", readerContext: " + readerContext);
-        }
+//        if (applicationContext == null) {
+//            throw new IllegalStateException("Failed to initialize the Dubbo context, can not find Spring ApplicationContext from registry: " +
+//                registry.getClass().getName() + ", readerContext: " + readerContext);
+//        }
 
         initContext(context, registry, beanFactory, applicationContext);
     }
@@ -107,6 +107,7 @@ public class DubboSpringInitializer {
         }
 
         // init SpringExtensionInjector
+        // maybe the applicationContext is null, we will reinitialize it again in DubboInfraBeanRegisterPostProcessor
         SpringExtensionInjector.get(context.getApplicationModel()).init(applicationContext);
 
         // create DubboBootstrap
