@@ -984,7 +984,7 @@ public class ReferenceConfigTest {
                 return loadedClass;
             } else {
                 try {
-                    if (name.equals("org.apache.dubbo.config.api.DemoService")) {
+                    if (name.equals("org.apache.dubbo.config.api.DemoService") || name.equals("org.apache.dubbo.config.api.DemoService$InnerClass")) {
                         Class<?> aClass = this.findClass(name);
                         if (resolve) {
                             this.resolveClass(aClass);
