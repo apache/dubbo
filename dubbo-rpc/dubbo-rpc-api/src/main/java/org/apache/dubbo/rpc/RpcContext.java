@@ -798,7 +798,7 @@ public class RpcContext {
         return asyncContext.stop();
     }
 
-    public AsyncContext getcontgetAsyncContext() {
+    public AsyncContext getAsyncContext() {
         return asyncContext;
     }
 
