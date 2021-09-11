@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.MapUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -552,7 +553,7 @@ public class RpcContext {
      */
     @Deprecated
     public Map<String, String> getAttachments() {
-        return new AttachmentsAdapter.ObjectToStringMap(this.getObjectAttachments());
+        return MapUtils.objectToStringMap(this.getObjectAttachments());
     }
 
     /**
