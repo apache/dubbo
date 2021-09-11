@@ -51,6 +51,7 @@ public class MapUtils {
 
     /**
      * use {@link Object#toString()} switch Obj to String
+     *
      * @param obj
      * @return
      */
