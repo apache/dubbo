@@ -189,7 +189,7 @@ public class ApplicationModel extends ScopeModel {
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         // TODO destroy application resources
         for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
             moduleModel.destroy();
@@ -202,6 +202,9 @@ public class ApplicationModel extends ScopeModel {
         } else {
             frameworkModel.removeApplication(this);
         }
+
+        notifyDestroy();
+
         if (environment != null) {
             environment.destroy();
             environment = null;
@@ -214,7 +217,6 @@ public class ApplicationModel extends ScopeModel {
             serviceRepository.destroy();
             serviceRepository = null;
         }
-        super.destroy();
     }
 
     public FrameworkModel getFrameworkModel() {
@@ -315,5 +317,14 @@ public class ApplicationModel extends ScopeModel {
         if (environment != null) {
             environment.refreshClassLoaders();
         }
+    }
+
+    @Override
+    protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
+        return !containsClassLoader(classLoader);
+    }
+
+    protected boolean containsClassLoader(ClassLoader classLoader) {
+        return moduleModels.stream().anyMatch(moduleModel -> moduleModel.getClassLoaders().contains(classLoader));
     }
 }

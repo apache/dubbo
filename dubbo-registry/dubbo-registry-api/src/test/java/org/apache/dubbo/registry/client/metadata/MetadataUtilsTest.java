@@ -27,8 +27,10 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -38,13 +40,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
 
 public class MetadataUtilsTest {
+
+    @BeforeEach
+    public void setup() {
+        ApplicationModel.defaultModel().destroy();
+    }
 
     @AfterEach
     public void tearDown() throws IOException {
@@ -121,7 +128,7 @@ public class MetadataUtilsTest {
         }
 
         MetadataUtils.destroyMetadataServiceProxy(serviceInstance);
-        applicationModel.destroy();
+        ApplicationModel.defaultModel().destroy();
     }
 
 
@@ -177,7 +184,7 @@ public class MetadataUtilsTest {
 
         Assertions.assertEquals(0, MetadataUtils.getMetadataServiceProxies().size());
         Assertions.assertEquals(0, MetadataUtils.getMetadataServiceInvokers().size());
-        applicationModel.destroy();
+        ApplicationModel.defaultModel().destroy();
     }
 
 
