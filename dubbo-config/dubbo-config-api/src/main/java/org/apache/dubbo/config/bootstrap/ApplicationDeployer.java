@@ -124,7 +124,7 @@ public class ApplicationDeployer implements Lifecycle {
 
     protected volatile ServiceInstance serviceInstance;
 
-    protected AtomicBoolean hasRegisteredServiceInstance = new AtomicBoolean(false);
+    protected AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
 
     protected volatile MetadataService metadataService;
 
@@ -568,7 +568,8 @@ public class ApplicationDeployer implements Lifecycle {
             futures.add(moduleFuture);
         }
 
-        registerApplicationInstanceIfNeed();
+        // prepare application instance
+        prepareApplicationInstance();
 
         // wait async export / refer finish if needed
         if (isExportBackground(moduleDeployers) || isReferBackground(moduleDeployers)) {
@@ -591,12 +592,15 @@ public class ApplicationDeployer implements Lifecycle {
         }
     }
 
-    public void registerApplicationInstanceIfNeed() {
-        if (!hasRegisteredServiceInstance.compareAndSet(false, true)) {
+    public void prepareApplicationInstance() {
+        if (hasPreparedApplicationInstance.get()) {
             return;
         }
         // if register consumer instance or has exported services
         if (isRegisterConsumerInstance() || hasExportedServices()) {
+            if (!hasPreparedApplicationInstance.compareAndSet(false, true)) {
+                return;
+            }
             // export MetadataService
             exportMetadataService();
             // register the local ServiceInstance if required

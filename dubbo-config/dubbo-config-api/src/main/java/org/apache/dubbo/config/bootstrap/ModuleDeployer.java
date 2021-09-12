@@ -98,6 +98,11 @@ public class ModuleDeployer {
         // export services
         exportServices();
 
+        // prepare application instance
+        if (hasExportedServices()) {
+            applicationDeployer.prepareApplicationInstance();
+        }
+
         // refer services
         referServices();
 
@@ -106,6 +111,10 @@ public class ModuleDeployer {
             onModuleStarted(startFuture);
         });
         return startFuture;
+    }
+
+    private boolean hasExportedServices() {
+        return configManager.getServices().size() > 0;
     }
 
     public void destroy() throws IllegalStateException {
@@ -318,7 +327,7 @@ public class ModuleDeployer {
      */
     public void afterExportService(ServiceConfig sc) {
         //TODO
-        applicationDeployer.registerApplicationInstanceIfNeed();
+        applicationDeployer.prepareApplicationInstance();
     }
 
 }
