@@ -36,7 +36,8 @@ public class FrameworkModel extends ScopeModel {
 
     public static final String NAME = "FrameworkModel";
     private static final AtomicLong index = new AtomicLong(1);
-    private static final AtomicLong appIndex = new AtomicLong(1);
+    // app index starts from 1 in each FrameworkModel
+    private final AtomicLong appIndex = new AtomicLong(1);
 
     private volatile static FrameworkModel defaultInstance;
 
@@ -80,9 +81,6 @@ public class FrameworkModel extends ScopeModel {
                 defaultInstance = null;
             }
         }
-        if (allInstances.isEmpty()) {
-            appIndex.set(0);
-        }
         super.destroy();
     }
 
@@ -105,7 +103,6 @@ public class FrameworkModel extends ScopeModel {
         for (FrameworkModel frameworkModel : new ArrayList<>(allInstances)) {
             frameworkModel.destroy();
         }
-        appIndex.set(0);
     }
 
     public ApplicationModel newApplication() {

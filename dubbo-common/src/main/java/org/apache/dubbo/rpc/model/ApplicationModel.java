@@ -264,7 +264,6 @@ public class ApplicationModel extends ScopeModel {
         if (!this.moduleModels.contains(moduleModel)) {
             this.moduleModels.add(moduleModel);
             moduleModel.setInternalName(buildInternalName(ModuleModel.NAME, getInternalId(), moduleIndex.getAndIncrement()));
-
         }
     }
 
