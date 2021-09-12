@@ -20,7 +20,9 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class ScopeModel implements ExtensionAccessor {
+
+    protected String modelName;
+    private Set<ClassLoader> classLoaders;
 
     private final ScopeModel parent;
     private final ExtensionScope scope;
@@ -54,11 +59,18 @@ public abstract class ScopeModel implements ExtensionAccessor {
      * </ol>
      */
     protected void initialize() {
-        this.extensionDirector = new ExtensionDirector(parent != null ? parent.getExtensionDirector() : null, scope);
+        this.extensionDirector = new ExtensionDirector(parent != null ? parent.getExtensionDirector() : null, scope, this);
         this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
         this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
         this.destroyListeners = new LinkedList<>();
         this.attribute = new ConcurrentHashMap<>();
+        this.classLoaders = new ConcurrentHashSet<>();
+
+        // Add Framework's ClassLoader by default
+        ClassLoader dubboClassLoader = ScopeModel.class.getClassLoader();
+        if (dubboClassLoader != null) {
+            this.addClassLoader(dubboClassLoader);
+        }
     }
 
     public void destroy() {
@@ -93,5 +105,33 @@ public abstract class ScopeModel implements ExtensionAccessor {
         for (ScopeModelPostProcessor processor : scopeModelPostProcessors) {
             processor.postProcessScopeModel(this);
         }
+    }
+
+    public String getModelName() {
+        return modelName;
+    }
+
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
+    }
+
+    public void addClassLoader(ClassLoader classLoader) {
+        this.classLoaders.add(classLoader);
+        if (parent != null) {
+            parent.addClassLoader(classLoader);
+        }
+        extensionDirector.removeAllCachedLoader();
+    }
+
+    public void removeClassLoader(ClassLoader classLoader) {
+        this.classLoaders.remove(classLoader);
+        if (parent != null) {
+            parent.removeClassLoader(classLoader);
+        }
+        extensionDirector.removeAllCachedLoader();
+    }
+
+    public Set<ClassLoader> getClassLoaders() {
+        return Collections.unmodifiableSet(classLoaders);
     }
 }

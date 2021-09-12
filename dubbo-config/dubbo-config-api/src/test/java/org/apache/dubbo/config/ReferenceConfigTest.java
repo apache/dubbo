@@ -884,8 +884,8 @@ public class ReferenceConfigTest {
 
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
-        TestClassLoader classLoader1 = new TestClassLoader(basePath);
-        TestClassLoader classLoader2 = new TestClassLoader(basePath);
+        TestClassLoader classLoader1 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
+        TestClassLoader classLoader2 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
 
         Class<?> class1 = classLoader1.loadClass(DemoService.class.getName(), false);
         Class<?> class2 = classLoader2.loadClass(DemoService.class.getName(), false);
@@ -1020,7 +1020,8 @@ public class ReferenceConfigTest {
     private static class TestClassLoader extends ClassLoader {
         private String basePath;
 
-        public TestClassLoader(String basePath) {
+        public TestClassLoader(ClassLoader parent, String basePath) {
+            super(parent);
             this.basePath = basePath;
         }
 
@@ -1041,7 +1042,7 @@ public class ReferenceConfigTest {
                 return loadedClass;
             } else {
                 try {
-                    if (name.startsWith("org.apache.dubbo.config")) {
+                    if (name.equals("org.apache.dubbo.config.api.DemoService") || name.equals("org.apache.dubbo.config.api.DemoService$InnerClass")) {
                         Class<?> aClass = this.findClass(name);
                         if (resolve) {
                             this.resolveClass(aClass);
