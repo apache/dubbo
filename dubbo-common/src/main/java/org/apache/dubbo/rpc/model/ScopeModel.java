@@ -141,7 +141,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
         return Collections.unmodifiableSet(classLoaders);
     }
 
-    protected String getInternalId() {
+    public String getInternalId() {
         // XxxModule-1.1
         if (this.internalName == null) {
             return null;

@@ -14,17 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common;
+package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
+import org.apache.dubbo.config.bootstrap.ApplicationDeployer;
+import org.apache.dubbo.config.bootstrap.ModuleDeployer;
+import org.apache.dubbo.config.utils.DefaultConfigValidator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-public class CommonScopeModelInitializer implements ScopeModelInitializer {
+public class ConfigScopeModelInitializer implements ScopeModelInitializer {
+
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
 
@@ -33,12 +35,14 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        beanFactory.registerBean(ShutdownHookCallbacks.class);
-        beanFactory.registerBean(FrameworkStatusReportService.class);
+        beanFactory.registerBean(DubboShutdownHook.class);
+        beanFactory.registerBean(DefaultConfigValidator.class);
+        beanFactory.getOrRegisterBean(ApplicationDeployer.class);
     }
 
     @Override
     public void initializeModuleModel(ModuleModel moduleModel) {
-
+        ScopeBeanFactory beanFactory = moduleModel.getBeanFactory();
+        beanFactory.getOrRegisterBean(ModuleDeployer.class);
     }
 }

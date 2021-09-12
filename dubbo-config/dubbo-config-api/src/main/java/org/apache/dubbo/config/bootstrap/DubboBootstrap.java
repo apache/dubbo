@@ -18,7 +18,6 @@ package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -157,7 +156,6 @@ public final class DubboBootstrap {
         }
 
         ApplicationModel.reset();
-        ShutdownHookCallbacks.INSTANCE.clear();
     }
 
     private DubboBootstrap(FrameworkModel frameworkModel) {

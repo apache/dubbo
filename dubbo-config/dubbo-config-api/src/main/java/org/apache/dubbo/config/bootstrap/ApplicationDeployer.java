@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
@@ -25,10 +24,8 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -41,7 +38,6 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.config.utils.DefaultConfigValidator;
 import org.apache.dubbo.config.utils.ReferenceCache;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
@@ -141,27 +137,11 @@ public class ApplicationDeployer implements Lifecycle {
 
         referenceCache = new CompositeReferenceCache(applicationModel);
         executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-        DubboShutdownHook.getDubboShutdownHook().register();
-        ShutdownHookCallbacks.INSTANCE.addCallback(ApplicationDeployer.this::destroy);
-
-        initInternalBeans();
     }
 
     public static ApplicationDeployer get(ScopeModel moduleOrApplicationModel) {
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(moduleOrApplicationModel);
         return applicationModel.getBeanFactory().getOrRegisterBean(ApplicationDeployer.class);
-    }
-
-    /**
-     * TODO init beans module-self
-     */
-    private void initInternalBeans() {
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        beanFactory.registerBean(this);
-        beanFactory.registerBean(MetadataReportInstance.class);
-        beanFactory.registerBean(RemoteMetadataServiceImpl.class);
-        beanFactory.registerBean(FrameworkStatusReportService.class);
-        beanFactory.registerBean(DefaultConfigValidator.class);
     }
 
     public ApplicationModel getApplicationModel() {
@@ -177,7 +157,7 @@ public class ApplicationDeployer implements Lifecycle {
     }
 
     public void unRegisterShutdownHook() {
-        DubboShutdownHook.getDubboShutdownHook().unregister();
+        applicationModel.getBeanFactory().getBean(DubboShutdownHook.class).unregister();
     }
 
     private boolean isRegisterConsumerInstance() {
@@ -204,6 +184,8 @@ public class ApplicationDeployer implements Lifecycle {
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
+        // register shutdown hook
+        registerShutdownHook();
 
         startConfigCenter();
 
@@ -219,6 +201,12 @@ public class ApplicationDeployer implements Lifecycle {
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " has been initialized!");
         }
+    }
+
+    private void registerShutdownHook() {
+        applicationModel.getBeanFactory().getBean(DubboShutdownHook.class)
+            .addCallback(ApplicationDeployer.this::destroy)
+            .register();
     }
 
     private void initModuleDeployers() {
@@ -832,7 +820,6 @@ public class ApplicationDeployer implements Lifecycle {
                 }
 
                 destroyDynamicConfigurations();
-                ShutdownHookCallbacks.INSTANCE.clear();
             } catch (Throwable ignored) {
                 // ignored
                 logger.warn(ignored.getMessage(), ignored);
@@ -840,6 +827,7 @@ public class ApplicationDeployer implements Lifecycle {
                 initialized.set(false);
                 startup.set(false);
                 destroyLock.unlock();
+                unRegisterShutdownHook();
             }
 
             applicationModel.destroy();
@@ -926,7 +914,7 @@ public class ApplicationDeployer implements Lifecycle {
 
     private String getIdentifier() {
         if (identifier == null) {
-            identifier = applicationModel.getInternalName();
+            identifier = "Dubbo Application-" + applicationModel.getInternalId();
         }
         return identifier;
     }

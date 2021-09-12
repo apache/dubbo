@@ -117,7 +117,7 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     private void onContextClosedEvent(ContextClosedEvent event) {
         if (bootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
             // will call dubboBootstrap.stop() through shutdown callback.
-            DubboShutdownHook.getDubboShutdownHook().run();
+            bootstrap.getApplicationModel().getBeanFactory().getBean(DubboShutdownHook.class).run();
         }
     }
 

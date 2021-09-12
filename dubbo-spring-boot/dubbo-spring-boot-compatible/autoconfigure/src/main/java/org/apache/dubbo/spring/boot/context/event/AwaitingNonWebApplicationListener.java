@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.spring.boot.context.event;
 
-import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
-
+import org.apache.dubbo.config.DubboShutdownHook;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -111,15 +111,16 @@ public class AwaitingNonWebApplicationListener implements SmartApplicationListen
 
         if (applicationContextId.compareAndSet(UNDEFINED_ID, applicationContext.hashCode())) {
             await();
-            releaseOnExit();
+            releaseOnExit(event.getApplicationContext());
         }
     }
 
     /**
      * @since 2.7.8
+     * @param applicationContext
      */
-    private void releaseOnExit() {
-        ShutdownHookCallbacks.INSTANCE.addCallback(this::release);
+    private void releaseOnExit(ConfigurableApplicationContext applicationContext) {
+        DubboBeanUtils.getApplicationModel(applicationContext).getBeanFactory().getBean(DubboShutdownHook.class).addCallback(this::release);
     }
 
     private boolean isRootApplicationContext(ApplicationContext applicationContext) {
