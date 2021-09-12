@@ -17,15 +17,27 @@
 package org.apache.dubbo.config.spring.api;
 
 public interface MethodCallback {
-    void oninvoke(String request);
+    void oninvoke1(String request);
 
-    void onreturn(String response, String request);
+    void onreturn1(String response, String request);
 
-    void onthrow(Throwable ex, String request);
+    void onthrow1(Throwable ex, String request);
 
-    String getOnInvoke();
+    void oninvoke2(String request);
 
-    String getOnReturn();
+    void onreturn2(String response, String request);
 
-    String getOnThrow();
+    void onthrow2(Throwable ex, String request);
+
+    String getOnInvoke1();
+
+    String getOnReturn1();
+
+    String getOnThrow1();
+
+    String getOnInvoke2();
+
+    String getOnReturn2();
+
+    String getOnThrow2();
 }

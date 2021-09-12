@@ -19,16 +19,12 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-/**
- * A post-processor after scope model is created (one of FrameworkModel/ApplicationModel/ModuleModel)
- */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ScopeModelPostProcessor {
+@SPI(scope = ExtensionScope.SELF)
+public interface ScopeModelInitializer {
 
-    /**
-     * Post-process after a scope model is created.
-     * @param scopeModel
-     */
-    void postProcessScopeModel(ScopeModel scopeModel);
+    void initializeFrameworkModel(FrameworkModel frameworkModel);
 
+    void initializeApplicationModel(ApplicationModel applicationModel);
+
+    void initializeModuleModel(ModuleModel moduleModel);
 }

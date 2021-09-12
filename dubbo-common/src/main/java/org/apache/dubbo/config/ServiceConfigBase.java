@@ -320,7 +320,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
         this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
-        setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
+        if (getInterfaceClassLoader() == null) {
+            setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
+        }
     }
 
     public T getRef() {

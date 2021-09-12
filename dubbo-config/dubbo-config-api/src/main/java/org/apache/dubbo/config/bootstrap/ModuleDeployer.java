@@ -304,7 +304,7 @@ public class ModuleDeployer {
 
     private String getIdentifier() {
         if (identifier == null) {
-            identifier = "Dubbo Module[" + moduleModel.getId() +"]";
+            identifier = moduleModel.getInternalName();
         }
         return identifier;
     }

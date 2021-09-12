@@ -50,24 +50,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ApplicationModel extends ScopeModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
-    public static final String NAME = "application";
+    public static final String NAME = "ApplicationModel";
     private static volatile ApplicationModel defaultInstance;
 
-    private volatile List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
+    private final List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
     private Environment environment;
     private ConfigManager configManager;
     private ServiceRepository serviceRepository;
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     private ModuleModel internalModule;
 
     private volatile ModuleModel defaultModule;
 
     // internal module index is 0, default module index is 1
-    private AtomicInteger moduleIndex = new AtomicInteger(-1);
+    private AtomicInteger moduleIndex = new AtomicInteger(0);
 
-    private String id;
 
     // --------- static methods ----------//
 
@@ -178,7 +177,11 @@ public class ApplicationModel extends ScopeModel {
 
         initFrameworkExts();
 
-        postProcessAfterCreated();
+        ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+        Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+        for (ScopeModelInitializer initializer : initializers) {
+            initializer.initializeApplicationModel(this);
+        }
     }
 
     private void initFrameworkExts() {
@@ -214,7 +217,7 @@ public class ApplicationModel extends ScopeModel {
             serviceRepository.destroy();
             serviceRepository = null;
         }
-
+        super.destroy();
     }
 
     public FrameworkModel getFrameworkModel() {
@@ -260,7 +263,8 @@ public class ApplicationModel extends ScopeModel {
     synchronized void addModule(ModuleModel moduleModel) {
         if (!this.moduleModels.contains(moduleModel)) {
             this.moduleModels.add(moduleModel);
-            moduleModel.setId(this.getId() + "-" + moduleIndex.incrementAndGet());
+            moduleModel.setInternalName(buildInternalName(ModuleModel.NAME, getInternalId(), moduleIndex.getAndIncrement()));
+
         }
     }
 
@@ -319,12 +323,20 @@ public class ApplicationModel extends ScopeModel {
         this.serviceRepository = serviceRepository;
     }
 
-    public String getId() {
-        return id;
+    @Override
+    public void addClassLoader(ClassLoader classLoader) {
+        super.addClassLoader(classLoader);
+        if (environment != null) {
+            environment.refreshClassLoaders();
+        }
     }
 
-    public void setId(String id) {
-        this.id = id;
+    @Override
+    public void removeClassLoader(ClassLoader classLoader) {
+        super.removeClassLoader(classLoader);
+        if (environment != null) {
+            environment.refreshClassLoaders();
+        }
     }
 
 }

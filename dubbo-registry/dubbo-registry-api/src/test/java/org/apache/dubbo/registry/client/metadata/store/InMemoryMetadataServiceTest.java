@@ -16,17 +16,20 @@
  */
 package org.apache.dubbo.registry.client.metadata.store;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.registry.MockLogger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.SortedSet;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -173,5 +176,38 @@ public class InMemoryMetadataServiceTest {
         metadataService.unexportURL(url);
         assertEquals(0, defaultMetadataInfo.getServices().size());
         assertNull(defaultMetadataInfo.getServiceInfo(url.getProtocolServiceKey()));
+    }
+
+    @Test
+    public void testServiceDefinition() {
+        URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService");
+        InMemoryWritableMetadataService metadataService = new InMemoryWritableMetadataService();
+        metadataService.setApplicationModel(ApplicationModel.defaultModel());
+        metadataService.publishServiceDefinition(url);
+
+        String serviceDefinition = metadataService.getServiceDefinition(url.getServiceInterface(), url.getVersion(), url.getGroup());
+        Gson gson = new Gson();
+        ServiceDefinition serviceDefinitionBuilder = gson.fromJson(serviceDefinition, ServiceDefinition.class);
+        assertEquals(serviceDefinitionBuilder.getCanonicalName(), url.getServiceInterface());
+    }
+
+    @Test
+    public void testSubscribe() {
+        InMemoryWritableMetadataService metadataService = new InMemoryWritableMetadataService();
+        metadataService.setApplicationModel(ApplicationModel.defaultModel());
+
+        URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService");
+        metadataService.subscribeURL(url);
+
+        URL url2 = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService2");
+        metadataService.subscribeURL(url2);
+
+        URL url3 = URL.valueOf("dubbo://30.225.21.30:20880/" + MetadataService.class.getName());
+        metadataService.subscribeURL(url3);
+
+        SortedSet<String> subscribedURLs = metadataService.getSubscribedURLs();
+        assertEquals(subscribedURLs.size(), 2);
+        assertEquals(subscribedURLs.first(), url.toFullString());
+        assertEquals(subscribedURLs.last(), url2.toFullString());
     }
 }

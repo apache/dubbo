@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.CodecSupport;
@@ -34,7 +33,7 @@ public class DubboCodecSupport {
         if (serializationTypeObj != null) {
             return CodecSupport.getSerializationById((byte) serializationTypeObj);
         }
-        return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
                 url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }
 
@@ -47,7 +46,7 @@ public class DubboCodecSupport {
                 return CodecSupport.getSerializationById((byte) serializationTypeObj);
             }
         }
-        return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
                 url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }
 }

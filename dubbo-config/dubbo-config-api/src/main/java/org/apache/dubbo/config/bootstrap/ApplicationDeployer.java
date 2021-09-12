@@ -926,7 +926,7 @@ public class ApplicationDeployer implements Lifecycle {
 
     private String getIdentifier() {
         if (identifier == null) {
-            identifier = "Dubbo Application[" + applicationModel.getId() +"]";
+            identifier = applicationModel.getInternalName();
         }
         return identifier;
     }

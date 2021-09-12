@@ -21,8 +21,7 @@ import grpc.health.v1.Health;
 import grpc.health.v1.HealthCheckRequest;
 import grpc.health.v1.HealthCheckResponse;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleRpcException;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -30,6 +29,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static org.apache.dubbo.rpc.RpcException.METHOD_NOT_FOUND;
 
 public class TriHealthImpl implements Health {
 
@@ -63,8 +64,7 @@ public class TriHealthImpl implements Health {
         if (status != null) {
             return HealthCheckResponse.newBuilder().setStatus(status).build();
         }
-        throw new TripleRpcException(GrpcStatus.fromCode(GrpcStatus.Code.NOT_FOUND)
-            .withDescription("unknown service " + request.getService()));
+        throw new RpcException(METHOD_NOT_FOUND, "unknown service " + request.getService());
     }
 
     @Override

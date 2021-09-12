@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -27,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -194,11 +192,10 @@ public class ConsumerConfigTest {
 
     @Test
     public void testOverrideConfigByDubboProps() {
-        Map props = new HashMap();
-        props.put("dubbo.consumers.consumerA.check", "false");
-        props.put("dubbo.consumers.consumerA.group", "demo");
-        props.put("dubbo.consumers.consumerA.threads", "10");
-        ConfigUtils.getProperties().putAll(props);
+        ApplicationModel.defaultModel().getDefaultModule();
+        ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.check", "false");
+        ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.group", "demo");
+        ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.threads", "10");
 
         try {
             ConsumerConfig consumerConfig = new ConsumerConfig();
@@ -218,7 +215,7 @@ public class ConsumerConfigTest {
             Assertions.assertEquals("groupA", consumerConfig.getGroup());
             Assertions.assertEquals(10, consumerConfig.getThreads());
         } finally {
-            props.keySet().forEach(ConfigUtils.getProperties()::remove);
+            ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().refresh();
         }
     }
 

@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -30,6 +25,9 @@ import javassist.CtMethod;
 import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.NotFoundException;
+import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -60,6 +58,7 @@ public final class ClassGenerator {
     private List<String> mFields;
     private List<String> mConstructors;
     private List<String> mMethods;
+    private ClassLoader mClassLoader;
     private Map<String, Method> mCopyMethods; // <method desc,method instance>
     private Map<String, Constructor<?>> mCopyConstructors; // <constructor desc,constructor instance>
     private boolean mDefaultConstructor = false;
@@ -67,16 +66,17 @@ public final class ClassGenerator {
     private ClassGenerator() {
     }
 
-    private ClassGenerator(ClassPool pool) {
+    private ClassGenerator(ClassLoader classLoader, ClassPool pool) {
+        mClassLoader = classLoader;
         mPool = pool;
     }
 
     public static ClassGenerator newInstance() {
-        return new ClassGenerator(getClassPool(Thread.currentThread().getContextClassLoader()));
+        return new ClassGenerator(Thread.currentThread().getContextClassLoader(), getClassPool(Thread.currentThread().getContextClassLoader()));
     }
 
     public static ClassGenerator newInstance(ClassLoader loader) {
-        return new ClassGenerator(getClassPool(loader));
+        return new ClassGenerator(loader, getClassPool(loader));
     }
 
     public static boolean isDynamicClass(Class<?> cl) {
@@ -282,7 +282,7 @@ public final class ClassGenerator {
     }
 
     public Class<?> toClass() {
-        return toClass(ClassUtils.getClassLoader(ClassGenerator.class),
+        return toClass(mClassLoader,
                 getClass().getProtectionDomain());
     }
 

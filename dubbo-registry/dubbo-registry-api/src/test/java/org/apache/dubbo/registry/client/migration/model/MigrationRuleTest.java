@@ -20,8 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -76,7 +74,7 @@ public class MigrationRuleTest {
         assertEquals(false, migrationRule.getForce());
 
         URL url = Mockito.mock(URL.class);
-        ModuleModel defaultModule = Mockito.spy(ApplicationModel.defaultModel().getDefaultModule());
+        ApplicationModel defaultModule = Mockito.spy(ApplicationModel.defaultModel());
         Mockito.when(defaultModule.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
 
         Mockito.when(url.getScopeModel()).thenReturn(defaultModule);

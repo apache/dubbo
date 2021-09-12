@@ -30,7 +30,11 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.io.Serializable;
@@ -554,6 +558,18 @@ class URL implements Serializable {
 
     public ScopeModel getScopeModel() {
         return (ScopeModel) getAttribute(CommonConstants.SCOPE_MODEL);
+    }
+
+    public FrameworkModel getOrDefaultFrameworkModel() {
+        return ScopeModelUtil.getFrameworkModel(getScopeModel());
+    }
+
+    public ApplicationModel getOrDefaultApplicationModel() {
+        return ScopeModelUtil.getApplicationModel(getScopeModel());
+    }
+
+    public ModuleModel getOrDefaultModuleModel() {
+        return ScopeModelUtil.getModuleModel(getScopeModel());
     }
 
     public URL setServiceModel(ServiceModel serviceModel) {

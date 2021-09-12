@@ -106,7 +106,10 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         try {
             // parseConfigurators will recognize app/service config automatically.
             List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
-            List<URL> safeUrls = urls.stream().map(url -> url.removeParameters(securityKey)).collect(Collectors.toList());
+            List<URL> safeUrls = urls.stream()
+                .map(url -> url.removeParameters(securityKey))
+                .map(url -> url.setScopeModel(applicationModel))
+                .collect(Collectors.toList());
             configurators = Configurator.toConfigurators(safeUrls).orElse(configurators);
         } catch (Exception e) {
             logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " +

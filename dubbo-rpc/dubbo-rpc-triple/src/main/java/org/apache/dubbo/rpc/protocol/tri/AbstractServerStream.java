@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import com.google.protobuf.Message;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -31,8 +32,6 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
-
-import com.google.protobuf.Message;
 
 import java.util.Arrays;
 import java.util.List;
@@ -64,7 +63,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         super(url, executor);
         this.providerModel = providerModel;
         this.serialize(getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
-        this.headerFilters = ExtensionLoader.getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
+        this.headerFilters = url.getOrDefaultApplicationModel().getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
     }
 
     private static Executor lookupExecutor(URL url, ProviderModel providerModel) {
@@ -154,8 +153,9 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                 }
                 if (getMethodDescriptor() == null) {
                     final String[] paramTypes = wrapper.getArgTypesList().toArray(new String[wrapper.getArgsCount()]);
-
+                    // wrapper mode the method can overload so maybe list
                     for (MethodDescriptor descriptor : getMethodDescriptors()) {
+                        // params type is array
                         if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
                             method(descriptor);
                             break;

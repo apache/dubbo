@@ -23,7 +23,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -144,7 +143,6 @@ public final class DubboBootstrap {
      */
     @Deprecated
     public static void reset(boolean destroy) {
-        ConfigUtils.setProperties(null);
         if (destroy) {
             if (instance != null) {
                 instance.destroy();

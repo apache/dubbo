@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.registry.xds.util;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.xds.XdsCertificateSigner;
-
 import io.envoyproxy.envoy.service.discovery.v3.AggregatedDiscoveryServiceGrpc;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
@@ -33,6 +27,10 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.grpc.stub.StreamObserver;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.xds.XdsCertificateSigner;
 
 import javax.net.ssl.SSLException;
 import java.io.ByteArrayInputStream;
@@ -45,7 +43,7 @@ public class XdsChannel {
     protected XdsChannel(URL url) {
         ManagedChannel channel1 = null;
         try {
-            XdsCertificateSigner signer = ExtensionLoader.getExtensionLoader(XdsCertificateSigner.class).getExtension(url.getParameter("Signer","istio"));
+            XdsCertificateSigner signer = url.getOrDefaultApplicationModel().getExtensionLoader(XdsCertificateSigner.class).getExtension(url.getParameter("Signer","istio"));
             XdsCertificateSigner.CertPair certPair = signer.request(url);
             SslContext context = GrpcSslContexts.forClient()
                     .trustManager(InsecureTrustManagerFactory.INSTANCE)

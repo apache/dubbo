@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -23,7 +24,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
@@ -31,6 +33,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FrameworkModel extends ScopeModel {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(FrameworkModel.class);
+
+    public static final String NAME = "FrameworkModel";
+    private static final AtomicLong index = new AtomicLong(1);
+    private static final AtomicLong appIndex = new AtomicLong(1);
 
     private volatile static FrameworkModel defaultInstance;
 
@@ -40,12 +46,12 @@ public class FrameworkModel extends ScopeModel {
 
     private FrameworkServiceRepository serviceRepository;
 
-    private static AtomicInteger appIndex = new AtomicInteger();
 
 
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
         initialize();
+        this.setInternalName(buildInternalName(NAME, null, index.getAndIncrement()));
     }
 
     @Override
@@ -54,7 +60,11 @@ public class FrameworkModel extends ScopeModel {
         serviceRepository = new FrameworkServiceRepository(this);
         allInstances.add(this);
 
-        postProcessAfterCreated();
+        ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+        Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+        for (ScopeModelInitializer initializer : initializers) {
+            initializer.initializeFrameworkModel(this);
+        }
     }
 
     @Override
@@ -73,6 +83,7 @@ public class FrameworkModel extends ScopeModel {
         if (allInstances.isEmpty()) {
             appIndex.set(0);
         }
+        super.destroy();
     }
 
     public static FrameworkModel defaultModel() {
@@ -104,7 +115,7 @@ public class FrameworkModel extends ScopeModel {
     synchronized void addApplication(ApplicationModel applicationModel) {
         if (!this.applicationModels.contains(applicationModel)) {
             this.applicationModels.add(applicationModel);
-            applicationModel.setId(appIndex.incrementAndGet()+"");
+            applicationModel.setInternalName(buildInternalName(ApplicationModel.NAME, getInternalId(), appIndex.getAndIncrement()));
         }
     }
 
@@ -122,5 +133,4 @@ public class FrameworkModel extends ScopeModel {
     public FrameworkServiceRepository getServiceRepository() {
         return serviceRepository;
     }
-
 }

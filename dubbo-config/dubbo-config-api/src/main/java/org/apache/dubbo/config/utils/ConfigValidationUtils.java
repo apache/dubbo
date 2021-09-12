@@ -19,7 +19,7 @@ package org.apache.dubbo.config.utils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.config.PropertiesConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
@@ -63,6 +63,8 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.net.InetAddress;
@@ -108,7 +110,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTO
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
@@ -325,7 +326,7 @@ public class ConfigValidationUtils {
                 .build();
         } else if (ConfigUtils.isNotEmpty(address) || ConfigUtils.isNotEmpty(protocol)) {
             if (!map.containsKey(PROTOCOL_KEY)) {
-                if (getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
+                if (interfaceConfig.getScopeModel().getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
                     map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
                 } else if (ConfigUtils.isNotEmpty(protocol)) {
                     map.put(PROTOCOL_KEY, protocol);
@@ -377,7 +378,7 @@ public class ConfigValidationUtils {
             }
         } else {
             //Check whether the mock class is a implementation of the interfaceClass, and if it has a default constructor
-            MockInvoker.getMockObject(normalizedMock, interfaceClass);
+            MockInvoker.getMockObject(config.getScopeModel().getExtensionDirector(), normalizedMock, interfaceClass);
         }
     }
 
@@ -386,9 +387,9 @@ public class ConfigValidationUtils {
         checkName("stub", config.getStub());
         checkMultiName("owner", config.getOwner());
 
-        checkExtension(ProxyFactory.class, PROXY_KEY, config.getProxy());
-        checkExtension(Cluster.class, CLUSTER_KEY, config.getCluster());
-        checkMultiExtension(Arrays.asList(Filter.class, ClusterFilter.class), FILTER_KEY, config.getFilter());
+        checkExtension(config.getScopeModel(), ProxyFactory.class, PROXY_KEY, config.getProxy());
+        checkExtension(config.getScopeModel(), Cluster.class, CLUSTER_KEY, config.getCluster());
+        checkMultiExtension(config.getScopeModel(), Arrays.asList(Filter.class, ClusterFilter.class), FILTER_KEY, config.getFilter());
         checkNameHasSymbol(LAYER_KEY, config.getLayer());
 
         List<MethodConfig> methods = config.getMethods();
@@ -403,7 +404,7 @@ public class ConfigValidationUtils {
         checkName(TOKEN_KEY, config.getToken());
         checkPathName(PATH_KEY, config.getPath());
 
-        checkMultiExtension(ExporterListener.class, "listener", config.getListener());
+        checkMultiExtension(config.getScopeModel(), ExporterListener.class, "listener", config.getListener());
 
         validateAbstractInterfaceConfig(config);
 
@@ -428,7 +429,7 @@ public class ConfigValidationUtils {
     }
 
     public static void validateReferenceConfig(ReferenceConfig config) {
-        checkMultiExtension(InvokerListener.class, "listener", config.getListener());
+        checkMultiExtension(config.getScopeModel(), InvokerListener.class, "listener", config.getListener());
         checkKey(VERSION_KEY, config.getVersion());
         checkKey(GROUP_KEY, config.getGroup());
         checkName(CLIENT_KEY, config.getClient());
@@ -465,11 +466,13 @@ public class ConfigValidationUtils {
         }
 
         // backward compatibility
-        String wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_KEY);
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(config.getScopeModel());
+        PropertiesConfiguration configuration = applicationModel.getApplicationEnvironment().getPropertiesConfiguration();
+        String wait = configuration.getProperty(SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
             System.setProperty(SHUTDOWN_WAIT_KEY, wait.trim());
         } else {
-            wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_SECONDS_KEY);
+            wait = configuration.getProperty(SHUTDOWN_WAIT_SECONDS_KEY);
             if (wait != null && wait.trim().length() > 0) {
                 System.setProperty(SHUTDOWN_WAIT_SECONDS_KEY, wait.trim());
             }
@@ -529,29 +532,29 @@ public class ConfigValidationUtils {
 
 
             if (DUBBO_PROTOCOL.equals(name)) {
-                checkMultiExtension(Codec2.class, CODEC_KEY, config.getCodec());
-                checkMultiExtension(Serialization.class, SERIALIZATION_KEY, config.getSerialization());
-                checkMultiExtension(Transporter.class, SERVER_KEY, config.getServer());
-                checkMultiExtension(Transporter.class, CLIENT_KEY, config.getClient());
+                checkMultiExtension(config.getScopeModel(), Codec2.class, CODEC_KEY, config.getCodec());
+                checkMultiExtension(config.getScopeModel(), Serialization.class, SERIALIZATION_KEY, config.getSerialization());
+                checkMultiExtension(config.getScopeModel(), Transporter.class, SERVER_KEY, config.getServer());
+                checkMultiExtension(config.getScopeModel(), Transporter.class, CLIENT_KEY, config.getClient());
             }
 
-            checkMultiExtension(TelnetHandler.class, TELNET, config.getTelnet());
-            checkMultiExtension(StatusChecker.class, "status", config.getStatus());
-            checkExtension(Transporter.class, TRANSPORTER_KEY, config.getTransporter());
-            checkExtension(Exchanger.class, EXCHANGER_KEY, config.getExchanger());
-            checkExtension(Dispatcher.class, DISPATCHER_KEY, config.getDispatcher());
-            checkExtension(Dispatcher.class, "dispather", config.getDispather());
-            checkExtension(ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
+            checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET, config.getTelnet());
+            checkMultiExtension(config.getScopeModel(), StatusChecker.class, "status", config.getStatus());
+            checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
+            checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
+            checkExtension(config.getScopeModel(), Dispatcher.class, DISPATCHER_KEY, config.getDispatcher());
+            checkExtension(config.getScopeModel(), Dispatcher.class, "dispather", config.getDispather());
+            checkExtension(config.getScopeModel(), ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
         }
     }
 
     public static void validateProviderConfig(ProviderConfig config) {
         checkPathName(CONTEXTPATH_KEY, config.getContextpath());
-        checkExtension(ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
-        checkMultiExtension(TelnetHandler.class, TELNET, config.getTelnet());
-        checkMultiExtension(StatusChecker.class, STATUS_KEY, config.getStatus());
-        checkExtension(Transporter.class, TRANSPORTER_KEY, config.getTransporter());
-        checkExtension(Exchanger.class, EXCHANGER_KEY, config.getExchanger());
+        checkExtension(config.getScopeModel(), ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
+        checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET, config.getTelnet());
+        checkMultiExtension(config.getScopeModel(), StatusChecker.class, STATUS_KEY, config.getStatus());
+        checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
+        checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
     }
 
     public static void validateConsumerConfig(ConsumerConfig config) {
@@ -572,7 +575,7 @@ public class ConfigValidationUtils {
     }
 
     public static void validateMethodConfig(MethodConfig config) {
-        checkExtension(LoadBalance.class, LOADBALANCE_KEY, config.getLoadbalance());
+        checkExtension(config.getScopeModel(), LoadBalance.class, LOADBALANCE_KEY, config.getLoadbalance());
         checkParameterName(config.getParameters());
         checkMethodName("name", config.getName());
 
@@ -597,10 +600,10 @@ public class ConfigValidationUtils {
         return StringUtils.isNotEmpty(registryProtocol) ? registryProtocol : REGISTRY_PROTOCOL;
     }
 
-    public static void checkExtension(Class<?> type, String property, String value) {
+    public static void checkExtension(ScopeModel scopeModel, Class<?> type, String property, String value) {
         checkName(property, value);
         if (StringUtils.isNotEmpty(value)
-            && !ExtensionLoader.getExtensionLoader(type).hasExtension(value)) {
+            && !scopeModel.getExtensionLoader(type).hasExtension(value)) {
             throw new IllegalStateException("No such extension " + value + " for " + property + "/" + type.getName());
         }
     }
@@ -613,11 +616,11 @@ public class ConfigValidationUtils {
      * @param property The extension key
      * @param value    The Extension name
      */
-    public static void checkMultiExtension(Class<?> type, String property, String value) {
-        checkMultiExtension(Collections.singletonList(type), property, value);
+    public static void checkMultiExtension(ScopeModel scopeModel, Class<?> type, String property, String value) {
+        checkMultiExtension(scopeModel,Collections.singletonList(type), property, value);
     }
 
-    public static void checkMultiExtension(List<Class<?>> types, String property, String value) {
+    public static void checkMultiExtension(ScopeModel scopeModel, List<Class<?>> types, String property, String value) {
         checkMultiName(property, value);
         if (StringUtils.isNotEmpty(value)) {
             String[] values = value.split("\\s*[,]+\\s*");
@@ -630,7 +633,7 @@ public class ConfigValidationUtils {
                 }
                 boolean match = false;
                 for (Class<?> type : types) {
-                    if (ExtensionLoader.getExtensionLoader(type).hasExtension(v)) {
+                    if (scopeModel.getExtensionLoader(type).hasExtension(v)) {
                         match = true;
                     }
                 }

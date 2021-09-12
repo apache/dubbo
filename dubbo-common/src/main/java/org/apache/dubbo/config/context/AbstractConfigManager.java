@@ -18,13 +18,13 @@ package org.apache.dubbo.config.context;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.PropertiesConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -331,6 +331,8 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     public abstract void loadConfigs();
 
     public <T extends AbstractConfig> void loadConfigsOfTypeFromProps(Class<T> cls) {
+        PropertiesConfiguration properties = applicationModel.getApplicationEnvironment().getPropertiesConfiguration();
+
         // load multiple configs with id
         Set<String> configIds = this.getConfigIdsFromProps(cls);
         configIds.forEach(id -> {
@@ -348,8 +350,8 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                 try {
                     // add default name config (same as id), e.g. dubbo.protocols.rest.port=1234
                     key = DUBBO + "." + AbstractConfig.getPluralTagName(cls) + "." + id + ".name";
-                    if (ConfigUtils.getProperties().getProperty(key) == null) {
-                        ConfigUtils.getProperties().setProperty(key, id);
+                    if (properties.getProperty(key) == null) {
+                        properties.setProperty(key, id);
                         addDefaultNameConfig = true;
                     }
 
@@ -360,7 +362,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                     throw new IllegalStateException("load config failed, id: " + id + ", type:" + cls.getSimpleName());
                 } finally {
                     if (addDefaultNameConfig && key != null) {
-                        ConfigUtils.getProperties().remove(key);
+                        properties.remove(key);
                     }
                 }
             }
