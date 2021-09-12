@@ -658,14 +658,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
         String portToRegistryStr = getValueFromConfig(protocolConfig, key);
         Integer portToRegistry = parsePort(portToRegistryStr);
-        if (portToRegistry == null) {
-            portToRegistry = portToBind;
+        if (portToRegistry != null) {
+            portToBind = portToRegistry;
         }
 
         // save bind port, used as url's key later
-        map.put(BIND_PORT_KEY, String.valueOf(portToRegistry));
+        map.put(BIND_PORT_KEY, String.valueOf(portToBind));
 
-        return portToRegistry;
+        return portToBind;
     }
 
 
