@@ -65,13 +65,16 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.utils.StringUtils.replace;
+import static org.apache.dubbo.metadata.report.support.Constants.CACHE_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES;
+import static org.apache.dubbo.metadata.report.support.Constants.DUBBO_METADATA_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.RETRY_PERIOD_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.RETRY_TIMES_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.SYNC_REPORT_KEY;
+import static org.apache.dubbo.metadata.report.support.Constants.USER_HOME;
 
 /**
  *
@@ -102,11 +105,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
         // Start file save timer
-        String defaultFilename = System.getProperty("user.home") +
-                "/.dubbo/dubbo-metadata-" +
-                reportServerURL.getApplication() + "-" +
-                replace(reportServerURL.getAddress(), ":", "-") +
-                ".cache";
+        String defaultFilename = System.getProperty(USER_HOME) + DUBBO_METADATA_KEY +
+            reportServerURL.getApplication() + "-" +
+            replace(reportServerURL.getAddress(), ":", "-") + CACHE_KEY;
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
@@ -116,7 +117,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                     throw new IllegalArgumentException("Invalid service store file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
                 }
             }
-            // if this file exist, firstly delete it.
+            // if this file exists, firstly delete it.
             if (!initialized.getAndSet(true) && file.exists()) {
                 file.delete();
             }
@@ -125,7 +126,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         loadProperties();
         syncReport = reportServerURL.getParameter(SYNC_REPORT_KEY, false);
         metadataReportRetry = new MetadataReportRetry(reportServerURL.getParameter(RETRY_TIMES_KEY, DEFAULT_METADATA_REPORT_RETRY_TIMES),
-                reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
+            reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
         // cycle report the data switch
         if (reportServerURL.getParameter(CYCLE_REPORT_KEY, DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
