@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class ScopeModel implements ExtensionAccessor {
 
@@ -43,6 +44,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
     private List<ScopeModelDestroyListener> destroyListeners;
 
     private Map<String, Object> attribute;
+    private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public ScopeModel(ScopeModel parent, ExtensionScope scope) {
         this.parent = parent;
@@ -74,10 +76,23 @@ public abstract class ScopeModel implements ExtensionAccessor {
     }
 
     public void destroy() {
+        if(destroyed.compareAndSet(false, true)) {
+            for (ClassLoader classLoader : classLoaders) {
+                if (parent != null) {
+                    removeClassLoader(classLoader);
+                }
+            }
+            onDestroy();
+        }
+    }
+
+    protected void notifyDestroy() {
         for (ScopeModelDestroyListener destroyListener : destroyListeners) {
             destroyListener.onDestroy(this);
         }
     }
+
+    public abstract void onDestroy();
 
     public final void addDestroyListener(ScopeModelDestroyListener listener) {
         destroyListeners.add(listener);

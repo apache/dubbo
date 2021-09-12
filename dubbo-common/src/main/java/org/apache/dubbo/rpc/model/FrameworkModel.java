@@ -68,7 +68,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         //TODO destroy framework model
         for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
             applicationModel.destroy();
@@ -80,7 +80,8 @@ public class FrameworkModel extends ScopeModel {
                 defaultInstance = null;
             }
         }
-        super.destroy();
+
+        notifyDestroy();
     }
 
     public static FrameworkModel defaultModel() {
