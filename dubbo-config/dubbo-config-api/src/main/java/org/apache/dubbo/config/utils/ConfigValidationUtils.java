@@ -19,6 +19,7 @@ package org.apache.dubbo.config.utils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.config.PropertiesConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
@@ -63,6 +64,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
 import java.net.InetAddress;
@@ -464,11 +466,13 @@ public class ConfigValidationUtils {
         }
 
         // backward compatibility
-        String wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_KEY);
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(config.getScopeModel());
+        PropertiesConfiguration configuration = applicationModel.getApplicationEnvironment().getPropertiesConfiguration();
+        String wait = configuration.getProperty(SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
             System.setProperty(SHUTDOWN_WAIT_KEY, wait.trim());
         } else {
-            wait = ConfigUtils.getProperty(SHUTDOWN_WAIT_SECONDS_KEY);
+            wait = configuration.getProperty(SHUTDOWN_WAIT_SECONDS_KEY);
             if (wait != null && wait.trim().length() > 0) {
                 System.setProperty(SHUTDOWN_WAIT_SECONDS_KEY, wait.trim());
             }

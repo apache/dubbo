@@ -20,7 +20,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             if (ArrayUtils.isEmpty(args)) {
-                String config = ConfigUtils.getProperty(CONTAINER_KEY, LOADER.getDefaultExtensionName());
+                String config = System.getProperty(CONTAINER_KEY, LOADER.getDefaultExtensionName());
                 args = COMMA_SPLIT_PATTERN.split(config);
             }
 
