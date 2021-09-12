@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -76,13 +77,16 @@ public abstract class ScopeModel implements ExtensionAccessor {
     }
 
     public void destroy() {
-        if(destroyed.compareAndSet(false, true)) {
-            for (ClassLoader classLoader : classLoaders) {
-                if (parent != null) {
+        if (destroyed.compareAndSet(false, true)) {
+            try {
+                HashSet<ClassLoader> copyOfClassLoaders = new HashSet<>(classLoaders);
+                for (ClassLoader classLoader : copyOfClassLoaders) {
                     removeClassLoader(classLoader);
                 }
+                onDestroy();
+            }catch (Throwable t) {
+                t.printStackTrace();
             }
-            onDestroy();
         }
     }
 
@@ -139,11 +143,17 @@ public abstract class ScopeModel implements ExtensionAccessor {
     }
 
     public void removeClassLoader(ClassLoader classLoader) {
-        this.classLoaders.remove(classLoader);
-        if (parent != null) {
-            parent.removeClassLoader(classLoader);
+        if (checkIfClassLoaderCanRemoved(classLoader)) {
+            this.classLoaders.remove(classLoader);
+            if (parent != null) {
+                parent.removeClassLoader(classLoader);
+            }
+            extensionDirector.removeAllCachedLoader();
         }
-        extensionDirector.removeAllCachedLoader();
+    }
+
+    protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
+        return true;
     }
 
     public Set<ClassLoader> getClassLoaders() {

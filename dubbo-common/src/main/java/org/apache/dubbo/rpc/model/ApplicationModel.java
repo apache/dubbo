@@ -318,4 +318,13 @@ public class ApplicationModel extends ScopeModel {
             environment.refreshClassLoaders();
         }
     }
+
+    @Override
+    protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
+        return !containsClassLoader(classLoader);
+    }
+
+    protected boolean containsClassLoader(ClassLoader classLoader) {
+        return moduleModels.stream().anyMatch(moduleModel -> moduleModel.getClassLoaders().contains(classLoader));
+    }
 }

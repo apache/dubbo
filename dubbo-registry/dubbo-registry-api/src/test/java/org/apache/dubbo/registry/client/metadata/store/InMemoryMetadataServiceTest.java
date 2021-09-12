@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.MockLogger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,6 +50,7 @@ public class InMemoryMetadataServiceTest {
 
     @BeforeAll
     public static void setUp() {
+        FrameworkModel.destroyAll();
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-provider2");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);

@@ -125,4 +125,9 @@ public class FrameworkModel extends ScopeModel {
     public FrameworkServiceRepository getServiceRepository() {
         return serviceRepository;
     }
+
+    @Override
+    protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
+        return applicationModels.stream().noneMatch(applicationModel -> applicationModel.containsClassLoader(classLoader));
+    }
 }
