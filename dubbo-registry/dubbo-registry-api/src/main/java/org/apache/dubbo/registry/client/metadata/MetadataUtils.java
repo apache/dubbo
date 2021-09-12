@@ -78,14 +78,14 @@ public class MetadataUtils {
     }
 
     private static MetadataService referProxy(String key, ServiceInstance instance) {
-        MetadataServiceURLBuilder builder = null;
+        MetadataServiceURLBuilder builder;
         ExtensionLoader<MetadataServiceURLBuilder> loader = instance.getOrDefaultApplicationModel()
             .getExtensionLoader(MetadataServiceURLBuilder.class);
 
         Map<String, String> metadata = instance.getMetadata();
         // METADATA_SERVICE_URLS_PROPERTY_NAME is a unique key exists only on instances of spring-cloud-alibaba.
-        String dubboURLsJSON = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
-        if (metadata.isEmpty() || StringUtils.isEmpty(dubboURLsJSON)) {
+        String dubboUrlsForJson = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
+        if (metadata.isEmpty() || StringUtils.isEmpty(dubboUrlsForJson)) {
             builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
         } else {
             builder = loader.getExtension(SpringCloudMetadataServiceURLBuilder.NAME);
@@ -107,4 +107,11 @@ public class MetadataUtils {
         return proxyFactory.getProxy(invoker);
     }
 
+    public static ConcurrentMap<String, MetadataService> getMetadataServiceProxies() {
+        return metadataServiceProxies;
+    }
+
+    public static ConcurrentMap<String, Invoker<?>> getMetadataServiceInvokers() {
+        return metadataServiceInvokers;
+    }
 }

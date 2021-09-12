@@ -41,11 +41,11 @@ public class SpringCloudMetadataServiceURLBuilder implements MetadataServiceURLB
     @Override
     public List<URL> build(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
-        String dubboURLsJSON = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
-        if (StringUtils.isBlank(dubboURLsJSON)) {
+        String dubboUrlsForJson = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
+        if (StringUtils.isBlank(dubboUrlsForJson)) {
             return Collections.emptyList();
         }
-        List<String> urlStrings = JSON.parseArray(dubboURLsJSON, String.class);
+        List<String> urlStrings = JSON.parseArray(dubboUrlsForJson, String.class);
         return urlStrings.stream().map(URL::valueOf).collect(Collectors.toList());
     }
 }
