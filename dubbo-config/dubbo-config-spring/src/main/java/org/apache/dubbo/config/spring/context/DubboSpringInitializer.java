@@ -25,8 +25,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.beans.factory.xml.XmlReaderContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.GenericApplicationContext;
@@ -45,15 +43,7 @@ public class DubboSpringInitializer {
     private DubboSpringInitializer() {
     }
 
-    public static void initialize(ParserContext parserContext) {
-        initialize(parserContext.getRegistry(), parserContext.getReaderContext());
-    }
-
     public static void initialize(BeanDefinitionRegistry registry) {
-        initialize(registry, null);
-    }
-
-    public synchronized static void initialize(BeanDefinitionRegistry registry, XmlReaderContext readerContext) {
 
         if (contextMap.putIfAbsent(registry, new DubboSpringInitializationContext()) != null) {
             return;
@@ -66,18 +56,7 @@ public class DubboSpringInitializer {
         ConfigurableListableBeanFactory beanFactory = findBeanFactory(registry);
         ApplicationContext applicationContext = findApplicationContext(registry, beanFactory);
 
-        // find applicationContext in XMLReaderContext (maybe load by ClassPathXmlApplicationContext)
-        if (applicationContext == null && readerContext != null) {
-            if (readerContext.getResourceLoader() instanceof ApplicationContext) {
-                applicationContext = (ApplicationContext) readerContext.getResourceLoader();
-            }
-        }
-
-//        if (applicationContext == null) {
-//            throw new IllegalStateException("Failed to initialize the Dubbo context, can not find Spring ApplicationContext from registry: " +
-//                registry.getClass().getName() + ", readerContext: " + readerContext);
-//        }
-
+        // init dubbo context
         initContext(context, registry, beanFactory, applicationContext);
     }
 
@@ -106,9 +85,12 @@ public class DubboSpringInitializer {
             context.setModuleModel(moduleModel);
         }
 
-        // init SpringExtensionInjector
-        // maybe the applicationContext is null, we will reinitialize it again in DubboInfraBeanRegisterPostProcessor
-        SpringExtensionInjector.get(context.getApplicationModel()).init(applicationContext);
+        // Init SpringExtensionInjector
+        // Maybe the applicationContext is null, that means the Spring ApplicationContext is not completely created, so can not retrieve bean from it.
+        // We will reinitialize it again in DubboInfraBeanRegisterPostProcessor
+        if (applicationContext != null) {
+            SpringExtensionInjector.get(context.getApplicationModel()).init(applicationContext);
+        }
 
         // create DubboBootstrap
         DubboBootstrap bootstrap = context.getDubboBootstrap();

@@ -82,7 +82,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
         registerAnnotationConfigProcessors(registry);
 
         // initialize dubbo beans
-        DubboSpringInitializer.initialize(parserContext);
+        DubboSpringInitializer.initialize(parserContext.getRegistry());
 
         BeanDefinition beanDefinition = super.parse(element, parserContext);
         setSource(beanDefinition);
