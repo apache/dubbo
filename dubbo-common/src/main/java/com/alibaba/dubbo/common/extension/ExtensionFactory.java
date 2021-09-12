@@ -19,6 +19,11 @@ package com.alibaba.dubbo.common.extension;
 /**
  * ExtensionFactory
  */
+/**
+ * @date 2021/9/11
+ * @author huangchenguang
+ * @desc 扩展工厂类，用于获取接口对应的实际对象，本身也是一个扩展接口，有spi和spring2种扩展实现
+ */
 @SPI
 public interface ExtensionFactory {
 

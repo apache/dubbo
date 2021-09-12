@@ -51,6 +51,11 @@ import java.lang.annotation.Target;
  * instead of reporting which extract extension implementation fails and the extract reason.
  * </p>
  */
+/**
+ * @date 2021/9/11
+ * @author huangchenguang
+ * @desc dubbo spi的核心注解，被注解的类在被调用时会根据条配置在META-INF中的规则获取实际的扩展对象
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

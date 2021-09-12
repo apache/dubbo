@@ -27,11 +27,21 @@ import java.util.List;
 /**
  * AdaptiveExtensionFactory
  */
+/**
+ * @date 2021/9/11
+ * @author huangchenguang
+ * @desc 扩展工厂的Adaptive类，用于获取真实的扩展点，有点奇怪的是，它的扩展实现还包括了自身(?)
+ */
 @Adaptive
 public class AdaptiveExtensionFactory implements ExtensionFactory {
 
     private final List<ExtensionFactory> factories;
 
+    /**
+     * @date 2021/9/11
+     * @author huangchenguang
+     * @desc 初始化所有扩展实现，并且设置到factories
+     */
     public AdaptiveExtensionFactory() {
         ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
         List<ExtensionFactory> list = new ArrayList<ExtensionFactory>();
@@ -41,6 +51,11 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
         factories = Collections.unmodifiableList(list);
     }
 
+    /**
+     * @date 2021/9/11
+     * @author huangchenguang
+     * @desc 根据type和name获取扩展实现
+     */
     @Override
     public <T> T getExtension(Class<T> type, String name) {
         for (ExtensionFactory factory : factories) {
