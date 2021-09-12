@@ -127,7 +127,7 @@
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
-        <hessian_lite_version>3.2.8</hessian_lite_version>
+        <hessian_lite_version>3.2.11</hessian_lite_version>
         <alibaba_spring_context_support_version>1.0.2</alibaba_spring_context_support_version>
         <yaml_version>1.17</yaml_version>
     </properties>
