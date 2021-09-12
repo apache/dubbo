@@ -84,7 +84,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -624,7 +623,7 @@ public final class DubboBootstrap {
         }
 
         // check port conflicts
-        Map<Integer, ProtocolConfig> protocolPortMap = new LinkedHashMap<>();
+        Map<Integer, ProtocolConfig> protocolPortMap = new HashMap<>();
         for (ProtocolConfig protocol : configManager.getProtocols()) {
             Integer port = protocol.getPort();
             if (port == null || port == -1) {
