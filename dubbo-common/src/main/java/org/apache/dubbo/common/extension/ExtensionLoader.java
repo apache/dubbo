@@ -195,7 +195,7 @@ public class ExtensionLoader<T> {
      */
     @Deprecated
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
-        return ApplicationModel.defaultModel().getExtensionLoader(type);
+        return ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(type);
     }
 
     // For testing purposes only

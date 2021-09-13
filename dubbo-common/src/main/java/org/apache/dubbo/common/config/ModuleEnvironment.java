@@ -79,7 +79,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
 
     @Override
     public List<Map<String, String>> getConfigurationMaps(AbstractConfig config, String prefix) {
-        List<Map<String, String>> maps = applicationDelegate.getConfigurationMaps();
+        List<Map<String, String>> maps = applicationDelegate.getConfigurationMaps(config, prefix);
         maps.add(orderedPropertiesConfiguration.getProperties());
         return maps;
     }
