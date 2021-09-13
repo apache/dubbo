@@ -118,7 +118,7 @@ public class MetadataUtilsTest {
 
         try (MockedStatic<ScopeModelUtil> scopeModelUtilMockedStatic = mockStatic(ScopeModelUtil.class)) {
             scopeModelUtilMockedStatic
-                .when(() -> ScopeModelUtil.getApplicationModel(serviceInstance.getApplicationModel()))
+                .when(() -> ScopeModelUtil.getOrDefaultApplicationModel(serviceInstance.getApplicationModel()))
                 .thenReturn(applicationModel);
             MetadataUtils.getMetadataServiceProxy(serviceInstance);
 
@@ -175,7 +175,7 @@ public class MetadataUtilsTest {
 
         try (MockedStatic<ScopeModelUtil> scopeModelUtilMockedStatic = mockStatic(ScopeModelUtil.class)) {
             scopeModelUtilMockedStatic
-                .when(() -> ScopeModelUtil.getApplicationModel(serviceInstance.getApplicationModel()))
+                .when(() -> ScopeModelUtil.getOrDefaultApplicationModel(serviceInstance.getApplicationModel()))
                 .thenReturn(applicationModel);
             MetadataUtils.getMetadataServiceProxy(serviceInstance);
         }
