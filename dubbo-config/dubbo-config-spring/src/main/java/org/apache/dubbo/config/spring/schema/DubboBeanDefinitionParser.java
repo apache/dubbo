@@ -18,12 +18,15 @@ package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractServiceConfig;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
@@ -32,6 +35,7 @@ import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
+
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -49,6 +53,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Date;
@@ -229,6 +234,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             parseNested(element, parserContext, ReferenceBean.class, true, "reference", "consumer", beanName, beanDefinition);
         } else if (ReferenceBean.class.equals(beanClass)) {
             configReferenceBean(element, parserContext, beanDefinition, null);
+        } else if (MetricsConfig.class.equals(beanClass)) {
+            parseAggregation(element, parserContext, beanDefinition);
         }
 
         // register bean definition
@@ -240,6 +247,39 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             parserContext.getRegistry().registerBeanDefinition(beanName, beanDefinition);
         }
         return beanDefinition;
+    }
+
+    private static void parseAggregation(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition) {
+        NodeList childNodes = element.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            if (!(childNodes.item(i) instanceof Element)) {
+                continue;
+            }
+
+            Element child = (Element) childNodes.item(i);
+            if ("aggregation".equals(child.getNodeName()) || "aggregation".equals(child.getLocalName())) {
+                MetricsConfig.Aggregation aggregation = new MetricsConfig.Aggregation();
+
+                Method[] methods = MetricsConfig.Aggregation.class.getMethods();
+                for (Method method : methods) {
+                    if (MethodUtils.isSetter(method)) {
+                        String beanProperty = method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4);
+                        String property = StringUtils.camelToSplitName(beanProperty, "-");
+                        String value = resolveAttribute(child, property, parserContext);
+                        if (StringUtils.isNotEmpty(value)) {
+                            try {
+                                Object v = ClassUtils.convertPrimitive(method.getParameterTypes()[0], value);
+                                method.invoke(aggregation, v);
+                            } catch (IllegalAccessException | InvocationTargetException e) {
+                                throw new IllegalStateException(e);
+                            }
+                        }
+                    }
+                }
+
+                beanDefinition.getPropertyValues().addPropertyValue("aggregation", aggregation);
+            }
+        }
     }
 
     private static void configReferenceBean(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition, BeanDefinition consumerDefinition) {

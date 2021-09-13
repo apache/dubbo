@@ -150,6 +150,7 @@
         <module>dubbo-configcenter</module>
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
+        <module>dubbo-metrics</module>
         <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
         <module>dubbo-native</module>

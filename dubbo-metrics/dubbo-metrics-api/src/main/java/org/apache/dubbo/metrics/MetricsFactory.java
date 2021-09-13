@@ -14,16 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.monitor.support;
+package org.apache.dubbo.metrics;
 
-import org.apache.dubbo.monitor.MetricsService;
-import org.apache.dubbo.rpc.model.BuiltinServiceDetector;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-public class MetricsServiceDetector implements BuiltinServiceDetector {
+/**
+ * MetricsFactory. (SPI, Singleton, ThreadSafe)
+ */
+@SPI(value = "prometheus", scope = ExtensionScope.APPLICATION)
+public interface MetricsFactory {
 
-    @Override
-    public Class<?> getService() {
-        return MetricsService.class;
-    }
+    /**
+     * Create metrics.
+     *
+     * @param url
+     * @return metrics
+     */
+    @Adaptive("protocol")
+    Metrics getMetrics(URL url);
 
 }

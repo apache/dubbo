@@ -166,7 +166,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The metrics configuration
      */
-    protected MetricsConfig metrics;
     protected MetadataReportConfig metadataReportConfig;
 
     protected ConfigCenterConfig configCenter;
@@ -209,9 +208,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
         if (this.metadataReportConfig != null && this.metadataReportConfig.getScopeModel() != applicationModel) {
             this.metadataReportConfig.setScopeModel(applicationModel);
-        }
-        if (this.metrics != null && this.metrics.getScopeModel() != applicationModel) {
-            this.metrics.setScopeModel(applicationModel);
         }
         if (this.monitor != null && this.monitor.getScopeModel() != applicationModel) {
             this.monitor.setScopeModel(applicationModel);
@@ -767,22 +763,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.metadataReportConfig = metadataReportConfig;
         if (metadataReportConfig != null) {
             getConfigManager().addMetadataReport(metadataReportConfig);
-        }
-    }
-
-    @Deprecated
-    public MetricsConfig getMetrics() {
-        if (metrics != null) {
-            return metrics;
-        }
-        return getConfigManager().getMetrics().orElse(null);
-    }
-
-    @Deprecated
-    public void setMetrics(MetricsConfig metrics) {
-        this.metrics = metrics;
-        if (metrics != null) {
-            getConfigManager().setMetrics(metrics);
         }
     }
 

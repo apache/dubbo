@@ -126,6 +126,7 @@ public class ConfigManagerTest {
     @Test
     public void tesMetricsConfig() {
         MetricsConfig config = new MetricsConfig();
+        config.setProtocol("prometheus");
         configManager.setMetrics(config);
         assertTrue(configManager.getMetrics().isPresent());
         assertEquals(config, configManager.getMetrics().get());

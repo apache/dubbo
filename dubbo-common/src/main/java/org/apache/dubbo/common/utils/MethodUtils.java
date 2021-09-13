@@ -395,4 +395,27 @@ public interface MethodUtils {
         List<Method> matchedMethods = getAllMethods(declaringClass, method -> overrides(overrider, method));
         return matchedMethods.isEmpty() ? null : matchedMethods.get(0);
     }
+
+    /**
+     * Extract fieldName from set/get/is method. if it's not a set/get/is method, return empty string.
+     *
+     * @param method method
+     * @return fieldName
+     */
+    static String extractFieldName(Method method) {
+        String methodName = method.getName();
+        String fieldName = "";
+        if (methodName.startsWith("get")) {
+            fieldName = methodName.substring("get".length());
+        } else if (methodName.startsWith("set")) {
+            fieldName = methodName.substring("set".length());
+        } else if (methodName.startsWith("is")) {
+            fieldName = methodName.substring("is".length());
+        } else {
+            return fieldName;
+        }
+
+        fieldName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
+        return fieldName;
+    }
 }

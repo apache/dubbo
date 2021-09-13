@@ -50,8 +50,12 @@ import java.util.List;
                 "dubbo.registry.address = zookeeper://192.168.99.100:32770",
                 "dubbo.protocol.name=dubbo",
                 "dubbo.protocol.port=20880",
-                "dubbo.metrics.protocol=dubbo",
-                "dubbo.metrics.port=20880",
+                "dubbo.metrics.mode=push",
+                "dubbo.metrics.address=prometheus://localhost:9091",
+                "dubbo.metrics.push-interval=5",
+                "dubbo.metrics.aggregation.enable=true",
+                "dubbo.metrics.aggregation.bucket-num=5",
+                "dubbo.metrics.aggregation.time-window-seconds=120",
                 "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
                 "dubbo.Config-center.address=zookeeper://127.0.0.1:2181",
                 "dubbo.config-Center.group=group1",
@@ -100,8 +104,12 @@ public class SpringBootConfigPropsTest {
         Assertions.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
 
         MetricsConfig metricsConfig = configManager.getMetrics().get();
-        Assertions.assertEquals("dubbo", metricsConfig.getProtocol());
-        Assertions.assertEquals("20880", metricsConfig.getPort());
+        Assertions.assertEquals("push", metricsConfig.getMode());
+        Assertions.assertEquals("prometheus://localhost:9091", metricsConfig.getAddress());
+        Assertions.assertEquals(5, metricsConfig.getPushInterval());
+        Assertions.assertEquals(5, metricsConfig.getAggregation().getBucketNum());
+        Assertions.assertEquals(120, metricsConfig.getAggregation().getTimeWindowSeconds());
+        Assertions.assertTrue(metricsConfig.getAggregation().getEnable());
 
         List<ProtocolConfig> defaultProtocols = configManager.getDefaultProtocols();
         Assertions.assertEquals(1, defaultProtocols.size());

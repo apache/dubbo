@@ -412,7 +412,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // append params with basic configs,
         ServiceConfig.appendRuntimeParameters(map);
-        AbstractConfig.appendParameters(map, getMetrics());
         AbstractConfig.appendParameters(map, getApplication());
         AbstractConfig.appendParameters(map, getModule());
         // remove 'default.' prefix for configs from ProviderConfig
