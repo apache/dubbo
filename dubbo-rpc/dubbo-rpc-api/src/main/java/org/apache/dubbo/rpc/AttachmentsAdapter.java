@@ -57,10 +57,11 @@ public class AttachmentsAdapter {
         }
 
         private String convert(Object obj) {
-            if (obj instanceof String) {
-                return (String) obj;
+            if (obj == null) {
+                return null;
+            } else {
+                return obj.toString();
             }
-            return null; // or JSON.toString(obj);
         }
 
         @Override
