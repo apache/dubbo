@@ -53,13 +53,35 @@ import java.util.concurrent.atomic.AtomicReference;
  * AbstractRegistry. (SPI, Prototype, ThreadSafe)
  *
  */
+/**
+ * @date 2021/9/13
+ * @author huangchenguang
+ * @desc 注册中心抽象类
+ */
 public abstract class AbstractRegistry implements Registry {
 
     // URL address separator, used in file cache, service provider URL separation
+    /**
+     * @date 2021/9/13
+     * @author huangchenguang
+     * @desc URL的地址分隔符，在缓存文件中使用，服务提供者的URL分隔
+     */
     private static final char URL_SEPARATOR = ' ';
+
     // URL address separated regular expression for parsing the service provider URL list in the file cache
+    /**
+     * @date 2021/9/13
+     * @author huangchenguang
+     * @desc URL地址分隔正则表达式，用于解析文件缓存中服务提供者URL列表
+     */
     private static final String URL_SPLIT = "\\s+";
+
     // Log output
+    /**
+     * @date 2021/9/13
+     * @author huangchenguang
+     * @desc 日志对象
+     */
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     // Local disk cache, where the special key value.registies records the list of registry centers, and the others are the list of notified service providers
     private final Properties properties = new Properties();

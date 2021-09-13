@@ -23,13 +23,26 @@ import com.alibaba.dubbo.common.extension.SPI;
 /**
  * SpiExtensionFactory
  */
+/**
+ * @date 2021/9/13
+ * @author huangchenguang
+ * @desc Spi扩展类工厂
+ */
 public class SpiExtensionFactory implements ExtensionFactory {
 
+    /**
+     * @date 2021/9/13
+     * @author huangchenguang
+     * @desc 生产Spi扩展类工厂对应的对象
+     */
     @Override
     public <T> T getExtension(Class<T> type, String name) {
+        // 判断是否为接口，接口上是否有@SPI注解
         if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
+            // 获取扩展类加载器
             ExtensionLoader<T> loader = ExtensionLoader.getExtensionLoader(type);
             if (!loader.getSupportedExtensions().isEmpty()) {
+                // 返回扩展适配器对象
                 return loader.getAdaptiveExtension();
             }
         }

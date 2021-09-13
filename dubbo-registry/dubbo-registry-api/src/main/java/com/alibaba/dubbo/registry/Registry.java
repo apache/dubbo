@@ -24,5 +24,10 @@ import com.alibaba.dubbo.common.Node;
  * @see com.alibaba.dubbo.registry.RegistryFactory#getRegistry(com.alibaba.dubbo.common.URL)
  * @see com.alibaba.dubbo.registry.support.AbstractRegistry
  */
+/**
+ * @date 2021/9/13
+ * @author huangchenguang
+ * @desc 注册中心接口，抽象
+ */
 public interface Registry extends Node, RegistryService {
 }

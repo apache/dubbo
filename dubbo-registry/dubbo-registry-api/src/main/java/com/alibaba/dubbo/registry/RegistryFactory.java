@@ -25,6 +25,11 @@ import com.alibaba.dubbo.common.extension.SPI;
  *
  * @see com.alibaba.dubbo.registry.support.AbstractRegistryFactory
  */
+/**
+ * @date 2021/9/13
+ * @author huangchenguang
+ * @desc 注册中心工厂类接口
+ */
 @SPI("dubbo")
 public interface RegistryFactory {
 
@@ -41,6 +46,11 @@ public interface RegistryFactory {
      *
      * @param url Registry address, is not allowed to be empty
      * @return Registry reference, never return empty value
+     */
+    /**
+     * @date 2021/9/13
+     * @author huangchenguang
+     * @desc 返回注册中心
      */
     @Adaptive({"protocol"})
     Registry getRegistry(URL url);

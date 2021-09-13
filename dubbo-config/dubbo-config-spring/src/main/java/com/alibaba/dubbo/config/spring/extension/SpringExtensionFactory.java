@@ -35,6 +35,11 @@ import java.util.Set;
 /**
  * SpringExtensionFactory
  */
+/**
+ * @date 2021/9/13
+ * @author huangchenguang
+ * @desc Spring扩展类工厂
+ */
 public class SpringExtensionFactory implements ExtensionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
@@ -60,6 +65,11 @@ public class SpringExtensionFactory implements ExtensionFactory {
         contexts.clear();
     }
 
+    /**
+     * @date 2021/9/13
+     * @author huangchenguang
+     * @desc 生产Spring扩展类工厂对应的对象，从Spring ApplicationContext中获取bean用来注入
+     */
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getExtension(Class<T> type, String name) {

@@ -19,12 +19,22 @@ package com.alibaba.dubbo.common;
 /**
  * Node. (API/SPI, Prototype, ThreadSafe)
  */
+/**
+ * @date 2021/9/13
+ * @author huangchenguang
+ * @desc 节点
+ */
 public interface Node {
 
     /**
      * get url.
      *
      * @return url.
+     */
+    /**
+     * @date 2021/9/13
+     * @author huangchenguang
+     * @desc 获取节点的地址
      */
     URL getUrl();
 
@@ -33,10 +43,20 @@ public interface Node {
      *
      * @return available.
      */
+    /**
+     * @date 2021/9/13
+     * @author huangchenguang
+     * @desc 判断节点是否可用
+     */
     boolean isAvailable();
 
     /**
      * destroy.
+     */
+    /**
+     * @date 2021/9/13
+     * @author huangchenguang
+     * @desc 销毁节点
      */
     void destroy();
 

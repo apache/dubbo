@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * @date 2021/9/11
  * @author huangchenguang
- * @desc 扩展工厂的Adaptive类，用于获取真实的扩展点，有点奇怪的是，它的扩展实现还包括了自身(?)
+ * @desc 扩展接口ExtensionFactory的Adaptive类，用来获取真实的对象，有点奇怪的是，它的扩展对象还包括了自身(?)
  */
 @Adaptive
 public class AdaptiveExtensionFactory implements ExtensionFactory {
@@ -40,7 +40,7 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
     /**
      * @date 2021/9/11
      * @author huangchenguang
-     * @desc 初始化所有扩展实现，并且设置到factories
+     * @desc 初始化所有扩展对象，并且设置到factories
      */
     public AdaptiveExtensionFactory() {
         ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
@@ -54,7 +54,7 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
     /**
      * @date 2021/9/11
      * @author huangchenguang
-     * @desc 根据type和name获取扩展实现
+     * @desc 根据扩展类和扩展名获取扩展对象
      */
     @Override
     public <T> T getExtension(Class<T> type, String name) {
