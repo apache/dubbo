@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -241,5 +242,35 @@ public class DubboNamespaceHandlerTest {
 
         String prefix = ((DemoServiceImpl) serviceBean.getRef()).getPrefix();
         assertThat(prefix, is("welcome:"));
+    }
+
+    @Test
+    public void testMetrics() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/metrics-aggregation.xml");
+        ctx.start();
+
+        ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+
+        MetricsConfig metricsConfigBean = ctx.getBean(MetricsConfig.class);
+        MetricsConfig metricsConfig = configManager.getMetrics().get();
+
+        assertEquals(metricsConfig.getProtocol(), "prometheus");
+        assertEquals(metricsConfig.getMode(), "pull");
+        assertEquals(metricsConfig.getAddress(), "localhost:9091");
+        assertEquals(metricsConfig.getMetricsPort(), 20888);
+        assertEquals(metricsConfig.getMetricsPath(), "/metrics");
+        assertEquals(metricsConfig.getAggregation().getEnable(), true);
+        assertEquals(metricsConfig.getAggregation().getBucketNum(), 5);
+        assertEquals(metricsConfig.getAggregation().getTimeWindowSeconds(), 120);
+
+        assertEquals(metricsConfig.getProtocol(), metricsConfigBean.getProtocol());
+        assertEquals(metricsConfig.getMode(), metricsConfigBean.getMode());
+        assertEquals(metricsConfig.getAddress(), metricsConfigBean.getAddress());
+        assertEquals(metricsConfig.getMetricsPort(), metricsConfigBean.getMetricsPort());
+        assertEquals(metricsConfig.getMetricsPath(), metricsConfigBean.getMetricsPath());
+        assertEquals(metricsConfig.getAggregation().getEnable(), metricsConfigBean.getAggregation().getEnable());
+        assertEquals(metricsConfig.getAggregation().getBucketNum(), metricsConfigBean.getAggregation().getBucketNum());
+        assertEquals(metricsConfig.getAggregation().getTimeWindowSeconds(), metricsConfigBean.getAggregation().getTimeWindowSeconds());
+
     }
 }
