@@ -49,10 +49,6 @@ public class ModuleDeployer {
 
     private List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
 
-    private boolean asyncExportFinish = true;
-
-    private volatile boolean asyncReferFinish = true;
-
     private ModuleModel moduleModel;
 
     private ExecutorRepository executorRepository;
@@ -91,6 +87,8 @@ public class ModuleDeployer {
     public CompletableFuture start() throws IllegalStateException {
 
         CompletableFuture startFuture = new CompletableFuture();
+
+        applicationDeployer.initialize();
 
         // initialize
         initialize();
@@ -249,7 +247,6 @@ public class ModuleDeployer {
 
     private void waitExportFinish() {
         try {
-            asyncExportFinish = false;
             logger.info(getIdentifier() + " waiting services exporting ...");
             CompletableFuture<?> future = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
             future.get();
@@ -258,14 +255,12 @@ public class ModuleDeployer {
         } finally {
             executorRepository.shutdownServiceExportExecutor();
             logger.info(getIdentifier() + " export services finished.");
-            asyncExportFinish = true;
             asyncExportingFutures.clear();
         }
     }
 
     private void waitReferFinish() {
         try {
-            asyncReferFinish = false;
             logger.info(getIdentifier() + " waiting services referring ...");
             CompletableFuture<?> future = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
             future.get();
@@ -274,7 +269,6 @@ public class ModuleDeployer {
         } finally {
             executorRepository.shutdownServiceReferExecutor();
             logger.info(getIdentifier() + " refer services finished.");
-            asyncReferFinish = true;
             asyncReferringFutures.clear();
         }
     }
@@ -282,6 +276,14 @@ public class ModuleDeployer {
     public void awaitFinish() {
         waitExportFinish();
         waitReferFinish();
+    }
+
+    public boolean isStartup() {
+        return startup;
+    }
+
+    public boolean getInitialized() {
+        return initialized.get();
     }
 
     public boolean isExportBackground() {
@@ -317,7 +319,6 @@ public class ModuleDeployer {
      * Prepare for export/refer service, trigger initializing application and module
      */
     public void prepare() {
-        //TODO
         applicationDeployer.initialize();
         this.initialize();
     }
@@ -325,8 +326,7 @@ public class ModuleDeployer {
     /**
      * After export one service, trigger starting application
      */
-    public void afterExportService(ServiceConfig sc) {
-        //TODO
+    public void notifyExportService(ServiceConfig sc) {
         applicationDeployer.prepareApplicationInstance();
     }
 

@@ -230,7 +230,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
 
             // notify export this service
-            moduleDeployer.afterExportService(this);
+            moduleDeployer.notifyExportService(this);
         }
     }
 
