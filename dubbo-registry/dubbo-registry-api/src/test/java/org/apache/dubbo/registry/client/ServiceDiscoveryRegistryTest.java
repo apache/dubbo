@@ -23,6 +23,8 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.listener.MockServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -83,6 +85,11 @@ public class ServiceDiscoveryRegistryTest {
         instanceList2.add(new DefaultServiceInstance());
         instanceList2.add(new DefaultServiceInstance());
 
+    }
+
+    @AfterEach
+    public void teardown() {
+        FrameworkModel.destroyAll();
     }
 
     @BeforeEach

@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -45,6 +46,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class MetadataUtilsTest {
+
+    @BeforeEach
+    public void setup() {
+        ApplicationModel.defaultModel().destroy();
+    }
 
     @AfterEach
     public void tearDown() throws IOException {
@@ -121,7 +127,7 @@ public class MetadataUtilsTest {
         }
 
         MetadataUtils.destroyMetadataServiceProxy(serviceInstance);
-        applicationModel.destroy();
+        ApplicationModel.defaultModel().destroy();
     }
 
 
@@ -177,7 +183,7 @@ public class MetadataUtilsTest {
 
         Assertions.assertEquals(0, MetadataUtils.getMetadataServiceProxies().size());
         Assertions.assertEquals(0, MetadataUtils.getMetadataServiceInvokers().size());
-        applicationModel.destroy();
+        ApplicationModel.defaultModel().destroy();
     }
 
 
