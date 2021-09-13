@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
@@ -26,10 +27,12 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Environment extends LifecycleAdapter implements ApplicationExt {
@@ -287,4 +290,12 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         loadMigrationRule();
     }
 
+    @Deprecated
+    public Configuration getDynamicGlobalConfiguration() {
+        return ScopeModelUtil.getApplicationModel(scopeModel).getDefaultModule().getModelEnvironment().getDynamicGlobalConfiguration();
+    }
+
+    public Optional<DynamicConfiguration> getDynamicConfiguration() {
+        return ScopeModelUtil.getApplicationModel(scopeModel).getDefaultModule().getModelEnvironment().getDynamicConfiguration();
+    }
 }
