@@ -32,7 +32,7 @@ public class EnumTypeBuilder implements TypeBuilder {
     private static final Logger logger = LoggerFactory.getLogger(TypeDefinitionBuilder.class);
 
     @Override
-    public boolean accept(Type type, Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }

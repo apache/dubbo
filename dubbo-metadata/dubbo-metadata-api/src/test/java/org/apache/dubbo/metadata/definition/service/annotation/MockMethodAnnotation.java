@@ -14,29 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition.builder;
+package org.apache.dubbo.metadata.definition.service.annotation;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.lang.reflect.Type;
-import java.util.Map;
-
-/**
- * 2015/1/27.
- */
-@SPI
-public interface TypeBuilder extends Prioritized {
-
-    /**
-     * Whether the build accept the class passed in.
-     */
-    boolean accept(Class<?> clazz);
-
-    /**
-     * Build type definition with the type or class.
-     */
-    TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache);
-
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MockMethodAnnotation {
+    String value();
 }
