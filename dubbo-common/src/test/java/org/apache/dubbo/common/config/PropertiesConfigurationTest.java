@@ -26,7 +26,7 @@ public class PropertiesConfigurationTest {
 
     @Test
     public void testOrderPropertiesProviders() {
-        OrderedPropertiesConfiguration configuration = new OrderedPropertiesConfiguration(ApplicationModel.defaultModel());
+        OrderedPropertiesConfiguration configuration = new OrderedPropertiesConfiguration(ApplicationModel.defaultModel().getDefaultModule());
         Assertions.assertEquals("999", configuration.getInternalProperty("testKey"));
     }
 
