@@ -19,7 +19,7 @@ package org.apache.dubbo.common.extension;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.extension.support.WrapperComparator;
@@ -1174,7 +1174,7 @@ public class ExtensionLoader<T> {
 
     private Environment getEnvironment() {
         if (environment == null) {
-            environment = (Environment) extensionDirector.getExtensionLoader(FrameworkExt.class).getExtension(Environment.NAME);
+            environment = (Environment) extensionDirector.getExtensionLoader(ApplicationExt.class).getExtension(Environment.NAME);
         }
         return environment;
     }

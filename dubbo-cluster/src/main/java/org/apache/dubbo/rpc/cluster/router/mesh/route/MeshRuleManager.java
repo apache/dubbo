@@ -17,11 +17,11 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -38,11 +38,11 @@ public final class MeshRuleManager {
 
     private static final ConcurrentHashMap<String, MeshAppRuleListener> APP_RULE_LISTENERS = new ConcurrentHashMap<>();
 
-    public synchronized static void subscribeAppRule(String app) {
+    public synchronized static void subscribeAppRule(URL consumerUrl, String app) {
 
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener(app);
         String appRuleDataId = app + MESH_RULE_DATA_ID_SUFFIX;
-        DynamicConfiguration configuration = ApplicationModel.defaultModel().getApplicationEnvironment().getDynamicConfiguration()
+        DynamicConfiguration configuration = consumerUrl.getOrDefaultModuleModel().getModelEnvironment().getDynamicConfiguration()
             .orElse(null);
 
         Set<MeshEnvListenerFactory> envListenerFactories = ExtensionLoader.getExtensionLoader(MeshEnvListenerFactory.class).getSupportedExtensionInstances();
@@ -75,8 +75,8 @@ public final class MeshRuleManager {
         APP_RULE_LISTENERS.put(app, meshAppRuleListener);
     }
 
-    public static void unsubscribeAppRule(String app) {
-        DynamicConfiguration configuration = ApplicationModel.getEnvironment().getDynamicConfiguration()
+    public static void unsubscribeAppRule(URL consumerUrl, String app) {
+        DynamicConfiguration configuration = consumerUrl.getOrDefaultModuleModel().getModelEnvironment().getDynamicConfiguration()
             .orElse(null);
 
         String appRuleDataId = app + MESH_RULE_DATA_ID_SUFFIX;

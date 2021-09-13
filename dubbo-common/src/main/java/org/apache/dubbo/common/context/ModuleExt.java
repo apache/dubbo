@@ -14,23 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config;
+package org.apache.dubbo.common.context;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-/**
- * 2019/12/30
- */
-
 @SPI(scope = ExtensionScope.MODULE)
-public interface ConfigPostProcessor {
+public interface ModuleExt extends Lifecycle {
 
-    default void postProcessReferConfig(ReferenceConfig referenceConfig) {
-
-    }
-
-    default void postProcessServiceConfig(ServiceConfig serviceConfig) {
-
-    }
 }

@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.context;
 
 import org.apache.dubbo.common.config.CompositeConfiguration;
-import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
@@ -68,7 +68,7 @@ import static org.apache.dubbo.config.AbstractConfig.getTagName;
  * A lock-free config manager (through ConcurrentHashMap), for fast read operation.
  * The Write operation lock with sub configs map of config type, for safely check and add new config.
  */
-public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
+public class ConfigManager extends LifecycleAdapter implements ApplicationExt {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
 
@@ -120,7 +120,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         if (!inited.compareAndSet(false, true)) {
             return;
         }
-        CompositeConfiguration configuration = applicationModel.getApplicationEnvironment().getConfiguration();
+        CompositeConfiguration configuration = applicationModel.getModelEnvironment().getConfiguration();
         String configModeStr = (String) configuration.getProperty(DUBBO_CONFIG_MODE);
         try {
             if (StringUtils.hasText(configModeStr)) {

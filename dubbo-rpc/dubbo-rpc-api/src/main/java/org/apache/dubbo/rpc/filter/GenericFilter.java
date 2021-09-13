@@ -115,7 +115,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                 } else if (ProtocolUtils.isGsonGenericSerialization(generic)) {
                     args = getGsonGenericArgs(args, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
-                    Configuration configuration = ApplicationModel.ofNullable(applicationModel).getApplicationEnvironment().getConfiguration();
+                    Configuration configuration = ApplicationModel.ofNullable(applicationModel).getModelEnvironment().getConfiguration();
                     if (!configuration.getBoolean(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, false)) {
                         String notice = "Trigger the safety barrier! " +
                                 "Native Java Serializer is not allowed by default." +

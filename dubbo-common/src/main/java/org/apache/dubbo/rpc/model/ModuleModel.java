@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.config.ModuleEnvironment;
+import org.apache.dubbo.common.context.ModuleExt;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
@@ -35,16 +37,17 @@ public class ModuleModel extends ScopeModel {
     public static final String NAME = "ModuleModel";
 
     private final ApplicationModel applicationModel;
+    private ModuleEnvironment moduleEnvironment;
     private ModuleServiceRepository serviceRepository;
 
     public ModuleModel(ApplicationModel applicationModel) {
-        this(NAME + "-" + index.getAndIncrement(), applicationModel);
+        this(NAME + "-" + index.getAndIncrement(), applicationModel, false);
     }
 
-    public ModuleModel(String name, ApplicationModel applicationModel) {
+    public ModuleModel(String name, ApplicationModel applicationModel, boolean isInternal) {
         super(applicationModel, ExtensionScope.MODULE);
         this.applicationModel = applicationModel;
-        applicationModel.addModule(this);
+        applicationModel.addModule(this, isInternal);
         initialize();
         this.modelName = name;
     }
@@ -54,6 +57,8 @@ public class ModuleModel extends ScopeModel {
         super.initialize();
         this.serviceRepository = new ModuleServiceRepository(this);
 
+        initModuleExt();
+
         ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
         Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
         for (ScopeModelInitializer initializer : initializers) {
@@ -61,6 +66,13 @@ public class ModuleModel extends ScopeModel {
         }
 
         postProcessAfterCreated();
+    }
+
+    private void initModuleExt() {
+        Set<ModuleExt> exts = this.getExtensionLoader(ModuleExt.class).getSupportedExtensionInstances();
+        for (ModuleExt ext : exts) {
+            ext.initialize();
+        }
     }
 
     @Override
@@ -98,6 +110,10 @@ public class ModuleModel extends ScopeModel {
         }
 
         // TODO destroy module resources
+        if (moduleEnvironment != null) {
+            moduleEnvironment.destroy();
+            moduleEnvironment = null;
+        }
         applicationModel.removeModule(this);
         super.destroy();
     }
@@ -108,5 +124,14 @@ public class ModuleModel extends ScopeModel {
 
     public ModuleServiceRepository getServiceRepository() {
         return serviceRepository;
+    }
+
+    @Override
+    public ModuleEnvironment getModelEnvironment() {
+        if (moduleEnvironment == null) {
+            moduleEnvironment = (ModuleEnvironment) this.getExtensionLoader(ModuleExt.class)
+                .getExtension(ModuleEnvironment.NAME);
+        }
+        return moduleEnvironment;
     }
 }

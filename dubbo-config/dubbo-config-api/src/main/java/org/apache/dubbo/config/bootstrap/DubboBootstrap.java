@@ -19,6 +19,7 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.ModuleEnvironment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
@@ -272,7 +273,7 @@ public final class DubboBootstrap {
         this.applicationModel = applicationModel;
         applicationModel.getAttribute().put(NAME, this);
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.getApplicationEnvironment();
+        environment = applicationModel.getModelEnvironment();
 
         executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         DubboShutdownHook.getDubboShutdownHook().register();
@@ -747,6 +748,15 @@ public final class DubboBootstrap {
         // load config centers
         loadConfigs(ConfigCenterConfig.class);
 
+        // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
+        List<ModuleEnvironment> unloadedModule = applicationModel.getPubModuleModels().stream()
+            .map(ModuleModel::getModelEnvironment)
+            .filter(e -> !e.getDynamicConfiguration().isPresent())
+            .collect(Collectors.toList());
+        if (unloadedModule.size() == 0) {
+            return;
+        }
+
         useRegistryAsConfigCenterIfNecessary();
 
         // check Config Center
@@ -777,7 +787,7 @@ public final class DubboBootstrap {
                 // Fetch config from remote config center
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
-            environment.setDynamicConfiguration(compositeDynamicConfiguration);
+            unloadedModule.forEach(e->e.setDynamicConfiguration(compositeDynamicConfiguration));
         }
 
         configManager.refreshAll();
@@ -816,10 +826,6 @@ public final class DubboBootstrap {
      * useAsConfigCenter of registryConfig is null or true
      */
     private void useRegistryAsConfigCenterIfNecessary() {
-        // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-        if (environment.getDynamicConfiguration().isPresent()) {
-            return;
-        }
 
         if (CollectionUtils.isNotEmpty(configManager.getConfigCenters())) {
             return;
@@ -1059,8 +1065,8 @@ public final class DubboBootstrap {
                 try {
                     // add default name config (same as id), e.g. dubbo.protocols.rest.port=1234
                     key = DUBBO + "." + AbstractConfig.getPluralTagName(cls) + "." + id + ".name";
-                    if (applicationModel.getApplicationEnvironment().getPropertiesConfiguration().getProperty(key) == null) {
-                        applicationModel.getApplicationEnvironment().getPropertiesConfiguration().setProperty(key, id);
+                    if (applicationModel.getModelEnvironment().getPropertiesConfiguration().getProperty(key) == null) {
+                        applicationModel.getModelEnvironment().getPropertiesConfiguration().setProperty(key, id);
                         addDefaultNameConfig = true;
                     }
 
@@ -1071,7 +1077,7 @@ public final class DubboBootstrap {
                     throw new IllegalStateException("load config failed, id: " + id + ", type:" + cls.getSimpleName());
                 } finally {
                     if (addDefaultNameConfig && key != null) {
-                        applicationModel.getApplicationEnvironment().getPropertiesConfiguration().remove(key);
+                        applicationModel.getModelEnvironment().getPropertiesConfiguration().remove(key);
                     }
                 }
             }
@@ -1811,7 +1817,7 @@ public final class DubboBootstrap {
     }
 
     public Module addModule(ModuleModel moduleModel) {
-        applicationModel.addModule(moduleModel);
+        applicationModel.addModule(moduleModel, false);
         currentModule = new Module(moduleModel);
         return currentModule;
     }

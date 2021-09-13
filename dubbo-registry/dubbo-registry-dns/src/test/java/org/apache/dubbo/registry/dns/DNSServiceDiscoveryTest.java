@@ -117,7 +117,7 @@ public class DNSServiceDiscoveryTest {
                 .addParameter(DNSClientConst.DNS_POLLING_CYCLE, 100)
                 .addParameter(Constants.ECHO_POLLING_CYCLE_KEY, 100);
         registryURL.setScopeModel(ApplicationModel.defaultModel());
-        applicationModel.getApplicationEnvironment().getAppExternalConfigMap()
+        applicationModel.getModelEnvironment().getAppExternalConfigMap()
                 .put(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(500));
         dnsServiceDiscovery.initialize(registryURL);
 
@@ -170,7 +170,7 @@ public class DNSServiceDiscoveryTest {
         serviceConfig.unexport();
 
         dnsServiceDiscovery.destroy();
-        applicationModel.getApplicationEnvironment().getAppExternalConfigMap()
+        applicationModel.getModelEnvironment().getAppExternalConfigMap()
                 .remove(METADATA_PROXY_TIMEOUT_KEY);
     }
 

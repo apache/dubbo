@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
@@ -54,6 +54,7 @@ public class ApplicationModel extends ScopeModel {
     private static volatile ApplicationModel defaultInstance;
 
     private final List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
+    private final List<ModuleModel> pubModuleModels = Collections.synchronizedList(new ArrayList<>());
     private Environment environment;
     private ConfigManager configManager;
     private ServiceRepository serviceRepository;
@@ -106,7 +107,7 @@ public class ApplicationModel extends ScopeModel {
 
     @Deprecated
     public static Environment getEnvironment() {
-        return defaultModel().getApplicationEnvironment();
+        return defaultModel().getModelEnvironment();
     }
 
     @Deprecated
@@ -161,7 +162,7 @@ public class ApplicationModel extends ScopeModel {
     @Override
     protected void initialize() {
         super.initialize();
-        internalModule = new ModuleModel(this.modelName + "-internal", this);
+        internalModule = new ModuleModel(this.modelName + "-internal", this, true);
         this.serviceRepository = new ServiceRepository(this);
 
         ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
@@ -170,7 +171,7 @@ public class ApplicationModel extends ScopeModel {
             extensionLoader.getExtension(listenerName).init();
         }
 
-        initFrameworkExts();
+        initApplicationExts();
 
         ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
         Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
@@ -181,9 +182,9 @@ public class ApplicationModel extends ScopeModel {
         postProcessAfterCreated();
     }
 
-    private void initFrameworkExts() {
-        Set<FrameworkExt> exts = this.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
-        for (FrameworkExt ext : exts) {
+    private void initApplicationExts() {
+        Set<ApplicationExt> exts = this.getExtensionLoader(ApplicationExt.class).getSupportedExtensionInstances();
+        for (ApplicationExt ext : exts) {
             ext.initialize();
         }
     }
@@ -221,9 +222,10 @@ public class ApplicationModel extends ScopeModel {
         return frameworkModel;
     }
 
-    public Environment getApplicationEnvironment() {
+    @Override
+    public Environment getModelEnvironment() {
         if (environment == null) {
-            environment = (Environment) this.getExtensionLoader(FrameworkExt.class)
+            environment = (Environment) this.getExtensionLoader(ApplicationExt.class)
                 .getExtension(Environment.NAME);
         }
         return environment;
@@ -231,7 +233,7 @@ public class ApplicationModel extends ScopeModel {
 
     public ConfigManager getApplicationConfigManager() {
         if (configManager == null) {
-            configManager = (ConfigManager) this.getExtensionLoader(FrameworkExt.class)
+            configManager = (ConfigManager) this.getExtensionLoader(ApplicationExt.class)
                 .getExtension(ConfigManager.NAME);
         }
         return configManager;
@@ -253,14 +255,18 @@ public class ApplicationModel extends ScopeModel {
         return getCurrentConfig().getName();
     }
 
-    public synchronized void addModule(ModuleModel model) {
+    public synchronized void addModule(ModuleModel model, boolean isInternal) {
         if (!this.moduleModels.contains(model)) {
             this.moduleModels.add(model);
+            if (!isInternal) {
+                this.pubModuleModels.add(model);
+            }
         }
     }
 
     public synchronized void removeModule(ModuleModel model) {
         this.moduleModels.remove(model);
+        this.pubModuleModels.remove(model);
         if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
             this.internalModule.destroy();
         }
@@ -271,15 +277,15 @@ public class ApplicationModel extends ScopeModel {
         return moduleModels;
     }
 
+    public List<ModuleModel> getPubModuleModels() {
+        return pubModuleModels;
+    }
+
     public synchronized ModuleModel getDefaultModule() {
-        for (ModuleModel moduleModel : moduleModels) {
-            if (moduleModel != internalModule) {
-                return moduleModel;
-            }
+        if (pubModuleModels.size() > 0) {
+            return pubModuleModels.get(0);
         }
-        ModuleModel moduleModel = new ModuleModel(this);
-        this.addModule(moduleModel);
-        return moduleModel;
+        return new ModuleModel(this);
     }
 
     public ModuleModel getInternalModule() {

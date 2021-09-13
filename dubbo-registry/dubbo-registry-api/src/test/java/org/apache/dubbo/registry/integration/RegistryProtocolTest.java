@@ -19,8 +19,6 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -35,6 +33,7 @@ import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
 import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
 import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -85,12 +84,6 @@ public class RegistryProtocolTest {
         CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
         when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
             .thenReturn(true);
-
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-
-        Environment environment = mock(Environment.class);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
@@ -154,12 +147,6 @@ public class RegistryProtocolTest {
         CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
         when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
             .thenReturn(true);
-
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-
-        Environment environment = mock(Environment.class);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
@@ -228,12 +215,6 @@ public class RegistryProtocolTest {
         when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
             .thenReturn(true);
 
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-
-        Environment environment = mock(Environment.class);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
-
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
@@ -286,12 +267,6 @@ public class RegistryProtocolTest {
         CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
         when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
             .thenReturn(true);
-
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-
-        Environment environment = mock(Environment.class);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
@@ -351,12 +326,6 @@ public class RegistryProtocolTest {
         when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
             .thenReturn(true);
 
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-
-        Environment environment = mock(Environment.class);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
-
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
         parameters.put("registry", "zookeeper");
@@ -391,13 +360,13 @@ public class RegistryProtocolTest {
         registryProtocolListeners.add(migrationRuleListener);
 
         RegistryProtocol registryProtocol = new RegistryProtocol();
-        ApplicationModel applicationModel = Mockito.spy(ApplicationModel.defaultModel());
-        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
+        ModuleModel moduleModel = Mockito.spy(ApplicationModel.defaultModel().getDefaultModule());
+        moduleModel.getApplicationModel().getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
         ExtensionLoader<RegistryProtocolListener> extensionLoaderMock = mock(ExtensionLoader.class);
-        Mockito.when(applicationModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
+        Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
         Mockito.when(extensionLoaderMock.getActivateExtension(url, "registry.protocol.listener"))
             .thenReturn(registryProtocolListeners);
-        url = url.setScopeModel(applicationModel);
+        url = url.setScopeModel(moduleModel);
 
         registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl, url);
         verify(migrationRuleListener, times(1)).onRefer(registryProtocol, clusterInvoker, consumerUrl, url);
@@ -421,12 +390,6 @@ public class RegistryProtocolTest {
         CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
         when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
             .thenReturn(true);
-
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-
-        Environment environment = mock(Environment.class);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
@@ -463,13 +426,13 @@ public class RegistryProtocolTest {
         List<RegistryProtocolListener> registryProtocolListeners = new ArrayList<>();
         registryProtocolListeners.add(new CountRegistryProtocolListener());
 
-        ApplicationModel applicationModel = Mockito.spy(ApplicationModel.defaultModel());
-        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
+        ModuleModel moduleModel = Mockito.spy(ApplicationModel.defaultModel().getDefaultModule());
+        moduleModel.getApplicationModel().getApplicationConfigManager().setApplication(new ApplicationConfig("application1"));
         ExtensionLoader<RegistryProtocolListener> extensionLoaderMock = mock(ExtensionLoader.class);
-        Mockito.when(applicationModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
+        Mockito.when(moduleModel.getExtensionLoader(RegistryProtocolListener.class)).thenReturn(extensionLoaderMock);
         Mockito.when(extensionLoaderMock.getActivateExtension(url, "registry.protocol.listener"))
             .thenReturn(registryProtocolListeners);
-        url = url.setScopeModel(applicationModel);
+        url = url.setScopeModel(moduleModel);
 
         registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl, url);
 
@@ -490,12 +453,6 @@ public class RegistryProtocolTest {
         CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
         when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
             .thenReturn(true);
-
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-
-        Environment environment = mock(Environment.class);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
 
         Map<String, String> parameters = new HashMap<>();
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
