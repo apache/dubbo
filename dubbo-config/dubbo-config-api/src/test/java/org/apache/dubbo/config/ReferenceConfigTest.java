@@ -18,6 +18,8 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.compiler.support.CtClassBuilder;
+import org.apache.dubbo.common.compiler.support.JavassistCompiler;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -29,16 +31,26 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+import org.apache.dubbo.registrycenter.RegistryCenter;
+import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 
-import org.apache.curator.test.TestingServer;
+import demo.MultiClassLoaderService;
+import demo.MultiClassLoaderServiceImpl;
+import demo.MultiClassLoaderServiceRequest;
+import demo.MultiClassLoaderServiceResult;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,15 +58,22 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -98,21 +117,25 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 public class ReferenceConfigTest {
-    private TestingServer zkServer;
-    private String zkUrl;
-    private String registryUrl;
+    private String zkUrl1;
+    private String zkUrl2;
+    private String registryUrl1;
+    private RegistryCenter registryCenter1;
+    private RegistryCenter registryCenter2;
 
     @BeforeEach
     public void setUp() throws Exception {
         DubboBootstrap.reset();
-        int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
-        this.zkServer = new TestingServer(zkServerPort, true);
-        this.zkServer.start();
-        this.zkUrl = "zookeeper://localhost:" + zkServerPort;
-        this.registryUrl = "registry://localhost:" + zkServerPort+"?registry=zookeeper";
+        int zkServerPort1 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
+        registryCenter1 = new ZookeeperSingleRegistryCenter(zkServerPort1);
+        registryCenter1.startup();
+        int zkServerPort2 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
+        registryCenter2 = new ZookeeperSingleRegistryCenter(zkServerPort2);
+        registryCenter2.startup();
+        this.zkUrl1 = "zookeeper://localhost:" + zkServerPort1;
+        this.zkUrl2 = "zookeeper://localhost:" + zkServerPort2;
+        this.registryUrl1 = "registry://localhost:" + zkServerPort1 + "?registry=zookeeper";
 
-        // preload
-        ReferenceConfig preloadReferenceConfig = new ReferenceConfig();
         ApplicationModel.defaultModel().getApplicationConfigManager();
         DubboBootstrap.getInstance();
     }
@@ -120,7 +143,8 @@ public class ReferenceConfigTest {
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
-        zkServer.stop();
+        registryCenter1.shutdown();
+        registryCenter2.shutdown();
         Mockito.framework().clearInlineMocks();
 
     }
@@ -215,7 +239,7 @@ public class ReferenceConfigTest {
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
         applicationConfig.setRegistries(Collections.singletonList(registry));
         applicationConfig.setRegistryIds(registry.getId());
         moduleConfig.setRegistries(Collections.singletonList(registry));
@@ -472,7 +496,7 @@ public class ReferenceConfigTest {
      * Verify the configuration of the registry protocol for remote reference
      */
     @Test
-    public  void testCreateInvokerForRemoteRefer(){
+    public void testCreateInvokerForRemoteRefer() {
 
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setGeneric(Boolean.FALSE.toString());
@@ -495,7 +519,7 @@ public class ReferenceConfigTest {
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
         applicationConfig.setRegistries(Collections.singletonList(registry));
         applicationConfig.setRegistryIds(registry.getId());
 
@@ -516,7 +540,7 @@ public class ReferenceConfigTest {
      * Verify that the registry url is directly configured for remote reference
      */
     @Test
-    public  void testCreateInvokerWithRegistryUrlForRemoteRefer(){
+    public void testCreateInvokerWithRegistryUrlForRemoteRefer() {
 
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setGeneric(Boolean.FALSE.toString());
@@ -539,7 +563,7 @@ public class ReferenceConfigTest {
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
 
-        referenceConfig.setUrl(registryUrl);
+        referenceConfig.setUrl(registryUrl1);
 
         dubboBootstrap
             .application(applicationConfig)
@@ -552,6 +576,57 @@ public class ReferenceConfigTest {
 
     }
 
+    /**
+     * Verify the service reference of multiple registries
+     */
+    @Test
+    public void testMultipleRegistryForRemoteRefer() {
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setGeneric(Boolean.FALSE.toString());
+        referenceConfig.setProtocol("dubbo");
+        referenceConfig.setInit(true);
+        referenceConfig.setLazy(false);
+        referenceConfig.setInjvm(false);
+
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("key1", "value1");
+        parameters.put("key2", "value2");
+        applicationConfig.setParameters(parameters);
+
+        referenceConfig.refreshed.set(true);
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.getInterfaceClass();
+        referenceConfig.setCheck(false);
+        RegistryConfig registry1 = new RegistryConfig();
+        registry1.setAddress(zkUrl1);
+        registry1.setId("zk1");
+
+        RegistryConfig registry2 = new RegistryConfig();
+        registry2.setAddress(zkUrl2);
+        registry2.setId("zk2");
+
+        List<RegistryConfig> registryConfigs = new ArrayList<>();
+        registryConfigs.add(registry1);
+        registryConfigs.add(registry2);
+        applicationConfig.setRegistries(registryConfigs);
+        applicationConfig.setRegistryIds("zk1,zk2");
+
+        referenceConfig.setRegistries(registryConfigs);
+
+        dubboBootstrap
+            .application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
+
+        referenceConfig.init();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof ZoneAwareClusterInvoker);
+
+        dubboBootstrap.destroy();
+    }
 
     @Test
     @Disabled("Disabled due to Github Actions environment")
@@ -562,7 +637,7 @@ public class ReferenceConfigTest {
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
 
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("dubbo");
@@ -606,7 +681,7 @@ public class ReferenceConfigTest {
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("injvm");
 
@@ -698,6 +773,7 @@ public class ReferenceConfigTest {
         testInitReferences(0, amount, applicationConfig, metadataReportConfig, configCenterConfig);
         ApplicationModel.defaultModel().getApplicationConfigManager().clear();
         testInitReferences(0, 1, applicationConfig, metadataReportConfig, configCenterConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().clear();
 
         long t1 = System.currentTimeMillis();
         int nThreads = 8;
@@ -770,16 +846,157 @@ public class ReferenceConfigTest {
         Assertions.assertEquals((referenceConfig.getMethods().get(0)).getName(), "sayHello");
         Assertions.assertEquals(1300, (int) (referenceConfig.getMethods().get(0)).getTimeout());
         Assertions.assertEquals(4, (int) (referenceConfig.getMethods().get(0)).getRetries());
-        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
         Assertions.assertEquals(3, (int) (referenceConfig.getMethods().get(0)).getActives());
         Assertions.assertEquals(5, (int) (referenceConfig.getMethods().get(0)).getExecutes());
         Assertions.assertTrue((referenceConfig.getMethods().get(0)).isAsync());
-        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getOninvokeMethod(), "i");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getOninvokeMethod(), "i");
         Assertions.assertEquals((referenceConfig.getMethods().get(0)).getOnreturnMethod(), "r");
-        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getOnthrowMethod(), "t");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getOnthrowMethod(), "t");
         Assertions.assertEquals((referenceConfig.getMethods().get(0)).getCache(), "c");
     }
 
+    @Test
+    public void testDifferentClassLoader() throws Exception {
+        ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
+        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ModuleModel moduleModel = new ModuleModel(applicationModel);
+
+        DemoService demoService = new DemoServiceImpl();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
+        serviceConfig.setScopeModel(moduleModel);
+        serviceConfig.setRef(demoService);
+        serviceConfig.export();
+
+        String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
+        TestClassLoader classLoader1 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
+        TestClassLoader classLoader2 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
+
+        Class<?> class1 = classLoader1.loadClass(DemoService.class.getName(), false);
+        Class<?> class2 = classLoader2.loadClass(DemoService.class.getName(), false);
+
+        Assertions.assertNotEquals(class1, class2);
+
+        ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
+        referenceConfig1.setInterface(class1);
+        referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
+        referenceConfig1.setScopeModel(moduleModel);
+        referenceConfig1.setScope("remote");
+        Object demoService1 = referenceConfig1.get();
+
+        for (Class<?> anInterface : demoService1.getClass().getInterfaces()) {
+            Assertions.assertNotEquals(DemoService.class, anInterface);
+        }
+        Assertions.assertTrue(Arrays.stream(demoService1.getClass().getInterfaces()).anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader1)));
+
+        java.lang.reflect.Method callBean1 = demoService1.getClass().getDeclaredMethod("callInnerClass");
+        callBean1.setAccessible(true);
+        Object result1 = callBean1.invoke(demoService1);
+
+        Assertions.assertNotEquals(result1.getClass(), DemoService.InnerClass.class);
+        Assertions.assertEquals(classLoader1, result1.getClass().getClassLoader());
+
+        ReferenceConfig<DemoService> referenceConfig2 = new ReferenceConfig<>();
+        referenceConfig2.setInterface(class2);
+        referenceConfig2.setRegistry(new RegistryConfig(zkUrl1));
+        referenceConfig2.setScopeModel(moduleModel);
+        referenceConfig2.setScope("remote");
+        Object demoService2 = referenceConfig2.get();
+
+        for (Class<?> anInterface : demoService2.getClass().getInterfaces()) {
+            Assertions.assertNotEquals(DemoService.class, anInterface);
+        }
+        Assertions.assertTrue(Arrays.stream(demoService2.getClass().getInterfaces()).anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader2)));
+
+        java.lang.reflect.Method callBean2 = demoService2.getClass().getDeclaredMethod("callInnerClass");
+        callBean2.setAccessible(true);
+        Object result2 = callBean2.invoke(demoService2);
+
+        Assertions.assertNotEquals(callBean1, callBean2);
+        Assertions.assertNotEquals(result2.getClass(), DemoService.InnerClass.class);
+        Assertions.assertEquals(classLoader2, result2.getClass().getClassLoader());
+        Assertions.assertNotEquals(result1.getClass(), result2.getClass());
+
+        applicationModel.destroy();
+    }
+
+    @Test
+    public void testDifferentClassLoaderRequest() throws Exception {
+        String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
+        TestClassLoader1 classLoader1 = new TestClassLoader1(basePath);
+        TestClassLoader1 classLoader2 = new TestClassLoader1(basePath);
+        TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
+
+        ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
+        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ModuleModel moduleModel = new ModuleModel(applicationModel);
+
+        Class<?> clazz1 = classLoader1.loadClass(MultiClassLoaderService.class.getName(), false);
+        Class<?> clazz1impl = classLoader1.loadClass(MultiClassLoaderServiceImpl.class.getName(), false);
+        Class<?> requestClazzCustom1 = compileCustomRequest(classLoader1);
+        Class<?> resultClazzCustom1 = compileCustomResult(classLoader1);
+        classLoader1.loadedClass.put(requestClazzCustom1.getName(), requestClazzCustom1);
+        classLoader1.loadedClass.put(resultClazzCustom1.getName(), resultClazzCustom1);
+        AtomicReference innerRequestReference = new AtomicReference();
+        AtomicReference innerResultReference = new AtomicReference();
+        innerResultReference.set(resultClazzCustom1.newInstance());
+        Constructor<?> declaredConstructor = clazz1impl.getDeclaredConstructor(AtomicReference.class, AtomicReference.class);
+
+        ServiceConfig serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterfaceClassLoader(classLoader1);
+        serviceConfig.setInterface(clazz1);
+        serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
+        serviceConfig.setScopeModel(moduleModel);
+        serviceConfig.setRef(declaredConstructor.newInstance(innerRequestReference, innerResultReference));
+        serviceConfig.export();
+
+        Class<?> clazz2 = classLoader2.loadClass(MultiClassLoaderService.class.getName(), false);
+        Class<?> requestClazzOrigin = classLoader2.loadClass(MultiClassLoaderServiceRequest.class.getName(), false);
+        Class<?> requestClazzCustom2 = compileCustomRequest(classLoader2);
+        Class<?> resultClazzCustom3 = compileCustomResult(classLoader3);
+        classLoader2.loadedClass.put(requestClazzCustom2.getName(), requestClazzCustom2);
+        classLoader3.loadedClass.put(resultClazzCustom3.getName(), resultClazzCustom3);
+
+        ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
+        referenceConfig1.setInterface(clazz2);
+        referenceConfig1.setInterfaceClassLoader(classLoader3);
+        referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
+        referenceConfig1.setScopeModel(moduleModel);
+        referenceConfig1.setScope("remote");
+        Object object1 = referenceConfig1.get();
+
+        java.lang.reflect.Method callBean1 = object1.getClass().getDeclaredMethod("call", requestClazzOrigin);
+        callBean1.setAccessible(true);
+        Object result1 = callBean1.invoke(object1, requestClazzCustom2.newInstance());
+
+        Assertions.assertEquals(resultClazzCustom3, result1.getClass());
+        Assertions.assertNotEquals(classLoader2, result1.getClass().getClassLoader());
+        Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
+
+        applicationModel.destroy();
+    }
+
+    private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
+        CtClassBuilder builder = new CtClassBuilder();
+        builder.setClassName(MultiClassLoaderServiceRequest.class.getName() + "A");
+        builder.setSuperClassName(MultiClassLoaderServiceRequest.class.getName());
+        CtClass cls = builder.build(classLoader);
+        return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
+    }
+
+    private Class<?> compileCustomResult(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
+        CtClassBuilder builder = new CtClassBuilder();
+        builder.setClassName(MultiClassLoaderServiceResult.class.getName() + "A");
+        builder.setSuperClassName(MultiClassLoaderServiceResult.class.getName());
+        CtClass cls = builder.build(classLoader);
+        return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
+    }
 
     @Reference(methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
         actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "instance.i", onthrow = "instance.t", onreturn = "instance.r", cache = "c", validation = "v",
@@ -789,4 +1006,168 @@ public class ReferenceConfigTest {
     private class InnerTest {
 
     }
+    private static class TestClassLoader extends ClassLoader {
+        private String basePath;
+
+        public TestClassLoader(ClassLoader parent, String basePath) {
+            super(parent);
+            this.basePath = basePath;
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                byte[] bytes = loadClassData(name);
+                return defineClass(name, bytes, 0, bytes.length);
+            } catch (Exception e) {
+                throw new ClassNotFoundException();
+            }
+        }
+
+        @Override
+        public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            Class<?> loadedClass = this.findLoadedClass(name);
+            if (loadedClass != null) {
+                return loadedClass;
+            } else {
+                try {
+                    if (name.equals("org.apache.dubbo.config.api.DemoService") || name.equals("org.apache.dubbo.config.api.DemoService$InnerClass")) {
+                        Class<?> aClass = this.findClass(name);
+                        if (resolve) {
+                            this.resolveClass(aClass);
+                        }
+                        return aClass;
+                    } else {
+                        return super.loadClass(name, resolve);
+                    }
+                } catch (Exception e) {
+                    return super.loadClass(name, resolve);
+                }
+            }
+        }
+
+
+        public byte[] loadClassData(String className) throws IOException {
+            className = className.replaceAll("\\.", "/");
+            String path = basePath + File.separator + className + ".class";
+            FileInputStream fileInputStream;
+            byte[] classBytes;
+            fileInputStream = new FileInputStream(path);
+            int length = fileInputStream.available();
+            classBytes = new byte[length];
+            fileInputStream.read(classBytes);
+            fileInputStream.close();
+            return classBytes;
+        }
+    }
+
+    private static class TestClassLoader1 extends ClassLoader {
+        private String basePath;
+
+        public TestClassLoader1(String basePath) {
+            this.basePath = basePath;
+        }
+
+        Map<String, Class<?>> loadedClass = new ConcurrentHashMap<>();
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                byte[] bytes = loadClassData(name);
+                return defineClass(name, bytes, 0, bytes.length);
+            } catch (Exception e) {
+                throw new ClassNotFoundException();
+            }
+        }
+
+        @Override
+        public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (loadedClass.containsKey(name)) {
+                return loadedClass.get(name);
+            }
+            if (name.startsWith("demo")) {
+                Class<?> aClass = this.findClass(name);
+                this.loadedClass.put(name, aClass);
+                if (resolve) {
+                    this.resolveClass(aClass);
+                }
+                return aClass;
+            } else {
+                Class<?> loadedClass = this.findLoadedClass(name);
+                if (loadedClass != null) {
+                    return loadedClass;
+                } else {
+                    return super.loadClass(name, resolve);
+                }
+            }
+        }
+
+
+        public byte[] loadClassData(String className) throws IOException {
+            className = className.replaceAll("\\.", "/");
+            String path = basePath + File.separator + className + ".class";
+            FileInputStream fileInputStream;
+            byte[] classBytes;
+            fileInputStream = new FileInputStream(path);
+            int length = fileInputStream.available();
+            classBytes = new byte[length];
+            fileInputStream.read(classBytes);
+            fileInputStream.close();
+            return classBytes;
+        }
+    }
+
+    private static class TestClassLoader2 extends ClassLoader {
+        private String basePath;
+        private TestClassLoader1 testClassLoader;
+
+        Map<String, Class<?>> loadedClass = new ConcurrentHashMap<>();
+
+        public TestClassLoader2(TestClassLoader1 testClassLoader, String basePath) {
+            this.testClassLoader = testClassLoader;
+            this.basePath = basePath;
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                byte[] bytes = loadClassData(name);
+                return defineClass(name, bytes, 0, bytes.length);
+            } catch (Exception e) {
+                throw new ClassNotFoundException();
+            }
+        }
+
+        @Override
+        public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (loadedClass.containsKey(name)) {
+                return loadedClass.get(name);
+            }
+            if (name.startsWith("demo.MultiClassLoaderServiceRe")) {
+                Class<?> aClass = this.findClass(name);
+                this.loadedClass.put(name, aClass);
+                if (resolve) {
+                    this.resolveClass(aClass);
+                }
+                return aClass;
+            } else {
+                return testClassLoader.loadClass(name, resolve);
+            }
+        }
+
+
+        public byte[] loadClassData(String className) throws IOException {
+            className = className.replaceAll("\\.", "/");
+            String path = basePath + File.separator + className + ".class";
+            FileInputStream fileInputStream;
+            byte[] classBytes;
+            fileInputStream = new FileInputStream(path);
+            int length = fileInputStream.available();
+            classBytes = new byte[length];
+            fileInputStream.read(classBytes);
+            fileInputStream.close();
+            return classBytes;
+        }
+    }
+
 }

@@ -19,11 +19,11 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.Serializable;
@@ -33,6 +33,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -56,7 +57,9 @@ public class RpcInvocation implements Invocation, Serializable {
     private String protocolServiceKey;
 
     private ServiceModel serviceModel;
+
     private String methodName;
+
     private String serviceName;
 
     private transient Class<?>[] parameterTypes;
@@ -179,16 +182,23 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     private void initParameterDesc() {
-        ServiceDescriptor serviceDescriptor = null;
+        AtomicReference<ServiceDescriptor> serviceDescriptor = new AtomicReference<>();
         if (serviceModel != null) {
-            serviceDescriptor = serviceModel.getServiceModel();
+            serviceDescriptor.set(serviceModel.getServiceModel());
         } else if (StringUtils.isNotEmpty(serviceName)){
-            ServiceRepository repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
-            serviceDescriptor = repository.lookupService(serviceName);
+            // TODO: Multi Instance compatible mode
+            FrameworkModel.defaultModel()
+                .getServiceRepository()
+                .allProviderModels()
+                .stream()
+                .map(ProviderModel::getServiceModel)
+                .filter(s->serviceName.equals(s.getServiceName()))
+                .findFirst()
+                .ifPresent(serviceDescriptor::set);
         }
 
-        if (serviceDescriptor != null) {
-            MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(methodName, parameterTypes);
+        if (serviceDescriptor.get() != null) {
+            MethodDescriptor methodDescriptor = serviceDescriptor.get().getMethod(methodName, parameterTypes);
             if (methodDescriptor != null) {
                 this.parameterTypesDesc = methodDescriptor.getParamDesc();
                 this.compatibleParamSignatures = methodDescriptor.getCompatibleParamSignatures();

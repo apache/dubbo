@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * {@link ExtensionLoader}, {@code DubboBootstrap} and this class are at present designed to be
@@ -48,15 +49,16 @@ import java.util.Set;
 
 public class ApplicationModel extends ScopeModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
-    public static final String NAME = "application";
+    private static final AtomicLong index = new AtomicLong(0);
+    public static final String NAME = "ApplicationModel";
     private static volatile ApplicationModel defaultInstance;
 
-    private volatile List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
+    private final List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
     private Environment environment;
     private ConfigManager configManager;
     private ServiceRepository serviceRepository;
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     private ModuleModel internalModule;
 
@@ -153,11 +155,13 @@ public class ApplicationModel extends ScopeModel {
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
         initialize();
+        this.modelName = NAME + "-" + index.getAndIncrement();
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
-        internalModule = new ModuleModel(this);
+        internalModule = new ModuleModel(this.modelName + "-internal", this);
         this.serviceRepository = new ServiceRepository(this);
 
         ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
@@ -167,6 +171,12 @@ public class ApplicationModel extends ScopeModel {
         }
 
         initFrameworkExts();
+
+        ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+        Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+        for (ScopeModelInitializer initializer : initializers) {
+            initializer.initializeApplicationModel(this);
+        }
 
         postProcessAfterCreated();
     }
@@ -179,12 +189,22 @@ public class ApplicationModel extends ScopeModel {
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         // TODO destroy application resources
         for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
             moduleModel.destroy();
         }
-        frameworkModel.removeApplication(this);
+        if (defaultInstance == this) {
+            synchronized (ApplicationModel.class) {
+                frameworkModel.removeApplication(this);
+                defaultInstance = null;
+            }
+        } else {
+            frameworkModel.removeApplication(this);
+        }
+
+        notifyDestroy();
+
         if (environment != null) {
             environment.destroy();
             environment = null;
@@ -243,6 +263,10 @@ public class ApplicationModel extends ScopeModel {
 
     public synchronized void removeModule(ModuleModel model) {
         this.moduleModels.remove(model);
+        if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
+            this.internalModule.destroy();
+        }
+        destroy();
     }
 
     public List<ModuleModel> getModuleModels() {
@@ -280,7 +304,27 @@ public class ApplicationModel extends ScopeModel {
     }
 
     @Override
-    public String toString() {
-        return "ApplicationModel";
+    public void addClassLoader(ClassLoader classLoader) {
+        super.addClassLoader(classLoader);
+        if (environment != null) {
+            environment.refreshClassLoaders();
+        }
+    }
+
+    @Override
+    public void removeClassLoader(ClassLoader classLoader) {
+        super.removeClassLoader(classLoader);
+        if (environment != null) {
+            environment.refreshClassLoaders();
+        }
+    }
+
+    @Override
+    protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
+        return !containsClassLoader(classLoader);
+    }
+
+    protected boolean containsClassLoader(ClassLoader classLoader) {
+        return moduleModels.stream().anyMatch(moduleModel -> moduleModel.getClassLoaders().contains(classLoader));
     }
 }

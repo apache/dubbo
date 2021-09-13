@@ -58,8 +58,15 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private transient String address;
     private transient MetadataInfo serviceMetadata;
-    // used at runtime
-    private transient String registryCluster; // extendParams can be more flexiable, but one single property uses less space
+
+    /**
+     * used at runtime
+     */
+    private transient String registryCluster;
+
+    /**
+     * extendParams can be more flexible, but one single property uses less space
+     */
     private transient Map<String, String> extendParams;
     private transient List<Endpoint> endpoints;
     private transient Map<String, Object> attributes = new HashMap<>();
@@ -174,6 +181,7 @@ public class DefaultServiceInstance implements ServiceInstance {
         return registryCluster;
     }
 
+    @Override
     public void setRegistryCluster(String registryCluster) {
         this.registryCluster = registryCluster;
     }
@@ -212,6 +220,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     @Override
+    @Transient
     public Map<String, Object> getAttributes() {
         return attributes;
     }

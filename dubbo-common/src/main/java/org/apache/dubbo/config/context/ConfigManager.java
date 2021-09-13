@@ -28,6 +28,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
+import org.apache.dubbo.config.AbstractMethodConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConfigKeys;
@@ -491,6 +492,11 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         if (config == null) {
             return null;
         }
+
+        if(!(config instanceof AbstractMethodConfig)) {
+            config.setScopeModel(applicationModel);
+        }
+
         // ignore MethodConfig
         if (config instanceof MethodConfig) {
             return null;
@@ -729,9 +735,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         String uniqueServiceName;
         Map<String, AbstractInterfaceConfig> configCache;
         if (config instanceof ReferenceConfigBase) {
-            ReferenceConfigBase<?> referenceConfig = (ReferenceConfigBase<?>) config;
-            uniqueServiceName = referenceConfig.getUniqueServiceName();
-            configCache = referenceConfigCache;
+            return null;
         } else if (config instanceof ServiceConfigBase) {
             ServiceConfigBase serviceConfig = (ServiceConfigBase) config;
             uniqueServiceName = serviceConfig.getUniqueServiceName();

@@ -20,8 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-
 /**
  * The default {@link SPI} implementation of {@link ServiceDiscoveryFactory} to {@link #getServiceDiscovery(URL) get the
  * instance of ServiceDiscovery} via the {@link URL#getProtocol() protocol} from the {@link URL} that will connect
@@ -42,7 +40,7 @@ public class DefaultServiceDiscoveryFactory extends AbstractServiceDiscoveryFact
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
         String protocol = registryURL.getProtocol();
-        ExtensionLoader<ServiceDiscovery> loader = getExtensionLoader(ServiceDiscovery.class);
+        ExtensionLoader<ServiceDiscovery> loader = registryURL.getOrDefaultApplicationModel().getExtensionLoader(ServiceDiscovery.class);
         return loader.getExtension(protocol);
     }
 }

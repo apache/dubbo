@@ -22,6 +22,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.RpcContext;
 import org.junit.jupiter.api.AfterAll;
@@ -48,7 +49,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 public class LocalCallMultipleReferenceAnnotationsTest {
 
-    private static ZookeeperSingleRegistryCenter registryCenter;
+    private static RegistryCenter registryCenter;
 
     @BeforeAll
     public static void setUp() {

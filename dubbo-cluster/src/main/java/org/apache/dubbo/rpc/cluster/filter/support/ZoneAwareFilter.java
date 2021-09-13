@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.ZoneDetector;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_FORCE;
@@ -39,12 +40,18 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_
 @Activate(group = CommonConstants.CONSUMER, value = "cluster:zone-aware")
 public class ZoneAwareFilter implements ClusterFilter {
 
+    private ApplicationModel applicationModel;
+
+    public ZoneAwareFilter(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         RpcContext rpcContext = RpcContext.getClientAttachment();
         String zone = (String) rpcContext.getAttachment(REGISTRY_ZONE);
         String force = (String) rpcContext.getAttachment(REGISTRY_ZONE_FORCE);
-        ExtensionLoader<ZoneDetector> loader = ExtensionLoader.getExtensionLoader(ZoneDetector.class);
+        ExtensionLoader<ZoneDetector> loader = applicationModel.getExtensionLoader(ZoneDetector.class);
         if (StringUtils.isEmpty(zone) && loader.hasExtension("default")) {
             ZoneDetector detector = loader.getExtension("default");
             zone = detector.getZoneOfCurrentRequest(invocation);

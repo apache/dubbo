@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -23,6 +24,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
@@ -31,6 +34,8 @@ public class FrameworkModel extends ScopeModel {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(FrameworkModel.class);
 
+    private static final AtomicLong index = new AtomicLong(0);
+    public static final String NAME = "FrameworkModel";
     private volatile static FrameworkModel defaultInstance;
 
     private static List<FrameworkModel> allInstances = Collections.synchronizedList(new ArrayList<>());
@@ -43,17 +48,27 @@ public class FrameworkModel extends ScopeModel {
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
         initialize();
+        this.modelName = NAME + "-" + index.getAndIncrement();
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         serviceRepository = new FrameworkServiceRepository(this);
         allInstances.add(this);
 
+        ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+        Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+        for (ScopeModelInitializer initializer : initializers) {
+            initializer.initializeFrameworkModel(this);
+        }
+
+
         postProcessAfterCreated();
     }
 
-    public void destroy() {
+    @Override
+    public void onDestroy() {
         //TODO destroy framework model
         for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
             applicationModel.destroy();
@@ -61,8 +76,12 @@ public class FrameworkModel extends ScopeModel {
 
         allInstances.remove(this);
         if (defaultInstance == this) {
-            defaultInstance = null;
+            synchronized (FrameworkModel.class) {
+                defaultInstance = null;
+            }
         }
+
+        notifyDestroy();
     }
 
     public static FrameworkModel defaultModel() {
@@ -94,6 +113,9 @@ public class FrameworkModel extends ScopeModel {
 
     public void removeApplication(ApplicationModel model) {
         this.applicationModels.remove(model);
+        if (applicationModels.size() == 0) {
+            destroy();
+        }
     }
 
     public List<ApplicationModel> getApplicationModels() {
@@ -105,7 +127,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     @Override
-    public String toString() {
-        return "FrameworkModel";
+    protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
+        return applicationModels.stream().noneMatch(applicationModel -> applicationModel.containsClassLoader(classLoader));
     }
 }

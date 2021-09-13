@@ -39,7 +39,11 @@ import java.util.UUID;
  * @author Patrick Peralta
  * @author Mark Fisher
  * @author David Turanski
+ * @deprecated
+ * @see org.apache.dubbo.test.common.registrycenter.ZookeeperSingleRegistryCenter
+ * @see org.apache.dubbo.test.common.registrycenter.ZookeeperMultipleRegistryCenter
  */
+@Deprecated
 public class EmbeddedZooKeeper {
 
     /**

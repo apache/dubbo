@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * ProviderModel is about published services
@@ -166,4 +167,23 @@ public class ProviderModel extends ServiceModel {
         }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ProviderModel that = (ProviderModel) o;
+        return Objects.equals(urls, that.urls) && Objects.equals(methods, that.methods);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), urls, methods);
+    }
 }

@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,7 +66,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private volatile boolean enableConfigurationListen = true;
     private volatile List<URL> originalUrls = null;
     private volatile Map<String, String> overrideQueryMap;
-    private volatile Map<String, String> consumerFirstQueryMap;
+    private final Set<String> providerFirstParams;
     private final ApplicationModel applicationModel;
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
@@ -73,18 +74,21 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         applicationModel = getApplicationModel(url.getScopeModel());
         consumerConfigurationListener = new ConsumerConfigurationListener(applicationModel);
 
-        Set<ProviderFirstParams> providerFirstParams = ExtensionLoader.getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
+        Set<ProviderFirstParams> providerFirstParams = url.getOrDefaultApplicationModel().getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
         if (CollectionUtils.isEmpty(providerFirstParams)) {
-            consumerFirstQueryMap = queryMap;
+            this.providerFirstParams = null;
         } else {
-            consumerFirstQueryMap = new HashMap<>(queryMap);
-            for (ProviderFirstParams paramsFilter : providerFirstParams) {
-                if (paramsFilter.params() == null) {
-                    break;
+            if (providerFirstParams.size() == 1) {
+                this.providerFirstParams = Collections.unmodifiableSet(providerFirstParams.iterator().next().params());
+            } else {
+                Set<String> params = new HashSet<>();
+                for (ProviderFirstParams paramsFilter : providerFirstParams) {
+                    if (paramsFilter.params() == null) {
+                        break;
+                    }
+                    params.addAll(paramsFilter.params());
                 }
-                for (String keyToRemove : paramsFilter.params()) {
-                    consumerFirstQueryMap.remove(keyToRemove);
-                }
+                this.providerFirstParams = Collections.unmodifiableSet(params);
             }
         }
 
@@ -142,7 +146,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         RpcServiceContext.setRpcContext(getConsumerUrl());
 
         //  3.x added for extend URL address
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultApplicationModel().getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
@@ -289,15 +293,15 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             if (EMPTY_PROTOCOL.equals(instanceAddressURL.getProtocol())) {
                 continue;
             }
-            if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(instanceAddressURL.getProtocol())) {
+            if (!getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).hasExtension(instanceAddressURL.getProtocol())) {
                 logger.error(new IllegalStateException("Unsupported protocol " + instanceAddressURL.getProtocol() +
                     " in notified url: " + instanceAddressURL + " from registry " + getUrl().getAddress() +
                     " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
-                    ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
+                    getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
 
-            instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), consumerFirstQueryMap);
+            instanceAddressURL.setProviderFirstParams(providerFirstParams);
 
             // Override provider urls if needed
             if (enableConfigurationListen) {
@@ -365,7 +369,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         if (localUrlInvokerMap != null) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
-                    invoker.destroy();
+                    invoker.destroyAll();
                 } catch (Throwable t) {
                     logger.warn("Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
                 }
@@ -398,7 +402,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             Invoker<T> invoker = entry.getValue();
             if (invoker != null) {
                 try {
-                    invoker.destroy();
+                    invoker.destroyAll();
                     if (logger.isDebugEnabled()) {
                         logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }

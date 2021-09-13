@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -222,6 +223,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         invoker = null;
         ref = null;
+        if (consumerModel != null) {
+            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+            repository.unregisterConsumer(consumerModel);
+        }
     }
 
     protected synchronized void init() {
@@ -233,7 +238,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         // Loading by Spring context will associate bootstrap in afterPropertiesSet() method.
         // Initializing bootstrap here only for compatible with old API usages.
         if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
+            bootstrap = DubboBootstrap.getInstance(getScopeModel().getApplicationModel());
             bootstrap.initialize();
             bootstrap.reference(this);
         }
@@ -425,7 +430,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (UrlUtils.isRegistry(url)) {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
                 } else {
-                    URL peerUrl = ClusterUtils.mergeUrl(url, referenceParameters);
+                    URL peerUrl = getScopeModel().getApplicationModel().getBeanFactory().getBean(ClusterUtils.class).mergeUrl(url, referenceParameters);
                     peerUrl = peerUrl.putAttribute(PEER_KEY, true);
                     urls.add(peerUrl);
                 }
@@ -485,15 +490,17 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 // for multi-subscription scenario, use 'zone-aware' policy by default
                 String cluster = registryUrl.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
                 // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, routing happens here) -> Invoker
-                invoker = Cluster.getCluster(cluster, false).join(new StaticDirectory(registryUrl, invokers));
+                invoker = Cluster.getCluster(registryUrl.getScopeModel(), cluster, false).join(new StaticDirectory(registryUrl, invokers));
             } else {
                 // not a registry url, must be direct invoke.
-                String cluster = CollectionUtils.isNotEmpty(invokers)
-                    ?
+                String cluster = CollectionUtils.isNotEmpty(invokers) ?
                     (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) :
                         Cluster.DEFAULT)
                     : Cluster.DEFAULT;
-                invoker = Cluster.getCluster(cluster).join(new StaticDirectory(invokers));
+                ScopeModel scopeModel = CollectionUtils.isNotEmpty(invokers) ?
+                    (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getScopeModel() : null)
+                    : null;
+                invoker = Cluster.getCluster(scopeModel, cluster).join(new StaticDirectory(invokers));
             }
         }
     }
@@ -538,8 +545,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             interfaceClass = GenericService.class;
         } else {
             try {
-                interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
-                    .getContextClassLoader());
+                if (getInterfaceClassLoader() != null) {
+                    interfaceClass = Class.forName(interfaceName, true, getInterfaceClassLoader());
+                } else {
+                    interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
+                        .getContextClassLoader());
+                }
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -610,6 +621,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     /**
      * just for test
+     *
      * @return
      */
     @Deprecated

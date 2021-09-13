@@ -31,7 +31,17 @@ import java.util.Set;
  */
 public class PropertiesConfiguration implements Configuration {
 
+    private Properties properties;
+    private final ApplicationModel applicationModel;
+
     public PropertiesConfiguration(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        refresh();
+    }
+
+    public void refresh() {
+        //load the default properties
+        properties = ConfigUtils.getProperties(applicationModel.getClassLoaders());
 
         ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = applicationModel.getExtensionLoader(OrderedPropertiesProvider.class);
         Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
@@ -48,23 +58,38 @@ public class PropertiesConfiguration implements Configuration {
             return b.priority() - a.priority();
         });
 
-        //load the default properties
-        Properties properties = ConfigUtils.getProperties();
 
         //override the properties.
         for (OrderedPropertiesProvider orderedPropertiesProvider :
-                orderedPropertiesProviders) {
+            orderedPropertiesProviders) {
             properties.putAll(orderedPropertiesProvider.initProperties());
         }
+    }
 
+    @Override
+    public String getProperty(String key) {
+        return properties.getProperty(key);
     }
 
     @Override
     public Object getInternalProperty(String key) {
-        return ConfigUtils.getProperty(key);
+        return properties.getProperty(key);
+    }
+
+    public void setProperty(String key, String value) {
+        properties.setProperty(key, value);
+    }
+
+    public String remove(String key) {
+        return (String) properties.remove(key);
+    }
+
+    @Deprecated
+    public void setProperties(Properties properties) {
+        this.properties = properties;
     }
 
     public Map<String, String> getProperties() {
-        return (Map) ConfigUtils.getProperties();
+        return (Map) properties;
     }
 }

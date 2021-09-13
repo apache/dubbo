@@ -446,6 +446,10 @@ public interface CommonConstants {
 
     int DEFAULT_REFER_THREAD_NUM = 10;
 
+    int DEFAULT_DELAY_NOTIFICATION_TIME = 5000;
+
+    int DEFAULT_DELAY_EXECUTE_TIMES = 10;
+
     /**
      * Url merge processor key
      */

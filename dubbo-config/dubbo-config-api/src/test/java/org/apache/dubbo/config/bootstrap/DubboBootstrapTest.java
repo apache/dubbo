@@ -19,7 +19,6 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -63,7 +62,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_AD
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
-import static org.apache.dubbo.rpc.model.ApplicationModel.getApplicationConfig;
 import static org.hamcrest.CoreMatchers.anything;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
@@ -124,21 +122,20 @@ public class DubboBootstrapTest {
     @Test
     public void compatibleApplicationShutdown() {
         try {
-            ConfigUtils.setProperties(null);
             System.clearProperty(SHUTDOWN_WAIT_KEY);
             System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);
 
             writeDubboProperties(SHUTDOWN_WAIT_KEY, "100");
+            ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().refresh();
             ConfigValidationUtils.validateApplicationConfig(new ApplicationConfig("demo"));
             Assertions.assertEquals("100", System.getProperty(SHUTDOWN_WAIT_KEY));
 
             System.clearProperty(SHUTDOWN_WAIT_KEY);
-            ConfigUtils.setProperties(null);
             writeDubboProperties(SHUTDOWN_WAIT_SECONDS_KEY, "1000");
+            ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().refresh();
             ConfigValidationUtils.validateApplicationConfig(new ApplicationConfig("demo"));
             Assertions.assertEquals("1000", System.getProperty(SHUTDOWN_WAIT_SECONDS_KEY));
         } finally {
-            ConfigUtils.setProperties(null);
             System.clearProperty("dubbo.application.name");
             System.clearProperty(SHUTDOWN_WAIT_KEY);
             System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);
@@ -338,7 +335,7 @@ public class DubboBootstrapTest {
         ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setRegistry(new RegistryConfig("N/A"));
         serviceConfig.setInterface(MetadataService.class);
-        serviceConfig.setGroup(getApplicationConfig().getName());
+        serviceConfig.setGroup(ApplicationModel.defaultModel().getCurrentConfig().getName());
         serviceConfig.setVersion(MetadataService.VERSION);
         assertThat(exporters, hasEntry(is(serviceConfig.getUniqueServiceName() + ":" + availablePort), anything()));
 

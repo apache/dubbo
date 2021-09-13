@@ -17,16 +17,19 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
 
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 public class ServiceModel {
     private String serviceKey;
     private Object proxyObject;
+    private Callable<Void> destroyCaller;
+    private ClassLoader classLoader;
     private final ModuleModel moduleModel;
     private final ServiceDescriptor serviceModel;
     private final AbstractInterfaceConfig config;
@@ -40,6 +43,7 @@ public class ServiceModel {
     public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config, ServiceMetadata serviceMetadata) {
         this(proxyObject, serviceKey, serviceModel, config, ScopeModelUtil.getModuleModel(config != null ? config.getScopeModel() : null), serviceMetadata);
     }
+
     public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config, ModuleModel moduleModel, ServiceMetadata serviceMetadata) {
         this.proxyObject = proxyObject;
         this.serviceKey = serviceKey;
@@ -47,6 +51,12 @@ public class ServiceModel {
         this.moduleModel = moduleModel;
         this.config = config;
         this.serviceMetadata = serviceMetadata;
+        if (config != null) {
+            this.classLoader = config.getInterfaceClassLoader();
+        }
+        if (this.classLoader == null) {
+            this.classLoader = Thread.currentThread().getContextClassLoader();
+        }
     }
 
     public String getServiceKey() {
@@ -65,9 +75,12 @@ public class ServiceModel {
         return serviceModel;
     }
 
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
     public ClassLoader getClassLoader() {
-        Class<?> serviceType = serviceMetadata.getServiceType();
-        return serviceType != null ? serviceType.getClassLoader() : ClassUtils.getClassLoader();
+        return classLoader;
     }
 
     /**
@@ -124,5 +137,30 @@ public class ServiceModel {
 
     public ModuleModel getModuleModel() {
         return moduleModel;
+    }
+
+    public Callable<Void> getDestroyCaller() {
+        return destroyCaller;
+    }
+
+    public void setDestroyCaller(Callable<Void> destroyCaller) {
+        this.destroyCaller = destroyCaller;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ServiceModel that = (ServiceModel) o;
+        return Objects.equals(serviceKey, that.serviceKey) && Objects.equals(proxyObject, that.proxyObject) && Objects.equals(moduleModel, that.moduleModel) && Objects.equals(serviceModel, that.serviceModel) && Objects.equals(config, that.config) && Objects.equals(serviceMetadata, that.serviceMetadata);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(serviceKey, proxyObject, moduleModel, serviceModel, config, serviceMetadata);
     }
 }
