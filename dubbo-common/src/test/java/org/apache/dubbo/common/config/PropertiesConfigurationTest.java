@@ -18,6 +18,7 @@ package org.apache.dubbo.common.config;
 
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,7 @@ public class PropertiesConfigurationTest {
 
     @Test
     public void testOrderPropertiesProviders() {
-        PropertiesConfiguration configuration = new PropertiesConfiguration(ApplicationModel.defaultModel());
+        OrderedPropertiesConfiguration configuration = new OrderedPropertiesConfiguration(ApplicationModel.defaultModel());
         Assertions.assertEquals("999", configuration.getInternalProperty("testKey"));
     }
 
