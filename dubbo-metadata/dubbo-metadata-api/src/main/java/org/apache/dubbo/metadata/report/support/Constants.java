@@ -36,7 +36,7 @@ public interface Constants {
 
     String USER_HOME = "user.home";
 
-    String CACHE_KEY = ".cache";
+    String CACHE = ".cache";
 
-    String DUBBO_METADATA_KEY = "/.dubbo/dubbo-metadata-";
+    String DUBBO_METADATA = "/.dubbo/dubbo-metadata-";
 }
