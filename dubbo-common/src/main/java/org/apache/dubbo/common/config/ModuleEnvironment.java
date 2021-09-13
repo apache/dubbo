@@ -84,7 +84,11 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
         return maps;
     }
 
+    @Override
     public Configuration getDynamicGlobalConfiguration() {
+        if (dynamicConfiguration == null) {
+            return applicationDelegate.getDynamicGlobalConfiguration();
+        }
         if (dynamicGlobalConfiguration == null) {
             if (dynamicConfiguration == null) {
                 if (logger.isWarnEnabled()) {
@@ -99,10 +103,15 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
         return dynamicGlobalConfiguration;
     }
 
+    @Override
     public Optional<DynamicConfiguration> getDynamicConfiguration() {
+        if (dynamicConfiguration == null) {
+            return applicationDelegate.getDynamicConfiguration();
+        }
         return Optional.ofNullable(dynamicConfiguration);
     }
 
+    @Override
     @DisableInject
     public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
         this.dynamicConfiguration = dynamicConfiguration;

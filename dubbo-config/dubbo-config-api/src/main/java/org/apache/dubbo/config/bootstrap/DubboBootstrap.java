@@ -19,7 +19,6 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.config.ModuleEnvironment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
@@ -748,15 +747,6 @@ public final class DubboBootstrap {
         // load config centers
         loadConfigs(ConfigCenterConfig.class);
 
-        // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-        List<ModuleEnvironment> unloadedModule = applicationModel.getPubModuleModels().stream()
-            .map(ModuleModel::getModelEnvironment)
-            .filter(e -> !e.getDynamicConfiguration().isPresent())
-            .collect(Collectors.toList());
-        if (unloadedModule.size() == 0) {
-            return;
-        }
-
         useRegistryAsConfigCenterIfNecessary();
 
         // check Config Center
@@ -787,7 +777,7 @@ public final class DubboBootstrap {
                 // Fetch config from remote config center
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
-            unloadedModule.forEach(e->e.setDynamicConfiguration(compositeDynamicConfiguration));
+            environment.setDynamicConfiguration(compositeDynamicConfiguration);
         }
 
         configManager.refreshAll();
@@ -828,6 +818,10 @@ public final class DubboBootstrap {
     private void useRegistryAsConfigCenterIfNecessary() {
 
         if (CollectionUtils.isNotEmpty(configManager.getConfigCenters())) {
+            return;
+        }
+
+        if (environment.getDynamicConfiguration().isPresent()) {
             return;
         }
 

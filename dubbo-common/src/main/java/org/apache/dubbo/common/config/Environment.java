@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,26 +40,30 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
     public static final String NAME = "environment";
 
     // dubbo properties in classpath
-    protected PropertiesConfiguration propertiesConfiguration;
+    private PropertiesConfiguration propertiesConfiguration;
 
     // java system props (-D)
-    protected SystemConfiguration systemConfiguration;
+    private SystemConfiguration systemConfiguration;
 
     // java system environment
-    protected EnvironmentConfiguration environmentConfiguration;
+    private EnvironmentConfiguration environmentConfiguration;
 
     // external config, such as config-center global/default config
-    protected InmemoryConfiguration externalConfiguration;
+    private InmemoryConfiguration externalConfiguration;
 
     // external app config, such as config-center app config
-    protected InmemoryConfiguration appExternalConfiguration;
+    private InmemoryConfiguration appExternalConfiguration;
 
     // local app config , such as Spring Environment/PropertySources/application.properties
-    protected InmemoryConfiguration appConfiguration;
+    private InmemoryConfiguration appConfiguration;
 
     protected CompositeConfiguration globalConfiguration;
 
-    protected List<Map<String, String>> globalConfigurationMaps;
+    private List<Map<String, String>> globalConfigurationMaps;
+
+    private CompositeConfiguration defaultDynamicGlobalConfiguration;
+
+    private DynamicConfiguration defaultDynamicConfiguration;
 
     private String localMigrationRule;
 
@@ -242,6 +245,8 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         appConfiguration = null;
         globalConfiguration = null;
         globalConfigurationMaps = null;
+        defaultDynamicGlobalConfiguration = null;
+        defaultDynamicConfiguration = null;
     }
 
     /**
@@ -290,12 +295,27 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         loadMigrationRule();
     }
 
-    @Deprecated
     public Configuration getDynamicGlobalConfiguration() {
-        return ScopeModelUtil.getApplicationModel(scopeModel).getDefaultModule().getModelEnvironment().getDynamicGlobalConfiguration();
+        if (defaultDynamicGlobalConfiguration == null) {
+            if (defaultDynamicConfiguration == null) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("dynamicConfiguration is null , return globalConfiguration.");
+                }
+                return getConfiguration();
+            }
+            defaultDynamicGlobalConfiguration = new CompositeConfiguration();
+            defaultDynamicGlobalConfiguration.addConfiguration(defaultDynamicConfiguration);
+            defaultDynamicGlobalConfiguration.addConfiguration(getConfiguration());
+        }
+        return defaultDynamicGlobalConfiguration;
     }
 
     public Optional<DynamicConfiguration> getDynamicConfiguration() {
-        return ScopeModelUtil.getApplicationModel(scopeModel).getDefaultModule().getModelEnvironment().getDynamicConfiguration();
+        return Optional.ofNullable(defaultDynamicConfiguration);
+    }
+
+    @DisableInject
+    public void setDynamicConfiguration(DynamicConfiguration defaultDynamicConfiguration) {
+        this.defaultDynamicConfiguration = defaultDynamicConfiguration;
     }
 }
