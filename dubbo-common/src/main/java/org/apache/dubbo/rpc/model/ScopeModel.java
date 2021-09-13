@@ -58,7 +58,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
     private ScopeBeanFactory beanFactory;
     private List<ScopeModelDestroyListener> destroyListeners;
 
-    private Map<String, Object> attribute;
+    private Map<String, Object> attributes;
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public ScopeModel(ScopeModel parent, ExtensionScope scope) {
@@ -80,7 +80,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
         this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
         this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
         this.destroyListeners = new LinkedList<>();
-        this.attribute = new ConcurrentHashMap<>();
+        this.attributes = new ConcurrentHashMap<>();
         this.classLoaders = new ConcurrentHashSet<>();
 
         // Add Framework's ClassLoader by default
@@ -98,7 +98,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
                     removeClassLoader(classLoader);
                 }
                 onDestroy();
-            }catch (Throwable t) {
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
@@ -116,8 +116,20 @@ public abstract class ScopeModel implements ExtensionAccessor {
         destroyListeners.add(listener);
     }
 
-    public Map<String, Object> getAttribute() {
-        return attribute;
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    public <T> T getAttribute(String key, Class<T> type) {
+        return (T) attributes.get(key);
+    }
+
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    public void setAttribute(String key, Object value) {
+        attributes.put(key, value);
     }
 
     public ExtensionDirector getExtensionDirector() {

@@ -22,6 +22,7 @@ import org.apache.dubbo.config.bootstrap.ModuleDeployer;
 import org.apache.dubbo.config.utils.DefaultConfigValidator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
@@ -37,12 +38,17 @@ public class ConfigScopeModelInitializer implements ScopeModelInitializer {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         beanFactory.registerBean(DubboShutdownHook.class);
         beanFactory.registerBean(DefaultConfigValidator.class);
-        beanFactory.getOrRegisterBean(ApplicationDeployer.class);
+        // applicationDeployer
+        ApplicationDeployer applicationDeployer = beanFactory.registerBean(ApplicationDeployer.class);
+        applicationModel.setAttribute(ModelConstants.DEPLOYER, applicationDeployer);
+
     }
 
     @Override
     public void initializeModuleModel(ModuleModel moduleModel) {
         ScopeBeanFactory beanFactory = moduleModel.getBeanFactory();
-        beanFactory.getOrRegisterBean(ModuleDeployer.class);
+        // moduleDeployer
+        ModuleDeployer moduleDeployer = beanFactory.registerBean(ModuleDeployer.class);
+        moduleModel.setAttribute(ModelConstants.DEPLOYER, moduleDeployer);
     }
 }

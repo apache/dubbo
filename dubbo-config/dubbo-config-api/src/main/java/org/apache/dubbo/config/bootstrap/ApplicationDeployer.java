@@ -54,6 +54,7 @@ import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
@@ -141,7 +142,11 @@ public class ApplicationDeployer implements Lifecycle {
 
     public static ApplicationDeployer get(ScopeModel moduleOrApplicationModel) {
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(moduleOrApplicationModel);
-        return applicationModel.getBeanFactory().getOrRegisterBean(ApplicationDeployer.class);
+        ApplicationDeployer applicationDeployer = applicationModel.getAttribute(ModelConstants.DEPLOYER, ApplicationDeployer.class);
+        if (applicationDeployer == null) {
+            applicationDeployer = applicationModel.getBeanFactory().getOrRegisterBean(ApplicationDeployer.class);
+        }
+        return applicationDeployer;
     }
 
     public ApplicationModel getApplicationModel() {
@@ -591,6 +596,14 @@ public class ApplicationDeployer implements Lifecycle {
             }
             // export MetadataService
             exportMetadataService();
+            // start internal module
+            ModuleDeployer internalModuleDeployer = ModuleDeployer.get(applicationModel.getInternalModule());
+            CompletableFuture internalModuleFuture = internalModuleDeployer.start();
+            try {
+                internalModuleFuture.get();
+            } catch (Exception e) {
+                logger.warn("Internal module start waiting was interrupted");
+            }
             // register the local ServiceInstance if required
             registerServiceInstance();
         }

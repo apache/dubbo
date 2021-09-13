@@ -27,6 +27,7 @@ import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.utils.ReferenceCache;
 import org.apache.dubbo.config.utils.SimpleReferenceCache;
+import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
@@ -65,8 +66,7 @@ public class ModuleDeployer {
     private ApplicationDeployer applicationDeployer;
 
     public static ModuleDeployer get(ModuleModel moduleModel) {
-        // create on first access
-        return moduleModel.getBeanFactory().getOrRegisterBean(ModuleDeployer.class);
+        return moduleModel.getAttribute(ModelConstants.DEPLOYER, ModuleDeployer.class);
     }
 
     public ModuleDeployer(ModuleModel moduleModel) {
@@ -273,7 +273,7 @@ public class ModuleDeployer {
         }
     }
 
-    public void awaitFinish() {
+    private void awaitFinish() {
         waitExportFinish();
         waitReferFinish();
     }

@@ -245,7 +245,7 @@ public class DubboBootstrapMultiInstanceTest {
     }
 
     @Test
-    public void testMultiModuleDeployAndReload() {
+    public void testMultiModuleDeployAndReload() throws Exception {
 
         String version1 = "1.0";
         String version2 = "2.0";
@@ -277,8 +277,7 @@ public class DubboBootstrapMultiInstanceTest {
                     .ref(new GreetingLocal2()))
                 .newModule()
                 .service(serviceConfig1)
-                .endModule()
-                .start();
+                .endModule();
 
             ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
             List<ModuleModel> moduleModels = applicationModel.getModuleModels();
@@ -288,6 +287,7 @@ public class DubboBootstrapMultiInstanceTest {
             Assertions.assertSame(moduleModels.get(2), serviceConfig1.getScopeModel());
 
             ModuleDeployer moduleDeployer1 = ModuleDeployer.get(serviceConfig1.getScopeModel());
+            moduleDeployer1.start().get();
             Assertions.assertTrue(moduleDeployer1.isStartup());
             ModuleDeployer internalModuleDeployer = ModuleDeployer.get(applicationModel.getInternalModule());
             Assertions.assertTrue(internalModuleDeployer.isStartup());
@@ -338,8 +338,7 @@ public class DubboBootstrapMultiInstanceTest {
                 .getModuleModel();
 
             ModuleDeployer moduleDeployer2 = ModuleDeployer.get(consumerModule2);
-            moduleDeployer2.start();
-            moduleDeployer2.awaitFinish();
+            moduleDeployer2.start().get();
 
             DemoService referProxy2 = moduleDeployer2.getReferenceCache().get(serviceKey2);
             String result2 = referProxy2.sayName("dubbo2");
@@ -358,7 +357,7 @@ public class DubboBootstrapMultiInstanceTest {
                 .service(serviceConfig3)
                 .endModule();
 
-            ModuleDeployer.get(serviceConfig3.getScopeModel()).start();
+            ModuleDeployer.get(serviceConfig3.getScopeModel()).start().get();
             Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey1));
             Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey2));
             Assertions.assertNotNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey3));
