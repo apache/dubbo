@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -25,7 +28,6 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.context.ModuleConfigManager;
-import org.apache.dubbo.config.utils.ReferenceCache;
 import org.apache.dubbo.config.utils.SimpleReferenceCache;
 import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -40,9 +42,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Export/refer services of module
  */
-public class ModuleDeployer {
+public class DefaultModuleDeployer implements ModuleDeployer {
 
-    private static final Logger logger = LoggerFactory.getLogger(ModuleDeployer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultModuleDeployer.class);
 
     private final List<CompletableFuture<?>> asyncExportingFutures = new ArrayList<>();
 
@@ -66,17 +68,18 @@ public class ModuleDeployer {
     private ApplicationDeployer applicationDeployer;
 
     public static ModuleDeployer get(ModuleModel moduleModel) {
-        return moduleModel.getAttribute(ModelConstants.DEPLOYER, ModuleDeployer.class);
+        return moduleModel.getAttribute(ModelConstants.DEPLOYER, DefaultModuleDeployer.class);
     }
 
-    public ModuleDeployer(ModuleModel moduleModel) {
+    public DefaultModuleDeployer(ModuleModel moduleModel) {
         this.moduleModel = moduleModel;
         configManager = moduleModel.getConfigManager();
         executorRepository = moduleModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         referenceCache = SimpleReferenceCache.newCache();
-        applicationDeployer = ApplicationDeployer.get(moduleModel);
+        applicationDeployer = DefaultApplicationDeployer.get(moduleModel);
     }
 
+    @Override
     public void initialize() throws IllegalStateException {
         if (!initialized.compareAndSet(false, true)) {
             return;
@@ -84,6 +87,7 @@ public class ModuleDeployer {
         loadConfigs();
     }
 
+    @Override
     public CompletableFuture start() throws IllegalStateException {
 
         CompletableFuture startFuture = new CompletableFuture();
@@ -115,6 +119,7 @@ public class ModuleDeployer {
         return configManager.getServices().size() > 0;
     }
 
+    @Override
     public void destroy() throws IllegalStateException {
         unexportServices();
         unreferServices();
@@ -278,14 +283,17 @@ public class ModuleDeployer {
         waitReferFinish();
     }
 
+    @Override
     public boolean isStartup() {
         return startup;
     }
 
-    public boolean getInitialized() {
+    @Override
+    public boolean isInitialized() {
         return initialized.get();
     }
 
+    @Override
     public boolean isExportBackground() {
         return moduleModel.getConfigManager().getProviders()
             .stream()
@@ -295,6 +303,7 @@ public class ModuleDeployer {
             .isPresent();
     }
 
+    @Override
     public boolean isReferBackground() {
         return moduleModel.getConfigManager().getConsumers()
             .stream()
@@ -311,6 +320,7 @@ public class ModuleDeployer {
         return identifier;
     }
 
+    @Override
     public ReferenceCache getReferenceCache() {
         return referenceCache;
     }
@@ -318,6 +328,7 @@ public class ModuleDeployer {
     /**
      * Prepare for export/refer service, trigger initializing application and module
      */
+    @Override
     public void prepare() {
         applicationDeployer.initialize();
         this.initialize();
@@ -326,7 +337,8 @@ public class ModuleDeployer {
     /**
      * After export one service, trigger starting application
      */
-    public void notifyExportService(ServiceConfig sc) {
+    @Override
+    public void notifyExportService(ServiceConfigBase<?> sc) {
         applicationDeployer.prepareApplicationInstance();
     }
 

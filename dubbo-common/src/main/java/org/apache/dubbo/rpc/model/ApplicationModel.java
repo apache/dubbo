@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
@@ -347,5 +348,13 @@ public class ApplicationModel extends ScopeModel {
 
     protected boolean containsClassLoader(ClassLoader classLoader) {
         return moduleModels.stream().anyMatch(moduleModel -> moduleModel.getClassLoaders().contains(classLoader));
+    }
+
+    public ApplicationDeployer getDeployer() {
+        return getAttribute(ModelConstants.DEPLOYER, ApplicationDeployer.class);
+    }
+
+    public void setDeployer(ApplicationDeployer deployer) {
+        setAttribute(ModelConstants.DEPLOYER, deployer);
     }
 }

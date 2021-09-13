@@ -14,33 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.utils;
+package org.apache.dubbo.common.deploy;
 
-import org.apache.dubbo.config.ReferenceConfigBase;
+import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.config.ServiceConfigBase;
 
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-public interface ReferenceCache {
-    @SuppressWarnings("unchecked")
-    <T> T get(ReferenceConfigBase<T> referenceConfig);
+/**
+ * Export/refer services of module
+ */
+public interface ModuleDeployer {
 
-    @SuppressWarnings("unchecked")
-    <T> T get(String key, Class<T> type);
+    void initialize() throws IllegalStateException;
 
-    @SuppressWarnings("unchecked")
-    <T> T get(String key);
+    CompletableFuture start() throws IllegalStateException;
 
-    @SuppressWarnings("unchecked")
-    <T> List<T> getAll(Class<T> type);
+    void destroy() throws IllegalStateException;
 
-    @SuppressWarnings("unchecked")
-    <T> T get(Class<T> type);
+    boolean isStartup();
 
-    void destroy(String key, Class<?> type);
+    boolean isInitialized();
 
-    void destroy(Class<?> type);
+    boolean isExportBackground();
 
-    <T> void destroy(ReferenceConfigBase<T> referenceConfig);
+    boolean isReferBackground();
 
-    void destroyAll();
+    ReferenceCache getReferenceCache();
+
+    void prepare();
+
+    void notifyExportService(ServiceConfigBase<?> sc);
+
 }

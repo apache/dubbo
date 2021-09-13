@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.config.utils;
 
+import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.config.ReferenceConfigBase;
-import org.apache.dubbo.config.bootstrap.ModuleDeployer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
@@ -42,8 +42,7 @@ public class CompositeReferenceCache implements ReferenceCache {
     @Override
     public <T> T get(String key, Class<T> type) {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ModuleDeployer moduleDeployer = getModuleDeployer(moduleModel);
-            T proxy = moduleDeployer.getReferenceCache().get(key, type);
+            T proxy = moduleModel.getDeployer().getReferenceCache().get(key, type);
             if (proxy != null) {
                 return proxy;
             }
@@ -54,8 +53,7 @@ public class CompositeReferenceCache implements ReferenceCache {
     @Override
     public <T> T get(String key) {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ModuleDeployer moduleDeployer = getModuleDeployer(moduleModel);
-            T proxy = moduleDeployer.getReferenceCache().get(key);
+            T proxy = moduleModel.getDeployer().getReferenceCache().get(key);
             if (proxy != null) {
                 return proxy;
             }
@@ -67,8 +65,7 @@ public class CompositeReferenceCache implements ReferenceCache {
     public <T> List<T> getAll(Class<T> type) {
         List<T> proxies = new ArrayList<>();
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ModuleDeployer moduleDeployer = getModuleDeployer(moduleModel);
-            proxies.addAll(moduleDeployer.getReferenceCache().getAll(type));
+            proxies.addAll(moduleModel.getDeployer().getReferenceCache().getAll(type));
         }
         return proxies;
     }
@@ -76,8 +73,7 @@ public class CompositeReferenceCache implements ReferenceCache {
     @Override
     public <T> T get(Class<T> type) {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ModuleDeployer moduleDeployer = getModuleDeployer(moduleModel);
-            T proxy = moduleDeployer.getReferenceCache().get(type);
+            T proxy = moduleModel.getDeployer().getReferenceCache().get(type);
             if (proxy != null) {
                 return proxy;
             }
@@ -88,34 +84,26 @@ public class CompositeReferenceCache implements ReferenceCache {
     @Override
     public void destroy(String key, Class<?> type) {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ModuleDeployer moduleDeployer = getModuleDeployer(moduleModel);
-            moduleDeployer.getReferenceCache().destroy(key, type);
+            moduleModel.getDeployer().getReferenceCache().destroy(key, type);
         }
     }
 
     @Override
     public void destroy(Class<?> type) {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ModuleDeployer moduleDeployer = getModuleDeployer(moduleModel);
-            moduleDeployer.getReferenceCache().destroy(type);
+            moduleModel.getDeployer().getReferenceCache().destroy(type);
         }
     }
 
     @Override
     public <T> void destroy(ReferenceConfigBase<T> referenceConfig) {
-        getModuleDeployer(referenceConfig.getScopeModel()).getReferenceCache().destroy(referenceConfig);
+        referenceConfig.getScopeModel().getDeployer().getReferenceCache().destroy(referenceConfig);
     }
 
     @Override
     public void destroyAll() {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ModuleDeployer moduleDeployer = getModuleDeployer(moduleModel);
-            moduleDeployer.getReferenceCache().destroyAll();
+            moduleModel.getDeployer().getReferenceCache().destroyAll();
         }
     }
-
-    private ModuleDeployer getModuleDeployer(ModuleModel moduleModel) {
-        return ModuleDeployer.get(moduleModel);
-    }
-
 }

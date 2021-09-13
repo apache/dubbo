@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -286,10 +287,10 @@ public class DubboBootstrapMultiInstanceTest {
             Assertions.assertSame(moduleModels.get(1), applicationModel.getDefaultModule());
             Assertions.assertSame(moduleModels.get(2), serviceConfig1.getScopeModel());
 
-            ModuleDeployer moduleDeployer1 = ModuleDeployer.get(serviceConfig1.getScopeModel());
+            ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
             moduleDeployer1.start().get();
             Assertions.assertTrue(moduleDeployer1.isStartup());
-            ModuleDeployer internalModuleDeployer = ModuleDeployer.get(applicationModel.getInternalModule());
+            ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
             Assertions.assertTrue(internalModuleDeployer.isStartup());
 
             FrameworkServiceRepository frameworkServiceRepository = applicationModel.getFrameworkModel().getServiceRepository();
@@ -324,7 +325,7 @@ public class DubboBootstrapMultiInstanceTest {
                 .service(serviceConfig2)
                 .endModule();
 
-            ModuleDeployer.get(serviceConfig2.getScopeModel()).start();
+            serviceConfig2.getScopeModel().getDeployer().start();
             Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey1));
             Assertions.assertNotNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey2));
             Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey3));
@@ -337,7 +338,7 @@ public class DubboBootstrapMultiInstanceTest {
                     .injvm(false))
                 .getModuleModel();
 
-            ModuleDeployer moduleDeployer2 = ModuleDeployer.get(consumerModule2);
+            ModuleDeployer moduleDeployer2 = consumerModule2.getDeployer();
             moduleDeployer2.start().get();
 
             DemoService referProxy2 = moduleDeployer2.getReferenceCache().get(serviceKey2);
@@ -357,7 +358,7 @@ public class DubboBootstrapMultiInstanceTest {
                 .service(serviceConfig3)
                 .endModule();
 
-            ModuleDeployer.get(serviceConfig3.getScopeModel()).start().get();
+            serviceConfig3.getScopeModel().getDeployer().start().get();
             Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey1));
             Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey2));
             Assertions.assertNotNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey3));
@@ -372,7 +373,7 @@ public class DubboBootstrapMultiInstanceTest {
 
             consumerBootstrap.start();
 
-            DemoService referProxy3 = ModuleDeployer.get(consumerModule3).getReferenceCache().get(serviceKey3);
+            DemoService referProxy3 = consumerModule3.getDeployer().getReferenceCache().get(serviceKey3);
             String result3 = referProxy3.sayName("dubbo3");
             Assertions.assertEquals("say:dubbo3", result3);
 

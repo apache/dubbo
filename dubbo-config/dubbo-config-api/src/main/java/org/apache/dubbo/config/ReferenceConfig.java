@@ -29,7 +29,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.bootstrap.ModuleDeployer;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
@@ -240,7 +239,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         // prepare application for reference
-        ModuleDeployer.get(getScopeModel()).prepare();
+        getScopeModel().getDeployer().prepare();
 
         if (!this.isRefreshed()) {
             this.refresh();

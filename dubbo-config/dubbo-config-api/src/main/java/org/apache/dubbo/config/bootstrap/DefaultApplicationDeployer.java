@@ -19,10 +19,12 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
-import org.apache.dubbo.common.context.Lifecycle;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -38,7 +40,6 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.config.utils.ReferenceCache;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -54,7 +55,6 @@ import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
@@ -91,9 +91,9 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 /**
  * initialize and start application instance
  */
-public class ApplicationDeployer implements Lifecycle {
+public class DefaultApplicationDeployer implements ApplicationDeployer {
 
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationDeployer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DefaultApplicationDeployer.class);
 
     private final ApplicationModel applicationModel;
 
@@ -131,7 +131,7 @@ public class ApplicationDeployer implements Lifecycle {
     private String identifier;
 
 
-    public ApplicationDeployer(ApplicationModel applicationModel) {
+    public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
         environment = applicationModel.getApplicationEnvironment();
@@ -142,26 +142,23 @@ public class ApplicationDeployer implements Lifecycle {
 
     public static ApplicationDeployer get(ScopeModel moduleOrApplicationModel) {
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(moduleOrApplicationModel);
-        ApplicationDeployer applicationDeployer = applicationModel.getAttribute(ModelConstants.DEPLOYER, ApplicationDeployer.class);
+        ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
         if (applicationDeployer == null) {
-            applicationDeployer = applicationModel.getBeanFactory().getOrRegisterBean(ApplicationDeployer.class);
+            applicationDeployer = applicationModel.getBeanFactory().getOrRegisterBean(DefaultApplicationDeployer.class);
         }
         return applicationDeployer;
     }
 
+    @Override
     public ApplicationModel getApplicationModel() {
         return applicationModel;
     }
 
-    public ConfigManager getConfigManager() {
-        return configManager;
-    }
-
-    public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+    private <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         return applicationModel.getExtensionLoader(type);
     }
 
-    public void unRegisterShutdownHook() {
+    private void unRegisterShutdownHook() {
         applicationModel.getBeanFactory().getBean(DubboShutdownHook.class).unregister();
     }
 
@@ -178,13 +175,15 @@ public class ApplicationDeployer implements Lifecycle {
         return type;
     }
 
-    public ReferenceCache getCache() {
+    @Override
+    public ReferenceCache getReferenceCache() {
         return referenceCache;
     }
 
     /**
      * Initialize
      */
+    @Override
     public synchronized void initialize() {
         if (!initialized.compareAndSet(false, true)) {
             return;
@@ -210,7 +209,7 @@ public class ApplicationDeployer implements Lifecycle {
 
     private void registerShutdownHook() {
         applicationModel.getBeanFactory().getBean(DubboShutdownHook.class)
-            .addCallback(ApplicationDeployer.this::destroy)
+            .addCallback(DefaultApplicationDeployer.this::destroy)
             .register();
     }
 
@@ -218,7 +217,7 @@ public class ApplicationDeployer implements Lifecycle {
         // make sure created default module
         applicationModel.getDefaultModule();
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            ModuleDeployer.get(moduleModel).initialize();
+            moduleModel.getDeployer().initialize();
         }
     }
 
@@ -508,6 +507,7 @@ public class ApplicationDeployer implements Lifecycle {
     /**
      * Start the bootstrap
      */
+    @Override
     public synchronized void start() {
         // avoid re-entry start method multiple times in same thread
         if (isCurrentlyInStart) {
@@ -555,7 +555,7 @@ public class ApplicationDeployer implements Lifecycle {
 
         for (ModuleModel moduleModel : moduleModels) {
             // export services in module
-            ModuleDeployer moduleDeployer = ModuleDeployer.get(moduleModel);
+            ModuleDeployer moduleDeployer = moduleModel.getDeployer();
             moduleDeployers.add(moduleDeployer);
             CompletableFuture moduleFuture = moduleDeployer.start();
             futures.add(moduleFuture);
@@ -585,6 +585,7 @@ public class ApplicationDeployer implements Lifecycle {
         }
     }
 
+    @Override
     public void prepareApplicationInstance() {
         if (hasPreparedApplicationInstance.get()) {
             return;
@@ -597,7 +598,7 @@ public class ApplicationDeployer implements Lifecycle {
             // export MetadataService
             exportMetadataService();
             // start internal module
-            ModuleDeployer internalModuleDeployer = ModuleDeployer.get(applicationModel.getInternalModule());
+            ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
             CompletableFuture internalModuleFuture = internalModuleDeployer.start();
             try {
                 internalModuleFuture.get();
@@ -638,18 +639,22 @@ public class ApplicationDeployer implements Lifecycle {
         return false;
     }
 
+    @Override
     public boolean isInitialized() {
         return initialized.get();
     }
 
+    @Override
     public boolean isStarted() {
         return started.get();
     }
 
+    @Override
     public boolean isStartup() {
         return startup.get();
     }
 
+    @Override
     public boolean isShutdown() {
         return shutdown.get();
     }
@@ -808,6 +813,7 @@ public class ApplicationDeployer implements Lifecycle {
         return this.serviceInstance;
     }
 
+    @Override
     public void destroy() {
         if (destroyLock.tryLock()
             && shutdown.compareAndSet(false, true)) {

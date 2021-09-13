@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.utils;
 
+import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;

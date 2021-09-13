@@ -17,12 +17,13 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.config.bootstrap.ApplicationDeployer;
-import org.apache.dubbo.config.bootstrap.ModuleDeployer;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.ModuleDeployer;
+import org.apache.dubbo.config.bootstrap.DefaultApplicationDeployer;
+import org.apache.dubbo.config.bootstrap.DefaultModuleDeployer;
 import org.apache.dubbo.config.utils.DefaultConfigValidator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
@@ -39,8 +40,8 @@ public class ConfigScopeModelInitializer implements ScopeModelInitializer {
         beanFactory.registerBean(DubboShutdownHook.class);
         beanFactory.registerBean(DefaultConfigValidator.class);
         // applicationDeployer
-        ApplicationDeployer applicationDeployer = beanFactory.registerBean(ApplicationDeployer.class);
-        applicationModel.setAttribute(ModelConstants.DEPLOYER, applicationDeployer);
+        ApplicationDeployer applicationDeployer = beanFactory.registerBean(DefaultApplicationDeployer.class);
+        applicationModel.setDeployer(applicationDeployer);
 
     }
 
@@ -48,7 +49,7 @@ public class ConfigScopeModelInitializer implements ScopeModelInitializer {
     public void initializeModuleModel(ModuleModel moduleModel) {
         ScopeBeanFactory beanFactory = moduleModel.getBeanFactory();
         // moduleDeployer
-        ModuleDeployer moduleDeployer = beanFactory.registerBean(ModuleDeployer.class);
-        moduleModel.setAttribute(ModelConstants.DEPLOYER, moduleDeployer);
+        ModuleDeployer moduleDeployer = beanFactory.registerBean(DefaultModuleDeployer.class);
+        moduleModel.setDeployer(moduleDeployer);
     }
 }

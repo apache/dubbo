@@ -258,14 +258,14 @@ public class DubboBootstrapTest {
         Assertions.assertFalse(bootstrap.isShutdown());
 
         ApplicationModel applicationModel = bootstrap.getApplicationModel();
-        ApplicationDeployer applicationDeployer = getApplicationDeployer(applicationModel);
+        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(applicationModel);
         Assertions.assertNotNull(applicationDeployer.serviceInstance);
         Assertions.assertNotNull(applicationDeployer.asyncMetadataFuture);
         Assertions.assertTrue(applicationModel.getDefaultModule().getServiceRepository().getExportedServices().size() > 0);
     }
 
-    private ApplicationDeployer getApplicationDeployer(ApplicationModel applicationModel) {
-        return ApplicationDeployer.get(applicationModel);
+    private DefaultApplicationDeployer getApplicationDeployer(ApplicationModel applicationModel) {
+        return (DefaultApplicationDeployer) DefaultApplicationDeployer.get(applicationModel);
     }
 
     @Test
@@ -332,7 +332,7 @@ public class DubboBootstrapTest {
     }
 
     private void assertMetadataService(DubboBootstrap bootstrap, int availablePort, boolean shouldReport) {
-        ApplicationDeployer applicationDeployer = getApplicationDeployer(bootstrap.getApplicationModel());
+        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(bootstrap.getApplicationModel());
         Assertions.assertTrue(applicationDeployer.metadataServiceExporter.isExported());
         DubboProtocol protocol = DubboProtocol.getDubboProtocol(bootstrap.getApplicationModel());
         Map<String, Exporter<?>> exporters = protocol.getExporterMap();

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
@@ -111,5 +112,13 @@ public class ModuleModel extends ScopeModel {
 
     public ModuleConfigManager getConfigManager() {
         return moduleConfigManager;
+    }
+
+    public ModuleDeployer getDeployer() {
+        return getAttribute(ModelConstants.DEPLOYER, ModuleDeployer.class);
+    }
+
+    public void setDeployer(ModuleDeployer deployer) {
+        setAttribute(ModelConstants.DEPLOYER, deployer);
     }
 }

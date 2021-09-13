@@ -17,6 +17,8 @@
 package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -44,7 +46,6 @@ import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
-import org.apache.dubbo.config.utils.ReferenceCache;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
@@ -169,7 +170,7 @@ public final class DubboBootstrap {
 
         referenceCache = new CompositeReferenceCache(applicationModel);
         executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-        applicationDeployer = ApplicationDeployer.get(applicationModel);
+        applicationDeployer = applicationModel.getDeployer();
         // register DubboBootstrap bean
         applicationModel.getBeanFactory().registerBean(this);
     }
