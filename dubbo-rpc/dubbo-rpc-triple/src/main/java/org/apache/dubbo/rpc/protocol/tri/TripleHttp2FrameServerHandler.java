@@ -200,7 +200,6 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         } else {
             stream = AbstractServerStream.unary(invoker.getUrl());
         }
-        ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(stream);
         Channel channel = ctx.channel();
         ChannelPromise promise = channel.newPromise();
         promise.addListener(future -> {
