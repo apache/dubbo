@@ -220,5 +220,4 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         registryCenter = null;
         writableMetadataService = null;
     }
-        }
-
+}
