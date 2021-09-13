@@ -609,7 +609,7 @@ public class NacosRegistry extends FailbackRegistry {
         private RegistryNotifier notifier;
 
         public RegistryChildListenerImpl(String serviceName, URL consumerUrl, NotifyListener listener) {
-            notifier = new RegistryNotifier(NacosRegistry.this.getDelay()) {
+            notifier = new RegistryNotifier(getUrl(), NacosRegistry.this.getDelay()) {
                 @Override
                 protected void doNotify(Object rawAddresses) {
                     List<Instance> instances = (List<Instance>) rawAddresses;

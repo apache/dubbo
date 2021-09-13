@@ -18,7 +18,6 @@ package org.apache.dubbo.container.spring;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.container.Container;
 
@@ -42,7 +41,7 @@ public class SpringContainer implements Container {
 
     @Override
     public void start() {
-        String configPath = ConfigUtils.getProperty(SPRING_CONFIG);
+        String configPath = System.getProperty(SPRING_CONFIG);
         if (StringUtils.isEmpty(configPath)) {
             configPath = DEFAULT_SPRING_CONFIG;
         }

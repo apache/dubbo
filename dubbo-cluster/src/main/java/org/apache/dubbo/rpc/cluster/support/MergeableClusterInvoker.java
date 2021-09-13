@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -30,6 +29,8 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.Merger;
 import org.apache.dubbo.rpc.cluster.merger.MergerFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -150,10 +151,12 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         } else {
             Merger resultMerger;
+            ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(invocation.getModuleModel().getApplicationModel());
+
             if (ConfigUtils.isDefault(merger)) {
-                resultMerger = MergerFactory.getMerger(returnType);
+                resultMerger = applicationModel.getBeanFactory().getBean(MergerFactory.class).getMerger(returnType);
             } else {
-                resultMerger = ExtensionLoader.getExtensionLoader(Merger.class).getExtension(merger);
+                resultMerger = applicationModel.getExtensionLoader(Merger.class).getExtension(merger);
             }
             if (resultMerger != null) {
                 List<Object> rets = new ArrayList<Object>(resultList.size());

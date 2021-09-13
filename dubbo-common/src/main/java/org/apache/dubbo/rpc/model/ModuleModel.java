@@ -16,11 +16,14 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Model of a service module
@@ -28,26 +31,40 @@ import java.util.List;
 public class ModuleModel extends ScopeModel {
     private static final Logger logger = LoggerFactory.getLogger(ModuleModel.class);
 
-    private String id;
+    private static final AtomicLong index = new AtomicLong(0);
+    public static final String NAME = "ModuleModel";
+
     private final ApplicationModel applicationModel;
     private ModuleServiceRepository serviceRepository;
 
     public ModuleModel(ApplicationModel applicationModel) {
+        this(NAME + "-" + index.getAndIncrement(), applicationModel);
+    }
+
+    public ModuleModel(String name, ApplicationModel applicationModel) {
         super(applicationModel, ExtensionScope.MODULE);
         this.applicationModel = applicationModel;
         applicationModel.addModule(this);
         initialize();
+        this.modelName = name;
     }
 
     @Override
     protected void initialize() {
         super.initialize();
         this.serviceRepository = new ModuleServiceRepository(this);
+
+        ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
+        Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
+        for (ScopeModelInitializer initializer : initializers) {
+            initializer.initializeModuleModel(this);
+        }
+
         postProcessAfterCreated();
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         if (serviceRepository != null) {
             List<ConsumerModel> consumerModels = serviceRepository.getReferredServices();
 
@@ -80,9 +97,8 @@ public class ModuleModel extends ScopeModel {
             serviceRepository = null;
         }
 
-        // TODO destroy module resources
+        notifyDestroy();
         applicationModel.removeModule(this);
-        super.destroy();
     }
 
     public ApplicationModel getApplicationModel() {
@@ -91,18 +107,5 @@ public class ModuleModel extends ScopeModel {
 
     public ModuleServiceRepository getServiceRepository() {
         return serviceRepository;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    @Override
-    public String toString() {
-        return "ModuleModel";
     }
 }
