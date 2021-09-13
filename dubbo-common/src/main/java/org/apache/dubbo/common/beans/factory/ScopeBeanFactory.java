@@ -65,10 +65,14 @@ public class ScopeBeanFactory {
     }
 
     public <T> T registerBean(Class<T> bean) throws ScopeBeanException {
-        return this.registerBean(null, bean);
+        return this.getOrRegisterBean(null, bean);
     }
 
     public <T> T registerBean(String name, Class<T> clazz) throws ScopeBeanException {
+        return getOrRegisterBean(name, clazz);
+    }
+
+    private <T> T createAndRegisterBean(String name, Class<T> clazz) {
         T instance = getBean(name, clazz);
         if (instance != null) {
             throw new ScopeBeanException("already exists bean with same name and type, name=" + name + ", type=" + clazz.getName());
@@ -108,7 +112,7 @@ public class ScopeBeanFactory {
     public <T> T getOrRegisterBean(String name, Class<T> type) {
         T bean = getBean(name, type);
         if (bean == null) {
-            bean = registerBean(name, type);
+            bean = createAndRegisterBean(name, type);
         }
         return bean;
     }
