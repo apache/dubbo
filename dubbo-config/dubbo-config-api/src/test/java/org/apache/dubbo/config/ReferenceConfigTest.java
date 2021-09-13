@@ -35,6 +35,7 @@ import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -68,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -117,21 +119,25 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 public class ReferenceConfigTest {
-    private String zkUrl;
-    private String registryUrl;
-    private RegistryCenter registryCenter;
+    private String zkUrl1;
+    private String zkUrl2;
+    private String registryUrl1;
+    private RegistryCenter registryCenter1;
+    private RegistryCenter registryCenter2;
 
     @BeforeEach
     public void setUp() throws Exception {
         DubboBootstrap.reset();
-        int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
-        registryCenter = new ZookeeperSingleRegistryCenter(zkServerPort);
-        registryCenter.startup();
-        this.zkUrl = "zookeeper://localhost:" + zkServerPort;
-        this.registryUrl = "registry://localhost:" + zkServerPort + "?registry=zookeeper";
+        int zkServerPort1 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
+        registryCenter1 = new ZookeeperSingleRegistryCenter(zkServerPort1);
+        registryCenter1.startup();
+        int zkServerPort2 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
+        registryCenter2 = new ZookeeperSingleRegistryCenter(zkServerPort2);
+        registryCenter2.startup();
+        this.zkUrl1 = "zookeeper://localhost:" + zkServerPort1;
+        this.zkUrl2 = "zookeeper://localhost:" + zkServerPort2;
+        this.registryUrl1 = "registry://localhost:" + zkServerPort1 + "?registry=zookeeper";
 
-        // preload
-        ReferenceConfig preloadReferenceConfig = new ReferenceConfig();
         ApplicationModel.defaultModel().getApplicationConfigManager();
         DubboBootstrap.getInstance();
     }
@@ -139,7 +145,8 @@ public class ReferenceConfigTest {
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
-        registryCenter.shutdown();
+        registryCenter1.shutdown();
+        registryCenter2.shutdown();
         Mockito.framework().clearInlineMocks();
 
     }
@@ -238,7 +245,7 @@ public class ReferenceConfigTest {
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
         applicationConfig.setRegistries(Collections.singletonList(registry));
         applicationConfig.setRegistryIds(registry.getId());
         moduleConfig.setRegistries(Collections.singletonList(registry));
@@ -523,7 +530,7 @@ public class ReferenceConfigTest {
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
         applicationConfig.setRegistries(Collections.singletonList(registry));
         applicationConfig.setRegistryIds(registry.getId());
 
@@ -567,7 +574,7 @@ public class ReferenceConfigTest {
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
 
-        referenceConfig.setUrl(registryUrl);
+        referenceConfig.setUrl(registryUrl1);
 
         dubboBootstrap
             .application(applicationConfig)
@@ -580,6 +587,57 @@ public class ReferenceConfigTest {
 
     }
 
+    /**
+     * Verify the service reference of multiple registries
+     */
+    @Test
+    public void testMultipleRegistryForRemoteRefer() {
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setGeneric(Boolean.FALSE.toString());
+        referenceConfig.setProtocol("dubbo");
+        referenceConfig.setInit(true);
+        referenceConfig.setLazy(false);
+        referenceConfig.setInjvm(false);
+
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("key1", "value1");
+        parameters.put("key2", "value2");
+        applicationConfig.setParameters(parameters);
+
+        referenceConfig.refreshed.set(true);
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.getInterfaceClass();
+        referenceConfig.setCheck(false);
+        RegistryConfig registry1 = new RegistryConfig();
+        registry1.setAddress(zkUrl1);
+        registry1.setId("zk1");
+
+        RegistryConfig registry2 = new RegistryConfig();
+        registry2.setAddress(zkUrl2);
+        registry2.setId("zk2");
+
+        List<RegistryConfig> registryConfigs = new ArrayList<>();
+        registryConfigs.add(registry1);
+        registryConfigs.add(registry2);
+        applicationConfig.setRegistries(registryConfigs);
+        applicationConfig.setRegistryIds("zk1,zk2");
+
+        referenceConfig.setRegistries(registryConfigs);
+
+        dubboBootstrap
+            .application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
+
+        referenceConfig.init();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof ZoneAwareClusterInvoker);
+
+        dubboBootstrap.destroy();
+    }
 
     @Test
     @Disabled("Disabled due to Github Actions environment")
@@ -590,7 +648,7 @@ public class ReferenceConfigTest {
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
 
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("dubbo");
@@ -634,7 +692,7 @@ public class ReferenceConfigTest {
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("injvm");
 
@@ -819,7 +877,7 @@ public class ReferenceConfigTest {
         DemoService demoService = new DemoServiceImpl();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(DemoService.class);
-        serviceConfig.setRegistry(new RegistryConfig(zkUrl));
+        serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
         serviceConfig.setScopeModel(moduleModel);
         serviceConfig.setRef(demoService);
         serviceConfig.export();
@@ -836,7 +894,7 @@ public class ReferenceConfigTest {
 
         ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
         referenceConfig1.setInterface(class1);
-        referenceConfig1.setRegistry(new RegistryConfig(zkUrl));
+        referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
         referenceConfig1.setScopeModel(moduleModel);
         referenceConfig1.setScope("remote");
         Object demoService1 = referenceConfig1.get();
@@ -855,7 +913,7 @@ public class ReferenceConfigTest {
 
         ReferenceConfig<DemoService> referenceConfig2 = new ReferenceConfig<>();
         referenceConfig2.setInterface(class2);
-        referenceConfig2.setRegistry(new RegistryConfig(zkUrl));
+        referenceConfig2.setRegistry(new RegistryConfig(zkUrl1));
         referenceConfig2.setScopeModel(moduleModel);
         referenceConfig2.setScope("remote");
         Object demoService2 = referenceConfig2.get();
@@ -904,7 +962,7 @@ public class ReferenceConfigTest {
         ServiceConfig serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterfaceClassLoader(classLoader1);
         serviceConfig.setInterface(clazz1);
-        serviceConfig.setRegistry(new RegistryConfig(zkUrl));
+        serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
         serviceConfig.setScopeModel(moduleModel);
         serviceConfig.setRef(declaredConstructor.newInstance(innerRequestReference, innerResultReference));
         serviceConfig.export();
@@ -919,7 +977,7 @@ public class ReferenceConfigTest {
         ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
         referenceConfig1.setInterface(clazz2);
         referenceConfig1.setInterfaceClassLoader(classLoader3);
-        referenceConfig1.setRegistry(new RegistryConfig(zkUrl));
+        referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
         referenceConfig1.setScopeModel(moduleModel);
         referenceConfig1.setScope("remote");
         Object object1 = referenceConfig1.get();

@@ -44,6 +44,7 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
@@ -107,7 +108,7 @@ public class MetadataInfo implements Serializable {
         }
 
         if (CollectionUtils.isEmptyMap(services)) {
-            this.revision = RevisionResolver.getEmptyRevision(app);
+            this.revision = EMPTY_REVISION;
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append(app);

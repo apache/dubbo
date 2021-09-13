@@ -76,7 +76,7 @@ public class ModuleModel extends ScopeModel {
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         if (serviceRepository != null) {
             List<ConsumerModel> consumerModels = serviceRepository.getReferredServices();
 
@@ -109,13 +109,13 @@ public class ModuleModel extends ScopeModel {
             serviceRepository = null;
         }
 
-        // TODO destroy module resources
+        notifyDestroy();
         if (moduleEnvironment != null) {
             moduleEnvironment.destroy();
             moduleEnvironment = null;
         }
+
         applicationModel.removeModule(this);
-        super.destroy();
     }
 
     public ApplicationModel getApplicationModel() {

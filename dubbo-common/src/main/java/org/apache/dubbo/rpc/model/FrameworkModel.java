@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
@@ -69,7 +70,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         //TODO destroy framework model
         for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
             applicationModel.destroy();
@@ -81,7 +82,8 @@ public class FrameworkModel extends ScopeModel {
                 defaultInstance = null;
             }
         }
-        super.destroy();
+
+        notifyDestroy();
     }
 
     public static FrameworkModel defaultModel() {
@@ -129,5 +131,10 @@ public class FrameworkModel extends ScopeModel {
     @Override
     public Environment getModelEnvironment() {
         throw new UnsupportedOperationException("Environment is inaccessible for FrameworkModel");
+    }
+
+    @Override
+    protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
+        return applicationModels.stream().noneMatch(applicationModel -> applicationModel.containsClassLoader(classLoader));
     }
 }
