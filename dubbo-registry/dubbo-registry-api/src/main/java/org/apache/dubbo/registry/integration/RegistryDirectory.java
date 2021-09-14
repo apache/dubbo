@@ -118,7 +118,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
-        return moduleModel.getBeanFactory().registerBeanIfAbsent(ConsumerConfigurationListener.class,
+        return moduleModel.getBeanFactory().getOrRegisterBean(ConsumerConfigurationListener.class,
             type -> new ConsumerConfigurationListener(moduleModel));
     }
 

@@ -273,7 +273,7 @@ public class ApplicationModel extends ScopeModel {
 
     public synchronized void removeModule(ModuleModel moduleModel) {
         this.moduleModels.remove(moduleModel);
-        this.pubModuleModels.remove(model);
+        this.pubModuleModels.remove(moduleModel);
         if (moduleModel == defaultModule) {
             defaultModule = findDefaultModule();
         }

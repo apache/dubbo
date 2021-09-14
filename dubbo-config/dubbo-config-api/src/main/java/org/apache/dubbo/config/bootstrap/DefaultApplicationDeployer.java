@@ -134,7 +134,7 @@ public class DefaultApplicationDeployer implements ApplicationDeployer {
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.getApplicationEnvironment();
+        environment = applicationModel.getModelEnvironment();
 
         referenceCache = new CompositeReferenceCache(applicationModel);
         executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
