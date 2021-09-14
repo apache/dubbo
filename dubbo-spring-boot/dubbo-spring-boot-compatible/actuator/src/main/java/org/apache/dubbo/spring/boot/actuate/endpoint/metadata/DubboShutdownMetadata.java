@@ -19,7 +19,7 @@ package org.apache.dubbo.spring.boot.actuate.endpoint.metadata;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -37,6 +37,8 @@ import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getRegis
 @Component
 public class DubboShutdownMetadata extends AbstractDubboMetadata {
 
+    @Autowired
+    private ApplicationModel applicationModel;
 
     public Map<String, Object> shutdown() throws Exception {
 
@@ -61,7 +63,7 @@ public class DubboShutdownMetadata extends AbstractDubboMetadata {
         shutdownCountData.put("services", serviceBeansMap.size());
 
         // Reference Beans
-        Collection<ReferenceConfigBase<?>> references = ApplicationModel.defaultModel().getApplicationConfigManager().getReferences();
+        Collection<ReferenceConfigBase<?>> references = applicationModel.getDefaultModule().getConfigManager().getReferences();
         for (ReferenceConfigBase<?> reference : references) {
             reference.destroy();
         }

@@ -17,18 +17,16 @@
 package org.apache.dubbo.config.spring.extension;
 
 import org.apache.dubbo.common.context.Lifecycle;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.config.DubboShutdownHook;
-
-import com.alibaba.spring.util.BeanFactoryUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 
-import java.util.Set;
+import java.util.Arrays;
 
 /**
  * SpringExtensionInjector
@@ -36,50 +34,87 @@ import java.util.Set;
 public class SpringExtensionInjector implements ExtensionInjector, Lifecycle {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionInjector.class);
 
-    private static final Set<ApplicationContext> CONTEXTS = new ConcurrentHashSet<ApplicationContext>();
+    public static final String NAME = "spring";
 
+    private ApplicationContext context;
+
+    @Deprecated
     public static void addApplicationContext(ApplicationContext context) {
-        CONTEXTS.add(context);
-        if (context instanceof ConfigurableApplicationContext) {
-            ((ConfigurableApplicationContext) context).registerShutdownHook();
-            // see https://github.com/apache/dubbo/issues/7093
-            DubboShutdownHook.getDubboShutdownHook().unregister();
-        }
+//        CONTEXTS.add(context);
+//        if (context instanceof ConfigurableApplicationContext) {
+//            ((ConfigurableApplicationContext) context).registerShutdownHook();
+//            // see https://github.com/apache/dubbo/issues/7093
+//            DubboShutdownHook.getDubboShutdownHook().unregister();
+//        }
     }
 
-    public static Set<ApplicationContext> getContexts() {
-        return CONTEXTS;
+//    @Deprecated
+//    public static Set<ApplicationContext> getContexts() {
+//        // return contexts;
+//        return Collections.emptySet();
+//    }
+
+//    @Deprecated
+//    public static void clearContexts() {
+//        //contexts.clear();
+//    }
+
+    public static SpringExtensionInjector get(ExtensionAccessor extensionAccessor) {
+        return (SpringExtensionInjector) extensionAccessor.getExtension(ExtensionInjector.class, NAME);
     }
 
-    // currently for test purpose
-    public static void clearContexts() {
-        CONTEXTS.clear();
+    public ApplicationContext getContext() {
+        return context;
+    }
+
+    public void init(ApplicationContext context) {
+        this.context = context;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getInstance(Class<T> type, String name) {
 
-        //SPI should be get from SpiExtensionInjector
+        if (context == null) {
+            // ignore if spring context is not bound
+            return null;
+        }
+
+        //check @SPI annotation
         if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
             return null;
         }
 
-        for (ApplicationContext context : CONTEXTS) {
-            T bean = BeanFactoryUtils.getOptionalBean(context, name, type);
-            if (bean != null) {
-                return bean;
-            }
+        T bean = getOptionalBean(context, name, type);
+        if (bean != null) {
+            return bean;
         }
 
         //logger.warn("No spring extension (bean) named:" + name + ", try to find an extension (bean) of type " + type.getName());
+        return null;
+    }
 
+    private <T> T getOptionalBean(ListableBeanFactory beanFactory, String name, Class<T> type) {
+        if (StringUtils.isEmpty(name)) {
+            String[] beanNamesForType = beanFactory.getBeanNamesForType(type, true, false);
+            if (beanNamesForType != null) {
+                if (beanNamesForType.length == 1) {
+                    return beanFactory.getBean(beanNamesForType[0], type);
+                } else if (beanNamesForType.length > 1) {
+                    throw new IllegalStateException("Expect single but found " + beanNamesForType.length + " beans in spring context: " +
+                        Arrays.toString(beanNamesForType));
+                }
+            }
+        } else {
+            if (beanFactory.containsBean(name)) {
+                return beanFactory.getBean(name, type);
+            }
+        }
         return null;
     }
 
     @Override
     public void initialize() throws IllegalStateException {
-        clearContexts();
     }
 
     @Override
@@ -89,6 +124,5 @@ public class SpringExtensionInjector implements ExtensionInjector, Lifecycle {
 
     @Override
     public void destroy() {
-        clearContexts();
     }
 }

@@ -22,8 +22,6 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,10 +70,6 @@ public class PropertySourcesInJavaConfigTest {
         try {
             providerContext.start();
 
-            // reset ConfigManager of provider context
-            ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
-            //ApplicationModel.defaultModel().getApplicationServiceRepository().setProviderUrlsWithoutGroup(tmp);
-
             // Resolve placeholder by import property sources
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class, ImportPropertyConfiguration.class);
             try {
@@ -103,9 +97,6 @@ public class PropertySourcesInJavaConfigTest {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(PROVIDER_CONFIG_PATH);
         try {
             providerContext.start();
-
-            // reset ConfigManager of provider context
-            ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
 
             // Resolve placeholder by custom PropertySourcesPlaceholderConfigurer bean
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class, PropertyBeanConfiguration.class);

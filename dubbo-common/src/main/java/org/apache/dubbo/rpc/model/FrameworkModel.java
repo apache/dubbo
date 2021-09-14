@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
@@ -34,8 +35,11 @@ public class FrameworkModel extends ScopeModel {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(FrameworkModel.class);
 
-    private static final AtomicLong index = new AtomicLong(0);
     public static final String NAME = "FrameworkModel";
+    private static final AtomicLong index = new AtomicLong(1);
+    // app index starts from 1 in each FrameworkModel
+    private final AtomicLong appIndex = new AtomicLong(1);
+
     private volatile static FrameworkModel defaultInstance;
 
     private static List<FrameworkModel> allInstances = Collections.synchronizedList(new ArrayList<>());
@@ -45,10 +49,11 @@ public class FrameworkModel extends ScopeModel {
     private FrameworkServiceRepository serviceRepository;
 
 
+
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
         initialize();
-        this.modelName = NAME + "-" + index.getAndIncrement();
+        this.setInternalName(buildInternalName(NAME, null, index.getAndIncrement()));
     }
 
     @Override
@@ -62,13 +67,10 @@ public class FrameworkModel extends ScopeModel {
         for (ScopeModelInitializer initializer : initializers) {
             initializer.initializeFrameworkModel(this);
         }
-
-
-        postProcessAfterCreated();
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         //TODO destroy framework model
         for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
             applicationModel.destroy();
@@ -80,7 +82,8 @@ public class FrameworkModel extends ScopeModel {
                 defaultInstance = null;
             }
         }
-        super.destroy();
+
+        notifyDestroy();
     }
 
     public static FrameworkModel defaultModel() {
@@ -104,13 +107,18 @@ public class FrameworkModel extends ScopeModel {
         }
     }
 
-    public void addApplication(ApplicationModel model) {
-        if (!this.applicationModels.contains(model)) {
-            this.applicationModels.add(model);
+    public ApplicationModel newApplication() {
+        return new ApplicationModel(this);
+    }
+
+    synchronized void addApplication(ApplicationModel applicationModel) {
+        if (!this.applicationModels.contains(applicationModel)) {
+            this.applicationModels.add(applicationModel);
+            applicationModel.setInternalName(buildInternalName(ApplicationModel.NAME, getInternalId(), appIndex.getAndIncrement()));
         }
     }
 
-    public void removeApplication(ApplicationModel model) {
+    synchronized void removeApplication(ApplicationModel model) {
         this.applicationModels.remove(model);
         if (applicationModels.size() == 0) {
             destroy();
@@ -118,10 +126,20 @@ public class FrameworkModel extends ScopeModel {
     }
 
     public List<ApplicationModel> getApplicationModels() {
-        return applicationModels;
+        return Collections.unmodifiableList(applicationModels);
     }
 
     public FrameworkServiceRepository getServiceRepository() {
         return serviceRepository;
+    }
+
+    @Override
+    public Environment getModelEnvironment() {
+        throw new UnsupportedOperationException("Environment is inaccessible for FrameworkModel");
+    }
+
+    @Override
+    protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
+        return applicationModels.stream().noneMatch(applicationModel -> applicationModel.containsClassLoader(classLoader));
     }
 }

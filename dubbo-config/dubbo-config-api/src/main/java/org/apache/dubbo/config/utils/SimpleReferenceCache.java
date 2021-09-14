@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.config.utils;
 
+import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * You can implement and use your own {@link ReferenceConfigBase} cache if you need use complicate strategy.
  */
-public class ReferenceConfigCache {
+public class SimpleReferenceCache implements ReferenceCache {
     public static final String DEFAULT_NAME = "_DEFAULT_";
     /**
      * Create the key with the <b>Group</b>, <b>Interface</b> and <b>version</b> attribute of {@link ReferenceConfigBase}.
@@ -68,15 +68,15 @@ public class ReferenceConfigCache {
 
     private static final AtomicInteger nameIndex = new AtomicInteger();
 
-    static final ConcurrentMap<String, ReferenceConfigCache> CACHE_HOLDER = new ConcurrentHashMap<String, ReferenceConfigCache>();
+    static final ConcurrentMap<String, SimpleReferenceCache> CACHE_HOLDER = new ConcurrentHashMap<>();
     private final String name;
     private final KeyGenerator generator;
 
-    private final ConcurrentMap<String, ReferenceConfigBase<?>> referredReferences = new ConcurrentHashMap<>();
+    private final Map<String, List<ReferenceConfigBase<?>>> referenceKeyMap = new ConcurrentHashMap<>();
+    private final Map<Class<?>, List<ReferenceConfigBase<?>>> referenceTypeMap = new ConcurrentHashMap<>();
+    private final Map<ReferenceConfigBase<?>, Object> references = new ConcurrentHashMap<>();
 
-    private final ConcurrentMap<Class<?>, ConcurrentMap<String, Object>> proxies = new ConcurrentHashMap<>();
-
-    private ReferenceConfigCache(String name, KeyGenerator generator) {
+    protected SimpleReferenceCache(String name, KeyGenerator generator) {
         this.name = name;
         this.generator = generator;
     }
@@ -85,11 +85,11 @@ public class ReferenceConfigCache {
      * Get the cache use default name and {@link #DEFAULT_KEY_GENERATOR} to generate cache key.
      * Create cache if not existed yet.
      */
-    public static ReferenceConfigCache getCache() {
+    public static SimpleReferenceCache getCache() {
         return getCache(DEFAULT_NAME);
     }
 
-    public static ReferenceConfigCache newCache() {
+    public static SimpleReferenceCache newCache() {
         return getCache(DEFAULT_NAME + "#" + nameIndex.incrementAndGet());
     }
 
@@ -97,7 +97,7 @@ public class ReferenceConfigCache {
      * Get the cache use specified name and {@link KeyGenerator}.
      * Create cache if not existed yet.
      */
-    public static ReferenceConfigCache getCache(String name) {
+    public static SimpleReferenceCache getCache(String name) {
         return getCache(name, DEFAULT_KEY_GENERATOR);
     }
 
@@ -105,22 +105,26 @@ public class ReferenceConfigCache {
      * Get the cache use specified {@link KeyGenerator}.
      * Create cache if not existed yet.
      */
-    public static ReferenceConfigCache getCache(String name, KeyGenerator keyGenerator) {
-        return CACHE_HOLDER.computeIfAbsent(name, k -> new ReferenceConfigCache(k, keyGenerator));
+    public static SimpleReferenceCache getCache(String name, KeyGenerator keyGenerator) {
+        return CACHE_HOLDER.computeIfAbsent(name, k -> new SimpleReferenceCache(k, keyGenerator));
     }
 
+    @Override
     @SuppressWarnings("unchecked")
-    public <T> T get(ReferenceConfigBase<T> referenceConfig) {
-        String key = generator.generateKey(referenceConfig);
-        Class<?> type = referenceConfig.getInterfaceClass();
+    public <T> T get(ReferenceConfigBase<T> rc) {
+        String key = generator.generateKey(rc);
+        Class<?> type = rc.getInterfaceClass();
+        Object proxy = rc.get();
 
-        ConcurrentMap<String, Object> proxiesOfType = proxies.computeIfAbsent(type, _t -> new ConcurrentHashMap<>());
-
-        return (T) proxiesOfType.computeIfAbsent(key, _k -> {
-            Object proxy = referenceConfig.get();
-            referredReferences.put(key, referenceConfig);
+        references.computeIfAbsent(rc, _rc -> {
+            List<ReferenceConfigBase<?>> referencesOfType = referenceTypeMap.computeIfAbsent(type, _t -> Collections.synchronizedList(new ArrayList<>()));
+            referencesOfType.add(rc);
+            List<ReferenceConfigBase<?>> referenceConfigList = referenceKeyMap.computeIfAbsent(key, _k -> Collections.synchronizedList(new ArrayList<>()));
+            referenceConfigList.add(rc);
             return proxy;
         });
+
+        return (T) proxy;
     }
 
     /**
@@ -133,71 +137,75 @@ public class ReferenceConfigCache {
      * @return object from the cached ReferenceConfigBase
      * @see KeyGenerator#generateKey(ReferenceConfigBase)
      */
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T get(String key, Class<T> type) {
-        Map<String, Object> proxiesOfType = proxies.get(type);
-        if (CollectionUtils.isEmptyMap(proxiesOfType)) {
-            return null;
+        List<ReferenceConfigBase<?>> referenceConfigs = referenceKeyMap.get(key);
+        if (referenceConfigs != null && referenceConfigs.size() > 0) {
+            return (T) referenceConfigs.get(0).get();
         }
-        return (T) proxiesOfType.get(key);
+        return null;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T get(String key) {
-        ReferenceConfigBase<?> rc = referredReferences.get(key);
-        if (rc == null) {
-            return null;
+        List<ReferenceConfigBase<?>> referenceConfigs = referenceKeyMap.get(key);
+        if (referenceConfigs != null && referenceConfigs.size() > 0) {
+            return (T) referenceConfigs.get(0).get();
         }
-
-        return (T) get(key, rc.getInterfaceClass());
+        return null;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> List<T> getAll(Class<T> type) {
-        Map<String, Object> proxiesOfType = proxies.get(type);
-        if (CollectionUtils.isEmptyMap(proxiesOfType)) {
-            return Collections.emptyList();
+        List<ReferenceConfigBase<?>> referenceConfigBases = referenceTypeMap.get(type);
+        if (CollectionUtils.isEmpty(referenceConfigBases)) {
+            return Collections.EMPTY_LIST;
         }
-
-        List<T> proxySet = new ArrayList<>();
-        proxiesOfType.values().forEach(obj -> proxySet.add((T) obj));
-        return proxySet;
+        List proxiesOfType = new ArrayList(referenceConfigBases.size());
+        for (ReferenceConfigBase<?> rc : referenceConfigBases) {
+            proxiesOfType.add(rc.get());
+        }
+        return Collections.unmodifiableList(proxiesOfType);
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public <T> T get(Class<T> type) {
-        Map<String, Object> proxiesOfType = proxies.get(type);
-        if (CollectionUtils.isEmptyMap(proxiesOfType)) {
-            return null;
+        List<ReferenceConfigBase<?>> referenceConfigBases = referenceTypeMap.get(type);
+        if (referenceConfigBases != null && referenceConfigBases.size() > 0) {
+            return (T) referenceConfigBases.get(0).get();
         }
-
-        return (T) proxiesOfType.values().iterator().next();
+        return null;
     }
 
+    @Override
     public void destroy(String key, Class<?> type) {
-        ReferenceConfigBase<?> rc = referredReferences.remove(key);
-        if (rc == null) {
+        List<ReferenceConfigBase<?>> referencesOfKey = referenceKeyMap.remove(key);
+        if (CollectionUtils.isEmpty(referencesOfKey)) {
             return;
         }
-
-        ScopeModelUtil.getApplicationModel(rc.getScopeModel()).getApplicationConfigManager().removeConfig(rc);
-        rc.destroy();
-
-        Map<String, Object> proxiesOftype = proxies.get(type);
-        if (CollectionUtils.isNotEmptyMap(proxiesOftype)) {
-            proxiesOftype.remove(key);
-            if (proxiesOftype.isEmpty()) {
-                proxies.remove(type);
-            }
+        List<ReferenceConfigBase<?>> referencesOfType = referenceTypeMap.get(type);
+        if (CollectionUtils.isEmpty(referencesOfType)) {
+            return;
         }
+        for (ReferenceConfigBase<?> rc : referencesOfKey) {
+            referencesOfType.remove(rc);
+            destroyReference(rc);
+        }
+
     }
 
+    @Override
     public void destroy(Class<?> type) {
-        Map<String, Object> proxiesOfType = proxies.remove(type);
-        proxiesOfType.forEach((k, v) -> {
-            ReferenceConfigBase rc = referredReferences.remove(k);
-            rc.destroy();
-        });
+        List<ReferenceConfigBase<?>> referencesOfType = referenceTypeMap.remove(type);
+        for (ReferenceConfigBase<?> rc : referencesOfType) {
+            String key = generator.generateKey(rc);
+            referenceKeyMap.remove(key);
+            destroyReference(rc);
+        }
     }
 
     /**
@@ -205,49 +213,49 @@ public class ReferenceConfigCache {
      *
      * @param referenceConfig use for create key.
      */
+    @Override
     public <T> void destroy(ReferenceConfigBase<T> referenceConfig) {
         String key = generator.generateKey(referenceConfig);
         Class<?> type = referenceConfig.getInterfaceClass();
-
         destroy(key, type);
     }
 
     /**
      * clear and destroy all {@link ReferenceConfigBase} in the cache.
      */
+    @Override
     public void destroyAll() {
-        if (CollectionUtils.isEmptyMap(referredReferences)) {
+        if (CollectionUtils.isEmptyMap(referenceKeyMap)) {
             return;
         }
 
-        referredReferences.forEach((_k, referenceConfig) -> {
-            referenceConfig.destroy();
-            ScopeModelUtil.getApplicationModel(referenceConfig.getScopeModel()).getApplicationConfigManager().removeConfig(referenceConfig);
+        referenceKeyMap.forEach((_k, referencesOfKey) -> {
+            for (ReferenceConfigBase<?> rc : referencesOfKey) {
+                destroyReference(rc);
+            }
         });
 
-        proxies.forEach((_type, proxiesOfType) -> {
-            proxiesOfType.forEach((_k, v) -> {
-                Destroyable proxy = (Destroyable) v;
-                proxy.$destroy();
-            });
-        });
-
-        referredReferences.clear();
-        proxies.clear();
+        referenceKeyMap.clear();
+        referenceTypeMap.clear();
     }
 
-    public ConcurrentMap<String, ReferenceConfigBase<?>> getReferredReferences() {
-        return referredReferences;
+    private void destroyReference(ReferenceConfigBase<?> rc) {
+        Destroyable proxy = (Destroyable) rc.get();
+        proxy.$destroy();
+        rc.destroy();
     }
 
-    public ConcurrentMap<Class<?>, ConcurrentMap<String, Object>> getProxies() {
-        return proxies;
+    public Map<String, List<ReferenceConfigBase<?>>> getReferenceMap() {
+        return referenceKeyMap;
+    }
+
+    public Map<Class<?>, List<ReferenceConfigBase<?>>> getReferenceTypeMap() {
+        return referenceTypeMap;
     }
 
     @Override
     public String toString() {
-        return "ReferenceConfigCache(name: " + name
-            + ")";
+        return "ReferenceCache(name: " + name + ")";
     }
 
     public interface KeyGenerator {

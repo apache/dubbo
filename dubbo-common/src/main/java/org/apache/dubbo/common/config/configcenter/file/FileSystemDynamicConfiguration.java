@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.common.config.configcenter.file;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
@@ -27,10 +30,8 @@ import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +44,6 @@ import java.nio.file.WatchService;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,6 +54,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -147,7 +148,6 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
         MODIFIERS = initWatchEventModifiers();
         DELAY = initDelay(MODIFIERS);
         WATCH_EVENTS_LOOP_THREAD_POOL = newWatchEventsLoopThreadPool();
-        registerDubboShutdownHook();
     }
 
     /**
@@ -168,6 +168,8 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
     private final Set<File> processingDirectories;
 
     private final Map<File, List<ConfigurationListener>> listenersRepository;
+    private ScopeModel scopeModel;
+    private AtomicBoolean hasRegisteredShutdownHook = new AtomicBoolean();
 
     public FileSystemDynamicConfiguration() {
         this(new File(DEFAULT_CONFIG_CENTER_DIR_PATH));
@@ -198,12 +200,27 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
         this.rootDirectory = rootDirectory;
         this.encoding = encoding;
         this.processingDirectories = initProcessingDirectories();
-        this.listenersRepository = new LinkedHashMap<>();
+        this.listenersRepository = new HashMap<>();
+        registerDubboShutdownHook();
+    }
+
+    public FileSystemDynamicConfiguration(File rootDirectory, String encoding,
+                                          String threadPoolPrefixName,
+                                          int threadPoolSize,
+                                          long keepAliveTime,
+                                          ScopeModel scopeModel) {
+        super(rootDirectory.getAbsolutePath(), threadPoolPrefixName, threadPoolSize, keepAliveTime, DEFAULT_GROUP, -1L);
+        this.rootDirectory = rootDirectory;
+        this.encoding = encoding;
+        this.processingDirectories = initProcessingDirectories();
+        this.listenersRepository = new HashMap<>();
+        this.scopeModel = scopeModel;
+        registerDubboShutdownHook();
     }
 
     public FileSystemDynamicConfiguration(URL url) {
         this(initDirectory(url), getEncoding(url), getThreadPoolPrefixName(url), getThreadPoolSize(url),
-                getThreadPoolKeepAliveTime(url));
+                getThreadPoolKeepAliveTime(url), url.getScopeModel());
     }
 
     private Set<File> initProcessingDirectories() {
@@ -237,8 +254,12 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
      *
      * @since 2.7.8
      */
-    private static void registerDubboShutdownHook() {
-        ShutdownHookCallbacks.INSTANCE.addCallback(() -> {
+    private void registerDubboShutdownHook() {
+        if (!hasRegisteredShutdownHook.compareAndSet(false, true)) {
+            return;
+        }
+        ShutdownHookCallbacks shutdownHookCallbacks = ScopeModelUtil.getApplicationModel(scopeModel).getBeanFactory().getBean(ShutdownHookCallbacks.class);
+        shutdownHookCallbacks.addCallback(() -> {
             watchService.ifPresent(w -> {
                 try {
                     w.close();
