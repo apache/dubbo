@@ -41,7 +41,7 @@ public class ServiceDefinitionBuilderTest {
 
     void checkComplexObjectAsParam(FullServiceDefinition fullServiceDefinition) {
         Assertions.assertEquals(fullServiceDefinition.getAnnotations(),
-            Arrays.asList("@org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation(value=testTypeMock)"));
+            Arrays.asList("@org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation()"));
 
         List<MethodDefinition> methodDefinitions = fullServiceDefinition.getMethods();
         MethodDefinition complexCompute = null;

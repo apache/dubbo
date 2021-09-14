@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * for test
  */
-@MockTypeAnnotation("testTypeMock")
+@MockTypeAnnotation
 public interface DemoService {
 
     String complexCompute(String input, ComplexObject co);
