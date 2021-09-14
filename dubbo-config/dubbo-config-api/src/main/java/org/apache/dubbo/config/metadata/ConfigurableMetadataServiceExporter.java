@@ -30,11 +30,15 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
+import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
@@ -156,42 +160,49 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     }
 
     private ProtocolConfig generateMetadataProtocol() {
-        ProtocolConfig defaultProtocol = new ProtocolConfig();
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setName(DUBBO_PROTOCOL);
         Integer port = getApplicationConfig().getMetadataServicePort();
 
         if (port == null || port < -1) {
             if (logger.isInfoEnabled()) {
                 logger.info("Metadata Service Port hasn't been set will use default protocol defined in protocols.");
             }
-            List<ProtocolConfig> defaultProtocols = applicationModel.getApplicationConfigManager().getDefaultProtocols();
+            Set<Protocol> defaultProtocols = applicationModel.getExtensionLoader(Protocol.class).getSupportedExtensionInstances();
 
-            ProtocolConfig dubboProtocol = findDubboProtocol(defaultProtocols);
-            if (dubboProtocol != null) {
-                logger.info("Using dubbo protocol " + dubboProtocol + " to export MetadataService.");
-                return dubboProtocol;
+            Protocol protocol = findDubboProtocol(defaultProtocols);
+            if (protocol != null) {
+                Iterator<ProtocolServer> it = protocol.getServers().iterator();
+                if (it.hasNext()) {
+                    String addr = it.next().getAddress();
+                    String rawPort = addr.substring(addr.indexOf(":") + 1);
+                    logger.info("Using dubbo protocol to export MetadataService on port " + rawPort);
+                    protocolConfig.setPort(Integer.parseInt(rawPort));
+                } else {
+                    protocolConfig.setPort(-1);
+                }
+                return protocolConfig;
             } else {
-                defaultProtocol.setName(DUBBO_PROTOCOL);
-                defaultProtocol.setPort(-1);
+                protocolConfig.setPort(-1);
             }
 
         } else {
-            defaultProtocol.setName(DUBBO_PROTOCOL);
-            defaultProtocol.setPort(port);
+            protocolConfig.setPort(port);
         }
 
-        logger.info("Using dubbo protocol " + defaultProtocol + " to export MetadataService.");
+        logger.info("Using dubbo protocol " + protocolConfig + " to export MetadataService.");
 
-        return defaultProtocol;
+        return protocolConfig;
     }
 
-    private ProtocolConfig findDubboProtocol(List<ProtocolConfig> protocolConfigs) {
-        if (CollectionUtils.isEmpty(protocolConfigs)) {
+    private Protocol findDubboProtocol(Set<Protocol> protocols) {
+        if (CollectionUtils.isEmpty(protocols)) {
             return null;
         }
 
-        for (ProtocolConfig protocolConfig : protocolConfigs) {
-            if (DUBBO_PROTOCOL.equalsIgnoreCase(protocolConfig.getName())) {
-                return protocolConfig;
+        for (Protocol p : protocols) {
+            if (p.getClass().equals("org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol")) {
+                return p;
             }
         }
 
