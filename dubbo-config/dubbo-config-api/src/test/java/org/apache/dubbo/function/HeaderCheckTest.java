@@ -102,6 +102,10 @@ public class HeaderCheckTest {
         DubboBootstrap.getInstance().registry(registryConfig);
     }
 
+    /**
+     * setting attachment to trigger the exception of checking header length  after removing tripleutil check
+     * pass the error to upper layer
+     */
     @Test()
     public void integrate() {
         try {
@@ -126,7 +130,6 @@ public class HeaderCheckTest {
     /**
      * Returns {@link ServiceDiscoveryRegistry} instance.
      * <p>
-     * FIXME It's not a good way to obtain {@link ServiceDiscoveryRegistry} using Reflection.
      */
     private ServiceDiscoveryRegistry getServiceDiscoveryRegistry() {
         ServiceDiscoveryRegistry serviceDiscoveryRegistry = null;
