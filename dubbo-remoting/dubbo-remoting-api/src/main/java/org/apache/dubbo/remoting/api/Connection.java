@@ -113,7 +113,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 // TODO support IDLE
 //                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
                 p.addLast(connectionHandler);
-                protocol.configClientPipeline(p, sslContext);
+                protocol.configClientPipeline(url, p, sslContext);
                 // TODO support Socks5
             }
         });

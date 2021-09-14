@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
@@ -29,11 +28,9 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -207,6 +204,23 @@ public final class DubboBootstrap {
         return instance;
     }
 
+    public static DubboBootstrap getInstance(ApplicationModel applicationModel) {
+        Map<String, Object> attribute = applicationModel.getAttribute();
+        Object cached = attribute.get(NAME);
+        if (cached instanceof DubboBootstrap) {
+            return (DubboBootstrap) cached;
+        } else {
+            synchronized (applicationModel) {
+                cached = attribute.get(NAME);
+                if (cached instanceof DubboBootstrap) {
+                    return (DubboBootstrap) cached;
+                } else {
+                    return new DubboBootstrap(applicationModel);
+                }
+            }
+        }
+    }
+
     public static DubboBootstrap newInstance() {
         return new DubboBootstrap(new FrameworkModel());
     }
@@ -232,7 +246,6 @@ public final class DubboBootstrap {
      */
     @Deprecated
     public static void reset(boolean destroy) {
-        ConfigUtils.setProperties(null);
         DubboBootstrap.ignoreConfigState = true;
         if (destroy) {
             if (instance != null) {
@@ -257,6 +270,7 @@ public final class DubboBootstrap {
 
     private DubboBootstrap(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
+        applicationModel.getAttribute().put(NAME, this);
         configManager = applicationModel.getApplicationConfigManager();
         environment = applicationModel.getApplicationEnvironment();
 
@@ -264,19 +278,6 @@ public final class DubboBootstrap {
         DubboShutdownHook.getDubboShutdownHook().register();
         ShutdownHookCallbacks.INSTANCE.addCallback(DubboBootstrap.this::destroy);
         cache = ReferenceConfigCache.newCache();
-
-        initInternalBeans();
-    }
-
-    /**
-     * TODO init beans module-self
-     */
-    private void initInternalBeans() {
-        ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        beanFactory.registerBean(this);
-        beanFactory.registerBean(MetadataReportInstance.class);
-        beanFactory.registerBean(RemoteMetadataServiceImpl.class);
-        beanFactory.registerBean(FrameworkStatusReportService.class);
     }
 
     public ApplicationModel getApplicationModel() {
@@ -1058,8 +1059,8 @@ public final class DubboBootstrap {
                 try {
                     // add default name config (same as id), e.g. dubbo.protocols.rest.port=1234
                     key = DUBBO + "." + AbstractConfig.getPluralTagName(cls) + "." + id + ".name";
-                    if (ConfigUtils.getProperties().getProperty(key) == null) {
-                        ConfigUtils.getProperties().setProperty(key, id);
+                    if (applicationModel.getApplicationEnvironment().getPropertiesConfiguration().getProperty(key) == null) {
+                        applicationModel.getApplicationEnvironment().getPropertiesConfiguration().setProperty(key, id);
                         addDefaultNameConfig = true;
                     }
 
@@ -1070,7 +1071,7 @@ public final class DubboBootstrap {
                     throw new IllegalStateException("load config failed, id: " + id + ", type:" + cls.getSimpleName());
                 } finally {
                     if (addDefaultNameConfig && key != null) {
-                        ConfigUtils.getProperties().remove(key);
+                        applicationModel.getApplicationEnvironment().getPropertiesConfiguration().remove(key);
                     }
                 }
             }

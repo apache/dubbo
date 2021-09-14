@@ -95,7 +95,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
                 path = CommonConstants.DEFAULT_DUBBO_MIGRATION_FILE;
             }
         }
-        this.localMigrationRule = ConfigUtils.loadMigrationRule(path);
+        this.localMigrationRule = ConfigUtils.loadMigrationRule(applicationModel.getClassLoaders(), path);
     }
 
     @Deprecated
@@ -311,6 +311,11 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     public String getLocalMigrationRule() {
         return localMigrationRule;
+    }
+
+    public void refreshClassLoaders() {
+        propertiesConfiguration.refresh();
+        loadMigrationRule();
     }
 
 }

@@ -21,7 +21,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
@@ -39,7 +38,7 @@ public class SslContexts {
     private static final Logger logger = LoggerFactory.getLogger(SslContexts.class);
 
     public static SslContext buildServerSslContext(URL url) {
-        ConfigManager globalConfigManager = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getApplicationConfigManager();
+        ConfigManager globalConfigManager = url.getOrDefaultApplicationModel().getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder sslClientContextBuilder;
@@ -68,7 +67,7 @@ public class SslContexts {
     }
 
     public static SslContext buildClientSslContext(URL url) {
-        ConfigManager globalConfigManager = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getApplicationConfigManager();
+        ConfigManager globalConfigManager = url.getOrDefaultApplicationModel().getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder builder = SslContextBuilder.forClient();

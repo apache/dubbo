@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
@@ -54,8 +55,8 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
     }
 
     @Override
-    public void configServerPipeline(ChannelPipeline pipeline, SslContext sslContext) {
-        final Configuration config = ConfigurationUtils.getGlobalConfiguration();
+    public void configServerPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+        final Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getScopeModel());
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()
@@ -77,8 +78,8 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
     }
 
     @Override
-    public void configClientPipeline(ChannelPipeline pipeline, SslContext sslContext) {
-        final Configuration config = ConfigurationUtils.getGlobalConfiguration();
+    public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+        final Configuration config = ConfigurationUtils.getGlobalConfiguration(url.getScopeModel());
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()

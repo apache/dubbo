@@ -25,6 +25,7 @@ import org.apache.dubbo.common.extension.director.impl.TestModuleService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -48,9 +49,9 @@ public class ExtensionDirectorTest {
         // 2. Child ExtensionDirector can get extension instance from parent
         // 3. Parent ExtensionDirector can't get extension instance from child
 
-        ExtensionDirector fwExtensionDirector = new ExtensionDirector(null, ExtensionScope.FRAMEWORK);
-        ExtensionDirector appExtensionDirector = new ExtensionDirector(fwExtensionDirector, ExtensionScope.APPLICATION);
-        ExtensionDirector moduleExtensionDirector = new ExtensionDirector(appExtensionDirector, ExtensionScope.MODULE);
+        ExtensionDirector fwExtensionDirector = new ExtensionDirector(null, ExtensionScope.FRAMEWORK, FrameworkModel.defaultModel());
+        ExtensionDirector appExtensionDirector = new ExtensionDirector(fwExtensionDirector, ExtensionScope.APPLICATION, ApplicationModel.defaultModel());
+        ExtensionDirector moduleExtensionDirector = new ExtensionDirector(appExtensionDirector, ExtensionScope.MODULE, ApplicationModel.defaultModel().getDefaultModule());
 
         // test module extension loader
         FooFrameworkService testFwSrvFromModule = moduleExtensionDirector.getExtension(FooFrameworkService.class, testFwSrvName);

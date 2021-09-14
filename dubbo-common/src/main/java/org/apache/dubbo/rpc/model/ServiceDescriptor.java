@@ -29,8 +29,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * ServiceModel and ServiceMetadata are to some extend duplicated with each other.
- * We should merge them in the future.
+ * ServiceModel and ServiceMetadata are to some extend duplicated with each other. We should merge them in the future.
  */
 public class ServiceDescriptor {
     private final String serviceName;
@@ -50,8 +49,10 @@ public class ServiceDescriptor {
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
+            MethodDescriptor methodDescriptor = new MethodDescriptor(method);
+
             List<MethodDescriptor> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
-            methodModels.add(new MethodDescriptor(method));
+            methodModels.add(methodDescriptor);
         }
 
         methods.forEach((methodName, methodList) -> {
@@ -102,8 +103,7 @@ public class ServiceDescriptor {
     public MethodDescriptor getMethod(String methodName, Class<?>[] paramTypes) {
         List<MethodDescriptor> methodModels = methods.get(methodName);
         if (CollectionUtils.isNotEmpty(methodModels)) {
-            for (int i = 0; i < methodModels.size(); i++) {
-                MethodDescriptor descriptor = methodModels.get(i);
+            for (MethodDescriptor descriptor : methodModels) {
                 if (Arrays.equals(paramTypes, descriptor.getParameterClasses())) {
                     return descriptor;
                 }
@@ -125,7 +125,10 @@ public class ServiceDescriptor {
             return false;
         }
         ServiceDescriptor that = (ServiceDescriptor) o;
-        return Objects.equals(serviceName, that.serviceName) && Objects.equals(serviceInterfaceClass, that.serviceInterfaceClass) && Objects.equals(methods, that.methods) && Objects.equals(descToMethods, that.descToMethods);
+        return Objects.equals(serviceName, that.serviceName)
+            && Objects.equals(serviceInterfaceClass, that.serviceInterfaceClass)
+            && Objects.equals(methods, that.methods)
+            && Objects.equals(descToMethods, that.descToMethods);
     }
 
     @Override
