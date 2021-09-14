@@ -61,12 +61,9 @@ public class InstantiationStrategy {
         List<Constructor> matchedConstructors = new ArrayList<>();
         Constructor<?>[] declaredConstructors = type.getConstructors();
         for (Constructor<?> constructor : declaredConstructors) {
-            for (Class<?> parameterType : constructor.getParameterTypes()) {
-                if (!isSupportedConstructorParameterType(parameterType)) {
-                    break;
-                }
+            if (isMatched(constructor)) {
+                matchedConstructors.add(constructor);
             }
-            matchedConstructors.add(constructor);
         }
         if (matchedConstructors.size() > 1) {
             throw new IllegalArgumentException("Expect only one but found " +
@@ -84,6 +81,15 @@ public class InstantiationStrategy {
             args[i] = getArgumentValueForType(parameterTypes[i]);
         }
         return (T) constructor.newInstance(args);
+    }
+
+    private boolean isMatched(Constructor<?> constructor) {
+        for (Class<?> parameterType : constructor.getParameterTypes()) {
+            if (!isSupportedConstructorParameterType(parameterType)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean isSupportedConstructorParameterType(Class<?> parameterType) {

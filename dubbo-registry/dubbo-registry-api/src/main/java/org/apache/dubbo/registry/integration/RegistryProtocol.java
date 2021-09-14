@@ -768,7 +768,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     private ProviderConfigurationListener getProviderConfigurationListener(ModuleModel moduleModel) {
-        return moduleModel.getBeanFactory().registerBeanIfAbsent(ProviderConfigurationListener.class,
+        return moduleModel.getBeanFactory().getOrRegisterBean(ProviderConfigurationListener.class,
             type -> new ProviderConfigurationListener(moduleModel));
     }
 

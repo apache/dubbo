@@ -18,11 +18,13 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.context.ApplicationExt;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
@@ -31,7 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * {@link ExtensionLoader}, {@code DubboBootstrap} and this class are at present designed to be
@@ -49,7 +51,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class ApplicationModel extends ScopeModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
-    private static final AtomicLong index = new AtomicLong(0);
     public static final String NAME = "ApplicationModel";
     private static volatile ApplicationModel defaultInstance;
 
@@ -62,6 +63,11 @@ public class ApplicationModel extends ScopeModel {
     private final FrameworkModel frameworkModel;
 
     private ModuleModel internalModule;
+
+    private volatile ModuleModel defaultModule;
+
+    // internal module index is 0, default module index is 1
+    private AtomicInteger moduleIndex = new AtomicInteger(0);
 
 
     // --------- static methods ----------//
@@ -153,16 +159,16 @@ public class ApplicationModel extends ScopeModel {
 
     public ApplicationModel(FrameworkModel frameworkModel) {
         super(frameworkModel, ExtensionScope.APPLICATION);
+        Assert.notNull(frameworkModel, "FrameworkModel can not be null");
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
         initialize();
-        this.modelName = NAME + "-" + index.getAndIncrement();
     }
 
     @Override
     protected void initialize() {
         super.initialize();
-        internalModule = new ModuleModel(this.modelName + "-internal", this, true);
+        internalModule = new ModuleModel(this);
         this.serviceRepository = new ServiceRepository(this);
 
         ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
@@ -178,8 +184,6 @@ public class ApplicationModel extends ScopeModel {
         for (ScopeModelInitializer initializer : initializers) {
             initializer.initializeApplicationModel(this);
         }
-
-        postProcessAfterCreated();
     }
 
     private void initApplicationExts() {
@@ -223,6 +227,9 @@ public class ApplicationModel extends ScopeModel {
     public FrameworkModel getFrameworkModel() {
         return frameworkModel;
     }
+    public synchronized ModuleModel newModule() {
+        return new ModuleModel(this);
+    }
 
     @Override
     public Environment getModelEnvironment() {
@@ -257,26 +264,29 @@ public class ApplicationModel extends ScopeModel {
         return getCurrentConfig().getName();
     }
 
-    public synchronized void addModule(ModuleModel model, boolean isInternal) {
-        if (!this.moduleModels.contains(model)) {
-            this.moduleModels.add(model);
-            if (!isInternal) {
-                this.pubModuleModels.add(model);
-            }
+    public synchronized void addModule(ModuleModel moduleModel) {
+        if (!this.moduleModels.contains(moduleModel)) {
+            this.moduleModels.add(moduleModel);
+            moduleModel.setInternalName(buildInternalName(ModuleModel.NAME, getInternalId(), moduleIndex.getAndIncrement()));
         }
     }
 
-    public synchronized void removeModule(ModuleModel model) {
-        this.moduleModels.remove(model);
+    public synchronized void removeModule(ModuleModel moduleModel) {
+        this.moduleModels.remove(moduleModel);
         this.pubModuleModels.remove(model);
+        if (moduleModel == defaultModule) {
+            defaultModule = findDefaultModule();
+        }
         if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
             this.internalModule.destroy();
         }
-        destroy();
+        if (this.moduleModels.isEmpty()) {
+            destroy();
+        }
     }
 
     public List<ModuleModel> getModuleModels() {
-        return moduleModels;
+        return Collections.unmodifiableList(moduleModels);
     }
 
     public List<ModuleModel> getPubModuleModels() {
@@ -284,10 +294,22 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public synchronized ModuleModel getDefaultModule() {
-        if (pubModuleModels.size() > 0) {
-            return pubModuleModels.get(0);
+        if (defaultModule == null) {
+            defaultModule = findDefaultModule();
+            if (defaultModule == null) {
+                defaultModule = this.newModule();
+            }
         }
-        return new ModuleModel(this);
+        return defaultModule;
+    }
+
+    private ModuleModel findDefaultModule() {
+        for (ModuleModel moduleModel : moduleModels) {
+            if (moduleModel != internalModule) {
+                return moduleModel;
+            }
+        }
+        return null;
     }
 
     public ModuleModel getInternalModule() {
@@ -332,5 +354,13 @@ public class ApplicationModel extends ScopeModel {
 
     protected boolean containsClassLoader(ClassLoader classLoader) {
         return moduleModels.stream().anyMatch(moduleModel -> moduleModel.getClassLoaders().contains(classLoader));
+    }
+
+    public ApplicationDeployer getDeployer() {
+        return getAttribute(ModelConstants.DEPLOYER, ApplicationDeployer.class);
+    }
+
+    public void setDeployer(ApplicationDeployer deployer) {
+        setAttribute(ModelConstants.DEPLOYER, deployer);
     }
 }

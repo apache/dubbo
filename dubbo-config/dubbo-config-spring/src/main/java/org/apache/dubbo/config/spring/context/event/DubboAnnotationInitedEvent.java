@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.context.event;
 
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -31,7 +32,15 @@ public class DubboAnnotationInitedEvent extends ApplicationEvent {
      * @param source the object on which the event initially occurred or with
      *               which the event is associated (never {@code null})
      */
-    public DubboAnnotationInitedEvent(Object source) {
+    public DubboAnnotationInitedEvent(ApplicationContext source) {
         super(source);
     }
+
+    /**
+     * Get the {@code ApplicationContext} that the event was raised for.
+     */
+    public final ApplicationContext getApplicationContext() {
+        return (ApplicationContext) getSource();
+    }
+
 }
