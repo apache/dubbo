@@ -301,7 +301,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
         public RegistryChildListenerImpl(URL consumerUrl, String path, NotifyListener listener, CountDownLatch latch) {
             this.latch = latch;
-            notifier = new RegistryNotifier(ZookeeperRegistry.this.getDelay()) {
+            notifier = new RegistryNotifier(getUrl(), ZookeeperRegistry.this.getDelay()) {
                 @Override
                 public void notify(Object rawAddresses) {
                     long delayTime = getDelayTime();

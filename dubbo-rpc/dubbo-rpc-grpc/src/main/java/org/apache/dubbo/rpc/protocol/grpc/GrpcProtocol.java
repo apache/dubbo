@@ -23,9 +23,8 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 
 import io.grpc.BindableService;
@@ -72,7 +71,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         GrpcRemotingServer grpcServer = (GrpcRemotingServer) protocolServer.getRemotingServer();
 
-        ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
+        FrameworkServiceRepository serviceRepository = frameworkModel.getServiceRepository();
         ProviderModel providerModel = serviceRepository.lookupExportedService(url.getServiceKey());
         if (providerModel == null) {
             throw new IllegalStateException("Service " + url.getServiceKey() + "should have already been stored in service repository, " +
@@ -119,11 +118,12 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         // CallOptions
         try {
+            ReferenceConfigBase<?> referenceConfig = url.getServiceModel().getReferenceConfig();
             @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null,
                     channel,
                     GrpcOptionsUtils.buildCallOptions(url),
                     url,
-                    ApplicationModel.getConsumerModel(url.getServiceKey()).getReferenceConfig()
+                    referenceConfig
             );
             final Invoker<T> target = proxyFactory.getInvoker(stub, type, url);
             GrpcInvoker<T> grpcInvoker = new GrpcInvoker<>(type, url, target, channel);

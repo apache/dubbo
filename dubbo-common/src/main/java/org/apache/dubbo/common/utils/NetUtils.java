@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -42,6 +43,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -237,15 +239,13 @@ public class NetUtils {
         return host;
     }
 
-    public static String getIpByConfig() {
-        String configIp = ConfigurationUtils.getProperty(DUBBO_IP_TO_BIND);
+    public static String getIpByConfig(ScopeModel scopeModel) {
+        String configIp = ConfigurationUtils.getProperty(scopeModel, DUBBO_IP_TO_BIND);
         if (configIp != null) {
             return configIp;
         }
 
-        InetAddress localAddress = getLocalAddress();
-        String hostName = localAddress == null ? LOCALHOST_VALUE : localAddress.getHostName();
-        return getIpByHost(hostName);
+        return getLocalHost();
     }
 
     /**
@@ -331,8 +331,20 @@ public class NetUtils {
         if (StringUtils.isNotEmpty(ignoredInterfaces)
             && StringUtils.isNotEmpty(networkInterfaceDisplayName = networkInterface.getDisplayName())) {
             for (String ignoredInterface : ignoredInterfaces.split(",")) {
-                if (networkInterfaceDisplayName.matches(ignoredInterface.trim())) {
-                    return true;
+                String trimIgnoredInterface = ignoredInterface.trim();
+                boolean matched = false;
+                try {                     
+                    matched = networkInterfaceDisplayName.matches(trimIgnoredInterface);
+                } catch (PatternSyntaxException e) {
+                    // if trimIgnoredInterface is a invalid regular expression, a PatternSyntaxException will be thrown out
+                    logger.warn("exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface, e);
+                } finally {
+                    if (matched) {
+                        return true;
+                    }
+                    if (networkInterfaceDisplayName.equals(trimIgnoredInterface)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -405,8 +417,7 @@ public class NetUtils {
                     if (addressOp.isPresent()) {
                         try {
                             if (addressOp.get().isReachable(100)) {
-                                result = networkInterface;
-                                break;
+                                return networkInterface;
                             }
                         } catch (IOException e) {
                             // ignore

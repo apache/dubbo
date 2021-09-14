@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -32,6 +31,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
@@ -338,14 +339,15 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
      * @return LoadBalance instance. if not need init, return null.
      */
     protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(invocation.getModuleModel());
         if (CollectionUtils.isNotEmpty(invokers)) {
-            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(
+            return applicationModel.getExtensionLoader(LoadBalance.class).getExtension(
                     invokers.get(0).getUrl().getMethodParameter(
                             RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE
                     )
             );
         } else {
-            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
+            return applicationModel.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
         }
     }
 

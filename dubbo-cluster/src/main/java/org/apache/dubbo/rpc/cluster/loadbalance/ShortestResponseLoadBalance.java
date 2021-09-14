@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,17 +42,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * if there are multiple invokers and the weights are not the same, then random according to the total weight;
  * if there are multiple invokers and the same weight, then randomly called.
  */
-public class ShortestResponseLoadBalance extends AbstractLoadBalance {
+public class ShortestResponseLoadBalance extends AbstractLoadBalance implements ScopeModelAware {
 
     public static final String NAME = "shortestresponse";
 
-    private static final int SLIDE_PERIOD = ApplicationModel.getEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
+    private int SLIDE_PERIOD = 30_000;
 
     private ConcurrentMap<RpcStatus, SlideWindowData> methodMap = new ConcurrentHashMap<>();
 
     private AtomicBoolean onResetSlideWindow = new AtomicBoolean(false);
 
     private volatile long lastUpdateTime = System.currentTimeMillis();
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        SLIDE_PERIOD = applicationModel.getModelEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
+    }
 
     protected static class SlideWindowData {
         private final static ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor((new NamedThreadFactory("Dubbo-slidePeriod-reset")));

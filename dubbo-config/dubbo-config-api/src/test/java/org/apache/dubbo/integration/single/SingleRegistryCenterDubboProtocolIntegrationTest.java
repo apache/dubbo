@@ -41,7 +41,6 @@ import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.cluster.Directory;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -234,7 +233,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         Assertions.assertTrue(services.contains(PROVIDER_APPLICATION_NAME));
 
         // obtain InMemoryWritableMetadataService instance
-        InMemoryWritableMetadataService inMemoryWritableMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+        InMemoryWritableMetadataService inMemoryWritableMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(serviceConfig.getScopeModel());
         // Exported url is right or not in InMemoryWritableMetadataService
         Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);
         // MetadataInfo exists or not in InMemoryWritableMetadataService
@@ -310,7 +309,6 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
     private void initConsumer() {
         referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(SingleRegistryCenterIntegrationService.class);
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
         DubboBootstrap.getInstance().reference(referenceConfig);
         referenceConfig.setRegistry(registryConfig);
         referenceConfig.setScope(SCOPE_REMOTE);
@@ -326,7 +324,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      */
     private void beforeRefer() {
         // ReferenceConfig has integrated into DubboBootstrap or not
-        Assertions.assertEquals(referenceConfig.getBootstrap(), DubboBootstrap.getInstance());
+        Assertions.assertEquals(referenceConfig.getScopeModel(), DubboBootstrap.getInstance().getApplicationModel().getDefaultModule());
     }
 
     /**

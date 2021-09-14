@@ -16,15 +16,21 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_STORAGE_TYPE_PROPERTY_NAME;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getEndpoint;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setEndpoints;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 
 /**
  * {@link DefaultServiceInstance} Test
@@ -36,9 +42,16 @@ public class DefaultServiceInstanceTest {
     public DefaultServiceInstance instance;
 
     public static DefaultServiceInstance createInstance() {
-        DefaultServiceInstance instance = new DefaultServiceInstance("A", "127.0.0.1", 8080);
-        instance.getMetadata().put("dubbo.metadata-service.urls", "[ \"dubbo://192.168.0.102:20881/com.alibaba.cloud.dubbo.service.DubboMetadataService?anyhost=true&application=spring-cloud-alibaba-dubbo-provider&bind.ip=192.168.0.102&bind.port=20881&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=spring-cloud-alibaba-dubbo-provider&interface=com.alibaba.cloud.dubbo.service.DubboMetadataService&methods=getAllServiceKeys,getServiceRestMetadata,getExportedURLs,getAllExportedURLs&pid=17134&qos.enable=false&register=true&release=2.7.3&revision=1.0.0&side=provider&timestamp=1564826098503&version=1.0.0\" ]");
-        instance.getMetadata().put("dubbo.metadata-service.url-params", "{\"dubbo\":{\"application\":\"dubbo-provider-demo\",\"deprecated\":\"false\",\"group\":\"dubbo-provider-demo\",\"version\":\"1.0.0\",\"timestamp\":\"1564845042651\",\"dubbo\":\"2.0.2\",\"provider.host\":\"192.168.0.102\",\"provider.port\":\"20880\"}}");
+        DefaultServiceInstance instance = new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
+        Map<String, String> metadata = instance.getMetadata();
+        metadata.put(METADATA_STORAGE_TYPE_PROPERTY_NAME, "remote");
+        metadata.put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, "111");
+        metadata.put("site", "dubbo");
+
+        Map<String, Integer> protocolPorts = new HashMap<>();
+        protocolPorts.put("rest", 8080);
+        protocolPorts.put("dubbo", 20880);
+        setEndpoints(instance, protocolPorts);
         return instance;
     }
 
@@ -48,28 +61,43 @@ public class DefaultServiceInstanceTest {
     }
 
     @Test
-    public void testDefaultValues() {
-        assertTrue(instance.isEnabled());
-        assertTrue(instance.isHealthy());
-        assertFalse(instance.getMetadata().isEmpty());
-    }
-
-    @Test
     public void testSetAndGetValues() {
         instance.setEnabled(false);
         instance.setHealthy(false);
 
         assertEquals("A", instance.getServiceName());
         assertEquals("127.0.0.1", instance.getHost());
-        assertEquals(8080, instance.getPort());
+        assertEquals(20880, instance.getPort());
         assertFalse(instance.isEnabled());
         assertFalse(instance.isHealthy());
         assertFalse(instance.getMetadata().isEmpty());
     }
 
     @Test
-    public void testGetMetadata() {
-        assertNotNull(instance.getMetadata(METADATA_SERVICE_URLS_PROPERTY_NAME));
-        assertNotNull(instance.getMetadata(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME));
+    public void testInstanceOperations() {
+        // test multiple protocols
+        assertEquals(2, instance.getEndpoints().size());
+        DefaultServiceInstance.Endpoint endpoint = getEndpoint(instance, "rest");
+        DefaultServiceInstance copyInstance = instance.copyFrom(endpoint);
+        assertEquals(8080, endpoint.getPort());
+        assertEquals("rest", endpoint.getProtocol());
+        assertEquals(endpoint.getPort(), copyInstance.getPort());
+
+        // test all params
+        Map<String, String> allParams = instance.getAllParams();
+        assertEquals(instance.getMetadata().size(), allParams.size());
+        assertEquals("dubbo", allParams.get("site"));
+        instance.getExtendParams().put("key", "value");
+        Map<String, String> allParams2 = instance.getAllParams();
+        assertNotSame(allParams, allParams2);
+        assertEquals(instance.getMetadata().size() + instance.getExtendParams().size(), allParams2.size());
+        assertEquals("value", allParams2.get("key"));
+
+        // test equals
+        DefaultServiceInstance instance2 = new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
+        instance2.setMetadata(new HashMap<>(instance.getMetadata()));
+        instance2.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, "222");
+        // assert instances with different revision and extend params are equal
+        assertEquals(instance, instance2);
     }
 }

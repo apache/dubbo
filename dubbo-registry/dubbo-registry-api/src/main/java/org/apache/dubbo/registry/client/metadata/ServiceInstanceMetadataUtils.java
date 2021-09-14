@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -29,12 +30,8 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -53,6 +50,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
+import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getServiceDiscoveries;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 
 /**
@@ -186,18 +184,6 @@ public class ServiceInstanceMetadataUtils {
         return StringUtils.isNotEmpty(serviceInstance.getMetadata().get(ENDPOINTS));
     }
 
-    /**
-     * Is Dubbo Service instance or not
-     *
-     * @param serviceInstance {@link ServiceInstance service instance}
-     * @return if Dubbo Service instance, return <code>true</code>, or <code>false</code>
-     */
-    public static boolean isDubboServiceInstance(ServiceInstance serviceInstance) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.containsKey(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME)
-                || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
-    }
-
     public static void setEndpoints(ServiceInstance serviceInstance, Map<String, Integer> protocolPorts) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         List<Endpoint> endpoints = new ArrayList<>();
@@ -234,10 +220,10 @@ public class ServiceInstanceMetadataUtils {
         if (registryCluster == null) {
             registryCluster = DEFAULT_KEY;
         }
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(instance.getApplicationModel());
         MetadataInfo metadataInfo = writableMetadataService.getMetadataInfos().get(registryCluster);
         if (metadataInfo == null) {
-            metadataInfo = ((InMemoryWritableMetadataService) writableMetadataService).getDefaultMetadataInfo();
+            metadataInfo = writableMetadataService.getDefaultMetadataInfo();
         }
         if (metadataInfo != null) {
             String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
@@ -258,11 +244,26 @@ public class ServiceInstanceMetadataUtils {
         instance.getExtendParams().remove(INSTANCE_REVISION_UPDATED_KEY);
     }
 
-    public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
-        if (REMOTE_METADATA_STORAGE_TYPE.equals(ServiceInstanceMetadataUtils.getMetadataStorageType(serviceInstance))) {
-            RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
-            remoteMetadataService.publishMetadata(ApplicationModel.getName());
+    public static void registerMetadataAndInstance(ServiceInstance serviceInstance) {
+        // register instance only when at least one service is exported.
+        if (serviceInstance.getPort() > 0) {
+            reportMetadataToRemote(serviceInstance);
+            LOGGER.info("Start registering instance address to registry.");
+            getServiceDiscoveries().forEach(serviceDiscovery ->
+            {
+                ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
+                calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstanceForRegistry);
+                }
+                // register metadata
+                serviceDiscovery.register(serviceInstanceForRegistry);
+            });
         }
+    }
+
+    public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
+        reportMetadataToRemote(serviceInstance);
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
             ServiceInstance instance = serviceDiscovery.getLocalInstance();
@@ -281,12 +282,19 @@ public class ServiceInstanceMetadataUtils {
 
     public static void customizeInstance(ServiceInstance instance) {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
-                ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
+                instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customizes
             customizer.customize(instance);
         });
+    }
+
+    private static void reportMetadataToRemote(ServiceInstance serviceInstance) {
+        if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(getMetadataStorageType(serviceInstance))) {
+            RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService(serviceInstance.getApplicationModel());
+            remoteMetadataService.publishMetadata(serviceInstance.getApplicationModel().getApplicationName());
+        }
     }
 
     /**

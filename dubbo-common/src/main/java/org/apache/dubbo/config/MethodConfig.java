@@ -24,7 +24,6 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 
 import java.util.ArrayList;
@@ -231,7 +230,7 @@ public class MethodConfig extends AbstractMethodConfig {
     private void refreshArgument(ArgumentConfig argument, InmemoryConfiguration subPropsConfiguration) {
         if (argument.getIndex() != null && argument.getIndex() >= 0) {
             String prefix = argument.getIndex() + ".";
-            Environment environment = ApplicationModel.getEnvironment();
+            Environment environment = getScopeModel().getModelEnvironment();
             java.lang.reflect.Method[] methods = argument.getClass().getMethods();
             for (java.lang.reflect.Method method : methods) {
                 if (MethodUtils.isSetter(method)) {

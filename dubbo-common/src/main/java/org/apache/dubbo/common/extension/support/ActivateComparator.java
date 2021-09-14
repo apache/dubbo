@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.extension.support;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -29,7 +30,11 @@ import java.util.Comparator;
  */
 public class ActivateComparator implements Comparator<Class<?>> {
 
-    public static final Comparator<Class<?>> COMPARATOR = new ActivateComparator();
+    private ExtensionDirector extensionDirector;
+
+    public ActivateComparator(ExtensionDirector extensionDirector) {
+        this.extensionDirector = extensionDirector;
+    }
 
     @Override
     public int compare(Class o1, Class o2) {
@@ -52,7 +57,7 @@ public class ActivateComparator implements Comparator<Class<?>> {
         ActivateInfo a2 = parseActivate(o2);
 
         if ((a1.applicableToCompare() || a2.applicableToCompare()) && inf != null) {
-            ExtensionLoader<?> extensionLoader = ExtensionLoader.getExtensionLoader(inf);
+            ExtensionLoader<?> extensionLoader = extensionDirector.getExtensionLoader(inf);
             if (a1.applicableToCompare()) {
                 String n2 = extensionLoader.getExtensionName(o2);
                 if (a1.isLess(n2)) {

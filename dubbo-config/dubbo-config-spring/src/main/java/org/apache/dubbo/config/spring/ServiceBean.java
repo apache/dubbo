@@ -19,11 +19,10 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.context.DubboSpringInitializationContext;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
-import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.config.support.Parameter;
-
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -65,8 +64,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        //TODO remove SpringExtensionFactory.addApplicationContext();
-        SpringExtensionFactory.addApplicationContext(applicationContext);
     }
 
     @Override
@@ -91,7 +88,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
             }
         }
         //register service bean and set bootstrap
-        DubboBootstrap.getInstance().service(this);
+        DubboSpringInitializationContext dubboContext = DubboBeanUtils.getInitializationContext(applicationContext);
+        dubboContext.getDubboBootstrap().service(this, dubboContext.getModuleModel());
     }
 
     /**
@@ -126,7 +124,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     @Override
     public void destroy() throws Exception {
         // no need to call unexport() here, see
-        // org.apache.dubbo.config.spring.extension.SpringExtensionFactory.ShutdownHookListener
+        // org.apache.dubbo.config.spring.extension.SpringExtensionInjector.ShutdownHookListener
     }
 
     // merged from dubbox

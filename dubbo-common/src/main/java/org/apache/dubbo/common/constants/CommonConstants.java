@@ -298,6 +298,8 @@ public interface CommonConstants {
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
+    String HEADER_FILTER_KEY = "header.filter";
+
     String INVOCATION_INTERCEPTOR_KEY = "invocation.interceptor";
 
     String INVOKER_LISTENER_KEY = "invoker.listener";
@@ -448,6 +450,10 @@ public interface CommonConstants {
 
     int DEFAULT_REFER_THREAD_NUM = 10;
 
+    int DEFAULT_DELAY_NOTIFICATION_TIME = 5000;
+
+    int DEFAULT_DELAY_EXECUTE_TIMES = 10;
+
     /**
      * Url merge processor key
      */
@@ -461,6 +467,10 @@ public interface CommonConstants {
     String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
 
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
+
+    String SCOPE_MODEL = "scopeModel";
+
+    String SERVICE_MODEL = "serviceModel";
 
     /**
      * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that

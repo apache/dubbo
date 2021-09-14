@@ -22,8 +22,7 @@ import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
-
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -368,7 +367,7 @@ public class RpcUtilsTest {
         RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
         Assertions.assertFalse(RpcUtils.isReturnTypeFuture(inv));
 
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
         repository.registerService(demoServiceClass);
 
         inv = new RpcInvocation("testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);

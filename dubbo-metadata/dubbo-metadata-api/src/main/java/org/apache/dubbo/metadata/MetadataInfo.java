@@ -44,6 +44,7 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
@@ -70,8 +71,8 @@ public class MetadataInfo implements Serializable {
     public MetadataInfo(String app, String revision, Map<String, ServiceInfo> services) {
         this.app = app;
         this.revision = revision;
-        this.services = services == null ? new HashMap<>() : services;
-        this.extendParams = new HashMap<>();
+        this.services = services == null ? new ConcurrentHashMap<>() : services;
+        this.extendParams = new ConcurrentHashMap<>();
     }
 
     public void addService(ServiceInfo serviceInfo) {
@@ -98,13 +99,16 @@ public class MetadataInfo implements Serializable {
         markChanged();
     }
 
+    /**
+     * Reported status and metadata modification must be synchronized if used in multiple threads.
+     */
     public String calAndGetRevision() {
         if (revision != null && hasReported()) {
             return revision;
         }
 
         if (CollectionUtils.isEmptyMap(services)) {
-            this.revision = RevisionResolver.getEmptyRevision(app);
+            this.revision = EMPTY_REVISION;
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append(app);
@@ -120,14 +124,23 @@ public class MetadataInfo implements Serializable {
         this.revision = revision;
     }
 
+    /**
+     * Reported status and metadata modification must be synchronized if used in multiple threads.
+     */
     public boolean hasReported() {
         return reported.get();
     }
 
+    /**
+     * Reported status and metadata modification must be synchronized if used in multiple threads.
+     */
     public void markReported() {
         reported.compareAndSet(false, true);
     }
 
+    /**
+     * Reported status and metadata modification must be synchronized if used in multiple threads.
+     */
     public void markChanged() {
         reported.compareAndSet(true, false);
     }
@@ -148,8 +161,8 @@ public class MetadataInfo implements Serializable {
         this.services = services;
     }
 
-    public ServiceInfo getServiceInfo(String serviceKey) {
-        return services.get(serviceKey);
+    public ServiceInfo getServiceInfo(String protocolServiceKey) {
+        return services.get(protocolServiceKey);
     }
 
     public Map<String, String> getExtendParams() {
@@ -185,6 +198,28 @@ public class MetadataInfo implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(app, services);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (!(obj instanceof MetadataInfo)) {
+            return false;
+        }
+
+        MetadataInfo other = (MetadataInfo)obj;
+
+        return Objects.equals(app, other.getApp())
+            && ((services == null && other.getServices() == null)
+                || (services != null && services.equals(other.getServices())));
+    }
+
+    @Override
     public String toString() {
         return "metadata{" +
             "app='" + app + "'," +
@@ -194,7 +229,6 @@ public class MetadataInfo implements Serializable {
     }
 
     public static class ServiceInfo implements Serializable {
-        private static ExtensionLoader<MetadataParamsFilter> loader = ExtensionLoader.getExtensionLoader(MetadataParamsFilter.class);
         private String name;
         private String group;
         private String version;
@@ -216,16 +250,16 @@ public class MetadataInfo implements Serializable {
         private transient String matchKey;
 
         private transient URL url;
+        private transient ExtensionLoader<MetadataParamsFilter> loader;
 
         private final static String[] KEYS_TO_REMOVE = {MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
             QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
 
-        public ServiceInfo() {
-        }
+        public ServiceInfo() {}
 
         public ServiceInfo(URL url) {
             this(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getProtocol(), url.getPath(), null);
-
+            this.loader = url.getOrDefaultApplicationModel().getExtensionLoader(MetadataParamsFilter.class);
             this.url = url;
             Map<String, String> params = new HashMap<>();
             List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
@@ -264,7 +298,7 @@ public class MetadataInfo implements Serializable {
             this.version = version;
             this.protocol = protocol;
             this.path = path;
-            this.params = params == null ? new HashMap<>() : params;
+            this.params = params == null ? new ConcurrentHashMap<>() : params;
 
             this.serviceKey = URL.buildKey(name, group, version);
             this.matchKey = buildMatchKey();
@@ -423,7 +457,7 @@ public class MetadataInfo implements Serializable {
         public void addConsumerParams(Map<String, String> params) {
             // copy once for one service subscription
             if (consumerParams == null) {
-                consumerParams = new HashMap<>(params);
+                consumerParams = new ConcurrentHashMap<>(params);
             }
         }
 
@@ -456,20 +490,20 @@ public class MetadataInfo implements Serializable {
             }
 
             ServiceInfo serviceInfo = (ServiceInfo) obj;
-//            return this.getMatchKey().equals(serviceInfo.getMatchKey()) && this.getParams().equals(serviceInfo.getParams());
-            // Please check ServiceInstancesChangedListener.localServiceToRevisions before changing this behaviour.
-            // equals to Objects.equals(this.getMatchKey(), serviceInfo.getMatchKey()), but match key will not get initialized
-            // on json deserialization.
+            /**
+             * Equals to Objects.equals(this.getMatchKey(), serviceInfo.getMatchKey()), but match key will not get initialized
+             * on json deserialization.
+             */
             return Objects.equals(this.getVersion(), serviceInfo.getVersion())
                 && Objects.equals(this.getGroup(), serviceInfo.getGroup())
                 && Objects.equals(this.getName(), serviceInfo.getName())
-                && Objects.equals(this.getProtocol(), serviceInfo.getProtocol());
+                && Objects.equals(this.getProtocol(), serviceInfo.getProtocol())
+                && this.getParams().equals(serviceInfo.getParams());
         }
 
         @Override
         public int hashCode() {
-//            return Objects.hash(getMatchKey(), getParams());
-            return Objects.hash(getVersion(), getGroup(), getName(), getProtocol());
+            return Objects.hash(getVersion(), getGroup(), getName(), getProtocol(), getParams());
 
         }
 

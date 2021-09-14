@@ -1,0 +1,1 @@
+dubbo-cluster=org.apache.dubbo.rpc.cluster.ClusterScopeModelInitializer

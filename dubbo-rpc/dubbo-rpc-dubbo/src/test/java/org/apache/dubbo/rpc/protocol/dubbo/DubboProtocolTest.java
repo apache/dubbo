@@ -38,7 +38,6 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.RemoteService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.RemoteServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.Type;
 import org.apache.dubbo.rpc.service.EchoService;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -64,12 +63,12 @@ public class DubboProtocolTest {
     @AfterAll
     public static void after() {
         ProtocolUtils.closeAll();
-        ApplicationModel.getServiceRepository().unregisterService(DemoService.class);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().unregisterService(DemoService.class);
     }
 
     @BeforeAll
     public static void setup() {
-        ApplicationModel.getServiceRepository().registerService(DemoService.class);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService(DemoService.class);
     }
 
     @Test
@@ -165,7 +164,7 @@ public class DubboProtocolTest {
 
         RemoteService remote = new RemoteServiceImpl();
 
-        ApplicationModel.getServiceRepository().registerService(RemoteService.class);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService(RemoteService.class);
 
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(remote, RemoteService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + RemoteService.class.getName())));
@@ -191,7 +190,7 @@ public class DubboProtocolTest {
         service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
                 3000L)));
         long start = System.currentTimeMillis();
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < 100; i++)
             service.getSize(new String[]{"", "", ""});
         System.out.println("take:" + (System.currentTimeMillis() - start));
     }

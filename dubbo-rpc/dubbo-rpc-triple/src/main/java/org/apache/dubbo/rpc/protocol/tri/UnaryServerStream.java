@@ -17,20 +17,22 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-
-import io.netty.handler.codec.http.HttpHeaderNames;
 
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.rpcExceptionCodeToGrpc;
 
 public class UnaryServerStream extends AbstractServerStream implements Stream {
 
@@ -55,22 +57,22 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         }
 
         @Override
-        public void doOnComplete(OperationHandler handler) {
-            if (getData() == null) {
+        public void doOnComplete() {
+            if (getData() != null) {
+                execute(this::invoke);
+            } else {
                 onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Missing request data"));
-                return;
+                    .withDescription("Missing request data"));
             }
-            execute(this::invoke);
         }
 
         public void invoke() {
 
-            final RpcInvocation invocation;
+            RpcInvocation invocation;
             try {
+                invocation = buildInvocation(getHeaders());
                 final Object[] arguments = deserializeRequest(getData());
                 if (arguments != null) {
-                    invocation = buildInvocation(getHeaders());
                     invocation.setArguments(arguments);
                 } else {
                     return;
@@ -78,7 +80,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
             } catch (Throwable t) {
                 LOGGER.warn("Exception processing triple message", t);
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Decode request failed:" + t.getMessage()));
+                    .withDescription("Decode request failed:" + t.getMessage()));
                 return;
             }
 
@@ -98,44 +100,50 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                 try {
                     if (response.hasException()) {
                         final Throwable exception = response.getException();
-                        if (exception instanceof TripleRpcException) {
-                            transportError(((TripleRpcException) exception).getStatus(), response.getObjectAttachments());
+                        if (exception instanceof RpcException) {
+                            transportError(rpcExceptionCodeToGrpc(((RpcException) exception).getCode())
+                                .withCause(exception), response.getObjectAttachments());
+                            final GrpcStatus status = rpcExceptionCodeToGrpc(((RpcException) exception).getCode())
+                                    .withCause(exception);
+                            transportError(status, response.getObjectAttachments());
                         } else {
                             transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
-                                    .withCause(exception), response.getObjectAttachments());
+                                .withCause(exception), response.getObjectAttachments());
                         }
                         return;
                     }
                     Metadata metadata = new DefaultMetadata();
                     metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
-                    getTransportSubscriber().tryOnMetadata(metadata, false);
+                    getTransportSubscriber().onMetadata(metadata, false);
 
                     final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
                     final byte[] data;
                     try {
                         ClassLoadUtil.switchContextLoader(
-                                getProviderModel().getServiceInterfaceClass().getClassLoader());
+                            getProviderModel().getServiceInterfaceClass().getClassLoader());
                         data = encodeResponse(response.getValue());
                     } finally {
                         ClassLoadUtil.switchContextLoader(tccl);
                     }
-                    getTransportSubscriber().tryOnData(data, false);
+                    getTransportSubscriber().onData(data, false);
 
                     Metadata trailers = new DefaultMetadata()
-                            .put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
+                        .put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
                     final Map<String, Object> attachments = response.getObjectAttachments();
                     if (attachments != null) {
                         convertAttachment(trailers, attachments);
                     }
-                    getTransportSubscriber().tryOnMetadata(trailers, true);
+                    getTransportSubscriber().onMetadata(trailers, true);
                 } catch (Throwable e) {
                     LOGGER.warn("Exception processing triple message", e);
-                    if (e instanceof TripleRpcException) {
-                        transportError(((TripleRpcException) e).getStatus(), response.getObjectAttachments());
+                    if (e instanceof RpcException) {
+                        final GrpcStatus status = rpcExceptionCodeToGrpc(((RpcException) e).getCode())
+                                .withCause(e);
+                        transportError(status, response.getObjectAttachments());
                     } else {
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
-                                .withDescription("Exception occurred in provider's execution:" + e.getMessage())
-                                .withCause(e), response.getObjectAttachments());
+                            .withDescription("Exception occurred in provider's execution:" + e.getMessage())
+                            .withCause(e), response.getObjectAttachments());
                     }
                 }
             };

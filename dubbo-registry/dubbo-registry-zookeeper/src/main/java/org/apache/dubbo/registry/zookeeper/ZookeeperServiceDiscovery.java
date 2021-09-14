@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
@@ -29,9 +31,6 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.RpcException;
-
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.KeeperException;
 
 import java.util.Iterator;
@@ -119,7 +118,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
-        return doInServiceDiscovery(s -> build(s.queryForInstances(serviceName)));
+        return doInServiceDiscovery(s -> build(registryURL, s.queryForInstances(serviceName)));
     }
 
     @Override
@@ -148,7 +147,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
                 for (int i = 0; i < pageSize; i++) {
                     if (iterator.hasNext()) {
                         String serviceId = iterator.next();
-                        ServiceInstance serviceInstance = build(serviceDiscovery.queryForInstance(serviceName, serviceId));
+                        ServiceInstance serviceInstance = build(registryURL, serviceDiscovery.queryForInstance(serviceName, serviceId));
                         serviceInstances.add(serviceInstance);
                     }
                 }
@@ -196,7 +195,6 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         } catch (KeeperException.NodeExistsException e) {
             // ignored
             if (logger.isDebugEnabled()) {
-
                 logger.debug(e);
             }
         } catch (Exception e) {
