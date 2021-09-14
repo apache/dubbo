@@ -25,14 +25,14 @@ import java.util.List;
 /**
  * for test
  */
-@MockTypeAnnotation
+@MockTypeAnnotation(666)
 public interface DemoService {
 
     String complexCompute(String input, ComplexObject co);
 
     ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
 
-    @MockMethodAnnotation("testMethodMock")
-    @MockMethodAnnotation2("testMethodMock2")
+    @MockMethodAnnotation(777)
+    @MockMethodAnnotation2(888)
     void testAnnotation(boolean flag);
 }

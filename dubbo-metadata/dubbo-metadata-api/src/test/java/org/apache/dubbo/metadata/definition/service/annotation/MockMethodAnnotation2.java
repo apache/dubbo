@@ -24,5 +24,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MockMethodAnnotation2 {
-    String value();
+    int value();
 }
