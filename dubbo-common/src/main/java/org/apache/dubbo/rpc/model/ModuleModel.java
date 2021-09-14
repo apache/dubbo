@@ -16,13 +16,17 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Model of a service module
@@ -30,12 +34,17 @@ import java.util.Set;
 public class ModuleModel extends ScopeModel {
     private static final Logger logger = LoggerFactory.getLogger(ModuleModel.class);
 
-    private String id;
+    private static final AtomicLong index = new AtomicLong(0);
+    public static final String NAME = "ModuleModel";
+
     private final ApplicationModel applicationModel;
     private ModuleServiceRepository serviceRepository;
+    private ModuleConfigManager moduleConfigManager;
+
 
     public ModuleModel(ApplicationModel applicationModel) {
         super(applicationModel, ExtensionScope.MODULE);
+        Assert.notNull(applicationModel, "ApplicationModel can not be null");
         this.applicationModel = applicationModel;
         applicationModel.addModule(this);
         initialize();
@@ -45,18 +54,18 @@ public class ModuleModel extends ScopeModel {
     protected void initialize() {
         super.initialize();
         this.serviceRepository = new ModuleServiceRepository(this);
+        this.moduleConfigManager = new ModuleConfigManager(this);
+        this.moduleConfigManager.initialize();
 
         ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
         Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
         for (ScopeModelInitializer initializer : initializers) {
             initializer.initializeModuleModel(this);
         }
-
-        postProcessAfterCreated();
     }
 
     @Override
-    public void destroy() {
+    public void onDestroy() {
         if (serviceRepository != null) {
             List<ConsumerModel> consumerModels = serviceRepository.getReferredServices();
 
@@ -89,9 +98,8 @@ public class ModuleModel extends ScopeModel {
             serviceRepository = null;
         }
 
-        // TODO destroy module resources
+        notifyDestroy();
         applicationModel.removeModule(this);
-        super.destroy();
     }
 
     public ApplicationModel getApplicationModel() {
@@ -102,16 +110,15 @@ public class ModuleModel extends ScopeModel {
         return serviceRepository;
     }
 
-    public String getId() {
-        return id;
+    public ModuleConfigManager getConfigManager() {
+        return moduleConfigManager;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public ModuleDeployer getDeployer() {
+        return getAttribute(ModelConstants.DEPLOYER, ModuleDeployer.class);
     }
 
-    @Override
-    public String toString() {
-        return "ModuleModel";
+    public void setDeployer(ModuleDeployer deployer) {
+        setAttribute(ModelConstants.DEPLOYER, deployer);
     }
 }

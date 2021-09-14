@@ -17,6 +17,7 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -32,6 +33,7 @@ public class CommonScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
+        beanFactory.registerBean(ShutdownHookCallbacks.class);
         beanFactory.registerBean(FrameworkStatusReportService.class);
     }
 

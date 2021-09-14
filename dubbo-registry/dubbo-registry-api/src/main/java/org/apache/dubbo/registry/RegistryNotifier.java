@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DELAY_EXECUTE_TIMES;
+
 public abstract class RegistryNotifier {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistryNotifier.class);
@@ -69,7 +71,7 @@ public abstract class RegistryNotifier {
             scheduler.schedule(new NotificationTask(this, notifyTime), -delta, TimeUnit.MILLISECONDS);
         } else {
             // check if more than 10 calls
-            if (!shouldDelay.get() && executeTime.incrementAndGet() > 10) {
+            if (!shouldDelay.get() && executeTime.incrementAndGet() > DEFAULT_DELAY_EXECUTE_TIMES) {
                 shouldDelay.set(true);
             }
             scheduler.submit(new NotificationTask(this, notifyTime));

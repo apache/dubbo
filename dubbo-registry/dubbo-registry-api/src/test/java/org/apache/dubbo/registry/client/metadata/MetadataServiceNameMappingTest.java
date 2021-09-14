@@ -25,7 +25,6 @@ import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,7 +59,7 @@ public class MetadataServiceNameMappingTest {
         applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
         configManager = mock(ConfigManager.class);
         metadataReport = mock(MetadataReport.class);
-        mapping = new MetadataServiceNameMapping(ApplicationModel.defaultModel());
+        mapping = new MetadataServiceNameMapping(applicationModel);
         mapping.setApplicationModel(applicationModel);
         url = URL.valueOf("dubbo://127.0.0.1:20880/TestService?version=1.0.0");
     }
@@ -72,7 +71,7 @@ public class MetadataServiceNameMappingTest {
 
     @Test
     public void testMap() {
-        ApplicationModel mockedApplicationModel = spy(ApplicationModel.defaultModel());
+        ApplicationModel mockedApplicationModel = spy(applicationModel);
 
         when(configManager.getMetadataConfigs()).thenReturn(Collections.emptyList());
         Mockito.when(mockedApplicationModel.getApplicationConfigManager()).thenReturn(configManager);

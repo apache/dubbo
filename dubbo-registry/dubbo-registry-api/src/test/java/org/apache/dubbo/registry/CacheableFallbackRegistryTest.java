@@ -18,7 +18,7 @@ package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLStrParser;
-
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +40,7 @@ public class CacheableFallbackRegistryTest {
     static void setProperty() {
         System.setProperty("dubbo.application.url.cache.task.interval", "0");
         System.setProperty("dubbo.application.url.cache.clear.waiting", "0");
+        FrameworkModel.destroyAll();
     }
 
     @BeforeEach

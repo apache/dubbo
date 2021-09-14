@@ -16,14 +16,12 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -390,7 +388,7 @@ public class AbstractConfigTest {
 
             Properties properties = new Properties();
             properties.load(this.getClass().getResourceAsStream("/dubbo.properties"));
-            ConfigUtils.setProperties(properties);
+            ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperties(properties);
 
             overrideConfig.refresh();
 
@@ -400,7 +398,6 @@ public class AbstractConfigTest {
             //Assertions.assertEquals("properties", overrideConfig.getUseKeyAsProperty());
         } finally {
             ApplicationModel.defaultModel().getApplicationEnvironment().destroy();
-            ConfigUtils.setProperties(null);
         }
     }
 

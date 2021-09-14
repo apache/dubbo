@@ -142,7 +142,7 @@ public interface ServiceDiscovery extends Prioritized {
 
     /**
      * Gets the {@link Page pagination} of {@link ServiceInstance service instances} by the specified service name.
-     * It's equal to {@link #getInstances(String, int, int, boolean)} with <code>healthyOnly == true</code>
+     * It's equal to {@link #getInstances(String, int, int, boolean)} with <code>healthyOnly == false</code>
      *
      * @param serviceName the service name
      * @param offset      the offset of request , the number "0" indicates first page
