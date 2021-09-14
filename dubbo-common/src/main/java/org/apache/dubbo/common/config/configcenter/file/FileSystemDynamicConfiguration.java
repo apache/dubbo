@@ -213,7 +213,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
         this.rootDirectory = rootDirectory;
         this.encoding = encoding;
         this.processingDirectories = initProcessingDirectories();
-        this.listenersRepository = new LinkedHashMap<>();
+        this.listenersRepository = new HashMap<>();
         this.scopeModel = scopeModel;
         registerDubboShutdownHook();
     }
