@@ -25,6 +25,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.Constants;
@@ -35,12 +36,11 @@ import org.apache.dubbo.test.common.impl.DemoServiceImpl;
 import org.apache.dubbo.test.common.registrycenter.RegistryCenter;
 import org.apache.dubbo.test.common.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.test.spring.context.MockSpringInitializationCustomizer;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -95,7 +95,8 @@ public class SpringJavaConfigBeanTest {
         try {
             consumerContext.start();
 
-            ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+            ApplicationModel applicationModel = consumerContext.getBean(ApplicationModel.class);
+            ConfigManager configManager = consumerContext.getBean(ConfigManager.class);
             ApplicationConfig application = configManager.getApplication().get();
             Assertions.assertEquals(false, application.getQosEnable());
             Assertions.assertEquals("Tom", application.getOwner());
@@ -110,7 +111,8 @@ public class SpringJavaConfigBeanTest {
             Assertions.assertEquals(2346, protocolConfig.getPort());
             Assertions.assertEquals(MY_PROTOCOL_ID, protocolConfig.getId());
 
-            ConsumerConfig consumerConfig = configManager.getDefaultConsumer().get();
+            ModuleConfigManager moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
+            ConsumerConfig consumerConfig = moduleConfigManager.getDefaultConsumer().get();
             Assertions.assertEquals(1000, consumerConfig.getTimeout());
             Assertions.assertEquals("demo", consumerConfig.getGroup());
             Assertions.assertEquals(false, consumerConfig.isCheck());

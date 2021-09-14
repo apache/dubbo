@@ -36,7 +36,6 @@ import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,7 +74,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         applicationModel = getApplicationModel(url.getScopeModel());
         consumerConfigurationListener = new ConsumerConfigurationListener(applicationModel);
 
-        Set<ProviderFirstParams> providerFirstParams = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
+        Set<ProviderFirstParams> providerFirstParams = url.getOrDefaultApplicationModel().getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
         if (CollectionUtils.isEmpty(providerFirstParams)) {
             this.providerFirstParams = null;
         } else {
@@ -147,7 +146,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         RpcServiceContext.setRpcContext(getConsumerUrl());
 
         //  3.x added for extend URL address
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultApplicationModel().getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
@@ -294,11 +293,11 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             if (EMPTY_PROTOCOL.equals(instanceAddressURL.getProtocol())) {
                 continue;
             }
-            if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(instanceAddressURL.getProtocol())) {
+            if (!getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).hasExtension(instanceAddressURL.getProtocol())) {
                 logger.error(new IllegalStateException("Unsupported protocol " + instanceAddressURL.getProtocol() +
                     " in notified url: " + instanceAddressURL + " from registry " + getUrl().getAddress() +
                     " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
-                    ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
+                    getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
 
@@ -370,7 +369,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         if (localUrlInvokerMap != null) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
-                    invoker.destroy();
+                    invoker.destroyAll();
                 } catch (Throwable t) {
                     logger.warn("Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
                 }
@@ -403,7 +402,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             Invoker<T> invoker = entry.getValue();
             if (invoker != null) {
                 try {
-                    invoker.destroy();
+                    invoker.destroyAll();
                     if (logger.isDebugEnabled()) {
                         logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }

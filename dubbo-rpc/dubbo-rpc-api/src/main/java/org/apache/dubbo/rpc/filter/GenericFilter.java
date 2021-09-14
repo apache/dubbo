@@ -16,13 +16,15 @@
  */
 package org.apache.dubbo.rpc.filter;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
 import org.apache.dubbo.common.logger.Logger;
@@ -43,10 +45,6 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -131,7 +129,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     for (int i = 0; i < args.length; i++) {
                         if (byte[].class == args[i].getClass()) {
                             try (UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
-                                args[i] = ExtensionLoader.getExtensionLoader(Serialization.class)
+                                args[i] = applicationModel.getExtensionLoader(Serialization.class)
                                         .getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA)
                                         .deserialize(null, is).readObject();
                             } catch (Exception e) {
@@ -166,7 +164,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
                     if (args.length == 1 && args[0] instanceof String) {
                         try (UnsafeByteArrayInputStream is =
                                      new UnsafeByteArrayInputStream(((String) args[0]).getBytes())) {
-                            args[0] = ExtensionLoader.getExtensionLoader(Serialization.class)
+                            args[0] = applicationModel.getExtensionLoader(Serialization.class)
                                     .getExtension(GENERIC_SERIALIZATION_PROTOBUF)
                                     .deserialize(null, is).readObject(method.getParameterTypes()[0]);
                         } catch (Exception e) {
@@ -236,7 +234,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                 try {
                     UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
-                    ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA)
+                    applicationModel.getExtensionLoader(Serialization.class).getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA)
                             .serialize(null, os).writeObject(appResponse.getValue());
                     appResponse.setValue(os.toByteArray());
                 } catch (IOException e) {
@@ -250,7 +248,7 @@ public class GenericFilter implements Filter, Filter.Listener, ScopeModelAware {
             } else if (ProtocolUtils.isProtobufGenericSerialization(generic)) {
                 try {
                     UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
-                    ExtensionLoader.getExtensionLoader(Serialization.class)
+                    applicationModel.getExtensionLoader(Serialization.class)
                             .getExtension(GENERIC_SERIALIZATION_PROTOBUF)
                             .serialize(null, os).writeObject(appResponse.getValue());
                     appResponse.setValue(os.toString());

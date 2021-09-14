@@ -29,7 +29,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
@@ -40,9 +39,11 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -133,8 +134,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private transient volatile boolean destroyed;
 
-    private DubboBootstrap bootstrap;
-
     /**
      * The service names that the Dubbo interface subscribed.
      *
@@ -151,8 +150,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @Override
-    protected void postProcessAfterScopeModelChanged() {
-        super.postProcessAfterScopeModelChanged();
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
 
         protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -209,6 +208,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @Override
     public synchronized void destroy() {
+        super.destroy();
         if (destroyed) {
             return;
         }
@@ -222,8 +222,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         invoker = null;
         ref = null;
-        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-        repository.unregisterConsumer(consumerModel);
+        if (consumerModel != null) {
+            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+            repository.unregisterConsumer(consumerModel);
+        }
+        getScopeModel().getConfigManager().removeConfig(this);
     }
 
     protected synchronized void init() {
@@ -231,19 +234,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             return;
         }
 
-        // Using DubboBootstrap API will associate bootstrap when registering reference.
-        // Loading by Spring context will associate bootstrap in afterPropertiesSet() method.
-        // Initializing bootstrap here only for compatible with old API usages.
-        if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
-            bootstrap.initialize();
-            bootstrap.reference(this);
+        if (getScopeModel() == null) {
+            setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
         }
 
-        // check bootstrap state
-        if (!bootstrap.isInitialized()) {
-            throw new IllegalStateException("DubboBootstrap is not initialized");
-        }
+        // prepare application for reference
+        getScopeModel().getDeployer().prepare();
 
         if (!this.isRefreshed()) {
             this.refresh();
@@ -428,7 +424,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (UrlUtils.isRegistry(url)) {
                     urls.add(url.putAttribute(REFER_KEY, referenceParameters));
                 } else {
-                    URL peerUrl = ClusterUtils.mergeUrl(url, referenceParameters);
+                    URL peerUrl = getScopeModel().getApplicationModel().getBeanFactory().getBean(ClusterUtils.class).mergeUrl(url, referenceParameters);
                     peerUrl = peerUrl.putAttribute(PEER_KEY, true);
                     urls.add(peerUrl);
                 }
@@ -488,15 +484,17 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 // for multi-subscription scenario, use 'zone-aware' policy by default
                 String cluster = registryUrl.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
                 // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, routing happens here) -> Invoker
-                invoker = Cluster.getCluster(cluster, false).join(new StaticDirectory(registryUrl, invokers));
+                invoker = Cluster.getCluster(registryUrl.getScopeModel(), cluster, false).join(new StaticDirectory(registryUrl, invokers));
             } else {
                 // not a registry url, must be direct invoke.
-                String cluster = CollectionUtils.isNotEmpty(invokers)
-                    ?
+                String cluster = CollectionUtils.isNotEmpty(invokers) ?
                     (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) :
                         Cluster.DEFAULT)
                     : Cluster.DEFAULT;
-                invoker = Cluster.getCluster(cluster).join(new StaticDirectory(invokers));
+                ScopeModel scopeModel = CollectionUtils.isNotEmpty(invokers) ?
+                    (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getScopeModel() : null)
+                    : null;
+                invoker = Cluster.getCluster(scopeModel, cluster).join(new StaticDirectory(invokers));
             }
         }
     }
@@ -601,14 +599,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         return isJvmRefer;
     }
 
-    public DubboBootstrap getBootstrap() {
-        return bootstrap;
-    }
-
-    public void setBootstrap(DubboBootstrap bootstrap) {
-        this.bootstrap = bootstrap;
-    }
-
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
             .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
@@ -617,6 +607,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     /**
      * just for test
+     *
      * @return
      */
     @Deprecated

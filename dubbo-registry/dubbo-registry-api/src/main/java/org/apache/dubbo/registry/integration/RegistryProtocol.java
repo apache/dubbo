@@ -472,11 +472,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         String group = qs.get(GROUP_KEY);
         if (group != null && group.length() > 0) {
             if ((COMMA_SPLIT_PATTERN.split(group)).length > 1 || "*".equals(group)) {
-                return doRefer(Cluster.getCluster(MergeableCluster.NAME), registry, type, url, qs);
+                return doRefer(Cluster.getCluster(url.getScopeModel(), MergeableCluster.NAME), registry, type, url, qs);
             }
         }
 
-        Cluster cluster = Cluster.getCluster(qs.get(CLUSTER_KEY));
+        Cluster cluster = Cluster.getCluster(url.getScopeModel(), qs.get(CLUSTER_KEY));
         return doRefer(cluster, registry, type, url, qs);
     }
 
@@ -765,7 +765,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     private ProviderConfigurationListener getProviderConfigurationListener(ApplicationModel applicationModel) {
-        return applicationModel.getBeanFactory().registerBeanIfAbsent(ProviderConfigurationListener.class,
+        return applicationModel.getBeanFactory().getOrRegisterBean(ProviderConfigurationListener.class,
             type -> new ProviderConfigurationListener(applicationModel));
     }
 
@@ -872,12 +872,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 if (subscribeUrl != null) {
                     Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
                     NotifyListener listener = overrideListeners.remove(registerUrl);
-                    registry.unsubscribe(subscribeUrl, listener);
-                    ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
-                    if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
-                        applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                            .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                                serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                    if (listener != null) {
+                        registry.unsubscribe(subscribeUrl, listener);
+                        ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
+                        if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+                            applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                                .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
+                                        serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                        }
                     }
                 }
             } catch (Throwable t) {

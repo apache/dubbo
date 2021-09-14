@@ -138,6 +138,20 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public void destroy() {
+        destroyInternal(false);
+    }
+
+    @Override
+    public void destroyAll() {
+        destroyInternal(true);
+    }
+
+    /**
+     * when destroy unused invoker, closeAll should be true
+     *
+     * @param closeAll
+     */
+    private void destroyInternal(boolean closeAll) {
         // in order to avoid closing a client multiple times, a counter is used in case of connection per jvm, every
         // time when client.close() is called, counter counts down once, and when counter reaches zero, client will be
         // closed.
@@ -154,7 +168,11 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
                 }
                 for (ExchangeClient client : clients) {
                     try {
-                        client.close(serverShutdownTimeout);
+                        if (closeAll) {
+                            client.closeAll(serverShutdownTimeout);
+                        } else {
+                            client.close(serverShutdownTimeout);
+                        }
                     } catch (Throwable t) {
                         logger.warn(t.getMessage(), t);
                     }
