@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;
@@ -33,7 +34,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class ScopeModel implements ExtensionAccessor {
 
-    protected String modelName;
+    /**
+     * The internal name is used to represent the hierarchy of the model tree, such as:
+     * <ol>
+     *     <li>FrameworkModel-1</li>
+     *     FrameworkModel (index=1)
+     *     <li>ApplicationModel-1.2</li>
+     *     FrameworkModel (index=1) -> ApplicationModel (index=2)
+     *     <li>ModuleModel-1.2.0</li>
+     *     FrameworkModel (index=1) -> ApplicationModel (index=2) -> ModuleModel (index=0, internal module)
+     *     <li>ModuleModel-1.2.1</li>
+     *     FrameworkModel (index=1) -> ApplicationModel (index=2) -> ModuleModel (index=1, first user module)
+     * </ol>
+     */
+    private String internalName;
+
     private Set<ClassLoader> classLoaders;
 
     private final ScopeModel parent;
@@ -44,7 +59,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
     private ScopeBeanFactory beanFactory;
     private List<ScopeModelDestroyListener> destroyListeners;
 
-    private Map<String, Object> attribute;
+    private Map<String, Object> attributes;
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public ScopeModel(ScopeModel parent, ExtensionScope scope) {
@@ -66,7 +81,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
         this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
         this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
         this.destroyListeners = new LinkedList<>();
-        this.attribute = new ConcurrentHashMap<>();
+        this.attributes = new ConcurrentHashMap<>();
         this.classLoaders = new ConcurrentHashSet<>();
 
         // Add Framework's ClassLoader by default
@@ -84,7 +99,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
                     removeClassLoader(classLoader);
                 }
                 onDestroy();
-            }catch (Throwable t) {
+            } catch (Throwable t) {
                 t.printStackTrace();
             }
         }
@@ -102,8 +117,20 @@ public abstract class ScopeModel implements ExtensionAccessor {
         destroyListeners.add(listener);
     }
 
-    public Map<String, Object> getAttribute() {
-        return attribute;
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    public <T> T getAttribute(String key, Class<T> type) {
+        return (T) attributes.get(key);
+    }
+
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    public void setAttribute(String key, Object value) {
+        attributes.put(key, value);
     }
 
     public ExtensionDirector getExtensionDirector() {
@@ -118,20 +145,12 @@ public abstract class ScopeModel implements ExtensionAccessor {
         return parent;
     }
 
-    protected void postProcessAfterCreated() {
-        Set<ScopeModelPostProcessor> scopeModelPostProcessors = getExtensionLoader(ScopeModelPostProcessor.class)
-            .getSupportedExtensionInstances();
-        for (ScopeModelPostProcessor processor : scopeModelPostProcessors) {
-            processor.postProcessScopeModel(this);
-        }
+    public String getInternalName() {
+        return internalName;
     }
 
-    public String getModelName() {
-        return modelName;
-    }
-
-    public void setModelName(String modelName) {
-        this.modelName = modelName;
+    protected void setInternalName(String internalName) {
+        this.internalName = internalName;
     }
 
     public void addClassLoader(ClassLoader classLoader) {
@@ -158,5 +177,26 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     public Set<ClassLoader> getClassLoaders() {
         return Collections.unmodifiableSet(classLoaders);
+    }
+
+    public abstract Environment getModelEnvironment();
+
+    public String getInternalId() {
+        // XxxModule-1.1
+        if (this.internalName == null) {
+            return null;
+        }
+        return this.internalName.substring(this.internalName.indexOf('-') + 1);
+    }
+
+    protected String buildInternalName(String type, String parentInternalId, long childIndex) {
+        // FrameworkModel-1
+        // ApplicationModel-1.1
+        // ModuleModel-1.1.1
+        if (parentInternalId != null) {
+            return type + "-" + parentInternalId + "." + childIndex;
+        } else {
+            return type + "-" + childIndex;
+        }
     }
 }

@@ -338,20 +338,10 @@ public abstract class AbstractConfig implements Serializable {
     public final void setScopeModel(ScopeModel scopeModel) {
         if (this.scopeModel != scopeModel) {
             checkScopeModel(scopeModel);
-            // remove this config from current ConfigManager
             ScopeModel oldScopeModel = this.scopeModel;
-            if (oldScopeModel != null) {
-                boolean removed = getConfigManager().removeConfig(this);
-                // change scope model and add it into new ConfigManager
-                this.scopeModel = scopeModel;
-                if (removed) {
-                    getConfigManager().addConfig(this);
-                }
-            }else {
-                this.scopeModel = scopeModel;
-            }
+            this.scopeModel = scopeModel;
             // reinitialize spi extension and change referenced config's scope model
-            this.postProcessAfterScopeModelChanged();
+            this.postProcessAfterScopeModelChanged(oldScopeModel, this.scopeModel);
         }
     }
 
@@ -379,8 +369,14 @@ public abstract class AbstractConfig implements Serializable {
      *   }
      * }
      * </pre>
+     * @param oldScopeModel
+     * @param newScopeModel
      */
-    protected void postProcessAfterScopeModelChanged() {
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        // remove this config from old ConfigManager
+//        if (oldScopeModel != null && oldScopeModel instanceof ApplicationModel) {
+//           ((ApplicationModel)oldScopeModel).getApplicationConfigManager().removeConfig(this);
+//        }
     }
 
     protected <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
@@ -531,7 +527,7 @@ public abstract class AbstractConfig implements Serializable {
             // check and init before do refresh
             preProcessRefresh();
 
-            Environment environment = getApplicationModel().getApplicationEnvironment();
+            Environment environment = getScopeModel().getModelEnvironment();
             List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
 
             // Search props starts with PREFIX in order

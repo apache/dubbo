@@ -69,6 +69,13 @@ public class ScopeModelUtil {
         }
     }
 
+    public static ScopeModel getOrDefaultApplicationModel(ScopeModel scopeModel) {
+        if(scopeModel == null) {
+            return ApplicationModel.defaultModel();
+        }
+        return scopeModel;
+    }
+
     public static FrameworkModel getFrameworkModel(ScopeModel scopeModel) {
         if (scopeModel == null) {
             return FrameworkModel.defaultModel();

@@ -26,7 +26,6 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
@@ -87,7 +86,6 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             ApplicationConfig applicationConfig = getApplicationConfig();
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
             serviceConfig.setScopeModel(applicationModel.getInternalModule());
-            serviceConfig.setBootstrap(applicationModel.getBeanFactory().getBean(DubboBootstrap.class));
             serviceConfig.setApplication(applicationConfig);
             serviceConfig.setRegistry(new RegistryConfig("N/A"));
             serviceConfig.setProtocol(generateMetadataProtocol());

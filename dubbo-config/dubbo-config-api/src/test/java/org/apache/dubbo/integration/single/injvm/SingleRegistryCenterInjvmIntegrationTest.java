@@ -18,12 +18,12 @@ package org.apache.dubbo.integration.single.injvm;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.registrycenter.RegistryCenter;
@@ -144,7 +144,6 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
         afterExport();
         ReferenceConfig<SingleRegistryCenterInjvmService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(SingleRegistryCenterInjvmService.class);
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
         referenceConfig.setScope(SCOPE_LOCAL);
         referenceConfig.get().hello("Dubbo");
         afterInvoke();
