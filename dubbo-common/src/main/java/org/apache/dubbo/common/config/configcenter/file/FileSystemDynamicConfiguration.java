@@ -44,7 +44,6 @@ import java.nio.file.WatchService;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -201,7 +200,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
         this.rootDirectory = rootDirectory;
         this.encoding = encoding;
         this.processingDirectories = initProcessingDirectories();
-        this.listenersRepository = new LinkedHashMap<>();
+        this.listenersRepository = new HashMap<>();
         registerDubboShutdownHook();
     }
 
@@ -214,7 +213,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
         this.rootDirectory = rootDirectory;
         this.encoding = encoding;
         this.processingDirectories = initProcessingDirectories();
-        this.listenersRepository = new LinkedHashMap<>();
+        this.listenersRepository = new HashMap<>();
         this.scopeModel = scopeModel;
         registerDubboShutdownHook();
     }

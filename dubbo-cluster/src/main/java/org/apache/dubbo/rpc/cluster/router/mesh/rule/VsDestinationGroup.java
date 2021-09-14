@@ -20,14 +20,14 @@ package org.apache.dubbo.rpc.cluster.router.mesh.rule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceRule;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 
 public class VsDestinationGroup {
     private String appName;
-    private List<VirtualServiceRule> virtualServiceRuleList = new ArrayList<>();
-    private List<DestinationRule> destinationRuleList = new ArrayList<>();
+    private List<VirtualServiceRule> virtualServiceRuleList = new LinkedList<>();
+    private List<DestinationRule> destinationRuleList = new LinkedList<>();
 
     public String getAppName() {
         return appName;

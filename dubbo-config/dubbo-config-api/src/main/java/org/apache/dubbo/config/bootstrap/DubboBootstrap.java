@@ -648,7 +648,6 @@ public final class DubboBootstrap {
     }
     /* serve for builder apis, end */
 
-
     public Module newModule() {
         return new Module(applicationModel.newModule());
     }
