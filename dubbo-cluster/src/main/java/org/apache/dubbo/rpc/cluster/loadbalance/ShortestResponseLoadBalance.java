@@ -56,7 +56,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance implements 
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
-        SLIDE_PERIOD = applicationModel.getApplicationEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
+        SLIDE_PERIOD = applicationModel.getModelEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
     }
 
     protected static class SlideWindowData {

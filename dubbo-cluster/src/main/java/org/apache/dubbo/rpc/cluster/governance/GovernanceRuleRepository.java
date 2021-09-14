@@ -19,9 +19,9 @@ package org.apache.dubbo.rpc.cluster.governance;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.extension.SPI;
 
-import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
+import static org.apache.dubbo.common.extension.ExtensionScope.MODULE;
 
-@SPI(value = "default", scope = APPLICATION)
+@SPI(value = "default", scope = MODULE)
 public interface GovernanceRuleRepository {
 
     String DEFAULT_GROUP = "dubbo";

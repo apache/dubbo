@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
@@ -30,6 +29,7 @@ public class ServiceModel {
     private String serviceKey;
     private Object proxyObject;
     private Callable<Void> destroyCaller;
+    private ClassLoader classLoader;
     private final ModuleModel moduleModel;
     private final ServiceDescriptor serviceModel;
     private final AbstractInterfaceConfig config;
@@ -51,6 +51,12 @@ public class ServiceModel {
         this.moduleModel = moduleModel;
         this.config = config;
         this.serviceMetadata = serviceMetadata;
+        if (config != null) {
+            this.classLoader = config.getInterfaceClassLoader();
+        }
+        if (this.classLoader == null) {
+            this.classLoader = Thread.currentThread().getContextClassLoader();
+        }
     }
 
     public String getServiceKey() {
@@ -69,9 +75,12 @@ public class ServiceModel {
         return serviceModel;
     }
 
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
     public ClassLoader getClassLoader() {
-        Class<?> serviceType = serviceMetadata.getServiceType();
-        return serviceType != null ? serviceType.getClassLoader() : ClassUtils.getClassLoader();
+        return classLoader;
     }
 
     /**

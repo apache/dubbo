@@ -17,18 +17,24 @@
 
 package org.apache.dubbo.rpc.cluster.merger;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.cluster.Merger;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class MergerFactory {
+public class MergerFactory implements ScopeModelAware {
 
-    private static final ConcurrentMap<Class<?>, Merger<?>> MERGER_CACHE =
-            new ConcurrentHashMap<Class<?>, Merger<?>>();
+    private ConcurrentMap<Class<?>, Merger<?>> MERGER_CACHE = new ConcurrentHashMap<Class<?>, Merger<?>>();
+    private ScopeModel scopeModel;
+
+    @Override
+    public void setScopeModel(ScopeModel scopeModel) {
+        this.scopeModel = scopeModel;
+    }
 
     /**
      * Find the merger according to the returnType class, the merger will
@@ -38,7 +44,7 @@ public class MergerFactory {
      * @return the merger which merges an array of returnType into one, return null if not exist
      * @throws IllegalArgumentException if returnType is null
      */
-    public static <T> Merger<T> getMerger(Class<T> returnType) {
+    public <T> Merger<T> getMerger(Class<T> returnType) {
         if (returnType == null) {
             throw new IllegalArgumentException("returnType is null");
         }
@@ -64,11 +70,11 @@ public class MergerFactory {
         return result;
     }
 
-    static void loadMergers() {
-        Set<String> names = ExtensionLoader.getExtensionLoader(Merger.class)
+    private void loadMergers() {
+        Set<String> names = scopeModel.getExtensionLoader(Merger.class)
                 .getSupportedExtensions();
         for (String name : names) {
-            Merger m = ExtensionLoader.getExtensionLoader(Merger.class).getExtension(name);
+            Merger m = scopeModel.getExtensionLoader(Merger.class).getExtension(name);
             MERGER_CACHE.putIfAbsent(ReflectUtils.getGenericClass(m.getClass()), m);
         }
     }

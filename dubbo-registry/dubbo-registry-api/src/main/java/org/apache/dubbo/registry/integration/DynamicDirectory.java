@@ -56,10 +56,9 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicDirectory.class);
 
-    protected static final Cluster CLUSTER = ExtensionLoader.getExtensionLoader(Cluster.class).getAdaptiveExtension();
+    protected final Cluster cluster;
 
-    protected static final RouterFactory ROUTER_FACTORY = ExtensionLoader.getExtensionLoader(RouterFactory.class)
-        .getAdaptiveExtension();
+    protected final RouterFactory routerFactory;
 
     /**
      * Initialization at construction time, assertion not null
@@ -112,6 +111,9 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     public DynamicDirectory(Class<T> serviceType, URL url) {
         super(url, true);
+
+        this.cluster = url.getOrDefaultApplicationModel().getExtensionLoader(Cluster.class).getAdaptiveExtension();
+        this.routerFactory = url.getOrDefaultApplicationModel().getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
 
         if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
@@ -280,7 +282,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             logger.warn("unexpected error when unsubscribe service " + serviceKey + " from registry: " + registry.getUrl(), t);
         }
 
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultApplicationModel().getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {

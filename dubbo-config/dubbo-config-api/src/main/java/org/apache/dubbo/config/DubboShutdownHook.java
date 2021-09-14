@@ -16,10 +16,14 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.lang.ShutdownHookCallback;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -32,9 +36,7 @@ public class DubboShutdownHook extends Thread {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboShutdownHook.class);
 
-    private static final DubboShutdownHook DUBBO_SHUTDOWN_HOOK = new DubboShutdownHook("DubboShutdownHook");
-
-    private final ShutdownHookCallbacks callbacks = ShutdownHookCallbacks.INSTANCE;
+    private final ShutdownHookCallbacks callbacks;
 
     /**
      * Has it already been registered or not?
@@ -46,13 +48,15 @@ public class DubboShutdownHook extends Thread {
      */
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
-    private DubboShutdownHook(String name) {
-        super(name);
+    public DubboShutdownHook(ApplicationModel applicationModel) {
+        super("DubboShutdownHook");
+        this.callbacks = applicationModel.getBeanFactory().getBean(ShutdownHookCallbacks.class);
+        Assert.notNull(this.callbacks, "ShutdownHookCallbacks is null");
     }
 
-    public static DubboShutdownHook getDubboShutdownHook() {
-        return DUBBO_SHUTDOWN_HOOK;
-    }
+//    public static DubboShutdownHook getDubboShutdownHook() {
+//        return DUBBO_SHUTDOWN_HOOK;
+//    }
 
     @Override
     public void run() {
@@ -85,13 +89,21 @@ public class DubboShutdownHook extends Thread {
         callbacks.callback();
     }
 
+    public DubboShutdownHook addCallback(ShutdownHookCallback callback) {
+        callbacks.addCallback(callback);
+        return this;
+    }
+
+    public Collection<ShutdownHookCallback> getCallbacks() {
+        return callbacks.getCallbacks();
+    }
+
     /**
      * Register the ShutdownHook
      */
     public void register() {
         if (registered.compareAndSet(false, true)) {
-            DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
-            Runtime.getRuntime().addShutdownHook(dubboShutdownHook);
+            Runtime.getRuntime().addShutdownHook(this);
         }
     }
 
@@ -100,8 +112,7 @@ public class DubboShutdownHook extends Thread {
      */
     public void unregister() {
         if (registered.compareAndSet(true, false)) {
-            DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
-            Runtime.getRuntime().removeShutdownHook(dubboShutdownHook);
+            Runtime.getRuntime().removeShutdownHook(this);
         }
     }
 

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client.metadata.store;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
@@ -34,8 +35,6 @@ import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-
-import com.google.gson.Gson;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -87,19 +86,19 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
      * All exported {@link URL urls} {@link Map} whose key is the return value of {@link URL#getServiceKey()} method
      * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
-    URL metadataServiceURL;
-    ConcurrentMap<String, MetadataInfo> metadataInfos;
+    private ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
+    private URL metadataServiceURL;
+    private ConcurrentMap<String, MetadataInfo> metadataInfos;
 
     // used to mark whether current metadata info is being updated to registry,
     // readLock for export or unExport which are support concurrency update,
     // writeLock for ServiceInstance update which should not work during exporting services
-    final ReentrantReadWriteLock updateLock = new ReentrantReadWriteLock();
-    final Semaphore metadataSemaphore = new Semaphore(0);
-    final Map<String, Set<String>> serviceToAppsMapping = new HashMap<>();
+    private final ReentrantReadWriteLock updateLock = new ReentrantReadWriteLock();
+    private final Semaphore metadataSemaphore = new Semaphore(0);
+    private final Map<String, Set<String>> serviceToAppsMapping = new HashMap<>();
 
-    String instanceMetadata;
-    ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap = new ConcurrentHashMap<>();
+    private String instanceMetadata;
+    private ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap = new ConcurrentHashMap<>();
 
 
     // ==================================================================================== //
