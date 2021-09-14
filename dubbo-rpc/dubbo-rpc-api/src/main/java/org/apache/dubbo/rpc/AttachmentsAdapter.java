@@ -22,12 +22,18 @@ import java.util.Map;
 /**
  * This class provides map adapters to support attachments in RpcContext, Invocation and Result switch from
  * <String, String> to <String, Object>
+ *
+ * please use {@link org.apache.dubbo.common.utils.MapUtils}
+ *
  */
+@Deprecated
 public class AttachmentsAdapter {
 
+    @Deprecated
     public static class ObjectToStringMap extends HashMap<String, String> {
         private Map<String, Object> attachments;
 
+        @Deprecated
         public ObjectToStringMap(Map<String, Object> attachments) {
             for (Entry<String, Object> entry : attachments.entrySet()) {
                 String convertResult = convert(entry.getValue());
@@ -51,10 +57,11 @@ public class AttachmentsAdapter {
         }
 
         private String convert(Object obj) {
-            if (obj instanceof String) {
-                return (String) obj;
+            if (obj == null) {
+                return null;
+            } else {
+                return obj.toString();
             }
-            return null; // or JSON.toString(obj);
         }
 
         @Override

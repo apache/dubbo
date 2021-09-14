@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc;
 
 
+import org.apache.dubbo.common.utils.MapUtils;
 import org.apache.dubbo.rpc.proxy.InvokerInvocationHandler;
 
 import java.util.HashMap;
@@ -121,7 +122,7 @@ public class AppResponse implements Result {
     @Override
     @Deprecated
     public Map<String, String> getAttachments() {
-        return new AttachmentsAdapter.ObjectToStringMap(attachments);
+        return MapUtils.objectToStringMap(attachments);
     }
 
     @Override
