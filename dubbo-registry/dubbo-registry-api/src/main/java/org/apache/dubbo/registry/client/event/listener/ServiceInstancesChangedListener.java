@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.client.event.listener;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -35,6 +34,7 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,7 +80,7 @@ public class ServiceInstancesChangedListener {
     private volatile long lastRefreshTime;
     private Semaphore retryPermission;
     private volatile ScheduledFuture<?> retryFuture;
-    private static ScheduledExecutorService scheduler = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
+    private ScheduledExecutorService scheduler;
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
@@ -90,6 +90,8 @@ public class ServiceInstancesChangedListener {
         this.serviceUrls = new HashMap<>();
         this.revisionToMetadata = new HashMap<>();
         retryPermission = new Semaphore(1);
+        this.scheduler = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel())
+            .getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
     }
 
     /**

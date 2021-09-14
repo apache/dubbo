@@ -190,7 +190,7 @@ public class DubboProtocolTest {
         service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
                 3000L)));
         long start = System.currentTimeMillis();
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < 100; i++)
             service.getSize(new String[]{"", "", ""});
         System.out.println("take:" + (System.currentTimeMillis() - start));
     }

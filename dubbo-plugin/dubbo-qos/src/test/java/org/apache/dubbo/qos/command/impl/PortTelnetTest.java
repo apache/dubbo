@@ -73,7 +73,7 @@ public class PortTelnetTest {
     public void testListClient() throws Exception {
         ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:" + availablePort + "/demo");
         ExchangeClient client2 = Exchangers.connect("dubbo://127.0.0.1:" + availablePort + "/demo");
-        Thread.sleep(5000);
+        Thread.sleep(100);
         String result = port.execute(mockCommandContext, new String[]{"-l", availablePort + ""});
         String client1Addr = client1.getLocalAddress().toString();
         String client2Addr = client2.getLocalAddress().toString();

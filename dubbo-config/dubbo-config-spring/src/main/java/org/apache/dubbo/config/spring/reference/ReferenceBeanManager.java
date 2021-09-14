@@ -22,6 +22,8 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.context.DubboSpringInitializationContext;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -52,7 +54,9 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     private Map<String, ReferenceConfig> referenceConfigMap = new ConcurrentHashMap<>();
 
     private ApplicationContext applicationContext;
+    private DubboBootstrap dubboBootstrap;
     private volatile boolean initialized = false;
+    private DubboSpringInitializationContext initializationContext;
 
     public void addReference(ReferenceBean referenceBean) throws Exception {
         String referenceBeanName = referenceBean.getId();
@@ -115,6 +119,8 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+        this.dubboBootstrap = DubboBeanUtils.getBootstrap(applicationContext);
+        initializationContext = DubboBeanUtils.getInitializationContext(applicationContext);
     }
 
     /**
@@ -169,7 +175,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
             referenceConfigMap.put(referenceKey, referenceConfig);
 
             // register ReferenceConfig
-            DubboBootstrap.getInstance().reference(referenceConfig);
+            dubboBootstrap.reference(referenceConfig, initializationContext.getModuleModel());
         }
 
         // associate referenceConfig to referenceBean

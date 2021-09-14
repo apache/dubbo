@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -40,8 +40,6 @@ import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
-import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -123,21 +121,20 @@ public class DubboBootstrapTest {
     @Test
     public void compatibleApplicationShutdown() {
         try {
-            ConfigUtils.setProperties(null);
             System.clearProperty(SHUTDOWN_WAIT_KEY);
             System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);
 
             writeDubboProperties(SHUTDOWN_WAIT_KEY, "100");
+            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
             ConfigValidationUtils.validateApplicationConfig(new ApplicationConfig("demo"));
             Assertions.assertEquals("100", System.getProperty(SHUTDOWN_WAIT_KEY));
 
             System.clearProperty(SHUTDOWN_WAIT_KEY);
-            ConfigUtils.setProperties(null);
             writeDubboProperties(SHUTDOWN_WAIT_SECONDS_KEY, "1000");
+            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
             ConfigValidationUtils.validateApplicationConfig(new ApplicationConfig("demo"));
             Assertions.assertEquals("1000", System.getProperty(SHUTDOWN_WAIT_SECONDS_KEY));
         } finally {
-            ConfigUtils.setProperties(null);
             System.clearProperty("dubbo.application.name");
             System.clearProperty(SHUTDOWN_WAIT_KEY);
             System.clearProperty(SHUTDOWN_WAIT_SECONDS_KEY);
@@ -155,7 +152,7 @@ public class DubboBootstrapTest {
 
         // load configs from props
         DubboBootstrap.getInstance()
-                .initialize();
+            .initialize();
 
         serviceConfig.refresh();
 
@@ -260,9 +257,15 @@ public class DubboBootstrapTest {
         Assertions.assertTrue(bootstrap.isStarted());
         Assertions.assertFalse(bootstrap.isShutdown());
 
-        Assertions.assertNotNull(bootstrap.serviceInstance);
-        Assertions.assertTrue(bootstrap.exportedServices.size() > 0);
-        Assertions.assertNotNull(bootstrap.asyncMetadataFuture);
+        ApplicationModel applicationModel = bootstrap.getApplicationModel();
+        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(applicationModel);
+        Assertions.assertNotNull(applicationDeployer.serviceInstance);
+        Assertions.assertNotNull(applicationDeployer.asyncMetadataFuture);
+        Assertions.assertTrue(applicationModel.getDefaultModule().getServiceRepository().getExportedServices().size() > 0);
+    }
+
+    private DefaultApplicationDeployer getApplicationDeployer(ApplicationModel applicationModel) {
+        return (DefaultApplicationDeployer) DefaultApplicationDeployer.get(applicationModel);
     }
 
     @Test
@@ -329,7 +332,8 @@ public class DubboBootstrapTest {
     }
 
     private void assertMetadataService(DubboBootstrap bootstrap, int availablePort, boolean shouldReport) {
-        Assertions.assertTrue(bootstrap.metadataServiceExporter.isExported());
+        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(bootstrap.getApplicationModel());
+        Assertions.assertTrue(applicationDeployer.metadataServiceExporter.isExported());
         DubboProtocol protocol = DubboProtocol.getDubboProtocol(bootstrap.getApplicationModel());
         Map<String, Exporter<?>> exporters = protocol.getExporterMap();
         Assertions.assertEquals(2, exporters.size());

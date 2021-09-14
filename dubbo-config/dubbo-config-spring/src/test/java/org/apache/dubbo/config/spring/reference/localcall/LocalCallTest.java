@@ -61,9 +61,6 @@ public class LocalCallTest {
     //@Qualifier("localHelloService")
     private HelloService localHelloService;
 
-    @Autowired
-    private ApplicationContext applicationContext;
-
     @Test
     public void testLocalCall() {
         // see also: org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker.doInvoke

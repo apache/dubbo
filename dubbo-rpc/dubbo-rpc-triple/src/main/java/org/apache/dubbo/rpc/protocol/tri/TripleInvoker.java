@@ -81,6 +81,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
         final String methodName = RpcUtils.getMethodName(invocation);
+        inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
         inv.setAttachment(PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.SERIALIZATION_KEY,
                 getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));

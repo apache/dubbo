@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -37,6 +36,7 @@ import static org.apache.dubbo.registry.Constants.MIGRATION_PROMOTION_KEY;
 import static org.apache.dubbo.registry.Constants.MIGRATION_STEP_KEY;
 import static org.apache.dubbo.registry.Constants.MIGRATION_THRESHOLD_KEY;
 import static org.apache.dubbo.registry.client.migration.MigrationRuleHandler.DUBBO_SERVICEDISCOVERY_MIGRATION;
+import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
 
 /**
  * # key = demo-consumer.migration
@@ -105,7 +105,7 @@ public class MigrationRule {
             migrationRule.setDelay(Integer.valueOf(delay.toString()));
         }
 
-        Object force = map.get("force");
+        Object force = map.get(FORCE_KEY);
         if (force != null) {
             migrationRule.setForce(Boolean.valueOf(force.toString()));
         }

@@ -57,7 +57,9 @@ public class RpcInvocation implements Invocation, Serializable {
     private String protocolServiceKey;
 
     private ServiceModel serviceModel;
+
     private String methodName;
+
     private String serviceName;
 
     private transient Class<?>[] parameterTypes;
