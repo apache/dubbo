@@ -62,7 +62,6 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.support.MockInvoker;
@@ -466,8 +465,8 @@ public class ConfigValidationUtils {
         }
 
         // backward compatibility
-        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(config.getScopeModel());
-        PropertiesConfiguration configuration = applicationModel.getModelEnvironment().getPropertiesConfiguration();
+        ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(config.getScopeModel());
+        PropertiesConfiguration configuration = scopeModel.getModelEnvironment().getPropertiesConfiguration();
         String wait = configuration.getProperty(SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
             System.setProperty(SHUTDOWN_WAIT_KEY, wait.trim());
