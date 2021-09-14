@@ -15,5 +15,4 @@
 # limitations under the License.
 #
 multipleConfigCenterServiceDiscoveryRegistry=org.apache.dubbo.integration.multiple.servicediscoveryregistry.MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListener
-singleRegistryCenterServiceDiscoveryRegistry=org.apache.dubbo.integration.single.servicediscoveryregistry.SingleRegistryCenterServiceDiscoveryRegistryListener
 
