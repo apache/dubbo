@@ -1112,4 +1112,11 @@ public class URLTest {
         assertEquals(shortNumNotExist, 15);
         assertEquals(bNotExist, 16);
     }
+
+    @Test
+    public void test_valueOfHasNameWithoutValue() throws Exception {
+        String decodedURLStr = "dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&noValue";
+        URL url = URLStrParser.parseDecodedStr(decodedURLStr);
+        Assertions.assertEquals("noValue", url.getParameter("noValue"));
+    }
 }
