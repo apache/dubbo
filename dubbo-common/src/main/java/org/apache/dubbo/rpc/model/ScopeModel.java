@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;

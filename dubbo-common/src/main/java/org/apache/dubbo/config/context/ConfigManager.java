@@ -18,7 +18,6 @@ package org.apache.dubbo.config.context;
 
 import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.context.ApplicationExt;
-import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
