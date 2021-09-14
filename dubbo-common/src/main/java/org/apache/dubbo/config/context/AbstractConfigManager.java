@@ -75,7 +75,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         this.scopeModel = scopeModel;
         this.applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
         this.supportedConfigTypes = supportedConfigTypes;
-        environment = applicationModel.getApplicationEnvironment();
+        environment = scopeModel.getModelEnvironment();
     }
 
     /**
@@ -331,7 +331,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     public abstract void loadConfigs();
 
     public <T extends AbstractConfig> void loadConfigsOfTypeFromProps(Class<T> cls) {
-        PropertiesConfiguration properties = applicationModel.getApplicationEnvironment().getPropertiesConfiguration();
+        PropertiesConfiguration properties = environment.getPropertiesConfiguration();
 
         // load multiple configs with id
         Set<String> configIds = this.getConfigIdsFromProps(cls);

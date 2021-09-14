@@ -16,27 +16,47 @@
  */
 package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
-/**
- * Configuration from system properties and dubbo.properties
- */
-public class PropertiesConfiguration implements Configuration {
+public class OrderedPropertiesConfiguration implements Configuration{
+    private Properties properties = new Properties();
+    private ModuleModel moduleModel;
 
-    private Properties properties;
-    private final ScopeModel scopeModel;
-
-    public PropertiesConfiguration(ScopeModel scopeModel) {
-        this.scopeModel = scopeModel;
+    public OrderedPropertiesConfiguration(ModuleModel moduleModel) {
+        this.moduleModel = moduleModel;
         refresh();
     }
 
     public void refresh() {
-        properties = ConfigUtils.getProperties(scopeModel.getClassLoaders());
+        ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = moduleModel.getExtensionLoader(OrderedPropertiesProvider.class);
+        Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
+        if (propertiesProviderNames == null || propertiesProviderNames.isEmpty()) {
+            return;
+        }
+        List<OrderedPropertiesProvider> orderedPropertiesProviders = new ArrayList<>();
+        for (String propertiesProviderName : propertiesProviderNames) {
+            orderedPropertiesProviders.add(propertiesProviderExtensionLoader.getExtension(propertiesProviderName));
+        }
+
+        //order the propertiesProvider according the priority descending
+        orderedPropertiesProviders.sort((OrderedPropertiesProvider a, OrderedPropertiesProvider b) -> {
+            return b.priority() - a.priority();
+        });
+
+
+        //override the properties.
+        for (OrderedPropertiesProvider orderedPropertiesProvider :
+            orderedPropertiesProviders) {
+            properties.putAll(orderedPropertiesProvider.initProperties());
+        }
+
     }
 
     @Override

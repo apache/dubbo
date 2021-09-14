@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
@@ -130,6 +131,11 @@ public class FrameworkModel extends ScopeModel {
 
     public FrameworkServiceRepository getServiceRepository() {
         return serviceRepository;
+    }
+
+    @Override
+    public Environment getModelEnvironment() {
+        throw new UnsupportedOperationException("Environment is inaccessible for FrameworkModel");
     }
 
     @Override

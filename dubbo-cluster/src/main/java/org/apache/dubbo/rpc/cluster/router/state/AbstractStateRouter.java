@@ -41,7 +41,7 @@ public abstract class AbstractStateRouter implements StateRouter {
     protected GovernanceRuleRepository ruleRepository;
 
     public AbstractStateRouter(URL url, RouterChain chain) {
-        this.ruleRepository = url.getOrDefaultApplicationModel().getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        this.ruleRepository = url.getOrDefaultModuleModel().getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.chain = chain;
         this.url = url;
     }

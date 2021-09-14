@@ -166,7 +166,7 @@ public final class DubboBootstrap {
     private DubboBootstrap(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
-        environment = applicationModel.getApplicationEnvironment();
+        environment = applicationModel.getModelEnvironment();
 
         referenceCache = new CompositeReferenceCache(applicationModel);
         executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();

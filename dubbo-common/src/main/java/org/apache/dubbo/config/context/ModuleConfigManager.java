@@ -63,7 +63,7 @@ public class ModuleConfigManager extends AbstractConfigManager {
         if (!inited.compareAndSet(false, true)) {
             return;
         }
-        CompositeConfiguration configuration = applicationModel.getApplicationEnvironment().getConfiguration();
+        CompositeConfiguration configuration = scopeModel.getModelEnvironment().getConfiguration();
 
         String ignoreDuplicatedInterfaceStr = (String) configuration
             .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_DUPLICATED_INTERFACE);

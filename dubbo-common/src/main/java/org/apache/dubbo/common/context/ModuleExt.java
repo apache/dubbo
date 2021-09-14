@@ -14,20 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config;
+package org.apache.dubbo.common.context;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-public class PropertiesConfigurationTest {
-
-    @Test
-    public void testOrderPropertiesProviders() {
-        OrderedPropertiesConfiguration configuration = new OrderedPropertiesConfiguration(ApplicationModel.defaultModel().getDefaultModule());
-        Assertions.assertEquals("999", configuration.getInternalProperty("testKey"));
-    }
+@SPI(scope = ExtensionScope.MODULE)
+public interface ModuleExt extends Lifecycle {
 
 }

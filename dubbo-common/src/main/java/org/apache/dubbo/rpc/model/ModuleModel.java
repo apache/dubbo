@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.config.ModuleEnvironment;
+import org.apache.dubbo.common.context.ModuleExt;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
@@ -38,6 +40,7 @@ public class ModuleModel extends ScopeModel {
     public static final String NAME = "ModuleModel";
 
     private final ApplicationModel applicationModel;
+    private ModuleEnvironment moduleEnvironment;
     private ModuleServiceRepository serviceRepository;
     private ModuleConfigManager moduleConfigManager;
 
@@ -48,6 +51,7 @@ public class ModuleModel extends ScopeModel {
         this.applicationModel = applicationModel;
         applicationModel.addModule(this);
         initialize();
+        Assert.notNull(applicationModel, "ApplicationModel can not be null");
     }
 
     @Override
@@ -57,10 +61,19 @@ public class ModuleModel extends ScopeModel {
         this.moduleConfigManager = new ModuleConfigManager(this);
         this.moduleConfigManager.initialize();
 
+        initModuleExt();
+
         ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
         Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
         for (ScopeModelInitializer initializer : initializers) {
             initializer.initializeModuleModel(this);
+        }
+    }
+
+    private void initModuleExt() {
+        Set<ModuleExt> exts = this.getExtensionLoader(ModuleExt.class).getSupportedExtensionInstances();
+        for (ModuleExt ext : exts) {
+            ext.initialize();
         }
     }
 
@@ -99,6 +112,11 @@ public class ModuleModel extends ScopeModel {
         }
 
         notifyDestroy();
+        if (moduleEnvironment != null) {
+            moduleEnvironment.destroy();
+            moduleEnvironment = null;
+        }
+
         applicationModel.removeModule(this);
     }
 
@@ -108,6 +126,15 @@ public class ModuleModel extends ScopeModel {
 
     public ModuleServiceRepository getServiceRepository() {
         return serviceRepository;
+    }
+
+    @Override
+    public ModuleEnvironment getModelEnvironment() {
+        if (moduleEnvironment == null) {
+            moduleEnvironment = (ModuleEnvironment) this.getExtensionLoader(ModuleExt.class)
+                .getExtension(ModuleEnvironment.NAME);
+        }
+        return moduleEnvironment;
     }
 
     public ModuleConfigManager getConfigManager() {
@@ -121,4 +148,5 @@ public class ModuleModel extends ScopeModel {
     public void setDeployer(ModuleDeployer deployer) {
         setAttribute(ModelConstants.DEPLOYER, deployer);
     }
+
 }

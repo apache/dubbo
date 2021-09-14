@@ -17,7 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
@@ -55,6 +55,7 @@ public class ApplicationModel extends ScopeModel {
     private static volatile ApplicationModel defaultInstance;
 
     private final List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
+    private final List<ModuleModel> pubModuleModels = Collections.synchronizedList(new ArrayList<>());
     private Environment environment;
     private ConfigManager configManager;
     private ServiceRepository serviceRepository;
@@ -112,7 +113,7 @@ public class ApplicationModel extends ScopeModel {
 
     @Deprecated
     public static Environment getEnvironment() {
-        return defaultModel().getApplicationEnvironment();
+        return defaultModel().getModelEnvironment();
     }
 
     @Deprecated
@@ -176,7 +177,7 @@ public class ApplicationModel extends ScopeModel {
             extensionLoader.getExtension(listenerName).init();
         }
 
-        initFrameworkExts();
+        initApplicationExts();
 
         ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
         Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
@@ -185,9 +186,9 @@ public class ApplicationModel extends ScopeModel {
         }
     }
 
-    private void initFrameworkExts() {
-        Set<FrameworkExt> exts = this.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
-        for (FrameworkExt ext : exts) {
+    private void initApplicationExts() {
+        Set<ApplicationExt> exts = this.getExtensionLoader(ApplicationExt.class).getSupportedExtensionInstances();
+        for (ApplicationExt ext : exts) {
             ext.initialize();
         }
     }
@@ -226,14 +227,14 @@ public class ApplicationModel extends ScopeModel {
     public FrameworkModel getFrameworkModel() {
         return frameworkModel;
     }
-
     public synchronized ModuleModel newModule() {
         return new ModuleModel(this);
     }
 
-    public Environment getApplicationEnvironment() {
+    @Override
+    public Environment getModelEnvironment() {
         if (environment == null) {
-            environment = (Environment) this.getExtensionLoader(FrameworkExt.class)
+            environment = (Environment) this.getExtensionLoader(ApplicationExt.class)
                 .getExtension(Environment.NAME);
         }
         return environment;
@@ -241,7 +242,7 @@ public class ApplicationModel extends ScopeModel {
 
     public ConfigManager getApplicationConfigManager() {
         if (configManager == null) {
-            configManager = (ConfigManager) this.getExtensionLoader(FrameworkExt.class)
+            configManager = (ConfigManager) this.getExtensionLoader(ApplicationExt.class)
                 .getExtension(ConfigManager.NAME);
         }
         return configManager;
@@ -263,15 +264,16 @@ public class ApplicationModel extends ScopeModel {
         return getCurrentConfig().getName();
     }
 
-    synchronized void addModule(ModuleModel moduleModel) {
+    public synchronized void addModule(ModuleModel moduleModel) {
         if (!this.moduleModels.contains(moduleModel)) {
             this.moduleModels.add(moduleModel);
             moduleModel.setInternalName(buildInternalName(ModuleModel.NAME, getInternalId(), moduleIndex.getAndIncrement()));
         }
     }
 
-    synchronized void removeModule(ModuleModel moduleModel) {
+    public synchronized void removeModule(ModuleModel moduleModel) {
         this.moduleModels.remove(moduleModel);
+        this.pubModuleModels.remove(moduleModel);
         if (moduleModel == defaultModule) {
             defaultModule = findDefaultModule();
         }
@@ -285,6 +287,10 @@ public class ApplicationModel extends ScopeModel {
 
     public List<ModuleModel> getModuleModels() {
         return Collections.unmodifiableList(moduleModels);
+    }
+
+    public List<ModuleModel> getPubModuleModels() {
+        return pubModuleModels;
     }
 
     public synchronized ModuleModel getDefaultModule() {
