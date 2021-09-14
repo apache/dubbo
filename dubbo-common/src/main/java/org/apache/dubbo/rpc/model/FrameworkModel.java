@@ -34,8 +34,11 @@ public class FrameworkModel extends ScopeModel {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(FrameworkModel.class);
 
-    private static final AtomicLong index = new AtomicLong(0);
     public static final String NAME = "FrameworkModel";
+    private static final AtomicLong index = new AtomicLong(1);
+    // app index starts from 1 in each FrameworkModel
+    private final AtomicLong appIndex = new AtomicLong(1);
+
     private volatile static FrameworkModel defaultInstance;
 
     private static List<FrameworkModel> allInstances = Collections.synchronizedList(new ArrayList<>());
@@ -45,10 +48,11 @@ public class FrameworkModel extends ScopeModel {
     private FrameworkServiceRepository serviceRepository;
 
 
+
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
         initialize();
-        this.modelName = NAME + "-" + index.getAndIncrement();
+        this.setInternalName(buildInternalName(NAME, null, index.getAndIncrement()));
     }
 
     @Override
@@ -62,9 +66,6 @@ public class FrameworkModel extends ScopeModel {
         for (ScopeModelInitializer initializer : initializers) {
             initializer.initializeFrameworkModel(this);
         }
-
-
-        postProcessAfterCreated();
     }
 
     @Override
@@ -105,13 +106,18 @@ public class FrameworkModel extends ScopeModel {
         }
     }
 
-    public void addApplication(ApplicationModel model) {
-        if (!this.applicationModels.contains(model)) {
-            this.applicationModels.add(model);
+    public ApplicationModel newApplication() {
+        return new ApplicationModel(this);
+    }
+
+    synchronized void addApplication(ApplicationModel applicationModel) {
+        if (!this.applicationModels.contains(applicationModel)) {
+            this.applicationModels.add(applicationModel);
+            applicationModel.setInternalName(buildInternalName(ApplicationModel.NAME, getInternalId(), appIndex.getAndIncrement()));
         }
     }
 
-    public void removeApplication(ApplicationModel model) {
+    synchronized void removeApplication(ApplicationModel model) {
         this.applicationModels.remove(model);
         if (applicationModels.size() == 0) {
             destroy();
@@ -119,7 +125,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     public List<ApplicationModel> getApplicationModels() {
-        return applicationModels;
+        return Collections.unmodifiableList(applicationModels);
     }
 
     public FrameworkServiceRepository getServiceRepository() {

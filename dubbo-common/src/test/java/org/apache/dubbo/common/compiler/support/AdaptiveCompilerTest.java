@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.compiler.support;
 
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
