@@ -24,7 +24,7 @@ import com.alibaba.dubbo.remoting.http.HttpServer;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
-
+import com.alibaba.dubbo.rpc.protocol.hessian.serialization.Hessian2FactoryUtil;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import com.alibaba.dubbo.rpc.support.ProtocolUtils;
 import com.caucho.hessian.HessianException;
@@ -122,6 +122,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
         int timeout = url.getParameter(Constants.TIMEOUT_KEY, Constants.DEFAULT_TIMEOUT);
         hessianProxyFactory.setConnectTimeout(timeout);
         hessianProxyFactory.setReadTimeout(timeout);
+        hessianProxyFactory.setSerializerFactory(Hessian2FactoryUtil.getInstance().getSerializerFactory());
         return (T) hessianProxyFactory.create(serviceType, url.setProtocol("http").toJavaURL(), Thread.currentThread().getContextClassLoader());
     }
 
@@ -181,7 +182,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
                 }
 
                 try {
-                    skeleton.invoke(request.getInputStream(), response.getOutputStream());
+                    skeleton.invoke(request.getInputStream(), response.getOutputStream(), Hessian2FactoryUtil.getInstance().getSerializerFactory());
                 } catch (Throwable e) {
                     throw new ServletException(e);
                 }
