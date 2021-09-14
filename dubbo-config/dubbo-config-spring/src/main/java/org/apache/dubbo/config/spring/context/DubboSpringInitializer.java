@@ -17,16 +17,12 @@
 package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.GenericApplicationContext;
 
 import java.util.Map;
@@ -52,19 +48,17 @@ public class DubboSpringInitializer {
         // prepare context and do customize
         DubboSpringInitializationContext context = contextMap.get(registry);
 
-        // find beanFactory and applicationContext
+        // find beanFactory
         ConfigurableListableBeanFactory beanFactory = findBeanFactory(registry);
-        ApplicationContext applicationContext = findApplicationContext(registry, beanFactory);
 
         // init dubbo context
-        initContext(context, registry, beanFactory, applicationContext);
+        initContext(context, registry, beanFactory);
     }
 
 
     private static void initContext(DubboSpringInitializationContext context, BeanDefinitionRegistry registry,
-                                    ConfigurableListableBeanFactory beanFactory, ApplicationContext applicationContext) {
+                                    ConfigurableListableBeanFactory beanFactory) {
         context.setRegistry(registry);
-        context.setApplicationContext(applicationContext);
 
         // customize context, you can change the bind module model via DubboSpringInitializationCustomizer SPI
         customize(context);
@@ -83,13 +77,6 @@ public class DubboSpringInitializer {
             // init ModuleModel
             ModuleModel moduleModel = applicationModel.getDefaultModule();
             context.setModuleModel(moduleModel);
-        }
-
-        // Init SpringExtensionInjector
-        // Maybe the applicationContext is null, that means the Spring ApplicationContext is not completely created, so can not retrieve bean from it.
-        // We will reinitialize it again in DubboInfraBeanRegisterPostProcessor
-        if (applicationContext != null) {
-            SpringExtensionInjector.get(context.getApplicationModel()).init(applicationContext);
         }
 
         // create DubboBootstrap
@@ -126,17 +113,6 @@ public class DubboSpringInitializer {
         return beanFactory;
     }
 
-    private static ApplicationContext findApplicationContext(BeanDefinitionRegistry registry, ConfigurableListableBeanFactory beanFactory) {
-        // GenericApplicationContext
-        if (registry instanceof ApplicationContext) {
-            return (ApplicationContext) registry;
-        }
-        // find by ApplicationContextAware
-        ApplicationContextAwareBean contextBean = new ApplicationContextAwareBean();
-        beanFactory.initializeBean(contextBean, ApplicationContextAwareBean.class.getSimpleName());
-        return contextBean.applicationContext;
-    }
-
     private static void registerContextBeans(ConfigurableListableBeanFactory beanFactory, DubboSpringInitializationContext context) {
         // register singleton
         registerSingleton(beanFactory, context);
@@ -170,13 +146,4 @@ public class DubboSpringInitializer {
         }
     }
 
-    static class ApplicationContextAwareBean implements ApplicationContextAware {
-
-        private ApplicationContext applicationContext;
-
-        @Override
-        public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-            this.applicationContext = applicationContext;
-        }
-    }
 }
