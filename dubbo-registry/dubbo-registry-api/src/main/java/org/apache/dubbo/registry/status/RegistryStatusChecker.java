@@ -20,7 +20,8 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
 
@@ -31,9 +32,16 @@ import java.util.Collection;
 @Activate
 public class RegistryStatusChecker implements StatusChecker {
 
+    private ApplicationModel applicationModel;
+
+    public RegistryStatusChecker(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
     @Override
     public Status check() {
-        Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
+        RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
+        Collection<Registry> registries = registryManager.getRegistries();
         if (registries.isEmpty()) {
             return new Status(Status.Level.UNKNOWN);
         }

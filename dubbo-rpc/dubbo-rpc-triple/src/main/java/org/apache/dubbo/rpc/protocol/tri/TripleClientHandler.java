@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2GoAwayFrame;
-import io.netty.handler.codec.http2.Http2SettingsFrame;
-import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -38,6 +32,13 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.Http2GoAwayFrame;
+import io.netty.handler.codec.http2.Http2SettingsFrame;
+import io.netty.util.ReferenceCountUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -79,7 +80,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
 
         MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel,inv);
 
-        ClassLoadUtil.switchContextLoader(consumerModel.getServiceInterfaceClass().getClassLoader());
+        ClassLoadUtil.switchContextLoader(consumerModel.getClassLoader());
         AbstractClientStream stream;
         if (methodDescriptor.isUnary()) {
             stream = AbstractClientStream.unary(url);
