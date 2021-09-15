@@ -54,7 +54,7 @@ public class RegistryManager {
      */
     protected final ReentrantLock lock = new ReentrantLock();
 
-    private static final AtomicBoolean destroyed = new AtomicBoolean(false);
+    private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public RegistryManager(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
