@@ -82,7 +82,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         }
 
         // switch TCCL
-        if (invocation.getServiceModel() != null) {
+        if (invocation != null && invocation.getServiceModel() != null) {
             Thread.currentThread().setContextClassLoader(invocation.getServiceModel().getClassLoader());
         }
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
