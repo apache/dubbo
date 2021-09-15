@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
@@ -129,7 +130,7 @@ public class ZookeeperRegistryTest {
       @see https://github.com/apache/dubbo/issues/1787
      */
     public void testStatusChecker() {
-        RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker();
+        RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker(ApplicationModel.defaultModel());
         Status status = registryStatusChecker.check();
         assertThat(status.getLevel(), is(Status.Level.UNKNOWN));
 

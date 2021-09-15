@@ -195,17 +195,19 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         repository.unregisterProvider(providerModel);
     }
 
-    private void init() {
+    /**
+     * for early init serviceMetadata
+     */
+    public void init() {
         if (this.initialized.compareAndSet(false, true)) {
-            initServiceMetadata(provider);
-            serviceMetadata.setServiceType(getInterfaceClass());
-            serviceMetadata.setTarget(getRef());
-            serviceMetadata.generateServiceKey();
-
             // load ServiceListeners from extension
             ExtensionLoader<ServiceListener> extensionLoader = this.getExtensionLoader(ServiceListener.class);
             this.serviceListeners.addAll(extensionLoader.getSupportedExtensionInstances());
         }
+        initServiceMetadata(provider);
+        serviceMetadata.setServiceType(getInterfaceClass());
+        serviceMetadata.setTarget(getRef());
+        serviceMetadata.generateServiceKey();
     }
 
     @Override

@@ -47,7 +47,6 @@ import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -149,7 +148,6 @@ public final class DubboBootstrap {
                 instance = null;
             }
             MetadataReportInstance.reset();
-            AbstractRegistryFactory.reset();
             destroyAllProtocols();
             FrameworkModel.destroyAll();
         } else {
