@@ -21,6 +21,8 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
 import java.util.Collections;
@@ -33,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class ScopeModel implements ExtensionAccessor {
+    protected static final Logger LOGGER = LoggerFactory.getLogger(ScopeModel.class);
 
     /**
      * The internal name is used to represent the hierarchy of the model tree, such as:
@@ -94,13 +97,13 @@ public abstract class ScopeModel implements ExtensionAccessor {
     public void destroy() {
         if (destroyed.compareAndSet(false, true)) {
             try {
+                onDestroy();
                 HashSet<ClassLoader> copyOfClassLoaders = new HashSet<>(classLoaders);
                 for (ClassLoader classLoader : copyOfClassLoaders) {
                     removeClassLoader(classLoader);
                 }
-                onDestroy();
             } catch (Throwable t) {
-                t.printStackTrace();
+                LOGGER.error("Error happened when destroying ScopeModel.", t);
             }
         }
     }
@@ -172,7 +175,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
     }
 
     protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
-        return true;
+        return classLoader != null && !classLoader.equals(ScopeModel.class.getClassLoader());
     }
 
     public Set<ClassLoader> getClassLoaders() {
