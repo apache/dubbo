@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -31,7 +30,9 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.registry.support.RegistryManager;
+
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -50,7 +51,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
-import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getServiceDiscoveries;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 
 /**
@@ -249,7 +249,8 @@ public class ServiceInstanceMetadataUtils {
         if (serviceInstance.getPort() > 0) {
             reportMetadataToRemote(serviceInstance);
             LOGGER.info("Start registering instance address to registry.");
-            getServiceDiscoveries().forEach(serviceDiscovery ->
+            RegistryManager registryManager = serviceInstance.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
+            registryManager.getServiceDiscoveries().forEach(serviceDiscovery ->
             {
                 ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
                 calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
@@ -264,8 +265,8 @@ public class ServiceInstanceMetadataUtils {
 
     public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
         reportMetadataToRemote(serviceInstance);
-
-        AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
+        RegistryManager registryManager = serviceInstance.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
+        registryManager.getServiceDiscoveries().forEach(serviceDiscovery -> {
             ServiceInstance instance = serviceDiscovery.getLocalInstance();
             if (instance == null) {
                 LOGGER.warn("Refreshing of service instance started, but instance hasn't been registered yet.");

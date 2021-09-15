@@ -51,7 +51,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -85,7 +85,6 @@ import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLI
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.calInstanceRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
-import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getServiceDiscoveries;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
@@ -771,7 +770,7 @@ public class DefaultApplicationDeployer implements ApplicationDeployer {
         if (serviceInstance.getPort() > 0) {
             publishMetadataToRemote(serviceInstance);
             logger.info("Start registering instance address to registry.");
-            getServiceDiscoveries().forEach(serviceDiscovery ->
+            RegistryManager.getInstance(applicationModel).getServiceDiscoveries().forEach(serviceDiscovery ->
             {
                 ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
                 calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
@@ -796,7 +795,7 @@ public class DefaultApplicationDeployer implements ApplicationDeployer {
 
     private void unregisterServiceInstance() {
         if (isRegisteredServiceInstance()) {
-            getServiceDiscoveries().forEach(serviceDiscovery -> {
+            RegistryManager.getInstance(applicationModel).getServiceDiscoveries().forEach(serviceDiscovery -> {
                 try {
                     serviceDiscovery.unregister(serviceInstance);
                 } catch (Exception ignored) {
@@ -874,7 +873,7 @@ public class DefaultApplicationDeployer implements ApplicationDeployer {
     }
 
     private void destroyRegistries() {
-        AbstractRegistryFactory.destroyAll();
+        RegistryManager.getInstance(applicationModel).destroyAll();
     }
 
     /**
@@ -904,7 +903,7 @@ public class DefaultApplicationDeployer implements ApplicationDeployer {
     }
 
     private void destroyServiceDiscoveries() {
-        getServiceDiscoveries().forEach(serviceDiscovery -> {
+        RegistryManager.getInstance(applicationModel).getServiceDiscoveries().forEach(serviceDiscovery -> {
             try {
                 execute(serviceDiscovery::destroy);
             } catch (Throwable ignored) {
