@@ -44,12 +44,15 @@ public class ModuleModel extends ScopeModel {
     private ModuleServiceRepository serviceRepository;
     private ModuleConfigManager moduleConfigManager;
 
-
     public ModuleModel(ApplicationModel applicationModel) {
+        this(applicationModel, false);
+    }
+
+    public ModuleModel(ApplicationModel applicationModel, boolean isInternal) {
         super(applicationModel, ExtensionScope.MODULE);
         Assert.notNull(applicationModel, "ApplicationModel can not be null");
         this.applicationModel = applicationModel;
-        applicationModel.addModule(this);
+        applicationModel.addModule(this, isInternal);
         initialize();
         Assert.notNull(applicationModel, "ApplicationModel can not be null");
     }
