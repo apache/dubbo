@@ -94,7 +94,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         FrameworkServiceRepository repo = ScopeModelUtil.getFrameworkModel(url.getScopeModel()).getServiceRepository();
         final ProviderModel model = repo.lookupExportedService(url.getServiceKey());
         if (model != null) {
-            ClassLoadUtil.switchContextLoader(model.getServiceInterfaceClass().getClassLoader());
+            ClassLoadUtil.switchContextLoader(model.getClassLoader());
         }
         return model;
     }
@@ -140,7 +140,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             if (getProviderModel() != null) {
-                ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
+                ClassLoadUtil.switchContextLoader(getProviderModel().getClassLoader());
             }
             if (getMethodDescriptor() == null || getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data,

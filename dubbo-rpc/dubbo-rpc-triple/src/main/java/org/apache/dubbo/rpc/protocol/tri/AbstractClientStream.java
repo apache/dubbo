@@ -124,7 +124,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             if (getConsumerModel() != null) {
-                ClassLoadUtil.switchContextLoader(getConsumerModel().getServiceInterfaceClass().getClassLoader());
+                ClassLoadUtil.switchContextLoader(getConsumerModel().getClassLoader());
             }
             if (getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleResponseWrapper wrapper = TripleUtil.unpack(data,
