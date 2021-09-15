@@ -349,7 +349,7 @@ public class ApplicationModel extends ScopeModel {
 
     @Override
     protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
-        return !containsClassLoader(classLoader);
+        return super.checkIfClassLoaderCanRemoved(classLoader) && !containsClassLoader(classLoader);
     }
 
     protected boolean containsClassLoader(ClassLoader classLoader) {

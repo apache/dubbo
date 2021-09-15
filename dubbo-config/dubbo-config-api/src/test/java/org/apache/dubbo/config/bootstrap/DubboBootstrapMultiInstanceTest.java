@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -93,8 +94,8 @@ public class DubboBootstrapMultiInstanceTest {
             DemoService demoServiceFromProvider = dubboBootstrap1.getCache().get(DemoService.class);
             Assertions.assertNull(demoServiceFromProvider);
         } finally {
-            dubboBootstrap1.destroy();
             dubboBootstrap2.destroy();
+            dubboBootstrap1.destroy();
         }
     }
 

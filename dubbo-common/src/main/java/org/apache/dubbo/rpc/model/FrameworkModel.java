@@ -140,6 +140,7 @@ public class FrameworkModel extends ScopeModel {
 
     @Override
     protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
-        return applicationModels.stream().noneMatch(applicationModel -> applicationModel.containsClassLoader(classLoader));
+        return super.checkIfClassLoaderCanRemoved(classLoader) &&
+            applicationModels.stream().noneMatch(applicationModel -> applicationModel.containsClassLoader(classLoader));
     }
 }
