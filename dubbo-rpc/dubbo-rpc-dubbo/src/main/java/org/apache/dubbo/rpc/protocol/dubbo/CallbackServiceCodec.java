@@ -72,11 +72,13 @@ class CallbackServiceCodec {
     private final ProxyFactory proxyFactory;
     private final Protocol protocolSPI;
     private final FrameworkModel frameworkModel;
+    private final DubboProtocol dubboProtocol;
 
     public CallbackServiceCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         protocolSPI = frameworkModel.getExtensionLoader(Protocol.class).getExtension(DUBBO_PROTOCOL);
+        dubboProtocol = (DubboProtocol) frameworkModel.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME, false);
     }
 
     private static byte isCallBack(URL url, String protocolServiceKey, String methodName, int argIndex) {
@@ -322,7 +324,7 @@ class CallbackServiceCodec {
         // need get URL from channel and env when decode
         URL url = null;
         try {
-            url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
+            url = dubboProtocol.getInvoker(channel, inv).getUrl();
         } catch (RemotingException e) {
             if (logger.isInfoEnabled()) {
                 logger.info(e.getMessage(), e);

@@ -150,7 +150,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         RpcServiceContext.setRpcContext(getConsumerUrl());
 
         //  3.x added for extend URL address
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultApplicationModel().getExtensionLoader(AddressListener.class);
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {

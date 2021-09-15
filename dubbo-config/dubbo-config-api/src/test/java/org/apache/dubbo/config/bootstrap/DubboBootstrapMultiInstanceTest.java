@@ -34,13 +34,15 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.junit.jupiter.api.AfterAll;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+
+import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
 
 public class DubboBootstrapMultiInstanceTest {
 
@@ -48,8 +50,8 @@ public class DubboBootstrapMultiInstanceTest {
 
     private static RegistryConfig registryConfig;
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
         registryCenter.startup();
         RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
@@ -60,15 +62,11 @@ public class DubboBootstrapMultiInstanceTest {
 
     }
 
-    @AfterAll
-    public static void teardown() {
-        registryCenter.shutdown();
-    }
-
     @AfterEach
-    protected void afterEach() {
+    public void afterEach() {
         SysProps.clear();
         DubboBootstrap.reset();
+        registryCenter.shutdown();
     }
 
     @Test
@@ -93,8 +91,8 @@ public class DubboBootstrapMultiInstanceTest {
             DemoService demoServiceFromProvider = dubboBootstrap1.getCache().get(DemoService.class);
             Assertions.assertNull(demoServiceFromProvider);
         } finally {
-            dubboBootstrap1.destroy();
             dubboBootstrap2.destroy();
+            dubboBootstrap1.destroy();
         }
     }
 
@@ -160,8 +158,9 @@ public class DubboBootstrapMultiInstanceTest {
     }
 
     @Test
-    public void testMultiModuleApplication() {
+    public void testMultiModuleApplication() throws InterruptedException {
 
+        SysProps.setProperty(METADATA_PUBLISH_DELAY_KEY, "1");
         String version1 = "1.0";
         String version2 = "2.0";
         String version3 = "3.0";
@@ -212,6 +211,7 @@ public class DubboBootstrapMultiInstanceTest {
 
             providerBootstrap.start();
 
+            Thread.sleep(100);
 
             // consumer app
             consumerBootstrap = DubboBootstrap.newInstance();
@@ -230,10 +230,12 @@ public class DubboBootstrapMultiInstanceTest {
             consumerBootstrap.start();
 
             DemoService referProxy1 = consumerBootstrap.getCache().get(DemoService.class.getName() + ":" + version1);
-            referProxy1.sayName("dubbo");
+            Assertions.assertEquals("say:dubbo", referProxy1.sayName("dubbo"));
 
             DemoService referProxy2 = consumerBootstrap.getCache().get(DemoService.class.getName() + ":" + version2);
-            referProxy2.sayName("dubbo");
+            Assertions.assertEquals("say:dubbo", referProxy2.sayName("dubbo"));
+
+            Assertions.assertNotEquals(referProxy1, referProxy2);
         } finally {
             if (providerBootstrap != null) {
                 providerBootstrap.destroy();
