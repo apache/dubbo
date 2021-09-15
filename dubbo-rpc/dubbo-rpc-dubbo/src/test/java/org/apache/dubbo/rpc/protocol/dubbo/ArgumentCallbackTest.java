@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,7 +86,7 @@ public class ArgumentCallbackTest {
                 + "&timeout=" + timeout
                 + "&retries=0"
                 + "&" + CALLBACK_INSTANCES_LIMIT_KEY + "=" + callbacks)
-            .setScopeModel(ApplicationModel.defaultModel())
+            .setScopeModel(ApplicationModel.defaultModel().getDefaultModule())
             .setServiceModel(new ConsumerModel(IDemoService.class.getName(), null, null, null,
             ApplicationModel.defaultModel().getDefaultModule(), null, null));
 
