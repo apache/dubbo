@@ -16,7 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.Http2Error;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -39,6 +44,8 @@ import io.netty.channel.ChannelPromise;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 public class TripleClientRequestHandler extends ChannelDuplexHandler {
 
@@ -72,6 +79,14 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
         if (StringUtils.isNotEmpty(ssl)) {
             ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(Boolean.parseBoolean(ssl));
         }
+
+        // get compressor
+        String compressorStr = ConfigurationUtils
+            .getGlobalConfiguration(url.getScopeModel()).getString(CommonConstants.COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
+        Compressor compressor = url.getOrDefaultApplicationModel().getExtensionLoader(Compressor.class).getExtension(compressorStr);
+        stream.setCompressor(compressor);
+        ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
+
         stream.service(consumerModel)
                 .connection(Connection.getConnectionFromChannel(ctx.channel()))
                 .method(methodDescriptor)

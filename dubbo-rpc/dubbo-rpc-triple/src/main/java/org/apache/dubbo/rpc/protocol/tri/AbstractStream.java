@@ -58,6 +58,7 @@ public abstract class AbstractStream implements Stream {
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
+    private Compressor compressor = IdentityCompressor.NONE;
 
     private final CancellationContext cancellationContext;
     private volatile boolean cancelled = false;
@@ -203,6 +204,15 @@ public abstract class AbstractStream implements Stream {
         this.serviceDescriptor = serviceDescriptor;
     }
 
+    protected AbstractStream setCompressor(Compressor compressor) {
+        this.compressor = compressor;
+        return this;
+    }
+
+    public Compressor getCompressor() {
+        return this.compressor;
+    }
+
     public URL getUrl() {
         return url;
     }
@@ -345,6 +355,14 @@ public abstract class AbstractStream implements Stream {
         } catch (Throwable t) {
             LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v, t);
         }
+    }
+
+    protected byte[] compress(byte[] data) {
+        return this.getCompressor().compress(data);
+    }
+
+    protected byte[] decompress(byte[] data) {
+        return this.getCompressor().decompress(data);
     }
 
     protected abstract class AbstractTransportObserver implements TransportObserver {

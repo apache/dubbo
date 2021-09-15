@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
@@ -33,6 +34,8 @@ import io.netty.handler.codec.http2.Http2Error;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+
+import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
     private ConsumerModel consumerModel;
@@ -110,7 +113,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         }
         out = TripleUtil.pack(obj);
 
-        return out;
+        return super.compress(out);
     }
 
     private TripleWrapper.TripleRequestWrapper getRequestWrapper(Object value) {
@@ -168,7 +171,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                         (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
                 .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
                         (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
-                .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), inv.getInvoker().getUrl().getGroup());
+                .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), inv.getInvoker().getUrl().getGroup())
+                .putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
+                    ConfigurationUtils.getGlobalConfiguration(inv.getInvoker().getUrl().getScopeModel()).getString(CommonConstants.COMPRESSOR_KEY, DEFAULT_COMPRESSOR))
+                .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(),
+                    TripleUtil.calcAcceptEncoding(inv.getInvoker().getUrl()));
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {
             convertAttachment(metadata, attachments);
