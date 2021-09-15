@@ -164,7 +164,10 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertEquals("hello", helloService.hello());
         Assertions.assertEquals(0, LogUtil.findMessage(errorMsg), "should not warning message");
 
-        // generally a client can only be closed once, here it is closed twice, counter is incorrect
+        // close twice, counter counts down from 1 to 0, no warning occurs
+        client.close();
+
+        // closed thrice, counter is incorrect
         client.close();
 
         // wait close done.
