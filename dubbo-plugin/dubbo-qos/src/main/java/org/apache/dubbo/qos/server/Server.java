@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -43,11 +44,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Server {
 
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
-    private static final Server INSTANCE = new Server();
-
-    public static final Server getInstance() {
-        return INSTANCE;
-    }
 
     private String host;
 
@@ -59,8 +55,11 @@ public class Server {
 
     private EventLoopGroup worker;
 
-    private Server() {
+    private FrameworkModel frameworkModel;
+
+    public Server(FrameworkModel frameworkModel) {
         this.welcome = DubboLogo.DUBBO;
+        this.frameworkModel = frameworkModel;
     }
 
     private String welcome;
@@ -96,7 +95,7 @@ public class Server {
 
             @Override
             protected void initChannel(Channel ch) throws Exception {
-                ch.pipeline().addLast(new QosProcessHandler(welcome, acceptForeignIp));
+                ch.pipeline().addLast(new QosProcessHandler(frameworkModel, welcome, acceptForeignIp));
             }
         });
         try {

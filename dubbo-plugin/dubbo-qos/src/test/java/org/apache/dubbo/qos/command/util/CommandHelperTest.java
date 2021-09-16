@@ -21,7 +21,6 @@ import org.apache.dubbo.qos.command.impl.ChangeTelnet;
 import org.apache.dubbo.qos.command.impl.CountTelnet;
 import org.apache.dubbo.qos.command.impl.Help;
 import org.apache.dubbo.qos.command.impl.InvokeTelnet;
-import org.apache.dubbo.qos.command.impl.InvokeTelnetTest;
 import org.apache.dubbo.qos.command.impl.Live;
 import org.apache.dubbo.qos.command.impl.Ls;
 import org.apache.dubbo.qos.command.impl.Offline;
@@ -39,6 +38,7 @@ import org.apache.dubbo.qos.command.impl.SelectTelnet;
 import org.apache.dubbo.qos.command.impl.ShutdownTelnet;
 import org.apache.dubbo.qos.command.impl.Startup;
 import org.apache.dubbo.qos.command.impl.Version;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -53,15 +53,16 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CommandHelperTest {
+    private CommandHelper commandHelper = new CommandHelper(FrameworkModel.defaultModel());
     @Test
     public void testHasCommand() throws Exception {
-        assertTrue(CommandHelper.hasCommand("greeting"));
-        assertFalse(CommandHelper.hasCommand("not-exiting"));
+        assertTrue(commandHelper.hasCommand("greeting"));
+        assertFalse(commandHelper.hasCommand("not-exiting"));
     }
 
     @Test
     public void testGetAllCommandClass() throws Exception {
-        List<Class<?>> classes = CommandHelper.getAllCommandClass();
+        List<Class<?>> classes = commandHelper.getAllCommandClass();
 
         // update this list when introduce a new command
         List<Class<?>> expectedClasses = new LinkedList<>();
@@ -92,7 +93,7 @@ public class CommandHelperTest {
 
     @Test
     public void testGetCommandClass() throws Exception {
-        assertThat(CommandHelper.getCommandClass("greeting"), equalTo(GreetingCommand.class));
-        assertNull(CommandHelper.getCommandClass("not-exiting"));
+        assertThat(commandHelper.getCommandClass("greeting"), equalTo(GreetingCommand.class));
+        assertNull(commandHelper.getCommandClass("not-exiting"));
     }
 }

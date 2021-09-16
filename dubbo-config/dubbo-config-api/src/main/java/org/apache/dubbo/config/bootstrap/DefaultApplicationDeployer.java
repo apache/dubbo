@@ -129,7 +129,6 @@ public class DefaultApplicationDeployer implements ApplicationDeployer {
     protected ScheduledFuture<?> asyncMetadataFuture;
     private String identifier;
 
-
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
@@ -810,6 +809,10 @@ public class DefaultApplicationDeployer implements ApplicationDeployer {
         setMetadataStorageType(serviceInstance, getMetadataType());
         ServiceInstanceMetadataUtils.customizeInstance(this.serviceInstance);
         return this.serviceInstance;
+    }
+
+    public ServiceInstance getServiceInstance() {
+        return serviceInstance;
     }
 
     @Override

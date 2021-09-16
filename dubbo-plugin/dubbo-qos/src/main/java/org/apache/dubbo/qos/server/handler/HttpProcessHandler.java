@@ -23,6 +23,7 @@ import org.apache.dubbo.qos.command.CommandExecutor;
 import org.apache.dubbo.qos.command.DefaultCommandExecutor;
 import org.apache.dubbo.qos.command.NoSuchCommandException;
 import org.apache.dubbo.qos.command.decoder.HttpCommandDecoder;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -50,8 +51,11 @@ import io.netty.handler.codec.http.HttpVersion;
 public class HttpProcessHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
     private static final Logger log = LoggerFactory.getLogger(HttpProcessHandler.class);
-    private static CommandExecutor commandExecutor = new DefaultCommandExecutor();
+    private CommandExecutor commandExecutor;
 
+    public HttpProcessHandler(FrameworkModel frameworkModel) {
+        this.commandExecutor = new DefaultCommandExecutor(frameworkModel);
+    }
 
     private static FullHttpResponse http(int httpCode, String result) {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.valueOf(httpCode)

@@ -24,6 +24,7 @@ import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import io.netty.channel.Channel;
@@ -40,7 +41,7 @@ import static org.mockito.Mockito.reset;
 
 public class ChangeTelnetTest {
     private final DefaultAttributeMap defaultAttributeMap = new DefaultAttributeMap();
-    private static final BaseCommand change = new ChangeTelnet();
+    private static final BaseCommand change = new ChangeTelnet(FrameworkModel.defaultModel());
 
     private Channel mockChannel;
     private CommandContext mockCommandContext;
