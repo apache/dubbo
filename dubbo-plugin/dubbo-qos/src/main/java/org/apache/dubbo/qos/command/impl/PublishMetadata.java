@@ -58,17 +58,18 @@ public class  PublishMetadata implements BaseCommand {
                 if (ArrayUtils.isEmpty(args)) {
                     ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
                     stringBuilder.append("publish metadata succeeded. App:").append(serviceInstance.getServiceName()).append("\n");
+                } else {
+                    try {
+                        int delay = Integer.parseInt(args[0]);
+                        ExecutorRepository executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+                        executorRepository.nextScheduledExecutor()
+                            .scheduleWithFixedDelay(() -> ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance), 0, delay, TimeUnit.MILLISECONDS);
+                    } catch (NumberFormatException e) {
+                        logger.error("Wrong delay param", e);
+                        return "publishMetadata failed! Wrong delay param!";
+                    }
+                    stringBuilder.append("publish task submitted, will publish in ").append(args[0]).append(" seconds. App:").append(serviceInstance.getServiceName()).append("\n");
                 }
-                try {
-                    int delay = Integer.parseInt(args[0]);
-                    ExecutorRepository executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-                    executorRepository.nextScheduledExecutor()
-                        .scheduleWithFixedDelay(() -> ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance), 0, delay, TimeUnit.MILLISECONDS);
-                } catch (NumberFormatException e) {
-                    logger.error("Wrong delay param", e);
-                    return "publishMetadata failed! Wrong delay param!";
-                }
-                stringBuilder.append("publish task submitted, will publish in ").append(args[0]).append(" seconds. App:").append(serviceInstance.getServiceName()).append("\n");
             }
         }
         return stringBuilder.toString();
