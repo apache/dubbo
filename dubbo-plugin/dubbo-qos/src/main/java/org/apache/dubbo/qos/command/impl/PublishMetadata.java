@@ -63,7 +63,7 @@ public class  PublishMetadata implements BaseCommand {
                         int delay = Integer.parseInt(args[0]);
                         ExecutorRepository executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
                         executorRepository.nextScheduledExecutor()
-                            .scheduleWithFixedDelay(() -> ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance), 0, delay, TimeUnit.MILLISECONDS);
+                            .schedule(() -> ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance), delay, TimeUnit.SECONDS);
                     } catch (NumberFormatException e) {
                         logger.error("Wrong delay param", e);
                         return "publishMetadata failed! Wrong delay param!";
