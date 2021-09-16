@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -59,6 +58,7 @@ public class DubboSpringInitializer {
     private static void initContext(DubboSpringInitializationContext context, BeanDefinitionRegistry registry,
                                     ConfigurableListableBeanFactory beanFactory) {
         context.setRegistry(registry);
+        context.setBeanFactory(beanFactory);
 
         // customize context, you can change the bind module model via DubboSpringInitializationCustomizer SPI
         customize(context);
@@ -79,15 +79,9 @@ public class DubboSpringInitializer {
             context.setModuleModel(moduleModel);
         }
 
-        // create DubboBootstrap
-        DubboBootstrap bootstrap = context.getDubboBootstrap();
-        if (bootstrap == null) {
-            if (applicationModel == ApplicationModel.defaultModel()) {
-                bootstrap = DubboBootstrap.getInstance();
-            } else {
-                bootstrap = DubboBootstrap.newInstance(applicationModel);
-            }
-            context.setDubboBootstrap(bootstrap);
+        // set module attributes
+        if (context.getModuleAttributes().size() > 0) {
+            context.getModuleModel().getAttributes().putAll(context.getModuleAttributes());
         }
 
         // bind dubbo initialization context to spring context
@@ -118,7 +112,6 @@ public class DubboSpringInitializer {
         registerSingleton(beanFactory, context);
         registerSingleton(beanFactory, context.getApplicationModel());
         registerSingleton(beanFactory, context.getModuleModel());
-        registerSingleton(beanFactory, context.getDubboBootstrap());
     }
 
     private static void registerSingleton(ConfigurableListableBeanFactory beanFactory, Object bean) {
@@ -140,10 +133,18 @@ public class DubboSpringInitializer {
         Set<DubboSpringInitializationCustomizer> customizers = FrameworkModel.defaultModel()
             .getExtensionLoader(DubboSpringInitializationCustomizer.class)
             .getSupportedExtensionInstances();
-
         for (DubboSpringInitializationCustomizer customizer : customizers) {
             customizer.customize(context);
         }
+
+        // load customizers in thread local holder
+        DubboSpringInitializationCustomizerHolder customizerHolder = DubboSpringInitializationCustomizerHolder.get();
+        customizers = customizerHolder.getCustomizers();
+        for (DubboSpringInitializationCustomizer customizer : customizers) {
+            customizer.customize(context);
+        }
+        customizerHolder.clearCustomizers();
+
     }
 
 }

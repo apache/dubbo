@@ -16,35 +16,30 @@
  */
 package org.apache.dubbo.config.spring.context.event;
 
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * A {@link org.springframework.context.ApplicationEvent} after {@link org.apache.dubbo.config.bootstrap.DubboBootstrap#start()} success
+ * An {@link ApplicationEvent} to trigger init {@link DubboConfigBeanInitializer}.
  *
- * @see org.springframework.context.ApplicationEvent
- * @see org.springframework.context.ApplicationListener
- * @see org.apache.dubbo.config.bootstrap.DubboBootstrap
- * @since 2.7.9
  */
-@Deprecated
-public class DubboBootstrapStatedEvent extends ApplicationEvent {
-
+public class DubboConfigInitEvent extends ApplicationEvent {
     /**
-     * Create a new ApplicationEvent.
+     * Create a new {@code ApplicationEvent}.
      *
-     * @param bootstrap {@link org.apache.dubbo.config.bootstrap.DubboBootstrap} bootstrap
+     * @param source the object on which the event initially occurred or with
+     *               which the event is associated (never {@code null})
      */
-    public DubboBootstrapStatedEvent(DubboBootstrap bootstrap) {
-        super(bootstrap);
+    public DubboConfigInitEvent(ApplicationContext source) {
+        super(source);
     }
 
     /**
-     * Get {@link org.apache.dubbo.config.bootstrap.DubboBootstrap} instance
-     *
-     * @return non-null
+     * Get the {@code ApplicationContext} that the event was raised for.
      */
-    public DubboBootstrap getDubboBootstrap() {
-        return (DubboBootstrap) super.getSource();
+    public final ApplicationContext getApplicationContext() {
+        return (ApplicationContext) getSource();
     }
+
 }

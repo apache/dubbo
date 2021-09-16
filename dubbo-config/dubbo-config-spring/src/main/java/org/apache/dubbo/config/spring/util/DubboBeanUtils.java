@@ -18,17 +18,19 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServicePackagesHolder;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
+import org.apache.dubbo.config.spring.context.DubboConfigApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
+import org.apache.dubbo.config.spring.context.DubboDeployApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboSpringInitializationContext;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -77,8 +79,12 @@ public interface DubboBeanUtils {
             DubboConfigAliasPostProcessor.class);
 
         // Since 2.7.4 Register DubboBootstrapApplicationListener as an infrastructure Bean
-        registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME,
-            DubboBootstrapApplicationListener.class);
+//        registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME,
+//            DubboBootstrapApplicationListener.class);
+
+        // register ApplicationListeners
+        registerInfrastructureBean(registry, DubboDeployApplicationListener.class.getName(), DubboDeployApplicationListener.class);
+        registerInfrastructureBean(registry, DubboConfigApplicationListener.class.getName(), DubboConfigApplicationListener.class);
 
         // Since 2.7.6 Register DubboConfigDefaultPropertyValueBeanPostProcessor as an infrastructure Bean
         registerInfrastructureBean(registry, DubboConfigDefaultPropertyValueBeanPostProcessor.BEAN_NAME,
@@ -186,18 +192,18 @@ public interface DubboBeanUtils {
         return null;
     }
 
-    static DubboBootstrap getBootstrap(BeanFactory beanFactory) {
-        String beanName = DubboBootstrap.class.getName();
-        if (beanFactory.containsBean(beanName)) {
-            return beanFactory.getBean(beanName, DubboBootstrap.class);
-        }
-        return null;
-    }
-
     static ApplicationModel getApplicationModel(BeanFactory beanFactory) {
         String beanName = ApplicationModel.class.getName();
         if (beanFactory.containsBean(beanName)) {
             return beanFactory.getBean(beanName, ApplicationModel.class);
+        }
+        return null;
+    }
+
+    static ModuleModel getModuleModel(BeanFactory beanFactory) {
+        String beanName = ModuleModel.class.getName();
+        if (beanFactory.containsBean(beanName)) {
+            return beanFactory.getBean(beanName, ModuleModel.class);
         }
         return null;
     }

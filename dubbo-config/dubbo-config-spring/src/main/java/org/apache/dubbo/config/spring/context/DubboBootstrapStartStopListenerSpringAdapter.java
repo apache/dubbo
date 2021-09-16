@@ -20,7 +20,6 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.bootstrap.DubboBootstrapStartStopListener;
 import org.apache.dubbo.config.spring.context.event.DubboBootstrapStatedEvent;
 import org.apache.dubbo.config.spring.context.event.DubboBootstrapStopedEvent;
-
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -28,6 +27,7 @@ import org.springframework.context.ApplicationContext;
  *
  * @scene 2.7.9
  */
+@Deprecated
 public class DubboBootstrapStartStopListenerSpringAdapter implements DubboBootstrapStartStopListener {
 
     static ApplicationContext applicationContext;
