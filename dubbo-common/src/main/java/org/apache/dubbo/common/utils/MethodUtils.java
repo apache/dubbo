@@ -21,6 +21,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -398,14 +399,19 @@ public interface MethodUtils {
 
     /**
      * Extract fieldName from set/get/is method. if it's not a set/get/is method, return empty string.
+     * If method equals get/is/getClass/getObject, also return empty string.
      *
      * @param method method
      * @return fieldName
      */
     static String extractFieldName(Method method) {
+        List<String> emptyFieldMethod = Arrays.asList("is", "get", "getObject", "getClass");
         String methodName = method.getName();
         String fieldName = "";
-        if (methodName.startsWith("get")) {
+
+        if (emptyFieldMethod.contains(methodName)) {
+            return fieldName;
+        } else if (methodName.startsWith("get")) {
             fieldName = methodName.substring("get".length());
         } else if (methodName.startsWith("set")) {
             fieldName = methodName.substring("set".length());
@@ -415,7 +421,10 @@ public interface MethodUtils {
             return fieldName;
         }
 
-        fieldName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
+        if (StringUtils.isNotEmpty(fieldName)) {
+            fieldName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
+        }
+
         return fieldName;
     }
 }

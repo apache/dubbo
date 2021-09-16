@@ -312,30 +312,40 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     private static boolean isNestedGetter(Object obj, Method method) {
-        String fieldName = MethodUtils.extractFieldName(method);
-        Field field = FieldUtils.getDeclaredField(obj.getClass(), fieldName);
         String name = method.getName();
-
-        return (name.startsWith("get") || name.startsWith("is"))
+        boolean isGetter = (name.startsWith("get") || name.startsWith("is"))
             && !"get".equals(name) && !"is".equals(name)
             && !"getClass".equals(name) && !"getObject".equals(name)
-            && (field != null && field.isAnnotationPresent(Nested.class))
             && Modifier.isPublic(method.getModifiers())
             && method.getParameterTypes().length == 0
             && (!method.getReturnType().isPrimitive() && !isSimpleType(method.getReturnType()));
+
+        if (!isGetter) {
+            return false;
+        } else {
+            // Extract fieldName only when necessary.
+            String fieldName = MethodUtils.extractFieldName(method);
+            Field field = FieldUtils.getDeclaredField(obj.getClass(), fieldName);
+            return field != null && field.isAnnotationPresent(Nested.class);
+        }
     }
 
     private static boolean isNestedSetter(Object obj, Method method) {
-        String fieldName = MethodUtils.extractFieldName(method);
-        Field field = FieldUtils.getDeclaredField(obj.getClass(), fieldName);
-
-        return method.getName().startsWith("set")
+        boolean isSetter = method.getName().startsWith("set")
             && !"set".equals(method.getName())
-            && (field != null && field.isAnnotationPresent(Nested.class))
             && Modifier.isPublic(method.getModifiers())
             && method.getParameterCount() == 1
             && method.getParameterTypes()[0] != null
             && (!method.getParameterTypes()[0].isPrimitive() && !isSimpleType(method.getParameterTypes()[0]));
+
+        if (!isSetter) {
+            return false;
+        } else {
+            // Extract fieldName only when necessary.
+            String fieldName = MethodUtils.extractFieldName(method);
+            Field field = FieldUtils.getDeclaredField(obj.getClass(), fieldName);
+            return field != null && field.isAnnotationPresent(Nested.class);
+        }
     }
 
     /**
