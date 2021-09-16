@@ -33,9 +33,9 @@ import java.util.concurrent.ConcurrentMap;
  */
 public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 
-    private static final ConcurrentMap<String, ServiceDiscovery> discoveries = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ServiceDiscovery> discoveries = new ConcurrentHashMap<>();
 
-    public static List<ServiceDiscovery> getAllServiceDiscoveries() {
+    public List<ServiceDiscovery> getAllServiceDiscoveries() {
         return Collections.unmodifiableList(new LinkedList<>(discoveries.values()));
     }
 

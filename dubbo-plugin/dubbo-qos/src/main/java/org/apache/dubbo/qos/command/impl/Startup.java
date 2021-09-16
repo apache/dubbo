@@ -46,6 +46,7 @@ public class Startup implements BaseCommand {
             .map(o -> o.orElse(null))
             .filter(Objects::nonNull)
             .map(ApplicationConfig::getStartupProbe)
+            .filter(Objects::nonNull)
             .collect(Collectors.joining(","));
 
         URL url = URL.valueOf("application://")

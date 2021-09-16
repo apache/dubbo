@@ -46,6 +46,7 @@ public class Live implements BaseCommand {
             .map(o -> o.orElse(null))
             .filter(Objects::nonNull)
             .map(ApplicationConfig::getLivenessProbe)
+            .filter(Objects::nonNull)
             .collect(Collectors.joining(","));
         if(StringUtils.isNotEmpty(config)) {
             URL url = URL.valueOf("application://")

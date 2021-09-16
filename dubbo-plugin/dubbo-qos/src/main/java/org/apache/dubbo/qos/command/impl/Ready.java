@@ -45,6 +45,7 @@ public class Ready implements BaseCommand {
             .map(o -> o.orElse(null))
             .filter(Objects::nonNull)
             .map(ApplicationConfig::getReadinessProbe)
+            .filter(Objects::nonNull)
             .collect(Collectors.joining(","));
 
         URL url = URL.valueOf("application://")

@@ -55,7 +55,8 @@ public class QosProtocolWrapperTest {
         when(invoker.getUrl()).thenReturn(url);
         when(url.getProtocol()).thenReturn(REGISTRY_PROTOCOL);
         server = FrameworkModel.defaultModel().getBeanFactory().getBean(Server.class);
-        wrapper = new QosProtocolWrapper(protocol, FrameworkModel.defaultModel());
+        wrapper = new QosProtocolWrapper(protocol);
+        wrapper.setFrameworkModel(FrameworkModel.defaultModel());
     }
 
     @AfterEach

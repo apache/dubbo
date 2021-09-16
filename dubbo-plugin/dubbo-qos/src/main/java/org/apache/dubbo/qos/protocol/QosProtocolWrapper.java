@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.protocol;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -28,6 +29,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,8 +39,8 @@ import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 
-
-public class QosProtocolWrapper implements Protocol {
+@Activate(order = 200)
+public class QosProtocolWrapper implements Protocol, ScopeModelAware {
 
     private final Logger logger = LoggerFactory.getLogger(QosProtocolWrapper.class);
 
@@ -48,11 +50,15 @@ public class QosProtocolWrapper implements Protocol {
 
     private FrameworkModel frameworkModel;
 
-    public QosProtocolWrapper(Protocol protocol, FrameworkModel frameworkModel) {
+    public QosProtocolWrapper(Protocol protocol) {
         if (protocol == null) {
             throw new IllegalArgumentException("protocol == null");
         }
         this.protocol = protocol;
+    }
+
+    @Override
+    public void setFrameworkModel(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
     }
 
