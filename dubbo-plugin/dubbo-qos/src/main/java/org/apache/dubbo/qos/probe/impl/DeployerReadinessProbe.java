@@ -18,37 +18,27 @@ package org.apache.dubbo.qos.probe.impl;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.qos.probe.ReadinessProbe;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
-import org.apache.dubbo.rpc.model.ProviderModel;
-
-import java.util.Collection;
-import java.util.List;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 @Activate
-public class ProviderReadinessProbe implements ReadinessProbe {
+public class DeployerReadinessProbe implements ReadinessProbe {
 
 
-    private static FrameworkServiceRepository serviceRepository = FrameworkModel.defaultModel().getServiceRepository();
+    private ApplicationModel applicationModel;
+
+    public DeployerReadinessProbe(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
 
     @Override
     public boolean check() {
-        Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
-        if (providerModelList.isEmpty()) {
-            return true;
-        }
-
-        boolean hasService = false;
-        for (ProviderModel providerModel : providerModelList) {
-            List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
-            for (ProviderModel.RegisterStatedURL statedUrl : statedUrls) {
-                if (statedUrl.isRegistered()) {
-                    hasService = true;
-                    break;
-                }
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            if (!moduleModel.getDeployer().isStarted()) {
+                return false;
             }
         }
-
-        return hasService;
+        return true;
     }
+
 }

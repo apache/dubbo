@@ -55,7 +55,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     /**
      * The lock for the acquisition process of the registry
      */
-    protected static final ReentrantLock LOCK = new ReentrantLock();
+    private static final ReentrantLock LOCK = new ReentrantLock();
 
     /**
      * Registry Collection Map<RegistryAddress, Registry>
@@ -118,6 +118,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
      * Reset state of AbstractRegistryFactory
      */
     public static void reset() {
+        destroyAll();
         destroyed.set(false);
         REGISTRIES.clear();
     }
