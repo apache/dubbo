@@ -31,6 +31,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,11 +50,16 @@ import java.util.List;
                 "dubbo.modules.demo-module.name = dubbo-demo-module",
                 "dubbo.registries.my-registry.address = zookeeper://192.168.99.100:32770",
                 "dubbo.protocols.dubbo.port=20880",
-                "dubbo.metricses.my-metrics.mode=push",
-                "dubbo.metricses.my-metrics.address=prometheus://localhost:9091",
-                "dubbo.metricses.my-metrics.push-interval=5",
-                "dubbo.metricses.my-metrics.aggregation.enable=true",
+                "dubbo.metricses.my-metrics.protocol=prometheus",
+                "dubbo.metricses.my-metrics.prometheus.pushgateway.enabled=true",
+                "dubbo.metricses.my-metrics.prometheus.pushgateway.base-url=localhost:9091",
+                "dubbo.metricses.my-metrics.prometheus.pushgateway.username=username",
+                "dubbo.metricses.my-metrics.prometheus.pushgateway.password=password",
+                "dubbo.metricses.my-metrics.prometheus.pushgateway.job=job",
+                "dubbo.metricses.my-metrics.prometheus.pushgateway.push-interval=30",
+                "dubbo.metricses.my-metrics.aggregation.enabled=true",
                 "dubbo.metricses.my-metrics.aggregation.bucket-num=5",
+                "dubbo.metricses.my-metrics.aggregation.time-window-seconds=120",
                 "dubbo.monitors.my-monitor.address=zookeeper://127.0.0.1:32770",
                 "dubbo.config-centers.my-configcenter.address=zookeeper://127.0.0.1:2181",
                 "dubbo.config-centers.my-configcenter.group=group1",
@@ -102,11 +108,16 @@ public class SpringBootMultipleConfigPropsTest {
         Assertions.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
 
         MetricsConfig metricsConfig = configManager.getMetrics().get();
-        Assertions.assertEquals("push", metricsConfig.getMode());
-        Assertions.assertEquals("prometheus://localhost:9091", metricsConfig.getAddress());
-        Assertions.assertEquals(5, metricsConfig.getPushInterval());
+        Assertions.assertEquals("prometheus", metricsConfig.getProtocol());
+        Assertions.assertTrue(metricsConfig.getPrometheus().getPushgateway().getEnabled());
+        Assertions.assertEquals("localhost:9091", metricsConfig.getPrometheus().getPushgateway().getBaseUrl());
+        Assertions.assertEquals("username", metricsConfig.getPrometheus().getPushgateway().getUsername());
+        Assertions.assertEquals("password", metricsConfig.getPrometheus().getPushgateway().getPassword());
+        Assertions.assertEquals("job", metricsConfig.getPrometheus().getPushgateway().getJob());
+        Assertions.assertEquals(30, metricsConfig.getPrometheus().getPushgateway().getPushInterval());
         Assertions.assertEquals(5, metricsConfig.getAggregation().getBucketNum());
-        Assertions.assertTrue(metricsConfig.getAggregation().getEnable());
+        Assertions.assertEquals(120, metricsConfig.getAggregation().getTimeWindowSeconds());
+        Assertions.assertTrue(metricsConfig.getAggregation().getEnabled());
 
         List<ProtocolConfig> defaultProtocols = configManager.getDefaultProtocols();
         Assertions.assertEquals(1, defaultProtocols.size());

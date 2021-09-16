@@ -24,8 +24,11 @@
     <!-- current application configuration -->
     <dubbo:application name="demo-consumer" />
 
-    <dubbo:metrics>
-        <dubbo:aggregation enabled="true" bucket-num="5" time-window-seconds="120" />
+    <dubbo:metrics protocol="prometheus">
+        <dubbo:prometheus>
+            <dubbo:prometheus-exporter enabled="true" enable-http-service-discovery="true" http-service-discovery-url="localhost:8080" metrics-port="20888" metrics-path="/metrics" />
+            <dubbo:prometheus-pushgateway enabled="true" base-url="localhost:9091" push-interval="30" username="username" password="password" job="job" />
+        </dubbo:prometheus>
     </dubbo:metrics>
 
 </beans>

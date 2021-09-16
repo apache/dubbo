@@ -887,25 +887,45 @@
     </xsd:complexType>
 
     <xsd:complexType name="metricsType">
-        <xsd:choice minOccurs="0">
-            <xsd:element ref="aggregation"  />
-        </xsd:choice>
+        <xsd:sequence minOccurs="0">
+            <xsd:choice minOccurs="0">
+                <xsd:element ref="prometheus" />
+            </xsd:choice>
+            <xsd:choice minOccurs="0">
+                <xsd:element ref="aggregation"  />
+            </xsd:choice>
+        </xsd:sequence>
         <xsd:attribute name="protocol" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The metrics protocol. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="mode" type="xsd:string">
+    </xsd:complexType>
+
+    <xsd:complexType name="prometheusType">
+        <xsd:sequence minOccurs="0">
+            <xsd:element ref="prometheus-exporter"  />
+            <xsd:element ref="prometheus-pushgateway" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="prometheusExporterType">
+        <xsd:attribute name="enabled" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The metrics collect mode, pull or push. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Enable prometheus exporter. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="address" type="xsd:string">
+        <xsd:attribute name="enable-http-service-discovery" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The metrics collect center address. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Enable http service discovery for prometheus. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="metrics-port" type="xsd:string">
+        <xsd:attribute name="http-service-discovery-url" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Http service discovery url. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="metrics-port" type="xsd:integer">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ When using pull method, which port to expose. ]]></xsd:documentation>
             </xsd:annotation>
@@ -915,15 +935,43 @@
                 <xsd:documentation><![CDATA[ When using pull mode, which path to expose metrics. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="push-interval" type="xsd:string">
+    </xsd:complexType>
+
+    <xsd:complexType name="prometheusPushgatewayType">
+        <xsd:attribute name="enabled" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ When using push mode, the interval of push behavior. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Enable publishing via a Prometheus Pushgateway. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="base-url" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Base URL for the Pushgateway. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="username" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Login user of the Prometheus Pushgateway. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="password" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Login password of the Prometheus Pushgateway. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="push-interval" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Frequency with which to push metrics. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="job" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Job identifier for this application instance. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="aggregationType">
-        <xsd:attribute name="enable" type="xsd:boolean">
+        <xsd:attribute name="enabled" type="xsd:boolean">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Enable local aggregation or not. ]]></xsd:documentation>
             </xsd:annotation>
@@ -1786,10 +1834,27 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="prometheus" type="prometheusType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The metrics prometheus config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="prometheus-exporter" type="prometheusExporterType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The metrics prometheus exporter config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="prometheus-pushgateway" type="prometheusPushgatewayType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The metrics prometheus pushgateway config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="aggregation" type="aggregationType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The metrics aggregation config. ]]></xsd:documentation>
         </xsd:annotation>
     </xsd:element>
-
 </xsd:schema>

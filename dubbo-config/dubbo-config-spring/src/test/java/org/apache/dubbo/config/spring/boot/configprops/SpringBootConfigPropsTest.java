@@ -50,10 +50,13 @@ import java.util.List;
                 "dubbo.registry.address = zookeeper://192.168.99.100:32770",
                 "dubbo.protocol.name=dubbo",
                 "dubbo.protocol.port=20880",
-                "dubbo.metrics.mode=push",
-                "dubbo.metrics.address=prometheus://localhost:9091",
-                "dubbo.metrics.push-interval=5",
-                "dubbo.metrics.aggregation.enable=true",
+                "dubbo.metrics.protocol=prometheus",
+                "dubbo.metrics.prometheus.exporter.enabled=true",
+                "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
+                "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
+                "dubbo.metrics.prometheus.exporter.metrics-port=20888",
+                "dubbo.metrics.prometheus.exporter.metrics-path=/metrics",
+                "dubbo.metrics.aggregation.enabled=true",
                 "dubbo.metrics.aggregation.bucket-num=5",
                 "dubbo.metrics.aggregation.time-window-seconds=120",
                 "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
@@ -104,12 +107,15 @@ public class SpringBootConfigPropsTest {
         Assertions.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
 
         MetricsConfig metricsConfig = configManager.getMetrics().get();
-        Assertions.assertEquals("push", metricsConfig.getMode());
-        Assertions.assertEquals("prometheus://localhost:9091", metricsConfig.getAddress());
-        Assertions.assertEquals(5, metricsConfig.getPushInterval());
+        Assertions.assertEquals("prometheus", metricsConfig.getProtocol());
+        Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnabled());
+        Assertions.assertTrue(metricsConfig.getPrometheus().getExporter().getEnableHttpServiceDiscovery());
+        Assertions.assertEquals("localhost:8080", metricsConfig.getPrometheus().getExporter().getHttpServiceDiscoveryUrl());
+        Assertions.assertEquals(20888, metricsConfig.getPrometheus().getExporter().getMetricsPort());
+        Assertions.assertEquals("/metrics", metricsConfig.getPrometheus().getExporter().getMetricsPath());
         Assertions.assertEquals(5, metricsConfig.getAggregation().getBucketNum());
         Assertions.assertEquals(120, metricsConfig.getAggregation().getTimeWindowSeconds());
-        Assertions.assertTrue(metricsConfig.getAggregation().getEnable());
+        Assertions.assertTrue(metricsConfig.getAggregation().getEnabled());
 
         List<ProtocolConfig> defaultProtocols = configManager.getDefaultProtocols();
         Assertions.assertEquals(1, defaultProtocols.size());

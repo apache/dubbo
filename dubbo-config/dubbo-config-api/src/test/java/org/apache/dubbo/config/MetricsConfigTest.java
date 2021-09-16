@@ -16,16 +16,46 @@
  */
 package org.apache.dubbo.config;
 
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.config.nested.PrometheusConfig;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 
 public class MetricsConfigTest {
+
+    @Test
+    public void testToUrl() {
+        MetricsConfig metrics = new MetricsConfig();
+        metrics.setProtocol("prometheus");
+
+        PrometheusConfig prometheus = new PrometheusConfig();
+        PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
+        PrometheusConfig.Pushgateway pushgateway = new PrometheusConfig.Pushgateway();
+
+        exporter.setEnabled(true);
+        pushgateway.setEnabled(true);
+        prometheus.setExporter(exporter);
+        prometheus.setPushgateway(pushgateway);
+        metrics.setPrometheus(prometheus);
+
+        AggregationConfig aggregation = new AggregationConfig();
+        aggregation.setEnabled(true);
+        metrics.setAggregation(aggregation);
+
+        URL url = metrics.toUrl();
+
+        assertThat(url.getProtocol(), equalTo("prometheus"));
+        assertThat(url.getAddress(), equalTo("localhost:9090"));
+        assertThat(url.getHost(), equalTo("localhost"));
+        assertThat(url.getPort(), equalTo(9090));
+        assertThat(url.getParameter("prometheus.exporter.enabled"), equalTo("true"));
+        assertThat(url.getParameter("prometheus.pushgateway.enabled"), equalTo("true"));
+        assertThat(url.getParameter("aggregation.enabled"), equalTo("true"));
+    }
 
     @Test
     public void testProtocol() {
@@ -35,47 +65,54 @@ public class MetricsConfigTest {
     }
 
     @Test
-    public void testMode() {
+    public void testPrometheus() {
         MetricsConfig metrics = new MetricsConfig();
-        metrics.setMode("push");
-        assertThat(metrics.getMode(), equalTo("push"));
-    }
 
-    @Test
-    public void testAddress() {
-        MetricsConfig metrics = new MetricsConfig();
-        metrics.setAddress("localhost:9091");
-        assertThat(metrics.getAddress(), equalTo("localhost:9091"));
-        Map<String, String> parameters = new HashMap<String, String>();
-        MonitorConfig.appendParameters(parameters, metrics);
-        assertThat(parameters.isEmpty(), is(true));
-    }
+        PrometheusConfig prometheus = new PrometheusConfig();
+        PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
+        PrometheusConfig.Pushgateway pushgateway = new PrometheusConfig.Pushgateway();
 
-    @Test
-    public void testMetricsPort() {
-        MetricsConfig metrics = new MetricsConfig();
-        metrics.setMetricsPort(20888);
-        assertThat(metrics.getMetricsPort(), equalTo(20888));
-    }
+        exporter.setEnabled(true);
+        exporter.setEnableHttpServiceDiscovery(true);
+        exporter.setHttpServiceDiscoveryUrl("localhost:8080");
+        exporter.setMetricsPath("/metrics");
+        exporter.setMetricsPort(20888);
+        prometheus.setExporter(exporter);
 
-    @Test
-    public void testMetricsPath() {
-        MetricsConfig metrics = new MetricsConfig();
-        metrics.setMetricsPath("/metrics");
-        assertThat(metrics.getMetricsPath(), equalTo("/metrics"));
+        pushgateway.setEnabled(true);
+        pushgateway.setBaseUrl("localhost:9091");
+        pushgateway.setUsername("username");
+        pushgateway.setPassword("password");
+        pushgateway.setJob("job");
+        pushgateway.setPushInterval(30);
+        prometheus.setPushgateway(pushgateway);
+
+        metrics.setPrometheus(prometheus);
+
+        assertThat(metrics.getPrometheus().getExporter().getEnabled(), equalTo(true));
+        assertThat(metrics.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), equalTo(true));
+        assertThat(metrics.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), equalTo("localhost:8080"));
+        assertThat(metrics.getPrometheus().getExporter().getMetricsPort(), equalTo(20888));
+        assertThat(metrics.getPrometheus().getExporter().getMetricsPath(), equalTo("/metrics"));
+        assertThat(metrics.getPrometheus().getPushgateway().getEnabled(), equalTo(true));
+        assertThat(metrics.getPrometheus().getPushgateway().getBaseUrl(), equalTo("localhost:9091"));
+        assertThat(metrics.getPrometheus().getPushgateway().getUsername(), equalTo("username"));
+        assertThat(metrics.getPrometheus().getPushgateway().getPassword(), equalTo("password"));
+        assertThat(metrics.getPrometheus().getPushgateway().getJob(), equalTo("job"));
+        assertThat(metrics.getPrometheus().getPushgateway().getPushInterval(), equalTo(30));
     }
 
     @Test
     public void testAggregation() {
         MetricsConfig metrics = new MetricsConfig();
 
-        MetricsConfig.Aggregation aggregation = new MetricsConfig.Aggregation();
-        aggregation.setEnable(true);
+        AggregationConfig aggregation = new AggregationConfig();
+        aggregation.setEnabled(true);
         aggregation.setBucketNum(5);
         aggregation.setTimeWindowSeconds(120);
         metrics.setAggregation(aggregation);
 
-        assertThat(metrics.getAggregation().getEnable(), equalTo(true));
+        assertThat(metrics.getAggregation().getEnabled(), equalTo(true));
         assertThat(metrics.getAggregation().getBucketNum(), equalTo(5));
         assertThat(metrics.getAggregation().getTimeWindowSeconds(), equalTo(120));
     }

@@ -31,6 +31,8 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.config.nested.PrometheusConfig;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -235,7 +237,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         } else if (ReferenceBean.class.equals(beanClass)) {
             configReferenceBean(element, parserContext, beanDefinition, null);
         } else if (MetricsConfig.class.equals(beanClass)) {
-            parseAggregation(element, parserContext, beanDefinition);
+            parseMetrics(element, parserContext, beanDefinition);
         }
 
         // register bean definition
@@ -249,7 +251,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         return beanDefinition;
     }
 
-    private static void parseAggregation(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition) {
+    private static void parseMetrics(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition) {
         NodeList childNodes = element.getChildNodes();
         for (int i = 0; i < childNodes.getLength(); i++) {
             if (!(childNodes.item(i) instanceof Element)) {
@@ -258,26 +260,49 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
             Element child = (Element) childNodes.item(i);
             if ("aggregation".equals(child.getNodeName()) || "aggregation".equals(child.getLocalName())) {
-                MetricsConfig.Aggregation aggregation = new MetricsConfig.Aggregation();
+                AggregationConfig aggregation = new AggregationConfig();
+                assignProperties(aggregation, child, parserContext);
+                beanDefinition.getPropertyValues().addPropertyValue("aggregation", aggregation);
+            } else if ("prometheus".equals(child.getNodeName()) || "prometheus".equals(child.getLocalName())) {
+                PrometheusConfig prometheus = new PrometheusConfig();
+                NodeList prometheusChildNodes = child.getChildNodes();
+                for (int j = 0; j < prometheusChildNodes.getLength(); j++) {
+                    if (!(prometheusChildNodes.item(j) instanceof Element)) {
+                        continue;
+                    }
 
-                Method[] methods = MetricsConfig.Aggregation.class.getMethods();
-                for (Method method : methods) {
-                    if (MethodUtils.isSetter(method)) {
-                        String beanProperty = method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4);
-                        String property = StringUtils.camelToSplitName(beanProperty, "-");
-                        String value = resolveAttribute(child, property, parserContext);
-                        if (StringUtils.isNotEmpty(value)) {
-                            try {
-                                Object v = ClassUtils.convertPrimitive(method.getParameterTypes()[0], value);
-                                method.invoke(aggregation, v);
-                            } catch (IllegalAccessException | InvocationTargetException e) {
-                                throw new IllegalStateException(e);
-                            }
-                        }
+                    Element prometheusChild = (Element) prometheusChildNodes.item(j);
+                    if ("prometheus-exporter".equals(prometheusChild.getNodeName()) || "prometheus-exporter".equals(prometheusChild.getLocalName())) {
+                        PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
+                        assignProperties(exporter, prometheusChild, parserContext);
+                        prometheus.setExporter(exporter);
+                    } else if ("prometheus-pushgateway".equals(prometheusChild.getNodeName()) || "prometheus-pushgateway".equals(prometheusChild.getLocalName())) {
+                        PrometheusConfig.Pushgateway pushgateway = new PrometheusConfig.Pushgateway();
+                        assignProperties(pushgateway, prometheusChild, parserContext);
+                        prometheus.setPushgateway(pushgateway);
                     }
                 }
 
-                beanDefinition.getPropertyValues().addPropertyValue("aggregation", aggregation);
+                beanDefinition.getPropertyValues().addPropertyValue("prometheus", prometheus);
+            }
+        }
+    }
+
+    private static void assignProperties(Object obj, Element ele, ParserContext parserContext) {
+        Method[] methods = obj.getClass().getMethods();
+        for (Method method : methods) {
+            if (MethodUtils.isSetter(method)) {
+                String beanProperty = method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4);
+                String property = StringUtils.camelToSplitName(beanProperty, "-");
+                String value = resolveAttribute(ele, property, parserContext);
+                if (StringUtils.isNotEmpty(value)) {
+                    try {
+                        Object v = ClassUtils.convertPrimitive(method.getParameterTypes()[0], value);
+                        method.invoke(obj, v);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
             }
         }
     }

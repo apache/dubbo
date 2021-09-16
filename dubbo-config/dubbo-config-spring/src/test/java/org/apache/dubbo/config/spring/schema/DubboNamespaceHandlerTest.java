@@ -245,32 +245,58 @@ public class DubboNamespaceHandlerTest {
     }
 
     @Test
-    public void testMetrics() {
+    public void testMetricsAggregation() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/metrics-aggregation.xml");
         ctx.start();
 
         ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
 
-        MetricsConfig metricsConfigBean = ctx.getBean(MetricsConfig.class);
-        MetricsConfig metricsConfig = configManager.getMetrics().get();
+        MetricsConfig metricsBean = ctx.getBean(MetricsConfig.class);
+        MetricsConfig metrics = configManager.getMetrics().get();
 
-        assertEquals(metricsConfig.getProtocol(), "prometheus");
-        assertEquals(metricsConfig.getMode(), "pull");
-        assertEquals(metricsConfig.getAddress(), "localhost:9091");
-        assertEquals(metricsConfig.getMetricsPort(), 20888);
-        assertEquals(metricsConfig.getMetricsPath(), "/metrics");
-        assertEquals(metricsConfig.getAggregation().getEnable(), true);
-        assertEquals(metricsConfig.getAggregation().getBucketNum(), 5);
-        assertEquals(metricsConfig.getAggregation().getTimeWindowSeconds(), 120);
+        assertEquals(metrics.getAggregation().getEnabled(), true);
+        assertEquals(metrics.getAggregation().getBucketNum(), 5);
+        assertEquals(metrics.getAggregation().getTimeWindowSeconds(), 120);
 
-        assertEquals(metricsConfig.getProtocol(), metricsConfigBean.getProtocol());
-        assertEquals(metricsConfig.getMode(), metricsConfigBean.getMode());
-        assertEquals(metricsConfig.getAddress(), metricsConfigBean.getAddress());
-        assertEquals(metricsConfig.getMetricsPort(), metricsConfigBean.getMetricsPort());
-        assertEquals(metricsConfig.getMetricsPath(), metricsConfigBean.getMetricsPath());
-        assertEquals(metricsConfig.getAggregation().getEnable(), metricsConfigBean.getAggregation().getEnable());
-        assertEquals(metricsConfig.getAggregation().getBucketNum(), metricsConfigBean.getAggregation().getBucketNum());
-        assertEquals(metricsConfig.getAggregation().getTimeWindowSeconds(), metricsConfigBean.getAggregation().getTimeWindowSeconds());
+        assertEquals(metrics.getAggregation().getEnabled(), metricsBean.getAggregation().getEnabled());
+        assertEquals(metrics.getAggregation().getBucketNum(), metricsBean.getAggregation().getBucketNum());
+        assertEquals(metrics.getAggregation().getTimeWindowSeconds(), metricsBean.getAggregation().getTimeWindowSeconds());
+    }
 
+    @Test
+    public void testMetricsPrometheus() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/metrics-prometheus.xml");
+        ctx.start();
+
+        ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+
+        MetricsConfig metricsBean = ctx.getBean(MetricsConfig.class);
+        MetricsConfig metrics = configManager.getMetrics().get();
+
+        assertEquals(metrics.getProtocol(), "prometheus");
+        assertEquals(metrics.getPrometheus().getExporter().getEnabled(), true);
+        assertEquals(metrics.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), true);
+        assertEquals(metrics.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), "localhost:8080");
+        assertEquals(metrics.getPrometheus().getExporter().getMetricsPort(), 20888);
+        assertEquals(metrics.getPrometheus().getExporter().getMetricsPath(), "/metrics");
+        assertEquals(metrics.getPrometheus().getPushgateway().getEnabled(), true);
+        assertEquals(metrics.getPrometheus().getPushgateway().getBaseUrl(), "localhost:9091");
+        assertEquals(metrics.getPrometheus().getPushgateway().getPushInterval(), 30);
+        assertEquals(metrics.getPrometheus().getPushgateway().getUsername(), "username");
+        assertEquals(metrics.getPrometheus().getPushgateway().getPassword(), "password");
+        assertEquals(metrics.getPrometheus().getPushgateway().getJob(), "job");
+
+        assertEquals(metricsBean.getProtocol(), "prometheus");
+        assertEquals(metricsBean.getPrometheus().getExporter().getEnabled(), true);
+        assertEquals(metricsBean.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), true);
+        assertEquals(metricsBean.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), "localhost:8080");
+        assertEquals(metricsBean.getPrometheus().getExporter().getMetricsPort(), 20888);
+        assertEquals(metricsBean.getPrometheus().getExporter().getMetricsPath(), "/metrics");
+        assertEquals(metricsBean.getPrometheus().getPushgateway().getEnabled(), true);
+        assertEquals(metricsBean.getPrometheus().getPushgateway().getBaseUrl(), "localhost:9091");
+        assertEquals(metricsBean.getPrometheus().getPushgateway().getPushInterval(), 30);
+        assertEquals(metricsBean.getPrometheus().getPushgateway().getUsername(), "username");
+        assertEquals(metricsBean.getPrometheus().getPushgateway().getPassword(), "password");
+        assertEquals(metricsBean.getPrometheus().getPushgateway().getJob(), "job");
     }
 }
