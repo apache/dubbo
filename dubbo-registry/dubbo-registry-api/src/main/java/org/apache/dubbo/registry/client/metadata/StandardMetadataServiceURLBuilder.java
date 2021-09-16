@@ -84,7 +84,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
             url = generateWithMetadata(serviceName, host, paramsMap);
         }
 
-        url = url.setScopeModel(serviceInstance.getApplicationModel());
+        url = url.setScopeModel(serviceInstance.getApplicationModel().getInternalModule());
 
         return Collections.singletonList(url);
     }
