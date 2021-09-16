@@ -170,9 +170,6 @@ public class ReferenceCountExchangeClientTest {
         // close twice, counter counts down from 1 to 0, no warning occurs
         client.close();
 
-        // closed thrice, counter is incorrect
-        client.close();
-
         // wait close done.
         try {
             Thread.sleep(1000);
