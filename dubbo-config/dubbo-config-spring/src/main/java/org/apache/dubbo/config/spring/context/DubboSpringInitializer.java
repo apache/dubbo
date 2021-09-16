@@ -33,19 +33,19 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DubboSpringInitializer {
 
-    private static Map<BeanDefinitionRegistry, DubboSpringInitializationContext> contextMap = new ConcurrentHashMap<>();
+    private static Map<BeanDefinitionRegistry, DubboSpringInitContext> contextMap = new ConcurrentHashMap<>();
 
     private DubboSpringInitializer() {
     }
 
     public static void initialize(BeanDefinitionRegistry registry) {
 
-        if (contextMap.putIfAbsent(registry, new DubboSpringInitializationContext()) != null) {
+        if (contextMap.putIfAbsent(registry, new DubboSpringInitContext()) != null) {
             return;
         }
 
         // prepare context and do customize
-        DubboSpringInitializationContext context = contextMap.get(registry);
+        DubboSpringInitContext context = contextMap.get(registry);
 
         // find beanFactory
         ConfigurableListableBeanFactory beanFactory = findBeanFactory(registry);
@@ -55,12 +55,12 @@ public class DubboSpringInitializer {
     }
 
 
-    private static void initContext(DubboSpringInitializationContext context, BeanDefinitionRegistry registry,
+    private static void initContext(DubboSpringInitContext context, BeanDefinitionRegistry registry,
                                     ConfigurableListableBeanFactory beanFactory) {
         context.setRegistry(registry);
         context.setBeanFactory(beanFactory);
 
-        // customize context, you can change the bind module model via DubboSpringInitializationCustomizer SPI
+        // customize context, you can change the bind module model via DubboSpringInitCustomizer SPI
         customize(context);
 
         // init ApplicationModel
@@ -107,7 +107,7 @@ public class DubboSpringInitializer {
         return beanFactory;
     }
 
-    private static void registerContextBeans(ConfigurableListableBeanFactory beanFactory, DubboSpringInitializationContext context) {
+    private static void registerContextBeans(ConfigurableListableBeanFactory beanFactory, DubboSpringInitContext context) {
         // register singleton
         registerSingleton(beanFactory, context);
         registerSingleton(beanFactory, context.getApplicationModel());
@@ -118,8 +118,8 @@ public class DubboSpringInitializer {
         beanFactory.registerSingleton(bean.getClass().getName(), bean);
     }
 
-    private static DubboSpringInitializationContext findContextForApplication(ApplicationModel applicationModel) {
-        for (DubboSpringInitializationContext initializationContext : contextMap.values()) {
+    private static DubboSpringInitContext findContextForApplication(ApplicationModel applicationModel) {
+        for (DubboSpringInitContext initializationContext : contextMap.values()) {
             if (initializationContext.getApplicationModel() == applicationModel) {
                 return initializationContext;
             }
@@ -127,20 +127,20 @@ public class DubboSpringInitializer {
         return null;
     }
 
-    private static void customize(DubboSpringInitializationContext context) {
+    private static void customize(DubboSpringInitContext context) {
 
         // find initialization customizers
-        Set<DubboSpringInitializationCustomizer> customizers = FrameworkModel.defaultModel()
-            .getExtensionLoader(DubboSpringInitializationCustomizer.class)
+        Set<DubboSpringInitCustomizer> customizers = FrameworkModel.defaultModel()
+            .getExtensionLoader(DubboSpringInitCustomizer.class)
             .getSupportedExtensionInstances();
-        for (DubboSpringInitializationCustomizer customizer : customizers) {
+        for (DubboSpringInitCustomizer customizer : customizers) {
             customizer.customize(context);
         }
 
         // load customizers in thread local holder
-        DubboSpringInitializationCustomizerHolder customizerHolder = DubboSpringInitializationCustomizerHolder.get();
+        DubboSpringInitCustomizerHolder customizerHolder = DubboSpringInitCustomizerHolder.get();
         customizers = customizerHolder.getCustomizers();
-        for (DubboSpringInitializationCustomizer customizer : customizers) {
+        for (DubboSpringInitCustomizer customizer : customizers) {
             customizer.customize(context);
         }
         customizerHolder.clearCustomizers();

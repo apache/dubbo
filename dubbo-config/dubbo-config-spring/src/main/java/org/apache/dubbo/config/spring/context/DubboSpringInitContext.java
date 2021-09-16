@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * Dubbo spring initialization context object
  */
-public class DubboSpringInitializationContext {
+public class DubboSpringInitContext {
 
     private BeanDefinitionRegistry registry;
 

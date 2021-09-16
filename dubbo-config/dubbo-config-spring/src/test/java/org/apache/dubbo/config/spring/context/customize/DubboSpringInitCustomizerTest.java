@@ -19,7 +19,7 @@ package org.apache.dubbo.config.spring.context.customize;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.api.HelloService;
-import org.apache.dubbo.config.spring.context.DubboSpringInitializationCustomizerHolder;
+import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizerHolder;
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class DubboSpringInitializationCustomizerTest {
+public class DubboSpringInitCustomizerTest {
 
     private static RegistryCenter singleRegistryCenter;
 
@@ -65,7 +65,7 @@ public class DubboSpringInitializationCustomizerTest {
         try {
             // start spring context 1
             ModuleModel moduleModel1 = applicationModel.newModule();
-            DubboSpringInitializationCustomizerHolder.get().addCustomizer(context -> {
+            DubboSpringInitCustomizerHolder.get().addCustomizer(context -> {
                 context.setModuleModel(moduleModel1);
             });
 
@@ -83,7 +83,7 @@ public class DubboSpringInitializationCustomizerTest {
             providerContext1 = null;
 
             ModuleModel moduleModel2 = applicationModel.newModule();
-            DubboSpringInitializationCustomizerHolder.get().addCustomizer(context -> {
+            DubboSpringInitCustomizerHolder.get().addCustomizer(context -> {
                 context.setModuleModel(moduleModel2);
             });
 

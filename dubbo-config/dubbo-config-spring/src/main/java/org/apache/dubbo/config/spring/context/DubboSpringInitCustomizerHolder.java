@@ -20,30 +20,30 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Hold a set of DubboSpringInitializationCustomizer, for register customizers by programing.
+ * Hold a set of DubboSpringInitCustomizer, for register customizers by programing.
  * <p>All customizers are store in thread local, and they will be clear after apply once.</p>
  *
  * <p>Usages:</p>
  *<pre>
- * DubboSpringInitializationCustomizerHolder.get().addCustomizer(context -> {...});
+ * DubboSpringInitCustomizerHolder.get().addCustomizer(context -> {...});
  * ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(..);
  * ...
- * DubboSpringInitializationCustomizerHolder.get().addCustomizer(context -> {...});
+ * DubboSpringInitCustomizerHolder.get().addCustomizer(context -> {...});
  * ClassPathXmlApplicationContext consumerContext = new ClassPathXmlApplicationContext(..);
  * </pre>
  */
-public class DubboSpringInitializationCustomizerHolder {
+public class DubboSpringInitCustomizerHolder {
 
-    private static final ThreadLocal<DubboSpringInitializationCustomizerHolder> holders = ThreadLocal.withInitial(() ->
-        new DubboSpringInitializationCustomizerHolder());
+    private static final ThreadLocal<DubboSpringInitCustomizerHolder> holders = ThreadLocal.withInitial(() ->
+        new DubboSpringInitCustomizerHolder());
 
-    public static DubboSpringInitializationCustomizerHolder get() {
+    public static DubboSpringInitCustomizerHolder get() {
         return holders.get();
     }
 
-    private Set<DubboSpringInitializationCustomizer> customizers = new HashSet<>();
+    private Set<DubboSpringInitCustomizer> customizers = new HashSet<>();
 
-    public void addCustomizer(DubboSpringInitializationCustomizer customizer) {
+    public void addCustomizer(DubboSpringInitCustomizer customizer) {
         this.customizers.add(customizer);
     }
 
@@ -51,7 +51,7 @@ public class DubboSpringInitializationCustomizerHolder {
         this.customizers = new HashSet<>();
     }
 
-    public Set<DubboSpringInitializationCustomizer> getCustomizers() {
+    public Set<DubboSpringInitCustomizer> getCustomizers() {
         return customizers;
     }
 

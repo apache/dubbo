@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.context.DubboSpringInitializationCustomizerHolder;
+import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizerHolder;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ public class ShutdownHookTest {
     public void testDisableShutdownHook(){
 
         // set KeepRunningOnSpringClosed flag for next spring context
-        DubboSpringInitializationCustomizerHolder.get().addCustomizer(context-> {
+        DubboSpringInitCustomizerHolder.get().addCustomizer(context-> {
             context.setKeepRunningOnSpringClosed(true);
         });
 

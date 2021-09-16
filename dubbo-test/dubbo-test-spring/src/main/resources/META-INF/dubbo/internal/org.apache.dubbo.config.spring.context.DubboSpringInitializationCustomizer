@@ -1,1 +1,1 @@
-mock=org.apache.dubbo.test.spring.context.MockSpringInitializationCustomizer
+mock=org.apache.dubbo.test.spring.context.MockSpringInitCustomizer

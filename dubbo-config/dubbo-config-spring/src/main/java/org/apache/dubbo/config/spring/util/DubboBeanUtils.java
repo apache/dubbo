@@ -27,7 +27,7 @@ import org.apache.dubbo.config.spring.context.DubboConfigApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.context.DubboDeployApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor;
-import org.apache.dubbo.config.spring.context.DubboSpringInitializationContext;
+import org.apache.dubbo.config.spring.context.DubboSpringInitContext;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -184,10 +184,10 @@ public interface DubboBeanUtils {
         return getReferenceAnnotationBeanPostProcessor((AbstractBeanFactory) applicationContext.getAutowireCapableBeanFactory());
     }
 
-    static DubboSpringInitializationContext getInitializationContext(BeanFactory beanFactory) {
-        String beanName = DubboSpringInitializationContext.class.getName();
+    static DubboSpringInitContext getInitializationContext(BeanFactory beanFactory) {
+        String beanName = DubboSpringInitContext.class.getName();
         if (beanFactory.containsBean(beanName)) {
-            return beanFactory.getBean(beanName, DubboSpringInitializationContext.class);
+            return beanFactory.getBean(beanName, DubboSpringInitContext.class);
         }
         return null;
     }
