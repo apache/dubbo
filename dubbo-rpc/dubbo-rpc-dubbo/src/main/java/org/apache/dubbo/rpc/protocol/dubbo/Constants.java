@@ -65,7 +65,7 @@ public interface Constants {
      */
     String LAZY_REQUEST_WITH_WARNING_KEY = "lazyclient_request_with_warning";
 
-    boolean DEFAULT_LAZY_REQUEST_WITH_WARNING_KEY = false;
+    boolean DEFAULT_LAZY_REQUEST_WITH_WARNING = false;
 
     String OPTIMIZER_KEY = "optimizer";
 
