@@ -282,7 +282,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             logger.warn("unexpected error when unsubscribe service " + serviceKey + " from registry: " + registry.getUrl(), t);
         }
 
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultApplicationModel().getExtensionLoader(AddressListener.class);
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {

@@ -62,7 +62,6 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.support.MockInvoker;
@@ -224,17 +223,17 @@ public class ConfigValidationUtils {
                 }
             }
         }
-        return genCompatibleRegistries(interfaceConfig.getApplicationModel(), registryList, provider);
+        return genCompatibleRegistries(interfaceConfig.getScopeModel(), registryList, provider);
     }
 
-    private static List<URL> genCompatibleRegistries(ApplicationModel applicationModel, List<URL> registryList, boolean provider) {
+    private static List<URL> genCompatibleRegistries(ScopeModel scopeModel, List<URL> registryList, boolean provider) {
         List<URL> result = new ArrayList<>(registryList.size());
         registryList.forEach(registryURL -> {
             if (provider) {
                 // for registries enabled service discovery, automatically register interface compatible addresses.
                 String registerMode;
                 if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
-                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(applicationModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(scopeModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
                     if (!isValidRegisterMode(registerMode)) {
                         registerMode = DEFAULT_REGISTER_MODE_INSTANCE;
                     }
@@ -248,7 +247,7 @@ public class ConfigValidationUtils {
                         result.add(interfaceCompatibleRegistryURL);
                     }
                 } else {
-                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(applicationModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_ALL));
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(scopeModel, DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_ALL));
                     if (!isValidRegisterMode(registerMode)) {
                         registerMode = DEFAULT_REGISTER_MODE_INTERFACE;
                     }
@@ -266,7 +265,7 @@ public class ConfigValidationUtils {
                     }
                 }
 
-                FrameworkStatusReportService reportService = applicationModel.getBeanFactory().getBean(FrameworkStatusReportService.class);
+                FrameworkStatusReportService reportService = ScopeModelUtil.getApplicationModel(scopeModel).getBeanFactory().getBean(FrameworkStatusReportService.class);
                 reportService.reportRegistrationStatus(reportService.createRegistrationReport(registerMode));
             } else {
                 result.add(registryURL);
@@ -466,8 +465,8 @@ public class ConfigValidationUtils {
         }
 
         // backward compatibility
-        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(config.getScopeModel());
-        PropertiesConfiguration configuration = applicationModel.getApplicationEnvironment().getPropertiesConfiguration();
+        ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(config.getScopeModel());
+        PropertiesConfiguration configuration = scopeModel.getModelEnvironment().getPropertiesConfiguration();
         String wait = configuration.getProperty(SHUTDOWN_WAIT_KEY);
         if (wait != null && wait.trim().length() > 0) {
             System.setProperty(SHUTDOWN_WAIT_KEY, wait.trim());

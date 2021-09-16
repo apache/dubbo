@@ -295,15 +295,9 @@ public abstract class AbstractStream implements Stream {
         try {
             if (v instanceof String) {
                 String str = (String) v;
-                if (TripleUtil.overEachHeaderListSize(str)) {
-                    return;
-                }
                 metadata.put(key, str);
             } else if (v instanceof byte[]) {
                 String str = TripleUtil.encodeBase64ASCII((byte[]) v);
-                if (TripleUtil.overEachHeaderListSize(str)) {
-                    return;
-                }
                 metadata.put(key + "-bin", str);
             }
         } catch (Throwable t) {

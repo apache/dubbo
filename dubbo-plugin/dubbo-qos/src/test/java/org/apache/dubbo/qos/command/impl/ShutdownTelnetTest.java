@@ -16,12 +16,11 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import io.netty.channel.Channel;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.remoting.RemotingException;
-
-import io.netty.channel.Channel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,6 +62,6 @@ public class ShutdownTelnetTest {
         String result = shutdown.execute(mockCommandContext, new String[]{"-t", "" + sleepTime});
         long end = System.currentTimeMillis();
         assertTrue(result.contains("Application has shutdown successfully"), result);
-        assertTrue((end - start) > sleepTime, "sleepTime: " + sleepTime + ", execTime: " + (end - start));
+        assertTrue((end - start) >= sleepTime, "sleepTime: " + sleepTime + ", execTime: " + (end - start));
     }
 }
