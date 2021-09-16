@@ -69,6 +69,7 @@ public class ApplicationModel extends ScopeModel {
 
     // internal module index is 0, default module index is 1
     private AtomicInteger moduleIndex = new AtomicInteger(0);
+    private Object moduleLock = new Object();
 
 
     // --------- static methods ----------//
@@ -237,7 +238,7 @@ public class ApplicationModel extends ScopeModel {
     public FrameworkModel getFrameworkModel() {
         return frameworkModel;
     }
-    public synchronized ModuleModel newModule() {
+    public ModuleModel newModule() {
         return new ModuleModel(this);
     }
 
@@ -274,27 +275,31 @@ public class ApplicationModel extends ScopeModel {
         return getCurrentConfig().getName();
     }
 
-    synchronized void addModule(ModuleModel moduleModel, boolean isInternal) {
-        if (!this.moduleModels.contains(moduleModel)) {
-            this.moduleModels.add(moduleModel);
-            moduleModel.setInternalName(buildInternalName(ModuleModel.NAME, getInternalId(), moduleIndex.getAndIncrement()));
-            if (!isInternal) {
-                pubModuleModels.add(moduleModel);
+    void addModule(ModuleModel moduleModel, boolean isInternal) {
+        synchronized (moduleLock) {
+            if (!this.moduleModels.contains(moduleModel)) {
+                this.moduleModels.add(moduleModel);
+                moduleModel.setInternalName(buildInternalName(ModuleModel.NAME, getInternalId(), moduleIndex.getAndIncrement()));
+                if (!isInternal) {
+                    pubModuleModels.add(moduleModel);
+                }
             }
         }
     }
 
-    public synchronized void removeModule(ModuleModel moduleModel) {
-        this.moduleModels.remove(moduleModel);
-        this.pubModuleModels.remove(moduleModel);
-        if (moduleModel == defaultModule) {
-            defaultModule = findDefaultModule();
-        }
-        if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
-            this.internalModule.destroy();
-        }
-        if (this.moduleModels.isEmpty()) {
-            destroy();
+    public void removeModule(ModuleModel moduleModel) {
+        synchronized (moduleLock) {
+            this.moduleModels.remove(moduleModel);
+            this.pubModuleModels.remove(moduleModel);
+            if (moduleModel == defaultModule) {
+                defaultModule = findDefaultModule();
+            }
+            if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
+                this.internalModule.destroy();
+            }
+            if (this.moduleModels.isEmpty()) {
+                destroy();
+            }
         }
     }
 
@@ -303,14 +308,21 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public List<ModuleModel> getPubModuleModels() {
-        return pubModuleModels;
+        return Collections.unmodifiableList(pubModuleModels);
     }
 
-    public synchronized ModuleModel getDefaultModule() {
+    public ModuleModel getDefaultModule() {
         if (defaultModule == null) {
-            defaultModule = findDefaultModule();
-            if (defaultModule == null) {
-                defaultModule = this.newModule();
+            if (isDestroyed()) {
+                return null;
+            }
+            synchronized (moduleLock) {
+                if (defaultModule == null) {
+                    defaultModule = findDefaultModule();
+                    if (defaultModule == null) {
+                        defaultModule = this.newModule();
+                    }
+                }
             }
         }
         return defaultModule;

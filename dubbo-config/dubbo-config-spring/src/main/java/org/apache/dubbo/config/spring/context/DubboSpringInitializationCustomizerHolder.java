@@ -25,10 +25,10 @@ import java.util.Set;
  *
  * <p>Usages:</p>
  *<pre>
- * DubboSpringInitializationCustomizerHolder.get().addCustomizer(customizer1);
+ * DubboSpringInitializationCustomizerHolder.get().addCustomizer(context -> {...});
  * ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(..);
  * ...
- * DubboSpringInitializationCustomizerHolder.get().addCustomizer(customizer2);
+ * DubboSpringInitializationCustomizerHolder.get().addCustomizer(context -> {...});
  * ClassPathXmlApplicationContext consumerContext = new ClassPathXmlApplicationContext(..);
  * </pre>
  */
