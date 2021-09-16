@@ -17,15 +17,15 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Constants;
 
 import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 /**
  * compress payload for grpc request， and decompress response payload
  * Configure it in files, pictures or other configurations that exist in the system properties
- * Configure {@link CommonConstants#COMPRESSOR_KEY} in dubbo.properties、dubbo.yml or other configuration that exist in the system property
+ * Configure {@link Constants#COMPRESSOR_KEY} in dubbo.properties、dubbo.yml or other configuration that exist in the system property
  */
 @SPI(DEFAULT_COMPRESSOR)
 public interface Compressor {

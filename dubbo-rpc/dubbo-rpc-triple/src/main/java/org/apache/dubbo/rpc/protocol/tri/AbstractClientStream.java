@@ -23,6 +23,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.triple.TripleWrapper;
@@ -173,7 +174,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                         (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
                 .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), inv.getInvoker().getUrl().getGroup())
                 .putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
-                    ConfigurationUtils.getGlobalConfiguration(inv.getInvoker().getUrl().getScopeModel()).getString(CommonConstants.COMPRESSOR_KEY, DEFAULT_COMPRESSOR))
+                    ConfigurationUtils.getGlobalConfiguration(inv.getInvoker().getUrl().getScopeModel()).getString(Constants.COMPRESSOR_KEY, DEFAULT_COMPRESSOR))
                 .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(),
                     TripleUtil.calcAcceptEncoding(inv.getInvoker().getUrl()));
         final Map<String, Object> attachments = inv.getObjectAttachments();

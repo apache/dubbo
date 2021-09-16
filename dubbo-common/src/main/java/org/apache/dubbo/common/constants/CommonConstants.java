@@ -308,8 +308,6 @@ public interface CommonConstants {
 
     String TAG_KEY = "dubbo.tag";
 
-    String COMPRESSOR_KEY = "dubbo.compressor";
-
     /**
      * To decide whether to make connection when the client is created
      */
