@@ -14,22 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.common.deploy;
 
-package org.apache.dubbo.config.bootstrap;
-
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 /**
- * call on DubboBootstrap start or stop.
- *
- * @scene 2.7.9
- * @see DubboBootstrap
+ * Module deploy listener
  */
-@SPI
-@Deprecated
-public interface DubboBootstrapStartStopListener {
+@SPI(scope = ExtensionScope.MODULE)
+public interface ModuleDeployListener extends DeployListener<ModuleModel> {
 
-    void onStart(DubboBootstrap bootstrap);
-
-    void onStop(DubboBootstrap bootstrap);
 }

@@ -16,15 +16,13 @@
  */
 package org.apache.dubbo.common.deploy;
 
-import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.concurrent.CompletableFuture;
 
 /**
- * initialize and start application instance
  */
-public interface ApplicationDeployer extends Deployer<ApplicationModel> {
+public interface Deployer<E extends ScopeModel> {
 
     /**
      * Initialize the component
@@ -41,24 +39,53 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
      */
     void stop() throws IllegalStateException;
 
-    void prepareApplicationInstance();
-
-    void destroy();
+    /**
+     * @return true if the component is added and waiting to start
+     */
+    boolean isPending();
 
     /**
-     * Indicates that the Application is initialized or not.
-     * @return
+     * @return true if the component is starting or has been started.
      */
-    boolean isInitialized();
+    boolean isRunning();
 
-    ApplicationModel getApplicationModel();
+    /**
+     * @return true if the component has been started.
+     * @see #start()
+     * @see #isStarting()
+     */
+    boolean isStarted();
 
-    ReferenceCache getReferenceCache();
+    /**
+     * @return true if the component is starting.
+     * @see #isStarted()
+     */
+    boolean isStarting();
 
-    boolean isAsync();
+    /**
+     * @return true if the component is stopping.
+     * @see #isStopped()
+     */
+    boolean isStopping();
 
-    void checkStarting();
+    /**
+     * @return true if the component is stopping.
+     * @see #isStopped()
+     */
+    boolean isStopped();
 
-    void checkStarted();
+    /**
+     * @return true if the component has failed to start or has failed to stop.
+     */
+    boolean isFailed();
+
+    /**
+     * @return current state
+     */
+    DeployState getState();
+
+    void addDeployListener(DeployListener<E> listener);
+
+    void removeDeployListener(DeployListener<E> listener);
 
 }

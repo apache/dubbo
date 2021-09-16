@@ -14,22 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.common.deploy;
 
-package org.apache.dubbo.config.bootstrap;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
-import org.apache.dubbo.common.extension.SPI;
+public class DeployListenerAdapter<E extends ScopeModel> implements DeployListener<E>{
+    @Override
+    public void onStarting(E scopeModel) {
+    }
 
-/**
- * call on DubboBootstrap start or stop.
- *
- * @scene 2.7.9
- * @see DubboBootstrap
- */
-@SPI
-@Deprecated
-public interface DubboBootstrapStartStopListener {
+    @Override
+    public void onStarted(E scopeModel) {
+    }
 
-    void onStart(DubboBootstrap bootstrap);
+    @Override
+    public void onStopping(E scopeModel) {
+    }
 
-    void onStop(DubboBootstrap bootstrap);
+    @Override
+    public void onStopped(E scopeModel) {
+    }
+
+    @Override
+    public void onFailure(E scopeModel, Throwable cause) {
+    }
 }

@@ -19,6 +19,7 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployListenerAdapter;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -45,8 +46,7 @@ import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
 import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.utils.CompositeReferenceCache;
-import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -54,6 +54,9 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -61,6 +64,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import static java.util.Collections.singletonList;
+import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getServiceDiscoveries;
 
 /**
  * See {@link ApplicationModel} and {@link ExtensionLoader} for why this class is designed to be singleton.
@@ -78,6 +82,7 @@ public final class DubboBootstrap {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBootstrap.class);
 
+    private static volatile Map<ApplicationModel, DubboBootstrap> instanceMap = new ConcurrentHashMap<>();
     private static volatile DubboBootstrap instance;
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
@@ -96,8 +101,6 @@ public final class DubboBootstrap {
 
     protected final Environment environment;
 
-    protected ReferenceCache referenceCache;
-
     private ApplicationDeployer applicationDeployer;
 
     /**
@@ -107,23 +110,27 @@ public final class DubboBootstrap {
         if (instance == null) {
             synchronized (DubboBootstrap.class) {
                 if (instance == null) {
-                    instance = new DubboBootstrap(ApplicationModel.defaultModel());
+                    instance = DubboBootstrap.getInstance(ApplicationModel.defaultModel());
                 }
             }
         }
         return instance;
     }
 
+    public static DubboBootstrap getInstance(ApplicationModel applicationModel) {
+        return instanceMap.computeIfAbsent(applicationModel, _k -> new DubboBootstrap(applicationModel));
+    }
+
     public static DubboBootstrap newInstance() {
-        return new DubboBootstrap(FrameworkModel.defaultModel());
+        return getInstance(FrameworkModel.defaultModel().newApplication());
     }
 
     public static DubboBootstrap newInstance(FrameworkModel frameworkModel) {
-        return new DubboBootstrap(frameworkModel);
+        return getInstance(frameworkModel.newApplication());
     }
 
     public static DubboBootstrap newInstance(ApplicationModel applicationModel) {
-        return new DubboBootstrap(applicationModel);
+        return getInstance(applicationModel);
     }
 
     /**
@@ -148,9 +155,10 @@ public final class DubboBootstrap {
                 instance.destroy();
                 instance = null;
             }
-            MetadataReportInstance.reset();
+            AbstractMetadataReportFactory.destroy();
             AbstractRegistryFactory.reset();
             destroyAllProtocols();
+            destroyServiceDiscoveries();
             FrameworkModel.destroyAll();
         } else {
             instance = null;
@@ -159,20 +167,47 @@ public final class DubboBootstrap {
         ApplicationModel.reset();
     }
 
-    private DubboBootstrap(FrameworkModel frameworkModel) {
-        this(new ApplicationModel(frameworkModel));
-    }
-
     private DubboBootstrap(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         configManager = applicationModel.getApplicationConfigManager();
         environment = applicationModel.getModelEnvironment();
 
-        referenceCache = new CompositeReferenceCache(applicationModel);
         executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         applicationDeployer = applicationModel.getDeployer();
+        // listen deploy events
+        applicationDeployer.addDeployListener(new DeployListenerAdapter<ApplicationModel>() {
+            @Override
+            public void onStarted(ApplicationModel scopeModel) {
+                notifyStarted(applicationModel);
+            }
+
+            @Override
+            public void onStopped(ApplicationModel scopeModel) {
+                notifyStopped(applicationModel);
+            }
+
+            @Override
+            public void onFailure(ApplicationModel scopeModel, Throwable cause) {
+                notifyStopped(applicationModel);
+            }
+        });
         // register DubboBootstrap bean
         applicationModel.getBeanFactory().registerBean(this);
+    }
+
+    private void notifyStarted(ApplicationModel applicationModel) {
+        ExtensionLoader<DubboBootstrapStartStopListener> exts = applicationModel.getExtensionLoader(DubboBootstrapStartStopListener.class);
+        exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(DubboBootstrap.this));
+    }
+
+    private void notifyStopped(ApplicationModel applicationModel) {
+        ExtensionLoader<DubboBootstrapStartStopListener> exts = applicationModel.getExtensionLoader(DubboBootstrapStartStopListener.class);
+        exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(DubboBootstrap.this));
+        executeMutually(() -> {
+            awaited.set(true);
+            condition.signalAll();
+        });
+        instanceMap.remove(applicationModel);
     }
 
     /**
@@ -186,7 +221,12 @@ public final class DubboBootstrap {
      * Start the bootstrap
      */
     public DubboBootstrap start() {
-        applicationDeployer.start();
+        CompletableFuture future = applicationDeployer.start();
+        try {
+            future.get();
+        } catch (Exception e) {
+            throw new IllegalStateException("await dubbo application start finish failure", e);
+        }
         return this;
     }
 
@@ -203,16 +243,48 @@ public final class DubboBootstrap {
         return applicationDeployer.isInitialized();
     }
 
+    public boolean isPending() {
+        return applicationDeployer.isPending();
+    }
+
+    /**
+     * @return true if the dubbo application is starting or has been started.
+     */
+    public boolean isRunning() {
+        return applicationDeployer.isRunning();
+    }
+
+    /**
+     * @return true if the dubbo application is starting.
+     * @see #isStarted()
+     */
+    public boolean isStarting() {
+        return applicationDeployer.isStarting();
+    }
+
+    /**
+     * @return true if the dubbo application has been started.
+     * @see #start()
+     * @see #isStarting()
+     */
     public boolean isStarted() {
         return applicationDeployer.isStarted();
     }
 
-    public boolean isStartup() {
-        return applicationDeployer.isStartup();
+    /**
+     * @return true if the dubbo application is stopping.
+     * @see #isStopped()
+     */
+    public boolean isStopping() {
+        return applicationDeployer.isStopping();
     }
 
-    public boolean isShutdown() {
-        return applicationDeployer.isShutdown();
+    /**
+     * @return true if the dubbo application is stopping.
+     * @see #isStopped()
+     */
+    public boolean isStopped() {
+        return applicationDeployer.isStopped();
     }
 
     /**
@@ -223,7 +295,7 @@ public final class DubboBootstrap {
     public DubboBootstrap await() {
         // if has been waited, no need to wait again, return immediately
         if (!awaited.get()) {
-            if (!isShutdown()) {
+            if (!isStopped()) {
                 executeMutually(() -> {
                     while (!awaited.get()) {
                         if (logger.isInfoEnabled()) {
@@ -242,7 +314,7 @@ public final class DubboBootstrap {
     }
 
     public ReferenceCache getCache() {
-        return referenceCache;
+        return applicationDeployer.getReferenceCache();
     }
 
     /**
@@ -267,6 +339,16 @@ public final class DubboBootstrap {
         for (FrameworkModel frameworkModel : FrameworkModel.getAllInstances()) {
             destroyProtocols(frameworkModel);
         }
+    }
+
+    private static void destroyServiceDiscoveries() {
+        getServiceDiscoveries().forEach(serviceDiscovery -> {
+            try {
+                serviceDiscovery.destroy();
+            } catch (Throwable ignored) {
+                logger.warn(ignored.getMessage(), ignored);
+            }
+        });
     }
 
     private void executeMutually(Runnable runnable) {

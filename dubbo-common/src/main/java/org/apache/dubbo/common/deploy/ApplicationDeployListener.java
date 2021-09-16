@@ -14,28 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.bootstrap;
+package org.apache.dubbo.common.deploy;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
- * Module deploy listener
+ * Listen for Dubbo application deployment events
  */
-@SPI(scope = ExtensionScope.MODULE)
-public interface ModuleDeployListener {
-
-    /**
-     * Notify after module is started (export/refer services)
-     * @param moduleModel
-     */
-    void onModuleStarted(ModuleModel moduleModel);
-
-    /**
-     * Notify after module is stopped
-     * @param moduleModel
-     */
-    void onModuleStopped(ModuleModel moduleModel);
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface ApplicationDeployListener extends DeployListener<ApplicationModel> {
 
 }

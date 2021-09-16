@@ -101,6 +101,9 @@ public class ServiceModel {
     }
 
     public ReferenceConfigBase<?> getReferenceConfig() {
+        if (config == null) {
+            return null;
+        }
         if (config instanceof ReferenceConfigBase) {
             return (ReferenceConfigBase<?>) config;
         } else {
@@ -109,6 +112,9 @@ public class ServiceModel {
     }
 
     public ServiceConfigBase<?> getServiceConfig() {
+        if (config == null) {
+            return null;
+        }
         if (config instanceof ServiceConfigBase) {
             return (ServiceConfigBase<?>) config;
         } else {

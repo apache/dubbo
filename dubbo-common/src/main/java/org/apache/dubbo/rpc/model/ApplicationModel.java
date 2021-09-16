@@ -59,6 +59,7 @@ public class ApplicationModel extends ScopeModel {
     private Environment environment;
     private ConfigManager configManager;
     private ServiceRepository serviceRepository;
+    private ApplicationDeployer deployer;
 
     private final FrameworkModel frameworkModel;
 
@@ -206,6 +207,11 @@ public class ApplicationModel extends ScopeModel {
             }
         } else {
             frameworkModel.removeApplication(this);
+        }
+
+        if (deployer != null) {
+            deployer.destroy();
+            deployer = null;
         }
 
         notifyDestroy();
@@ -357,10 +363,10 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public ApplicationDeployer getDeployer() {
-        return getAttribute(ModelConstants.DEPLOYER, ApplicationDeployer.class);
+        return deployer;
     }
 
     public void setDeployer(ApplicationDeployer deployer) {
-        setAttribute(ModelConstants.DEPLOYER, deployer);
+        this.deployer = deployer;
     }
 }

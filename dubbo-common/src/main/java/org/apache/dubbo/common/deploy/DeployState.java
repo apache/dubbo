@@ -14,22 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.config.bootstrap;
-
-import org.apache.dubbo.common.extension.SPI;
+package org.apache.dubbo.common.deploy;
 
 /**
- * call on DubboBootstrap start or stop.
- *
- * @scene 2.7.9
- * @see DubboBootstrap
+ * Deploy state enum
  */
-@SPI
-@Deprecated
-public interface DubboBootstrapStartStopListener {
-
-    void onStart(DubboBootstrap bootstrap);
-
-    void onStop(DubboBootstrap bootstrap);
+public enum DeployState {
+    PENDING, STARTING, STARTED, STOPPING, STOPPED, FAILED
 }

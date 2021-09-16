@@ -14,10 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.bootstrap;
+package org.apache.dubbo.config.deploy;
 
 import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.ModuleDeployListener;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,20 +31,21 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.utils.SimpleReferenceCache;
-import org.apache.dubbo.rpc.model.ModelConstants;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Export/refer services of module
  */
-public class DefaultModuleDeployer implements ModuleDeployer {
+public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> implements ModuleDeployer {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultModuleDeployer.class);
 
@@ -61,36 +64,53 @@ public class DefaultModuleDeployer implements ModuleDeployer {
     private final SimpleReferenceCache referenceCache;
     private String identifier;
 
-    private volatile boolean startup;
-
-    protected AtomicBoolean initialized = new AtomicBoolean(false);
-
     private ApplicationDeployer applicationDeployer;
+    private CompletableFuture startFuture;
+    private Boolean async;
 
-    public static ModuleDeployer get(ModuleModel moduleModel) {
-        return moduleModel.getAttribute(ModelConstants.DEPLOYER, DefaultModuleDeployer.class);
-    }
 
     public DefaultModuleDeployer(ModuleModel moduleModel) {
+        super(moduleModel);
         this.moduleModel = moduleModel;
         configManager = moduleModel.getConfigManager();
         executorRepository = moduleModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         referenceCache = SimpleReferenceCache.newCache();
         applicationDeployer = DefaultApplicationDeployer.get(moduleModel);
+
+        //load spi listener
+        Set<ModuleDeployListener> listeners = moduleModel.getExtensionLoader(ModuleDeployListener.class).getSupportedExtensionInstances();
+        for (ModuleDeployListener listener : listeners) {
+            this.addDeployListener(listener);
+        }
     }
 
     @Override
     public void initialize() throws IllegalStateException {
-        if (!initialized.compareAndSet(false, true)) {
+        if (initialized.get()) {
             return;
         }
-        loadConfigs();
+        // Ensure that the initialization is completed when concurrent calls
+        synchronized (this) {
+            if (initialized.get()) {
+                return;
+            }
+            loadConfigs();
+
+            initialized.set(true);
+            if (logger.isInfoEnabled()) {
+                logger.info(getIdentifier() + " has been initialized!");
+            }
+        }
     }
 
     @Override
-    public CompletableFuture start() throws IllegalStateException {
+    public synchronized CompletableFuture start() throws IllegalStateException {
+        if (isStarting() || isStarted()) {
+            return startFuture;
+        }
 
-        CompletableFuture startFuture = new CompletableFuture();
+        onModuleStarting();
+        startFuture = new CompletableFuture();
 
         applicationDeployer.initialize();
 
@@ -109,9 +129,16 @@ public class DefaultModuleDeployer implements ModuleDeployer {
         referServices();
 
         executorRepository.getSharedExecutor().submit(() -> {
-            awaitFinish();
+
+            // wait for export finish
+            waitExportFinish();
+
+            // wait for refer finish
+            waitReferFinish();
+
             onModuleStarted(startFuture);
         });
+
         return startFuture;
     }
 
@@ -120,29 +147,74 @@ public class DefaultModuleDeployer implements ModuleDeployer {
     }
 
     @Override
-    public void destroy() throws IllegalStateException {
+    public void stop() throws IllegalStateException {
+        destroy();
+    }
+
+    @Override
+    public synchronized void destroy() throws IllegalStateException {
+        if (isStopping() || isStopped()) {
+            return;
+        }
+        onModuleStopping();
         unexportServices();
         unreferServices();
+
+        ModuleServiceRepository serviceRepository = moduleModel.getServiceRepository();
+        if (serviceRepository != null) {
+            List<ConsumerModel> consumerModels = serviceRepository.getReferredServices();
+
+            for (ConsumerModel consumerModel : consumerModels) {
+                try {
+                    if (consumerModel.getReferenceConfig() != null) {
+                        consumerModel.getReferenceConfig().destroy();
+                    } else if (consumerModel.getDestroyCaller() != null) {
+                        consumerModel.getDestroyCaller().call();
+                    }
+                } catch (Throwable t) {
+                    logger.error("Unable to destroy consumerModel.", t);
+                }
+            }
+
+            List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
+            for (ProviderModel providerModel : exportedServices) {
+                try {
+                    if (providerModel.getServiceConfig() != null) {
+                        providerModel.getServiceConfig().unexport();
+                    } else if (providerModel.getDestroyCaller() != null) {
+                        providerModel.getDestroyCaller().call();
+                    }
+                } catch (Throwable t) {
+                    logger.error("Unable to destroy providerModel.", t);
+                }
+            }
+            serviceRepository.destroy();
+        }
+        moduleModel.destroy();
         onModuleStopped();
     }
 
-    private void onModuleStopped() {
-        startup = false;
-        logger.info(getIdentifier() + " has stopped.");
-        Set<ModuleDeployListener> listeners = moduleModel.getExtensionLoader(ModuleDeployListener.class).getSupportedExtensionInstances();
-        for (ModuleDeployListener listener : listeners) {
-            listener.onModuleStopped(moduleModel);
-        }
+    private void onModuleStarting() {
+        setStarting();
+        logger.info(getIdentifier() + " is starting.");
+        applicationDeployer.checkStarting();
     }
 
     private void onModuleStarted(CompletableFuture startFuture) {
-        startup = true;
+        setStarted();
         logger.info(getIdentifier() + " has started.");
         startFuture.complete(true);
-        Set<ModuleDeployListener> listeners = moduleModel.getExtensionLoader(ModuleDeployListener.class).getSupportedExtensionInstances();
-        for (ModuleDeployListener listener : listeners) {
-            listener.onModuleStarted(moduleModel);
-        }
+        applicationDeployer.checkStarted();
+    }
+
+    private void onModuleStopping() {
+        setStopping();
+        logger.info(getIdentifier() + " is stopping.");
+    }
+
+    private void onModuleStopped() {
+        setStopped();
+        logger.info(getIdentifier() + " has stopped.");
     }
 
     private void loadConfigs() {
@@ -278,23 +350,15 @@ public class DefaultModuleDeployer implements ModuleDeployer {
         }
     }
 
-    private void awaitFinish() {
-        waitExportFinish();
-        waitReferFinish();
+    @Override
+    public boolean isAsync() {
+        if (async == null) {
+            async = isExportBackground() || isReferBackground();
+        }
+        return async;
     }
 
-    @Override
-    public boolean isStartup() {
-        return startup;
-    }
-
-    @Override
-    public boolean isInitialized() {
-        return initialized.get();
-    }
-
-    @Override
-    public boolean isExportBackground() {
+    private boolean isExportBackground() {
         return moduleModel.getConfigManager().getProviders()
             .stream()
             .map(ProviderConfig::getExportBackground)
@@ -303,8 +367,7 @@ public class DefaultModuleDeployer implements ModuleDeployer {
             .isPresent();
     }
 
-    @Override
-    public boolean isReferBackground() {
+    private boolean isReferBackground() {
         return moduleModel.getConfigManager().getConsumers()
             .stream()
             .map(ConsumerConfig::getReferBackground)
