@@ -72,7 +72,11 @@ public class DubboShutdownHook extends Thread {
      */
     public void register() {
         if (registered.compareAndSet(false, true)) {
-            Runtime.getRuntime().addShutdownHook(this);
+            try {
+                Runtime.getRuntime().addShutdownHook(this);
+            } catch (Exception e) {
+                logger.warn("register shutdown hook failed: " + e.getMessage(), e);
+            }
         }
     }
 
@@ -81,7 +85,11 @@ public class DubboShutdownHook extends Thread {
      */
     public void unregister() {
         if (registered.compareAndSet(true, false)) {
-            Runtime.getRuntime().removeShutdownHook(this);
+            try {
+                Runtime.getRuntime().removeShutdownHook(this);
+            } catch (Exception e) {
+                logger.warn("unregister shutdown hook failed: " + e.getMessage(), e);
+            }
         }
     }
 
