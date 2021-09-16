@@ -18,6 +18,8 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.common.deploy.DeployListenerAdapter;
 import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.spring.context.event.DubboApplicationStateEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -32,10 +34,14 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * An ApplicationListener to control Dubbo application.
  */
 public class DubboDeployApplicationListener implements ApplicationListener<ApplicationContextEvent>, ApplicationContextAware, Ordered {
+
+    private static final Logger logger = LoggerFactory.getLogger(DubboDeployApplicationListener.class);
 
     private ApplicationContext applicationContext;
 
@@ -94,7 +100,14 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     }
 
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
-        moduleModel.getDeployer().start();
+        CompletableFuture future = moduleModel.getDeployer().start();
+        try {
+            future.get();
+        } catch (InterruptedException e) {
+            logger.warn("Interrupted while waiting for dubbo module start: " + e.getMessage());
+        } catch (Exception e) {
+            logger.warn("An error occurred while waiting for dubbo module start: " + e.getMessage(), e);
+        }
     }
 
     private void onContextClosedEvent(ContextClosedEvent event) {

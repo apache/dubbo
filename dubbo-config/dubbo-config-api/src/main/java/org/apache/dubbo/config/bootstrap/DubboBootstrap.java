@@ -214,18 +214,35 @@ public final class DubboBootstrap {
     }
 
     /**
-     * Start the bootstrap
+     * Start dubbo application and wait for finish
      */
     public DubboBootstrap start() {
+        this.start(true);
+        return this;
+    }
+
+    /**
+     * Start dubbo application
+     * @param wait If true, wait for startup to complete, or else no waiting.
+     * @return
+     */
+    public DubboBootstrap start(boolean wait) {
         CompletableFuture future = applicationDeployer.start();
-        try {
-            future.get();
-        } catch (Exception e) {
-            throw new IllegalStateException("await dubbo application start finish failure", e);
+        if (wait) {
+            try {
+                future.get();
+            } catch (Exception e) {
+                throw new IllegalStateException("await dubbo application start finish failure", e);
+            }
         }
         return this;
     }
 
+    /**
+     * Stop dubbo application
+     * @return
+     * @throws IllegalStateException
+     */
     public DubboBootstrap stop() throws IllegalStateException {
         destroy();
         return this;

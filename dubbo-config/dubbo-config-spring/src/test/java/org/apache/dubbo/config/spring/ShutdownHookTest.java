@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.DubboSpringInitializationCustomizerHolder;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -40,6 +41,8 @@ public class ShutdownHookTest {
                 resourcePath + "/demo-provider-properties.xml");
             providerContext.start();
 
+            ModuleModel moduleModel = providerContext.getBean(ModuleModel.class);
+            Assertions.assertTrue(moduleModel.getDeployer().isStarted());
             Assertions.assertEquals(true, DubboBootstrap.getInstance().isStarted());
             Assertions.assertEquals(false, DubboBootstrap.getInstance().isStopped());
 
