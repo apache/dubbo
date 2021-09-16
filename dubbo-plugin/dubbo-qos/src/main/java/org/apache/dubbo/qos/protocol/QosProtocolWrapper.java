@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,15 +42,18 @@ public class QosProtocolWrapper implements Protocol {
 
     private final Logger logger = LoggerFactory.getLogger(QosProtocolWrapper.class);
 
-    private static AtomicBoolean hasStarted = new AtomicBoolean(false);
+    private AtomicBoolean hasStarted = new AtomicBoolean(false);
 
     private Protocol protocol;
 
-    public QosProtocolWrapper(Protocol protocol) {
+    private FrameworkModel frameworkModel;
+
+    public QosProtocolWrapper(Protocol protocol, FrameworkModel frameworkModel) {
         if (protocol == null) {
             throw new IllegalArgumentException("protocol == null");
         }
         this.protocol = protocol;
+        this.frameworkModel = frameworkModel;
     }
 
     @Override
@@ -103,7 +107,7 @@ public class QosProtocolWrapper implements Protocol {
             String host = url.getParameter(QOS_HOST);
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
-            Server server = Server.getInstance();
+            Server server = frameworkModel.getBeanFactory().getBean(Server.class);
             server.setHost(host);
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);
@@ -116,7 +120,7 @@ public class QosProtocolWrapper implements Protocol {
 
     /*package*/ void stopServer() {
         if (hasStarted.compareAndSet(true, false)) {
-            Server server = Server.getInstance();
+            Server server = frameworkModel.getBeanFactory().getBean(Server.class);
             server.stop();
         }
     }

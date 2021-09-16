@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,8 +28,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -41,7 +43,7 @@ public class HttpProcessHandlerTest {
         when(context.writeAndFlush(any(FullHttpResponse.class))).thenReturn(future);
         HttpRequest message = Mockito.mock(HttpRequest.class);
         when(message.getUri()).thenReturn("test");
-        HttpProcessHandler handler = new HttpProcessHandler();
+        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel());
         handler.channelRead0(context, message);
         verify(future).addListener(ChannelFutureListener.CLOSE);
         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
@@ -58,7 +60,7 @@ public class HttpProcessHandlerTest {
         HttpRequest message = Mockito.mock(HttpRequest.class);
         when(message.getUri()).thenReturn("localhost:80/greeting");
         when(message.getMethod()).thenReturn(HttpMethod.GET);
-        HttpProcessHandler handler = new HttpProcessHandler();
+        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel());
         handler.channelRead0(context, message);
         verify(future).addListener(ChannelFutureListener.CLOSE);
         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
@@ -75,7 +77,7 @@ public class HttpProcessHandlerTest {
         HttpRequest message = Mockito.mock(HttpRequest.class);
         when(message.getUri()).thenReturn("localhost:80/test");
         when(message.getMethod()).thenReturn(HttpMethod.GET);
-        HttpProcessHandler handler = new HttpProcessHandler();
+        HttpProcessHandler handler = new HttpProcessHandler(FrameworkModel.defaultModel());
         handler.channelRead0(context, message);
         verify(future).addListener(ChannelFutureListener.CLOSE);
         ArgumentCaptor<FullHttpResponse> captor = ArgumentCaptor.forClass(FullHttpResponse.class);
