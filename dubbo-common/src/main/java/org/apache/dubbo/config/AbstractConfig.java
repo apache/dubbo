@@ -180,12 +180,14 @@ public abstract class AbstractConfig implements Serializable {
                     if (method.getReturnType() == Object.class) {
                         continue;
                     }
-                    String key = calculatePropertyFromGetter(name);
+                    String key;
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (asParameters) {
                         if (parameter != null && parameter.excluded()) {
                             continue;
                         }
+                        // get parameter key
+                        key = calculatePropertyFromGetter(name);
                         if (parameter != null && parameter.key().length() > 0) {
                             key = parameter.key();
                         }
@@ -194,6 +196,10 @@ public abstract class AbstractConfig implements Serializable {
                         if (parameter != null && !parameter.attribute()) {
                             continue;
                         }
+                        // get attribute name
+                        String propertyName = extractPropertyName(method.getName());
+                        // convert camelCase/snake_case to kebab-case
+                        key = StringUtils.convertToSplitName(propertyName, "-");
                     }
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
