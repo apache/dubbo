@@ -928,7 +928,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private String getIdentifier() {
         if (identifier == null) {
-            identifier = "Dubbo Application-" + applicationModel.getInternalId();
+            if (applicationModel.getModelName() != null && !StringUtils.isEquals(applicationModel.getModelName(), applicationModel.getInternalName())) {
+                identifier = applicationModel.getModelName() + "[" + applicationModel.getInternalId() + "]";
+            } else {
+                identifier = "Dubbo Application" + "[" + applicationModel.getInternalId() + "]";
+            }
         }
         return identifier;
     }

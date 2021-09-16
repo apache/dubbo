@@ -24,6 +24,7 @@ import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
@@ -379,7 +380,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private String getIdentifier() {
         if (identifier == null) {
-            identifier = "Dubbo Module-" + moduleModel.getInternalId();
+            if (moduleModel.getModelName() != null && !StringUtils.isEquals(moduleModel.getModelName(), moduleModel.getInternalName())) {
+                identifier = moduleModel.getModelName() + "[" + moduleModel.getInternalId() + "]";
+            } else {
+                identifier = "Dubbo Module" + "[" + moduleModel.getInternalId() + "]";
+            }
         }
         return identifier;
     }
