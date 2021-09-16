@@ -42,8 +42,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_REQUEST_WITH_WARNING_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
-
 
 public class ReferenceCountExchangeClientTest {
 
@@ -167,9 +167,6 @@ public class ReferenceCountExchangeClientTest {
         // close twice, counter counts down from 1 to 0, no warning occurs
         client.close();
 
-        // closed thrice, counter is incorrect
-        client.close();
-
         // wait close done.
         try {
             Thread.sleep(1000);
@@ -214,8 +211,11 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertTrue(shareConnections >= 1);
 
         int port = NetUtils.getAvailablePort();
-        URL demoUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/demo?" + CONNECTIONS_KEY + "=" + connections + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections);
-        URL helloUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/hello?" + CONNECTIONS_KEY + "=" + connections + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections);
+        String params = CONNECTIONS_KEY + "=" + connections
+                + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections
+                + "&" + LAZY_REQUEST_WITH_WARNING_KEY + "=" + "true";
+        URL demoUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/demo?" + params);
+        URL helloUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/hello?" + params);
 
         demoExporter = export(new DemoServiceImpl(), IDemoService.class, demoUrl);
         helloExporter = export(new HelloServiceImpl(), IHelloService.class, helloUrl);
