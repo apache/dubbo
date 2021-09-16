@@ -47,7 +47,6 @@ import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -64,7 +63,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import static java.util.Collections.singletonList;
-import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getServiceDiscoveries;
 
 /**
  * See {@link ApplicationModel} and {@link ExtensionLoader} for why this class is designed to be singleton.
@@ -156,9 +154,7 @@ public final class DubboBootstrap {
                 instance = null;
             }
             AbstractMetadataReportFactory.destroy();
-            AbstractRegistryFactory.reset();
             destroyAllProtocols();
-            destroyServiceDiscoveries();
             FrameworkModel.destroyAll();
         } else {
             instance = null;
@@ -339,16 +335,6 @@ public final class DubboBootstrap {
         for (FrameworkModel frameworkModel : FrameworkModel.getAllInstances()) {
             destroyProtocols(frameworkModel);
         }
-    }
-
-    private static void destroyServiceDiscoveries() {
-        getServiceDiscoveries().forEach(serviceDiscovery -> {
-            try {
-                serviceDiscovery.destroy();
-            } catch (Throwable ignored) {
-                logger.warn(ignored.getMessage(), ignored);
-            }
-        });
     }
 
     private void executeMutually(Runnable runnable) {

@@ -603,10 +603,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
             if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-                for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-                    moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                        .removeListener(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX,
-                            getProviderConfigurationListener(moduleModel));
+                for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
+                    if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
+                        moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                            .removeListener(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX,
+                                getProviderConfigurationListener(moduleModel));
+                    }
                 }
             }
         }
@@ -879,10 +881,12 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                         registry.unsubscribe(subscribeUrl, listener);
                         ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
                         if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
-                            for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-                                moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                                    .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                                        serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                            for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
+                                if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
+                                    moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                                        .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
+                                            serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
+                                }
                             }
                         }
                     }

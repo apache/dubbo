@@ -17,6 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
+import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -29,11 +33,6 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
-
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.Status;
-import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -295,15 +294,9 @@ public abstract class AbstractStream implements Stream {
         try {
             if (v instanceof String) {
                 String str = (String) v;
-                if (TripleUtil.overEachHeaderListSize(str)) {
-                    return;
-                }
                 metadata.put(key, str);
             } else if (v instanceof byte[]) {
                 String str = TripleUtil.encodeBase64ASCII((byte[]) v);
-                if (TripleUtil.overEachHeaderListSize(str)) {
-                    return;
-                }
                 metadata.put(key + "-bin", str);
             }
         } catch (Throwable t) {

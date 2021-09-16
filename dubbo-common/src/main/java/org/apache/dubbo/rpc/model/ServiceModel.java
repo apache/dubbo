@@ -51,6 +51,9 @@ public class ServiceModel {
         this.moduleModel = moduleModel;
         this.config = config;
         this.serviceMetadata = serviceMetadata;
+        if (serviceMetadata != null) {
+            serviceMetadata.setServiceModel(this);
+        }
         if (config != null) {
             this.classLoader = config.getInterfaceClassLoader();
         }

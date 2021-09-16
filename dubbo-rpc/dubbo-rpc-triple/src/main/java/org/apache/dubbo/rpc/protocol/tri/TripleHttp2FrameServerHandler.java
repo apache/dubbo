@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -198,10 +200,17 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         } else {
             stream = AbstractServerStream.unary(invoker.getUrl());
         }
+        Channel channel = ctx.channel();
+        ChannelPromise promise = channel.newPromise();
+        promise.addListener(future -> {
+            if (!future.isSuccess()) {
+                exceptionCaught(ctx, future.cause());
+            }
+        });
         stream.service(providerModel.getServiceModel())
             .invoker(invoker)
             .methodName(methodName)
-            .subscribe(new ServerTransportObserver(ctx));
+            .subscribe(new ServerTransportObserver(ctx,promise));
         if (methodDescriptor != null) {
             stream.method(methodDescriptor);
         } else {
@@ -214,7 +223,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             observer.onComplete();
         }
 
-        ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(stream);
+        channel.attr(TripleUtil.SERVER_STREAM_KEY).set(stream);
     }
 
 

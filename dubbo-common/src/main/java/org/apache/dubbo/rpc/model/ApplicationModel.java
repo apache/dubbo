@@ -173,7 +173,7 @@ public class ApplicationModel extends ScopeModel {
     @Override
     protected void initialize() {
         super.initialize();
-        internalModule = new ModuleModel(this);
+        internalModule = new ModuleModel(this, true);
         this.serviceRepository = new ServiceRepository(this);
 
         ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
@@ -274,10 +274,13 @@ public class ApplicationModel extends ScopeModel {
         return getCurrentConfig().getName();
     }
 
-    public synchronized void addModule(ModuleModel moduleModel) {
+    synchronized void addModule(ModuleModel moduleModel, boolean isInternal) {
         if (!this.moduleModels.contains(moduleModel)) {
             this.moduleModels.add(moduleModel);
             moduleModel.setInternalName(buildInternalName(ModuleModel.NAME, getInternalId(), moduleIndex.getAndIncrement()));
+            if (!isInternal) {
+                pubModuleModels.add(moduleModel);
+            }
         }
     }
 
@@ -359,7 +362,7 @@ public class ApplicationModel extends ScopeModel {
 
     @Override
     protected boolean checkIfClassLoaderCanRemoved(ClassLoader classLoader) {
-        return !containsClassLoader(classLoader);
+        return super.checkIfClassLoaderCanRemoved(classLoader) && !containsClassLoader(classLoader);
     }
 
     protected boolean containsClassLoader(ClassLoader classLoader) {
