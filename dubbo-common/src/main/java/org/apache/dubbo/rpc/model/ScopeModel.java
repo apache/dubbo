@@ -52,6 +52,11 @@ public abstract class ScopeModel implements ExtensionAccessor {
      */
     private String internalName;
 
+    /**
+     * Public Model Name, can be set from user
+     */
+    private String modelName;
+
     private Set<ClassLoader> classLoaders;
 
     private final ScopeModel parent;
@@ -154,6 +159,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     protected void setInternalName(String internalName) {
         this.internalName = internalName;
+        this.modelName = internalName;
     }
 
     public void addClassLoader(ClassLoader classLoader) {
@@ -201,5 +207,13 @@ public abstract class ScopeModel implements ExtensionAccessor {
         } else {
             return type + "-" + childIndex;
         }
+    }
+
+    public String getModelName() {
+        return modelName;
+    }
+
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
     }
 }
