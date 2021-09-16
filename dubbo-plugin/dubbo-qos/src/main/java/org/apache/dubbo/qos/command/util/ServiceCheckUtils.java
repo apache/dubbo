@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistry;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
@@ -32,7 +32,8 @@ public class ServiceCheckUtils {
 
     public static boolean isRegistered(ProviderModel providerModel) {
         // TODO, only check the status of one registry and no protocol now.
-        Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
+        RegistryManager registryManager = providerModel.getModuleModel().getApplicationModel().getBeanFactory().getBean(RegistryManager.class);
+        Collection<Registry> registries = registryManager.getRegistries();
         if (CollectionUtils.isNotEmpty(registries)) {
             AbstractRegistry abstractRegistry = (AbstractRegistry) registries.iterator().next();
             if (abstractRegistry.getRegistered().stream().anyMatch(url -> url.getServiceKey().equals(providerModel.getServiceKey()))) {
@@ -45,8 +46,9 @@ public class ServiceCheckUtils {
     public static int getConsumerAddressNum(ConsumerModel consumerModel) {
         // TODO, only check one registry by default.
         int num = 0;
+        RegistryManager registryManager = consumerModel.getModuleModel().getApplicationModel().getBeanFactory().getBean(RegistryManager.class);
 
-        Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
+        Collection<Registry> registries = registryManager.getRegistries();
         if (CollectionUtils.isNotEmpty(registries)) {
             AbstractRegistry abstractRegistry = (AbstractRegistry) registries.iterator().next();
             for (Map.Entry<URL, Map<String, List<URL>>> entry : abstractRegistry.getNotified().entrySet()) {

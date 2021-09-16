@@ -31,7 +31,6 @@ import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.config.ConfigurableSourceBeanMetadataElement;
-
 import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -83,7 +82,7 @@ public class DubboNamespaceHandler extends NamespaceHandlerSupport implements Co
         registerAnnotationConfigProcessors(registry);
 
         // initialize dubbo beans
-        DubboSpringInitializer.initialize(registry);
+        DubboSpringInitializer.initialize(parserContext.getRegistry());
 
         BeanDefinition beanDefinition = super.parse(element, parserContext);
         setSource(beanDefinition);

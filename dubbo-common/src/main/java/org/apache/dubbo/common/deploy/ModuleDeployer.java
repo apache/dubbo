@@ -14,21 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.model;
+package org.apache.dubbo.common.deploy;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.config.ServiceConfigBase;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
- * A post-processor after scope model is created (one of FrameworkModel/ApplicationModel/ModuleModel)
+ * Export/refer services of module
  */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ScopeModelPostProcessor {
+public interface ModuleDeployer {
 
-    /**
-     * Post-process after a scope model is created.
-     * @param scopeModel
-     */
-    void postProcessScopeModel(ScopeModel scopeModel);
+    void initialize() throws IllegalStateException;
+
+    CompletableFuture start() throws IllegalStateException;
+
+    void destroy() throws IllegalStateException;
+
+    boolean isStartup();
+
+    boolean isInitialized();
+
+    boolean isExportBackground();
+
+    boolean isReferBackground();
+
+    ReferenceCache getReferenceCache();
+
+    void prepare();
+
+    void notifyExportService(ServiceConfigBase<?> sc);
 
 }

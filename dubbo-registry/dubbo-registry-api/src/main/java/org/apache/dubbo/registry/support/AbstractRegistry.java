@@ -91,9 +91,11 @@ public abstract class AbstractRegistry implements Registry {
     // Local disk cache file
     private File file;
     private boolean localCacheEnabled;
+    private RegistryManager registryManager;
 
     public AbstractRegistry(URL url) {
         setUrl(url);
+        registryManager = url.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
         localCacheEnabled = url.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
         if (localCacheEnabled) {
             // Start file save timer
@@ -505,7 +507,7 @@ public abstract class AbstractRegistry implements Registry {
                 }
             }
         }
-        AbstractRegistryFactory.removeDestroyedRegistry(this);
+        registryManager.removeDestroyedRegistry(this);
     }
 
     protected boolean acceptable(URL urlToRegistry) {

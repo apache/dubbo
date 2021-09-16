@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 
@@ -204,8 +205,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     @Override
-    protected void postProcessAfterScopeModelChanged() {
-        super.postProcessAfterScopeModelChanged();
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
+        // remove this config from old ConfigManager
+//        if (oldScopeModel != null && oldScopeModel instanceof ModuleModel) {
+//            ((ModuleModel)oldScopeModel).getConfigManager().removeConfig(this);
+//        }
 
         // change referenced config's scope model
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
@@ -268,7 +273,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     protected Environment getEnvironment() {
-        return getApplicationModel().getApplicationEnvironment();
+        return getScopeModel().getModelEnvironment();
     }
 
     @Override

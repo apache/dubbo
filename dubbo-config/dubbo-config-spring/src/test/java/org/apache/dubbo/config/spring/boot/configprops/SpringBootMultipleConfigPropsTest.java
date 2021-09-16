@@ -28,9 +28,11 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -45,32 +47,32 @@ import java.util.Collection;
 import java.util.List;
 
 @SpringBootTest(
-        properties = {
-                "dubbo.applications.application1.name = dubbo-demo-application",
-                "dubbo.modules.demo-module.name = dubbo-demo-module",
-                "dubbo.registries.my-registry.address = zookeeper://192.168.99.100:32770",
-                "dubbo.protocols.dubbo.port=20880",
-                "dubbo.metricses.my-metrics.protocol=prometheus",
-                "dubbo.metricses.my-metrics.prometheus.pushgateway.enabled=true",
-                "dubbo.metricses.my-metrics.prometheus.pushgateway.base-url=localhost:9091",
-                "dubbo.metricses.my-metrics.prometheus.pushgateway.username=username",
-                "dubbo.metricses.my-metrics.prometheus.pushgateway.password=password",
-                "dubbo.metricses.my-metrics.prometheus.pushgateway.job=job",
-                "dubbo.metricses.my-metrics.prometheus.pushgateway.push-interval=30",
-                "dubbo.metricses.my-metrics.aggregation.enabled=true",
-                "dubbo.metricses.my-metrics.aggregation.bucket-num=5",
-                "dubbo.metricses.my-metrics.aggregation.time-window-seconds=120",
-                "dubbo.monitors.my-monitor.address=zookeeper://127.0.0.1:32770",
-                "dubbo.config-centers.my-configcenter.address=zookeeper://127.0.0.1:2181",
-                "dubbo.config-centers.my-configcenter.group=group1",
-                "dubbo.metadata-reports.my-metadata.address=zookeeper://127.0.0.1:2182",
-                "dubbo.metadata-reports.my-metadata.username=User",
-                "dubbo.providers.my-provider.host=127.0.0.1",
-                "dubbo.consumers.my-consumer.client=netty"
-        },
-        classes = {
-                SpringBootMultipleConfigPropsTest.class
-        }
+    properties = {
+        "dubbo.applications.application1.name = dubbo-demo-application",
+        "dubbo.modules.demo-module.name = dubbo-demo-module",
+        "dubbo.registries.my-registry.address = zookeeper://192.168.99.100:32770",
+        "dubbo.protocols.dubbo.port=20880",
+        "dubbo.metricses.my-metrics.protocol=prometheus",
+        "dubbo.metricses.my-metrics.prometheus.pushgateway.enabled=true",
+        "dubbo.metricses.my-metrics.prometheus.pushgateway.base-url=localhost:9091",
+        "dubbo.metricses.my-metrics.prometheus.pushgateway.username=username",
+        "dubbo.metricses.my-metrics.prometheus.pushgateway.password=password",
+        "dubbo.metricses.my-metrics.prometheus.pushgateway.job=job",
+        "dubbo.metricses.my-metrics.prometheus.pushgateway.push-interval=30",
+        "dubbo.metricses.my-metrics.aggregation.enabled=true",
+        "dubbo.metricses.my-metrics.aggregation.bucket-num=5",
+        "dubbo.metricses.my-metrics.aggregation.time-window-seconds=120",
+        "dubbo.monitors.my-monitor.address=zookeeper://127.0.0.1:32770",
+        "dubbo.config-centers.my-configcenter.address=zookeeper://127.0.0.1:2181",
+        "dubbo.config-centers.my-configcenter.group=group1",
+        "dubbo.metadata-reports.my-metadata.address=zookeeper://127.0.0.1:2182",
+        "dubbo.metadata-reports.my-metadata.username=User",
+        "dubbo.providers.my-provider.host=127.0.0.1",
+        "dubbo.consumers.my-consumer.client=netty"
+    },
+    classes = {
+        SpringBootMultipleConfigPropsTest.class
+    }
 )
 @Configuration
 @ComponentScan
@@ -94,6 +96,9 @@ public class SpringBootMultipleConfigPropsTest {
 
     @Autowired
     private ConfigManager configManager;
+
+    @Autowired
+    private ModuleModel moduleModel;
 
     @Test
     public void testConfigProps() {
@@ -142,10 +147,11 @@ public class SpringBootMultipleConfigPropsTest {
         Assertions.assertEquals("zookeeper://127.0.0.1:2182", reportConfig.getAddress());
         Assertions.assertEquals("User", reportConfig.getUsername());
 
-        ProviderConfig providerConfig = configManager.getDefaultProvider().get();
+        ModuleConfigManager moduleConfigManager = moduleModel.getConfigManager();
+        ProviderConfig providerConfig = moduleConfigManager.getDefaultProvider().get();
         Assertions.assertEquals("127.0.0.1", providerConfig.getHost());
 
-        ConsumerConfig consumerConfig = configManager.getDefaultConsumer().get();
+        ConsumerConfig consumerConfig = moduleConfigManager.getDefaultConsumer().get();
         Assertions.assertEquals("netty", consumerConfig.getClient());
 
     }

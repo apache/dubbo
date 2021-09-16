@@ -23,7 +23,6 @@ import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -331,8 +330,8 @@ public class AbstractConfigTest {
             external.put("dubbo.override.key", "external");
             // @Parameter(key="key2", useKeyAsProperty=true)
             external.put("dubbo.override.key2", "external");
-            ApplicationModel.defaultModel().getApplicationEnvironment().initialize();
-            ApplicationModel.defaultModel().getApplicationEnvironment().setExternalConfigMap(external);
+            ApplicationModel.defaultModel().getModelEnvironment().initialize();
+            ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(external);
 
             SysProps.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
             SysProps.setProperty("dubbo.override.protocol", "system");
@@ -350,7 +349,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("system", overrideConfig.getKey2());
         } finally {
             SysProps.clear();
-            ApplicationModel.defaultModel().getApplicationEnvironment().destroy();
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
 
@@ -375,14 +374,14 @@ public class AbstractConfigTest {
             Assertions.assertEquals("system", overrideConfig.getKey());
         } finally {
             SysProps.clear();
-            ApplicationModel.defaultModel().getApplicationEnvironment().destroy();
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
 
     @Test
     public void testRefreshProperties() throws Exception {
         try {
-            ApplicationModel.defaultModel().getApplicationEnvironment().setExternalConfigMap(new HashMap<>());
+            ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(new HashMap<>());
             OverrideConfig overrideConfig = new OverrideConfig();
             overrideConfig.setAddress("override-config://127.0.0.1:2181");
             overrideConfig.setProtocol("override-config");
@@ -390,7 +389,7 @@ public class AbstractConfigTest {
 
             Properties properties = new Properties();
             properties.load(this.getClass().getResourceAsStream("/dubbo.properties"));
-            ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperties(properties);
+            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperties(properties);
 
             overrideConfig.refresh();
 
@@ -399,7 +398,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("override-config://", overrideConfig.getEscape());
             //Assertions.assertEquals("properties", overrideConfig.getUseKeyAsProperty());
         } finally {
-            ApplicationModel.defaultModel().getApplicationEnvironment().destroy();
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
 
@@ -422,8 +421,8 @@ public class AbstractConfigTest {
             external.put("dubbo.override.key", "external");
             // @Parameter(key="key2", useKeyAsProperty=true)
             external.put("dubbo.override.key2", "external");
-            ApplicationModel.defaultModel().getApplicationEnvironment().initialize();
-            ApplicationModel.defaultModel().getApplicationEnvironment().setExternalConfigMap(external);
+            ApplicationModel.defaultModel().getModelEnvironment().initialize();
+            ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(external);
 
             overrideConfig.refresh();
 
@@ -434,7 +433,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("external", overrideConfig.getKey());
             Assertions.assertEquals("external", overrideConfig.getKey2());
         } finally {
-            ApplicationModel.defaultModel().getApplicationEnvironment().destroy();
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
 
@@ -454,8 +453,8 @@ public class AbstractConfigTest {
             external.put("dubbo.overrides.override-id.key2", "external");
             external.put("dubbo.override.address", "external://127.0.0.1:2181");
             external.put("dubbo.override.exclude", "external");
-            ApplicationModel.defaultModel().getApplicationEnvironment().initialize();
-            ApplicationModel.defaultModel().getApplicationEnvironment().setExternalConfigMap(external);
+            ApplicationModel.defaultModel().getModelEnvironment().initialize();
+            ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(external);
 
             // refresh config
             overrideConfig.refresh();
@@ -466,7 +465,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("external", overrideConfig.getKey());
             Assertions.assertEquals("external", overrideConfig.getKey2());
         } finally {
-            ApplicationModel.defaultModel().getApplicationEnvironment().destroy();
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
 
@@ -482,8 +481,8 @@ public class AbstractConfigTest {
 
             Map<String, String> external = new HashMap<>();
             external.put("dubbo.override.parameters", "[{key3:value3},{key4:value4},{key2:value5}]");
-            ApplicationModel.defaultModel().getApplicationEnvironment().initialize();
-            ApplicationModel.defaultModel().getApplicationEnvironment().setExternalConfigMap(external);
+            ApplicationModel.defaultModel().getModelEnvironment().initialize();
+            ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(external);
 
             // refresh config
             overrideConfig.refresh();
@@ -500,7 +499,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("value4", overrideConfig.getParameters().get("key4"));
         } finally {
             SysProps.clear();
-            ApplicationModel.defaultModel().getApplicationEnvironment().destroy();
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
 
@@ -513,7 +512,7 @@ public class AbstractConfigTest {
             assertEquals("value00", overrideConfig.getParameters().get("key00"));
         } finally {
             SysProps.clear();
-            ApplicationModel.defaultModel().getApplicationEnvironment().destroy();
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
 
@@ -536,14 +535,14 @@ public class AbstractConfigTest {
                 e.printStackTrace();
             }
 
-            ApplicationModel.defaultModel().getApplicationEnvironment().setExternalConfigMap(external);
+            ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(external);
 
             overrideConfig.refresh();
 
             Assertions.assertEquals("value-from-config", overrideConfig.getNotConflictKey());
             Assertions.assertEquals("value-from-env", overrideConfig.getNotConflictKey2());
         } finally {
-            ApplicationModel.defaultModel().getApplicationEnvironment().destroy();
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
 
         }
     }
@@ -952,8 +951,8 @@ public class AbstractConfigTest {
             external.put("dubbo.outer.a1", "1");
             external.put("dubbo.outer.b.b1", "11");
             external.put("dubbo.outer.b.b2", "12");
-            ApplicationModel.defaultModel().getApplicationEnvironment().initialize();
-            ApplicationModel.defaultModel().getApplicationEnvironment().setExternalConfigMap(external);
+            ApplicationModel.defaultModel().getModelEnvironment().initialize();
+            ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(external);
 
             // refresh config
             outerConfig.refresh();
@@ -962,7 +961,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals(11, outerConfig.getB().getB1());
             Assertions.assertEquals(12, outerConfig.getB().getB2());
         } finally {
-            ApplicationModel.defaultModel().getApplicationEnvironment().destroy();
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
         }
     }
 

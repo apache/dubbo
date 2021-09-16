@@ -26,12 +26,12 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.ConfigTest;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -177,7 +177,7 @@ public class DubboNamespaceHandlerTest {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/provider-nested-service.xml");
         ctx.start();
 
-        ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+        ModuleConfigManager configManager = ApplicationModel.defaultModel().getDefaultModule().getConfigManager();
         Collection<ProviderConfig> providerConfigs = configManager.getProviders();
         Assertions.assertEquals(2, providerConfigs.size());
 

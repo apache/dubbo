@@ -20,10 +20,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
