@@ -268,6 +268,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 // ignored
             }
         });
+        exportedServices.clear();
 
         asyncExportingFutures.forEach(future -> {
             if (!future.isDone()) {

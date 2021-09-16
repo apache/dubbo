@@ -164,6 +164,10 @@ public class ApplicationModel extends ScopeModel {
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
         initialize();
+        // bind to default instance if absent
+        if (defaultInstance == null) {
+            defaultInstance = this;
+        }
     }
 
     @Override
