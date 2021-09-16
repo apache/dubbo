@@ -91,7 +91,7 @@ public final class ClassGenerator {
         ClassPool pool = POOL_MAP.get(loader);
         if (pool == null) {
             pool = new ClassPool(true);
-            pool.appendClassPath(new CustomizedLoaderClassPath(loader));
+            pool.insertClassPath(new CustomizedLoaderClassPath(loader));
             POOL_MAP.put(loader, pool);
         }
         return pool;

@@ -772,6 +772,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return this.serviceInstance;
     }
 
+    public ServiceInstance getServiceInstance() {
+        return serviceInstance;
+    }
+
     @Override
     public void stop() {
         destroy();

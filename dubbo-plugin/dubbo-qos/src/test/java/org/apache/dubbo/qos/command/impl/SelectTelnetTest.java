@@ -26,6 +26,7 @@ import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.junit.jupiter.api.AfterEach;
@@ -43,7 +44,7 @@ import static org.mockito.Mockito.reset;
 
 public class SelectTelnetTest {
 
-    private static BaseCommand select = new SelectTelnet();
+    private static BaseCommand select = new SelectTelnet(FrameworkModel.defaultModel());
 
     private Channel mockChannel;
     private CommandContext mockCommandContext;
