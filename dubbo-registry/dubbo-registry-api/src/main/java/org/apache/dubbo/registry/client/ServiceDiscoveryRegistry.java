@@ -279,10 +279,8 @@ public class ServiceDiscoveryRegistry implements Registry {
     @Override
     public void destroy() {
         registryManager.removeDestroyedRegistry(this);
-        execute(() -> {
-            // stop ServiceDiscovery
-            serviceDiscovery.destroy();
-        });
+        // stop ServiceDiscovery
+        execute(serviceDiscovery::destroy);
     }
 
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
