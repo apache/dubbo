@@ -36,11 +36,12 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -50,8 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
@@ -286,22 +286,13 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      * FIXME It's not a good way to obtain {@link ServiceDiscoveryRegistry} using Reflection.
      */
     private ServiceDiscoveryRegistry getServiceDiscoveryRegistry() {
-        ServiceDiscoveryRegistry serviceDiscoveryRegistry = null;
-        try {
-            // get AbstractRegistryFactory.REGISTRIES
-            Field field = AbstractRegistryFactory.class.getDeclaredField("REGISTRIES");
-            field.setAccessible(true);
-            Map<String, Registry> REGISTRIES = (Map<String, Registry>) field.get(AbstractRegistryFactory.class);
-            for (Registry registry : REGISTRIES.values()) {
-                if (registry instanceof ServiceDiscoveryRegistry) {
-                    serviceDiscoveryRegistry = (ServiceDiscoveryRegistry) registry;
-                    break;
-                }
+        Collection<Registry> registries = RegistryManager.getInstance(ApplicationModel.defaultModel()).getRegistries();
+        for (Registry registry : registries) {
+            if(registry instanceof ServiceDiscoveryRegistry) {
+                return (ServiceDiscoveryRegistry) registry;
             }
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            // ignore
         }
-        return serviceDiscoveryRegistry;
+        return null;
     }
 
     /**
@@ -310,7 +301,6 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
     private void initConsumer() {
         referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(SingleRegistryCenterIntegrationService.class);
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
         DubboBootstrap.getInstance().reference(referenceConfig);
         referenceConfig.setRegistry(registryConfig);
         referenceConfig.setScope(SCOPE_REMOTE);
@@ -326,7 +316,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      */
     private void beforeRefer() {
         // ReferenceConfig has integrated into DubboBootstrap or not
-        Assertions.assertEquals(referenceConfig.getBootstrap(), DubboBootstrap.getInstance());
+        Assertions.assertEquals(referenceConfig.getScopeModel(), DubboBootstrap.getInstance().getApplicationModel().getDefaultModule());
     }
 
     /**
