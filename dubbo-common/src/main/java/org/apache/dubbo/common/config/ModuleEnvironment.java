@@ -215,6 +215,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
         orderedPropertiesConfiguration.refresh();
         applicationDelegate.refreshClassLoaders();
         this.globalConfiguration = null;
+        this.globalConfigurationMaps = null;
         this.dynamicGlobalConfiguration = null;
     }
 }
