@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import grpc.health.v1.HealthCheckResponse;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -33,6 +31,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
+
+import grpc.health.v1.HealthCheckResponse;
 
 import java.util.ArrayList;
 
