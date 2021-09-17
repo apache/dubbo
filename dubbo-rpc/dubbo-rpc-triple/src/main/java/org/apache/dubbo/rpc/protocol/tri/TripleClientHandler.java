@@ -45,7 +45,7 @@ import java.util.List;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public TripleClientHandler(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
