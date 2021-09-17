@@ -17,13 +17,26 @@
 package org.apache.dubbo.qos.probe.impl;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.qos.probe.ReadinessProbe;
+import org.apache.dubbo.qos.probe.StartupProbe;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 @Activate
-public class BootstrapReadinessProbe implements ReadinessProbe {
+public class DeployerStartupProbe implements StartupProbe {
+
+    private ApplicationModel applicationModel;
+
+    public DeployerStartupProbe(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
     @Override
     public boolean check() {
-        return !DubboBootstrap.getInstance().isShutdown() && DubboBootstrap.getInstance().isStartup();
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            if (moduleModel.getDeployer().isRunning()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

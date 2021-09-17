@@ -26,6 +26,7 @@ import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.junit.jupiter.api.AfterEach;
@@ -40,8 +41,9 @@ import static org.mockito.Mockito.reset;
 
 public class InvokeTelnetTest {
 
-    private static final BaseCommand invoke = new InvokeTelnet();
-    private static final BaseCommand select = new SelectTelnet();
+    private FrameworkModel frameworkModel;
+    private BaseCommand invoke;
+    private BaseCommand select;
     private Channel mockChannel;
     private CommandContext mockCommandContext;
     private final DefaultAttributeMap defaultAttributeMap = new DefaultAttributeMap();
@@ -50,16 +52,20 @@ public class InvokeTelnetTest {
     @BeforeEach
     public void setup() {
         DubboBootstrap.reset();
+        frameworkModel = new FrameworkModel();
+        invoke = new InvokeTelnet(frameworkModel);
+        select = new SelectTelnet(frameworkModel);
         mockChannel = mock(Channel.class);
         mockCommandContext = mock(CommandContext.class);
         given(mockCommandContext.getRemote()).willReturn(mockChannel);
-        repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        repository = applicationModel.getDefaultModule().getServiceRepository();
     }
 
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
-        DubboBootstrap.reset();
+        frameworkModel.destroy();
         reset(mockChannel, mockCommandContext);
     }
 

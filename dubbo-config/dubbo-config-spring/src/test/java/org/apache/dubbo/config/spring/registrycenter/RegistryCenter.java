@@ -66,5 +66,10 @@ public interface RegistryCenter {
          * Returns the port of registry center.
          */
         int getPort();
+
+        /**
+         * Return registry center url, such as: zookeeper://127.0.0.1:2181
+         */
+        String toURL();
     }
 }

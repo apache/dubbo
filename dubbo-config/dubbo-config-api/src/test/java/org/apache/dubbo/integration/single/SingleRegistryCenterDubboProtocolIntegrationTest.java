@@ -42,7 +42,6 @@ import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -162,12 +161,14 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         Assertions.assertFalse(serviceConfig.isExported());
         // ServiceConfig's exportedUrl has values or not
         Assertions.assertEquals(serviceConfig.getExportedUrls().size(), 0);
+        // DubboBootstrap is pending or not
+        Assertions.assertTrue(DubboBootstrap.getInstance().isPending());
         // DubboBootstrap is initialized or not
         Assertions.assertFalse(DubboBootstrap.getInstance().isInitialized());
         // DubboBootstrap is started or not
         Assertions.assertFalse(DubboBootstrap.getInstance().isStarted());
-        // DubboBootstrap is shutdown or not
-        Assertions.assertFalse(DubboBootstrap.getInstance().isShutdown());
+        // DubboBootstrap is stopped or not
+        Assertions.assertFalse(DubboBootstrap.getInstance().isStopped());
         // The ServiceListener is loaded by SPI or not
         Assertions.assertNull(singleRegistryCenterExportedServiceListener);
     }
@@ -202,10 +203,12 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
     private void afterExport() {
         // DubboBootstrap is initialized or not
         Assertions.assertTrue(DubboBootstrap.getInstance().isInitialized());
+        // DubboBootstrap is pending or not
+        Assertions.assertFalse(DubboBootstrap.getInstance().isPending());
         // DubboBootstrap is started or not
         Assertions.assertTrue(DubboBootstrap.getInstance().isStarted());
         // DubboBootstrap is shutdown or not
-        Assertions.assertFalse(DubboBootstrap.getInstance().isShutdown());
+        Assertions.assertFalse(DubboBootstrap.getInstance().isStopped());
         // Service has been exported or not
         Assertions.assertTrue(this.serviceConfig.isExported());
         // There is exported urls or not

@@ -35,7 +35,7 @@ import org.apache.dubbo.test.common.api.DemoService;
 import org.apache.dubbo.test.common.impl.DemoServiceImpl;
 import org.apache.dubbo.test.common.registrycenter.RegistryCenter;
 import org.apache.dubbo.test.common.registrycenter.ZookeeperSingleRegistryCenter;
-import org.apache.dubbo.test.spring.context.MockSpringInitializationCustomizer;
+import org.apache.dubbo.test.spring.context.MockSpringInitCustomizer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -135,7 +135,7 @@ public class SpringJavaConfigBeanTest {
             Assertions.assertEquals("Hello dubbo", result);
 
             // check initialization customizer
-            MockSpringInitializationCustomizer.checkCustomizer(consumerContext);
+            MockSpringInitCustomizer.checkCustomizer(consumerContext);
         } finally {
             consumerContext.close();
         }

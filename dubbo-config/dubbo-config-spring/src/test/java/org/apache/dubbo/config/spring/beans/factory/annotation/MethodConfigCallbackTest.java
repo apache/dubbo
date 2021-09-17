@@ -91,7 +91,7 @@ public class MethodConfigCallbackTest {
 
     @Test
     public void testMethodAnnotationCallBack() {
-        int threadCnt = Runtime.getRuntime().availableProcessors();
+        int threadCnt = Math.min(4, Runtime.getRuntime().availableProcessors());
         int callCnt = 2 * threadCnt;
         for (int i = 0; i < threadCnt; i++) {
             new Thread(() -> {
@@ -102,7 +102,7 @@ public class MethodConfigCallbackTest {
             }).start();
         }
         int i = 0;
-        while (MethodCallbackImpl.cnt.get() < ( 2 * threadCnt * callCnt) && i < 50){
+        while (MethodCallbackImpl.cnt.get() < ( 2 * threadCnt * callCnt)){
             // wait for async callback finished
             try {
                 i++;
