@@ -18,11 +18,12 @@ package org.apache.dubbo.rpc.protocol.tri.service;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
@@ -31,8 +32,7 @@ import org.apache.dubbo.rpc.protocol.tri.PathResolver;
 
 import grpc.health.v1.Health;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -42,54 +42,63 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
  **/
 public class TriBuiltinService {
 
-    private static final ProxyFactory PROXY_FACTORY =
-        ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private final ProxyFactory proxyFactory;
 
-    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
-        .getDefaultExtension();
+    private final PathResolver pathResolver;
 
-    private static final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+    private final ModuleServiceRepository repository;
 
-    private static final Map<Class<?>, Object> TRI_SERVICES = new HashMap<>();
+    private final Health healthService;
 
-    private static final HealthStatusManager HEALTH_STATUS_MANAGER;
+    private final HealthStatusManager healthStatusManager;
 
-    private static final AtomicBoolean init = new AtomicBoolean();
+    private final AtomicBoolean init = new AtomicBoolean();
 
-    static {
-        HEALTH_STATUS_MANAGER = new HealthStatusManager(new TriHealthImpl());
-        TRI_SERVICES.put(Health.class, HEALTH_STATUS_MANAGER.getHealthService());
+    public TriBuiltinService(FrameworkModel frameworkModel) {
+        healthStatusManager = new HealthStatusManager(new TriHealthImpl());
+        healthService = healthStatusManager.getHealthService();
+        proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+        List<ApplicationModel> applicationModels = frameworkModel.getApplicationModels();
+        if (CollectionUtils.isEmpty(applicationModels)) {
+            throw new IllegalStateException("Should have at least one applicationModel in frameworkModel. FrameworkModel:" + frameworkModel);
+        }
+        repository = applicationModels.get(0).getInternalModule().getServiceRepository();
+        init();
     }
 
-    public static void init() {
+    public void init() {
         if (init.compareAndSet(false, true)) {
-            TRI_SERVICES.forEach((clz, impl) -> {
-                ServiceDescriptor serviceDescriptor = repository.registerService(clz);
-                ServiceMetadata serviceMetadata = new ServiceMetadata();
-                serviceMetadata.setServiceType(clz);
-                serviceMetadata.setTarget(impl);
-                serviceMetadata.setServiceInterfaceName(clz.getName());
-                serviceMetadata.generateServiceKey();
-                ProviderModel providerModel = new ProviderModel(
-                    clz.getName(),
-                    impl,
-                    serviceDescriptor,
-                    null,
-                    serviceMetadata);
-                repository.registerProvider(providerModel);
-                int port = 0;
-                URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null,
-                    null, ANYHOST_VALUE, port, clz.getName());
-                url.setServiceModel(providerModel);
-                url.setScopeModel(ApplicationModel.defaultModel().getInternalModule());
-                Invoker<?> invoker = PROXY_FACTORY.getInvoker(impl, (Class) clz, url);
-                PATH_RESOLVER.add(url.getServiceKey(), invoker);
-                PATH_RESOLVER.add(url.getServiceInterface(), invoker);
+            ServiceDescriptor serviceDescriptor = repository.registerService(Health.class);
+            ServiceMetadata serviceMetadata = new ServiceMetadata();
+            serviceMetadata.setServiceType(Health.class);
+            serviceMetadata.setTarget(healthService);
+            serviceMetadata.setServiceInterfaceName(Health.class.getName());
+            serviceMetadata.generateServiceKey();
+            ProviderModel providerModel = new ProviderModel(
+                Health.class.getName(),
+                healthService,
+                serviceDescriptor,
+                null,
+                serviceMetadata);
+            repository.registerProvider(providerModel);
+            int port = 0;
+            URL url = new ServiceConfigURL(CommonConstants.TRIPLE, null,
+                null, ANYHOST_VALUE, port, Health.class.getName());
+            url.setServiceModel(providerModel);
+            url.setScopeModel(ApplicationModel.defaultModel().getInternalModule());
+            Invoker<?> invoker = proxyFactory.getInvoker(healthService, Health.class, url);
+            pathResolver.add(url.getServiceKey(), invoker);
+            pathResolver.add(url.getServiceInterface(), invoker);
+            providerModel.setDestroyCaller(()->{
+                pathResolver.remove(url.getServiceKey());
+                pathResolver.remove(url.getServiceInterface());
+                return null;
             });
         }
     }
 
-    public static HealthStatusManager getHealthStatusManager() {
-        return HEALTH_STATUS_MANAGER;
+    public HealthStatusManager getHealthStatusManager() {
+        return healthStatusManager;
     }
 }

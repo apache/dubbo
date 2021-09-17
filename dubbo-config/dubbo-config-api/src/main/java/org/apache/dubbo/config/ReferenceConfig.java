@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.directory.UrlStaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -464,7 +465,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void createInvokerForRemote() {
         if (urls.size() == 1) {
-            invoker = protocolSPI.refer(interfaceClass, urls.get(0));
+            URL curUrl = urls.get(0);
+            invoker = protocolSPI.refer(interfaceClass,curUrl);
+            if (!UrlUtils.isRegistry(curUrl)){
+                List<Invoker<?>> invokers = new ArrayList<>();
+                invokers.add(invoker);
+                invoker = Cluster.getCluster(scopeModel, Cluster.DEFAULT).join(new UrlStaticDirectory(curUrl,invokers));
+            }
         } else {
             List<Invoker<?>> invokers = new ArrayList<>();
             URL registryUrl = null;
@@ -483,18 +490,17 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 // registry url is available
                 // for multi-subscription scenario, use 'zone-aware' policy by default
                 String cluster = registryUrl.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
-                // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, routing happens here) -> Invoker
+                // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker
+                // (RegistryDirectory, routing happens here) -> Invoker
                 invoker = Cluster.getCluster(registryUrl.getScopeModel(), cluster, false).join(new StaticDirectory(registryUrl, invokers));
             } else {
                 // not a registry url, must be direct invoke.
-                String cluster = CollectionUtils.isNotEmpty(invokers) ?
-                    (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) :
-                        Cluster.DEFAULT)
-                    : Cluster.DEFAULT;
-                ScopeModel scopeModel = CollectionUtils.isNotEmpty(invokers) ?
-                    (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getScopeModel() : null)
-                    : null;
-                invoker = Cluster.getCluster(scopeModel, cluster).join(new StaticDirectory(invokers));
+                if (CollectionUtils.isEmpty(invokers)) {
+                    throw new IllegalArgumentException("invokers == null");
+                }
+                URL curUrl = invokers.get(0).getUrl();
+                String cluster = curUrl.getParameter(CLUSTER_KEY, Cluster.DEFAULT);
+                invoker = Cluster.getCluster(scopeModel, cluster).join(new UrlStaticDirectory(curUrl, invokers));
             }
         }
     }

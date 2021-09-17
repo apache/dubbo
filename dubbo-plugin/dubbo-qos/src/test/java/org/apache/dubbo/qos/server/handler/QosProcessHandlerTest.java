@@ -25,6 +25,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -40,7 +41,7 @@ public class QosProcessHandlerTest {
         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
         ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(context.pipeline()).thenReturn(pipeline);
-        QosProcessHandler handler = new QosProcessHandler("welcome", false);
+        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(), "welcome", false);
         handler.decode(context, buf, Collections.emptyList());
         verify(pipeline).addLast(any(HttpServerCodec.class));
         verify(pipeline).addLast(any(HttpObjectAggregator.class));
@@ -54,7 +55,7 @@ public class QosProcessHandlerTest {
         ChannelHandlerContext context = Mockito.mock(ChannelHandlerContext.class);
         ChannelPipeline pipeline = Mockito.mock(ChannelPipeline.class);
         Mockito.when(context.pipeline()).thenReturn(pipeline);
-        QosProcessHandler handler = new QosProcessHandler("welcome", false);
+        QosProcessHandler handler = new QosProcessHandler(FrameworkModel.defaultModel(), "welcome", false);
         handler.decode(context, buf, Collections.emptyList());
         verify(pipeline).addLast(any(LineBasedFrameDecoder.class));
         verify(pipeline).addLast(any(StringDecoder.class));

@@ -20,4 +20,8 @@ public interface ModelConstants {
 
     String DEPLOYER = "deployer";
 
+    /**
+     * Keep Dubbo running when spring is stopped
+     */
+    String KEEP_RUNNING_ON_SPRING_CLOSED = "keepRunningOnSpringClosed";
 }

@@ -18,27 +18,24 @@ package org.apache.dubbo.common.deploy;
 
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.config.ServiceConfigBase;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.concurrent.CompletableFuture;
 
 /**
  * Export/refer services of module
  */
-public interface ModuleDeployer {
+public interface ModuleDeployer extends Deployer<ModuleModel> {
 
     void initialize() throws IllegalStateException;
 
     CompletableFuture start() throws IllegalStateException;
 
+    void stop() throws IllegalStateException;
+
     void destroy() throws IllegalStateException;
 
-    boolean isStartup();
-
     boolean isInitialized();
-
-    boolean isExportBackground();
-
-    boolean isReferBackground();
 
     ReferenceCache getReferenceCache();
 
@@ -46,4 +43,5 @@ public interface ModuleDeployer {
 
     void notifyExportService(ServiceConfigBase<?> sc);
 
+    boolean isAsync();
 }

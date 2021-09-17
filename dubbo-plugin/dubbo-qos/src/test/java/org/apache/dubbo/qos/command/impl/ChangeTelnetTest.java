@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import io.netty.channel.Channel;
+import io.netty.util.DefaultAttributeMap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.command.BaseCommand;
@@ -24,10 +26,8 @@ import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
-import io.netty.channel.Channel;
-import io.netty.util.DefaultAttributeMap;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +40,7 @@ import static org.mockito.Mockito.reset;
 
 public class ChangeTelnetTest {
     private final DefaultAttributeMap defaultAttributeMap = new DefaultAttributeMap();
-    private static final BaseCommand change = new ChangeTelnet();
+    private static final BaseCommand change = new ChangeTelnet(FrameworkModel.defaultModel());
 
     private Channel mockChannel;
     private CommandContext mockCommandContext;
