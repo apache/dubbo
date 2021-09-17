@@ -734,6 +734,57 @@ public class ReferenceConfigTest {
     }
 
     @Test
+    public void test2ReferenceRetry() {
+        ApplicationConfig application = new ApplicationConfig();
+        application.setName("test-reference-retry2");
+        application.setEnableFileCache(false);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
+
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress(zkUrl1);
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setName("mockprotocol");
+
+        ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
+        rc.setRegistry(registry);
+        rc.setInterface(DemoService.class.getName());
+
+        boolean success = false;
+        DemoService demoService = null;
+        try {
+            demoService = rc.get();
+            success = true;
+        } catch (Exception e) {
+            // ignore
+        }
+        Assertions.assertFalse(success);
+        Assertions.assertNull(demoService);
+
+        ServiceConfig<DemoService> sc = new ServiceConfig<>();
+        sc.setInterface(DemoService.class.getName());
+        sc.setRef(new DemoServiceImpl());
+        sc.setRegistry(registry);
+        sc.setProtocol(protocol);
+
+        try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
+            sc.export();
+            demoService = rc.get();
+            success = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            rc.destroy();
+            sc.unexport();
+            System.clearProperty("java.net.preferIPv4Stack");
+
+        }
+        Assertions.assertTrue(success);
+        Assertions.assertNotNull(demoService);
+
+    }
+
+    @Test
     public void testMetaData() {
         ReferenceConfig config = new ReferenceConfig();
         Map<String, String> metaData = config.getMetaData();
