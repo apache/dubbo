@@ -45,8 +45,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KE
 
 public abstract class AbstractServerStream extends AbstractStream implements Stream {
 
-    protected static final ExecutorRepository EXECUTOR_REPOSITORY =
-            ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     private final ProviderModel providerModel;
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
@@ -73,11 +71,12 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             executor = (ExecutorService) providerModel.getServiceMetadata()
                     .getAttribute(CommonConstants.THREADPOOL_KEY);
         }
+        ExecutorRepository executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         if (executor == null) {
-            executor = EXECUTOR_REPOSITORY.getExecutor(url);
+            executor = executorRepository.getExecutor(url);
         }
         if (executor == null) {
-            executor = EXECUTOR_REPOSITORY.createExecutorIfAbsent(url);
+            executor = executorRepository.createExecutorIfAbsent(url);
         }
         return executor;
     }

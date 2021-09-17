@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
@@ -83,7 +82,7 @@ public abstract class AbstractStream implements Stream {
         this.url = url;
         this.executor = executor;
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
-        this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class)
+        this.multipleSerialization = url.getOrDefaultFrameworkModel().getExtensionLoader(MultipleSerialization.class)
                 .getExtension(value);
         this.streamObserver = createStreamObserver();
         this.transportObserver = createTransportObserver();
@@ -130,7 +129,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     public AbstractStream serialize(String serializeType) {
-        if (serializeType.equals("hessian4")) {
+        if ("hessian4".equals(serializeType)) {
             serializeType = "hessian2";
         }
         this.serializeType = serializeType;

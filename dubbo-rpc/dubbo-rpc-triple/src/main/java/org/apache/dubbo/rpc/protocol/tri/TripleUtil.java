@@ -340,14 +340,14 @@ public class TripleUtil {
     }
 
     public static String convertHessianToWrapper(String serializeType) {
-        if (serializeType.equals("hessian2")) {
+        if ("hessian2".equals(serializeType)) {
             return "hessian4";
         }
         return serializeType;
     }
 
     public static String convertHessianFromWrapper(String serializeType) {
-        if (serializeType.equals("hessian4")) {
+        if ("hessian4".equals(serializeType)) {
             return "hessian2";
         }
         return serializeType;

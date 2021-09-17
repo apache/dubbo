@@ -64,8 +64,6 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class TripleInvoker<T> extends AbstractInvoker<T> {
 
-    private static final ConnectionManager CONNECTION_MANAGER = ExtensionLoader.getExtensionLoader(
-            ConnectionManager.class).getExtension("multiple");
     private final Connection connection;
     private final ReentrantLock destroyLock = new ReentrantLock();
 
@@ -74,7 +72,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     public TripleInvoker(Class<T> serviceType, URL url, Set<Invoker<?>> invokers) throws RemotingException {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
-        this.connection = CONNECTION_MANAGER.connect(url);
+        ConnectionManager connectionManager = url.getOrDefaultFrameworkModel().getExtensionLoader(ConnectionManager.class).getExtension("multiple");
+        this.connection = connectionManager.connect(url);
     }
 
     @Override
