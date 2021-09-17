@@ -744,7 +744,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             newUrl = getConfiguredInvokerUrl(getProviderConfigurationListener(originUrl).getConfigurators(), newUrl);
             newUrl = getConfiguredInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
                 .getConfigurators(), newUrl);
-            if (!currentUrl.equals(newUrl)) {
+            if (!newUrl.equals(currentUrl)) {
                 if (newUrl.getParameter(Constants.NEED_REEXPORT, true)) {
                     RegistryProtocol.this.reExport(originInvoker, newUrl);
                 }
