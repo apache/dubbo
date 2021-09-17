@@ -283,6 +283,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             EventType eventType;
             if (childData == null) {
                 eventType = EventType.NodeDeleted;
+            } else if (childData.getStat().getVersion() == 0) {
+                // NodeData created: do nothing
+                return;
             } else {
                 content = new String(childData.getData(), CHARSET);
                 eventType = EventType.NodeDataChanged;
