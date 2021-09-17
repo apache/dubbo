@@ -17,7 +17,9 @@
 package org.apache.dubbo.metadata.store.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
@@ -33,14 +35,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
 
 /**
  * 2018/10/9
@@ -272,5 +273,46 @@ public class ZookeeperMetadataReportTest {
                 "?paramTest=etcdTest&version=" + version + "&application="
                 + application + (group == null ? "" : "&group=" + group));
         return url;
+    }
+
+
+    @Test
+    public void testMapping() throws InterruptedException {
+        String serviceKey = ZookeeperMetadataReportTest.class.getName();
+        URL url = URL.valueOf("test://127.0.0.1:8888/" + serviceKey);
+        String appNames = "demo1,demo2";
+
+        CountDownLatch latch = new CountDownLatch(1);
+        Set<String> serviceAppMapping = zookeeperMetadataReport.getServiceAppMapping(serviceKey, event -> {
+            Set<String> apps = event.getApps();
+            Assertions.assertEquals(apps.size(), 2);
+            Assertions.assertTrue(apps.contains("demo1"));
+            Assertions.assertTrue(apps.contains("demo2"));
+            latch.countDown();
+        }, url);
+        Assertions.assertTrue(serviceAppMapping.isEmpty());
+
+        ConfigItem configItem = zookeeperMetadataReport.getConfigItem(serviceKey, DEFAULT_MAPPING_GROUP);
+        zookeeperMetadataReport.registerServiceAppMapping(serviceKey, DEFAULT_MAPPING_GROUP, appNames, configItem.getTicket());
+        latch.await();
+    }
+
+    @Test
+    public void testAppMetadata() {
+        String serviceKey = ZookeeperMetadataReportTest.class.getName();
+        String appName = "demo";
+        URL url = URL.valueOf("test://127.0.0.1:8888/" + serviceKey);
+        MetadataInfo metadataInfo = new MetadataInfo(appName);
+        metadataInfo.addService(new MetadataInfo.ServiceInfo(url));
+
+        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(appName, metadataInfo.calAndGetRevision());
+        MetadataInfo appMetadata = zookeeperMetadataReport.getAppMetadata(identifier);
+        Assertions.assertNull(appMetadata);
+
+        zookeeperMetadataReport.publishAppMetadata(identifier, metadataInfo);
+        appMetadata = zookeeperMetadataReport.getAppMetadata(identifier);
+        Assertions.assertNotNull(appMetadata);
+        Assertions.assertEquals(appMetadata.calAndGetRevision(), metadataInfo.calAndGetRevision());
+
     }
 }

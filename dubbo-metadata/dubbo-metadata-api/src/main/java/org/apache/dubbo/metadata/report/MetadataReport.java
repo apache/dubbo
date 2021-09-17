@@ -45,7 +45,7 @@ public interface MetadataReport {
     default void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
     }
 
-    default MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
+    default MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier) {
         return null;
     }
 

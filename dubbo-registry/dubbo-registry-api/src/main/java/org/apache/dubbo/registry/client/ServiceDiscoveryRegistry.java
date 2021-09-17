@@ -90,7 +90,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         this.writableMetadataService = WritableMetadataService.getDefaultExtension(registryURL.getScopeModel());
     }
 
-    // Currently for test purpose
+    // Currently, for test purpose
     protected ServiceDiscoveryRegistry(URL registryURL, ServiceDiscovery serviceDiscovery, WritableMetadataService writableMetadataService) {
         this.registryURL = registryURL;
         this.serviceDiscovery = serviceDiscovery;
@@ -139,7 +139,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
         if (!should) {
             if (logger.isDebugEnabled()) {
-                logger.debug(String.format("The URL[%s] should not be registered.", providerURL.toString()));
+                logger.debug(String.format("The URL[%s] should not be registered.", providerURL));
             }
         }
 

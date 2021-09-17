@@ -147,7 +147,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
+    public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier) {
         String content = zkClient.getContent(getNodePath(identifier));
         return gson.fromJson(content, MetadataInfo.class);
     }
