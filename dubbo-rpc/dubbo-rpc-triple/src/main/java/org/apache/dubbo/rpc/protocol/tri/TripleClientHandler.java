@@ -44,7 +44,7 @@ import java.util.List;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public TripleClientHandler(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -79,7 +79,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
 
         MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel,inv);
 
-        ClassLoadUtil.switchContextLoader(consumerModel.getServiceInterfaceClass().getClassLoader());
+        ClassLoadUtil.switchContextLoader(consumerModel.getClassLoader());
         AbstractClientStream stream;
         if (methodDescriptor.isUnary()) {
             stream = AbstractClientStream.unary(url);

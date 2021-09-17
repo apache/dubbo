@@ -21,7 +21,6 @@ import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.util.HashMap;
@@ -59,7 +58,7 @@ public class GenericApplication {
                 .start();
 
         // generic invoke
-        GenericService genericService = (GenericService) ReferenceConfigCache.getCache().get(reference);
+        GenericService genericService = (GenericService) bootstrap.getCache().get(reference);
         while (true) {
             try {
                 Object genericInvokeResult = genericService.$invoke("sayHello", new String[]{String.class.getName()},

@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -25,10 +28,7 @@ import org.apache.dubbo.qos.command.DefaultCommandExecutor;
 import org.apache.dubbo.qos.command.NoSuchCommandException;
 import org.apache.dubbo.qos.command.decoder.TelnetCommandDecoder;
 import org.apache.dubbo.qos.common.QosConstants;
-
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 /**
  * Telnet process handler
@@ -36,7 +36,11 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
 
     private static final Logger log = LoggerFactory.getLogger(TelnetProcessHandler.class);
-    private static CommandExecutor commandExecutor = new DefaultCommandExecutor();
+    private final CommandExecutor commandExecutor;
+
+    public TelnetProcessHandler(FrameworkModel frameworkModel) {
+        this.commandExecutor = new DefaultCommandExecutor(frameworkModel);
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {

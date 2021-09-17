@@ -28,8 +28,8 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
 public class PortTelnetTest {
-    private static final BaseCommand port = new PortTelnet();
+    private static final BaseCommand port = new PortTelnet(FrameworkModel.defaultModel());
 
     private Invoker<DemoService> mockInvoker;
     private CommandContext mockCommandContext;

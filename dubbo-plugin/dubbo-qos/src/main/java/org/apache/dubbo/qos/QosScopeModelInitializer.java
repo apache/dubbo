@@ -14,17 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.probe.impl;
+package org.apache.dubbo.qos;
 
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.qos.probe.StartupProbe;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.qos.server.Server;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-@Activate
-public class BootstrapStartupProbe implements StartupProbe {
+public class QosScopeModelInitializer implements ScopeModelInitializer {
+    @Override
+    public void initializeFrameworkModel(FrameworkModel frameworkModel) {
+        ScopeBeanFactory beanFactory = frameworkModel.getBeanFactory();
+        beanFactory.registerBean(Server.class);
+    }
 
     @Override
-    public boolean check() {
-        return DubboBootstrap.getInstance().isStartup();
+    public void initializeApplicationModel(ApplicationModel applicationModel) {
+
+    }
+
+    @Override
+    public void initializeModuleModel(ModuleModel moduleModel) {
+
     }
 }

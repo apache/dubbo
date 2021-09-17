@@ -17,12 +17,12 @@
 package org.apache.dubbo.integration.multiple.injvm;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.registrycenter.RegistryCenter;
@@ -145,7 +145,6 @@ public class MultipleRegistryCenterInjvmIntegrationTest implements IntegrationTe
         afterExport();
         ReferenceConfig<MultipleRegistryCenterInjvmService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(MultipleRegistryCenterInjvmService.class);
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
         referenceConfig.setScope(SCOPE_LOCAL);
         referenceConfig.get().hello("Dubbo in multiple registry center");
         afterInvoke();

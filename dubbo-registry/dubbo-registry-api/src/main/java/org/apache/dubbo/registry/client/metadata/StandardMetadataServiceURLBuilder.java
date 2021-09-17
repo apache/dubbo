@@ -27,7 +27,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -72,20 +72,21 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     public List<URL> build(ServiceInstance serviceInstance) {
         Map<String, String> paramsMap = getMetadataServiceURLsParams(serviceInstance);
 
-        List<URL> urls = new ArrayList<>(paramsMap.size());
-
         String serviceName = serviceInstance.getServiceName();
 
         String host = serviceInstance.getHost();
 
+        URL url;
         if (paramsMap.isEmpty()) {
             // ServiceInstance Metadata is empty. Happened when registry not support metadata write.
-            urls.add(generateUrlWithoutMetadata(serviceName, host, serviceInstance.getPort()));
+            url = generateUrlWithoutMetadata(serviceName, host, serviceInstance.getPort());
         } else {
-            urls.add(generateWithMetadata(serviceName, host, paramsMap));
+            url = generateWithMetadata(serviceName, host, paramsMap);
         }
 
-        return urls;
+        url = url.setScopeModel(serviceInstance.getApplicationModel().getInternalModule());
+
+        return Collections.singletonList(url);
     }
 
     private URL generateWithMetadata(String serviceName, String host, Map<String, String> params) {

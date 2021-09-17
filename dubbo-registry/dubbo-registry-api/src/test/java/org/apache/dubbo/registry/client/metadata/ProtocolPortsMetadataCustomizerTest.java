@@ -16,21 +16,20 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 

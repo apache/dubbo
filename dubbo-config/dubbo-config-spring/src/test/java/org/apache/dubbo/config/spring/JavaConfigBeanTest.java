@@ -25,6 +25,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
@@ -32,7 +33,6 @@ import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -104,7 +104,9 @@ public class JavaConfigBeanTest {
             Assertions.assertEquals(2346, protocolConfig.getPort());
             Assertions.assertEquals(MY_PROTOCOL_ID, protocolConfig.getId());
 
-            ConsumerConfig consumerConfig = configManager.getDefaultConsumer().get();
+            ApplicationModel applicationModel = consumerContext.getBean(ApplicationModel.class);
+            ModuleConfigManager moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
+            ConsumerConfig consumerConfig = moduleConfigManager.getDefaultConsumer().get();
             Assertions.assertEquals(1000, consumerConfig.getTimeout());
             Assertions.assertEquals("demo", consumerConfig.getGroup());
             Assertions.assertEquals(false, consumerConfig.isCheck());

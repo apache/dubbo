@@ -30,7 +30,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.registry.support.RegistryManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,10 +84,13 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     private URL registryURL;
 
+    private RegistryManager registryManager;
+
     public ServiceDiscoveryRegistry(URL registryURL) {
         this.registryURL = registryURL;
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.writableMetadataService = WritableMetadataService.getDefaultExtension(registryURL.getScopeModel());
+        this.registryManager = registryURL.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
     }
 
     // Currently for test purpose
@@ -187,7 +190,7 @@ public class ServiceDiscoveryRegistry implements Registry {
             }
         } else {
             if (logger.isWarnEnabled()) {
-                logger.info(format("The URL[%s] has been deregistered.", url.toString()));
+                logger.warn(format("The URL[%s] has been deregistered.", url.toString()));
             }
         }
     }

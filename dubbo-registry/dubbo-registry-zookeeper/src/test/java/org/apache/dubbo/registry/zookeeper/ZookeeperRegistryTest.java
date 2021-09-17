@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
+import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
-
-import org.apache.curator.test.TestingServer;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -129,7 +129,7 @@ public class ZookeeperRegistryTest {
       @see https://github.com/apache/dubbo/issues/1787
      */
     public void testStatusChecker() {
-        RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker();
+        RegistryStatusChecker registryStatusChecker = new RegistryStatusChecker(ApplicationModel.defaultModel());
         Status status = registryStatusChecker.check();
         assertThat(status.getLevel(), is(Status.Level.UNKNOWN));
 

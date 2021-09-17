@@ -19,7 +19,6 @@ package org.apache.dubbo.registry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

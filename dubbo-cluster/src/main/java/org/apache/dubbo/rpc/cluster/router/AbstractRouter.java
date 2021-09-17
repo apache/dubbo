@@ -28,7 +28,7 @@ public abstract class AbstractRouter implements Router {
     private GovernanceRuleRepository ruleRepository;
 
     public AbstractRouter(URL url) {
-        this.ruleRepository = url.getOrDefaultApplicationModel().getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        this.ruleRepository = url.getOrDefaultModuleModel().getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
     }
 

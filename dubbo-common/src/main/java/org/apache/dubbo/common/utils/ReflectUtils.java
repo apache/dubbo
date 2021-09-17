@@ -1368,4 +1368,16 @@ public final class ReflectUtils {
         return fieldNames;
     }
 
+    public static <T> T getFieldValue(Object obj, String fieldName) throws RuntimeException {
+        if (obj == null) {
+            throw new IllegalArgumentException("object is null");
+        }
+        try {
+            Field field = obj.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return (T) field.get(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
 }

@@ -14,12 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.context;
+package org.apache.dubbo.qos.probe.impl;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.qos.probe.StartupProbe;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
-@SPI(scope = ExtensionScope.APPLICATION)
-public interface FrameworkExt extends Lifecycle {
+@Activate
+public class DeployerStartupProbe implements StartupProbe {
 
+    private ApplicationModel applicationModel;
+
+    public DeployerStartupProbe(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
+    @Override
+    public boolean check() {
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            if (moduleModel.getDeployer().isRunning()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -32,7 +32,7 @@ public class EnvironmentTest {
 
     @Test
     public void testResolvePlaceholders1() {
-        Environment environment = ApplicationModel.defaultModel().getApplicationEnvironment();
+        Environment environment = ApplicationModel.defaultModel().getModelEnvironment();
 
         Map<String, String> externalMap = new LinkedHashMap<>();
         externalMap.put("zookeeper.address", "127.0.0.1");

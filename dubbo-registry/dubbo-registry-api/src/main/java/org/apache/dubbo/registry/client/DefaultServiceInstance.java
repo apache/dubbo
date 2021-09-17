@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.registry.client;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import com.alibaba.fastjson.JSON;
 
 import java.beans.Transient;
 import java.util.HashMap;

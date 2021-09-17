@@ -23,7 +23,7 @@ import org.apache.dubbo.test.common.api.GreetingService;
 import org.apache.dubbo.test.common.api.RestDemoService;
 import org.apache.dubbo.test.common.registrycenter.RegistryCenter;
 import org.apache.dubbo.test.common.registrycenter.ZookeeperSingleRegistryCenter;
-import org.apache.dubbo.test.spring.context.MockSpringInitializationCustomizer;
+import org.apache.dubbo.test.spring.context.MockSpringInitCustomizer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -69,7 +69,7 @@ public class SpringXmlConfigTest {
             Assertions.assertEquals("Hello, dubbo", resetHelloResult);
 
             // check initialization customizer
-            MockSpringInitializationCustomizer.checkCustomizer(applicationContext);
+            MockSpringInitCustomizer.checkCustomizer(applicationContext);
         } finally {
             SysProps.clear();
             if (applicationContext != null) {

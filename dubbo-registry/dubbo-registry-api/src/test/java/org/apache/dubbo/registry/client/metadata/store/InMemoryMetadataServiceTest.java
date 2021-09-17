@@ -25,7 +25,6 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.registry.MockLogger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

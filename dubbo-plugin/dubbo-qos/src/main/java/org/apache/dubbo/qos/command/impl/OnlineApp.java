@@ -17,10 +17,9 @@
 package org.apache.dubbo.qos.command.impl;
 
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 @Cmd(name = "onlineApp", summary = "online app addresses", example = {
@@ -28,7 +27,9 @@ import org.apache.dubbo.rpc.model.ProviderModel;
         "onlineApp xx.xx.xxx.service"
 })
 public class OnlineApp extends BaseOnline {
-    private static final Logger logger = LoggerFactory.getLogger(OnlineApp.class);
+    public OnlineApp(FrameworkModel frameworkModel) {
+        super(frameworkModel);
+    }
 
     @Override
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {

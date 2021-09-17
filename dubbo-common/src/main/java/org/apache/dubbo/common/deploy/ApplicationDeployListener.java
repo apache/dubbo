@@ -14,23 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context;
+package org.apache.dubbo.common.deploy;
 
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
- * Dubbo spring initialization context object
+ * Listen for Dubbo application deployment events
  */
-public class DubboSpringInitializationContext {
-
-    private BeanDefinitionRegistry registry;
-
-    public BeanDefinitionRegistry getRegistry() {
-        return registry;
-    }
-
-    void setRegistry(BeanDefinitionRegistry registry) {
-        this.registry = registry;
-    }
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface ApplicationDeployListener extends DeployListener<ApplicationModel> {
 
 }
