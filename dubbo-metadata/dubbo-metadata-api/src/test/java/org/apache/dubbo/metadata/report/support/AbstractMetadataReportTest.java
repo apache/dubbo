@@ -50,7 +50,6 @@ public class AbstractMetadataReportTest {
 
     private NewMetadataReport abstractMetadataReport;
 
-
     @BeforeEach
     public void before() {
         URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
