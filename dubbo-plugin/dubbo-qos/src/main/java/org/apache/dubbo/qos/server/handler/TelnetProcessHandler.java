@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -26,10 +29,6 @@ import org.apache.dubbo.qos.command.NoSuchCommandException;
 import org.apache.dubbo.qos.command.decoder.TelnetCommandDecoder;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
  * Telnet process handler

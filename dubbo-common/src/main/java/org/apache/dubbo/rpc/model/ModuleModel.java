@@ -26,7 +26,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -43,6 +42,7 @@ public class ModuleModel extends ScopeModel {
     private ModuleEnvironment moduleEnvironment;
     private ModuleServiceRepository serviceRepository;
     private ModuleConfigManager moduleConfigManager;
+    private ModuleDeployer deployer;
 
     public ModuleModel(ApplicationModel applicationModel) {
         this(applicationModel, false);
@@ -82,45 +82,23 @@ public class ModuleModel extends ScopeModel {
 
     @Override
     public void onDestroy() {
+        applicationModel.removeModule(this);
+
+        if (deployer != null) {
+            deployer.destroy();
+            deployer = null;
+        }
         if (serviceRepository != null) {
-            List<ConsumerModel> consumerModels = serviceRepository.getReferredServices();
-
-            for (ConsumerModel consumerModel : consumerModels) {
-                try {
-                    if (consumerModel.getReferenceConfig() != null) {
-                        consumerModel.getReferenceConfig().destroy();
-                    } else if (consumerModel.getDestroyCaller() != null) {
-                        consumerModel.getDestroyCaller().call();
-                    }
-                } catch (Throwable t) {
-                    logger.error("Unable to destroy consumerModel.", t);
-                }
-            }
-
-            List<ProviderModel> exportedServices = serviceRepository.getExportedServices();
-            for (ProviderModel providerModel : exportedServices) {
-                try {
-                    if (providerModel.getServiceConfig() != null) {
-                        providerModel.getServiceConfig().unexport();
-                    } else if (providerModel.getDestroyCaller() != null) {
-                        providerModel.getDestroyCaller().call();
-                    }
-                } catch (Throwable t) {
-                    logger.error("Unable to destroy providerModel.", t);
-                }
-            }
-
             serviceRepository.destroy();
             serviceRepository = null;
         }
 
         notifyDestroy();
+
         if (moduleEnvironment != null) {
             moduleEnvironment.destroy();
             moduleEnvironment = null;
         }
-
-        applicationModel.removeModule(this);
     }
 
     public ApplicationModel getApplicationModel() {
@@ -153,11 +131,11 @@ public class ModuleModel extends ScopeModel {
     }
 
     public ModuleDeployer getDeployer() {
-        return getAttribute(ModelConstants.DEPLOYER, ModuleDeployer.class);
+        return deployer;
     }
 
     public void setDeployer(ModuleDeployer deployer) {
-        setAttribute(ModelConstants.DEPLOYER, deployer);
+        this.deployer = deployer;
     }
 
 }

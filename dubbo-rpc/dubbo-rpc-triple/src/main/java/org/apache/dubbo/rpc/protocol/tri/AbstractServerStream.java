@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import com.google.protobuf.Message;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -30,8 +31,6 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
-
-import com.google.protobuf.Message;
 
 import java.util.Arrays;
 import java.util.List;

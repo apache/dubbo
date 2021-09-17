@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import io.netty.channel.Channel;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import io.netty.channel.Channel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

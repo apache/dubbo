@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -39,8 +40,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
-
-import io.netty.channel.ChannelFuture;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;

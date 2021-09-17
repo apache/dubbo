@@ -16,15 +16,14 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import io.netty.channel.Channel;
-import io.netty.util.AttributeKey;
 
 import java.lang.reflect.Method;
 import java.util.List;

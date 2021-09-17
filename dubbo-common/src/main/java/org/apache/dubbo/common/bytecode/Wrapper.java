@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
-
 import javassist.ClassPool;
 import javassist.CtMethod;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

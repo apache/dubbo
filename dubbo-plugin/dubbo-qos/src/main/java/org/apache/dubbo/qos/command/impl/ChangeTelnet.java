@@ -16,15 +16,14 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
-import io.netty.channel.Channel;
-import io.netty.util.AttributeKey;
 
 @Cmd(name = "cd", summary = "Change default service.", example = {
     "cd [service]"

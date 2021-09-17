@@ -16,11 +16,10 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
-import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;

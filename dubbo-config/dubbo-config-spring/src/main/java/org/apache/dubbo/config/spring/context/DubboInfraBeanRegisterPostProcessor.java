@@ -37,8 +37,9 @@ import java.util.SortedMap;
  * Register some infrastructure beans if not exists.
  * This post-processor MUST impl BeanDefinitionRegistryPostProcessor,
  * in order to enable the registered BeanFactoryPostProcessor bean to be loaded and executed.
+ *
  * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(
- * org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
+ *org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
  */
 public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
 
@@ -74,6 +75,7 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
 
         // Initialize SpringExtensionInjector
         SpringExtensionInjector.get(applicationModel).init(applicationContext);
+        DubboBeanUtils.getInitializationContext(beanFactory).setApplicationContext(applicationContext);
 
         // Initialize dubbo Environment before ConfigManager
         // Extract dubbo props from Spring env and put them to app config

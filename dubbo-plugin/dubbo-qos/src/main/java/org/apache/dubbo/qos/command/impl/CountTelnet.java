@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
@@ -29,9 +31,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;

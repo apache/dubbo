@@ -104,6 +104,11 @@ class ZookeeperRegistryCenter extends AbstractRegistryCenter {
                 public int getPort() {
                     return instanceSpec.getPort();
                 }
+
+                @Override
+                public String toURL() {
+                    return String.format("%s://%s:%d", getType(), getHostname(), getPort());
+                }
             });
         }
         return instances;

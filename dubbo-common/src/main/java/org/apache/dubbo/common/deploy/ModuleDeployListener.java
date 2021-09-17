@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.probe.impl;
+package org.apache.dubbo.common.deploy;
 
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.qos.probe.ReadinessProbe;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
-@Activate
-public class BootstrapReadinessProbe implements ReadinessProbe {
-    @Override
-    public boolean check() {
-        return !DubboBootstrap.getInstance().isShutdown() && DubboBootstrap.getInstance().isStartup();
-    }
+/**
+ * Module deploy listener
+ */
+@SPI(scope = ExtensionScope.MODULE)
+public interface ModuleDeployListener extends DeployListener<ModuleModel> {
+
 }
