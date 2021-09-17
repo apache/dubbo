@@ -21,8 +21,8 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcException;
 
 @Activate(group = CommonConstants.PROVIDER, order = 10000)
 public class SingleRegistryCenterInjvmFilter implements Filter,Filter.Listener {
@@ -55,7 +55,7 @@ public class SingleRegistryCenterInjvmFilter implements Filter,Filter.Listener {
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        response = appResponse.getValue().toString();
+        response = String.valueOf(appResponse.getValue());
     }
 
     @Override

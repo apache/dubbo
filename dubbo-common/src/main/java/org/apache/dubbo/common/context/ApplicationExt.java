@@ -14,21 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.model;
+package org.apache.dubbo.common.context;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-/**
- * A post-processor after scope model is created (one of FrameworkModel/ApplicationModel/ModuleModel)
- */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ScopeModelPostProcessor {
-
-    /**
-     * Post-process after a scope model is created.
-     * @param scopeModel
-     */
-    void postProcessScopeModel(ScopeModel scopeModel);
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface ApplicationExt extends Lifecycle {
 
 }

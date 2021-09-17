@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.context;
+package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+public interface ModelConstants {
 
-@SPI(scope = ExtensionScope.APPLICATION)
-public interface FrameworkExt extends Lifecycle {
+    String DEPLOYER = "deployer";
 
+    /**
+     * Keep Dubbo running when spring is stopped
+     */
+    String KEEP_RUNNING_ON_SPRING_CLOSED = "keepRunningOnSpringClosed";
 }

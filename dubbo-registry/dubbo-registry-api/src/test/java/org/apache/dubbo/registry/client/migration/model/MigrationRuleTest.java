@@ -20,8 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -76,10 +74,10 @@ public class MigrationRuleTest {
         assertEquals(false, migrationRule.getForce());
 
         URL url = Mockito.mock(URL.class);
-        ModuleModel defaultModule = Mockito.spy(ApplicationModel.defaultModel().getDefaultModule());
-        Mockito.when(defaultModule.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
+        ApplicationModel defaultModel = Mockito.spy(ApplicationModel.defaultModel());
+        Mockito.when(defaultModel.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
 
-        Mockito.when(url.getScopeModel()).thenReturn(defaultModule);
+        Mockito.when(url.getScopeModel()).thenReturn(defaultModel);
         Mockito.when(url.getDisplayServiceKey()).thenReturn("DemoService:1.0.0");
         Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
         Mockito.when(url.getParameter(ArgumentMatchers.eq(REGISTRY_CLUSTER_TYPE_KEY), anyString())).thenReturn("default");
@@ -101,7 +99,7 @@ public class MigrationRuleTest {
 
         Mockito.when(url.getDisplayServiceKey()).thenReturn("GreetingService:1.0.1");
         Mockito.when(url.getServiceInterface()).thenReturn("GreetingService");
-        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(defaultModule);
+        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(defaultModel);
         metadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(url), Collections.singleton("TestApplication"));
 
         Set<String> services = new HashSet<>();
@@ -113,5 +111,6 @@ public class MigrationRuleTest {
         assertEquals(false, migrationRule.getForce(url));
         assertEquals(MigrationStep.FORCE_INTERFACE, migrationRule.getStep(url));
         metadataService.removeCachedMapping("GreetingService");
+        ApplicationModel.defaultModel().destroy();
     }
 }

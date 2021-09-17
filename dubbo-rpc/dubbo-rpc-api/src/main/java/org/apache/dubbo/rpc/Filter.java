@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
@@ -64,7 +65,7 @@ import org.apache.dubbo.common.extension.SPI;
  * @see org.apache.dubbo.rpc.filter.TokenFilter
  * @see org.apache.dubbo.rpc.filter.TpsLimitFilter
  */
-@SPI
+@SPI(scope = ExtensionScope.MODULE)
 public interface Filter extends BaseFilter {
 }
 

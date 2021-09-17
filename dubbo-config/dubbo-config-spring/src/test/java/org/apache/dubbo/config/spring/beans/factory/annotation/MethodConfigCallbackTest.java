@@ -23,11 +23,11 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.api.MethodCallback;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import org.apache.dubbo.config.spring.impl.MethodCallbackImpl;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +91,7 @@ public class MethodConfigCallbackTest {
 
     @Test
     public void testMethodAnnotationCallBack() {
-        int threadCnt = Runtime.getRuntime().availableProcessors();
+        int threadCnt = Math.min(4, Runtime.getRuntime().availableProcessors());
         int callCnt = 2 * threadCnt;
         for (int i = 0; i < threadCnt; i++) {
             new Thread(() -> {
@@ -102,7 +102,7 @@ public class MethodConfigCallbackTest {
             }).start();
         }
         int i = 0;
-        while (MethodCallbackImpl.cnt.get() < ( 2 * threadCnt * callCnt) && i < 50){
+        while (MethodCallbackImpl.cnt.get() < ( 2 * threadCnt * callCnt)){
             // wait for async callback finished
             try {
                 i++;

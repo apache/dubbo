@@ -29,9 +29,12 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -47,6 +50,17 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 public class ConfigurationUtils {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
     private static Map<String, String> CACHED_DYNAMIC_PROPERTIES = new ConcurrentHashMap<>();
+    private static final List<String> securityKey;
+
+    static {
+        List<String> keys = new LinkedList<>();
+        keys.add("accesslog");
+        keys.add("router");
+        keys.add("rule");
+        keys.add("runtime");
+        keys.add("type");
+        securityKey = Collections.unmodifiableList(keys);
+    }
 
     /**
      * Used to get properties from the jvm
@@ -54,7 +68,7 @@ public class ConfigurationUtils {
      * @return
      */
     public static Configuration getSystemConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getApplicationModel(scopeModel).getApplicationEnvironment().getSystemConfiguration();
+        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getSystemConfiguration();
     }
 
     /**
@@ -64,7 +78,7 @@ public class ConfigurationUtils {
      */
 
     public static Configuration getEnvConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getApplicationModel(scopeModel).getApplicationEnvironment().getEnvironmentConfiguration();
+        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getEnvironmentConfiguration();
     }
 
     /**
@@ -76,11 +90,11 @@ public class ConfigurationUtils {
      */
 
     public static Configuration getGlobalConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getApplicationModel(scopeModel).getApplicationEnvironment().getConfiguration();
+        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getConfiguration();
     }
 
     public static Configuration getDynamicGlobalConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getApplicationModel(scopeModel).getApplicationEnvironment().getDynamicGlobalConfiguration();
+        return ScopeModelUtil.getModuleModel(scopeModel).getModelEnvironment().getDynamicGlobalConfiguration();
     }
 
     // FIXME
@@ -142,8 +156,18 @@ public class ConfigurationUtils {
             Properties properties = new Properties();
             properties.load(new StringReader(content));
             properties.stringPropertyNames().forEach(
-                    k -> map.put(k, properties.getProperty(k))
-            );
+                    k -> {
+                        boolean deny = false;
+                        for (String key : securityKey) {
+                            if (k.contains(key)) {
+                                deny = true;
+                                break;
+                            }
+                        }
+                        if (!deny) {
+                            map.put(k, properties.getProperty(k));
+                        }
+                    });
         }
         return map;
     }
@@ -300,22 +324,22 @@ public class ConfigurationUtils {
      */
     @Deprecated
     public static Configuration getSystemConfiguration() {
-        return ApplicationModel.defaultModel().getApplicationEnvironment().getSystemConfiguration();
+        return ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration();
     }
 
     @Deprecated
     public static Configuration getEnvConfiguration() {
-        return ApplicationModel.defaultModel().getApplicationEnvironment().getEnvironmentConfiguration();
+        return ApplicationModel.defaultModel().getModelEnvironment().getEnvironmentConfiguration();
     }
 
     @Deprecated
     public static Configuration getGlobalConfiguration() {
-        return ApplicationModel.defaultModel().getApplicationEnvironment().getConfiguration();
+        return ApplicationModel.defaultModel().getModelEnvironment().getConfiguration();
     }
 
     @Deprecated
     public static Configuration getDynamicGlobalConfiguration() {
-        return ApplicationModel.defaultModel().getApplicationEnvironment().getDynamicGlobalConfiguration();
+        return ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().getDynamicGlobalConfiguration();
     }
 
     @Deprecated

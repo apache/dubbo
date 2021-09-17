@@ -30,7 +30,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.registry.support.RegistryManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,10 +84,13 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     private URL registryURL;
 
+    private RegistryManager registryManager;
+
     public ServiceDiscoveryRegistry(URL registryURL) {
         this.registryURL = registryURL;
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.writableMetadataService = WritableMetadataService.getDefaultExtension(registryURL.getScopeModel());
+        this.registryManager = registryURL.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
     }
 
     // Currently for test purpose
@@ -115,7 +118,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     }
 
     private List<SubscribedURLsSynthesizer> initSubscribedURLsSynthesizers() {
-        ExtensionLoader<SubscribedURLsSynthesizer> loader = ExtensionLoader.getExtensionLoader(SubscribedURLsSynthesizer.class);
+        ExtensionLoader<SubscribedURLsSynthesizer> loader = getUrl().getOrDefaultApplicationModel().getExtensionLoader(SubscribedURLsSynthesizer.class);
         return Collections.unmodifiableList(new ArrayList<>(loader.getSupportedExtensionInstances()));
     }
 
@@ -187,7 +190,7 @@ public class ServiceDiscoveryRegistry implements Registry {
             }
         } else {
             if (logger.isWarnEnabled()) {
-                logger.info(format("The URL[%s] has been deregistered.", url.toString()));
+                logger.warn(format("The URL[%s] has been deregistered.", url.toString()));
             }
         }
     }
@@ -275,7 +278,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     @Override
     public void destroy() {
-        AbstractRegistryFactory.removeDestroyedRegistry(this);
+        registryManager.removeDestroyedRegistry(this);
         execute(() -> {
             // stop ServiceDiscovery
             serviceDiscovery.destroy();

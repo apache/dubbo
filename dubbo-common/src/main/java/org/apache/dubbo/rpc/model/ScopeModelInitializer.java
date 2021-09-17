@@ -14,24 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.event;
+package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
-import org.springframework.context.ApplicationEvent;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-/**
- * An {@link ApplicationEvent} after Dubbo service/reference annotation has been processed.
- * <p />
- * NOTE: This event is used to trigger init {@link DubboConfigBeanInitializer}
- */
-public class DubboAnnotationInitedEvent extends ApplicationEvent {
-    /**
-     * Create a new {@code ApplicationEvent}.
-     *
-     * @param source the object on which the event initially occurred or with
-     *               which the event is associated (never {@code null})
-     */
-    public DubboAnnotationInitedEvent(Object source) {
-        super(source);
-    }
+@SPI(scope = ExtensionScope.SELF)
+public interface ScopeModelInitializer {
+
+    void initializeFrameworkModel(FrameworkModel frameworkModel);
+
+    void initializeApplicationModel(ApplicationModel applicationModel);
+
+    void initializeModuleModel(ModuleModel moduleModel);
 }

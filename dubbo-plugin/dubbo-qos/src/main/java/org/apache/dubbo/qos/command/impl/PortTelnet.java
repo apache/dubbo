@@ -23,6 +23,7 @@ import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.rpc.ProtocolServer;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import java.util.Collection;
@@ -31,6 +32,12 @@ import java.util.Collection;
     "ps -l [port]", "ps", "ps -l", "ps -l 20880"
 })
 public class PortTelnet implements BaseCommand {
+    private DubboProtocol dubboProtocol;
+
+    public PortTelnet(FrameworkModel frameworkModel) {
+        this.dubboProtocol = DubboProtocol.getDubboProtocol(frameworkModel);
+    }
+
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         StringBuilder buf = new StringBuilder();
@@ -49,7 +56,7 @@ public class PortTelnet implements BaseCommand {
             }
         }
         if (port == null || port.length() == 0) {
-            for (ProtocolServer server : DubboProtocol.getDubboProtocol().getServers()) {
+            for (ProtocolServer server : dubboProtocol.getServers()) {
                 if (buf.length() > 0) {
                     buf.append("\r\n");
                 }
@@ -62,7 +69,7 @@ public class PortTelnet implements BaseCommand {
         } else {
             int p = Integer.parseInt(port);
             ProtocolServer protocolServer = null;
-            for (ProtocolServer s : DubboProtocol.getDubboProtocol().getServers()) {
+            for (ProtocolServer s : dubboProtocol.getServers()) {
                 if (p == s.getUrl().getPort()) {
                     protocolServer = s;
                     break;

@@ -30,6 +30,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.action.DemoActionByAnnotation;
 import org.apache.dubbo.config.spring.action.DemoActionBySetter;
 import org.apache.dubbo.config.spring.annotation.consumer.AnnotationAction;
@@ -52,7 +53,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -133,9 +133,6 @@ public class ConfigTest {
         try {
             ctx.start();
 
-            // clear config manager
-            ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
-
             DemoService demoService = refer("dubbo://127.0.0.1:20887");
             String hello = demoService.sayName("hello");
             assertEquals("welcome:hello", hello);
@@ -158,7 +155,7 @@ public class ConfigTest {
             reference.setInterface(HelloService.class);
             reference.setUrl("dubbo://127.0.0.1:12345");
 
-            DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+            DubboBootstrap bootstrap = DubboBootstrap.newInstance()
                     .application(new ApplicationConfig("consumer"))
                     .reference(reference)
                     .start();
@@ -197,7 +194,7 @@ public class ConfigTest {
         reference.setInterface(DemoService.class);
         reference.setUrl(url);
 
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance()
+        DubboBootstrap bootstrap = DubboBootstrap.newInstance()
                 .application(new ApplicationConfig("consumer"))
                 .reference(reference)
                 .start();
@@ -240,9 +237,6 @@ public class ConfigTest {
 
         try {
             ctx.start();
-
-            // clear config manager
-            ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
 
             DemoService demoService = refer("dubbo://127.0.0.1:20881");
             String hello = demoService.sayName("hello");
@@ -481,18 +475,16 @@ public class ConfigTest {
         try {
             providerContext.start();
 
-            // clear config manager
-            ApplicationModel.defaultModel().getApplicationConfigManager().destroy();
-
-            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/init-reference.xml",
+            // consumer app
+            ClassPathXmlApplicationContext consumerContext = new ClassPathXmlApplicationContext(resourcePath + "/init-reference.xml",
                     resourcePath + "/init-reference-properties.xml");
             try {
-                ctx.start();
+                consumerContext.start();
 
-                NotifyService notifyService = ctx.getBean(NotifyService.class);
+                NotifyService notifyService = consumerContext.getBean(NotifyService.class);
 
                 // check reference bean
-                Map<String, ReferenceBean> referenceBeanMap = ctx.getBeansOfType(ReferenceBean.class);
+                Map<String, ReferenceBean> referenceBeanMap = consumerContext.getBeansOfType(ReferenceBean.class);
                 Assertions.assertEquals(2, referenceBeanMap.size());
                 ReferenceBean referenceBean = referenceBeanMap.get("&demoService");
                 Assertions.assertNotNull(referenceBean);
@@ -524,15 +516,15 @@ public class ConfigTest {
 
 
                 // do call
-                DemoService demoService = (DemoService) ctx.getBean("demoService");
+                DemoService demoService = (DemoService) consumerContext.getBean("demoService");
                 assertEquals("say:world", demoService.sayName("world"));
 
-                GenericService demoService2 = (GenericService) ctx.getBean("demoService2");
+                GenericService demoService2 = (GenericService) consumerContext.getBean("demoService2");
                 assertEquals("say:world", demoService2.$invoke("sayName", new String[]{"java.lang.String"}, new Object[]{"world"}));
 
             } finally {
-                ctx.stop();
-                ctx.close();
+                consumerContext.stop();
+                consumerContext.close();
             }
         } finally {
             providerContext.stop();
@@ -543,17 +535,25 @@ public class ConfigTest {
     // DUBBO-571 methods key in provider's URLONE doesn't contain the methods from inherited super interface
     @Test
     public void test_noMethodInterface_methodsKeyHasValue() throws Exception {
+        List<URL> urls = null;
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/demo-provider-no-methods-interface.xml");
         try {
             ctx.start();
+
             ServiceBean bean = (ServiceBean) ctx.getBean("service");
-            List<URL> urls = bean.getExportedUrls();
+            urls = bean.getExportedUrls();
             assertEquals(1, urls.size());
             URL url = urls.get(0);
             assertEquals("sayName,getBox", url.getParameter("methods"));
         } finally {
             ctx.stop();
             ctx.close();
+            // Check if the port is closed
+            if (urls != null) {
+                for (URL url : urls) {
+                    Assertions.assertFalse(NetUtils.isPortInUsed(url.getPort()));
+                }
+            }
         }
     }
 
@@ -833,7 +833,8 @@ public class ConfigTest {
             // set default value of check
             assertEquals(false, reference.shouldCheck());
 
-            ConsumerConfig defaultConsumer = ApplicationModel.defaultModel().getApplicationConfigManager().getDefaultConsumer().get();
+            ModuleConfigManager moduleConfigManager = ApplicationModel.defaultModel().getDefaultModule().getConfigManager();
+            ConsumerConfig defaultConsumer = moduleConfigManager.getDefaultConsumer().get();
             assertEquals(1234, defaultConsumer.getTimeout());
             assertEquals(false, defaultConsumer.isCheck());
         } finally {

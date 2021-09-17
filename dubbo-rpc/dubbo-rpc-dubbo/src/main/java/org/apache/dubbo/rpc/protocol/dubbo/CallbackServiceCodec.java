@@ -37,7 +37,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 
@@ -73,11 +72,13 @@ class CallbackServiceCodec {
     private final ProxyFactory proxyFactory;
     private final Protocol protocolSPI;
     private final FrameworkModel frameworkModel;
+    private final DubboProtocol dubboProtocol;
 
     public CallbackServiceCodec(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         proxyFactory = frameworkModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         protocolSPI = frameworkModel.getExtensionLoader(Protocol.class).getExtension(DUBBO_PROTOCOL);
+        dubboProtocol = (DubboProtocol) frameworkModel.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME, false);
     }
 
     private static byte isCallBack(URL url, String protocolServiceKey, String methodName, int argIndex) {
@@ -199,7 +200,7 @@ class CallbackServiceCodec {
                 URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + INTERFACE_KEY + "=" + clazz.getName());
                 referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(METHODS_KEY);
                 if (!isInstancesOverLimit(channel, referurl, clazz.getName(), instid, true)) {
-                    ScopeModelUtil.getApplicationModel(url.getScopeModel()).getDefaultModule().getServiceRepository().registerService(clazz);
+                    url.getOrDefaultApplicationModel().getDefaultModule().getServiceRepository().registerService(clazz);
                     @SuppressWarnings("rawtypes")
                     Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referurl, String.valueOf(instid));
                     proxy = proxyFactory.getProxy(invoker);
@@ -323,7 +324,7 @@ class CallbackServiceCodec {
         // need get URL from channel and env when decode
         URL url = null;
         try {
-            url = DubboProtocol.getDubboProtocol().getInvoker(channel, inv).getUrl();
+            url = dubboProtocol.getInvoker(channel, inv).getUrl();
         } catch (RemotingException e) {
             if (logger.isInfoEnabled()) {
                 logger.info(e.getMessage(), e);

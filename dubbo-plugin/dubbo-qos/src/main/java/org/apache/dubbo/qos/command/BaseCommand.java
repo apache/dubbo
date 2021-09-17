@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.qos.command;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface BaseCommand {
     String execute(CommandContext commandContext,String[] args);
 }

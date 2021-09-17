@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+
 import io.netty.handler.codec.http2.Http2CodecUtil;
 import io.netty.util.AsciiString;
 import io.netty.util.AttributeKey;
-import org.apache.dubbo.common.constants.CommonConstants;
 
 public interface TripleConstant {
     String CONTENT_PROTO = "application/grpc+proto";

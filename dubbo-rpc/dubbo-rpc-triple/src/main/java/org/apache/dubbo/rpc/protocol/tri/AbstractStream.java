@@ -17,9 +17,12 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
+import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
@@ -29,11 +32,6 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
-
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.Status;
-import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -83,7 +81,7 @@ public abstract class AbstractStream implements Stream {
         this.url = url;
         this.executor = executor;
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
-        this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class)
+        this.multipleSerialization = url.getOrDefaultFrameworkModel().getExtensionLoader(MultipleSerialization.class)
                 .getExtension(value);
         this.streamObserver = createStreamObserver();
         this.transportObserver = createTransportObserver();
@@ -130,7 +128,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     public AbstractStream serialize(String serializeType) {
-        if (serializeType.equals("hessian4")) {
+        if ("hessian4".equals(serializeType)) {
             serializeType = "hessian2";
         }
         this.serializeType = serializeType;
@@ -295,15 +293,9 @@ public abstract class AbstractStream implements Stream {
         try {
             if (v instanceof String) {
                 String str = (String) v;
-                if (TripleUtil.overEachHeaderListSize(str)) {
-                    return;
-                }
                 metadata.put(key, str);
             } else if (v instanceof byte[]) {
                 String str = TripleUtil.encodeBase64ASCII((byte[]) v);
-                if (TripleUtil.overEachHeaderListSize(str)) {
-                    return;
-                }
                 metadata.put(key + "-bin", str);
             }
         } catch (Throwable t) {
