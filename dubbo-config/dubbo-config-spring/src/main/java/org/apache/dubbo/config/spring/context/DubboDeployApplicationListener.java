@@ -111,10 +111,14 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     }
 
     private void onContextClosedEvent(ContextClosedEvent event) {
-        Object value = moduleModel.getAttribute(ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED);
-        boolean keepRunningOnClosed = Boolean.parseBoolean(String.valueOf(value));
-        if (!keepRunningOnClosed) {
-            moduleModel.getDeployer().stop();
+        try {
+            Object value = moduleModel.getAttribute(ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED);
+            boolean keepRunningOnClosed = Boolean.parseBoolean(String.valueOf(value));
+            if (!keepRunningOnClosed && !moduleModel.isDestroyed()) {
+                moduleModel.destroy();
+            }
+        } catch (Exception e) {
+            logger.error("An error occurred when stop dubbo module: " + e.getMessage(), e);
         }
     }
 
