@@ -132,6 +132,14 @@ public class ModuleModel extends ScopeModel {
     }
 
     @Override
+    public void addClassLoader(ClassLoader classLoader) {
+        super.addClassLoader(classLoader);
+        if (moduleEnvironment != null) {
+            moduleEnvironment.refreshClassLoaders();
+        }
+    }
+
+    @Override
     public ModuleEnvironment getModelEnvironment() {
         if (moduleEnvironment == null) {
             moduleEnvironment = (ModuleEnvironment) this.getExtensionLoader(ModuleExt.class)
