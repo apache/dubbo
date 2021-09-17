@@ -120,6 +120,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
     @Override
     public void destroy() throws IllegalStateException {
         this.orderedPropertiesConfiguration = null;
+        this.globalConfiguration = null;
         this.dynamicGlobalConfiguration = null;
         this.dynamicConfiguration = null;
     }
@@ -213,5 +214,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
     public void refreshClassLoaders() {
         orderedPropertiesConfiguration.refresh();
         applicationDelegate.refreshClassLoaders();
+        this.globalConfiguration = null;
+        this.dynamicGlobalConfiguration = null;
     }
 }
