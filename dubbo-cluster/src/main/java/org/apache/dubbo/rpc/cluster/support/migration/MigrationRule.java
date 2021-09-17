@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -103,7 +104,7 @@ public class MigrationRule {
 
     private  static MigrationRule getMigrationRule(String step) {
         MigrationRule rule = new MigrationRule();
-        rule.setStep(Enum.valueOf(MigrationStep.class, StringUtils.isBlank(step) ? MigrationStep.APPLICATION_FIRST.name() : step));
+        rule.setStep(Enum.valueOf(MigrationStep.class, StringUtils.isBlank(step) ? MigrationStep.FORCE_INTERFACE.name() : step));
         return rule;
     }
 }
