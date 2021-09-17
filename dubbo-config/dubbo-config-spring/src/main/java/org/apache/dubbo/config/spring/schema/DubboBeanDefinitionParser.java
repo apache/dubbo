@@ -253,6 +253,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     private static void parseMetrics(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition) {
         NodeList childNodes = element.getChildNodes();
+        PrometheusConfig prometheus = null;
         for (int i = 0; i < childNodes.getLength(); i++) {
             if (!(childNodes.item(i) instanceof Element)) {
                 continue;
@@ -263,28 +264,27 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 AggregationConfig aggregation = new AggregationConfig();
                 assignProperties(aggregation, child, parserContext);
                 beanDefinition.getPropertyValues().addPropertyValue("aggregation", aggregation);
-            } else if ("prometheus".equals(child.getNodeName()) || "prometheus".equals(child.getLocalName())) {
-                PrometheusConfig prometheus = new PrometheusConfig();
-                NodeList prometheusChildNodes = child.getChildNodes();
-                for (int j = 0; j < prometheusChildNodes.getLength(); j++) {
-                    if (!(prometheusChildNodes.item(j) instanceof Element)) {
-                        continue;
-                    }
-
-                    Element prometheusChild = (Element) prometheusChildNodes.item(j);
-                    if ("prometheus-exporter".equals(prometheusChild.getNodeName()) || "prometheus-exporter".equals(prometheusChild.getLocalName())) {
-                        PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
-                        assignProperties(exporter, prometheusChild, parserContext);
-                        prometheus.setExporter(exporter);
-                    } else if ("prometheus-pushgateway".equals(prometheusChild.getNodeName()) || "prometheus-pushgateway".equals(prometheusChild.getLocalName())) {
-                        PrometheusConfig.Pushgateway pushgateway = new PrometheusConfig.Pushgateway();
-                        assignProperties(pushgateway, prometheusChild, parserContext);
-                        prometheus.setPushgateway(pushgateway);
-                    }
+            } else if ("prometheus-exporter".equals(child.getNodeName()) || "prometheus-exporter".equals(child.getLocalName())) {
+                if (prometheus == null) {
+                    prometheus = new PrometheusConfig();
                 }
 
-                beanDefinition.getPropertyValues().addPropertyValue("prometheus", prometheus);
+                PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
+                assignProperties(exporter, child, parserContext);
+                prometheus.setExporter(exporter);
+            } else if ("prometheus-pushgateway".equals(child.getNodeName()) || "prometheus-pushgateway".equals(child.getLocalName())) {
+                if (prometheus == null) {
+                    prometheus = new PrometheusConfig();
+                }
+
+                PrometheusConfig.Pushgateway pushgateway = new PrometheusConfig.Pushgateway();
+                assignProperties(pushgateway, child, parserContext);
+                prometheus.setPushgateway(pushgateway);
             }
+        }
+
+        if (prometheus != null) {
+            beanDefinition.getPropertyValues().addPropertyValue("prometheus", prometheus);
         }
     }
 

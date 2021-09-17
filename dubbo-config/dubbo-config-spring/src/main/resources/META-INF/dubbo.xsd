@@ -887,26 +887,16 @@
     </xsd:complexType>
 
     <xsd:complexType name="metricsType">
-        <xsd:sequence minOccurs="0">
-            <xsd:choice minOccurs="0">
-                <xsd:element ref="prometheus" />
-            </xsd:choice>
-            <xsd:choice minOccurs="0">
-                <xsd:element ref="aggregation"  />
-            </xsd:choice>
-        </xsd:sequence>
+        <xsd:all>
+                <xsd:element ref="prometheus-exporter" minOccurs="0"/>
+                <xsd:element ref="prometheus-pushgateway" minOccurs="0"/>
+                <xsd:element ref="aggregation" minOccurs="0"/>
+        </xsd:all>
         <xsd:attribute name="protocol" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The metrics protocol. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-    </xsd:complexType>
-
-    <xsd:complexType name="prometheusType">
-        <xsd:sequence minOccurs="0">
-            <xsd:element ref="prometheus-exporter"  />
-            <xsd:element ref="prometheus-pushgateway" />
-        </xsd:sequence>
     </xsd:complexType>
 
     <xsd:complexType name="prometheusExporterType">
@@ -1831,12 +1821,6 @@
                     <tool:exports type="org.apache.dubbo.config.MetricsConfig"/>
                 </tool:annotation>
             </xsd:appinfo>
-        </xsd:annotation>
-    </xsd:element>
-
-    <xsd:element name="prometheus" type="prometheusType">
-        <xsd:annotation>
-            <xsd:documentation><![CDATA[ The metrics prometheus config. ]]></xsd:documentation>
         </xsd:annotation>
     </xsd:element>
 

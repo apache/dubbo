@@ -25,10 +25,8 @@
     <dubbo:application name="demo-consumer" />
 
     <dubbo:metrics protocol="prometheus">
-        <dubbo:prometheus>
-            <dubbo:prometheus-exporter enabled="true" enable-http-service-discovery="true" http-service-discovery-url="localhost:8080" metrics-port="20888" metrics-path="/metrics" />
-            <dubbo:prometheus-pushgateway enabled="true" base-url="localhost:9091" push-interval="30" username="username" password="password" job="job" />
-        </dubbo:prometheus>
+        <dubbo:prometheus-exporter enabled="true" enable-http-service-discovery="true" http-service-discovery-url="localhost:8080" metrics-port="20888" metrics-path="/metrics" />
+        <dubbo:prometheus-pushgateway enabled="true" base-url="localhost:9091" push-interval="30" username="username" password="password" job="job" />
     </dubbo:metrics>
 
 </beans>
