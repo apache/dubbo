@@ -47,7 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_K
  * @see Filter
  * @see RpcContext
  */
-@Activate(group = CONSUMER, order = -10000)
+@Activate(group = CONSUMER, order = Integer.MIN_VALUE)
 public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Listener {
 
     private ApplicationModel applicationModel;
@@ -74,11 +74,11 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             for (String supportedSelector : supportedSelectors) {
                 Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select();
                 if (CollectionUtils.isNotEmptyMap(selected)) {
-                    ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(selected);
+                    ((RpcInvocation) invocation).addObjectAttachments(selected);
                 }
             }
         } else {
-            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(RpcContext.getServerAttachment().getObjectAttachments());
+            ((RpcInvocation) invocation).addObjectAttachments(RpcContext.getServerAttachment().getObjectAttachments());
         }
 
         Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();

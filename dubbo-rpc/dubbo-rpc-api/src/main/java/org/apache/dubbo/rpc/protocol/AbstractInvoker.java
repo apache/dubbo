@@ -210,22 +210,6 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         if (CollectionUtils.isNotEmptyMap(clientContextAttachments)) {
             invocation.addObjectAttachmentsIfAbsent(clientContextAttachments);
         }
-
-        // server context attachment
-        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = invocation.getModuleModel().getExtensionLoader(PenetrateAttachmentSelector.class);
-        Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
-        if (CollectionUtils.isNotEmpty(supportedSelectors)) {
-            // custom context attachment
-            for (String supportedSelector : supportedSelectors) {
-                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select();
-                if (CollectionUtils.isNotEmptyMap(selected)) {
-                    invocation.addObjectAttachmentsIfAbsent(selected);
-                }
-            }
-        } else {
-            Map<String, Object> serverContextAttachments = RpcContext.getServerAttachment().getObjectAttachments();
-            invocation.addObjectAttachmentsIfAbsent(serverContextAttachments);
-        }
     }
 
     private AsyncRpcResult doInvokeAndReturn(RpcInvocation invocation) {
