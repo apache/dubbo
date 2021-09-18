@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.spring.context.event;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -28,6 +27,7 @@ import org.springframework.context.ApplicationEvent;
  * @see org.apache.dubbo.config.bootstrap.DubboBootstrap
  * @since 2.7.9
  */
+@Deprecated
 public class DubboBootstrapStopedEvent extends ApplicationEvent {
 
     /**

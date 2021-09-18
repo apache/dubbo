@@ -18,11 +18,11 @@ package org.apache.dubbo.integration.multiple.servicediscoveryregistry;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.registry.RegistryServiceListener;
@@ -156,7 +156,6 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
         afterExport();
         ReferenceConfig<MultipleRegistryCenterServiceDiscoveryRegistryService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(MultipleRegistryCenterServiceDiscoveryRegistryService.class);
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
         referenceConfig.get().hello("Dubbo in multiple registry center");
         afterInvoke();
     }

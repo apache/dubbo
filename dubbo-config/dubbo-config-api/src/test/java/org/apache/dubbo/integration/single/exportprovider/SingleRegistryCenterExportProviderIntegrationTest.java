@@ -35,7 +35,6 @@ import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -176,7 +175,6 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
         afterExport();
         ReferenceConfig<SingleRegistryCenterExportProviderService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(SingleRegistryCenterExportProviderService.class);
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
         referenceConfig.setScope(SCOPE_LOCAL);
         referenceConfig.get().hello(PROVIDER_APPLICATION_NAME);
         afterInvoke();

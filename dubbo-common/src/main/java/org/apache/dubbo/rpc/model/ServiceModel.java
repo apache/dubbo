@@ -51,6 +51,9 @@ public class ServiceModel {
         this.moduleModel = moduleModel;
         this.config = config;
         this.serviceMetadata = serviceMetadata;
+        if (serviceMetadata != null) {
+            serviceMetadata.setServiceModel(this);
+        }
         if (config != null) {
             this.classLoader = config.getInterfaceClassLoader();
         }
@@ -101,6 +104,9 @@ public class ServiceModel {
     }
 
     public ReferenceConfigBase<?> getReferenceConfig() {
+        if (config == null) {
+            return null;
+        }
         if (config instanceof ReferenceConfigBase) {
             return (ReferenceConfigBase<?>) config;
         } else {
@@ -109,6 +115,9 @@ public class ServiceModel {
     }
 
     public ServiceConfigBase<?> getServiceConfig() {
+        if (config == null) {
+            return null;
+        }
         if (config instanceof ServiceConfigBase) {
             return (ServiceConfigBase<?>) config;
         } else {

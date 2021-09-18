@@ -16,11 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.tag;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -31,6 +26,12 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 
 /**
@@ -55,7 +56,7 @@ public class TagStaticStateRouter extends AbstractStateRouter {
     public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> routerCache, URL url, Invocation invocation)
         throws RpcException {
 
-        String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
+        String tag = isNoTag(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
             invocation.getAttachment(TAG_KEY);
         if (StringUtils.isEmpty(tag)) {
             tag = NO_TAG;
@@ -67,6 +68,10 @@ public class TagStaticStateRouter extends AbstractStateRouter {
             return invokers;
         }
         return invokers.intersect(res, invokers.getUnmodifiableList());
+    }
+
+    private boolean isNoTag(String tag) {
+        return StringUtils.isEmpty(tag) || NO_TAG.equals(tag);
     }
 
     @Override

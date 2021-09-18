@@ -58,7 +58,7 @@ abstract class AbstractRegistryCenter implements RegistryCenter {
     private static final int DEFAULT_TICK_TIME = 5 * 1000;
 
     /**
-     * The default value is 60.
+     * The default value is 200.
      */
     private static final int DEFAULT_MAX_CLIENT_CNXNS = 200;
 

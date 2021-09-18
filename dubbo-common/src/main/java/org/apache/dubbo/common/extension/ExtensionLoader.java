@@ -19,7 +19,7 @@ package org.apache.dubbo.common.extension;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.context.FrameworkExt;
+import org.apache.dubbo.common.context.ApplicationExt;
 import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.support.ActivateComparator;
 import org.apache.dubbo.common.extension.support.WrapperComparator;
@@ -37,6 +37,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.io.BufferedReader;
@@ -130,6 +131,7 @@ public class ExtensionLoader<T> {
     private InstantiationStrategy instantiationStrategy;
     private Environment environment;
     private ActivateComparator activateComparator;
+    private ScopeModel scopeModel;
 
     public static void setLoadingStrategies(LoadingStrategy... strategies) {
         if (ArrayUtils.isNotEmpty(strategies)) {
@@ -161,7 +163,7 @@ public class ExtensionLoader<T> {
         return asList(strategies);
     }
 
-    ExtensionLoader(Class<?> type, ExtensionDirector extensionDirector) {
+    ExtensionLoader(Class<?> type, ExtensionDirector extensionDirector, ScopeModel scopeModel) {
         this.type = type;
         this.extensionDirector = extensionDirector;
         this.extensionPostProcessors = extensionDirector.getExtensionPostProcessors();
@@ -169,6 +171,7 @@ public class ExtensionLoader<T> {
         this.injector = (type == ExtensionInjector.class ? null : extensionDirector.getExtensionLoader(ExtensionInjector.class)
             .getAdaptiveExtension());
         this.activateComparator = new ActivateComparator(extensionDirector);
+        this.scopeModel = scopeModel;
     }
 
     private void initInstantiationStrategy() {
@@ -192,7 +195,7 @@ public class ExtensionLoader<T> {
      */
     @Deprecated
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
-        return ApplicationModel.defaultModel().getExtensionLoader(type);
+        return ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(type);
     }
 
     // For testing purposes only
@@ -289,7 +292,8 @@ public class ExtensionLoader<T> {
         // solve the bug of using @SPI's wrapper method to report a null pointer exception.
         Map<Class<?>, T> activateExtensionsMap = new TreeMap<>(activateComparator);
         List<String> names = values == null ? new ArrayList<>(0) : asList(values);
-        if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
+        Set<String> namesSet = new HashSet<>(names);
+        if (!namesSet.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             if (cachedActivateGroups.size() == 0) {
                 synchronized (cachedActivateGroups) {
                     // cache all extensions
@@ -320,8 +324,8 @@ public class ExtensionLoader<T> {
             // traverse all cached extensions
             cachedActivateGroups.forEach((name, activateGroup) -> {
                 if (isMatchGroup(group, activateGroup)
-                    && !names.contains(name)
-                    && !names.contains(REMOVE_VALUE_PREFIX + name)
+                    && !namesSet.contains(name)
+                    && !namesSet.contains(REMOVE_VALUE_PREFIX + name)
                     && isActive(cachedActivateValues.get(name), url)) {
 
                     activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
@@ -329,14 +333,14 @@ public class ExtensionLoader<T> {
             });
         }
 
-        if (names.contains(DEFAULT_KEY)) {
+        if (namesSet.contains(DEFAULT_KEY)) {
             // will affect order
             // `ext1,default,ext2` means ext1 will happens before all of the default extensions while ext2 will after them
             ArrayList<T> extensionsResult = new ArrayList<>(activateExtensionsMap.size() + names.size());
             for (int i = 0; i < names.size(); i++) {
                 String name = names.get(i);
                 if (!name.startsWith(REMOVE_VALUE_PREFIX)
-                    && !names.contains(REMOVE_VALUE_PREFIX + name)) {
+                    && !namesSet.contains(REMOVE_VALUE_PREFIX + name)) {
                     if (!DEFAULT_KEY.equals(name)) {
                         if (containsExtension(name)) {
                             extensionsResult.add(getExtension(name));
@@ -352,7 +356,7 @@ public class ExtensionLoader<T> {
             for (int i = 0; i < names.size(); i++) {
                 String name = names.get(i);
                 if (!name.startsWith(REMOVE_VALUE_PREFIX)
-                    && !names.contains(REMOVE_VALUE_PREFIX + name)) {
+                    && !namesSet.contains(REMOVE_VALUE_PREFIX + name)) {
                     if (!DEFAULT_KEY.equals(name)) {
                         if (containsExtension(name)) {
                             activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
@@ -917,34 +921,42 @@ public class ExtensionLoader<T> {
                                boolean extensionLoaderClassLoaderFirst, boolean overridden, String... excludedPackages) {
         String fileName = dir + type;
         try {
-            Enumeration<java.net.URL> urls = null;
-            ClassLoader classLoader = findClassLoader();
+
+            Enumeration<java.net.URL> urls;
 
             // try to load from ExtensionLoader's ClassLoader first
             if (extensionLoaderClassLoaderFirst) {
                 ClassLoader extensionLoaderClassLoader = ExtensionLoader.class.getClassLoader();
                 if (ClassLoader.getSystemClassLoader() != extensionLoaderClassLoader) {
                     urls = extensionLoaderClassLoader.getResources(fileName);
+                    loadFromClass(extensionClasses, overridden, urls, extensionLoaderClassLoader, excludedPackages);
                 }
             }
 
-            if (urls == null || !urls.hasMoreElements()) {
-                if (classLoader != null) {
+            // load from scope model
+            Set<ClassLoader> classLoaders = scopeModel.getClassLoaders();
+
+            if (CollectionUtils.isEmpty(classLoaders)) {
+                urls = ClassLoader.getSystemResources(fileName);
+                loadFromClass(extensionClasses, overridden, urls, null, excludedPackages);
+            } else {
+                for (ClassLoader classLoader : classLoaders) {
                     urls = classLoader.getResources(fileName);
-                } else {
-                    urls = ClassLoader.getSystemResources(fileName);
-                }
-            }
-
-            if (urls != null) {
-                while (urls.hasMoreElements()) {
-                    java.net.URL resourceURL = urls.nextElement();
-                    loadResource(extensionClasses, classLoader, resourceURL, overridden, excludedPackages);
+                    loadFromClass(extensionClasses, overridden, urls, classLoader, excludedPackages);
                 }
             }
         } catch (Throwable t) {
             logger.error("Exception occurred when loading extension class (interface: " +
                 type + ", description file: " + fileName + ").", t);
+        }
+    }
+
+    private void loadFromClass(Map<String, Class<?>> extensionClasses, boolean overridden, Enumeration<java.net.URL> urls, ClassLoader classLoader, String[] excludedPackages) {
+        if (urls != null) {
+            while (urls.hasMoreElements()) {
+                java.net.URL resourceURL = urls.nextElement();
+                loadResource(extensionClasses, classLoader, resourceURL, overridden, excludedPackages);
+            }
         }
     }
 
@@ -1163,7 +1175,7 @@ public class ExtensionLoader<T> {
 
     private Environment getEnvironment() {
         if (environment == null) {
-            environment = (Environment) extensionDirector.getExtensionLoader(FrameworkExt.class).getExtension(Environment.NAME);
+            environment = (Environment) extensionDirector.getExtensionLoader(ApplicationExt.class).getExtension(Environment.NAME);
         }
         return environment;
     }

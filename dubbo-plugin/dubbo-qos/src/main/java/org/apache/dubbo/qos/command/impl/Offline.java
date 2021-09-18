@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 @Cmd(name = "offline", summary = "offline dubbo", example = {
@@ -24,6 +25,11 @@ import org.apache.dubbo.rpc.model.ProviderModel;
         "offline xx.xx.xxx.service"
 })
 public class Offline extends BaseOffline {
+
+    public Offline(FrameworkModel frameworkModel) {
+        super(frameworkModel);
+    }
+
     @Override
     protected void doUnexport(ProviderModel.RegisterStatedURL statedURL) {
         super.doUnexport(statedURL);

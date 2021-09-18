@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.grpc;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import io.grpc.stub.StreamObserver;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -33,9 +35,6 @@ import org.apache.dubbo.rpc.protocol.grpc.support.DubboGreeterGrpc;
 import org.apache.dubbo.rpc.protocol.grpc.support.GrpcGreeterImpl;
 import org.apache.dubbo.rpc.protocol.grpc.support.HelloReply;
 import org.apache.dubbo.rpc.protocol.grpc.support.HelloRequest;
-
-import com.google.common.util.concurrent.ListenableFuture;
-import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -115,9 +114,5 @@ public class GrpcProtocolTest {
             return null;
         }
 
-        @Override
-        public void destroy() {
-
-        }
     }
 }

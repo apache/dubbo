@@ -17,7 +17,6 @@
 package org.apache.dubbo.common.logger;
 
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
 import org.junit.jupiter.api.Test;
 
 import java.io.File;

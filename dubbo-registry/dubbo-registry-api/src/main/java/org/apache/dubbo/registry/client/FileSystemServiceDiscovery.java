@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.client;
 
+import com.alibaba.fastjson.JSON;
+import org.apache.commons.io.FileUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration;
@@ -23,9 +25,6 @@ import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-
-import com.alibaba.fastjson.JSON;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +67,8 @@ public class FileSystemServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     private void registerDubboShutdownHook() {
-        ShutdownHookCallbacks.INSTANCE.addCallback(this::destroy);
+        serviceInstance.getApplicationModel().getBeanFactory().getBean(ShutdownHookCallbacks.class)
+            .addCallback(this::destroy);
     }
 
     private void registerListener() {
