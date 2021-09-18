@@ -16,31 +16,39 @@
  */
 package org.apache.dubbo.config.spring.context.event;
 
-import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
-import org.springframework.context.ApplicationContext;
+import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * An {@link ApplicationEvent} after Dubbo service/reference annotation has been processed.
- * <p />
- * NOTE: This event is used to trigger init {@link DubboConfigBeanInitializer}
+ * Dubbo application state event on starting/started/stopping/stopped
  */
-public class DubboAnnotationInitedEvent extends ApplicationEvent {
-    /**
-     * Create a new {@code ApplicationEvent}.
-     *
-     * @param source the object on which the event initially occurred or with
-     *               which the event is associated (never {@code null})
-     */
-    public DubboAnnotationInitedEvent(ApplicationContext source) {
-        super(source);
+public class DubboApplicationStateEvent extends ApplicationEvent {
+
+    private DeployState state;
+
+    private Throwable cause;
+
+    public DubboApplicationStateEvent(ApplicationModel applicationModel, DeployState state) {
+        super(applicationModel);
+        this.state = state;
     }
 
-    /**
-     * Get the {@code ApplicationContext} that the event was raised for.
-     */
-    public final ApplicationContext getApplicationContext() {
-        return (ApplicationContext) getSource();
+    public DubboApplicationStateEvent(ApplicationModel applicationModel, DeployState state, Throwable cause) {
+        super(applicationModel);
+        this.state = state;
+        this.cause = cause;
     }
 
+    public ApplicationModel getApplicationModel() {
+        return (ApplicationModel) getSource();
+    }
+
+    public DeployState getState() {
+        return state;
+    }
+
+    public Throwable getCause() {
+        return cause;
+    }
 }

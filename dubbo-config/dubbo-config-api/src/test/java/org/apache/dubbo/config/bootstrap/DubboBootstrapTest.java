@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
@@ -30,10 +31,12 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
@@ -255,12 +258,12 @@ public class DubboBootstrapTest {
 
         Assertions.assertTrue(bootstrap.isInitialized());
         Assertions.assertTrue(bootstrap.isStarted());
-        Assertions.assertFalse(bootstrap.isShutdown());
+        Assertions.assertFalse(bootstrap.isStopped());
 
         ApplicationModel applicationModel = bootstrap.getApplicationModel();
         DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(applicationModel);
-        Assertions.assertNotNull(applicationDeployer.serviceInstance);
-        Assertions.assertNotNull(applicationDeployer.asyncMetadataFuture);
+        Assertions.assertNotNull(ReflectUtils.getFieldValue(applicationDeployer, "serviceInstance"));
+        Assertions.assertNotNull(ReflectUtils.getFieldValue(applicationDeployer, "asyncMetadataFuture"));
         Assertions.assertTrue(applicationModel.getDefaultModule().getServiceRepository().getExportedServices().size() > 0);
     }
 
@@ -333,7 +336,8 @@ public class DubboBootstrapTest {
 
     private void assertMetadataService(DubboBootstrap bootstrap, int availablePort, boolean shouldReport) {
         DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(bootstrap.getApplicationModel());
-        Assertions.assertTrue(applicationDeployer.metadataServiceExporter.isExported());
+        MetadataServiceExporter metadataServiceExporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
+        Assertions.assertTrue(metadataServiceExporter.isExported());
         DubboProtocol protocol = DubboProtocol.getDubboProtocol(bootstrap.getApplicationModel());
         Map<String, Exporter<?>> exporters = protocol.getExporterMap();
         Assertions.assertEquals(2, exporters.size());

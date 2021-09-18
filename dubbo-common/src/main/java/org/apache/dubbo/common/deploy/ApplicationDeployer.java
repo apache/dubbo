@@ -17,32 +17,48 @@
 package org.apache.dubbo.common.deploy;
 
 import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * initialize and start application instance
  */
-public interface ApplicationDeployer extends Lifecycle {
+public interface ApplicationDeployer extends Deployer<ApplicationModel> {
 
-    void initialize();
+    /**
+     * Initialize the component
+     */
+    void initialize() throws IllegalStateException;
 
-    void start();
+    /**
+     * Starts the component.
+     */
+    CompletableFuture start() throws IllegalStateException;
+
+    /**
+     * Stops the component.
+     */
+    void stop() throws IllegalStateException;
 
     void prepareApplicationInstance();
 
     void destroy();
 
+    /**
+     * Indicates that the Application is initialized or not.
+     * @return
+     */
     boolean isInitialized();
-
-    boolean isStarted();
-
-    boolean isStartup();
-
-    boolean isShutdown();
 
     ApplicationModel getApplicationModel();
 
     ReferenceCache getReferenceCache();
+
+    boolean isAsync();
+
+    void checkStarting();
+
+    void checkStarted();
 
 }

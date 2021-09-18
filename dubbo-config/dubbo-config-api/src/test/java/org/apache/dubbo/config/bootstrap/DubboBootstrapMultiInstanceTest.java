@@ -34,7 +34,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,6 +102,7 @@ public class DubboBootstrapMultiInstanceTest {
             configProviderApp(dubboBootstrap).start();
         } finally {
             dubboBootstrap.destroy();
+            DubboBootstrap.reset();
         }
     }
 
@@ -114,9 +114,11 @@ public class DubboBootstrapMultiInstanceTest {
             configConsumerApp(dubboBootstrap).start();
             testConsumer(dubboBootstrap);
         } catch (Exception e) {
-            Assertions.assertTrue(e.toString().contains("No provider available from registry"), StringUtils.toString(e));
+            Assertions.assertTrue(e.toString().contains("No provider available"), StringUtils.toString(e));
         } finally {
             dubboBootstrap.destroy();
+            DubboBootstrap.reset();
+            SysProps.clear();
         }
     }
 
@@ -132,6 +134,7 @@ public class DubboBootstrapMultiInstanceTest {
             testConsumer(dubboBootstrap);
         } finally {
             dubboBootstrap.destroy();
+            DubboBootstrap.reset();
         }
     }
 
@@ -291,9 +294,9 @@ public class DubboBootstrapMultiInstanceTest {
 
             ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
             moduleDeployer1.start().get();
-            Assertions.assertTrue(moduleDeployer1.isStartup());
+            Assertions.assertTrue(moduleDeployer1.isStarted());
             ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
-            Assertions.assertTrue(internalModuleDeployer.isStartup());
+            Assertions.assertTrue(internalModuleDeployer.isStarted());
 
             FrameworkServiceRepository frameworkServiceRepository = applicationModel.getFrameworkModel().getServiceRepository();
             Assertions.assertNotNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey1));

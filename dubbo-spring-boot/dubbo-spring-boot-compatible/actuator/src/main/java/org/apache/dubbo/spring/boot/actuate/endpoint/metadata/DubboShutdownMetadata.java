@@ -20,7 +20,6 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

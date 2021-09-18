@@ -59,7 +59,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
 
     protected CompositeConfiguration globalConfiguration;
 
-    private List<Map<String, String>> globalConfigurationMaps;
+    protected List<Map<String, String>> globalConfigurationMaps;
 
     private CompositeConfiguration defaultDynamicGlobalConfiguration;
 
@@ -293,6 +293,9 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
     public void refreshClassLoaders() {
         propertiesConfiguration.refresh();
         loadMigrationRule();
+        this.globalConfiguration = null;
+        this.globalConfigurationMaps = null;
+        this.defaultDynamicGlobalConfiguration = null;
     }
 
     public Configuration getDynamicGlobalConfiguration() {

@@ -19,8 +19,8 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
-import org.apache.dubbo.config.bootstrap.DefaultApplicationDeployer;
-import org.apache.dubbo.config.bootstrap.DefaultModuleDeployer;
+import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.deploy.DefaultModuleDeployer;
 import org.apache.dubbo.config.utils.DefaultConfigValidator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -37,7 +37,6 @@ public class ConfigScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-        beanFactory.registerBean(DubboShutdownHook.class);
         beanFactory.registerBean(DefaultConfigValidator.class);
         // applicationDeployer
         ApplicationDeployer applicationDeployer = beanFactory.registerBean(DefaultApplicationDeployer.class);

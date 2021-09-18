@@ -27,6 +27,8 @@ import java.util.List;
 
 @Activate
 public class ProviderReadinessProbe implements ReadinessProbe {
+
+
     private static FrameworkServiceRepository serviceRepository = FrameworkModel.defaultModel().getServiceRepository();
 
     @Override
