@@ -100,7 +100,7 @@ public class CacheListener implements DataListener {
         ConfigChangeType changeType;
         if (EventType.NodeCreated.equals(eventType)) {
             changeType = ConfigChangeType.ADDED;
-        } if (value == null) {
+        } else if (value == null) {
             changeType = ConfigChangeType.DELETED;
         } else {
             changeType = ConfigChangeType.MODIFIED;
