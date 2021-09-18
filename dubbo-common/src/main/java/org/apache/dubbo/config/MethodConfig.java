@@ -30,6 +30,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_PARAMETER_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_PARAMETER_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_INSTANCE_PARAMETER_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_METHOD_PARAMETER_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_INSTANCE_PARAMETER_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_PARAMETER_KEY;
+
 /**
  * The method configuration
  *
@@ -392,6 +399,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.sticky = sticky;
     }
 
+    @Parameter(key = ON_RETURN_INSTANCE_PARAMETER_KEY, excluded = true, attribute = true)
     public Object getOnreturn() {
         return onreturn;
     }
@@ -400,6 +408,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onreturn = onreturn;
     }
 
+    @Parameter(key = ON_RETURN_METHOD_PARAMETER_KEY, excluded = true, attribute = true)
     public String getOnreturnMethod() {
         return onreturnMethod;
     }
@@ -408,6 +417,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onreturnMethod = onreturnMethod;
     }
 
+    @Parameter(key = ON_THROW_INSTANCE_PARAMETER_KEY, excluded = true, attribute = true)
     public Object getOnthrow() {
         return onthrow;
     }
@@ -416,6 +426,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onthrow = onthrow;
     }
 
+    @Parameter(key = ON_THROW_METHOD_PARAMETER_KEY, excluded = true, attribute = true)
     public String getOnthrowMethod() {
         return onthrowMethod;
     }
@@ -424,6 +435,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.onthrowMethod = onthrowMethod;
     }
 
+    @Parameter(key = ON_INVOKE_INSTANCE_PARAMETER_KEY, excluded = true, attribute = true)
     public Object getOninvoke() {
         return oninvoke;
     }
@@ -432,6 +444,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.oninvoke = oninvoke;
     }
 
+    @Parameter(key = ON_INVOKE_METHOD_PARAMETER_KEY, excluded = true, attribute = true)
     public String getOninvokeMethod() {
         return oninvokeMethod;
     }
