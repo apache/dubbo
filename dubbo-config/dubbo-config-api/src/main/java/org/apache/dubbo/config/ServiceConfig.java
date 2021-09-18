@@ -133,7 +133,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private transient volatile boolean unexported;
 
-    private final transient AtomicBoolean initialized = new AtomicBoolean(false);
+    private transient volatile AtomicBoolean initialized = new AtomicBoolean(false);
 
     /**
      * The exported services
