@@ -485,6 +485,26 @@
                 <xsd:documentation><![CDATA[ Whether start module in background, if true do not await finish. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="refer-async" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Weather the reference is refer asynchronously, default false.  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="refer-thread-num" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Thread num for asynchronous refer pool size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="export-async" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Weather the service is export asynchronously, default false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="export-thread-num" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="registryType">

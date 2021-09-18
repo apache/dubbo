@@ -71,9 +71,19 @@ public class ModuleConfig extends AbstractConfig {
     private Boolean background;
 
     /**
+     * Weather the reference is refer asynchronously
+     */
+    private Boolean referAsync;
+
+    /**
      * Thread num for asynchronous refer pool size
      */
     private Integer referThreadNum;
+
+    /**
+     * Weather the service is export asynchronously
+     */
+    private Boolean exportAsync;
 
     /**
      * Thread num for asynchronous export pool size
@@ -85,7 +95,7 @@ public class ModuleConfig extends AbstractConfig {
     }
 
     public ModuleConfig(String name) {
-        super(ApplicationModel.defaultModel().getDefaultModule());
+        this();
         setName(name);
     }
 
@@ -193,5 +203,21 @@ public class ModuleConfig extends AbstractConfig {
 
     public void setExportThreadNum(Integer exportThreadNum) {
         this.exportThreadNum = exportThreadNum;
+    }
+
+    public Boolean getReferAsync() {
+        return referAsync;
+    }
+
+    public void setReferAsync(Boolean referAsync) {
+        this.referAsync = referAsync;
+    }
+
+    public Boolean getExportAsync() {
+        return exportAsync;
+    }
+
+    public void setExportAsync(Boolean exportAsync) {
+        this.exportAsync = exportAsync;
     }
 }

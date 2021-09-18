@@ -69,6 +69,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private ApplicationDeployer applicationDeployer;
     private CompletableFuture startFuture;
     private Boolean background;
+    private Boolean exportAsync;
+    private Boolean referAsync;
 
 
     public DefaultModuleDeployer(ModuleModel moduleModel) {
@@ -97,6 +99,18 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 return;
             }
             loadConfigs();
+
+            // read ModuleConfig
+            ModuleConfig moduleConfig = moduleModel.getConfigManager().getModule().orElseThrow(() -> new IllegalStateException("Default module config is not initialized"));
+            exportAsync = Boolean.TRUE.equals(moduleConfig.getExportAsync());
+            referAsync = Boolean.TRUE.equals(moduleConfig.getReferAsync());
+
+            // start in background
+            background = moduleConfig.getBackground();
+            if (background == null) {
+                // compatible with old usages
+                background = isExportBackground() || isReferBackground();
+            }
 
             initialized.set(true);
             if (logger.isInfoEnabled()) {
@@ -239,7 +253,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         if (sc.isExported()) {
             return;
         }
-        if (sc.shouldExportAsync()) {
+        if (exportAsync || sc.shouldExportAsync()) {
             ExecutorService executor = executorRepository.getServiceExportExecutor();
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
@@ -283,14 +297,13 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void referServices() {
         configManager.getReferences().forEach(rc -> {
             try {
-                // TODO, compatible with  ReferenceConfig.refer()
                 ReferenceConfig<?> referenceConfig = (ReferenceConfig<?>) rc;
                 if (!referenceConfig.isRefreshed()) {
                     referenceConfig.refresh();
                 }
 
                 if (rc.shouldInit()) {
-                    if (rc.shouldReferAsync()) {
+                    if (referAsync || rc.shouldReferAsync()) {
                         ExecutorService executor = executorRepository.getServiceReferExecutor();
                         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                             try {
@@ -355,15 +368,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     @Override
     public boolean isBackground() {
-        if (background == null) {
-            ModuleConfig moduleConfig = moduleModel.getConfigManager().getModule()
-                .orElseThrow(() -> new IllegalStateException("Default module config is not initialized"));
-            background = moduleConfig.getBackground();
-            if (background == null) {
-                // compatible with old usages
-                background = isExportBackground() || isReferBackground();
-            }
-        }
         return background;
     }
 
