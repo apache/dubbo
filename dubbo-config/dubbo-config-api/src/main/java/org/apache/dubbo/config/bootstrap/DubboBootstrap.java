@@ -659,6 +659,17 @@ public final class DubboBootstrap {
         moduleModel.getConfigManager().addConsumer(consumerConfig);
         return this;
     }
+
+    public DubboBootstrap module(ModuleConfig moduleConfig) {
+        this.module(moduleConfig, applicationModel.getDefaultModule());
+        return this;
+    }
+
+    public DubboBootstrap module(ModuleConfig moduleConfig, ModuleModel moduleModel) {
+        moduleConfig.setScopeModel(moduleModel);
+        moduleModel.getConfigManager().setModule(moduleConfig);
+        return this;
+    }
     // module configs end
 
     // {@link ConfigCenterConfig} correlative methods
@@ -687,12 +698,6 @@ public final class DubboBootstrap {
     public DubboBootstrap metrics(MetricsConfig metrics) {
         metrics.setScopeModel(applicationModel);
         configManager.setMetrics(metrics);
-        return this;
-    }
-
-    public DubboBootstrap module(ModuleConfig module) {
-        module.setScopeModel(applicationModel);
-        configManager.setModule(module);
         return this;
     }
 
@@ -737,6 +742,13 @@ public final class DubboBootstrap {
         return new Module(applicationModel.newModule());
     }
 
+    public Module newModule(ModuleConfig moduleConfig) {
+        ModuleModel moduleModel = applicationModel.newModule();
+        moduleConfig.setScopeModel(moduleModel);
+        moduleModel.getConfigManager().setModule(moduleConfig);
+        return new Module(moduleModel);
+    }
+
     public DubboBootstrap endModule() {
         return this;
     }
@@ -757,6 +769,11 @@ public final class DubboBootstrap {
 
         public ModuleModel getModuleModel() {
             return moduleModel;
+        }
+
+        public Module config(ModuleConfig moduleConfig) {
+            this.moduleModel.getConfigManager().setModule(moduleConfig);
+            return this;
         }
 
         // {@link ServiceConfig} correlative methods

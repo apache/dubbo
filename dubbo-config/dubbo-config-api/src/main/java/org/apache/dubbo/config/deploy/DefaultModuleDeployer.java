@@ -26,6 +26,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -67,7 +68,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private ApplicationDeployer applicationDeployer;
     private CompletableFuture startFuture;
-    private Boolean async;
+    private Boolean background;
 
 
     public DefaultModuleDeployer(ModuleModel moduleModel) {
@@ -353,11 +354,17 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     @Override
-    public boolean isAsync() {
-        if (async == null) {
-            async = isExportBackground() || isReferBackground();
+    public boolean isBackground() {
+        if (background == null) {
+            ModuleConfig moduleConfig = moduleModel.getConfigManager().getModule()
+                .orElseThrow(() -> new IllegalStateException("Default module config is not initialized"));
+            background = moduleConfig.getBackground();
+            if (background == null) {
+                // compatible with old usages
+                background = isExportBackground() || isReferBackground();
+            }
         }
-        return async;
+        return background;
     }
 
     private boolean isExportBackground() {

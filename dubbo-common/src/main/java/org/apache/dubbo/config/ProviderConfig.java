@@ -163,7 +163,10 @@ public class ProviderConfig extends AbstractServiceConfig {
     private Integer exportThreadNum;
 
     /**
-     * Whether export should run in background or not
+     * Whether export should run in background or not.
+     *
+     * @deprecated replace with {@link ModuleConfig#setBackground(Boolean)}
+     * @see ModuleConfig#setBackground(Boolean)
      */
     private Boolean exportBackground;
 
@@ -436,20 +439,34 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.wait = wait;
     }
 
+    @Deprecated
     @Parameter(key = EXPORT_THREAD_NUM_KEY, excluded = true)
     public Integer getExportThreadNum() {
         return exportThreadNum;
     }
 
+    @Deprecated
     public void setExportThreadNum(Integer exportThreadNum) {
         this.exportThreadNum = exportThreadNum;
     }
 
+    /**
+     * @deprecated replace with {@link ModuleConfig#getBackground()}
+     * @see ModuleConfig#getBackground()
+     */
+    @Deprecated
     @Parameter(key = EXPORT_BACKGROUND_KEY, excluded = true)
     public Boolean getExportBackground() {
         return exportBackground;
     }
 
+    /**
+     * Whether export should run in background or not.
+     *
+     * @deprecated replace with {@link ModuleConfig#setBackground(Boolean)}
+     * @see ModuleConfig#setBackground(Boolean)
+     */
+    @Deprecated
     public void setExportBackground(Boolean exportBackground) {
         this.exportBackground = exportBackground;
     }

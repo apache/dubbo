@@ -23,15 +23,14 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -41,7 +40,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_EXPORT_THREAD_NUM;
@@ -233,20 +231,20 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     private Integer getExportThreadNum() {
-        List<Integer> threadNum = ApplicationModel.ofNullable(applicationModel).getDefaultModule().getConfigManager().getProviders()
-            .stream()
-            .map(ProviderConfig::getExportThreadNum)
-            .filter(k -> k != null && k > 0)
-            .collect(Collectors.toList());
-
-        if (CollectionUtils.isEmpty(threadNum)) {
-            logger.info("Cannot get config `export-thread-num` for service export thread, using default: " + DEFAULT_EXPORT_THREAD_NUM);
-            return DEFAULT_EXPORT_THREAD_NUM;
-        } else if (threadNum.size() > 1) {
-            logger.info("Detect multiple config `export-thread-num` for service export thread, using: " + threadNum.get(0));
+        ModuleModel moduleModel = ApplicationModel.ofNullable(applicationModel).getDefaultModule();
+        Integer threadNum = moduleModel.getConfigManager().getModule().get().getExportThreadNum();
+        if (threadNum == null) {
+            threadNum = moduleModel.getConfigManager().getProviders()
+                .stream()
+                .map(ProviderConfig::getExportThreadNum)
+                .filter(k -> k != null && k > 0)
+                .findAny().orElse(null);
         }
-
-        return threadNum.get(0);
+        if (threadNum == null) {
+            logger.info("Cannot get config `export-thread-num` from module config, using default: " + DEFAULT_EXPORT_THREAD_NUM);
+            return DEFAULT_EXPORT_THREAD_NUM;
+        }
+        return threadNum;
     }
 
     @Override
@@ -280,20 +278,20 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     private Integer getReferThreadNum() {
-        List<Integer> threadNum = ApplicationModel.ofNullable(applicationModel).getDefaultModule().getConfigManager().getConsumers()
-            .stream()
-            .map(ConsumerConfig::getReferThreadNum)
-            .filter(k -> k != null && k > 0)
-            .collect(Collectors.toList());
-
-        if (CollectionUtils.isEmpty(threadNum)) {
-            logger.info("Cannot get config `refer-thread-num` for service refer thread, using default: " + DEFAULT_REFER_THREAD_NUM);
-            return DEFAULT_REFER_THREAD_NUM;
-        } else if (threadNum.size() > 1) {
-            logger.info("Detect multiple config `refer-thread-num` for service refer thread, using: " + threadNum.get(0));
+        ModuleModel moduleModel = ApplicationModel.ofNullable(applicationModel).getDefaultModule();
+        Integer threadNum = moduleModel.getConfigManager().getModule().get().getReferThreadNum();
+        if (threadNum == null) {
+            threadNum = moduleModel.getConfigManager().getConsumers()
+                .stream()
+                .map(ConsumerConfig::getReferThreadNum)
+                .filter(k -> k != null && k > 0)
+                .findAny().orElse(null);
         }
-
-        return threadNum.get(0);
+        if (threadNum == null) {
+            logger.info("Cannot get config `refer-thread-num` from module config, using default: " + DEFAULT_REFER_THREAD_NUM);
+            return DEFAULT_REFER_THREAD_NUM;
+        }
+        return threadNum;
     }
 
     @Override

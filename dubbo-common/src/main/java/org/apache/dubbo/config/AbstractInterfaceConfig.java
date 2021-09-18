@@ -624,14 +624,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (module != null) {
             return module;
         }
-        return getConfigManager().getModule().orElse(null);
+        return getModuleConfigManager().getModule().orElse(null);
     }
 
     @Deprecated
     public void setModule(ModuleConfig module) {
         this.module = module;
         if (module != null) {
-            getConfigManager().setModule(module);
+            getModuleConfigManager().setModule(module);
         }
     }
 

@@ -610,9 +610,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public boolean isAsync() {
+    public boolean isBackground() {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            if (moduleModel.getDeployer().isAsync()) {
+            if (moduleModel.getDeployer().isBackground()) {
                 return true;
             }
         }

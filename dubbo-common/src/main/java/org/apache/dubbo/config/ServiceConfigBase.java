@@ -213,7 +213,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         if (provider == null) {
             provider = getModuleConfigManager()
                     .getDefaultProvider()
-                    .orElseThrow(() -> new IllegalArgumentException("Default provider is not initialized"));
+                    .orElseThrow(() -> new IllegalStateException("Default provider is not initialized"));
         }
     }
 
