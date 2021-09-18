@@ -17,12 +17,12 @@
 
 package org.apache.dubbo.rpc.protocol.tri.service;
 
+import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.RpcException;
+
 import grpc.health.v1.Health;
 import grpc.health.v1.HealthCheckRequest;
 import grpc.health.v1.HealthCheckResponse;
-
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.RpcException;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;

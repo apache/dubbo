@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -24,19 +25,23 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+
+import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
 
 public class DubboBootstrapMultiInstanceTest {
 
@@ -44,8 +49,8 @@ public class DubboBootstrapMultiInstanceTest {
 
     private static RegistryConfig registryConfig;
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
         registryCenter.startup();
         RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
@@ -56,22 +61,18 @@ public class DubboBootstrapMultiInstanceTest {
 
     }
 
-    @AfterAll
-    public static void teardown() {
-        registryCenter.shutdown();
-    }
-
     @AfterEach
-    protected void afterEach() {
+    public void afterEach() {
         SysProps.clear();
         DubboBootstrap.reset();
+        registryCenter.shutdown();
     }
 
     @Test
     public void testIsolatedApplications() {
 
-        DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance();
-        DubboBootstrap dubboBootstrap2 = DubboBootstrap.newInstance();
+        DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance(new FrameworkModel());
+        DubboBootstrap dubboBootstrap2 = DubboBootstrap.newInstance(new FrameworkModel());
         try {
             ApplicationModel applicationModel1 = dubboBootstrap1.getApplicationModel();
             ApplicationModel applicationModel2 = dubboBootstrap2.getApplicationModel();
@@ -89,8 +90,8 @@ public class DubboBootstrapMultiInstanceTest {
             DemoService demoServiceFromProvider = dubboBootstrap1.getCache().get(DemoService.class);
             Assertions.assertNull(demoServiceFromProvider);
         } finally {
-            dubboBootstrap1.destroy();
             dubboBootstrap2.destroy();
+            dubboBootstrap1.destroy();
         }
     }
 
@@ -101,6 +102,7 @@ public class DubboBootstrapMultiInstanceTest {
             configProviderApp(dubboBootstrap).start();
         } finally {
             dubboBootstrap.destroy();
+            DubboBootstrap.reset();
         }
     }
 
@@ -112,9 +114,11 @@ public class DubboBootstrapMultiInstanceTest {
             configConsumerApp(dubboBootstrap).start();
             testConsumer(dubboBootstrap);
         } catch (Exception e) {
-            Assertions.assertTrue(e.toString().contains("No provider available from registry"), StringUtils.toString(e));
+            Assertions.assertTrue(e.toString().contains("No provider available"), StringUtils.toString(e));
         } finally {
             dubboBootstrap.destroy();
+            DubboBootstrap.reset();
+            SysProps.clear();
         }
     }
 
@@ -130,6 +134,7 @@ public class DubboBootstrapMultiInstanceTest {
             testConsumer(dubboBootstrap);
         } finally {
             dubboBootstrap.destroy();
+            DubboBootstrap.reset();
         }
     }
 
@@ -156,10 +161,12 @@ public class DubboBootstrapMultiInstanceTest {
     }
 
     @Test
-    public void testMultiModuleApplication() {
+    public void testMultiModuleApplication() throws InterruptedException {
 
+        SysProps.setProperty(METADATA_PUBLISH_DELAY_KEY, "1");
         String version1 = "1.0";
         String version2 = "2.0";
+        String version3 = "3.0";
 
         DubboBootstrap providerBootstrap = null;
         DubboBootstrap consumerBootstrap = null;
@@ -178,27 +185,36 @@ public class DubboBootstrapMultiInstanceTest {
             serviceConfig2.setRef(new DemoServiceImpl());
             serviceConfig2.setVersion(version2);
 
+            ServiceConfig serviceConfig3 = new ServiceConfig();
+            serviceConfig3.setInterface(DemoService.class);
+            serviceConfig3.setRef(new DemoServiceImpl());
+            serviceConfig3.setVersion(version3);
+
             providerBootstrap
                 .application("provider-app")
                 .registry(registryConfig)
-                .protocol(new ProtocolConfig("dubbo", 2002))
-                .addModule()
+                .protocol(new ProtocolConfig("dubbo", -1))
                 .service(serviceConfig1)
-                .endModule()
-                .addModule()
+                .newModule()
                 .service(serviceConfig2)
+                .endModule()
+                .newModule()
+                .service(serviceConfig3)
                 .endModule();
 
             ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
             List<ModuleModel> moduleModels = applicationModel.getModuleModels();
-            Assertions.assertEquals(3, moduleModels.size());
+            Assertions.assertEquals(4, moduleModels.size());
             Assertions.assertSame(moduleModels.get(0), applicationModel.getInternalModule());
-            Assertions.assertSame(moduleModels.get(1), serviceConfig1.getScopeModel());
+            Assertions.assertSame(moduleModels.get(1), applicationModel.getDefaultModule());
+            Assertions.assertSame(applicationModel.getDefaultModule(), serviceConfig1.getScopeModel());
             Assertions.assertSame(moduleModels.get(2), serviceConfig2.getScopeModel());
+            Assertions.assertSame(moduleModels.get(3), serviceConfig3.getScopeModel());
             Assertions.assertNotSame(applicationModel.getDefaultModule(), applicationModel.getInternalModule());
 
             providerBootstrap.start();
 
+            Thread.sleep(100);
 
             // consumer app
             consumerBootstrap = DubboBootstrap.newInstance();
@@ -208,7 +224,7 @@ public class DubboBootstrapMultiInstanceTest {
                     .interfaceClass(DemoService.class)
                     .version(version1)
                     .injvm(false))
-                .addModule()
+                .newModule()
                 .reference(builder -> builder
                     .interfaceClass(DemoService.class)
                     .version(version2)
@@ -217,10 +233,12 @@ public class DubboBootstrapMultiInstanceTest {
             consumerBootstrap.start();
 
             DemoService referProxy1 = consumerBootstrap.getCache().get(DemoService.class.getName() + ":" + version1);
-            referProxy1.sayName("dubbo");
+            Assertions.assertEquals("say:dubbo", referProxy1.sayName("dubbo"));
 
             DemoService referProxy2 = consumerBootstrap.getCache().get(DemoService.class.getName() + ":" + version2);
-            referProxy2.sayName("dubbo");
+            Assertions.assertEquals("say:dubbo", referProxy2.sayName("dubbo"));
+
+            Assertions.assertNotEquals(referProxy1, referProxy2);
         } finally {
             if (providerBootstrap != null) {
                 providerBootstrap.destroy();
@@ -231,6 +249,149 @@ public class DubboBootstrapMultiInstanceTest {
         }
 
     }
+
+    @Test
+    public void testMultiModuleDeployAndReload() throws Exception {
+
+        String version1 = "1.0";
+        String version2 = "2.0";
+        String version3 = "3.0";
+
+        String serviceKey1 = DemoService.class.getName() + ":" + version1;
+        String serviceKey2 = DemoService.class.getName() + ":" + version2;
+        String serviceKey3 = DemoService.class.getName() + ":" + version3;
+
+        DubboBootstrap providerBootstrap = null;
+        DubboBootstrap consumerBootstrap = null;
+
+        try {
+            // provider app
+            providerBootstrap = DubboBootstrap.newInstance();
+
+            ServiceConfig serviceConfig1 = new ServiceConfig();
+            serviceConfig1.setInterface(DemoService.class);
+            serviceConfig1.setRef(new DemoServiceImpl());
+            serviceConfig1.setVersion(version1);
+
+            //provider module 1
+            providerBootstrap
+                .application("provider-app")
+                .registry(registryConfig)
+                .protocol(new ProtocolConfig("dubbo", -1))
+                .service(builder -> builder
+                    .interfaceClass(Greeting.class)
+                    .ref(new GreetingLocal2()))
+                .newModule()
+                .service(serviceConfig1)
+                .endModule();
+
+            ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
+            List<ModuleModel> moduleModels = applicationModel.getModuleModels();
+            Assertions.assertEquals(3, moduleModels.size());
+            Assertions.assertSame(moduleModels.get(0), applicationModel.getInternalModule());
+            Assertions.assertSame(moduleModels.get(1), applicationModel.getDefaultModule());
+            Assertions.assertSame(moduleModels.get(2), serviceConfig1.getScopeModel());
+
+            ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
+            moduleDeployer1.start().get();
+            Assertions.assertTrue(moduleDeployer1.isStarted());
+            ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
+            Assertions.assertTrue(internalModuleDeployer.isStarted());
+
+            FrameworkServiceRepository frameworkServiceRepository = applicationModel.getFrameworkModel().getServiceRepository();
+            Assertions.assertNotNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey1));
+            Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey2));
+            Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey3));
+
+            // consumer module 1
+            consumerBootstrap = DubboBootstrap.newInstance();
+            consumerBootstrap.application("consumer-app")
+                .registry(registryConfig)
+                .reference(builder -> builder
+                    .interfaceClass(DemoService.class)
+                    .version(version1)
+                    .injvm(false));
+            consumerBootstrap.start();
+
+            DemoService referProxy1 = consumerBootstrap.getCache().get(serviceKey1);
+            String result1 = referProxy1.sayName("dubbo");
+            Assertions.assertEquals("say:dubbo", result1);
+
+            // destroy provider module 1
+            serviceConfig1.getScopeModel().destroy();
+
+            // provider module 2
+            ServiceConfig serviceConfig2 = new ServiceConfig();
+            serviceConfig2.setInterface(DemoService.class);
+            serviceConfig2.setRef(new DemoServiceImpl());
+            serviceConfig2.setVersion(version2);
+
+            providerBootstrap.newModule()
+                .service(serviceConfig2)
+                .endModule();
+
+            serviceConfig2.getScopeModel().getDeployer().start();
+            Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey1));
+            Assertions.assertNotNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey2));
+            Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey3));
+
+            // consumer module2
+            ModuleModel consumerModule2 = consumerBootstrap.newModule()
+                .reference(builder -> builder
+                    .interfaceClass(DemoService.class)
+                    .version(version2)
+                    .injvm(false))
+                .getModuleModel();
+
+            ModuleDeployer moduleDeployer2 = consumerModule2.getDeployer();
+            moduleDeployer2.start().get();
+
+            DemoService referProxy2 = moduleDeployer2.getReferenceCache().get(serviceKey2);
+            String result2 = referProxy2.sayName("dubbo2");
+            Assertions.assertEquals("say:dubbo2", result2);
+
+            // destroy provider module 2
+            serviceConfig2.getScopeModel().destroy();
+
+            // provider module 3
+            ServiceConfig serviceConfig3 = new ServiceConfig();
+            serviceConfig3.setInterface(DemoService.class);
+            serviceConfig3.setRef(new DemoServiceImpl());
+            serviceConfig3.setVersion(version3);
+
+            providerBootstrap.newModule()
+                .service(serviceConfig3)
+                .endModule();
+
+            serviceConfig3.getScopeModel().getDeployer().start().get();
+            Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey1));
+            Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey2));
+            Assertions.assertNotNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey3));
+
+            // consumer module3
+            ModuleModel consumerModule3 = consumerBootstrap.newModule()
+                .reference(builder -> builder
+                    .interfaceClass(DemoService.class)
+                    .version(version3)
+                    .injvm(false))
+                .getModuleModel();
+
+            consumerBootstrap.start();
+
+            DemoService referProxy3 = consumerModule3.getDeployer().getReferenceCache().get(serviceKey3);
+            String result3 = referProxy3.sayName("dubbo3");
+            Assertions.assertEquals("say:dubbo3", result3);
+
+        } finally {
+            if (providerBootstrap != null) {
+                providerBootstrap.destroy();
+            }
+            if (consumerBootstrap != null) {
+                consumerBootstrap.destroy();
+            }
+        }
+    }
+
 
     private DubboBootstrap configConsumerApp(DubboBootstrap dubboBootstrap) {
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();

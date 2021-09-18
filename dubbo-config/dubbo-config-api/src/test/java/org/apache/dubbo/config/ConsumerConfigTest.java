@@ -20,7 +20,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -117,7 +116,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getApplicationConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -147,7 +146,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getApplicationConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -180,7 +179,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getApplicationConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(true, consumerConfig.isCheck());
@@ -194,9 +193,9 @@ public class ConsumerConfigTest {
     @Test
     public void testOverrideConfigByDubboProps() {
         ApplicationModel.defaultModel().getDefaultModule();
-        ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.check", "false");
-        ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.group", "demo");
-        ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.threads", "10");
+        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.check", "false");
+        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.group", "demo");
+        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.threads", "10");
 
         try {
             ConsumerConfig consumerConfig = new ConsumerConfig();
@@ -209,14 +208,14 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getApplicationConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(false, consumerConfig.isCheck());
             Assertions.assertEquals("groupA", consumerConfig.getGroup());
             Assertions.assertEquals(10, consumerConfig.getThreads());
         } finally {
-            ApplicationModel.defaultModel().getApplicationEnvironment().getPropertiesConfiguration().refresh();
+            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
         }
     }
 

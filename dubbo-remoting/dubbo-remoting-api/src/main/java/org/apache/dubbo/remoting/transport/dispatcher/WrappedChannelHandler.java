@@ -17,7 +17,6 @@
 package org.apache.dubbo.remoting.transport.dispatcher;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -132,7 +131,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
      */
     public ExecutorService getSharedExecutorService() {
         ExecutorRepository executorRepository =
-                ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+                url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         ExecutorService executor = executorRepository.getExecutor(url);
         if (executor == null) {
             executor = executorRepository.createExecutorIfAbsent(url);

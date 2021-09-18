@@ -14,16 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.probe.impl;
+package org.apache.dubbo.config.context;
 
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.qos.probe.ReadinessProbe;
+import org.apache.dubbo.config.AbstractConfig;
 
-@Activate
-public class BootstrapReadinessProbe implements ReadinessProbe {
-    @Override
-    public boolean check() {
-        return !DubboBootstrap.getInstance().isShutdown() && DubboBootstrap.getInstance().isStartup();
-    }
+public interface ConfigValidator {
+
+    void validate(AbstractConfig config);
+
 }

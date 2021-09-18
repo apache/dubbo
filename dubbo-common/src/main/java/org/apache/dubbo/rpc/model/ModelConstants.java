@@ -16,19 +16,12 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+public interface ModelConstants {
 
-/**
- * A post-processor after scope model is created (one of FrameworkModel/ApplicationModel/ModuleModel)
- */
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ScopeModelPostProcessor {
+    String DEPLOYER = "deployer";
 
     /**
-     * Post-process after a scope model is created.
-     * @param scopeModel
+     * Keep Dubbo running when spring is stopped
      */
-    void postProcessScopeModel(ScopeModel scopeModel);
-
+    String KEEP_RUNNING_ON_SPRING_CLOSED = "keepRunningOnSpringClosed";
 }

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -97,6 +98,13 @@ public class FrameworkServiceRepository {
 
     public List<ProviderModel> allProviderModels() {
         return Collections.unmodifiableList(new ArrayList<>(providers.values()));
+    }
+
+    public List<ConsumerModel> allConsumerModels() {
+        List<ConsumerModel> consumerModels = new LinkedList<>();
+        frameworkModel.getApplicationModels().forEach(applicationModel ->
+            consumerModels.addAll(applicationModel.getApplicationServiceRepository().allConsumerModels()));
+        return Collections.unmodifiableList(consumerModels);
     }
 
     private static String keyWithoutGroup(String serviceKey) {

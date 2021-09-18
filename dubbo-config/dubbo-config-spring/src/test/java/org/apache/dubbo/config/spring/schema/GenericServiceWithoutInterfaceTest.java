@@ -22,10 +22,10 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.service.GenericService;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -68,7 +68,7 @@ public class GenericServiceWithoutInterfaceTest {
         Object result = genericServiceWithoutInterfaceRef.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"generic"});
         Assertions.assertEquals("Welcome generic", result);
 
-        ReferenceConfigBase<Object> reference = DubboBootstrap.getInstance().getConfigManager().getReference("genericServiceWithoutInterfaceRef");
+        ReferenceConfigBase<Object> reference = DubboBootstrap.getInstance().getApplicationModel().getDefaultModule().getConfigManager().getReference("genericServiceWithoutInterfaceRef");
         Assertions.assertNull(reference.getServiceInterfaceClass());
         Assertions.assertEquals("org.apache.dubbo.config.spring.api.LocalMissClass", reference.getInterface());
         Assertions.assertThrows(ClassNotFoundException.class, () -> ClassUtils.forName(reference.getInterface()));

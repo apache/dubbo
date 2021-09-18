@@ -42,6 +42,7 @@ import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -105,15 +106,20 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
         applicationModel = getApplicationModel(url.getScopeModel());
-        consumerConfigurationListener = new ConsumerConfigurationListener(applicationModel);
+        consumerConfigurationListener = getConsumerConfigurationListener(url.getOrDefaultModuleModel());
     }
 
     @Override
     public void subscribe(URL url) {
         setSubscribeUrl(url);
         consumerConfigurationListener.addNotifyListener(this);
-        referenceConfigurationListener = new ReferenceConfigurationListener(applicationModel, this, url);
+        referenceConfigurationListener = new ReferenceConfigurationListener(url.getOrDefaultModuleModel(), this, url);
         registry.subscribe(url, this);
+    }
+
+    private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
+        return moduleModel.getBeanFactory().getOrRegisterBean(ConsumerConfigurationListener.class,
+            type -> new ConsumerConfigurationListener(moduleModel));
     }
 
     @Override
@@ -146,7 +152,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());
 
         // 3.x added for extend URL address
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultApplicationModel().getExtensionLoader(AddressListener.class);
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
@@ -623,8 +629,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         private RegistryDirectory directory;
         private URL url;
 
-        ReferenceConfigurationListener(ApplicationModel applicationModel, RegistryDirectory directory, URL url) {
-            super(applicationModel);
+        ReferenceConfigurationListener(ModuleModel moduleModel, RegistryDirectory directory, URL url) {
+            super(moduleModel);
             this.directory = directory;
             this.url = url;
             this.initWith(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
@@ -644,9 +650,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
         List<RegistryDirectory> listeners = new ArrayList<>();
 
-        ConsumerConfigurationListener(ApplicationModel applicationModel) {
-            super(applicationModel);
-            this.initWith(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX);
+        ConsumerConfigurationListener(ModuleModel moduleModel) {
+            super(moduleModel);
+            this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
         }
 
         void addNotifyListener(RegistryDirectory listener) {
