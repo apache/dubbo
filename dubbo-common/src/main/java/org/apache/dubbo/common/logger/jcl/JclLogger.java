@@ -28,7 +28,7 @@ import java.io.Serializable;
  */
 public class JclLogger implements Logger, Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -7694601616451571342L;
 
     private final Log logger;
 

@@ -34,7 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_K
  */
 public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -9026290350363878309L;
 
     /**
      * The service version

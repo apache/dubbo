@@ -31,7 +31,7 @@ import java.util.Map;
  */
 public abstract class AbstractMethodConfig extends AbstractConfig {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 5809761483000878437L;
 
     /**
      * The timeout for remote invocation in milliseconds

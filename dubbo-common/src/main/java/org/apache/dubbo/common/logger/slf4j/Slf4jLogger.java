@@ -25,7 +25,7 @@ import java.io.Serializable;
 
 public class Slf4jLogger implements Logger, Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -6472033381989561850L;
 
     private static final String FQCN = FailsafeLogger.class.getName();
 
