@@ -192,7 +192,7 @@ public class FailoverClusterInvokerTest {
     }
 
     @Test()
-    public void testInvoke_when_without_retry() {
+    public void testInvoke_without_retry() {
         int withoutRetry = 0;
         final URL url = URL.valueOf("test://localhost/" + Demo.class.getName() + "?loadbalance=roundrobin&retries=" + withoutRetry);
         RpcException exception = new RpcException(RpcException.TIMEOUT_EXCEPTION);
