@@ -54,7 +54,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
  * - Migration rule is of consumer application scope.
  * - Listener is shared among all invokers (interfaces), it keeps the relation between interface and handler.
  *
- * There're two execution points:
+ * There are two execution points:
  * - Refer, invoker behaviour is determined with default rule.
  * - Rule change, invoker behaviour is changed according to the newly received rule.
  */
@@ -63,6 +63,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "DUBBO_SERVICEDISCOVERY_MIGRATION";
     private static final String MIGRATION_DELAY_KEY = "dubbo.application.migration.delay";
+    private static final int MIGRATION_DEFAULT_DELAY_TIME = 60000;
     private String ruleKey;
 
     protected final Map<MigrationInvoker, MigrationRuleHandler> handlers = new ConcurrentHashMap<>();
@@ -117,7 +118,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     }
 
     private int getDelay() {
-        int delay = 60000;
+        int delay = MIGRATION_DEFAULT_DELAY_TIME;
         String delayStr = ConfigurationUtils.getProperty(moduleModel, MIGRATION_DELAY_KEY);
         if (StringUtils.isEmpty(delayStr)) {
             return delay;
@@ -244,6 +245,10 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         if (localRuleMigrationFuture != null) {
             localRuleMigrationFuture.cancel(true);
         }
+        if (ruleManageExecutor != null) {
+            ruleManageExecutor.shutdown();
+        }
+        ruleQueue.clear();
     }
 
     public Map<MigrationInvoker, MigrationRuleHandler> getHandlers() {
