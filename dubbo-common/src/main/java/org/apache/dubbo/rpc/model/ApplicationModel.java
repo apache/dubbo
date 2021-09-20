@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -273,6 +274,11 @@ public class ApplicationModel extends ScopeModel {
 
     public String getApplicationName() {
         return getCurrentConfig().getName();
+    }
+
+    public String tryGetApplicationName() {
+        Optional<ApplicationConfig> appCfgOptional = getApplicationConfigManager().getApplication();
+        return appCfgOptional.isPresent() ? appCfgOptional.get().getName() : null;
     }
 
     void addModule(ModuleModel moduleModel, boolean isInternal) {
