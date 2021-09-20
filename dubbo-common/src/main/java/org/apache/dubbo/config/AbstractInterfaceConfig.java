@@ -51,6 +51,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 
 /**
@@ -255,6 +256,21 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         map.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
             map.put(PID_KEY, String.valueOf(ConfigUtils.getPid()));
+        }
+    }
+
+    /**
+     * @deprecated After metrics config is refactored.
+     * This method should no longer use and will be deleted in the future.
+     */
+    @Deprecated
+    protected void appendMetricsCompatible(Map<String, String> map) {
+        MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
+        if (metricsConfig != null) {
+            if (!metricsConfig.getProtocol().equals(PROTOCOL_PROMETHEUS)) {
+                map.put("metrics.protocol", metricsConfig.getProtocol());
+                map.put("metrics.port", metricsConfig.getPort());
+            }
         }
     }
 

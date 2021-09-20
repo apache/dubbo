@@ -39,6 +39,13 @@ public class MetricsConfig extends AbstractConfig {
     private String protocol;
 
     /**
+     * @deprecated After metrics config is refactored.
+     * This parameter should no longer use and will be deleted in the future.
+     */
+    @Deprecated
+    private String port;
+
+    /**
      * The prometheus metrics config
      */
     @Nested
@@ -74,6 +81,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
     }
 
     public PrometheusConfig getPrometheus() {
