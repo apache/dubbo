@@ -59,15 +59,15 @@ import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtens
 /**
  * ServiceDiscoveryRegistry is a very special Registry implementation, which is used to bridge the old interface-level service discovery model
  * with the new service discovery model introduced in 3.0 in a compatible manner.
- *
+ * <p>
  * It fully complies with the extension specification of the Registry SPI, but is different from the specific implementation of zookeeper and Nacos,
  * because it does not interact with any real third-party registry, but only with the relevant components of ServiceDiscovery in the process.
  * In short, it bridges the old interface model and the new service discovery model:
- *
+ * <p>
  * - register() aggregates interface level data into MetadataInfo by mainly interacting with MetadataService.
  * - subscribe() triggers the whole subscribe process of the application level service discovery model.
- *   - Maps interface to applications depending on ServiceNameMapping.
- *   - Starts the new service discovery listener (InstanceListener) and makes NotifierListeners part of the InstanceListener.
+ * - Maps interface to applications depending on ServiceNameMapping.
+ * - Starts the new service discovery listener (InstanceListener) and makes NotifierListeners part of the InstanceListener.
  */
 public class ServiceDiscoveryRegistry implements Registry {
 
@@ -113,7 +113,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
         ServiceDiscovery serviceDiscovery = getServiceDiscovery(registryURL);
         execute(() -> serviceDiscovery.initialize(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
-                .removeParameter(REGISTRY_TYPE_KEY)));
+            .removeParameter(REGISTRY_TYPE_KEY)));
         return serviceDiscovery;
     }
 
@@ -279,10 +279,8 @@ public class ServiceDiscoveryRegistry implements Registry {
     @Override
     public void destroy() {
         registryManager.removeDestroyedRegistry(this);
-        execute(() -> {
-            // stop ServiceDiscovery
-            serviceDiscovery.destroy();
-        });
+        // stop ServiceDiscovery
+        execute(serviceDiscovery::destroy);
     }
 
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
@@ -339,7 +337,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     private static boolean isCompatibleProtocol(String protocol, URL targetURL) {
         return protocol == null || Objects.equals(protocol, targetURL.getParameter(PROTOCOL_KEY))
-                || Objects.equals(protocol, targetURL.getProtocol());
+            || Objects.equals(protocol, targetURL.getProtocol());
     }
 
     public Map<String, ServiceInstancesChangedListener> getServiceListeners() {
