@@ -69,6 +69,7 @@ public class RpcServiceContext extends RpcContext {
     private Object request;
     private Object response;
     private AsyncContext asyncContext;
+    private CancellableContext cancellableContext;
 
     private boolean remove = true;
 
@@ -584,6 +585,13 @@ public class RpcServiceContext extends RpcContext {
     @Override
     public AsyncContext getAsyncContext() {
         return asyncContext;
+    }
+
+    public CancellableContext getCancellableContext() {
+        if (cancellableContext == null) {
+            cancellableContext = new CancellableContextImpl();
+        }
+        return cancellableContext;
     }
 
     // RPC service context updated before each service call.

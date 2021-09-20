@@ -28,6 +28,7 @@ import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.AsciiString;
+import io.netty.util.AttributeKey;
 
 public class ClientTransportObserver implements TransportObserver {
     private final AsciiString SCHEME;
@@ -50,6 +51,9 @@ public class ClientTransportObserver implements TransportObserver {
 
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
         streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
+        AttributeKey<Http2StreamChannel> clientStreamAttribute =
+            AttributeKey.valueOf(TripleConstant.CLIENT_STREAM_KEY + stream.hashCode());
+        ctx.channel().attr(clientStreamAttribute).set(streamChannel);
 
         final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
         streamChannel.pipeline().addLast(responseHandler)

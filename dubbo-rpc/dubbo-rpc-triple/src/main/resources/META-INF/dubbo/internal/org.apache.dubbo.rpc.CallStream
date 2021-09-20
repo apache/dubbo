@@ -1,0 +1,1 @@
+http2=org.apache.dubbo.rpc.protocol.tri.Http2CallStream

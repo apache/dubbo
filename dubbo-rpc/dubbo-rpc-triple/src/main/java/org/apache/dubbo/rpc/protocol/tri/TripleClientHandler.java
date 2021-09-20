@@ -21,6 +21,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2SettingsFrame;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -34,6 +36,7 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -116,6 +119,10 @@ public class TripleClientHandler extends ChannelDuplexHandler {
                 result = new AppResponse();
                 stream.asStreamObserver().onNext(inv.getArguments()[0]);
                 stream.asStreamObserver().onCompleted();
+                AttributeKey<Http2StreamChannel> clientStreamAttribute =
+                    AttributeKey.valueOf(TripleConstant.CLIENT_STREAM_KEY + stream.hashCode());
+                Http2StreamChannel streamChannel = ctx.channel().attr(clientStreamAttribute).get();
+                RpcContext.getServiceContext().getCancellableContext().registerChannel(stream.getStreamSubscriber(), streamChannel);
             }
             response.setResult(result);
             DefaultFuture2.received(stream.getConnection(), response);
