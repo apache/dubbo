@@ -132,7 +132,7 @@ public class FailbackClusterInvokerTest {
         resetInvokerToException();
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         invoker.invoke(invocation);
-        Assertions.assertNull(RpcContext.getServiceContext().getUrl());
+        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
         DubboAppender.clear();
     }
 
