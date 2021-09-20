@@ -49,7 +49,6 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
@@ -289,13 +288,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
         AbstractBeanDefinition serviceBeanDefinition =
                 buildServiceBeanDefinition(service, serviceAnnotationAttributes, interfaceClass, annotatedServiceBeanName);
-        /**
-         * Supports {@link Lazy} annotation
-         * */
-        Lazy lazyAnnotation = beanClass.getAnnotation(Lazy.class);
-        if (lazyAnnotation != null) {
-            serviceBeanDefinition.setLazyInit(lazyAnnotation.value());
-        }
+
         // ServiceBean Bean name
         String beanName = generateServiceBeanName(serviceAnnotationAttributes, interfaceClass);
 
