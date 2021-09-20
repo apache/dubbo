@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.Node;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
@@ -34,7 +33,6 @@ import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.PenetrateAttachmentSelector;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
@@ -46,7 +44,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -209,22 +206,6 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         Map<String, Object> clientContextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
         if (CollectionUtils.isNotEmptyMap(clientContextAttachments)) {
             invocation.addObjectAttachmentsIfAbsent(clientContextAttachments);
-        }
-
-        // server context attachment
-        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = invocation.getModuleModel().getExtensionLoader(PenetrateAttachmentSelector.class);
-        Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
-        if (CollectionUtils.isNotEmpty(supportedSelectors)) {
-            // custom context attachment
-            for (String supportedSelector : supportedSelectors) {
-                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select();
-                if (CollectionUtils.isNotEmptyMap(selected)) {
-                    invocation.addObjectAttachmentsIfAbsent(selected);
-                }
-            }
-        } else {
-            Map<String, Object> serverContextAttachments = RpcContext.getServerAttachment().getObjectAttachments();
-            invocation.addObjectAttachmentsIfAbsent(serverContextAttachments);
         }
     }
 
