@@ -165,22 +165,25 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 }
             } else {
                 CountDownLatch latch = new CountDownLatch(1);
-                List<URL> urls = new ArrayList<>();
-                for (String path : toCategoriesPath(url)) {
-                    ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
-                    ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, k, latch));
-                    if (zkListener instanceof RegistryChildListenerImpl) {
-                        ((RegistryChildListenerImpl) zkListener).setLatch(latch);
+                try {
+                    List<URL> urls = new ArrayList<>();
+                    for (String path : toCategoriesPath(url)) {
+                        ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
+                        ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, k, latch));
+                        if (zkListener instanceof RegistryChildListenerImpl) {
+                            ((RegistryChildListenerImpl) zkListener).setLatch(latch);
+                        }
+                        zkClient.create(path, false);
+                        List<String> children = zkClient.addChildListener(path, zkListener);
+                        if (children != null) {
+                            urls.addAll(toUrlsWithEmpty(url, path, children));
+                        }
                     }
-                    zkClient.create(path, false);
-                    List<String> children = zkClient.addChildListener(path, zkListener);
-                    if (children != null) {
-                        urls.addAll(toUrlsWithEmpty(url, path, children));
-                    }
+                    notify(url, listener, urls);
+                } finally {
+                    // tells the listener to run only after the sync notification of main thread finishes.
+                    latch.countDown();
                 }
-                notify(url, listener, urls);
-                // tells the listener to run only after the sync notification of main thread finishes.
-                latch.countDown();
             }
         } catch (Throwable e) {
             throw new RpcException("Failed to subscribe " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
