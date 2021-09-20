@@ -19,10 +19,10 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.spring.context.DubboSpringInitializationContext;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
@@ -87,9 +87,9 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 setPath(getInterface());
             }
         }
-        //register service bean and set bootstrap
-        DubboSpringInitializationContext dubboContext = DubboBeanUtils.getInitializationContext(applicationContext);
-        dubboContext.getDubboBootstrap().service(this, dubboContext.getModuleModel());
+        //register service bean
+        ModuleModel moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
+        moduleModel.getConfigManager().addService(this);
     }
 
     /**

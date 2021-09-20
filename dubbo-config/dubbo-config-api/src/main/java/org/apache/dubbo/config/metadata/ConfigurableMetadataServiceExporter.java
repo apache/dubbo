@@ -93,7 +93,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             serviceConfig.setMethods(generateMethodConfig());
 
             // export
-            serviceConfig.export();
+            serviceConfig.exportOnly();
 
             if (logger.isInfoEnabled()) {
                 logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
@@ -146,7 +146,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     }
 
     public boolean isExported() {
-        return serviceConfig != null && serviceConfig.isExported();
+        return serviceConfig != null && serviceConfig.isExported() && !serviceConfig.isUnexported();
     }
 
     private ApplicationConfig getApplicationConfig() {

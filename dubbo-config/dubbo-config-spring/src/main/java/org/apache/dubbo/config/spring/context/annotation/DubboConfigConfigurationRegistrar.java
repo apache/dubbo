@@ -39,7 +39,7 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
         // initialize dubbo beans
         DubboSpringInitializer.initialize(registry);
 
-        // Config beans creating from props have move to DubboBootstrap
+        // Config beans creating from props have move to ConfigManager
 //        AnnotationAttributes attributes = AnnotationAttributes.fromMap(
 //                importingClassMetadata.getAnnotationAttributes(EnableDubboConfig.class.getName()));
 //

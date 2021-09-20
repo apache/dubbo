@@ -197,7 +197,7 @@ public abstract class AbstractConfig implements Serializable {
                             continue;
                         }
                         // get attribute name
-                        String propertyName = extractPropertyName(method.getName());
+                        String propertyName = calculateAttributeFromGetter(method.getName());
                         // convert camelCase/snake_case to kebab-case
                         key = StringUtils.convertToSplitName(propertyName, "-");
                     }

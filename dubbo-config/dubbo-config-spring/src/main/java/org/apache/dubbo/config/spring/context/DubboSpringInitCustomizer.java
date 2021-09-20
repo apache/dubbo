@@ -27,12 +27,12 @@ import static org.apache.dubbo.common.extension.ExtensionScope.FRAMEWORK;
  * Custom dubbo spring initialization
  */
 @SPI(scope = FRAMEWORK)
-public interface DubboSpringInitializationCustomizer {
+public interface DubboSpringInitCustomizer {
 
     /**
      * <p>Customize dubbo spring initialization on bean registry processing phase.</p>
      * <p>You can register a {@link BeanFactoryPostProcessor} or {@link BeanPostProcessor} for custom processing.</p>
-     * <p>Or change the bind module model via {@link DubboSpringInitializationContext#setModuleModel(ModuleModel)}.</p>
+     * <p>Or change the bind module model via {@link DubboSpringInitContext#setModuleModel(ModuleModel)}.</p>
      *
      * <p><b>Note:</b></p>
      * <p>1. The bean factory may be not ready yet when triggered by parsing dubbo xml definition.</p>
@@ -41,6 +41,6 @@ public interface DubboSpringInitializationCustomizer {
      *
      * @param context
      */
-    void customize(DubboSpringInitializationContext context);
+    void customize(DubboSpringInitContext context);
 
 }

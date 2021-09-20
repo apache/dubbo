@@ -16,17 +16,20 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Dubbo spring initialization context object
  */
-public class DubboSpringInitializationContext {
+public class DubboSpringInitContext {
 
     private BeanDefinitionRegistry registry;
 
@@ -36,7 +39,7 @@ public class DubboSpringInitializationContext {
 
     private ModuleModel moduleModel;
 
-    private DubboBootstrap dubboBootstrap;
+    private Map<String, Object> moduleAttributes = new HashMap<>();
 
     private volatile boolean bound;
 
@@ -79,7 +82,6 @@ public class DubboSpringInitializationContext {
     /**
      * Change the binding ModuleModel, the ModuleModel and DubboBootstrap must be matched.
      *
-     * @see #setDubboBootstrap(DubboBootstrap)
      * @param moduleModel
      */
     public void setModuleModel(ModuleModel moduleModel) {
@@ -89,22 +91,23 @@ public class DubboSpringInitializationContext {
         this.moduleModel = moduleModel;
     }
 
-    public DubboBootstrap getDubboBootstrap() {
-        return dubboBootstrap;
+    public boolean isKeepRunningOnSpringClosed() {
+        return (boolean) moduleAttributes.get(ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED);
     }
 
     /**
-     * Change the binding DubboBootstrap instance, the ModuleModel and DubboBootstrap must be matched.
-     * <p></p>
-     * By default, DubboBoostrap is created using the ApplicationModel in which the ModuleModel resides.
-     *
-     * @see #setModuleModel(ModuleModel)
-     * @param dubboBootstrap
+     * Keep Dubbo running when spring is stopped
+     * @param keepRunningOnSpringClosed
      */
-    public void setDubboBootstrap(DubboBootstrap dubboBootstrap) {
-        if (bound) {
-            throw new IllegalStateException("Cannot change DubboBootstrap after bound context");
-        }
-        this.dubboBootstrap = dubboBootstrap;
+    public void setKeepRunningOnSpringClosed(boolean keepRunningOnSpringClosed) {
+        this.setModuleAttribute(ModelConstants.KEEP_RUNNING_ON_SPRING_CLOSED, keepRunningOnSpringClosed);
+    }
+
+    public Map<String, Object> getModuleAttributes() {
+        return moduleAttributes;
+    }
+
+    public void setModuleAttribute(String key, Object value) {
+        this.moduleAttributes.put(key, value);
     }
 }

@@ -22,15 +22,14 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMPOSITE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -40,21 +39,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class MetadataServiceExporterTest {
 
-    @BeforeAll
-    public static void init() {
+    @BeforeEach
+    public void init() {
         DubboBootstrap.reset();
-        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
+
+        ApplicationConfig applicationConfig = new ApplicationConfig("Test");
+        applicationConfig.setRegisterConsumer(true);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
         ApplicationModel.defaultModel().getApplicationConfigManager().addRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
         ApplicationModel.defaultModel().getApplicationConfigManager().addProtocol(new ProtocolConfig("injvm"));
     }
 
-    @AfterAll
-    public static void destroy() {
-        DubboBootstrap.reset();
-    }
-
     @Test
     public void test() {
+        ApplicationModel.defaultModel().getInternalModule().getDeployer().start();
+
         MetadataService metadataService = Mockito.mock(MetadataService.class);
         ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
         exporter.setMetadataService(metadataService);
@@ -68,4 +67,23 @@ public class MetadataServiceExporterTest {
         assertTrue(exporter.supports(REMOTE_METADATA_STORAGE_TYPE));
         assertTrue(exporter.supports(COMPOSITE_METADATA_STORAGE_TYPE));
     }
+
+    @Test
+    public void test2() throws Exception {
+
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) applicationModel.getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
+        MetadataService metadataService = Mockito.mock(MetadataService.class);
+        exporter.setMetadataService(metadataService);
+
+        applicationModel.getDeployer().start().get();
+        assertTrue(exporter.isExported());
+        assertTrue(exporter.supports(DEFAULT_METADATA_STORAGE_TYPE));
+        assertTrue(exporter.supports(REMOTE_METADATA_STORAGE_TYPE));
+        assertTrue(exporter.supports(COMPOSITE_METADATA_STORAGE_TYPE));
+
+        applicationModel.getDeployer().stop();
+        assertFalse(exporter.isExported());
+    }
+
 }

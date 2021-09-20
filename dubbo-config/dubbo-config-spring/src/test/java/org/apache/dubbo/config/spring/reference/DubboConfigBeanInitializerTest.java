@@ -19,14 +19,15 @@ package org.apache.dubbo.config.spring.reference;
 
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,8 +109,10 @@ public class DubboConfigBeanInitializerTest {
     @Configuration
     static class BusinessConfig {
         @Bean
-        public FooService fooService() {
-            // DubboBootstrap should be inited at DubboConfigInitializer, before init FooService bean
+        public FooService fooService(ApplicationContext applicationContext) {
+            // Dubbo config beans should be inited at DubboConfigInitializer, before init FooService bean
+            Assertions.assertTrue(DubboBeanUtils.getModuleModel(applicationContext).getDeployer().isInitialized());
+            Assertions.assertTrue(DubboBeanUtils.getApplicationModel(applicationContext).getDeployer().isInitialized());
             Assertions.assertTrue(DubboBootstrap.getInstance().isInitialized());
             return new FooService();
         }

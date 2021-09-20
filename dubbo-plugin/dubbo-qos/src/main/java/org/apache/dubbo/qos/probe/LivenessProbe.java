@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.probe;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
@@ -27,7 +28,7 @@ import org.apache.dubbo.common.extension.SPI;
  *
  * @since 3.0
  */
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface LivenessProbe {
     /**
      * Check if program is alive
