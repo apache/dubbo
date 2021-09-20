@@ -185,9 +185,13 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
         if (!interfaceClass.isInstance(ref)) {
             throw new IllegalStateException("The class "
-                    + ref.getClass().getName() + " unimplemented interface "
-                    + interfaceClass + "!");
+                + ref.getClass().getName() + getClassloaderDesc(ref.getClass()) + " unimplemented interface "
+                + interfaceClass + getClassloaderDesc(ref.getClass()) + "!");
         }
+    }
+
+    private String getClassloaderDesc(Class clazz) {
+        return "[classloader=" + clazz.getClassLoader().getClass().getName() + "@" + clazz.getClassLoader().hashCode() + "]";
     }
 
     public Optional<String> getContextPath(ProtocolConfig protocolConfig) {

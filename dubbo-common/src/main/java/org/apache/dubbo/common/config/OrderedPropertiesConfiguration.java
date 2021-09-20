@@ -26,7 +26,7 @@ import java.util.Properties;
 import java.util.Set;
 
 public class OrderedPropertiesConfiguration implements Configuration{
-    private Properties properties = new Properties();
+    private Properties properties;
     private ModuleModel moduleModel;
 
     public OrderedPropertiesConfiguration(ModuleModel moduleModel) {
@@ -35,6 +35,7 @@ public class OrderedPropertiesConfiguration implements Configuration{
     }
 
     public void refresh() {
+        properties = new Properties();
         ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = moduleModel.getExtensionLoader(OrderedPropertiesProvider.class);
         Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
         if (propertiesProviderNames == null || propertiesProviderNames.isEmpty()) {

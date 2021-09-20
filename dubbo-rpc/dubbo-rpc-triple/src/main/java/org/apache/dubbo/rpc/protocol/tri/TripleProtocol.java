@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import grpc.health.v1.HealthCheckResponse;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -29,9 +27,12 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
+
+import grpc.health.v1.HealthCheckResponse;
 
 import java.util.ArrayList;
 
@@ -44,13 +45,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
-    private final PathResolver pathResolver = ExtensionLoader.getExtensionLoader(PathResolver.class)
-            .getDefaultExtension();
-    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension();
+    private final PathResolver pathResolver;
+    private final TriBuiltinService triBuiltinService;
 
-    static {
-        TriBuiltinService.init();
+    public TripleProtocol(FrameworkModel frameworkModel) {
+        this.triBuiltinService = new TriBuiltinService(frameworkModel);
+        this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
     }
 
     @Override
@@ -79,8 +79,8 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
         pathResolver.add(url.getServiceInterface(), invoker);
 
         // set service status
-        TriBuiltinService.getHealthStatusManager().setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
-        TriBuiltinService.getHealthStatusManager().setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
+        triBuiltinService.getHealthStatusManager().setStatus(url.getServiceKey(), HealthCheckResponse.ServingStatus.SERVING);
+        triBuiltinService.getHealthStatusManager().setStatus(url.getServiceInterface(), HealthCheckResponse.ServingStatus.SERVING);
 
         PortUnificationExchanger.bind(invoker.getUrl());
         return exporter;
@@ -92,6 +92,8 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
         try {
             url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
             url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+            ExecutorRepository executorRepository = url.getOrDefaultApplicationModel()
+                .getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
             executorRepository.createExecutorIfAbsent(url);
             invoker = new TripleInvoker<>(type, url, invokers);
         } catch (RemotingException e) {

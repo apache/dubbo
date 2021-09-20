@@ -140,7 +140,7 @@ public class CtClassBuilder {
      */
     public CtClass build(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
         ClassPool pool = new ClassPool(true);
-        pool.appendClassPath(new LoaderClassPath(classLoader));
+        pool.insertClassPath(new LoaderClassPath(classLoader));
         
         // create class
         CtClass ctClass = pool.makeClass(className, pool.get(superClassName));
