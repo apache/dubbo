@@ -44,7 +44,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
     private final AtomicInteger disconnectCount = new AtomicInteger(0);
-    private final Integer warning_period = 50;
+    private final Integer warningPeriod = 50;
     private ExchangeClient client;
 
     public ReferenceCountExchangeClient(ExchangeClient client) {
@@ -198,7 +198,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
      */
     private void replaceWithLazyClient() {
         // start warning at second replaceWithLazyClient()
-        if (disconnectCount.getAndIncrement() % warning_period == 1) {
+        if (disconnectCount.getAndIncrement() % warningPeriod == 1) {
             logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
         }
 

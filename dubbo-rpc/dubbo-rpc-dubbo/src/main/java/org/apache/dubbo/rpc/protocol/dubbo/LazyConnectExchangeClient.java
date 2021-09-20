@@ -51,7 +51,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     private final URL url;
     private final ExchangeHandler requestHandler;
     private final Lock connectLock = new ReentrantLock();
-    private final int warning_period = 5000;
+    private final int warningPeriod = 5000;
     /**
      * lazy connect, initial state for connection
      */
@@ -132,7 +132,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
      */
     private void warning() {
         if (requestWithWarning) {
-            if (warningcount.get() % warning_period == 0) {
+            if (warningcount.get() % warningPeriod == 0) {
                 logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
             }
             warningcount.incrementAndGet();
