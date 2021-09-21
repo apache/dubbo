@@ -155,7 +155,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier) {
+    public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         try {
             String content = configService.getConfig(identifier.getApplication(), identifier.getRevision(), 3000L);
             return gson.fromJson(content, MetadataInfo.class);

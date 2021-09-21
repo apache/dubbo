@@ -103,7 +103,7 @@ public class RemoteMetadataServiceImpl implements ScopeModelAware {
         if (instance.getRegistryCluster() != null && !instance.getRegistryCluster().equalsIgnoreCase(params.get(REGISTRY_CLUSTER_KEY))) {
             params.put(REGISTRY_CLUSTER_KEY, instance.getRegistryCluster());
         }
-        return metadataReport.getAppMetadata(identifier);
+        return metadataReport.getAppMetadata(identifier, params);
     }
 
     private void checkRemoteConfigured() {
