@@ -700,7 +700,7 @@ public class RegistryProtocol implements Protocol {
             newUrl = getConfiguredInvokerUrl(providerConfigurationListener.getConfigurators(), newUrl);
             newUrl = getConfiguredInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
                     .getConfigurators(), newUrl);
-            if (!currentUrl.equals(newUrl)) {
+            if (!newUrl.equals(currentUrl)) {
                 if(newUrl.getParameter(Constants.NEED_REEXPORT, true)) {
                     RegistryProtocol.this.reExport(originInvoker, newUrl);
                 }
