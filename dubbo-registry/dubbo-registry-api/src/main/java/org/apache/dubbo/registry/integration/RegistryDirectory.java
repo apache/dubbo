@@ -70,6 +70,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CON
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_HASHMAP_LOAD_FACTOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
@@ -227,7 +228,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
             Map<URL, Invoker<T>> oldUrlInvokerMap = null;
             if (this.urlInvokerMap != null) {
-                oldUrlInvokerMap = new LinkedHashMap<>(this.urlInvokerMap.size());
+                // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
+                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + this.urlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
                 this.urlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
             Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
