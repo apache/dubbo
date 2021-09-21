@@ -306,11 +306,11 @@ public class ZookeeperMetadataReportTest {
         metadataInfo.addService(new MetadataInfo.ServiceInfo(url));
 
         SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(appName, metadataInfo.calAndGetRevision());
-        MetadataInfo appMetadata = zookeeperMetadataReport.getAppMetadata(identifier);
+        MetadataInfo appMetadata = zookeeperMetadataReport.getAppMetadata(identifier, Collections.emptyMap());
         Assertions.assertNull(appMetadata);
 
         zookeeperMetadataReport.publishAppMetadata(identifier, metadataInfo);
-        appMetadata = zookeeperMetadataReport.getAppMetadata(identifier);
+        appMetadata = zookeeperMetadataReport.getAppMetadata(identifier, Collections.emptyMap());
         Assertions.assertNotNull(appMetadata);
         Assertions.assertEquals(appMetadata.calAndGetRevision(), metadataInfo.calAndGetRevision());
 
