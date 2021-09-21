@@ -56,6 +56,7 @@ import static org.apache.dubbo.rpc.model.ScopeModelUtil.getModuleModel;
 
 public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryDirectory.class);
+    private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     /**
      * instance address to invoker mapping.
@@ -256,7 +257,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
             Map<String, Invoker<T>> oldUrlInvokerMap = null;
             if (this.urlInvokerMap != null) {
-                oldUrlInvokerMap = new LinkedHashMap<>(this.urlInvokerMap.size());
+                // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
+                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + this.urlInvokerMap.size() / DEFAULT_LOAD_FACTOR));
                 this.urlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
