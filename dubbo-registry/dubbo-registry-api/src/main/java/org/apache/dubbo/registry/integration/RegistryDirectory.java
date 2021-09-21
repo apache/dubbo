@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -69,6 +70,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CON
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_HASHMAP_LOAD_FACTOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
@@ -209,7 +211,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
-            Map<URL, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
+            
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
             }
@@ -222,7 +224,15 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             if (invokerUrls.isEmpty()) {
                 return;
             }
-            Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
+            
+            // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
+            Map<URL, Invoker<T>> oldUrlInvokerMap = null;
+            if (this.urlInvokerMap != null) {
+                // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
+                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + this.urlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
+                this.urlInvokerMap.forEach(oldUrlInvokerMap::put);
+            }
+            Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
 
             /**
              * If the calculation is wrong, it is not processed.
@@ -313,11 +323,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     /**
      * Turn urls into invokers, and if url has been refer, will not re-reference.
+     * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
+     * @param oldUrlInvokerMap     
      * @param urls
      * @return invokers
      */
-    private Map<URL, Invoker<T>> toInvokers(List<URL> urls) {
+    private Map<URL, Invoker<T>> toInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
         Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
@@ -351,8 +363,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             URL url = mergeUrl(providerUrl);
 
             // Cache key is url that does not merge with consumer side parameters, regardless of how the consumer combines parameters, if the server url changes, then refer again
-            Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
-            Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.remove(url);
+            Invoker<T> invoker = oldUrlInvokerMap == null ? null : oldUrlInvokerMap.remove(url);
             if (invoker == null) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
@@ -567,7 +578,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public boolean isAvailable() {
-        if (isDestroyed()) {
+        if (isDestroyed() || this.forbidden) {
             return false;
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
