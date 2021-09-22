@@ -76,14 +76,14 @@ public class FrameworkModel extends ScopeModel {
             applicationModel.destroy();
         }
 
-        notifyDestroy();
-
         allInstances.remove(this);
         if (defaultInstance == this) {
             synchronized (FrameworkModel.class) {
                 defaultInstance = null;
             }
         }
+
+        notifyDestroy();
     }
 
     public static FrameworkModel defaultModel() {
