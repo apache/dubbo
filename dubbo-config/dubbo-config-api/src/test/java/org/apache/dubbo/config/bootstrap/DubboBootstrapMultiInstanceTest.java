@@ -34,8 +34,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,8 +51,8 @@ public class DubboBootstrapMultiInstanceTest {
 
     private static RegistryConfig registryConfig;
 
-    @BeforeEach
-    public void setup() {
+    @BeforeAll
+    public static void beforeAll() {
         registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
         registryCenter.startup();
         RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
@@ -58,6 +60,15 @@ public class DubboBootstrapMultiInstanceTest {
             instance.getType(),
             instance.getHostname(),
             instance.getPort()));
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        registryCenter.shutdown();
+    }
+
+    @BeforeEach
+    public void setup() {
 
     }
 
@@ -65,7 +76,6 @@ public class DubboBootstrapMultiInstanceTest {
     public void afterEach() {
         SysProps.clear();
         DubboBootstrap.reset();
-        registryCenter.shutdown();
     }
 
     @Test
