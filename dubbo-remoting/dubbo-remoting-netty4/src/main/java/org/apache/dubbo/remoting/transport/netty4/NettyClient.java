@@ -32,6 +32,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -118,13 +119,23 @@ public class NettyClient extends AbstractClient {
                         .addLast("handler", nettyClientHandler);
 
                 String socksProxyHost = ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
-                if(socksProxyHost != null) {
+                if(socksProxyHost != null && !isFilteredAddress(getUrl().getHost())) {
                     int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
                     Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
                     ch.pipeline().addFirst(socks5ProxyHandler);
                 }
             }
         });
+    }
+
+    private boolean isFilteredAddress(String host) {
+        // filter local address
+        if (StringUtils.isEquals(NetUtils.getLocalHost(), host) ||
+            "localhost".equals(host) ||
+            "127.0.0.1".equals(host)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
