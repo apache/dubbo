@@ -41,6 +41,8 @@ public interface ModuleDeployer extends Deployer<ModuleModel> {
 
     void prepare();
 
+    void setPending();
+
     void notifyExportService(ServiceConfigBase<?> sc);
 
     boolean isAsync();
