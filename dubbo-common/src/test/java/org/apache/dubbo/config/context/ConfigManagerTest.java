@@ -48,12 +48,15 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class ConfigManagerTest {
 
-    private ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
-    private ModuleConfigManager moduleConfigManager = ApplicationModel.defaultModel().getDefaultModule().getConfigManager();
+    private ConfigManager configManager;
+    private ModuleConfigManager moduleConfigManager;
 
     @BeforeEach
     public void init() {
-        configManager.destroy();
+        ApplicationModel.defaultModel().destroy();
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        configManager = applicationModel.getApplicationConfigManager();
+        moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
     }
 
     @Test
