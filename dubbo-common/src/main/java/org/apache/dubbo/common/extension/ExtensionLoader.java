@@ -27,6 +27,7 @@ import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ClassLoaderResourceLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -41,7 +42,9 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelAccessor;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
@@ -921,15 +924,13 @@ public class ExtensionLoader<T> {
                                boolean extensionLoaderClassLoaderFirst, boolean overridden, String... excludedPackages) {
         String fileName = dir + type;
         try {
-
-            Enumeration<java.net.URL> urls;
+            List<ClassLoader> classLoadersToLoad = new LinkedList<>();
 
             // try to load from ExtensionLoader's ClassLoader first
             if (extensionLoaderClassLoaderFirst) {
                 ClassLoader extensionLoaderClassLoader = ExtensionLoader.class.getClassLoader();
                 if (ClassLoader.getSystemClassLoader() != extensionLoaderClassLoader) {
-                    urls = extensionLoaderClassLoader.getResources(fileName);
-                    loadFromClass(extensionClasses, overridden, urls, extensionLoaderClassLoader, excludedPackages);
+                    classLoadersToLoad.add(extensionLoaderClassLoader);
                 }
             }
 
@@ -937,25 +938,30 @@ public class ExtensionLoader<T> {
             Set<ClassLoader> classLoaders = scopeModel.getClassLoaders();
 
             if (CollectionUtils.isEmpty(classLoaders)) {
-                urls = ClassLoader.getSystemResources(fileName);
-                loadFromClass(extensionClasses, overridden, urls, null, excludedPackages);
-            } else {
-                for (ClassLoader classLoader : classLoaders) {
-                    urls = classLoader.getResources(fileName);
-                    loadFromClass(extensionClasses, overridden, urls, classLoader, excludedPackages);
+                Enumeration<java.net.URL> resources = ClassLoader.getSystemResources(fileName);
+                if (resources != null) {
+                    while (resources.hasMoreElements()) {
+                        loadResource(extensionClasses, null, resources.nextElement(), overridden, excludedPackages);
+                    }
                 }
+            } else {
+                classLoadersToLoad.addAll(classLoaders);
             }
+
+            Map<ClassLoader, Set<java.net.URL>> resources = ClassLoaderResourceLoader.loadResources(fileName, classLoadersToLoad);
+            resources.forEach(((classLoader, urls) -> {
+                loadFromClass(extensionClasses, overridden, urls, classLoader, excludedPackages);
+            }));
         } catch (Throwable t) {
             logger.error("Exception occurred when loading extension class (interface: " +
                 type + ", description file: " + fileName + ").", t);
         }
     }
 
-    private void loadFromClass(Map<String, Class<?>> extensionClasses, boolean overridden, Enumeration<java.net.URL> urls, ClassLoader classLoader, String[] excludedPackages) {
-        if (urls != null) {
-            while (urls.hasMoreElements()) {
-                java.net.URL resourceURL = urls.nextElement();
-                loadResource(extensionClasses, classLoader, resourceURL, overridden, excludedPackages);
+    private void loadFromClass(Map<String, Class<?>> extensionClasses, boolean overridden, Set<java.net.URL> urls, ClassLoader classLoader, String[] excludedPackages) {
+        if (CollectionUtils.isNotEmpty(urls)) {
+            for (java.net.URL url : urls) {
+                loadResource(extensionClasses, classLoader, url, overridden, excludedPackages);
             }
         }
     }
@@ -1161,7 +1167,7 @@ public class ExtensionLoader<T> {
     private Class<?> createAdaptiveExtensionClass() {
         ClassLoader classLoader = findClassLoader();
         try {
-            if (getEnvironment().getConfiguration().getBoolean(NATIVE, false)) {
+            if (Boolean.parseBoolean(System.getProperty(NATIVE, "false"))) {
                 return classLoader.loadClass(type.getName() + "$Adaptive");
             }
         } catch (Throwable ignore) {
