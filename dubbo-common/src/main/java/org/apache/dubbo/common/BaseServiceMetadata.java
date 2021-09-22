@@ -17,6 +17,7 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 
@@ -30,6 +31,7 @@ public class BaseServiceMetadata {
     protected String serviceInterfaceName;
     protected String version;
     protected volatile String group;
+    private ServiceModel serviceModel;
 
     public static String buildServiceKey(String path, String group, String version) {
         int length = path == null ? 0 : path.length();
@@ -145,4 +147,11 @@ public class BaseServiceMetadata {
         this.group = group;
     }
 
+    public ServiceModel getServiceModel() {
+        return serviceModel;
+    }
+
+    public void setServiceModel(ServiceModel serviceModel) {
+        this.serviceModel = serviceModel;
+    }
 }

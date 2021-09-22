@@ -42,11 +42,13 @@ import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -68,6 +70,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CON
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_HASHMAP_LOAD_FACTOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
@@ -105,15 +108,20 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     public RegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
         applicationModel = getApplicationModel(url.getScopeModel());
-        consumerConfigurationListener = new ConsumerConfigurationListener(applicationModel);
+        consumerConfigurationListener = getConsumerConfigurationListener(url.getOrDefaultModuleModel());
     }
 
     @Override
     public void subscribe(URL url) {
         setSubscribeUrl(url);
         consumerConfigurationListener.addNotifyListener(this);
-        referenceConfigurationListener = new ReferenceConfigurationListener(applicationModel, this, url);
+        referenceConfigurationListener = new ReferenceConfigurationListener(url.getOrDefaultModuleModel(), this, url);
         registry.subscribe(url, this);
+    }
+
+    private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
+        return moduleModel.getBeanFactory().getOrRegisterBean(ConsumerConfigurationListener.class,
+            type -> new ConsumerConfigurationListener(moduleModel));
     }
 
     @Override
@@ -146,7 +154,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         List<URL> providerURLs = categoryUrls.getOrDefault(PROVIDERS_CATEGORY, Collections.emptyList());
 
         // 3.x added for extend URL address
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
@@ -203,7 +211,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
-            Map<URL, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
+            
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
             }
@@ -216,7 +224,15 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             if (invokerUrls.isEmpty()) {
                 return;
             }
-            Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
+            
+            // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
+            Map<URL, Invoker<T>> oldUrlInvokerMap = null;
+            if (this.urlInvokerMap != null) {
+                // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
+                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + this.urlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
+                this.urlInvokerMap.forEach(oldUrlInvokerMap::put);
+            }
+            Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
 
             /**
              * If the calculation is wrong, it is not processed.
@@ -265,7 +281,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             for (List<Invoker<T>> groupList : groupMap.values()) {
                 StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
                 staticDirectory.buildRouterChain();
-                mergedInvokers.add(CLUSTER.join(staticDirectory));
+                mergedInvokers.add(cluster.join(staticDirectory));
             }
         } else {
             mergedInvokers = invokers;
@@ -293,7 +309,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 url = url.setProtocol(routerType);
             }
             try {
-                Router router = ROUTER_FACTORY.getRouter(url);
+                Router router = routerFactory.getRouter(url);
                 if (!routers.contains(router)) {
                     routers.add(router);
                 }
@@ -307,11 +323,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     /**
      * Turn urls into invokers, and if url has been refer, will not re-reference.
+     * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
+     * @param oldUrlInvokerMap     
      * @param urls
      * @return invokers
      */
-    private Map<URL, Invoker<T>> toInvokers(List<URL> urls) {
+    private Map<URL, Invoker<T>> toInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
         Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
@@ -335,18 +353,17 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             if (EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
                 continue;
             }
-            if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
+            if (!getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
                 logger.error(new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() +
                         " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() +
                         " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
-                        ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
+                    getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
             URL url = mergeUrl(providerUrl);
 
             // Cache key is url that does not merge with consumer side parameters, regardless of how the consumer combines parameters, if the server url changes, then refer again
-            Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
-            Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.remove(url);
+            Invoker<T> invoker = oldUrlInvokerMap == null ? null : oldUrlInvokerMap.remove(url);
             if (invoker == null) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
@@ -381,7 +398,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         if (providerUrl instanceof ServiceAddressURL) {
             providerUrl = overrideWithConfigurator(providerUrl);
         } else {
-            providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
+            providerUrl = applicationModel.getBeanFactory().getBean(ClusterUtils.class).mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
             providerUrl = overrideWithConfigurator(providerUrl);
             providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
         }
@@ -465,7 +482,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         if (localUrlInvokerMap != null) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
-                    invoker.destroy();
+                    invoker.destroyAll();
                 } catch (Throwable t) {
                     logger.warn("Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
                 }
@@ -490,7 +507,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             Invoker<T> invoker = entry.getValue();
             if (invoker != null) {
                 try {
-                    invoker.destroy();
+                    invoker.destroyAll();
                     if (logger.isDebugEnabled()) {
                         logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }
@@ -561,7 +578,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public boolean isAvailable() {
-        if (isDestroyed()) {
+        if (isDestroyed() || this.forbidden) {
             return false;
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
@@ -623,8 +640,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         private RegistryDirectory directory;
         private URL url;
 
-        ReferenceConfigurationListener(ApplicationModel applicationModel, RegistryDirectory directory, URL url) {
-            super(applicationModel);
+        ReferenceConfigurationListener(ModuleModel moduleModel, RegistryDirectory directory, URL url) {
+            super(moduleModel);
             this.directory = directory;
             this.url = url;
             this.initWith(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
@@ -644,9 +661,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
         List<RegistryDirectory> listeners = new ArrayList<>();
 
-        ConsumerConfigurationListener(ApplicationModel applicationModel) {
-            super(applicationModel);
-            this.initWith(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX);
+        ConsumerConfigurationListener(ModuleModel moduleModel) {
+            super(moduleModel);
+            this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
         }
 
         void addNotifyListener(RegistryDirectory listener) {

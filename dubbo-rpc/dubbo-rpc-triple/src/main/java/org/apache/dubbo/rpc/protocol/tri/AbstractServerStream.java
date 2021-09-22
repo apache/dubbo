@@ -17,9 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import com.google.protobuf.Message;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.HeaderFilter;
@@ -32,8 +32,6 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
 
-import com.google.protobuf.Message;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +43,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KE
 
 public abstract class AbstractServerStream extends AbstractStream implements Stream {
 
-    protected static final ExecutorRepository EXECUTOR_REPOSITORY =
-            ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     private final ProviderModel providerModel;
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
@@ -64,7 +60,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         super(url, executor);
         this.providerModel = providerModel;
         this.serialize(getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
-        this.headerFilters = ExtensionLoader.getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
+        this.headerFilters = url.getOrDefaultApplicationModel().getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
     }
 
     private static Executor lookupExecutor(URL url, ProviderModel providerModel) {
@@ -73,11 +69,12 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             executor = (ExecutorService) providerModel.getServiceMetadata()
                     .getAttribute(CommonConstants.THREADPOOL_KEY);
         }
+        ExecutorRepository executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         if (executor == null) {
-            executor = EXECUTOR_REPOSITORY.getExecutor(url);
+            executor = executorRepository.getExecutor(url);
         }
         if (executor == null) {
-            executor = EXECUTOR_REPOSITORY.createExecutorIfAbsent(url);
+            executor = executorRepository.createExecutorIfAbsent(url);
         }
         return executor;
     }
@@ -94,7 +91,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         FrameworkServiceRepository repo = ScopeModelUtil.getFrameworkModel(url.getScopeModel()).getServiceRepository();
         final ProviderModel model = repo.lookupExportedService(url.getServiceKey());
         if (model != null) {
-            ClassLoadUtil.switchContextLoader(model.getServiceInterfaceClass().getClassLoader());
+            ClassLoadUtil.switchContextLoader(model.getClassLoader());
         }
         return model;
     }
@@ -140,7 +137,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             if (getProviderModel() != null) {
-                ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
+                ClassLoadUtil.switchContextLoader(getProviderModel().getClassLoader());
             }
             if (getMethodDescriptor() == null || getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data,
@@ -154,8 +151,9 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                 }
                 if (getMethodDescriptor() == null) {
                     final String[] paramTypes = wrapper.getArgTypesList().toArray(new String[wrapper.getArgsCount()]);
-
+                    // wrapper mode the method can overload so maybe list
                     for (MethodDescriptor descriptor : getMethodDescriptors()) {
+                        // params type is array
                         if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
                             method(descriptor);
                             break;

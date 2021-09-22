@@ -46,7 +46,7 @@ public class TypeDefinitionBuilder {
     }
 
     public static TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
-        TypeBuilder builder = getGenericTypeBuilder(type, clazz);
+        TypeBuilder builder = getGenericTypeBuilder(clazz);
         TypeDefinition td;
 
         if (clazz.isPrimitive() || ClassUtils.isSimpleType(clazz)) { // changed since 2.7.6
@@ -60,10 +60,10 @@ public class TypeDefinitionBuilder {
         return td;
     }
 
-    private static TypeBuilder getGenericTypeBuilder(Type type, Class<?> clazz) {
+    private static TypeBuilder getGenericTypeBuilder(Class<?> clazz) {
         for (TypeBuilder builder : BUILDERS) {
             try {
-                if (builder.accept(type, clazz)) {
+                if (builder.accept(clazz)) {
                     return builder;
                 }
             } catch (NoClassDefFoundError cnfe) {

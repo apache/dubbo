@@ -26,7 +26,6 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
@@ -83,7 +82,6 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             ApplicationConfig applicationConfig = getApplicationConfig();
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
             serviceConfig.setScopeModel(applicationModel.getInternalModule());
-            serviceConfig.setBootstrap(applicationModel.getBeanFactory().getBean(DubboBootstrap.class));
             serviceConfig.setApplication(applicationConfig);
             serviceConfig.setRegistry(new RegistryConfig("N/A"));
             serviceConfig.setProtocol(generateMetadataProtocol());
@@ -95,7 +93,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             serviceConfig.setMethods(generateMethodConfig());
 
             // export
-            serviceConfig.export();
+            serviceConfig.exportOnly();
 
             if (logger.isInfoEnabled()) {
                 logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
@@ -148,7 +146,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     }
 
     public boolean isExported() {
-        return serviceConfig != null && serviceConfig.isExported();
+        return serviceConfig != null && serviceConfig.isExported() && !serviceConfig.isUnexported();
     }
 
     private ApplicationConfig getApplicationConfig() {

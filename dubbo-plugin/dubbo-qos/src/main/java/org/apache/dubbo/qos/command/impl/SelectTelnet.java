@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
-
-import io.netty.channel.Channel;
-import io.netty.util.AttributeKey;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -35,7 +35,11 @@ public class SelectTelnet implements BaseCommand {
     public static final AttributeKey<Boolean> SELECT_KEY = AttributeKey.valueOf("telnet.select");
     public static final AttributeKey<Method> SELECT_METHOD_KEY = AttributeKey.valueOf("telnet.select.method");
 
-    private final InvokeTelnet invokeTelnet = new InvokeTelnet();
+    private final InvokeTelnet invokeTelnet;
+
+    public SelectTelnet(FrameworkModel frameworkModel) {
+        this.invokeTelnet = new InvokeTelnet(frameworkModel);
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {

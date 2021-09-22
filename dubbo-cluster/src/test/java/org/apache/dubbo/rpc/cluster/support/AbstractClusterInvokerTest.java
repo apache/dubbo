@@ -33,7 +33,6 @@ import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -389,7 +388,7 @@ public class AbstractClusterInvokerTest {
         int min = 100, max = 500;
         Double d = (Math.random() * (max - min + 1) + min);
         int runs = d.intValue();
-        Assertions.assertTrue(runs > min);
+        Assertions.assertTrue(runs >= min);
         LoadBalance lb = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(lbname);
         initlistsize5();
         for (int i = 0; i < runs; i++) {

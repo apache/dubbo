@@ -61,7 +61,7 @@ public class ProtobufTypeBuilder implements TypeBuilder, Prioritized {
     }
 
     @Override
-    public boolean accept(Type type, Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }

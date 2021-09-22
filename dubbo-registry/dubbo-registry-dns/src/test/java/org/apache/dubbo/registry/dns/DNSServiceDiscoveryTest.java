@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.dns;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -38,8 +39,6 @@ import org.apache.dubbo.registry.dns.util.DNSResolver;
 import org.apache.dubbo.registry.dns.util.ResolveResult;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
-
-import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,7 +116,7 @@ public class DNSServiceDiscoveryTest {
                 .addParameter(DNSClientConst.DNS_POLLING_CYCLE, 100)
                 .addParameter(Constants.ECHO_POLLING_CYCLE_KEY, 100);
         registryURL.setScopeModel(ApplicationModel.defaultModel());
-        applicationModel.getApplicationEnvironment().getAppExternalConfigMap()
+        applicationModel.getModelEnvironment().getAppExternalConfigMap()
                 .put(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(500));
         dnsServiceDiscovery.initialize(registryURL);
 
@@ -154,8 +153,8 @@ public class DNSServiceDiscoveryTest {
         serviceInstances = dnsServiceDiscovery.getInstances("Test.Service.");
         assertEquals("c", serviceInstances.get(0).getMetadata("a"));
 
-        dnsServiceDiscovery.addServiceInstancesChangedListener(changedListener);
         ArgumentCaptor<ServiceInstancesChangedEvent> argument = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+        dnsServiceDiscovery.addServiceInstancesChangedListener(changedListener);
         Thread.sleep(1000);
         Mockito.verify(changedListener, Mockito.timeout(1000)).onEvent(argument.capture());
         assertEquals("c", argument.getValue().getServiceInstances().get(0).getMetadata("a"));
@@ -170,7 +169,7 @@ public class DNSServiceDiscoveryTest {
         serviceConfig.unexport();
 
         dnsServiceDiscovery.destroy();
-        applicationModel.getApplicationEnvironment().getAppExternalConfigMap()
+        applicationModel.getModelEnvironment().getAppExternalConfigMap()
                 .remove(METADATA_PROXY_TIMEOUT_KEY);
     }
 

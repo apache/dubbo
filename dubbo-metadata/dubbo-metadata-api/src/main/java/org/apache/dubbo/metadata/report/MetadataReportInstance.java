@@ -40,7 +40,7 @@ public class MetadataReportInstance {
     private final Map<String, MetadataReport> metadataReports = new HashMap<>();
 
     public void init(MetadataReportConfig config) {
-        if (init.get()) {
+        if (!init.compareAndSet(false, true)) {
             return;
         }
         ApplicationModel applicationModel = config.getApplicationModel();
@@ -63,7 +63,6 @@ public class MetadataReportInstance {
         if (metadataReport != null) {
             metadataReports.put(relatedRegistryId, metadataReport);
         }
-        init.set(true);
     }
 
     public Map<String, MetadataReport> getMetadataReports(boolean checked) {
@@ -89,8 +88,4 @@ public class MetadataReportInstance {
         }
     }
 
-    public static void reset() {
-//        metadataReports.clear();
-//        init.set(false);
-    }
 }

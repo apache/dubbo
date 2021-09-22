@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registrycenter;
 
+import org.apache.dubbo.common.utils.NetUtils;
+
 /**
  * The default zookeeper multiple registry center.
  */
@@ -35,7 +37,7 @@ public class ZookeeperMultipleRegistryCenter extends ZookeeperRegistryCenter {
      * Initialize {@link ZookeeperMultipleRegistryCenter} instance.
      */
     public ZookeeperMultipleRegistryCenter() {
-        this(DEFAULT_PORT1, DEFAULT_PORT2);
+        this(NetUtils.getAvailablePort(), NetUtils.getAvailablePort());
     }
 
     private static final int DEFAULT_PORT1 = 2181;

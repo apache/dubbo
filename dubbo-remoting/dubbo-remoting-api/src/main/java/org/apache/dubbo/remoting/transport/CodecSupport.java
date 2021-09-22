@@ -79,7 +79,7 @@ public class CodecSupport {
     }
 
     public static Serialization getSerialization(URL url) {
-        return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
                 url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }
 

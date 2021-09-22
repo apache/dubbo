@@ -80,9 +80,9 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             synchronized (this) {
                 if (failTimer == null) {
                     failTimer = new HashedWheelTimer(
-                            new NamedThreadFactory("failback-cluster-timer", true),
-                            1,
-                            TimeUnit.SECONDS, 32, failbackTasks);
+                        new NamedThreadFactory("failback-cluster-timer", true),
+                        1,
+                        TimeUnit.SECONDS, 32, failbackTasks);
                 }
             }
         }
@@ -90,7 +90,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         try {
             failTimer.newTimeout(retryTimerTask, RETRY_FAILED_PERIOD, TimeUnit.SECONDS);
         } catch (Throwable e) {
-            logger.error("Failback background works error,invocation->" + invocation + ", exception: " + e.getMessage());
+            logger.error("Failback background works error, invocation->" + invocation + ", exception: " + e.getMessage());
         }
     }
 
@@ -106,8 +106,10 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             return invokeWithContextAsync(invoker, invocation, consumerUrl);
         } catch (Throwable e) {
             logger.error("Failback to invoke method " + invocation.getMethodName() + ", wait for retry in background. Ignored exception: "
-                    + e.getMessage() + ", ", e);
-            addFailed(loadbalance, invocation, invokers, invoker, consumerUrl);
+                + e.getMessage() + ", ", e);
+            if (retries > 0) {
+                addFailed(loadbalance, invocation, invokers, invoker, consumerUrl);
+            }
             return AsyncRpcResult.newDefaultAsyncResult(null, null, invocation); // ignore
         }
     }
@@ -133,13 +135,14 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         private int retryTimes = 0;
         private URL consumerUrl;
 
-        RetryTimerTask(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, Invoker<T> lastInvoker, int retries, long tick, URL consumerUrl) {
+        RetryTimerTask(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, Invoker<T> lastInvoker,
+                       int retries, long tick, URL consumerUrl) {
             this.loadbalance = loadbalance;
             this.invocation = invocation;
             this.invokers = invokers;
             this.retries = retries;
             this.tick = tick;
-            this.lastInvoker=lastInvoker;
+            this.lastInvoker = lastInvoker;
             this.consumerUrl = consumerUrl;
         }
 

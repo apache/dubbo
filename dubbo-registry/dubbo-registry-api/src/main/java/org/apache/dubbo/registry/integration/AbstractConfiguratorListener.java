@@ -27,7 +27,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,13 +51,12 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     protected GovernanceRuleRepository ruleRepository;
 
     protected Set<String> securityKey = new HashSet<>();
-    protected ApplicationModel applicationModel;
+    protected ModuleModel moduleModel;
 
-    public AbstractConfiguratorListener(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+    public AbstractConfiguratorListener(ModuleModel moduleModel) {
+        this.moduleModel = moduleModel;
 
-        ruleRepository = applicationModel.getExtensionLoader(
-            GovernanceRuleRepository.class).getDefaultExtension();
+        ruleRepository = moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
 
         initSecurityKey();
     }
@@ -90,7 +89,9 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
                     ", raw config content is:\n " + event.getContent());
         }
 
-        if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
+        if (event.getChangeType().equals(ConfigChangeType.ADDED)) {
+            return;
+        } else if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             configurators.clear();
         } else {
             if (!genConfiguratorsFromRawRule(event.getContent())) {
@@ -106,7 +107,10 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         try {
             // parseConfigurators will recognize app/service config automatically.
             List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
-            List<URL> safeUrls = urls.stream().map(url -> url.removeParameters(securityKey)).collect(Collectors.toList());
+            List<URL> safeUrls = urls.stream()
+                .map(url -> url.removeParameters(securityKey))
+                .map(url -> url.setScopeModel(moduleModel))
+                .collect(Collectors.toList());
             configurators = Configurator.toConfigurators(safeUrls).orElse(configurators);
         } catch (Exception e) {
             logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " +

@@ -24,7 +24,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
-
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -45,7 +45,7 @@ class ProviderAuthFilterTest {
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(Invocation.class);
         when(invoker.getUrl()).thenReturn(url);
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
         providerAuthFilter.invoke(invoker, invocation);
         verify(url, never()).getParameter(eq(Constants.AUTHENTICATOR), eq(Constants.DEFAULT_AUTHENTICATOR));
     }
@@ -60,7 +60,7 @@ class ProviderAuthFilterTest {
         Invoker invoker = mock(Invoker.class);
         Invocation invocation = mock(Invocation.class);
         when(invoker.getUrl()).thenReturn(url);
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
         providerAuthFilter.invoke(invoker, invocation);
         verify(invocation, atLeastOnce()).getAttachment(anyString());
     }
@@ -78,7 +78,7 @@ class ProviderAuthFilterTest {
         when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(null);
         when(invoker.getUrl()).thenReturn(url);
 
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertTrue(result.hasException());
 
@@ -96,7 +96,7 @@ class ProviderAuthFilterTest {
         when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(null);
         when(invoker.getUrl()).thenReturn(url);
 
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertTrue(result.hasException());
     }
@@ -114,7 +114,7 @@ class ProviderAuthFilterTest {
         when(invocation.getObjectAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(System.currentTimeMillis());
         when(invoker.getUrl()).thenReturn(url);
 
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertTrue(result.hasException());
         assertTrue(result.getException() instanceof RpcAuthenticationException);
@@ -150,7 +150,7 @@ class ProviderAuthFilterTest {
         String sign = SignatureUtils.sign(originalParams, requestString, "sk");
         when(invocation.getObjectAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(sign);
 
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertTrue(result.hasException());
         assertTrue(result.getException() instanceof RpcAuthenticationException);
@@ -181,7 +181,7 @@ class ProviderAuthFilterTest {
         String sign = SignatureUtils.sign(requestString, "sk");
         when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(sign);
 
-        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter();
+        ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
         Result result = providerAuthFilter.invoke(invoker, invocation);
         assertNull(result);
     }

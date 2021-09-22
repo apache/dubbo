@@ -26,7 +26,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -61,7 +61,7 @@ public class DefaultServiceRestMetadataResolver extends AbstractServiceRestMetad
             "application/*+xml;charset=UTF-8"
     );
 
-    private final Set<ExecutableElement> hasComplexParameterTypeMethods = new LinkedHashSet<>();
+    private final Set<ExecutableElement> hasComplexParameterTypeMethods = new HashSet<>();
 
     @Override
     public boolean supports(ProcessingEnvironment processingEnvironment, TypeElement serviceType) {

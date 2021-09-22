@@ -17,6 +17,14 @@
 package org.apache.dubbo.registry.nacos;
 
 
+import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.listener.Event;
+import com.alibaba.nacos.api.naming.listener.EventListener;
+import com.alibaba.nacos.api.naming.listener.NamingEvent;
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.api.naming.pojo.ListView;
+import com.google.common.collect.Lists;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
@@ -31,15 +39,6 @@ import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.nacos.util.NacosInstanceManageUtil;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.RpcException;
-
-import com.alibaba.nacos.api.common.Constants;
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.listener.Event;
-import com.alibaba.nacos.api.naming.listener.EventListener;
-import com.alibaba.nacos.api.naming.listener.NamingEvent;
-import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.alibaba.nacos.api.naming.pojo.ListView;
-import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -228,12 +228,19 @@ public class NacosRegistry extends FailbackRegistry {
                     subscribeEventListener(serviceName, url, listener);
                 }
             } else {
-                List<Instance> instances = new LinkedList<>();
                 for (String serviceName : serviceNames) {
+                    List<Instance> instances = new LinkedList<>();
                     instances.addAll(namingService.getAllInstances(serviceName
                         , getUrl().getGroup(Constants.DEFAULT_GROUP)));
-                    notifySubscriber(url, listener, instances);
-                    subscribeEventListener(serviceName, url, listener);
+                    String serviceInterface = serviceName;
+                    String[] segments = serviceName.split(SERVICE_NAME_SEPARATOR, -1);
+                    if (segments.length == 4) {
+                        serviceInterface = segments[SERVICE_INTERFACE_INDEX];
+                    }
+                    URL subscriberURL = url.setPath(serviceInterface).addParameters(INTERFACE_KEY, serviceInterface,
+                        CHECK_KEY, String.valueOf(false));
+                    notifySubscriber(subscriberURL, listener, instances);
+                    subscribeEventListener(serviceName, subscriberURL, listener);
                 }
             }
         }catch (Throwable cause){
@@ -609,7 +616,7 @@ public class NacosRegistry extends FailbackRegistry {
         private RegistryNotifier notifier;
 
         public RegistryChildListenerImpl(String serviceName, URL consumerUrl, NotifyListener listener) {
-            notifier = new RegistryNotifier(NacosRegistry.this.getDelay()) {
+            notifier = new RegistryNotifier(getUrl(), NacosRegistry.this.getDelay()) {
                 @Override
                 protected void doNotify(Object rawAddresses) {
                     List<Instance> instances = (List<Instance>) rawAddresses;

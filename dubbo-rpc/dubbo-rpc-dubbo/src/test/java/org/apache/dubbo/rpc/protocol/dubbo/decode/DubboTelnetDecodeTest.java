@@ -467,7 +467,7 @@ public class DubboTelnetDecodeTest {
 
         ByteBuf dubboByteBuf = Unpooled.buffer();
         ChannelBuffer buffer = new NettyBackedChannelBuffer(dubboByteBuf);
-        DubboCodec dubboCodec = new DubboCodec();
+        DubboCodec dubboCodec = new DubboCodec(FrameworkModel.defaultModel());
         dubboCodec.encode(new MockChannel(), buffer, request);
 
         return dubboByteBuf;
