@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
@@ -38,6 +39,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+
 /**
  * abstract ProtocolSupport.
  */
@@ -51,6 +55,7 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
      * <host:port, ProtocolServer>
      */
     protected final Map<String, ProtocolServer> serverMap = new ConcurrentHashMap<>();
+    protected final Map<ProtocolServer, Map<String, Object>> serverProperties = new ConcurrentHashMap<>();
 
     // TODO SoftReference
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<>();
@@ -74,6 +79,30 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
     @Override
     public List<ProtocolServer> getServers() {
         return Collections.unmodifiableList(new ArrayList<>(serverMap.values()));
+    }
+
+    protected Map<String, Object> getServerProperties(ProtocolServer server) {
+        return serverProperties.computeIfAbsent(server, key -> new ConcurrentHashMap());
+    }
+
+
+    protected void loadServerProperties(ProtocolServer server) {
+        // read and hold config before destroy
+        int serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(server.getUrl().getScopeModel());
+        getServerProperties(server).put(SHUTDOWN_WAIT_KEY, serverShutdownTimeout);
+    }
+
+    protected int getServerShutdownTimeout(ProtocolServer server) {
+        Map<String, Object> serverProperties = getServerProperties(server);
+        return getServerShutdownTimeout(serverProperties);
+    }
+
+    protected int getServerShutdownTimeout(Map<String, Object> props) {
+        if (props == null) {
+            return DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+        }
+        Integer v = (Integer) props.get(SHUTDOWN_WAIT_KEY);
+        return v != null ? v : DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
     }
 
     @Override
