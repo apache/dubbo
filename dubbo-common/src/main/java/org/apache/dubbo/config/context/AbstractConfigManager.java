@@ -85,11 +85,14 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     static {
         // init unique config types
+        // unique config in application
         uniqueConfigTypes.add(ApplicationConfig.class);
-        uniqueConfigTypes.add(ModuleConfig.class);
         uniqueConfigTypes.add(MonitorConfig.class);
         uniqueConfigTypes.add(MetricsConfig.class);
         uniqueConfigTypes.add(SslConfig.class);
+
+        // unique config in each module
+        uniqueConfigTypes.add(ModuleConfig.class);
     }
 
 
