@@ -17,13 +17,15 @@
 
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import java.util.concurrent.Executor;
 
-/**
- * @author earthchen
- * @date 2021/9/20
- **/
+
 public class ExecutableListener implements Runnable {
+
+    private static final Logger log = LoggerFactory.getLogger(ExecutableListener.class);
 
     private final Executor executor;
     private final CancellationListener listener;
@@ -39,7 +41,7 @@ public class ExecutableListener implements Runnable {
         try {
             executor.execute(this);
         } catch (Throwable t) {
-//            log.log(Level.INFO, "Exception notifying context listener", t);
+            log.warn("Exception notifying context listener", t);
         }
     }
 

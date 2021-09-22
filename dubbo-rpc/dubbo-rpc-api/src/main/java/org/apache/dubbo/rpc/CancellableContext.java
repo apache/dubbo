@@ -25,10 +25,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
 
-/**
- * @author earthchen
- * @date 2021/9/20
- **/
 public class CancellableContext extends RpcServiceContext implements Closeable {
 
     private static final Logger log = LoggerFactory.getLogger(CancellableContext.class);
