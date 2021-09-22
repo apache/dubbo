@@ -19,6 +19,8 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,6 +107,16 @@ public class ModuleConfig extends AbstractConfig {
         // default is false
         if (background == null) {
             background = false;
+        }
+    }
+
+    @Override
+    protected void checkScopeModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            throw new IllegalArgumentException("scopeModel cannot be null");
+        }
+        if (!(scopeModel instanceof ModuleModel)) {
+            throw new IllegalArgumentException("Invalid scope model, expect to be a ModuleModel but got: " + scopeModel);
         }
     }
 

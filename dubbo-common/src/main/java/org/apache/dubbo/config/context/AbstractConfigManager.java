@@ -554,8 +554,10 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
         //validate configs
         Collection<T> configs = this.getConfigs(configType);
-        for (T config : configs) {
-            getConfigValidator().validate(config);
+        if (getConfigValidator() != null) {
+            for (T config : configs) {
+                getConfigValidator().validate(config);
+            }
         }
 
         // check required default
