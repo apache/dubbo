@@ -17,10 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.Status;
-import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
@@ -32,6 +28,12 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
+
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -72,6 +74,11 @@ public abstract class AbstractStream implements Stream {
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
+    private boolean cancel = false;
+
+    public boolean isCancel() {
+        return cancel;
+    }
 
     protected AbstractStream(URL url) {
         this(url, allocateCallbackExecutor());
@@ -119,6 +126,20 @@ public abstract class AbstractStream implements Stream {
         return this;
     }
 
+
+    final void cancel(Throwable cause) {
+        cancel(GrpcStatus.fromCode(Code.CANCELLED).withCause(cause));
+    }
+
+
+    final void cancel(GrpcStatus status){
+        cancel = true;
+        onCancel(status);
+    }
+
+    protected abstract void onCancel(GrpcStatus status);
+
+
     protected abstract StreamObserver<Object> createStreamObserver();
 
     protected abstract TransportObserver createTransportObserver();
@@ -147,7 +168,7 @@ public abstract class AbstractStream implements Stream {
         return transportSubscriber;
     }
 
-    public MethodDescriptor getMethodDescriptor() {
+    public MethodDescriptor  getMethodDescriptor() {
         return methodDescriptor;
     }
 
@@ -198,12 +219,12 @@ public abstract class AbstractStream implements Stream {
         getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
-                + " method=" + getMethodName() +" onlyTrailers=" + onlyTrailers, status.cause);
+                    + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
         }
     }
 
     protected void transportError(GrpcStatus status, Map<String, Object> attachments) {
-        transportError(status, attachments,false);
+        transportError(status, attachments, false);
     }
 
     protected void transportError(GrpcStatus status) {
@@ -236,11 +257,11 @@ public abstract class AbstractStream implements Stream {
         if (throwable == null) {
             Status status = builder.build();
             metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                TripleUtil.encodeBase64ASCII(status.toByteArray()));
+                    TripleUtil.encodeBase64ASCII(status.toByteArray()));
             return metadata;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
-                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable,10))
+                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
                 // can not use now
                 // .setDetail(throwable.getMessage())
                 .build();
@@ -303,7 +324,7 @@ public abstract class AbstractStream implements Stream {
         }
     }
 
-    protected static abstract class AbstractTransportObserver implements TransportObserver {
+    protected abstract class AbstractTransportObserver implements TransportObserver {
         private Metadata headers;
         private Metadata trailers;
 
@@ -313,6 +334,11 @@ public abstract class AbstractStream implements Stream {
 
         public Metadata getTrailers() {
             return trailers;
+        }
+
+        @Override
+        public void onReset(Http2Error http2Error) {
+            getTransportSubscriber().onReset(http2Error);
         }
 
         @Override
@@ -343,7 +369,7 @@ public abstract class AbstractStream implements Stream {
 
     }
 
-    protected abstract static class UnaryTransportObserver extends AbstractTransportObserver implements TransportObserver {
+    protected abstract class UnaryTransportObserver extends AbstractTransportObserver implements TransportObserver {
         private byte[] data;
 
         public byte[] getData() {
@@ -362,7 +388,7 @@ public abstract class AbstractStream implements Stream {
             }
         }
 
-        protected abstract void doOnComplete() ;
+        protected abstract void doOnComplete();
 
 
         @Override

@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -26,6 +24,10 @@ import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.triple.TripleWrapper;
+
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http2.Http2Error;
 
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -163,7 +165,13 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return metadata;
     }
 
+    @Override
+    protected void onCancel(GrpcStatus status) {
+        getTransportSubscriber().onReset(Http2Error.CANCEL);
+    }
+
     protected class ClientStreamObserver implements StreamObserver<Object> {
+
         @Override
         public void onNext(Object data) {
             RpcInvocation invocation = (RpcInvocation) data;

@@ -16,19 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.codec.http2.Http2DataFrame;
-import io.netty.handler.codec.http2.Http2Frame;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2HeadersFrame;
-import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
@@ -43,11 +30,23 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 
-import java.util.List;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http2.Http2DataFrame;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Frame;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.handler.codec.http2.Http2ResetFrame;
+import io.netty.util.ReferenceCountUtil;
 
-import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.rpcExceptionCodeToGrpc;
-import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
-import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responsePlainTextError;
+import java.util.List;
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
@@ -56,7 +55,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
     public TripleHttp2FrameServerHandler(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        PATH_RESOLVER = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+        this.PATH_RESOLVER = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
     }
 
     @Override
@@ -74,15 +73,36 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof Http2ResetFrame) {
+            onResetRead(ctx, (Http2ResetFrame) evt);
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
+    }
+
+    public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
+        Http2Error http2Error = Http2Error.valueOf(frame.errorCode());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("server Received rst .http2Error=" + http2Error.name());
+        }
+        if (Http2Error.CANCEL == http2Error) {
+            final AbstractServerStream serverStream = TripleUtil.getServerStream(ctx);
+            serverStream.cancel(GrpcStatus.fromCode(Code.CANCELLED));
+        }
+    }
+
+
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         if (LOGGER.isWarnEnabled()) {
             LOGGER.warn("Exception in processing triple message", cause);
         }
         if (cause instanceof RpcException) {
-            TripleUtil.responseErr(ctx, rpcExceptionCodeToGrpc(((RpcException) cause).getCode()));
+            TripleUtil.responseErr(ctx, GrpcStatus.rpcExceptionCodeToGrpc(((RpcException) cause).getCode()));
         } else {
             TripleUtil.responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withDescription("Provider's error:\n" + cause.getMessage()));
+                    .withDescription("Provider's error:\n" + cause.getMessage()));
         }
     }
 
@@ -99,9 +119,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
     private Invoker<?> getInvoker(Http2Headers headers, String serviceName) {
         final String version = headers.contains(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ? headers.get(
-            TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
+                TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
         final String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader())
-            .toString() : null;
+                .toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = PATH_RESOLVER.resolve(key);
         if (invoker == null) {
@@ -114,45 +134,45 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         final Http2Headers headers = msg.headers();
 
         if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
-            responsePlainTextError(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
-                GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription(String.format("Method '%s' is not supported", headers.method())));
+            TripleUtil.responsePlainTextError(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
+                    GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription(String.format("Method '%s' is not supported", headers.method())));
             return;
         }
 
         if (headers.path() == null) {
-            responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(),
-                GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
+            TripleUtil.responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(),
+                    GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
             return;
         }
 
         final String path = headers.path().toString();
         if (path.charAt(0) != '/') {
-            responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(),
-                GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
-                    .withDescription(String.format("Expected path to start with /: %s", path)));
+            TripleUtil.responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(),
+                    GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
+                            .withDescription(String.format("Expected path to start with /: %s", path)));
             return;
         }
 
         final CharSequence contentType = HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));
         if (contentType == null) {
-            responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
-                GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code)
-                    .withDescription("Content-Type is missing from the request"));
+            TripleUtil.responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
+                    GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code)
+                            .withDescription("Content-Type is missing from the request"));
             return;
         }
 
         final String contentString = contentType.toString();
         if (!TripleUtil.supportContentType(contentString)) {
-            responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
-                GrpcStatus.fromCode(Code.INTERNAL.code)
-                    .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
+            TripleUtil.responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
+                    GrpcStatus.fromCode(Code.INTERNAL.code)
+                            .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
             return;
         }
 
         String[] parts = path.split("/");
         if (parts.length != 3) {
-            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Bad path format:" + path));
+            TripleUtil.responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Bad path format:" + path));
             return;
         }
         String serviceName = parts[1];
@@ -161,15 +181,15 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
         final Invoker<?> invoker = getInvoker(headers, serviceName);
         if (invoker == null) {
-            responseErr(ctx,
-                GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
+            TripleUtil.responseErr(ctx,
+                    GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
         FrameworkServiceRepository repo = frameworkModel.getServiceRepository();
         ProviderModel providerModel = repo.lookupExportedService(invoker.getUrl().getServiceKey());
         if (providerModel == null || providerModel.getServiceModel() == null) {
-            responseErr(ctx,
-                GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
+            TripleUtil.responseErr(ctx,
+                    GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
 
@@ -185,8 +205,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         } else {
             methodDescriptors = providerModel.getServiceModel().getMethods(methodName);
             if (CollectionUtils.isEmpty(methodDescriptors)) {
-                responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
-                    .withDescription("Method :" + methodName + " not found of service:" + serviceName));
+                TripleUtil.responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+                        .withDescription("Method :" + methodName + " not found of service:" + serviceName));
                 return;
             }
             // In most cases there is only one method
@@ -208,9 +228,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             }
         });
         stream.service(providerModel.getServiceModel())
-            .invoker(invoker)
-            .methodName(methodName)
-            .subscribe(new ServerTransportObserver(ctx,promise));
+                .invoker(invoker)
+                .methodName(methodName)
+                .subscribe(new ServerTransportObserver(ctx, promise));
         if (methodDescriptor != null) {
             stream.method(methodDescriptor);
         } else {
@@ -235,4 +255,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName);
     }
 
+    @Override
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        super.write(ctx, msg, promise);
+    }
 }

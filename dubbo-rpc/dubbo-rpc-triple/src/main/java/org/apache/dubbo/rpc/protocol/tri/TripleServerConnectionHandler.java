@@ -51,6 +51,11 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
     }
 
     @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        super.userEventTriggered(ctx, evt);
+    }
+
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         // this may be change in future follow https://github.com/apache/dubbo/pull/8644
         if (TripleUtil.isQuiteException(cause)) {

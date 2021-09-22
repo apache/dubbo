@@ -17,13 +17,14 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.Message;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.CancellableContext;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -31,6 +32,8 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
+
+import com.google.protobuf.Message;
 
 import java.util.Arrays;
 import java.util.List;
@@ -47,6 +50,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
     private List<HeaderFilter> headerFilters;
+    private CancellableContext cancellableContext;
+
 
     protected AbstractServerStream(URL url) {
         this(url, lookupProviderModel(url));
@@ -77,6 +82,16 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             executor = executorRepository.createExecutorIfAbsent(url);
         }
         return executor;
+    }
+
+    @Override
+    protected void onCancel(GrpcStatus status) {
+        super.execute(() -> {
+            if (cancellableContext != null) {
+                cancellableContext.cancel(status.cause);
+            }
+        });
+
     }
 
     public static AbstractServerStream unary(URL url) {
@@ -119,8 +134,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
     protected RpcInvocation buildInvocation(Metadata metadata) {
         RpcInvocation inv = new RpcInvocation(getUrl().getServiceModel(),
-            getMethodName(), getServiceDescriptor().getServiceName(),
-            getUrl().getProtocolServiceKey(), getMethodDescriptor().getParameterClasses(), new Object[0]);
+                getMethodName(), getServiceDescriptor().getServiceName(),
+                getUrl().getProtocolServiceKey(), getMethodDescriptor().getParameterClasses(), new Object[0]);
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
         inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
 
@@ -129,6 +144,10 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
         for (HeaderFilter headerFilter : getHeaderFilters()) {
             inv = headerFilter.invoke(getInvoker(), inv);
+        }
+
+        if (cancellableContext == null) {
+            cancellableContext = RpcContext.getCancellableContext();
         }
         return inv;
     }
@@ -222,6 +241,10 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     public AbstractServerStream invoker(Invoker<?> invoker) {
         this.invoker = invoker;
         return this;
+    }
+
+    public void setCancellableContext(CancellableContext cancellableContext) {
+        this.cancellableContext = cancellableContext;
     }
 
 }

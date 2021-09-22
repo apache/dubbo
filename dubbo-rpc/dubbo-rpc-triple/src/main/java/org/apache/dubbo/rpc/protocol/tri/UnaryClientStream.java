@@ -17,15 +17,17 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.Status;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcException;
+
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
+import io.netty.handler.codec.http2.Http2Error;
 
 import java.util.List;
 import java.util.Map;
@@ -66,10 +68,24 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                     DefaultFuture2.received(getConnection(), response);
                 } catch (Exception e) {
                     final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withCause(e)
-                        .withDescription("Failed to deserialize response");
+                            .withCause(e)
+                            .withDescription("Failed to deserialize response");
                     onError(status);
                 }
+            });
+        }
+
+        @Override
+        public void onReset(Http2Error http2Error) {
+            // run in callback executor will truncate exception stack and avoid blocking netty's event loop
+            execute(() -> {
+                Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
+                final AppResponse result = new AppResponse();
+                result.setException(new RpcException("server cancel"));
+                response.setResult(result);
+                response.setErrorMessage("server cancel");
+                response.setStatus(GrpcStatus.toDubboStatus(GrpcStatus.Code.CANCELLED));
+                DefaultFuture2.received(getConnection(), response);
             });
         }
 
@@ -112,7 +128,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo == null) {
                     return new RpcException(statusDetail.getCode(),
-                        statusDetail.getMessage());
+                            statusDetail.getMessage());
                 }
                 String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
                 return new RpcException(statusDetail.getCode(), msg);
