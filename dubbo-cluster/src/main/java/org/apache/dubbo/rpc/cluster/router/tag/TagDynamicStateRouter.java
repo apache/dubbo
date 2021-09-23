@@ -110,7 +110,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
     }
 
     private boolean isForceUseTag(Invocation invocation) {
-        return Boolean.valueOf(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
+        return Boolean.parseBoolean(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
     }
 
     @Override
@@ -249,7 +249,6 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
                 }
             }
         }
-        pool(invokers);
     }
 
     @Override
