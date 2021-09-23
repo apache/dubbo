@@ -39,35 +39,29 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
     @Override
     public void configServerPipeline(ChannelPipeline pipeline, SslContext sslContext) {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
-                .gracefulShutdownTimeoutMillis(10000)
-                .initialSettings(new Http2Settings()
-                        .maxHeaderListSize(8192)
-                        .maxFrameSize(2 << 16)
-                        .maxConcurrentStreams(Integer.MAX_VALUE)
-                        .initialWindowSize(1048576))
-                .frameLogger(SERVER_LOGGER)
-                .build();
+            .gracefulShutdownTimeoutMillis(10000)
+            .initialSettings(new Http2Settings()
+                .maxHeaderListSize(8192)
+                .maxFrameSize(2 << 16)
+                .maxConcurrentStreams(Integer.MAX_VALUE)
+                .initialWindowSize(1048576))
+            .frameLogger(SERVER_LOGGER)
+            .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleServerInitializer());
-        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler,
-                new SimpleChannelInboundHandler<Object>() {
-                    @Override
-                    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
-                        // empty
-                    }
-                });
+        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler);
     }
 
     @Override
     public void configClientPipeline(ChannelPipeline pipeline, SslContext sslContext) {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
-                .initialSettings(new Http2Settings()
-                        .maxHeaderListSize(8192)
-                        .maxFrameSize(2 << 16)
-                        .maxConcurrentStreams(Integer.MAX_VALUE)
-                        .initialWindowSize(1048576))
-                .gracefulShutdownTimeoutMillis(10000)
-                .frameLogger(CLIENT_LOGGER)
-                .build();
+            .initialSettings(new Http2Settings()
+                .maxHeaderListSize(8192)
+                .maxFrameSize(2 << 16)
+                .maxConcurrentStreams(Integer.MAX_VALUE)
+                .initialWindowSize(1048576))
+            .gracefulShutdownTimeoutMillis(10000)
+            .frameLogger(CLIENT_LOGGER)
+            .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new SimpleChannelInboundHandler<Object>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
