@@ -32,7 +32,9 @@ import org.apache.dubbo.remoting.exchange.Response;
 
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,6 +60,8 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
     private volatile long sent;
     private Timeout timeoutCheckTask;
 
+    private List<Runnable> timeoutListeners = new ArrayList<>();
+
     private ExecutorService executor;
 
     private DefaultFuture2(Connection client2, Request request, int timeout) {
@@ -66,6 +70,19 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         this.timeout = timeout;
         // put into waiting map.
         FUTURES.put(request.getId(), this);
+    }
+
+    public void addTimeoutListener(Runnable runnable) {
+        timeoutListeners.add(runnable);
+    }
+
+    public static void addTimeoutListener(long id, Runnable runnable) {
+        DefaultFuture2 defaultFuture2 = FUTURES.get(id);
+        defaultFuture2.addTimeoutListener(runnable);
+    }
+
+    public List<Runnable> getTimeoutListeners() {
+        return timeoutListeners;
     }
 
     /**
@@ -236,7 +253,12 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
             }
 
             if (future.getExecutor() != null) {
-                future.getExecutor().execute(() -> notifyTimeout(future));
+                future.getExecutor().execute(() -> {
+                    notifyTimeout(future);
+                    for (Runnable timeoutListener : future.getTimeoutListeners()) {
+                        timeoutListener.run();
+                    }
+                });
             } else {
                 notifyTimeout(future);
             }
