@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
@@ -195,14 +196,14 @@ public class MultipleRegistry extends AbstractRegistry {
 
     @Override
     public List<URL> lookup(URL url) {
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         for (Registry registry : referenceRegistries.values()) {
             List<URL> tmpUrls = registry.lookup(url);
             if (!CollectionUtils.isEmpty(tmpUrls)) {
                 urls.addAll(tmpUrls);
             }
         }
-        return urls;
+        return urls.stream().distinct().collect(Collectors.toList());
     }
 
     protected void init() {
