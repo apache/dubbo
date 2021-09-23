@@ -31,121 +31,122 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
-
 /**
  * dubbo protocol support class.
  */
 @SuppressWarnings("deprecation")
-final class ReferenceCountExchangeClient implements ExchangeClient {
+class ReferenceCountExchangeClient implements ExchangeClient {
 
     private static final Logger logger = LoggerFactory.getLogger(ReferenceCountExchangeClient.class);
-    private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
-    private final AtomicInteger disconnectCount = new AtomicInteger(0);
-    private final Integer warningPeriod = 50;
     private ExchangeClient client;
 
     public ReferenceCountExchangeClient(ExchangeClient client) {
         this.client = client;
         referenceCount.incrementAndGet();
-        this.url = client.getUrl();
+    }
+
+    protected ExchangeClient getExchangeClient(){
+        return this.client;
+    }
+
+    protected void setExchangClient(ExchangeClient client){
+        this.client = client;
     }
 
     @Override
     public void reset(URL url) {
-        client.reset(url);
+        getExchangeClient().reset(url);
     }
 
     @Override
     public CompletableFuture<Object> request(Object request) throws RemotingException {
-        return client.request(request);
+        return getExchangeClient().request(request);
     }
 
     @Override
     public URL getUrl() {
-        return client.getUrl();
+        return getExchangeClient().getUrl();
     }
 
     @Override
     public InetSocketAddress getRemoteAddress() {
-        return client.getRemoteAddress();
+        return getExchangeClient().getRemoteAddress();
     }
 
     @Override
     public ChannelHandler getChannelHandler() {
-        return client.getChannelHandler();
+        return getExchangeClient().getChannelHandler();
     }
 
     @Override
     public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
-        return client.request(request, timeout);
+        return getExchangeClient().request(request, timeout);
     }
 
     @Override
     public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
-        return client.request(request, executor);
+        return getExchangeClient().request(request, executor);
     }
 
     @Override
     public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
-        return client.request(request, timeout, executor);
+        return getExchangeClient().request(request, timeout, executor);
     }
 
     @Override
     public boolean isConnected() {
-        return client.isConnected();
+        return getExchangeClient().isConnected();
     }
 
     @Override
     public void reconnect() throws RemotingException {
-        client.reconnect();
+        getExchangeClient().reconnect();
     }
 
     @Override
     public InetSocketAddress getLocalAddress() {
-        return client.getLocalAddress();
+        return getExchangeClient().getLocalAddress();
     }
 
     @Override
     public boolean hasAttribute(String key) {
-        return client.hasAttribute(key);
+        return getExchangeClient().hasAttribute(key);
     }
 
     @Override
     public void reset(Parameters parameters) {
-        client.reset(parameters);
+        getExchangeClient().reset(parameters);
     }
 
     @Override
     public void send(Object message) throws RemotingException {
-        client.send(message);
+        getExchangeClient().send(message);
     }
 
     @Override
     public ExchangeHandler getExchangeHandler() {
-        return client.getExchangeHandler();
+        return getExchangeClient().getExchangeHandler();
     }
 
     @Override
     public Object getAttribute(String key) {
-        return client.getAttribute(key);
+        return getExchangeClient().getAttribute(key);
     }
 
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
-        client.send(message, sent);
+        getExchangeClient().send(message, sent);
     }
 
     @Override
     public void setAttribute(String key, Object value) {
-        client.setAttribute(key, value);
+        getExchangeClient().setAttribute(key, value);
     }
 
     @Override
     public void removeAttribute(String key) {
-        client.removeAttribute(key);
+        getExchangeClient().removeAttribute(key);
     }
 
     /**
@@ -172,59 +173,50 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
      * @param timeout
      * @param closeAll
      */
-    private void closeInternal(int timeout, boolean closeAll) {
-        if (closeAll || referenceCount.decrementAndGet() <= 0) {
-            if (timeout == 0) {
-                client.close();
+    protected boolean closeInternal(int timeout, boolean closeAll) {
+        if (closeAll || refCountDec() <= 0) {
+            closeImpl(timeout);
+            client = null;
+            return true;
+        }
+        return false;
+    }
 
-            } else {
-                client.close(timeout);
-            }
-
-            replaceWithLazyClient();
+    protected void closeImpl(int timeout){
+        ExchangeClient exchangeClient = getExchangeClient();
+        if (timeout == 0) {
+            exchangeClient.close();
+        } else {
+            exchangeClient.close(timeout);
         }
     }
 
     @Override
     public void startClose() {
-        client.startClose();
-    }
-
-    /**
-     * when closing the client, the client needs to be set to LazyConnectExchangeClient, and if a new call is made,
-     * the client will "resurrect".
-     *
-     * @return
-     */
-    private void replaceWithLazyClient() {
-        // start warning at second replaceWithLazyClient()
-        if (disconnectCount.getAndIncrement() % warningPeriod == 1) {
-            logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
-        }
-
-        /**
-         * the order of judgment in the if statement cannot be changed.
-         */
-        if (!(client instanceof LazyConnectExchangeClient) || client.isClosed()) {
-            // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
-            URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
-                    //.addParameter(RECONNECT_KEY, Boolean.FALSE)
-                    .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
-            //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
-            client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
-        }
+        getExchangeClient().startClose();
     }
 
     @Override
     public boolean isClosed() {
-        return client.isClosed();
+        return getExchangeClient().isClosed();
     }
 
     /**
      * The reference count of current ExchangeClient, connection will be closed if all invokers destroyed.
      */
-    public void incrementAndGetCount() {
-        referenceCount.incrementAndGet();
+    public boolean addRef() {
+        if(isClosed()){
+            return false;
+        }
+        return refCountInc() > 0;
+    }
+
+    protected int refCountInc(){
+        return referenceCount.getAndIncrement();
+    }
+
+    protected int refCountDec(){
+        return referenceCount.decrementAndGet();
     }
 
     public int getCount() {

@@ -86,6 +86,8 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ON_CONNECT_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ON_DISCONNECT_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.OPTIMIZER_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.NERVER_DIE_EXCHANGE_CLIENT;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_NERVER_DIE_EXCHANGE_CLIENT;
 
 
 /**
@@ -443,8 +445,7 @@ public class DubboProtocol extends AbstractProtocol {
         Object clients = referenceClientMap.get(key);
         if (clients instanceof List) {
             List<ReferenceCountExchangeClient> typedClients = (List<ReferenceCountExchangeClient>) clients;
-            if (checkClientCanUse(typedClients)) {
-                batchClientRefIncr(typedClients);
+            if (addRefClients(typedClients)) {
                 return typedClients;
             }
         }
@@ -457,8 +458,7 @@ public class DubboProtocol extends AbstractProtocol {
 
                 if (clients instanceof List) {
                     typedClients = (List<ReferenceCountExchangeClient>) clients;
-                    if (checkClientCanUse(typedClients)) {
-                        batchClientRefIncr(typedClients);
+                    if (addRefClients(typedClients)) {
                         return typedClients;
                     } else {
                         referenceClientMap.put(key, PENDING_OBJECT);
@@ -480,18 +480,15 @@ public class DubboProtocol extends AbstractProtocol {
             // connectNum must be greater than or equal to 1
             connectNum = Math.max(connectNum, 1);
 
-            // If the clients is empty, then the first initialization is
-            if (CollectionUtils.isEmpty(typedClients)) {
-                typedClients = buildReferenceCountExchangeClientList(url, connectNum);
-            } else {
+            List<ReferenceCountExchangeClient> tmpTypedClients = typedClients;
+            typedClients = buildReferenceCountExchangeClientList(url, connectNum);
+
+            // If the clients is not empty, closeAll
+            if (CollectionUtils.isNotEmpty(tmpTypedClients)) {
                 for (int i = 0; i < typedClients.size(); i++) {
                     ReferenceCountExchangeClient referenceCountExchangeClient = typedClients.get(i);
-                    // If there is a client in the list that is no longer available, create a new one to replace him.
-                    if (referenceCountExchangeClient == null || referenceCountExchangeClient.isClosed()) {
-                        typedClients.set(i, buildReferenceCountExchangeClient(url));
-                        continue;
-                    }
-                    referenceCountExchangeClient.incrementAndGetCount();
+                    //closeAll
+                    referenceCountExchangeClient.closeAll(0);
                 }
             }
         } finally {
@@ -509,42 +506,23 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     /**
-     * Check if the client list is all available
-     *
-     * @param referenceCountExchangeClients
-     * @return true-available，false-unavailable
-     */
-    private boolean checkClientCanUse(List<ReferenceCountExchangeClient> referenceCountExchangeClients) {
-        if (CollectionUtils.isEmpty(referenceCountExchangeClients)) {
-            return false;
-        }
-
-        for (ReferenceCountExchangeClient referenceCountExchangeClient : referenceCountExchangeClients) {
-            // As long as one client is not available, you need to replace the unavailable client with the available one.
-            if (referenceCountExchangeClient == null || referenceCountExchangeClient.getCount() <= 0 ||
-                    referenceCountExchangeClient.isClosed()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * Increase the reference Count if we create new invoker shares same connection, the connection will be closed without any reference.
      *
      * @param referenceCountExchangeClients
      */
-    private void batchClientRefIncr(List<ReferenceCountExchangeClient> referenceCountExchangeClients) {
+    private boolean addRefClients(List<ReferenceCountExchangeClient> referenceCountExchangeClients) {
         if (CollectionUtils.isEmpty(referenceCountExchangeClients)) {
-            return;
+            return false;
         }
-
         for (ReferenceCountExchangeClient referenceCountExchangeClient : referenceCountExchangeClients) {
-            if (referenceCountExchangeClient != null) {
-                referenceCountExchangeClient.incrementAndGetCount();
+            if(referenceCountExchangeClient == null){
+                return false;
+            }
+            if(!referenceCountExchangeClient.addRef()){
+                return false;
             }
         }
+        return true;
     }
 
     /**
@@ -572,7 +550,10 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private ReferenceCountExchangeClient buildReferenceCountExchangeClient(URL url) {
         ExchangeClient exchangeClient = initClient(url);
-
+        boolean parameter = url.getParameter(NERVER_DIE_EXCHANGE_CLIENT, DEFAULT_NERVER_DIE_EXCHANGE_CLIENT);
+        if(parameter){
+            return new NerverDieReferenceCountExchangeClient(exchangeClient);
+        }
         return new ReferenceCountExchangeClient(exchangeClient);
     }
 

@@ -75,4 +75,7 @@ public interface Constants {
 
     String ASYNC_METHOD_INFO = "async-method-info";
 
+    String NERVER_DIE_EXCHANGE_CLIENT = "nerver.die";
+
+    boolean DEFAULT_NERVER_DIE_EXCHANGE_CLIENT = true;
 }

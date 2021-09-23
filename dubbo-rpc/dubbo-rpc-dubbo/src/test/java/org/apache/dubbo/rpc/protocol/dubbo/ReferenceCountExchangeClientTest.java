@@ -204,7 +204,10 @@ public class ReferenceCountExchangeClientTest {
         // client has been replaced with lazy client. lazy client is fetched from referenceclientmap, and since it's
         // been invoked once, it's close status is false
         Assertions.assertFalse(client.isClosed(), "client status close");
-        Assertions.assertFalse(helloServiceInvoker.isAvailable(), "client status close");
+        Assertions.assertTrue(helloServiceInvoker.isAvailable(), "client status close");
+
+        Assertions.assertEquals("hello", helloService.hello());
+
         destoy();
     }
 
