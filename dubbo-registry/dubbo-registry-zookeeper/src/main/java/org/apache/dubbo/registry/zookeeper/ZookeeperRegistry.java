@@ -42,6 +42,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
@@ -141,6 +142,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
         try {
             if (ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
+                boolean check = url.getParameter(CHECK_KEY, false);
                 ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
                 ChildListener zkListener = listeners.computeIfAbsent(listener, k -> (parentPath, currentChilds) -> {
                     for (String child : currentChilds) {
@@ -148,7 +150,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                         if (!anyServices.contains(child)) {
                             anyServices.add(child);
                             subscribe(url.setPath(child).addParameters(INTERFACE_KEY, child,
-                                Constants.CHECK_KEY, String.valueOf(false)), k);
+                                Constants.CHECK_KEY, String.valueOf(check)), k);
                         }
                     }
                 });
@@ -159,7 +161,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                         service = URL.decode(service);
                         anyServices.add(service);
                         subscribe(url.setPath(service).addParameters(INTERFACE_KEY, service,
-                            Constants.CHECK_KEY, String.valueOf(false)), listener);
+                            Constants.CHECK_KEY, String.valueOf(check)), listener);
                     }
                 }
             } else {
