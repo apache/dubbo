@@ -51,8 +51,10 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -119,25 +121,28 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 public class ReferenceConfigTest {
-    private String zkUrl1;
-    private String zkUrl2;
-    private String registryUrl1;
-    private RegistryCenter registryCenter1;
-    private RegistryCenter registryCenter2;
+    private static String zkUrl1;
+    private static String zkUrl2;
+    private static String registryUrl1;
+    private static RegistryCenter registryCenter1;
+    private static RegistryCenter registryCenter2;
 
-    @BeforeEach
-    public void setUp() throws Exception {
-        DubboBootstrap.reset();
+    @BeforeAll
+    public static void beforeAll() {
         int zkServerPort1 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
         registryCenter1 = new ZookeeperSingleRegistryCenter(zkServerPort1);
         registryCenter1.startup();
         int zkServerPort2 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
         registryCenter2 = new ZookeeperSingleRegistryCenter(zkServerPort2);
         registryCenter2.startup();
-        this.zkUrl1 = "zookeeper://localhost:" + zkServerPort1;
-        this.zkUrl2 = "zookeeper://localhost:" + zkServerPort2;
-        this.registryUrl1 = "registry://localhost:" + zkServerPort1 + "?registry=zookeeper";
+        zkUrl1 = "zookeeper://localhost:" + zkServerPort1;
+        zkUrl2 = "zookeeper://localhost:" + zkServerPort2;
+        registryUrl1 = "registry://localhost:" + zkServerPort1 + "?registry=zookeeper";
+    }
 
+    @BeforeEach
+    public void setUp() throws Exception {
+        DubboBootstrap.reset();
         ApplicationModel.defaultModel().getApplicationConfigManager();
         DubboBootstrap.getInstance();
     }
@@ -145,10 +150,13 @@ public class ReferenceConfigTest {
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
+        Mockito.framework().clearInlineMocks();
+    }
+
+    @AfterAll
+    public static void afterAll() {
         registryCenter1.shutdown();
         registryCenter2.shutdown();
-        Mockito.framework().clearInlineMocks();
-
     }
 
     /**
