@@ -112,7 +112,13 @@ public class ScopeBeanFactory {
     public <T> T getOrRegisterBean(String name, Class<T> type) {
         T bean = getBean(name, type);
         if (bean == null) {
-            bean = createAndRegisterBean(name, type);
+            // lock by type
+            synchronized (type) {
+                bean = getBean(name, type);
+                if (bean == null) {
+                    bean = createAndRegisterBean(name, type);
+                }
+            }
         }
         return bean;
     }
@@ -124,9 +130,14 @@ public class ScopeBeanFactory {
     public <T> T getOrRegisterBean(String name, Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
         T bean = getBean(name, type);
         if (bean == null) {
-            //TODO add lock for type
-            bean = mappingFunction.apply(type);
-            registerBean(name, bean);
+            // lock by type
+            synchronized (type) {
+                bean = getBean(name, type);
+                if (bean == null) {
+                    bean = mappingFunction.apply(type);
+                    registerBean(name, bean);
+                }
+            }
         }
         return bean;
     }
