@@ -27,8 +27,8 @@ import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcStatus;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
 public class CountTelnetTest {
-    private static final BaseCommand count = new CountTelnet();
+    private static final BaseCommand count = new CountTelnet(FrameworkModel.defaultModel());
 
     private MockNettyChannel mockChannel;
     private Invoker<DemoService> mockInvoker;

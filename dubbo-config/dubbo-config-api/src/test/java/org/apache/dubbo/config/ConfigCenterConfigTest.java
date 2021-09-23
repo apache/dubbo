@@ -18,7 +18,6 @@
 package org.apache.dubbo.config;
 
 
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -29,7 +28,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -95,7 +93,7 @@ public class ConfigCenterConfigTest {
                 // ignore
             }
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(zkAddr, configCenter.getAddress());
@@ -123,7 +121,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(zkAddr, configCenter.getAddress());
@@ -150,7 +148,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .initialize();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(1234, configCenter.getTimeout());
@@ -163,11 +161,10 @@ public class ConfigCenterConfigTest {
     @Test
     public void testOverrideConfigByDubboProps() {
 
+        ApplicationModel.defaultModel().getDefaultModule();
         // Config instance has id, dubbo props has no id
-        Map props = new HashMap();
-        props.put("dubbo.config-center.check", "false");
-        props.put("dubbo.config-center.timeout", "1234");
-        ConfigUtils.getProperties().putAll(props);
+        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-center.check", "false");
+        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-center.timeout", "1234");
 
         try {
             // Config instance has id
@@ -179,13 +176,13 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .initialize();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(3000L, configCenter.getTimeout());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
-            props.keySet().forEach(ConfigUtils.getProperties()::remove);
+            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
         }
     }
 
@@ -207,7 +204,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(1234, configCenter.getTimeout());
@@ -220,11 +217,10 @@ public class ConfigCenterConfigTest {
     @Test
     public void testOverrideConfigByDubboPropsWithId() {
 
+        ApplicationModel.defaultModel().getDefaultModule();
         // Config instance has id, dubbo props has id
-        Map props = new HashMap();
-        props.put("dubbo.config-centers.configcenterA.check", "false");
-        props.put("dubbo.config-centers.configcenterA.timeout", "1234");
-        ConfigUtils.getProperties().putAll(props);
+        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-centers.configcenterA.check", "false");
+        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.config-centers.configcenterA.timeout", "1234");
 
         try {
             // Config instance has id
@@ -237,13 +233,13 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(3000L, configCenter.getTimeout());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
-            props.keySet().forEach(ConfigUtils.getProperties()::remove);
+            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
         }
     }
 

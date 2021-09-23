@@ -48,11 +48,13 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
     private static final Logger logger = LoggerFactory.getLogger(ListenableRouter.class);
     private volatile ConditionRouterRule routerRule;
     private volatile List<ConditionRouter> conditionRouters = Collections.emptyList();
+    private String ruleKey;
 
     public ListenableRouter(URL url, String ruleKey) {
         super(url);
         this.setForce(false);
         this.init(ruleKey);
+        this.ruleKey = ruleKey;
     }
 
     @Override
@@ -118,5 +120,10 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
         if (StringUtils.isNotEmpty(rule)) {
             this.process(new ConfigChangedEvent(routerKey, DynamicConfiguration.DEFAULT_GROUP, rule));
         }
+    }
+
+    @Override
+    public void stop() {
+        this.getRuleRepository().removeListener(ruleKey, this);
     }
 }

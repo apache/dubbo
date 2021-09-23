@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import com.alibaba.fastjson.JSON;
+import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -23,13 +26,9 @@ import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
-
-import com.alibaba.fastjson.JSON;
-import io.netty.channel.Channel;
-import io.netty.util.AttributeKey;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -48,6 +47,11 @@ public class InvokeTelnet implements BaseCommand {
     public static final AttributeKey<List<Method>> INVOKE_METHOD_LIST_KEY = AttributeKey.valueOf("telnet.invoke.method.list");
     public static final AttributeKey<ProviderModel> INVOKE_METHOD_PROVIDER_KEY = AttributeKey.valueOf("telnet.invoke.method.provider");
 
+    private FrameworkModel frameworkModel;
+
+    public InvokeTelnet(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
@@ -87,7 +91,7 @@ public class InvokeTelnet implements BaseCommand {
             selectedProvider = channel.attr(INVOKE_METHOD_PROVIDER_KEY).get();
             invokeMethod = channel.attr(SelectTelnet.SELECT_METHOD_KEY).get();
         } else {
-            for (ProviderModel provider : ApplicationModel.allProviderModels()) {
+            for (ProviderModel provider : frameworkModel.getServiceRepository().allProviderModels()) {
                 if (!isServiceMatch(service, provider)) {
                     continue;
                 }

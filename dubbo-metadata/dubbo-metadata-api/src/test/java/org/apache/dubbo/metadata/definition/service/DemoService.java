@@ -16,15 +16,23 @@
  */
 package org.apache.dubbo.metadata.definition.service;
 
+import org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation;
+import org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation2;
+import org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation;
+
 import java.util.List;
 
 /**
  * for test
  */
+@MockTypeAnnotation(666)
 public interface DemoService {
 
     String complexCompute(String input, ComplexObject co);
 
     ComplexObject findComplexObject(String var1, int var2, long l, String[] var3, List<Integer> var4, ComplexObject.TestEnum testEnum);
 
+    @MockMethodAnnotation(777)
+    @MockMethodAnnotation2(888)
+    void testAnnotation(boolean flag);
 }

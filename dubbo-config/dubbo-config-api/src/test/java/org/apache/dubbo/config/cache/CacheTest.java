@@ -55,7 +55,7 @@ public class CacheTest {
 
     @AfterEach
     public void tearDown() {
-//        ApplicationModel.getConfigManager().clear();
+//        ApplicationModel.defaultModel().getConfigManager().clear();
     }
 
     private void testCache(String type) throws Exception {

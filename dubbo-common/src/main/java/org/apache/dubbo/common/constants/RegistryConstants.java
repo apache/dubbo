@@ -130,4 +130,6 @@ public interface RegistryConstants {
 
     String REGISTRY_SERVICE_REFERENCE_PATH = "org.apache.dubbo.registry.RegistryService";
     String INIT = "INIT";
+
+    float DEFAULT_HASHMAP_LOAD_FACTOR = 0.75f;
 }

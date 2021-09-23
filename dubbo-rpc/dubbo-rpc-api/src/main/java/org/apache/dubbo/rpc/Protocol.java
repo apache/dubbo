@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.util.Collections;
@@ -26,7 +27,7 @@ import java.util.List;
 /**
  * Protocol. (API/SPI, Singleton, ThreadSafe)
  */
-@SPI("dubbo")
+@SPI(value = "dubbo", scope = ExtensionScope.FRAMEWORK)
 public interface Protocol {
 
     /**

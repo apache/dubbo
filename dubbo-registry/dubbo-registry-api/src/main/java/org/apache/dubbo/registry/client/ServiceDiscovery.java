@@ -35,13 +35,14 @@ import java.util.stream.Stream;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
+import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 /**
  * The common operations of Service Discovery
  *
  * @since 2.7.5
  */
-@SPI("zookeeper")
+@SPI(value = "zookeeper", scope = APPLICATION)
 public interface ServiceDiscovery extends Prioritized {
 
     // ==================================== Lifecycle ==================================== //
@@ -141,7 +142,7 @@ public interface ServiceDiscovery extends Prioritized {
 
     /**
      * Gets the {@link Page pagination} of {@link ServiceInstance service instances} by the specified service name.
-     * It's equal to {@link #getInstances(String, int, int, boolean)} with <code>healthyOnly == true</code>
+     * It's equal to {@link #getInstances(String, int, int, boolean)} with <code>healthyOnly == false</code>
      *
      * @param serviceName the service name
      * @param offset      the offset of request , the number "0" indicates first page

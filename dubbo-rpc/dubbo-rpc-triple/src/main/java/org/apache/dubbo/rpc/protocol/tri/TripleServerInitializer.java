@@ -16,16 +16,24 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 
 public class TripleServerInitializer extends ChannelInitializer<Channel> {
 
+    private FrameworkModel frameworkModel;
+
+    public TripleServerInitializer(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
+
     @Override
     protected void initChannel(Channel ch) throws Exception {
         final ChannelPipeline p = ch.pipeline();
-        p.addLast(new TripleHttp2FrameServerHandler());
+        p.addLast(new TripleHttp2FrameServerHandler(frameworkModel));
         // TODO constraint MAX DATA_SIZE
         p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE));
         p.addLast(new TripleServerInboundHandler());

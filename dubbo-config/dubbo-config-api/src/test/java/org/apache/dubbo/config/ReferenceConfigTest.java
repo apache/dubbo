@@ -16,11 +16,17 @@
  */
 package org.apache.dubbo.config;
 
+import demo.MultiClassLoaderService;
+import demo.MultiClassLoaderServiceImpl;
+import demo.MultiClassLoaderServiceRequest;
+import demo.MultiClassLoaderServiceResult;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.config.CompositeConfiguration;
-import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.compiler.support.CtClassBuilder;
+import org.apache.dubbo.common.compiler.support.JavassistCompiler;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -30,20 +36,19 @@ import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
-
-import org.apache.dubbo.metadata.report.MetadataReport;
-import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+import org.apache.dubbo.registrycenter.RegistryCenter;
+import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.curator.test.TestingServer;
-import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.junit.jupiter.api.AfterEach;
@@ -51,88 +56,97 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-
-import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PROTOCOL;
-import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PORT;
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
-import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.STARTUP_PROBE;
-import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCESSOR_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REFER_THREAD_NUM_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REFER_BACKGROUND_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PORT;
+import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFER_BACKGROUND_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFER_THREAD_NUM_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.STARTUP_PROBE;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCESSOR_KEY;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
-import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
-import static org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
 import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 public class ReferenceConfigTest {
-    private TestingServer zkServer;
-    private String zkUrl;
-    private String registryUrl;
+    private String zkUrl1;
+    private String zkUrl2;
+    private String registryUrl1;
+    private RegistryCenter registryCenter1;
+    private RegistryCenter registryCenter2;
 
     @BeforeEach
     public void setUp() throws Exception {
         DubboBootstrap.reset();
-        int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
-        this.zkServer = new TestingServer(zkServerPort, true);
-        this.zkServer.start();
-        this.zkUrl = "zookeeper://localhost:" + zkServerPort;
-        this.registryUrl = "registry://localhost:" + zkServerPort+"?registry=zookeeper";
-        ApplicationModel.getConfigManager();
+        int zkServerPort1 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
+        registryCenter1 = new ZookeeperSingleRegistryCenter(zkServerPort1);
+        registryCenter1.startup();
+        int zkServerPort2 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
+        registryCenter2 = new ZookeeperSingleRegistryCenter(zkServerPort2);
+        registryCenter2.startup();
+        this.zkUrl1 = "zookeeper://localhost:" + zkServerPort1;
+        this.zkUrl2 = "zookeeper://localhost:" + zkServerPort2;
+        this.registryUrl1 = "registry://localhost:" + zkServerPort1 + "?registry=zookeeper";
+
+        ApplicationModel.defaultModel().getApplicationConfigManager();
         DubboBootstrap.getInstance();
     }
 
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
-        zkServer.stop();
+        registryCenter1.shutdown();
+        registryCenter2.shutdown();
         Mockito.framework().clearInlineMocks();
 
     }
@@ -142,24 +156,6 @@ public class ReferenceConfigTest {
      */
     @Test
     public void testAppendConfig() {
-
-        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
-        referenceConfig.setClient("netty");
-        referenceConfig.setGeneric(Boolean.FALSE.toString());
-        referenceConfig.setProtocol("dubbo");
-        referenceConfig.setInit(true);
-        referenceConfig.setLazy(false);
-        referenceConfig.setInjvm(false);
-        referenceConfig.setReconnect("reconnect");
-        referenceConfig.setSticky(false);
-        referenceConfig.setStub(DEFAULT_STUB_EVENT);
-        referenceConfig.setRouter("default");
-        referenceConfig.setReferAsync(true);
-
-        DubboBootstrap.getInstance()
-            .application("application1")
-            .initialize();
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
@@ -192,6 +188,19 @@ public class ReferenceConfigTest {
         applicationConfig.setReadinessProbe("readinessProb");
         applicationConfig.setStartupProbe("startupProbe");
 
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setClient("netty");
+        referenceConfig.setGeneric(Boolean.FALSE.toString());
+        referenceConfig.setProtocol("dubbo");
+        referenceConfig.setInit(true);
+        referenceConfig.setLazy(false);
+        referenceConfig.setInjvm(false);
+        referenceConfig.setReconnect("reconnect");
+        referenceConfig.setSticky(false);
+        referenceConfig.setStub(DEFAULT_STUB_EVENT);
+        referenceConfig.setRouter("default");
+        referenceConfig.setReferAsync(true);
+
         MonitorConfig monitorConfig = new MonitorConfig();
         applicationConfig.setMonitor(monitorConfig);
 
@@ -219,7 +228,7 @@ public class ReferenceConfigTest {
         referenceConfig.setConsumer(consumerConfig);
 
         MethodConfig methodConfig = new MethodConfig();
-        methodConfig.setName("method1");
+        methodConfig.setName("sayName");
         methodConfig.setStat(1);
         methodConfig.setRetries(0);
         methodConfig.setExecutes(10);
@@ -230,51 +239,26 @@ public class ReferenceConfigTest {
         methodConfig.setServiceId(DemoService.class.getName());
         methodConfig.setParentPrefix("demo");
 
-
         referenceConfig.setMethods(Collections.singletonList(methodConfig));
 
-        ConfigManager configManager = mock(ConfigManager.class);
-        Environment environment = mock(Environment.class);
-        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-        ServiceRepository serviceRepository = mock(ServiceRepository.class);
-        ConsumerModel consumerModel = mock(ConsumerModel.class);
-
-        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
-        when(configManager.getMetrics()).thenReturn(Optional.of(metricsConfig));
-        when(configManager.getModule()).thenReturn(Optional.of(moduleConfig));
-
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-        applicationModelMockedStatic.when(ApplicationModel::getServiceRepository).thenReturn(serviceRepository);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
-        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
-            .thenReturn(true);
-
-        MockedStatic<MetadataReportInstance> metadataReportInstanceMockedStatic =
-            Mockito.mockStatic(MetadataReportInstance.class);
-
-        MetadataReport metadataReport = mock(MetadataReport.class);
-        metadataReportInstanceMockedStatic.when(() -> MetadataReportInstance.getMetadataReport("default"))
-            .thenReturn(metadataReport);
-
-
-        when(serviceRepository.lookupReferredService("org.apache.dubbo.config.api.DemoService"))
-            .thenReturn(consumerModel);
-
-        referenceConfig.refreshed.set(true);
         referenceConfig.setInterface(DemoService.class);
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
         applicationConfig.setRegistries(Collections.singletonList(registry));
         applicationConfig.setRegistryIds(registry.getId());
         moduleConfig.setRegistries(Collections.singletonList(registry));
 
         referenceConfig.setRegistry(registry);
+
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
+        dubboBootstrap.application(applicationConfig)
+            .reference(referenceConfig)
+            .registry(registry)
+            .metrics(metricsConfig)
+            .module(moduleConfig)
+            .initialize();
 
         referenceConfig.init();
 
@@ -399,20 +383,20 @@ public class ReferenceConfigTest {
         // verify additional method config
         Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("name"));
         Assertions.assertEquals(methodConfig.getStat().toString(),
-            serviceMetadata.getAttachments().get("method1.stat"));
+            serviceMetadata.getAttachments().get("sayName.stat"));
         Assertions.assertEquals(methodConfig.getRetries().toString(),
-            serviceMetadata.getAttachments().get("method1.retries"));
-        Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("method1.reliable"));
+            serviceMetadata.getAttachments().get("sayName.retries"));
+        Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("sayName.reliable"));
         Assertions.assertEquals(methodConfig.getExecutes().toString(),
-            serviceMetadata.getAttachments().get("method1.executes"));
+            serviceMetadata.getAttachments().get("sayName.executes"));
         Assertions.assertEquals(methodConfig.getDeprecated().toString(),
-            serviceMetadata.getAttachments().get("method1.deprecated"));
-        Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("method1.stick"));
+            serviceMetadata.getAttachments().get("sayName.deprecated"));
+        Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("sayName.stick"));
         Assertions.assertEquals(methodConfig.isReturn().toString(),
-            serviceMetadata.getAttachments().get("method1.return"));
-        Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("method1.service"));
-        Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("method1.service.id"));
-        Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("method1.parent.prefix"));
+            serviceMetadata.getAttachments().get("sayName.return"));
+        Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("sayName.service"));
+        Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("sayName.service.id"));
+        Assertions.assertFalse(serviceMetadata.getAttachments().containsKey("sayName.parent.prefix"));
 
         // verify additional revision and methods parameter
         Assertions.assertEquals(Version.getVersion(referenceConfig.getInterfaceClass(), referenceConfig.getVersion()),
@@ -421,8 +405,7 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(DemoService.class.getMethods().length,
             StringUtils.split((String) serviceMetadata.getAttachments().get(METHODS_KEY), ',').length);
 
-        applicationModelMockedStatic.closeOnDemand();
-        metadataReportInstanceMockedStatic.closeOnDemand();
+        dubboBootstrap.stop();
     }
 
     @Test
@@ -493,11 +476,6 @@ public class ReferenceConfigTest {
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setScope(LOCAL_KEY);
 
-        DubboBootstrap.getInstance()
-            .application("application1")
-            .initialize();
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
-
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
         Map<String, String> parameters = new HashMap<>();
@@ -505,39 +483,14 @@ public class ReferenceConfigTest {
         parameters.put("key2", "value2");
         applicationConfig.setParameters(parameters);
 
-        ConfigManager configManager = mock(ConfigManager.class);
-        Environment environment = mock(Environment.class);
-        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-        ServiceRepository serviceRepository = mock(ServiceRepository.class);
-        ConsumerModel consumerModel = mock(ConsumerModel.class);
-
-        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
-
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-        applicationModelMockedStatic.when(ApplicationModel::getServiceRepository).thenReturn(serviceRepository);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
-        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
-            .thenReturn(true);
-
-        MockedStatic<MetadataReportInstance> metadataReportInstanceMockedStatic =
-            Mockito.mockStatic(MetadataReportInstance.class);
-
-        MetadataReport metadataReport = mock(MetadataReport.class);
-        metadataReportInstanceMockedStatic.when(() -> MetadataReportInstance.getMetadataReport("default"))
-            .thenReturn(metadataReport);
-
-
-        when(serviceRepository.lookupReferredService("org.apache.dubbo.config.api.DemoService"))
-            .thenReturn(consumerModel);
-
-        referenceConfig.refreshed.set(true);
         referenceConfig.setInterface(DemoService.class);
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
+
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
+        dubboBootstrap.application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
 
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof ListenerInvokerWrapper);
@@ -547,16 +500,14 @@ public class ReferenceConfigTest {
         Assertions.assertEquals("value1", url.getParameter("key1"));
         Assertions.assertEquals("value2", url.getParameter("key2"));
 
-        applicationModelMockedStatic.closeOnDemand();
-        metadataReportInstanceMockedStatic.closeOnDemand();
+        dubboBootstrap.stop();
     }
-
 
     /**
      * Verify the configuration of the registry protocol for remote reference
      */
     @Test
-    public  void testCreateInvokerForRemoteRefer(){
+    public void testCreateInvokerForRemoteRefer() {
 
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setGeneric(Boolean.FALSE.toString());
@@ -565,10 +516,7 @@ public class ReferenceConfigTest {
         referenceConfig.setLazy(false);
         referenceConfig.setInjvm(false);
 
-        DubboBootstrap.getInstance()
-            .application("application1")
-            .initialize();
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
@@ -576,59 +524,34 @@ public class ReferenceConfigTest {
         parameters.put("key1", "value1");
         parameters.put("key2", "value2");
         applicationConfig.setParameters(parameters);
-
-        ConfigManager configManager = mock(ConfigManager.class);
-        Environment environment = mock(Environment.class);
-        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-        ServiceRepository serviceRepository = mock(ServiceRepository.class);
-        ConsumerModel consumerModel = mock(ConsumerModel.class);
-
-        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
-
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-        applicationModelMockedStatic.when(ApplicationModel::getServiceRepository).thenReturn(serviceRepository);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
-        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
-            .thenReturn(true);
-
-        MockedStatic<MetadataReportInstance> metadataReportInstanceMockedStatic =
-            Mockito.mockStatic(MetadataReportInstance.class);
-
-        MetadataReport metadataReport = mock(MetadataReport.class);
-        metadataReportInstanceMockedStatic.when(() -> MetadataReportInstance.getMetadataReport("default"))
-            .thenReturn(metadataReport);
-
-
-        when(serviceRepository.lookupReferredService("org.apache.dubbo.config.api.DemoService"))
-            .thenReturn(consumerModel);
 
         referenceConfig.refreshed.set(true);
         referenceConfig.setInterface(DemoService.class);
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
         applicationConfig.setRegistries(Collections.singletonList(registry));
         applicationConfig.setRegistryIds(registry.getId());
 
         referenceConfig.setRegistry(registry);
 
+        dubboBootstrap
+            .application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
+
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
 
-        applicationModelMockedStatic.closeOnDemand();
-        metadataReportInstanceMockedStatic.closeOnDemand();
+        dubboBootstrap.destroy();
     }
 
     /**
      * Verify that the registry url is directly configured for remote reference
      */
     @Test
-    public  void testCreateInvokerWithRegistryUrlForRemoteRefer(){
+    public void testCreateInvokerWithRegistryUrlForRemoteRefer() {
 
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setGeneric(Boolean.FALSE.toString());
@@ -637,10 +560,7 @@ public class ReferenceConfigTest {
         referenceConfig.setLazy(false);
         referenceConfig.setInjvm(false);
 
-        DubboBootstrap.getInstance()
-            .application("application1")
-            .initialize();
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
@@ -649,46 +569,74 @@ public class ReferenceConfigTest {
         parameters.put("key2", "value2");
         applicationConfig.setParameters(parameters);
 
-        ConfigManager configManager = mock(ConfigManager.class);
-        Environment environment = mock(Environment.class);
-        CompositeConfiguration compositeConfiguration = mock(CompositeConfiguration.class);
-        Configuration dynamicGlobalConfiguration = mock(Configuration.class);
-        ServiceRepository serviceRepository = mock(ServiceRepository.class);
-        ConsumerModel consumerModel = mock(ConsumerModel.class);
-
-        when(configManager.getApplicationOrElseThrow()).thenReturn(applicationConfig);
-
-        MockedStatic<ApplicationModel> applicationModelMockedStatic = Mockito.mockStatic(ApplicationModel.class);
-        applicationModelMockedStatic.when(ApplicationModel::getConfigManager).thenReturn(configManager);
-        applicationModelMockedStatic.when(ApplicationModel::getEnvironment).thenReturn(environment);
-        applicationModelMockedStatic.when(ApplicationModel::getServiceRepository).thenReturn(serviceRepository);
-        when(environment.getConfiguration()).thenReturn(compositeConfiguration);
-        when(environment.getDynamicGlobalConfiguration()).thenReturn(dynamicGlobalConfiguration);
-        when(compositeConfiguration.convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true))
-            .thenReturn(true);
-
-        MockedStatic<MetadataReportInstance> metadataReportInstanceMockedStatic =
-            Mockito.mockStatic(MetadataReportInstance.class);
-
-        MetadataReport metadataReport = mock(MetadataReport.class);
-        metadataReportInstanceMockedStatic.when(() -> MetadataReportInstance.getMetadataReport("default"))
-            .thenReturn(metadataReport);
-
-
-        when(serviceRepository.lookupReferredService("org.apache.dubbo.config.api.DemoService"))
-            .thenReturn(consumerModel);
-
         referenceConfig.refreshed.set(true);
         referenceConfig.setInterface(DemoService.class);
         referenceConfig.getInterfaceClass();
         referenceConfig.setCheck(false);
 
-        referenceConfig.setUrl(registryUrl);
+        referenceConfig.setUrl(registryUrl1);
+
+        dubboBootstrap
+            .application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
+
         referenceConfig.init();
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
+        dubboBootstrap.destroy();
 
-        applicationModelMockedStatic.closeOnDemand();
-        metadataReportInstanceMockedStatic.closeOnDemand();
+    }
+
+    /**
+     * Verify the service reference of multiple registries
+     */
+    @Test
+    public void testMultipleRegistryForRemoteRefer() {
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setGeneric(Boolean.FALSE.toString());
+        referenceConfig.setProtocol("dubbo");
+        referenceConfig.setInit(true);
+        referenceConfig.setLazy(false);
+        referenceConfig.setInjvm(false);
+
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("key1", "value1");
+        parameters.put("key2", "value2");
+        applicationConfig.setParameters(parameters);
+
+        referenceConfig.refreshed.set(true);
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.getInterfaceClass();
+        referenceConfig.setCheck(false);
+        RegistryConfig registry1 = new RegistryConfig();
+        registry1.setAddress(zkUrl1);
+        registry1.setId("zk1");
+
+        RegistryConfig registry2 = new RegistryConfig();
+        registry2.setAddress(zkUrl2);
+        registry2.setId("zk2");
+
+        List<RegistryConfig> registryConfigs = new ArrayList<>();
+        registryConfigs.add(registry1);
+        registryConfigs.add(registry2);
+        applicationConfig.setRegistries(registryConfigs);
+        applicationConfig.setRegistryIds("zk1,zk2");
+
+        referenceConfig.setRegistries(registryConfigs);
+
+        dubboBootstrap
+            .application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
+
+        referenceConfig.init();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof ZoneAwareClusterInvoker);
+
+        dubboBootstrap.destroy();
     }
 
     @Test
@@ -697,10 +645,10 @@ public class ReferenceConfigTest {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
         application.setEnableFileCache(false);
-        ApplicationModel.getConfigManager().setApplication(application);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
 
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("dubbo");
@@ -741,10 +689,10 @@ public class ReferenceConfigTest {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry");
         application.setEnableFileCache(false);
-        ApplicationModel.getConfigManager().setApplication(application);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress(zkUrl);
+        registry.setAddress(zkUrl1);
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("injvm");
 
@@ -777,6 +725,57 @@ public class ReferenceConfigTest {
         } finally {
             rc.destroy();
             InjvmProtocol.getInjvmProtocol().destroy();
+            System.clearProperty("java.net.preferIPv4Stack");
+
+        }
+        Assertions.assertTrue(success);
+        Assertions.assertNotNull(demoService);
+
+    }
+
+    @Test
+    public void test2ReferenceRetry() {
+        ApplicationConfig application = new ApplicationConfig();
+        application.setName("test-reference-retry2");
+        application.setEnableFileCache(false);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
+
+        RegistryConfig registry = new RegistryConfig();
+        registry.setAddress(zkUrl1);
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setName("mockprotocol");
+
+        ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
+        rc.setRegistry(registry);
+        rc.setInterface(DemoService.class.getName());
+
+        boolean success = false;
+        DemoService demoService = null;
+        try {
+            demoService = rc.get();
+            success = true;
+        } catch (Exception e) {
+            // ignore
+        }
+        Assertions.assertFalse(success);
+        Assertions.assertNull(demoService);
+
+        ServiceConfig<DemoService> sc = new ServiceConfig<>();
+        sc.setInterface(DemoService.class.getName());
+        sc.setRef(new DemoServiceImpl());
+        sc.setRegistry(registry);
+        sc.setProtocol(protocol);
+
+        try {
+            System.setProperty("java.net.preferIPv4Stack", "true");
+            sc.export();
+            demoService = rc.get();
+            success = true;
+        } catch (Exception e) {
+            // ignore
+        } finally {
+            rc.destroy();
+            sc.unexport();
             System.clearProperty("java.net.preferIPv4Stack");
 
         }
@@ -826,6 +825,8 @@ public class ReferenceConfigTest {
     @Test
     public void testLargeReferences() throws InterruptedException {
         int amount = 10000;
+        ModuleConfigManager configManager = DubboBootstrap.getInstance().getApplicationModel().getDefaultModule().getConfigManager();
+
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("test-app");
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
@@ -834,8 +835,9 @@ public class ReferenceConfigTest {
         configCenterConfig.setAddress("diamond://");
 
         testInitReferences(0, amount, applicationConfig, metadataReportConfig, configCenterConfig);
-        ApplicationModel.getConfigManager().clear();
+        configManager.clear();
         testInitReferences(0, 1, applicationConfig, metadataReportConfig, configCenterConfig);
+        configManager.clear();
 
         long t1 = System.currentTimeMillis();
         int nThreads = 8;
@@ -859,7 +861,7 @@ public class ReferenceConfigTest {
         long t2 = System.currentTimeMillis();
         long cost = t2 - t1;
         System.out.println("Init large references cost: " + cost + "ms");
-        Assertions.assertEquals(amount, DubboBootstrap.getInstance().getConfigManager().getReferences().size());
+        Assertions.assertEquals(amount, configManager.getReferences().size());
         Assertions.assertTrue(cost < 1000, "Init large references too slowly: " + cost);
 
         //test equals
@@ -869,7 +871,7 @@ public class ReferenceConfigTest {
 
     private void testSearchReferences() {
         long t1 = System.currentTimeMillis();
-        Collection<ReferenceConfigBase<?>> references = DubboBootstrap.getInstance().getConfigManager().getReferences();
+        Collection<ReferenceConfigBase<?>> references = DubboBootstrap.getInstance().getApplicationModel().getDefaultModule().getConfigManager().getReferences();
         List<ReferenceConfigBase<?>> results = references.stream().filter(rc -> rc.equals(references.iterator().next()))
             .collect(Collectors.toList());
         long t2 = System.currentTimeMillis();
@@ -891,7 +893,7 @@ public class ReferenceConfigTest {
                 referenceConfig.setConfigCenter(configCenterConfig);
                 DubboBootstrap.getInstance().reference(referenceConfig);
 
-                //ApplicationModel.getConfigManager().getConfigCenters();
+                //ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -908,16 +910,157 @@ public class ReferenceConfigTest {
         Assertions.assertEquals((referenceConfig.getMethods().get(0)).getName(), "sayHello");
         Assertions.assertEquals(1300, (int) (referenceConfig.getMethods().get(0)).getTimeout());
         Assertions.assertEquals(4, (int) (referenceConfig.getMethods().get(0)).getRetries());
-        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getLoadbalance(), "random");
         Assertions.assertEquals(3, (int) (referenceConfig.getMethods().get(0)).getActives());
         Assertions.assertEquals(5, (int) (referenceConfig.getMethods().get(0)).getExecutes());
         Assertions.assertTrue((referenceConfig.getMethods().get(0)).isAsync());
-        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getOninvokeMethod(), "i");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getOninvokeMethod(), "i");
         Assertions.assertEquals((referenceConfig.getMethods().get(0)).getOnreturnMethod(), "r");
-        Assertions.assertEquals(( referenceConfig.getMethods().get(0)).getOnthrowMethod(), "t");
+        Assertions.assertEquals((referenceConfig.getMethods().get(0)).getOnthrowMethod(), "t");
         Assertions.assertEquals((referenceConfig.getMethods().get(0)).getCache(), "c");
     }
 
+    @Test
+    public void testDifferentClassLoader() throws Exception {
+        ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
+        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ModuleModel moduleModel = new ModuleModel(applicationModel);
+
+        DemoService demoService = new DemoServiceImpl();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
+        serviceConfig.setScopeModel(moduleModel);
+        serviceConfig.setRef(demoService);
+        serviceConfig.export();
+
+        String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
+        TestClassLoader classLoader1 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
+        TestClassLoader classLoader2 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
+
+        Class<?> class1 = classLoader1.loadClass(DemoService.class.getName(), false);
+        Class<?> class2 = classLoader2.loadClass(DemoService.class.getName(), false);
+
+        Assertions.assertNotEquals(class1, class2);
+
+        ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
+        referenceConfig1.setInterface(class1);
+        referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
+        referenceConfig1.setScopeModel(moduleModel);
+        referenceConfig1.setScope("remote");
+        Object demoService1 = referenceConfig1.get();
+
+        for (Class<?> anInterface : demoService1.getClass().getInterfaces()) {
+            Assertions.assertNotEquals(DemoService.class, anInterface);
+        }
+        Assertions.assertTrue(Arrays.stream(demoService1.getClass().getInterfaces()).anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader1)));
+
+        java.lang.reflect.Method callBean1 = demoService1.getClass().getDeclaredMethod("callInnerClass");
+        callBean1.setAccessible(true);
+        Object result1 = callBean1.invoke(demoService1);
+
+        Assertions.assertNotEquals(result1.getClass(), DemoService.InnerClass.class);
+        Assertions.assertEquals(classLoader1, result1.getClass().getClassLoader());
+
+        ReferenceConfig<DemoService> referenceConfig2 = new ReferenceConfig<>();
+        referenceConfig2.setInterface(class2);
+        referenceConfig2.setRegistry(new RegistryConfig(zkUrl1));
+        referenceConfig2.setScopeModel(moduleModel);
+        referenceConfig2.setScope("remote");
+        Object demoService2 = referenceConfig2.get();
+
+        for (Class<?> anInterface : demoService2.getClass().getInterfaces()) {
+            Assertions.assertNotEquals(DemoService.class, anInterface);
+        }
+        Assertions.assertTrue(Arrays.stream(demoService2.getClass().getInterfaces()).anyMatch((clazz) -> clazz.getClassLoader().equals(classLoader2)));
+
+        java.lang.reflect.Method callBean2 = demoService2.getClass().getDeclaredMethod("callInnerClass");
+        callBean2.setAccessible(true);
+        Object result2 = callBean2.invoke(demoService2);
+
+        Assertions.assertNotEquals(callBean1, callBean2);
+        Assertions.assertNotEquals(result2.getClass(), DemoService.InnerClass.class);
+        Assertions.assertEquals(classLoader2, result2.getClass().getClassLoader());
+        Assertions.assertNotEquals(result1.getClass(), result2.getClass());
+
+        applicationModel.destroy();
+    }
+
+    @Test
+    public void testDifferentClassLoaderRequest() throws Exception {
+        String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
+        TestClassLoader1 classLoader1 = new TestClassLoader1(basePath);
+        TestClassLoader1 classLoader2 = new TestClassLoader1(basePath);
+        TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
+
+        ApplicationConfig applicationConfig = new ApplicationConfig("TestApp");
+        ApplicationModel applicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
+        ModuleModel moduleModel = new ModuleModel(applicationModel);
+
+        Class<?> clazz1 = classLoader1.loadClass(MultiClassLoaderService.class.getName(), false);
+        Class<?> clazz1impl = classLoader1.loadClass(MultiClassLoaderServiceImpl.class.getName(), false);
+        Class<?> requestClazzCustom1 = compileCustomRequest(classLoader1);
+        Class<?> resultClazzCustom1 = compileCustomResult(classLoader1);
+        classLoader1.loadedClass.put(requestClazzCustom1.getName(), requestClazzCustom1);
+        classLoader1.loadedClass.put(resultClazzCustom1.getName(), resultClazzCustom1);
+        AtomicReference innerRequestReference = new AtomicReference();
+        AtomicReference innerResultReference = new AtomicReference();
+        innerResultReference.set(resultClazzCustom1.newInstance());
+        Constructor<?> declaredConstructor = clazz1impl.getDeclaredConstructor(AtomicReference.class, AtomicReference.class);
+
+        ServiceConfig serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterfaceClassLoader(classLoader1);
+        serviceConfig.setInterface(clazz1);
+        serviceConfig.setRegistry(new RegistryConfig(zkUrl1));
+        serviceConfig.setScopeModel(moduleModel);
+        serviceConfig.setRef(declaredConstructor.newInstance(innerRequestReference, innerResultReference));
+        serviceConfig.export();
+
+        Class<?> clazz2 = classLoader2.loadClass(MultiClassLoaderService.class.getName(), false);
+        Class<?> requestClazzOrigin = classLoader2.loadClass(MultiClassLoaderServiceRequest.class.getName(), false);
+        Class<?> requestClazzCustom2 = compileCustomRequest(classLoader2);
+        Class<?> resultClazzCustom3 = compileCustomResult(classLoader3);
+        classLoader2.loadedClass.put(requestClazzCustom2.getName(), requestClazzCustom2);
+        classLoader3.loadedClass.put(resultClazzCustom3.getName(), resultClazzCustom3);
+
+        ReferenceConfig<DemoService> referenceConfig1 = new ReferenceConfig<>();
+        referenceConfig1.setInterface(clazz2);
+        referenceConfig1.setInterfaceClassLoader(classLoader3);
+        referenceConfig1.setRegistry(new RegistryConfig(zkUrl1));
+        referenceConfig1.setScopeModel(moduleModel);
+        referenceConfig1.setScope("remote");
+        Object object1 = referenceConfig1.get();
+
+        java.lang.reflect.Method callBean1 = object1.getClass().getDeclaredMethod("call", requestClazzOrigin);
+        callBean1.setAccessible(true);
+        Object result1 = callBean1.invoke(object1, requestClazzCustom2.newInstance());
+
+        Assertions.assertEquals(resultClazzCustom3, result1.getClass());
+        Assertions.assertNotEquals(classLoader2, result1.getClass().getClassLoader());
+        Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
+
+        applicationModel.destroy();
+    }
+
+    private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
+        CtClassBuilder builder = new CtClassBuilder();
+        builder.setClassName(MultiClassLoaderServiceRequest.class.getName() + "A");
+        builder.setSuperClassName(MultiClassLoaderServiceRequest.class.getName());
+        CtClass cls = builder.build(classLoader);
+        return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
+    }
+
+    private Class<?> compileCustomResult(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
+        CtClassBuilder builder = new CtClassBuilder();
+        builder.setClassName(MultiClassLoaderServiceResult.class.getName() + "A");
+        builder.setSuperClassName(MultiClassLoaderServiceResult.class.getName());
+        CtClass cls = builder.build(classLoader);
+        return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
+    }
 
     @Reference(methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
         actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "instance.i", onthrow = "instance.t", onreturn = "instance.r", cache = "c", validation = "v",
@@ -927,4 +1070,168 @@ public class ReferenceConfigTest {
     private class InnerTest {
 
     }
+    private static class TestClassLoader extends ClassLoader {
+        private String basePath;
+
+        public TestClassLoader(ClassLoader parent, String basePath) {
+            super(parent);
+            this.basePath = basePath;
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                byte[] bytes = loadClassData(name);
+                return defineClass(name, bytes, 0, bytes.length);
+            } catch (Exception e) {
+                throw new ClassNotFoundException();
+            }
+        }
+
+        @Override
+        public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            Class<?> loadedClass = this.findLoadedClass(name);
+            if (loadedClass != null) {
+                return loadedClass;
+            } else {
+                try {
+                    if (name.equals("org.apache.dubbo.config.api.DemoService") || name.equals("org.apache.dubbo.config.api.DemoService$InnerClass")) {
+                        Class<?> aClass = this.findClass(name);
+                        if (resolve) {
+                            this.resolveClass(aClass);
+                        }
+                        return aClass;
+                    } else {
+                        return super.loadClass(name, resolve);
+                    }
+                } catch (Exception e) {
+                    return super.loadClass(name, resolve);
+                }
+            }
+        }
+
+
+        public byte[] loadClassData(String className) throws IOException {
+            className = className.replaceAll("\\.", "/");
+            String path = basePath + File.separator + className + ".class";
+            FileInputStream fileInputStream;
+            byte[] classBytes;
+            fileInputStream = new FileInputStream(path);
+            int length = fileInputStream.available();
+            classBytes = new byte[length];
+            fileInputStream.read(classBytes);
+            fileInputStream.close();
+            return classBytes;
+        }
+    }
+
+    private static class TestClassLoader1 extends ClassLoader {
+        private String basePath;
+
+        public TestClassLoader1(String basePath) {
+            this.basePath = basePath;
+        }
+
+        Map<String, Class<?>> loadedClass = new ConcurrentHashMap<>();
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                byte[] bytes = loadClassData(name);
+                return defineClass(name, bytes, 0, bytes.length);
+            } catch (Exception e) {
+                throw new ClassNotFoundException();
+            }
+        }
+
+        @Override
+        public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (loadedClass.containsKey(name)) {
+                return loadedClass.get(name);
+            }
+            if (name.startsWith("demo")) {
+                Class<?> aClass = this.findClass(name);
+                this.loadedClass.put(name, aClass);
+                if (resolve) {
+                    this.resolveClass(aClass);
+                }
+                return aClass;
+            } else {
+                Class<?> loadedClass = this.findLoadedClass(name);
+                if (loadedClass != null) {
+                    return loadedClass;
+                } else {
+                    return super.loadClass(name, resolve);
+                }
+            }
+        }
+
+
+        public byte[] loadClassData(String className) throws IOException {
+            className = className.replaceAll("\\.", "/");
+            String path = basePath + File.separator + className + ".class";
+            FileInputStream fileInputStream;
+            byte[] classBytes;
+            fileInputStream = new FileInputStream(path);
+            int length = fileInputStream.available();
+            classBytes = new byte[length];
+            fileInputStream.read(classBytes);
+            fileInputStream.close();
+            return classBytes;
+        }
+    }
+
+    private static class TestClassLoader2 extends ClassLoader {
+        private String basePath;
+        private TestClassLoader1 testClassLoader;
+
+        Map<String, Class<?>> loadedClass = new ConcurrentHashMap<>();
+
+        public TestClassLoader2(TestClassLoader1 testClassLoader, String basePath) {
+            this.testClassLoader = testClassLoader;
+            this.basePath = basePath;
+        }
+
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            try {
+                byte[] bytes = loadClassData(name);
+                return defineClass(name, bytes, 0, bytes.length);
+            } catch (Exception e) {
+                throw new ClassNotFoundException();
+            }
+        }
+
+        @Override
+        public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (loadedClass.containsKey(name)) {
+                return loadedClass.get(name);
+            }
+            if (name.startsWith("demo.MultiClassLoaderServiceRe")) {
+                Class<?> aClass = this.findClass(name);
+                this.loadedClass.put(name, aClass);
+                if (resolve) {
+                    this.resolveClass(aClass);
+                }
+                return aClass;
+            } else {
+                return testClassLoader.loadClass(name, resolve);
+            }
+        }
+
+
+        public byte[] loadClassData(String className) throws IOException {
+            className = className.replaceAll("\\.", "/");
+            String path = basePath + File.separator + className + ".class";
+            FileInputStream fileInputStream;
+            byte[] classBytes;
+            fileInputStream = new FileInputStream(path);
+            int length = fileInputStream.available();
+            classBytes = new byte[length];
+            fileInputStream.read(classBytes);
+            fileInputStream.close();
+            return classBytes;
+        }
+    }
+
 }

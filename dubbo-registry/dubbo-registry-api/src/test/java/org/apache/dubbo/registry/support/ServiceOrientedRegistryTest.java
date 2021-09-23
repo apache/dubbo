@@ -23,6 +23,7 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,10 +84,14 @@ public class ServiceOrientedRegistryTest {
 
     @BeforeEach
     public void init() {
+        ApplicationModel.reset();
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ModuleModel scopeModel = applicationModel.getDefaultModule();
+        registryURL.setScopeModel(scopeModel);
         registry = ServiceDiscoveryRegistry.create(registryURL);
-        metadataService = WritableMetadataService.getDefaultExtension();
+        metadataService = WritableMetadataService.getDefaultExtension(scopeModel);
         notifyListener = new MyNotifyListener();
-        ApplicationModel.getConfigManager().setApplication(new ApplicationConfig("Test"));
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
     }
 
     @AfterAll

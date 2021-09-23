@@ -25,9 +25,9 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -192,8 +192,8 @@ public class FutureFilter implements ClusterFilter, ClusterFilter.Listener {
             return asyncMethodInfo;
         }
 
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
-        if (consumerModel == null) {
+        ServiceModel serviceModel = invocation.getServiceModel();
+        if (!(serviceModel instanceof ConsumerModel)) {
             return null;
         }
 
@@ -202,7 +202,7 @@ public class FutureFilter implements ClusterFilter, ClusterFilter.Listener {
             methodName = (String) invocation.getArguments()[0];
         }
 
-        return consumerModel.getAsyncInfo(methodName);
+        return ((ConsumerModel) serviceModel).getAsyncInfo(methodName);
     }
 
 }

@@ -16,17 +16,25 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -42,14 +50,25 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 public class ConfigurationUtils {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
     private static Map<String, String> CACHED_DYNAMIC_PROPERTIES = new ConcurrentHashMap<>();
+    private static final List<String> securityKey;
+
+    static {
+        List<String> keys = new LinkedList<>();
+        keys.add("accesslog");
+        keys.add("router");
+        keys.add("rule");
+        keys.add("runtime");
+        keys.add("type");
+        securityKey = Collections.unmodifiableList(keys);
+    }
 
     /**
      * Used to get properties from the jvm
      *
      * @return
      */
-    public static Configuration getSystemConfiguration() {
-        return ApplicationModel.getEnvironment().getSystemConfiguration();
+    public static Configuration getSystemConfiguration(ScopeModel scopeModel) {
+        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getSystemConfiguration();
     }
 
     /**
@@ -57,8 +76,9 @@ public class ConfigurationUtils {
      *
      * @return
      */
-    public static Configuration getEnvConfiguration() {
-        return ApplicationModel.getEnvironment().getEnvironmentConfiguration();
+
+    public static Configuration getEnvConfiguration(ScopeModel scopeModel) {
+        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getEnvironmentConfiguration();
     }
 
     /**
@@ -68,19 +88,20 @@ public class ConfigurationUtils {
      *
      * @return
      */
-    public static Configuration getGlobalConfiguration() {
-        return ApplicationModel.getEnvironment().getConfiguration();
+
+    public static Configuration getGlobalConfiguration(ScopeModel scopeModel) {
+        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getConfiguration();
     }
 
-    public static Configuration getDynamicGlobalConfiguration() {
-        return ApplicationModel.getEnvironment().getDynamicGlobalConfiguration();
+    public static Configuration getDynamicGlobalConfiguration(ScopeModel scopeModel) {
+        return ScopeModelUtil.getModuleModel(scopeModel).getModelEnvironment().getDynamicGlobalConfiguration();
     }
 
     // FIXME
     @SuppressWarnings("deprecation")
-    public static int getServerShutdownTimeout() {
+    public static int getServerShutdownTimeout(ScopeModel scopeModel) {
         int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        Configuration configuration = getGlobalConfiguration();
+        Configuration configuration = getGlobalConfiguration(scopeModel);
         String value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_KEY));
 
         if (value != null && value.length() > 0) {
@@ -102,29 +123,29 @@ public class ConfigurationUtils {
         return timeout;
     }
 
-    public static String getCachedDynamicProperty(String key, String defaultValue) {
-        String value = CACHED_DYNAMIC_PROPERTIES.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(key, ""));
+    public static String getCachedDynamicProperty(ScopeModel scopeModel, String key, String defaultValue) {
+        String value = CACHED_DYNAMIC_PROPERTIES.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(scopeModel, key, ""));
         return StringUtils.isEmpty(value) ? defaultValue : value;
     }
 
-    public static String getDynamicProperty(String property) {
-        return getDynamicProperty(property, null);
+    public static String getDynamicProperty(ScopeModel scopeModel, String property) {
+        return getDynamicProperty(scopeModel, property, null);
     }
 
-    public static String getDynamicProperty(String property, String defaultValue) {
-        return StringUtils.trim(getDynamicGlobalConfiguration().getString(property, defaultValue));
+    public static String getDynamicProperty(ScopeModel scopeModel, String property, String defaultValue) {
+        return StringUtils.trim(getDynamicGlobalConfiguration(scopeModel).getString(property, defaultValue));
     }
 
-    public static String getProperty(String property) {
-        return getProperty(property, null);
+    public static String getProperty(ScopeModel scopeModel, String property) {
+        return getProperty(scopeModel, property, null);
     }
 
-    public static String getProperty(String property, String defaultValue) {
-        return StringUtils.trim(getGlobalConfiguration().getString(property, defaultValue));
+    public static String getProperty(ScopeModel scopeModel, String property, String defaultValue) {
+        return StringUtils.trim(getGlobalConfiguration(scopeModel).getString(property, defaultValue));
     }
 
-    public static int get(String property, int defaultValue) {
-        return getGlobalConfiguration().getInt(property, defaultValue);
+    public static int get(ScopeModel scopeModel, String property, int defaultValue) {
+        return getGlobalConfiguration(scopeModel).getInt(property, defaultValue);
     }
 
     public static Map<String, String> parseProperties(String content) throws IOException {
@@ -135,8 +156,18 @@ public class ConfigurationUtils {
             Properties properties = new Properties();
             properties.load(new StringReader(content));
             properties.stringPropertyNames().forEach(
-                    k -> map.put(k, properties.getProperty(k))
-            );
+                    k -> {
+                        boolean deny = false;
+                        for (String key : securityKey) {
+                            if (k.contains(key)) {
+                                deny = true;
+                                break;
+                            }
+                        }
+                        if (!deny) {
+                            map.put(k, properties.getProperty(k));
+                        }
+                    });
         }
         return map;
     }
@@ -273,6 +304,72 @@ public class ConfigurationUtils {
             }
         }
         return ids;
+    }
+
+    /**
+     * Get an instance of {@link DynamicConfigurationFactory} by the specified name. If not found, take the default
+     * extension of {@link DynamicConfigurationFactory}
+     *
+     * @param name the name of extension of {@link DynamicConfigurationFactory}
+     * @return non-null
+     * @see 2.7.4
+     */
+    public static DynamicConfigurationFactory getDynamicConfigurationFactory(ExtensionAccessor extensionAccessor, String name) {
+        ExtensionLoader<DynamicConfigurationFactory> loader = extensionAccessor.getExtensionLoader(DynamicConfigurationFactory.class);
+        return loader.getOrDefaultExtension(name);
+    }
+
+    /**
+     * For compact single instance
+     */
+    @Deprecated
+    public static Configuration getSystemConfiguration() {
+        return ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration();
+    }
+
+    @Deprecated
+    public static Configuration getEnvConfiguration() {
+        return ApplicationModel.defaultModel().getModelEnvironment().getEnvironmentConfiguration();
+    }
+
+    @Deprecated
+    public static Configuration getGlobalConfiguration() {
+        return ApplicationModel.defaultModel().getModelEnvironment().getConfiguration();
+    }
+
+    @Deprecated
+    public static Configuration getDynamicGlobalConfiguration() {
+        return ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().getDynamicGlobalConfiguration();
+    }
+
+    @Deprecated
+    public static String getCachedDynamicProperty(String key, String defaultValue) {
+        return getCachedDynamicProperty(ApplicationModel.defaultModel(), key, defaultValue);
+    }
+
+    @Deprecated
+    public static String getDynamicProperty(String property) {
+        return getDynamicProperty(ApplicationModel.defaultModel(), property);
+    }
+
+    @Deprecated
+    public static String getDynamicProperty(String property, String defaultValue) {
+        return getDynamicProperty(ApplicationModel.defaultModel(), property, defaultValue);
+    }
+
+    @Deprecated
+    public static String getProperty(String property) {
+        return getProperty(ApplicationModel.defaultModel(), property);
+    }
+
+    @Deprecated
+    public static String getProperty(String property, String defaultValue) {
+        return getProperty(ApplicationModel.defaultModel(), property, defaultValue);
+    }
+
+    @Deprecated
+    public static int get(String property, int defaultValue) {
+        return get(ApplicationModel.defaultModel(), property, defaultValue);
     }
 
 }

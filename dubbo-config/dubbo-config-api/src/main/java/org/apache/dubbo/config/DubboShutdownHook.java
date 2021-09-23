@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,9 +33,7 @@ public class DubboShutdownHook extends Thread {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboShutdownHook.class);
 
-    private static final DubboShutdownHook DUBBO_SHUTDOWN_HOOK = new DubboShutdownHook("DubboShutdownHook");
-
-    private final ShutdownHookCallbacks callbacks = ShutdownHookCallbacks.INSTANCE;
+    private final ApplicationModel applicationModel;
 
     /**
      * Has it already been registered or not?
@@ -47,44 +45,26 @@ public class DubboShutdownHook extends Thread {
      */
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
-    private DubboShutdownHook(String name) {
-        super(name);
-    }
-
-    public static DubboShutdownHook getDubboShutdownHook() {
-        return DUBBO_SHUTDOWN_HOOK;
+    public DubboShutdownHook(ApplicationModel applicationModel) {
+        super("DubboShutdownHook");
+        this.applicationModel = applicationModel;
+        Assert.notNull(this.applicationModel, "ApplicationModel is null");
     }
 
     @Override
     public void run() {
-        String disableShutdownHookValue = (String) ApplicationModel.getEnvironment().getConfiguration()
-            .getProperty(ConfigKeys.DUBBO_LIFECYCLE_DISABLE_SHUTDOWN_HOOK, "false");
-        if (Boolean.parseBoolean(disableShutdownHookValue)) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("Shutdown hook is disabled, please shutdown dubbo services by qos manually");
-            }
-            return;
-        }
 
         if (destroyed.compareAndSet(false, true)) {
             if (logger.isInfoEnabled()) {
                 logger.info("Run shutdown hook now.");
             }
 
-            callback();
             doDestroy();
         }
     }
 
-    /**
-     * For testing purpose
-     */
-    void clear() {
-        callbacks.clear();
-    }
-
-    private void callback() {
-        callbacks.callback();
+    private void doDestroy() {
+        applicationModel.destroy();
     }
 
     /**
@@ -92,8 +72,11 @@ public class DubboShutdownHook extends Thread {
      */
     public void register() {
         if (registered.compareAndSet(false, true)) {
-            DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
-            Runtime.getRuntime().addShutdownHook(dubboShutdownHook);
+            try {
+                Runtime.getRuntime().addShutdownHook(this);
+            } catch (Exception e) {
+                logger.warn("register shutdown hook failed: " + e.getMessage(), e);
+            }
         }
     }
 
@@ -102,17 +85,11 @@ public class DubboShutdownHook extends Thread {
      */
     public void unregister() {
         if (registered.compareAndSet(true, false)) {
-            DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
-            Runtime.getRuntime().removeShutdownHook(dubboShutdownHook);
-        }
-    }
-
-    /**
-     * Destroy all the resources, including registries and protocols.
-     */
-    public void doDestroy() {
-        if (logger.isInfoEnabled()) {
-            logger.info("Dubbo Service has been destroyed.");
+            try {
+                Runtime.getRuntime().removeShutdownHook(this);
+            } catch (Exception e) {
+                logger.warn("unregister shutdown hook failed: " + e.getMessage(), e);
+            }
         }
     }
 

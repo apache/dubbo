@@ -22,7 +22,10 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.RpcContext;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -46,9 +49,18 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 public class LocalCallMultipleReferenceAnnotationsTest {
 
+    private static RegistryCenter registryCenter;
+
     @BeforeAll
     public static void setUp() {
         DubboBootstrap.reset();
+        registryCenter = new ZookeeperSingleRegistryCenter();
+        registryCenter.startup();
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        registryCenter.shutdown();
     }
 
     @Autowired
@@ -87,10 +99,10 @@ public class LocalCallMultipleReferenceAnnotationsTest {
         @DubboReference
         private HelloService helloService;
 
-        @DubboReference(group = "demo")
+        @DubboReference(group = "demo", version = "2.0.0")
         private HelloService demoHelloService;
 
-        @DubboReference(group = "${biz.group}")
+        @DubboReference(group = "${biz.group}", version = "${biz.version}")
         private HelloService helloService3;
 
     }
@@ -101,7 +113,7 @@ public class LocalCallMultipleReferenceAnnotationsTest {
         @DubboReference
         private HelloService helloService;
 
-        @DubboReference(group = "${biz.group}")
+        @DubboReference(group = "${biz.group}", version = "2.0.0")
         private HelloService demoHelloService;
 
     }
@@ -122,7 +134,7 @@ public class LocalCallMultipleReferenceAnnotationsTest {
         }
     }
 
-    @DubboService(group = "demo")
+    @DubboService(group = "demo", version = "2.0.0")
     public static class DemoHelloServiceImpl implements HelloService {
         @Override
         public String sayHello(String name) {

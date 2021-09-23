@@ -18,7 +18,9 @@ package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.extension.SPI;
 
+import java.util.Set;
+
 @SPI
 public interface ProviderFirstParams {
-    String[] params();
+    Set<String> params();
 }

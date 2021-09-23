@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -24,18 +23,21 @@ import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.util.Collection;
 import java.util.List;
 
 public class BaseOnline implements BaseCommand {
     private static final Logger logger = LoggerFactory.getLogger(Online.class);
-    public static RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
-    public static ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
+    public FrameworkServiceRepository serviceRepository;
+
+    public BaseOnline(FrameworkModel frameworkModel) {
+        this.serviceRepository = frameworkModel.getServiceRepository();
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
@@ -56,7 +58,7 @@ public class BaseOnline implements BaseCommand {
     public boolean online(String servicePattern) {
         boolean hasService = false;
 
-        Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
+        Collection<ProviderModel> providerModelList = serviceRepository.allProviderModels();
         for (ProviderModel providerModel : providerModelList) {
             ServiceMetadata metadata = providerModel.getServiceMetadata();
             if (metadata.getServiceKey().matches(servicePattern) || metadata.getDisplayServiceKey().matches(servicePattern)) {
@@ -78,6 +80,8 @@ public class BaseOnline implements BaseCommand {
     }
 
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
+        RegistryFactory registryFactory =
+            statedURL.getRegistryUrl().getOrDefaultApplicationModel().getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
         Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
         registry.register(statedURL.getProviderUrl());
         statedURL.setRegistered(true);

@@ -27,6 +27,8 @@ import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -39,44 +41,20 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 
 public class MetadataUtils {
 
-    private static final Object REMOTE_LOCK = new Object();
-
     public static ConcurrentMap<String, MetadataService> metadataServiceProxies = new ConcurrentHashMap<>();
 
     public static ConcurrentMap<String, Invoker<?>> metadataServiceInvokers = new ConcurrentHashMap<>();
 
-    private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-
-    private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-
-    public static RemoteMetadataServiceImpl remoteMetadataService;
-
-    public static WritableMetadataService localMetadataService;
-
-    public static WritableMetadataService getLocalMetadataService() {
-        if (localMetadataService == null) {
-            localMetadataService = WritableMetadataService.getDefaultExtension();
-        }
-        return localMetadataService;
-    }
-
-    public static RemoteMetadataServiceImpl getRemoteMetadataService() {
-        if (remoteMetadataService == null) {
-            synchronized (REMOTE_LOCK) {
-                if (remoteMetadataService == null) {
-                    remoteMetadataService = new RemoteMetadataServiceImpl(getLocalMetadataService());
-                }
-            }
-        }
-        return remoteMetadataService;
+    public static RemoteMetadataServiceImpl getRemoteMetadataService(ScopeModel scopeModel) {
+        return scopeModel.getBeanFactory().getBean(RemoteMetadataServiceImpl.class);
     }
 
     public static void publishServiceDefinition(URL url) {
         // store in local
-        WritableMetadataService.getDefaultExtension().publishServiceDefinition(url);
+        WritableMetadataService.getDefaultExtension(url.getScopeModel()).publishServiceDefinition(url);
         // send to remote
         if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(url.getParameter(METADATA_KEY))) {
-            getRemoteMetadataService().publishServiceDefinition(url);
+            getRemoteMetadataService(url.getOrDefaultApplicationModel()).publishServiceDefinition(url);
         }
     }
 
@@ -99,14 +77,14 @@ public class MetadataUtils {
     }
 
     private static MetadataService referProxy(String key, ServiceInstance instance) {
-        MetadataServiceURLBuilder builder = null;
-        ExtensionLoader<MetadataServiceURLBuilder> loader
-                = ExtensionLoader.getExtensionLoader(MetadataServiceURLBuilder.class);
+        MetadataServiceURLBuilder builder;
+        ExtensionLoader<MetadataServiceURLBuilder> loader = instance.getOrDefaultApplicationModel()
+            .getExtensionLoader(MetadataServiceURLBuilder.class);
 
         Map<String, String> metadata = instance.getMetadata();
         // METADATA_SERVICE_URLS_PROPERTY_NAME is a unique key exists only on instances of spring-cloud-alibaba.
-        String dubboURLsJSON = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
-        if (metadata.isEmpty() || StringUtils.isEmpty(dubboURLsJSON)) {
+        String dubboUrlsForJson = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
+        if (metadata.isEmpty() || StringUtils.isEmpty(dubboUrlsForJson)) {
             builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
         } else {
             builder = loader.getExtension(SpringCloudMetadataServiceURLBuilder.NAME);
@@ -119,14 +97,20 @@ public class MetadataUtils {
         }
 
         // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
+        ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(instance.getApplicationModel());
+        Protocol protocol = scopeModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, urls.get(0));
         metadataServiceInvokers.put(key, invoker);
 
+        ProxyFactory proxyFactory = scopeModel.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         return proxyFactory.getProxy(invoker);
     }
 
-    public static void saveMetadataURL(URL url) {
-        // store in local
-        getLocalMetadataService().setMetadataServiceURL(url);
+    public static ConcurrentMap<String, MetadataService> getMetadataServiceProxies() {
+        return metadataServiceProxies;
+    }
+
+    public static ConcurrentMap<String, Invoker<?>> getMetadataServiceInvokers() {
+        return metadataServiceInvokers;
     }
 }

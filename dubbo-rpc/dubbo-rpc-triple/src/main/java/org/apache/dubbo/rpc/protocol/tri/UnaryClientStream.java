@@ -17,15 +17,15 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
-
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.Status;
+import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
 import java.util.Map;
@@ -66,8 +66,8 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                     DefaultFuture2.received(getConnection(), response);
                 } catch (Exception e) {
                     final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                            .withCause(e)
-                            .withDescription("Failed to deserialize response");
+                        .withCause(e)
+                        .withDescription("Failed to deserialize response");
                     onError(status);
                 }
             });
@@ -75,20 +75,27 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
         @Override
         protected void onError(GrpcStatus status) {
-            Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-            response.setErrorMessage(status.description);
-            final AppResponse result = new AppResponse();
-            result.setException(getThrowable(this.getTrailers()));
-            result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(this.getTrailers()));
-            response.setResult(result);
-            if (!result.hasException()) {
-                final byte code = GrpcStatus.toDubboStatus(status.code);
-                response.setStatus(code);
-            }
-            DefaultFuture2.received(getConnection(), response);
+            // run in callback executor will truncate exception stack and avoid blocking netty's event loop
+            execute(() -> {
+                Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
+                response.setErrorMessage(status.description);
+                final AppResponse result = new AppResponse();
+                final Metadata trailers = getTrailers() == null ? getHeaders() : getTrailers();
+                result.setException(getThrowable(trailers));
+                result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(trailers));
+                response.setResult(result);
+                if (!result.hasException()) {
+                    final byte code = GrpcStatus.toDubboStatus(status.code);
+                    response.setStatus(code);
+                }
+                DefaultFuture2.received(getConnection(), response);
+            });
         }
 
         private Throwable getThrowable(Metadata metadata) {
+            if (null == metadata) {
+                return null;
+            }
             // second get status detail
             if (!metadata.contains(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
                 return null;
@@ -104,11 +111,11 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                 // get common exception from DebugInfo
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo == null) {
-                    return new TripleRpcException(statusDetail.getCode(),
-                            statusDetail.getMessage(), metadata);
+                    return new RpcException(statusDetail.getCode(),
+                        statusDetail.getMessage());
                 }
                 String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
-                return new TripleRpcException(statusDetail.getCode(), msg, metadata);
+                return new RpcException(statusDetail.getCode(), msg);
             } finally {
                 ClassLoadUtil.switchContextLoader(tccl);
             }

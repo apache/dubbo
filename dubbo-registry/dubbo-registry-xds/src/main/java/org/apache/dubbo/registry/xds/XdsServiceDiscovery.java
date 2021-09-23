@@ -25,6 +25,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -74,7 +75,7 @@ public class XdsServiceDiscovery extends SelfHostMetaServiceDiscovery {
         List<ServiceInstance> instances = new LinkedList<>();
         endpoints.forEach(endpoint -> {
             try {
-                DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, endpoint.getAddress(), endpoint.getPortValue());
+                DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, endpoint.getAddress(), endpoint.getPortValue(), ScopeModelUtil.getApplicationModel(getUrl().getScopeModel()));
                 // fill metadata by SelfHostMetaServiceDiscovery, will be fetched by RPC request
                 fillServiceInstance(serviceInstance);
                 instances.add(serviceInstance);

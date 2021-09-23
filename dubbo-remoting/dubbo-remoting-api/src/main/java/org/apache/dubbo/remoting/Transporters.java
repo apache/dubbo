@@ -18,7 +18,6 @@ package org.apache.dubbo.remoting;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDispatcher;
 
@@ -53,7 +52,7 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
-        return getTransporter().bind(url, handler);
+        return getTransporter(url).bind(url, handler);
     }
 
     public static Client connect(String url, ChannelHandler... handler) throws RemotingException {
@@ -72,11 +71,11 @@ public class Transporters {
         } else {
             handler = new ChannelHandlerDispatcher(handlers);
         }
-        return getTransporter().connect(url, handler);
+        return getTransporter(url).connect(url, handler);
     }
 
-    public static Transporter getTransporter() {
-        return ExtensionLoader.getExtensionLoader(Transporter.class).getAdaptiveExtension();
+    public static Transporter getTransporter(URL url) {
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Transporter.class).getAdaptiveExtension();
     }
 
 }

@@ -23,7 +23,7 @@ import org.apache.dubbo.config.ServiceConfig;
  * SPRING: will be controlled by spring context
  * MANUAL: will be controlled by users, after all services init, should call {@link DubboBootstrap#start()} to init app-level env
  * AUTO: env will be init once {@link ServiceConfig#export()} finished
- * SERVLET: will be controlled by tomcat
+ * SERVLET: will be controlled by java servlet container
  */
 public enum BootstrapTakeoverMode {
     SPRING, MANUAL, AUTO, SERVLET

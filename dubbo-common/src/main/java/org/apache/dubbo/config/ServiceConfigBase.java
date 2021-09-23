@@ -21,7 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -105,6 +105,14 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return protocols;
     }
 
+    @Override
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
+        if (this.provider != null && this.provider.getScopeModel() != scopeModel) {
+            this.provider.setScopeModel(scopeModel);
+        }
+    }
+
     @Deprecated
     private static List<ProviderConfig> convertProtocolToProvider(List<ProtocolConfig> protocols) {
         if (CollectionUtils.isEmpty(protocols)) {
@@ -177,9 +185,13 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
         if (!interfaceClass.isInstance(ref)) {
             throw new IllegalStateException("The class "
-                    + ref.getClass().getName() + " unimplemented interface "
-                    + interfaceClass + "!");
+                + ref.getClass().getName() + getClassloaderDesc(ref.getClass()) + " unimplemented interface "
+                + interfaceClass + getClassloaderDesc(ref.getClass()) + "!");
         }
+    }
+
+    private String getClassloaderDesc(Class clazz) {
+        return "[classloader=" + clazz.getClassLoader().getClass().getName() + "@" + clazz.getClassLoader().hashCode() + "]";
     }
 
     public Optional<String> getContextPath(ProtocolConfig protocolConfig) {
@@ -199,7 +211,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         super.preProcessRefresh();
         convertProviderIdToProvider();
         if (provider == null) {
-            provider = ApplicationModel.getConfigManager()
+            provider = getModuleConfigManager()
                     .getDefaultProvider()
                     .orElseThrow(() -> new IllegalArgumentException("Default provider is not initialized"));
         }
@@ -247,7 +259,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     protected void convertProviderIdToProvider() {
         if (provider == null && StringUtils.hasText(providerIds)) {
-            provider = ApplicationModel.getConfigManager().getProvider(providerIds)
+            provider = getModuleConfigManager().getProvider(providerIds)
                     .orElseThrow(() -> new IllegalStateException("Provider config not found: " + providerIds));
         }
     }
@@ -255,7 +267,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     protected void convertProtocolIdsToProtocols() {
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-                List<ProtocolConfig> protocolConfigs = ApplicationModel.getConfigManager().getDefaultProtocols();
+                List<ProtocolConfig> protocolConfigs = getConfigManager().getDefaultProtocols();
                 if (protocolConfigs.isEmpty()) {
                     throw new IllegalStateException("The default protocol has not been initialized.");
                 }
@@ -266,7 +278,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             Set<String> idsSet = new LinkedHashSet<>(Arrays.asList(idsArray));
             List<ProtocolConfig> tmpProtocols = new ArrayList<>();
             for (String id : idsSet) {
-                Optional<ProtocolConfig> globalProtocol = ApplicationModel.getConfigManager().getProtocol(id);
+                Optional<ProtocolConfig> globalProtocol = getConfigManager().getProtocol(id);
                 if (globalProtocol.isPresent()) {
                     tmpProtocols.add(globalProtocol.get());
                 } else {
@@ -312,6 +324,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
         this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
+        if (getInterfaceClassLoader() == null) {
+            setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
+        }
     }
 
     public T getRef() {
@@ -336,7 +351,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public void setProvider(ProviderConfig provider) {
-        ApplicationModel.getConfigManager().addProvider(provider);
+        getModuleConfigManager().addProvider(provider);
         this.provider = provider;
     }
 
@@ -436,7 +451,15 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return shouldExportAsync;
     }
 
+    /**
+     * export service and auto start application instance
+     */
     public abstract void export();
+
+    /**
+     * export service only, do not register application instance, for exporting services in batches by module
+     */
+    public abstract void exportOnly();
 
     public abstract void unexport();
 
