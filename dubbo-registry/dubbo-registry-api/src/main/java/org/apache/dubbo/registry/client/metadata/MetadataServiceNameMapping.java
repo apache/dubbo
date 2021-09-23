@@ -36,7 +36,6 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
 
@@ -45,10 +44,15 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     private static final List<String> IGNORED_SERVICE_INTERFACES = Collections.singletonList(MetadataService.class.getName());
 
     private static final int CAS_RETRY_TIMES = 6;
+    protected MetadataReportInstance metadataReportInstance;
+
+    public MetadataServiceNameMapping(ApplicationModel applicationModel) {
+        metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
+    }
 
     @Override
     public boolean map(URL url) {
-        if (CollectionUtils.isEmpty(ApplicationModel.getConfigManager().getMetadataConfigs())) {
+        if (CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
             return false;
         }
         String serviceInterface = url.getServiceInterface();
@@ -56,29 +60,31 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
             return false;
         }
         String registryCluster = getRegistryCluster(url);
-        MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
+        MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
 
-        if (metadataReport.registerServiceAppMapping(serviceInterface, getName(), url)) {
+        String appName = applicationModel.getApplicationName();
+        if (metadataReport.registerServiceAppMapping(serviceInterface, appName, url)) {
             // MetadataReport support directly register service-app mapping
             return true;
         }
 
         int currentRetryTimes = 1;
         boolean succeeded = false;
-        String newConfigContent = getName();
+        String newConfigContent = appName;
         do {
             ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
             String oldConfigContent = configItem.getContent();
             if (StringUtils.isNotEmpty(oldConfigContent)) {
-                boolean contains = StringUtils.isContains(oldConfigContent, getName());
+                boolean contains = StringUtils.isContains(oldConfigContent, appName);
                 if (contains) {
+                    // From the user's perspective, it means successful when the oldConfigContent has contained the current appName. So we should not throw an Exception to user, it will confuse the user.
+                    succeeded = true;
                     break;
                 }
-                newConfigContent = oldConfigContent + COMMA_SEPARATOR + getName();
+                newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;
             }
             succeeded = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
         } while (!succeeded && currentRetryTimes++ <= CAS_RETRY_TIMES);
-
         if (!succeeded) {
             throw new RuntimeException();
         }
@@ -90,7 +96,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     public Set<String> get(URL url) {
         String serviceInterface = url.getServiceInterface();
         String registryCluster = getRegistryCluster(url);
-        MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
+        MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
         return metadataReport.getServiceAppMapping(serviceInterface, url);
     }
 
@@ -98,7 +104,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
         String registryCluster = getRegistryCluster(url);
-        MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
+        MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
         return metadataReport.getServiceAppMapping(serviceInterface, mappingListener, url);
     }
 

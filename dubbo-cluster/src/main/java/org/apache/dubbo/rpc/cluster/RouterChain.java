@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -71,8 +70,7 @@ public class RouterChain<T> {
 
     private List<StateRouter> builtinStateRouters = Collections.emptyList();
     private List<StateRouter> stateRouters = Collections.emptyList();
-    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-        .getDefaultExtension();
+    private final ExecutorRepository executorRepository;
 
     protected URL url;
 
@@ -90,18 +88,21 @@ public class RouterChain<T> {
     }
 
     private RouterChain(URL url) {
+        executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension();
         loopPool = executorRepository.nextExecutorExecutor();
-        List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class)
+        List<RouterFactory> extensionFactories = url.getOrDefaultApplicationModel().getExtensionLoader(RouterFactory.class)
             .getActivateExtension(url, ROUTER_KEY);
 
         List<Router> routers = extensionFactories.stream()
             .map(factory -> factory.getRouter(url))
+            .sorted(Router::compareTo)
             .collect(Collectors.toList());
 
         initWithRouters(routers);
 
-        List<StateRouterFactory> extensionStateRouterFactories = ExtensionLoader.getExtensionLoader(
-            StateRouterFactory.class)
+        List<StateRouterFactory> extensionStateRouterFactories = url.getOrDefaultApplicationModel()
+            .getExtensionLoader(StateRouterFactory.class)
             .getActivateExtension(url, STATE_ROUTER_KEY);
 
         List<StateRouter> stateRouters = extensionStateRouterFactories.stream()
@@ -120,7 +121,6 @@ public class RouterChain<T> {
     public void initWithRouters(List<Router> builtinRouters) {
         this.builtinRouters = builtinRouters;
         this.routers = new ArrayList<>(builtinRouters);
-        this.sort();
     }
 
     private void initWithStateRouters(List<StateRouter> builtinRouters) {
@@ -158,10 +158,6 @@ public class RouterChain<T> {
 
     public List<StateRouter> getStateRouters() {
         return stateRouters;
-    }
-
-    private void sort() {
-        Collections.sort(routers);
     }
 
     /**
@@ -213,10 +209,10 @@ public class RouterChain<T> {
 
     /**
      * Build the asynchronous address cache for stateRouter.
-     * @param notify Whether the addresses in registry has changed.
+     * @param notify Whether the addresses in registry have changed.
      */
     private void buildCache(boolean notify) {
-        if (invokers == null || invokers.size() <= 0) {
+        if (CollectionUtils.isEmpty(invokers)) {
             return;
         }
         AddrCache<T> origin = cache.get();
@@ -272,8 +268,7 @@ public class RouterChain<T> {
      * @param notify Whether the addresses in registry has changed.
      */
     public void loop(boolean notify) {
-        if (firstBuildCache.get()) {
-            firstBuildCache.compareAndSet(true,false);
+        if (firstBuildCache.compareAndSet(true,false)) {
             buildCache(notify);
         }
         if (notify) {

@@ -60,7 +60,7 @@ abstract class AbstractRegistryCenter implements RegistryCenter {
     /**
      * The default value is -1.
      */
-    private static final int DEFAULT_MAX_CLIENT_CNXNS = -1;
+    private static final int DEFAULT_MAX_CLIENT_CNXNS = 200;
 
     /**
      * The minimum session timeout.

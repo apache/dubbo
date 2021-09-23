@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
@@ -31,7 +32,7 @@ public class EnvironmentTest {
 
     @Test
     public void testResolvePlaceholders1() {
-        Environment environment = ApplicationModel.getEnvironment();
+        Environment environment = ApplicationModel.defaultModel().getModelEnvironment();
 
         Map<String, String> externalMap = new LinkedHashMap<>();
         externalMap.put("zookeeper.address", "127.0.0.1");

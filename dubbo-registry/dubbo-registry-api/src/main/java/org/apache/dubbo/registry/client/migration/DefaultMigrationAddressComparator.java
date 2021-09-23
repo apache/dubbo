@@ -64,11 +64,11 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         migrationData.put(NEW_ADDRESS_SIZE, newAddressSize);
 
         String rawThreshold = null;
-        Float configedThreshold = rule == null ? null : rule.getThreshold(oldInvoker.getUrl());
-        if (configedThreshold != null && configedThreshold >= 0) {
-            rawThreshold = String.valueOf(configedThreshold);
+        Float configuredThreshold = rule == null ? null : rule.getThreshold(oldInvoker.getUrl());
+        if (configuredThreshold != null && configuredThreshold >= 0) {
+            rawThreshold = String.valueOf(configuredThreshold);
         }
-        rawThreshold = StringUtils.isNotEmpty(rawThreshold) ? rawThreshold : ConfigurationUtils.getCachedDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
+        rawThreshold = StringUtils.isNotEmpty(rawThreshold) ? rawThreshold : ConfigurationUtils.getCachedDynamicProperty(newInvoker.getUrl().getScopeModel(), MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
         float threshold;
         try {
             threshold = Float.parseFloat(rawThreshold);

@@ -70,7 +70,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
                     if (GrpcStatus.Code.isOk(status.code.code)) {
                         getStreamSubscriber().onCompleted();
                     } else {
-                        getStreamSubscriber().onError(status.asException(getTrailers()));
+                        getStreamSubscriber().onError(status.asException());
                     }
                 });
             }

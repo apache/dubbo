@@ -28,7 +28,7 @@ import java.util.Map;
 public class ArrayTypeBuilder implements TypeBuilder {
 
     @Override
-    public boolean accept(Type type, Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }
@@ -44,7 +44,7 @@ public class ArrayTypeBuilder implements TypeBuilder {
         }
         td = new TypeDefinition(canonicalName);
         typeCache.put(canonicalName, td);
-        // Process the component type of an array.
+        // Process the component type of array.
         Class<?> componentType = clazz.getComponentType();
         TypeDefinition itemTd = TypeDefinitionBuilder.build(componentType, componentType, typeCache);
         if (itemTd != null) {

@@ -17,13 +17,14 @@
 package org.apache.dubbo.rpc.protocol.grpc.interceptors;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 import io.grpc.CallOptions;
 import io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.NettyServerBuilder;
 
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface GrpcConfigurator {
 
     default NettyServerBuilder configureServerBuilder(NettyServerBuilder builder, URL url) {

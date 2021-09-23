@@ -16,23 +16,24 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,13 +54,13 @@ public class ProtocolPortsMetadataCustomizerTest {
     private InMemoryWritableMetadataService metadataService;
 
     public static DefaultServiceInstance createInstance() {
-        return new DefaultServiceInstance("A", "127.0.0.1", 20880);
+        return new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
     }
 
     @BeforeAll
     public static void setUp() {
         ApplicationConfig applicationConfig = new ApplicationConfig("test");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
     }
 
     @AfterAll
@@ -72,21 +73,26 @@ public class ProtocolPortsMetadataCustomizerTest {
         instance = createInstance();
         metadataService = mock(InMemoryWritableMetadataService.class);
 
-        URL duboURL = URL.valueOf("dubbo://30.10.104.63:20880/org.apache.dubbo.demo.GreetingService?" +
+        URL dubboUrl = URL.valueOf("dubbo://30.10.104.63:20880/org.apache.dubbo.demo.GreetingService?" +
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
         URL triURL = URL.valueOf("tri://30.10.104.63:50332/org.apache.dubbo.demo.GreetingService?" +
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
         Set<URL> urls = new HashSet<>();
-        urls.add(duboURL);
+        urls.add(dubboUrl);
         urls.add(triURL);
         when(metadataService.getExportedServiceURLs()).thenReturn(urls);
+    }
+
+    @AfterEach
+    public void tearDown() throws IOException {
+        Mockito.framework().clearInlineMocks();
     }
 
     @Test
     public void test() {
         ProtocolPortsMetadataCustomizer customizer = new ProtocolPortsMetadataCustomizer();
         try (MockedStatic<WritableMetadataService> mockMetadataService = Mockito.mockStatic(WritableMetadataService.class)) {
-            mockMetadataService.when(() -> WritableMetadataService.getDefaultExtension()).thenReturn(metadataService);
+            mockMetadataService.when(() -> WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel())).thenReturn(metadataService);
             customizer.customize(instance);
             String endpoints = instance.getMetadata().get(ENDPOINTS);
             assertNotNull(endpoints);

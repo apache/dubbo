@@ -33,4 +33,10 @@ public interface Constants {
     String CYCLE_REPORT_KEY = "cycle.report";
 
     Boolean DEFAULT_METADATA_REPORT_CYCLE_REPORT = true;
+
+    String USER_HOME = "user.home";
+
+    String CACHE = ".cache";
+
+    String DUBBO_METADATA = "/.dubbo/dubbo-metadata-";
 }

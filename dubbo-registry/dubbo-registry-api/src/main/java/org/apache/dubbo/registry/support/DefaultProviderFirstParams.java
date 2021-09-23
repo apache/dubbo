@@ -18,6 +18,11 @@ package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.registry.ProviderFirstParams;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
@@ -25,10 +30,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 
 public class DefaultProviderFirstParams implements ProviderFirstParams {
+    private final static Set<String> PARAMS = Collections.unmodifiableSet(new HashSet<String>() {{
+        addAll(Arrays.asList(RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY));
+    }});
 
     @Override
-    public String[] params() {
-        return new String[]{RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY};
+    public Set<String> params() {
+        return PARAMS;
     }
 
 }

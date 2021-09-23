@@ -52,7 +52,7 @@
 //        when(providerUrl.toFullString()).thenReturn("dubbo://localhost:8888/org.apache.dubbo.BarService");
 //        when(providerInvoker.getUrl()).thenReturn(providerUrl);
 //        ApplicationModel.registerProviderInvoker(providerInvoker, registryUrl, providerUrl);
-//        for (ProviderInvokerWrapper wrapper : ApplicationModel.getProviderInvokers("org.apache.dubbo.BarService")) {
+//        for (ProviderInvokerWrapper wrapper : ApplicationModel.defaultModel().getProviderInvokers("org.apache.dubbo.BarService")) {
 //            wrapper.setReg(true);
 //        }
 //

@@ -44,7 +44,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
     private final AtomicInteger disconnectCount = new AtomicInteger(0);
-    private final Integer maxDisconnectCount = 50;
+    private final Integer warningPeriod = 50;
     private ExchangeClient client;
 
     public ReferenceCountExchangeClient(ExchangeClient client) {
@@ -158,7 +158,22 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     @Override
     public void close(int timeout) {
-        if (referenceCount.decrementAndGet() <= 0) {
+        closeInternal(timeout, false);
+    }
+
+    @Override
+    public void closeAll(int timeout) {
+        closeInternal(timeout, true);
+    }
+
+    /**
+     * when destroy unused invoker, closeAll should be true
+     * 
+     * @param timeout
+     * @param closeAll  
+     */
+    private void closeInternal(int timeout, boolean closeAll) {
+        if (closeAll || referenceCount.decrementAndGet() <= 0) {
             if (timeout == 0) {
                 client.close();
 
@@ -182,13 +197,8 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
      * @return
      */
     private void replaceWithLazyClient() {
-        // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
-        URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
-                //.addParameter(RECONNECT_KEY, Boolean.FALSE)
-                .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
-        //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
-
-        if (disconnectCount.getAndIncrement() % maxDisconnectCount == 0) {
+        // start warning at second replaceWithLazyClient()
+        if (disconnectCount.getAndIncrement() % warningPeriod == 1) {
             logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
         }
 
@@ -196,6 +206,11 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
          * the order of judgment in the if statement cannot be changed.
          */
         if (!(client instanceof LazyConnectExchangeClient) || client.isClosed()) {
+            // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
+            URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
+                    //.addParameter(RECONNECT_KEY, Boolean.FALSE)
+                    .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
+            //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
             client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
         }
     }

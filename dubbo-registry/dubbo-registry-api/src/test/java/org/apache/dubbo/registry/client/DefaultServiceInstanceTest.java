@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +42,7 @@ public class DefaultServiceInstanceTest {
     public DefaultServiceInstance instance;
 
     public static DefaultServiceInstance createInstance() {
-        DefaultServiceInstance instance = new DefaultServiceInstance("A", "127.0.0.1", 20880);
+        DefaultServiceInstance instance = new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
         Map<String, String> metadata = instance.getMetadata();
         metadata.put(METADATA_STORAGE_TYPE_PROPERTY_NAME, "remote");
         metadata.put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, "111");
@@ -50,7 +52,6 @@ public class DefaultServiceInstanceTest {
         protocolPorts.put("rest", 8080);
         protocolPorts.put("dubbo", 20880);
         setEndpoints(instance, protocolPorts);
-
         return instance;
     }
 
@@ -93,7 +94,7 @@ public class DefaultServiceInstanceTest {
         assertEquals("value", allParams2.get("key"));
 
         // test equals
-        DefaultServiceInstance instance2 = new DefaultServiceInstance("A", "127.0.0.1", 20880);
+        DefaultServiceInstance instance2 = new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
         instance2.setMetadata(new HashMap<>(instance.getMetadata()));
         instance2.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, "222");
         // assert instances with different revision and extend params are equal

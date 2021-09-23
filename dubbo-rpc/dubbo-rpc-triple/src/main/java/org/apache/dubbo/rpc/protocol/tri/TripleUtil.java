@@ -43,11 +43,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -57,6 +60,27 @@ public class TripleUtil {
             "tri_server_stream");
     public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
             "tri_client_stream");
+
+    // Some exceptions are not very useful and add too much noise to the log
+    private static final Set<String> QUIET_EXCEPTIONS = new HashSet<>();
+    private static final Set<Class<?>> QUIET_EXCEPTIONS_CLASS = new HashSet<>();
+
+    static {
+        QUIET_EXCEPTIONS.add("NativeIoException");
+        QUIET_EXCEPTIONS_CLASS.add(IOException.class);
+        QUIET_EXCEPTIONS_CLASS.add(SocketException.class);
+    }
+
+    public static boolean isQuiteException(Throwable t) {
+        if (QUIET_EXCEPTIONS_CLASS.contains(t.getClass())) {
+            return true;
+        }
+        if (QUIET_EXCEPTIONS.contains(t.getClass().getSimpleName())) {
+            return true;
+        }
+        return false;
+    }
+
 
     public static final String LANGUAGE = "java";
 
@@ -317,14 +341,14 @@ public class TripleUtil {
     }
 
     public static String convertHessianToWrapper(String serializeType) {
-        if (serializeType.equals("hessian2")) {
+        if ("hessian2".equals(serializeType)) {
             return "hessian4";
         }
         return serializeType;
     }
 
     public static String convertHessianFromWrapper(String serializeType) {
-        if (serializeType.equals("hessian4")) {
+        if ("hessian4".equals(serializeType)) {
             return "hessian2";
         }
         return serializeType;
