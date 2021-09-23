@@ -126,10 +126,20 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
             }
             return null;
         }
-        this.connectingPromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
+        createConnectingPromise();
         final ChannelFuture promise = bootstrap.connect();
         promise.addListener(this.connectionListener);
         return promise;
+    }
+
+    private void createConnectingPromise() {
+        if (this.connectingPromise == null) {
+            synchronized (this) {
+                if (this.connectingPromise == null) {
+                    this.connectingPromise = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
+                }
+            }
+        }
     }
 
     public Channel getChannel() {
@@ -151,9 +161,18 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     }
 
     public void onConnected(Channel channel) {
+        if (isClosed()) {
+            channel.close();
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("%s is closed, ignoring connected event", this));
+            }
+            return;
+        }
         this.channel.set(channel);
         // This indicates that the connection is available.
-        this.connectingPromise.setSuccess(CONNECTED_OBJECT);
+        if (this.connectingPromise != null) {
+            this.connectingPromise.setSuccess(CONNECTED_OBJECT);
+        }
         channel.attr(CONNECTION).set(this);
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("%s connected ", this));
@@ -173,7 +192,14 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 connect();
             }
         }
+
+        this.createConnectingPromise();
         this.connectingPromise.awaitUninterruptibly(this.connectTimeout, TimeUnit.MILLISECONDS);
+        // destroy connectingPromise after used
+        synchronized (this) {
+            this.connectingPromise = null;
+        }
+
         channel = getChannel();
         return channel != null && channel.isActive();
     }
@@ -197,21 +223,21 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
     @Override
     protected void deallocate() {
-        if (closed.compareAndSet(false, true)) {
-            close();
-        }
+        close();
         closePromise.setSuccess(null);
     }
 
     public void close() {
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Connection:%s freed ", this));
+        if (closed.compareAndSet(false, true)) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Connection:%s freed ", this));
+            }
+            final Channel current = this.channel.get();
+            if (current != null) {
+                current.close();
+            }
+            this.channel.set(null);
         }
-        final Channel current = this.channel.get();
-        if (current != null) {
-            current.close();
-        }
-        this.channel.set(null);
     }
 
     @Override
