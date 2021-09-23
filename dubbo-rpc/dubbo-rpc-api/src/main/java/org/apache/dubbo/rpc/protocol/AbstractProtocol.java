@@ -55,7 +55,6 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
      * <host:port, ProtocolServer>
      */
     protected final Map<String, ProtocolServer> serverMap = new ConcurrentHashMap<>();
-    protected final Map<ProtocolServer, Map<String, Object>> serverProperties = new ConcurrentHashMap<>();
 
     // TODO SoftReference
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<>();
@@ -81,28 +80,14 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
         return Collections.unmodifiableList(new ArrayList<>(serverMap.values()));
     }
 
-    protected Map<String, Object> getServerProperties(ProtocolServer server) {
-        return serverProperties.computeIfAbsent(server, key -> new ConcurrentHashMap());
-    }
-
-
     protected void loadServerProperties(ProtocolServer server) {
         // read and hold config before destroy
         int serverShutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(server.getUrl().getScopeModel());
-        getServerProperties(server).put(SHUTDOWN_WAIT_KEY, serverShutdownTimeout);
+        server.getAttributes().put(SHUTDOWN_WAIT_KEY, serverShutdownTimeout);
     }
 
     protected int getServerShutdownTimeout(ProtocolServer server) {
-        Map<String, Object> serverProperties = getServerProperties(server);
-        return getServerShutdownTimeout(serverProperties);
-    }
-
-    protected int getServerShutdownTimeout(Map<String, Object> props) {
-        if (props == null) {
-            return DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-        }
-        Integer v = (Integer) props.get(SHUTDOWN_WAIT_KEY);
-        return v != null ? v : DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
+        return (int) server.getAttributes().getOrDefault(SHUTDOWN_WAIT_KEY, DEFAULT_SERVER_SHUTDOWN_TIMEOUT);
     }
 
     @Override

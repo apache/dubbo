@@ -52,7 +52,6 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +63,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.remoting.Constants.CHANNEL_READONLYEVENT_SENT_KEY;
@@ -103,7 +101,6 @@ public class DubboProtocol extends AbstractProtocol {
      * {@link Map<String, List<ReferenceCountExchangeClient>}
      */
     private final Map<String, Object> referenceClientMap = new ConcurrentHashMap<>();
-    private final Map<String, Map<String, Object>> referenceClientProps = new ConcurrentHashMap<>();
     private static final Object PENDING_OBJECT = new Object();
     private final Set<String> optimizers = new ConcurrentHashSet<>();
 
@@ -327,9 +324,7 @@ public class DubboProtocol extends AbstractProtocol {
                 synchronized (this) {
                     server = serverMap.get(key);
                     if (server == null) {
-                        server = createServer(url);
-                        serverMap.put(key, server);
-                        loadServerProperties(server);
+                        serverMap.put(key, createServer(url));
                     }else {
                         server.reset(url);
                     }
@@ -370,7 +365,9 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
-        return new DubboProtocolServer(server);
+        DubboProtocolServer protocolServer = new DubboProtocolServer(server);
+        loadServerProperties(protocolServer);
+        return protocolServer;
     }
 
     private void optimizeSerialization(URL url) throws RpcException {
@@ -527,17 +524,12 @@ public class DubboProtocol extends AbstractProtocol {
                     referenceClientMap.remove(key);
                 } else {
                     referenceClientMap.put(key, typedClients);
-                    getReferenceClientProps(key).put(SHUTDOWN_WAIT_KEY, ConfigurationUtils.getServerShutdownTimeout(url.getScopeModel()));
                 }
                 referenceClientMap.notifyAll();
             }
         }
         return typedClients;
 
-    }
-
-    private Map<String, Object> getReferenceClientProps(String key) {
-        return referenceClientProps.computeIfAbsent(key, k -> new HashMap<>());
     }
 
     /**
@@ -603,8 +595,11 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private ReferenceCountExchangeClient buildReferenceCountExchangeClient(URL url) {
         ExchangeClient exchangeClient = initClient(url);
-
-        return new ReferenceCountExchangeClient(exchangeClient);
+        ReferenceCountExchangeClient client = new ReferenceCountExchangeClient(exchangeClient);
+        // read configs
+        int shutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(url.getScopeModel());
+        client.setShutdownWaitTime(shutdownTimeout);
+        return client;
     }
 
     /**
@@ -672,9 +667,6 @@ public class DubboProtocol extends AbstractProtocol {
 
         for (String key : new ArrayList<>(referenceClientMap.keySet())) {
             Object clients = referenceClientMap.remove(key);
-            Map<String, Object> props = referenceClientProps.remove(key);
-            int serverShutdownTimeout = getServerShutdownTimeout(props);
-
             if (clients instanceof List) {
                 List<ReferenceCountExchangeClient> typedClients = (List<ReferenceCountExchangeClient>) clients;
 
@@ -683,7 +675,7 @@ public class DubboProtocol extends AbstractProtocol {
                 }
 
                 for (ReferenceCountExchangeClient client : typedClients) {
-                    closeReferenceCountExchangeClient(client, serverShutdownTimeout);
+                    closeReferenceCountExchangeClient(client);
                 }
             }
         }
@@ -693,10 +685,10 @@ public class DubboProtocol extends AbstractProtocol {
 
     /**
      * close ReferenceCountExchangeClient
-     *  @param client
-     * @param timeout
+     *
+     * @param client
      */
-    private void closeReferenceCountExchangeClient(ReferenceCountExchangeClient client, int timeout) {
+    private void closeReferenceCountExchangeClient(ReferenceCountExchangeClient client) {
         if (client == null) {
             return;
         }
@@ -706,7 +698,7 @@ public class DubboProtocol extends AbstractProtocol {
                 logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
             }
 
-            client.close(timeout);
+            client.close(client.getShutdownWaitTime());
 
             // TODO
             /*
