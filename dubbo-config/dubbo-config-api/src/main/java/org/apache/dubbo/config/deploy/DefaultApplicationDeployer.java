@@ -832,7 +832,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     @Override
     public void checkStarted() {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            if (!moduleModel.getDeployer().isStarted()) {
+            if (moduleModel.getDeployer().isPending()) {
+                setPending();
+            } else if (moduleModel.getDeployer().isStarting()) {
                 return;
             }
         }

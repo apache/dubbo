@@ -206,6 +206,9 @@ public class ApplicationModel extends ScopeModel {
         for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
             moduleModel.destroy();
         }
+
+        notifyDestroy();
+
         if (defaultInstance == this) {
             synchronized (ApplicationModel.class) {
                 frameworkModel.removeApplication(this);
@@ -219,8 +222,6 @@ public class ApplicationModel extends ScopeModel {
             deployer.destroy();
             deployer = null;
         }
-
-        notifyDestroy();
 
         if (environment != null) {
             environment.destroy();

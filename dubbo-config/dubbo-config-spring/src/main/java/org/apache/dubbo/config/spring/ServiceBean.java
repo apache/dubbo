@@ -90,6 +90,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         //register service bean
         ModuleModel moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
         moduleModel.getConfigManager().addService(this);
+        moduleModel.getDeployer().setPending();
     }
 
     /**

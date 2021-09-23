@@ -93,6 +93,10 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
         listeners.remove(listener);
     }
 
+    public void setPending() {
+        this.state = PENDING;
+    }
+
     protected void setStarting() {
         this.state = STARTING;
         for (DeployListener<E> listener : listeners) {
