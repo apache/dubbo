@@ -120,7 +120,10 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     /**
      * Weather the service is export asynchronously
+     * @deprecated
+     * @see ModuleConfig#exportAsync
      */
+    @Deprecated
     private Boolean exportAsync;
 
     @Override
@@ -310,11 +313,13 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         this.serialization = serialization;
     }
 
+    @Deprecated
     @Parameter(key = EXPORT_ASYNC_KEY)
     public Boolean getExportAsync() {
         return exportAsync;
     }
 
+    @Deprecated
     public void setExportAsync(Boolean exportAsync) {
         this.exportAsync = exportAsync;
     }

@@ -97,9 +97,6 @@ public class SpringBootMultipleConfigPropsTest {
         ApplicationConfig applicationConfig = configManager.getApplicationOrElseThrow();
         Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
 
-        ModuleConfig moduleConfig = configManager.getModule().get();
-        Assertions.assertEquals("dubbo-demo-module", moduleConfig.getName());
-
         MonitorConfig monitorConfig = configManager.getMonitor().get();
         Assertions.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
 
@@ -130,7 +127,12 @@ public class SpringBootMultipleConfigPropsTest {
         Assertions.assertEquals("zookeeper://127.0.0.1:2182", reportConfig.getAddress());
         Assertions.assertEquals("User", reportConfig.getUsername());
 
+        // module configs
         ModuleConfigManager moduleConfigManager = moduleModel.getConfigManager();
+
+        ModuleConfig moduleConfig = moduleConfigManager.getModule().get();
+        Assertions.assertEquals("dubbo-demo-module", moduleConfig.getName());
+
         ProviderConfig providerConfig = moduleConfigManager.getDefaultProvider().get();
         Assertions.assertEquals("127.0.0.1", providerConfig.getHost());
 

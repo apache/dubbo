@@ -117,7 +117,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (consumer == null) {
             consumer = getModuleConfigManager()
                     .getDefaultConsumer()
-                    .orElseThrow(() -> new IllegalArgumentException("Default consumer is not initialized"));
+                    .orElseThrow(() -> new IllegalStateException("Default consumer is not initialized"));
         }
     }
 

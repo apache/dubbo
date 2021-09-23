@@ -45,5 +45,8 @@ public interface ModuleDeployer extends Deployer<ModuleModel> {
 
     void notifyExportService(ServiceConfigBase<?> sc);
 
-    boolean isAsync();
+    /**
+     * Whether start in background, do not await finish
+     */
+    boolean isBackground();
 }
