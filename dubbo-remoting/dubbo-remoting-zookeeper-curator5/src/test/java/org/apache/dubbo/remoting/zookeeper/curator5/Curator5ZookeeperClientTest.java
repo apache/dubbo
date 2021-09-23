@@ -97,7 +97,7 @@ public class Curator5ZookeeperClientTest {
     @Test
     public void testWithInvalidServer() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            curatorClient = new Curator5ZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service?timeout=500"));
+            curatorClient = new Curator5ZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service?timeout=1000"));
             curatorClient.create("/testPath", true);
         });
     }
