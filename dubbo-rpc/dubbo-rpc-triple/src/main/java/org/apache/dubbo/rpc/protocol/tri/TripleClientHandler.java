@@ -16,14 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2GoAwayFrame;
-import io.netty.handler.codec.http2.Http2SettingsFrame;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.util.AttributeKey;
-import io.netty.util.ReferenceCountUtil;
+
+
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -41,6 +36,15 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.Http2GoAwayFrame;
+import io.netty.handler.codec.http2.Http2SettingsFrame;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.AttributeKey;
+import io.netty.util.ReferenceCountUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -76,6 +80,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     }
 
     private void writeRequest(ChannelHandlerContext ctx, final Request req, final ChannelPromise promise) {
+        DefaultFuture2.addTimeoutListener(req.getId(), ctx::close);
         final RpcInvocation inv = (RpcInvocation) req.getData();
         final URL url = inv.getInvoker().getUrl();
         ConsumerModel consumerModel = inv.getServiceModel() != null ? (ConsumerModel) inv.getServiceModel() : (ConsumerModel) url.getServiceModel();

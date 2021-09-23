@@ -98,6 +98,11 @@ public class ConfigurationUtils {
     }
 
     // FIXME
+
+    /**
+     * Server shutdown wait timeout mills
+     * @return
+     */
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout(ScopeModel scopeModel) {
         int timeout = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;

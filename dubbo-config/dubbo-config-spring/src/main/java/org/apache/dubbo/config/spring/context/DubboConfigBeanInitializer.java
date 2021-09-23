@@ -99,7 +99,6 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         //Make sure all these config beans are inited and registered to ConfigManager
         // load application configs
         loadConfigBeansOfType(ApplicationConfig.class, configManager);
-        loadConfigBeansOfType(ModuleConfig.class, configManager);
         loadConfigBeansOfType(RegistryConfig.class, configManager);
         loadConfigBeansOfType(ProtocolConfig.class, configManager);
         loadConfigBeansOfType(MonitorConfig.class, configManager);
@@ -109,6 +108,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         loadConfigBeansOfType(SslConfig.class, configManager);
 
         // load module configs
+        loadConfigBeansOfType(ModuleConfig.class, moduleModel.getConfigManager());
         loadConfigBeansOfType(ProviderConfig.class, moduleModel.getConfigManager());
         loadConfigBeansOfType(ConsumerConfig.class, moduleModel.getConfigManager());
 

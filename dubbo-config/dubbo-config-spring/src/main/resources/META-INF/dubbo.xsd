@@ -342,7 +342,7 @@
                         <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="export-async" type="xsd:boolean">
+                <xsd:attribute name="export-async" type="xsd:boolean" >
                     <xsd:annotation>
                         <xsd:documentation>
                             <![CDATA[ Weather the service is export asynchronously, default false. ]]></xsd:documentation>
@@ -478,6 +478,31 @@
         <xsd:attribute name="default" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="background" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Whether start module in background, if true do not await finish. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="refer-async" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Weather the reference is refer asynchronously, default false.  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="refer-thread-num" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Thread num for asynchronous refer pool size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="export-async" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Weather the service is export asynchronously, default false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="export-thread-num" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1443,7 +1468,7 @@
                 </xsd:attribute>
                 <xsd:attribute name="export-background" type="xsd:boolean">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Whether export should run in background or not, default false. ]]></xsd:documentation>
+                        <xsd:documentation><![CDATA[ Deprecated. Whether export should run in background or not, default false. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>

@@ -48,12 +48,15 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class ConfigManagerTest {
 
-    private ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
-    private ModuleConfigManager moduleConfigManager = ApplicationModel.defaultModel().getDefaultModule().getConfigManager();
+    private ConfigManager configManager;
+    private ModuleConfigManager moduleConfigManager;
 
     @BeforeEach
     public void init() {
-        configManager.destroy();
+        ApplicationModel.defaultModel().destroy();
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        configManager = applicationModel.getApplicationConfigManager();
+        moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
     }
 
     @Test
@@ -66,7 +69,6 @@ public class ConfigManagerTest {
         // assert single
         assertFalse(configManager.getApplication().isPresent());
         assertFalse(configManager.getMonitor().isPresent());
-        assertFalse(configManager.getModule().isPresent());
         assertFalse(configManager.getMetrics().isPresent());
 
         // protocols
@@ -88,6 +90,7 @@ public class ConfigManagerTest {
         assertTrue(moduleConfigManager.getReferences().isEmpty());
 
         // providers and consumers
+        assertFalse(moduleConfigManager.getModule().isPresent());
         assertFalse(moduleConfigManager.getDefaultProvider().isPresent());
         assertFalse(moduleConfigManager.getDefaultConsumer().isPresent());
         assertTrue(moduleConfigManager.getProviders().isEmpty());
@@ -117,9 +120,9 @@ public class ConfigManagerTest {
     @Test
     public void tesModuleConfig() {
         ModuleConfig config = new ModuleConfig();
-        configManager.setModule(config);
-        assertTrue(configManager.getModule().isPresent());
-        assertEquals(config, configManager.getModule().get());
+        moduleConfigManager.setModule(config);
+        assertTrue(moduleConfigManager.getModule().isPresent());
+        assertEquals(config, moduleConfigManager.getModule().get());
     }
 
     // Test MetricsConfig correlative methods
