@@ -174,6 +174,11 @@ public class ReferenceCountExchangeClientTest {
             Assertions.fail();
         }
 
+        // client has been replaced with lazy client, close status is false because a new lazy client's exchange client is null.
+        Assertions.assertFalse(client.isClosed(), "client status close");
+        // invoker status is available because the default value of associated lazy client's initial state is true.
+        Assertions.assertTrue(helloServiceInvoker.isAvailable(), "invoker status unavailable");
+
         // due to the effect of LazyConnectExchangeClient, the client will be "revived" whenever there is a call.
         Assertions.assertEquals("hello", helloService.hello());
         Assertions.assertEquals(1, LogUtil.findMessage(errorMsg), "should warning message");
@@ -183,9 +188,6 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertEquals(1, LogUtil.findMessage(errorMsg), "should warning message");
 
         DubboAppender.doStop();
-
-        // status switch to available once invoke again
-        Assertions.assertTrue(helloServiceInvoker.isAvailable(), "client status available");
 
         /**
          * This is the third time to close the same client. Under normal circumstances,
@@ -198,10 +200,14 @@ public class ReferenceCountExchangeClientTest {
          */
         client.close();
 
-        // client has been replaced with lazy client. lazy client is fetched from referenceclientmap, and since it's
-        // been invoked once, it's close status is false
+        // close status is false because the lazy client's exchange client is null again after close().
         Assertions.assertFalse(client.isClosed(), "client status close");
-        Assertions.assertFalse(helloServiceInvoker.isAvailable(), "client status close");
+        // invoker status is available because the default value of associated lazy client's initial state is true.
+        Assertions.assertTrue(helloServiceInvoker.isAvailable(), "invoker status unavailable");
+
+        // revive: initial the lazy client's exchange client again.  
+        Assertions.assertEquals("hello", helloService.hello());
+
         destoy();
     }
 
