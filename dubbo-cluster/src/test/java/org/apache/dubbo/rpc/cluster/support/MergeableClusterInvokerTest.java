@@ -29,7 +29,6 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Proxy;
@@ -42,7 +41,10 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
@@ -237,15 +239,31 @@ public class MergeableClusterInvokerTest {
         given(invocation.getObjectAttachments()).willReturn(new HashMap<>());
         given(invocation.getInvoker()).willReturn(firstInvoker);
 
-        given(firstInvoker.getUrl()).willReturn(url.addParameter(GROUP_KEY, "first"));
-        given(firstInvoker.getInterface()).willReturn(MenuService.class);
-        given(firstInvoker.invoke(invocation)).willReturn(new AppResponse());
-        given(firstInvoker.isAvailable()).willReturn(true);
+        firstInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, (proxy, method, args) -> {
+            if ("getUrl".equals(method.getName())) {
+                return url.addParameter(GROUP_KEY, "first");
+            }
+            if ("getInterface".equals(method.getName())) {
+                return MenuService.class;
+            }
+            if ("invoke".equals(method.getName())) {
+                return AsyncRpcResult.newDefaultAsyncResult(firstMenu, invocation);
+            }
+            return null;
+        });
 
-        given(secondInvoker.getUrl()).willReturn(url.addParameter(GROUP_KEY, "second"));
-        given(secondInvoker.getInterface()).willReturn(MenuService.class);
-        given(secondInvoker.invoke(invocation)).willReturn(new AppResponse());
-        given(secondInvoker.isAvailable()).willReturn(true);
+        secondInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, (proxy, method, args) -> {
+            if ("getUrl".equals(method.getName())) {
+                return url.addParameter(GROUP_KEY, "second");
+            }
+            if ("getInterface".equals(method.getName())) {
+                return MenuService.class;
+            }
+            if ("invoke".equals(method.getName())) {
+                return AsyncRpcResult.newDefaultAsyncResult(secondMenu, invocation);
+            }
+            return null;
+        });
 
         given(directory.list(invocation)).willReturn(new ArrayList() {
 
@@ -265,6 +283,7 @@ public class MergeableClusterInvokerTest {
         Assertions.assertNull(result.getValue());
 
     }
+
     @Test
     public void testInvokerToNoInvokerAvailableException() {
         String menu = "first";
@@ -482,48 +501,21 @@ public class MergeableClusterInvokerTest {
         }
     }
 
-    @Disabled
     @Test
-    public void testGetMenuWithApplicationModel() {
-
-        // setup
-        url = url.addParameter(MERGER_KEY, "list");
-
+    public void testDestroy() {
         given(invocation.getMethodName()).willReturn("getMenu");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{});
         given(invocation.getArguments()).willReturn(new Object[]{});
         given(invocation.getObjectAttachments()).willReturn(new HashMap<>());
         given(invocation.getInvoker()).willReturn(firstInvoker);
-        // mock ApplicationModel
-        given(invocation.getModuleModel()).willReturn(moduleModel);
-        given(invocation.getModuleModel().getApplicationModel()).willReturn(ApplicationModel.defaultModel());
 
+        given(firstInvoker.getUrl()).willReturn(url.addParameter(GROUP_KEY, "first"));
+        given(firstInvoker.getInterface()).willReturn(MenuService.class);
+        given(firstInvoker.invoke(invocation)).willReturn(new AppResponse());
 
-        firstInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, (proxy, method, args) -> {
-            if ("getUrl".equals(method.getName())) {
-                return url.addParameter(GROUP_KEY, "first");
-            }
-            if ("getInterface".equals(method.getName())) {
-                return MenuService.class;
-            }
-            if ("invoke".equals(method.getName())) {
-                return AsyncRpcResult.newDefaultAsyncResult(firstMenu, invocation);
-            }
-            return null;
-        });
-
-        secondInvoker = (Invoker) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Invoker.class}, (proxy, method, args) -> {
-            if ("getUrl".equals(method.getName())) {
-                return url.addParameter(GROUP_KEY, "second");
-            }
-            if ("getInterface".equals(method.getName())) {
-                return MenuService.class;
-            }
-            if ("invoke".equals(method.getName())) {
-                return AsyncRpcResult.newDefaultAsyncResult(secondMenu, invocation);
-            }
-            return null;
-        });
+        given(secondInvoker.getUrl()).willReturn(url.addParameter(GROUP_KEY, "second"));
+        given(secondInvoker.getInterface()).willReturn(MenuService.class);
+        given(secondInvoker.invoke(invocation)).willReturn(new AppResponse());
 
         given(directory.list(invocation)).willReturn(new ArrayList() {
 
@@ -538,8 +530,9 @@ public class MergeableClusterInvokerTest {
         given(directory.getInterface()).willReturn(MenuService.class);
 
         mergeableClusterInvoker = new MergeableClusterInvoker<MenuService>(directory);
-        // invoke
-        mergeableClusterInvoker.invoke(invocation);
+        mergeableClusterInvoker.destroy();
 
+        assertFalse(firstInvoker.isAvailable());
+        assertFalse(secondInvoker.isAvailable());
     }
 }
