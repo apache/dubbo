@@ -22,6 +22,7 @@ import org.apache.dubbo.config.nested.PrometheusConfig;
 
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -30,7 +31,7 @@ public class MetricsConfigTest {
     @Test
     public void testToUrl() {
         MetricsConfig metrics = new MetricsConfig();
-        metrics.setProtocol("prometheus");
+        metrics.setProtocol(PROTOCOL_PROMETHEUS);
 
         PrometheusConfig prometheus = new PrometheusConfig();
         PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
@@ -48,7 +49,7 @@ public class MetricsConfigTest {
 
         URL url = metrics.toUrl();
 
-        assertThat(url.getProtocol(), equalTo("prometheus"));
+        assertThat(url.getProtocol(), equalTo(PROTOCOL_PROMETHEUS));
         assertThat(url.getAddress(), equalTo("localhost:9090"));
         assertThat(url.getHost(), equalTo("localhost"));
         assertThat(url.getPort(), equalTo(9090));
@@ -60,8 +61,8 @@ public class MetricsConfigTest {
     @Test
     public void testProtocol() {
         MetricsConfig metrics = new MetricsConfig();
-        metrics.setProtocol("prometheus");
-        assertThat(metrics.getProtocol(), equalTo("prometheus"));
+        metrics.setProtocol(PROTOCOL_PROMETHEUS);
+        assertThat(metrics.getProtocol(), equalTo(PROTOCOL_PROMETHEUS));
     }
 
     @Test

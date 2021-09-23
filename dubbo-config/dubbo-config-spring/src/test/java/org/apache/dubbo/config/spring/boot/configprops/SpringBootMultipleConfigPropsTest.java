@@ -46,6 +46,8 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Collection;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
+
 @SpringBootTest(
     properties = {
         "dubbo.applications.application1.name = dubbo-demo-application",
@@ -113,7 +115,7 @@ public class SpringBootMultipleConfigPropsTest {
         Assertions.assertEquals("zookeeper://127.0.0.1:32770", monitorConfig.getAddress());
 
         MetricsConfig metricsConfig = configManager.getMetrics().get();
-        Assertions.assertEquals("prometheus", metricsConfig.getProtocol());
+        Assertions.assertEquals(PROTOCOL_PROMETHEUS, metricsConfig.getProtocol());
         Assertions.assertTrue(metricsConfig.getPrometheus().getPushgateway().getEnabled());
         Assertions.assertEquals("localhost:9091", metricsConfig.getPrometheus().getPushgateway().getBaseUrl());
         Assertions.assertEquals("username", metricsConfig.getPrometheus().getPushgateway().getUsername());

@@ -47,6 +47,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.util.Collection;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -273,7 +274,7 @@ public class DubboNamespaceHandlerTest {
         MetricsConfig metricsBean = ctx.getBean(MetricsConfig.class);
         MetricsConfig metrics = configManager.getMetrics().get();
 
-        assertEquals(metrics.getProtocol(), "prometheus");
+        assertEquals(metrics.getProtocol(), PROTOCOL_PROMETHEUS);
         assertEquals(metrics.getPrometheus().getExporter().getEnabled(), true);
         assertEquals(metrics.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), true);
         assertEquals(metrics.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), "localhost:8080");
@@ -286,7 +287,7 @@ public class DubboNamespaceHandlerTest {
         assertEquals(metrics.getPrometheus().getPushgateway().getPassword(), "password");
         assertEquals(metrics.getPrometheus().getPushgateway().getJob(), "job");
 
-        assertEquals(metricsBean.getProtocol(), "prometheus");
+        assertEquals(metricsBean.getProtocol(), PROTOCOL_PROMETHEUS);
         assertEquals(metricsBean.getPrometheus().getExporter().getEnabled(), true);
         assertEquals(metricsBean.getPrometheus().getExporter().getEnableHttpServiceDiscovery(), true);
         assertEquals(metricsBean.getPrometheus().getExporter().getHttpServiceDiscoveryUrl(), "localhost:8080");
