@@ -207,8 +207,6 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
-        // protocol as id is inappropriate, registries's protocol may be duplicated
-//        this.updateIdIfAbsent(protocol);
     }
 
     @Parameter(excluded = true)

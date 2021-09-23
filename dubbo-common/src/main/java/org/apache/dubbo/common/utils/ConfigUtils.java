@@ -31,10 +31,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -225,23 +226,20 @@ public class ConfigUtils {
             return properties;
         }
 
-        Set<java.net.URL> set = new HashSet<java.net.URL>();
+        Set<java.net.URL> set = null;
         try {
-            Enumeration<java.net.URL> urls = ClassUtils.getClassLoader().getResources(fileName);
-            while (urls.hasMoreElements()) {
-                set.add(urls.nextElement());
-            }
-            for (ClassLoader classLoader : classLoaders) {
-                urls = classLoader.getResources(fileName);
-                while (urls.hasMoreElements()) {
-                    set.add(urls.nextElement());
-                }
-            }
+            List<ClassLoader> classLoadersToLoad = new LinkedList<>();
+            classLoadersToLoad.add(ClassUtils.getClassLoader());
+            classLoadersToLoad.addAll(classLoaders);
+            set = ClassLoaderResourceLoader.loadResources(fileName, classLoadersToLoad).values().stream().reduce(new LinkedHashSet<>(), (a, i) -> {
+                a.addAll(i);
+                return a;
+            });
         } catch (Throwable t) {
             logger.warn("Fail to load " + fileName + " file: " + t.getMessage(), t);
         }
 
-        if (set.isEmpty()) {
+        if (CollectionUtils.isEmpty(set)) {
             if (!optional) {
                 logger.warn("No " + fileName + " found on the class path.");
             }
@@ -302,14 +300,15 @@ public class ConfigUtils {
         }
 
         try {
-            InputStream is = ClassUtils.getClassLoader().getResourceAsStream(fileName);
-            if (is != null) {
-                return readString(is);
-            }
-            for (ClassLoader classLoader : classLoaders) {
-                is = classLoader.getResourceAsStream(fileName);
-                if (is != null) {
-                    return readString(is);
+            List<ClassLoader> classLoadersToLoad = new LinkedList<>();
+            classLoadersToLoad.add(ClassUtils.getClassLoader());
+            classLoadersToLoad.addAll(classLoaders);
+            for (Set<URL> urls : ClassLoaderResourceLoader.loadResources(fileName, classLoadersToLoad).values()) {
+                for (URL url : urls) {
+                    InputStream is = url.openStream();
+                    if (is != null) {
+                        return readString(is);
+                    }
                 }
             }
         } catch (Throwable e) {

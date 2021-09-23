@@ -14,39 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.deploy;
+package com.alibaba.dubbo.container.page;
 
-import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.config.ServiceConfigBase;
-import org.apache.dubbo.rpc.model.ModuleModel;
-
-import java.util.concurrent.CompletableFuture;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Export/refer services of module
+ * Menu
  */
-public interface ModuleDeployer extends Deployer<ModuleModel> {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE})
+public @interface Menu {
 
-    void initialize() throws IllegalStateException;
+    String name();
 
-    CompletableFuture start() throws IllegalStateException;
+    String desc() default "";
 
-    void stop() throws IllegalStateException;
+    int order() default 0;
 
-    void destroy() throws IllegalStateException;
-
-    boolean isInitialized();
-
-    ReferenceCache getReferenceCache();
-
-    void prepare();
-
-    void setPending();
-
-    void notifyExportService(ServiceConfigBase<?> sc);
-
-    /**
-     * Whether start in background, do not await finish
-     */
-    boolean isBackground();
 }

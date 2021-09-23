@@ -401,12 +401,6 @@ public abstract class AbstractConfig implements Serializable {
         this.id = id;
     }
 
-    public void updateIdIfAbsent(String value) {
-        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(id)) {
-            this.id = value;
-        }
-    }
-
     /**
      * Copy attributes from annotation
      *

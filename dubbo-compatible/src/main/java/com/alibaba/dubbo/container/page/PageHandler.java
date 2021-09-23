@@ -14,39 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.deploy;
+package com.alibaba.dubbo.container.page;
 
-import org.apache.dubbo.common.config.ReferenceCache;
-import org.apache.dubbo.config.ServiceConfigBase;
-import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.util.concurrent.CompletableFuture;
+import org.apache.dubbo.common.extension.SPI;
+
+import com.alibaba.dubbo.common.URL;
 
 /**
- * Export/refer services of module
+ * PageHandler
  */
-public interface ModuleDeployer extends Deployer<ModuleModel> {
-
-    void initialize() throws IllegalStateException;
-
-    CompletableFuture start() throws IllegalStateException;
-
-    void stop() throws IllegalStateException;
-
-    void destroy() throws IllegalStateException;
-
-    boolean isInitialized();
-
-    ReferenceCache getReferenceCache();
-
-    void prepare();
-
-    void setPending();
-
-    void notifyExportService(ServiceConfigBase<?> sc);
+@SPI
+public interface PageHandler {
 
     /**
-     * Whether start in background, do not await finish
+     * Handle the page.
+     *
+     * @param url
+     * @return the page.
      */
-    boolean isBackground();
+    Page handle(URL url);
+
 }
