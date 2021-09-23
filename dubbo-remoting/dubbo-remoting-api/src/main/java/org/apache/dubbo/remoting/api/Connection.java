@@ -224,7 +224,6 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     @Override
     protected void deallocate() {
         close();
-        closePromise.setSuccess(null);
     }
 
     public void close() {
@@ -237,6 +236,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 current.close();
             }
             this.channel.set(null);
+            closePromise.setSuccess(null);
         }
     }
 
