@@ -54,13 +54,20 @@ final class NerverDieReferenceCountExchangeClient extends ReferenceCountExchange
         if(exchangeClient != null){
             return exchangeClient;
         }
-        // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
-        URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
-                //.addParameter(RECONNECT_KEY, Boolean.FALSE)
-                .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
-        //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
-        exchangeClient = new LazyConnectExchangeClient(lazyUrl, exchangeHandler);
-        setExchangClient(exchangeClient);
+
+        synchronized(this) {
+            exchangeClient = super.getExchangeClient();
+            if(exchangeClient != null){
+                return exchangeClient;
+            }
+            // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
+            URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
+                    //.addParameter(RECONNECT_KEY, Boolean.FALSE)
+                    .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
+            //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
+            exchangeClient = new LazyConnectExchangeClient(lazyUrl, exchangeHandler);
+            setExchangClient(exchangeClient);
+        }
         return exchangeClient;
     }
 
