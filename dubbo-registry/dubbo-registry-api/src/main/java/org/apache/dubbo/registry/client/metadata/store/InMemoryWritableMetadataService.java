@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
@@ -242,7 +243,10 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
             String interfaceName = url.getServiceInterface();
             if (StringUtils.isNotEmpty(interfaceName)
                 && !ProtocolUtils.isGeneric(url.getParameter(GENERIC_KEY))) {
-                Class interfaceClass = Class.forName(interfaceName);
+                ClassLoader classLoader = url.getServiceModel() != null ?
+                    url.getServiceModel().getClassLoader() :
+                    ClassUtils.getClassLoader();
+                Class interfaceClass = Class.forName(interfaceName, false, classLoader);
                 ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
                 Gson gson = new Gson();
                 String data = gson.toJson(serviceDefinition);
