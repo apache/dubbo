@@ -14,21 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.monitor.support;
+package org.apache.dubbo.common.constants;
 
-import org.apache.dubbo.monitor.MetricsService;
-import org.apache.dubbo.rpc.model.BuiltinServiceDetector;
+public interface MetricsConstants {
 
-/**
- * @deprecated After metrics config is refactored.
- * This class should no longer use and will be deleted in the future.
- */
-@Deprecated
-public class MetricsServiceDetector implements BuiltinServiceDetector {
+    String PROTOCOL_PROMETHEUS = "prometheus";
 
-    @Override
-    public Class<?> getService() {
-        return MetricsService.class;
-    }
+    String AGGREGATION_ENABLE = "aggregation.enable";
 
+    String AGGREGATION_BUCKET_NUM = "aggregation.bucket.num";
+
+    String AGGREGATION_TIME_WINDOW_SECONDS = "aggregation.time.window.seconds";
 }

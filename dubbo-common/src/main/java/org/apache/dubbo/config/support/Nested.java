@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.monitor.support;
+package org.apache.dubbo.config.support;
 
-import org.apache.dubbo.monitor.MetricsService;
-import org.apache.dubbo.rpc.model.BuiltinServiceDetector;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @deprecated After metrics config is refactored.
- * This class should no longer use and will be deleted in the future.
+ * Nested Class Parameter
  */
-@Deprecated
-public class MetricsServiceDetector implements BuiltinServiceDetector {
-
-    @Override
-    public Class<?> getService() {
-        return MetricsService.class;
-    }
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD})
+public @interface Nested {
 
 }

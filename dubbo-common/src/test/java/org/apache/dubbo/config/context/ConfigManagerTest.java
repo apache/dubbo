@@ -34,6 +34,7 @@ import java.util.Collection;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.config.context.ConfigManager.DUBBO_CONFIG_MODE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -127,8 +128,9 @@ public class ConfigManagerTest {
 
     // Test MetricsConfig correlative methods
     @Test
-    public void tesMetricsConfig() {
+    public void testMetricsConfig() {
         MetricsConfig config = new MetricsConfig();
+        config.setProtocol(PROTOCOL_PROMETHEUS);
         configManager.setMetrics(config);
         assertTrue(configManager.getMetrics().isPresent());
         assertEquals(config, configManager.getMetrics().get());

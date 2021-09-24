@@ -92,8 +92,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_K
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PORT;
-import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
@@ -212,10 +210,6 @@ public class ReferenceConfigTest {
         MonitorConfig monitorConfig = new MonitorConfig();
         applicationConfig.setMonitor(monitorConfig);
 
-        MetricsConfig metricsConfig = new MetricsConfig();
-        metricsConfig.setProtocol("metricProtocol");
-        metricsConfig.setPort("55555");
-
         ModuleConfig moduleConfig = new ModuleConfig();
         moduleConfig.setMonitor("default");
         moduleConfig.setName("module1");
@@ -264,7 +258,6 @@ public class ReferenceConfigTest {
         dubboBootstrap.application(applicationConfig)
             .reference(referenceConfig)
             .registry(registry)
-            .metrics(metricsConfig)
             .module(moduleConfig)
             .initialize();
 
@@ -289,10 +282,6 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(Version.getVersion(), serviceMetadata.getAttachments().get(RELEASE_KEY));
         Assertions.assertTrue(serviceMetadata.getAttachments().containsKey(TIMESTAMP_KEY));
         Assertions.assertEquals(String.valueOf(ConfigUtils.getPid()), serviceMetadata.getAttachments().get(PID_KEY));
-
-        // verify additional metric config
-        Assertions.assertEquals(metricsConfig.getProtocol(), serviceMetadata.getAttachments().get(METRICS_PROTOCOL));
-        Assertions.assertEquals(metricsConfig.getPort(), serviceMetadata.getAttachments().get(METRICS_PORT));
 
         // verify additional application config
         Assertions.assertEquals(applicationConfig.getName(), serviceMetadata.getAttachments().get(APPLICATION_KEY));

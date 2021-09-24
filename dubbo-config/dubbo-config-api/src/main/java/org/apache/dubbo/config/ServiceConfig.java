@@ -422,7 +422,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // append params with basic configs,
         ServiceConfig.appendRuntimeParameters(map);
-        AbstractConfig.appendParameters(map, getMetrics());
         AbstractConfig.appendParameters(map, getApplication());
         AbstractConfig.appendParameters(map, getModule());
         // remove 'default.' prefix for configs from ProviderConfig
@@ -430,6 +429,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         AbstractConfig.appendParameters(map, provider);
         AbstractConfig.appendParameters(map, protocolConfig);
         AbstractConfig.appendParameters(map, this);
+        appendMetricsCompatible(map);
+
         MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
         if (metadataReportConfig != null && metadataReportConfig.isValid()) {
             map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
