@@ -17,8 +17,7 @@
 package org.apache.dubbo.common.threadpool.manager;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -26,9 +25,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class ExecutorRepositoryTest {
-    private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+    private ExecutorRepository executorRepository = ApplicationModel.defaultModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     @Test
+    public void test() {
+        testGetExecutor();
+        testUpdateExecutor();
+    }
+
     public void testGetExecutor() {
         testGet(URL.valueOf("dubbo://127.0.0.1:23456"));
         testGet(URL.valueOf("dubbo://127.0.0.1:23456?side=consumer"));
@@ -50,7 +54,6 @@ public class ExecutorRepositoryTest {
         Assertions.assertNotEquals(executorService, executorRepository.getExecutor(url));
     }
 
-    @Test
     public void testUpdateExecutor() {
         URL url = URL.valueOf("dubbo://127.0.0.1:23456?threads=5");
         ThreadPoolExecutor executorService = (ThreadPoolExecutor) executorRepository.createExecutorIfAbsent(url);

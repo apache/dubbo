@@ -325,11 +325,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
         }
 
-        AbstractConfig.appendParameters(map, getMetrics());
         AbstractConfig.appendParameters(map, getApplication());
         AbstractConfig.appendParameters(map, getModule());
         AbstractConfig.appendParameters(map, consumer);
         AbstractConfig.appendParameters(map, this);
+        appendMetricsCompatible(map);
 
         MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
         if (metadataReportConfig != null && metadataReportConfig.isValid()) {
@@ -508,16 +508,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private void checkInvokerAvailable() throws IllegalStateException {
         if (shouldCheck() && !invoker.isAvailable()) {
             invoker.destroy();
-            throw new IllegalStateException("Failed to check the status of the service "
-                + interfaceName
-                + ". No provider available for the service "
-                + (group == null ? "" : group + "/")
-                + interfaceName +
-                (version == null ? "" : ":" + version)
-                + " from the url "
-                + invoker.getUrl()
-                + " to the consumer "
-                + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
+            throw new IllegalStateException("Should has at least one way to know which services this interface belongs to," +
+                " subscription url: " + invoker.getUrl());
         }
     }
 

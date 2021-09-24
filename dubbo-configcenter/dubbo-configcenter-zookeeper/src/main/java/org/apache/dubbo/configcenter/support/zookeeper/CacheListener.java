@@ -94,7 +94,9 @@ public class CacheListener implements DataListener {
     @Override
     public void dataChanged(String path, Object value, EventType eventType) {
         ConfigChangeType changeType;
-        if (value == null) {
+        if (EventType.NodeCreated.equals(eventType)) {
+            changeType = ConfigChangeType.ADDED;
+        } else if (value == null) {
             changeType = ConfigChangeType.DELETED;
         } else {
             changeType = ConfigChangeType.MODIFIED;

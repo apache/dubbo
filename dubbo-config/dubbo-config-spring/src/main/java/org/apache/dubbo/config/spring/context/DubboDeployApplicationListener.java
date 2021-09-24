@@ -18,8 +18,10 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.common.deploy.DeployListenerAdapter;
 import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.spring.context.event.DubboApplicationStateEvent;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -100,13 +102,20 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
     }
 
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
-        CompletableFuture future = moduleModel.getDeployer().start();
-        try {
-            future.get();
-        } catch (InterruptedException e) {
-            logger.warn("Interrupted while waiting for dubbo module start: " + e.getMessage());
-        } catch (Exception e) {
-            logger.warn("An error occurred while waiting for dubbo module start: " + e.getMessage(), e);
+        ModuleDeployer deployer = moduleModel.getDeployer();
+        Assert.notNull(deployer, "Module deployer is null");
+        // start module
+        CompletableFuture future = deployer.start();
+
+        // if the module does not start in background, await finish
+        if (!deployer.isBackground()) {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                logger.warn("Interrupted while waiting for dubbo module start: " + e.getMessage());
+            } catch (Exception e) {
+                logger.warn("An error occurred while waiting for dubbo module start: " + e.getMessage(), e);
+            }
         }
     }
 

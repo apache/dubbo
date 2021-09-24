@@ -34,6 +34,7 @@ import java.util.Collection;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 import static org.apache.dubbo.config.context.ConfigManager.DUBBO_CONFIG_MODE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -48,12 +49,15 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class ConfigManagerTest {
 
-    private ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
-    private ModuleConfigManager moduleConfigManager = ApplicationModel.defaultModel().getDefaultModule().getConfigManager();
+    private ConfigManager configManager;
+    private ModuleConfigManager moduleConfigManager;
 
     @BeforeEach
     public void init() {
-        configManager.destroy();
+        ApplicationModel.defaultModel().destroy();
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        configManager = applicationModel.getApplicationConfigManager();
+        moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
     }
 
     @Test
@@ -66,7 +70,6 @@ public class ConfigManagerTest {
         // assert single
         assertFalse(configManager.getApplication().isPresent());
         assertFalse(configManager.getMonitor().isPresent());
-        assertFalse(configManager.getModule().isPresent());
         assertFalse(configManager.getMetrics().isPresent());
 
         // protocols
@@ -88,6 +91,7 @@ public class ConfigManagerTest {
         assertTrue(moduleConfigManager.getReferences().isEmpty());
 
         // providers and consumers
+        assertFalse(moduleConfigManager.getModule().isPresent());
         assertFalse(moduleConfigManager.getDefaultProvider().isPresent());
         assertFalse(moduleConfigManager.getDefaultConsumer().isPresent());
         assertTrue(moduleConfigManager.getProviders().isEmpty());
@@ -117,15 +121,16 @@ public class ConfigManagerTest {
     @Test
     public void tesModuleConfig() {
         ModuleConfig config = new ModuleConfig();
-        configManager.setModule(config);
-        assertTrue(configManager.getModule().isPresent());
-        assertEquals(config, configManager.getModule().get());
+        moduleConfigManager.setModule(config);
+        assertTrue(moduleConfigManager.getModule().isPresent());
+        assertEquals(config, moduleConfigManager.getModule().get());
     }
 
     // Test MetricsConfig correlative methods
     @Test
-    public void tesMetricsConfig() {
+    public void testMetricsConfig() {
         MetricsConfig config = new MetricsConfig();
+        config.setProtocol(PROTOCOL_PROMETHEUS);
         configManager.setMetrics(config);
         assertTrue(configManager.getMetrics().isPresent());
         assertEquals(config, configManager.getMetrics().get());

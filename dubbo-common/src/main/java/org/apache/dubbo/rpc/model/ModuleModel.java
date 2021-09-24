@@ -82,6 +82,7 @@ public class ModuleModel extends ScopeModel {
 
     @Override
     public void onDestroy() {
+        notifyDestroy();
         applicationModel.removeModule(this);
 
         if (deployer != null) {
@@ -92,8 +93,6 @@ public class ModuleModel extends ScopeModel {
             serviceRepository.destroy();
             serviceRepository = null;
         }
-
-        notifyDestroy();
 
         if (moduleEnvironment != null) {
             moduleEnvironment.destroy();
@@ -138,4 +137,27 @@ public class ModuleModel extends ScopeModel {
         this.deployer = deployer;
     }
 
+    /**
+     * for ut only
+     */
+    @Deprecated
+    public void setModuleEnvironment(ModuleEnvironment moduleEnvironment) {
+        this.moduleEnvironment = moduleEnvironment;
+    }
+
+    /**
+     * for ut only
+     */
+    @Deprecated
+    public void setServiceRepository(ModuleServiceRepository serviceRepository) {
+        this.serviceRepository = serviceRepository;
+    }
+
+    /**
+     * for ut only
+     */
+    @Deprecated
+    public void setModuleConfigManager(ModuleConfigManager moduleConfigManager) {
+        this.moduleConfigManager = moduleConfigManager;
+    }
 }

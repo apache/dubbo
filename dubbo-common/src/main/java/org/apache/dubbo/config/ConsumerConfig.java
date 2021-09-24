@@ -75,7 +75,10 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     private Integer referThreadNum;
 
     /**
-     * Whether refer should run in background or not
+     * Whether refer should run in background or not.
+     *
+     * @deprecated replace with {@link ModuleConfig#setBackground(Boolean)}
+     * @see ModuleConfig#setBackground(Boolean)
      */
     private Boolean referBackground;
 
@@ -155,11 +158,19 @@ public class ConsumerConfig extends AbstractReferenceConfig {
         this.referThreadNum = referThreadNum;
     }
 
+    @Deprecated
     @Parameter(key = REFER_BACKGROUND_KEY, excluded = true)
     public Boolean getReferBackground() {
         return referBackground;
     }
 
+    /**
+     * Whether refer should run in background or not.
+     *
+     * @deprecated replace with {@link ModuleConfig#setBackground(Boolean)}
+     * @see ModuleConfig#setBackground(Boolean)
+     */
+    @Deprecated
     public void setReferBackground(Boolean referBackground) {
         this.referBackground = referBackground;
     }

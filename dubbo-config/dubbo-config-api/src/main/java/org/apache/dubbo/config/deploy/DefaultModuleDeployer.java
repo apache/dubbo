@@ -26,6 +26,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -67,7 +68,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private ApplicationDeployer applicationDeployer;
     private CompletableFuture startFuture;
-    private Boolean async;
+    private Boolean background;
+    private Boolean exportAsync;
+    private Boolean referAsync;
 
 
     public DefaultModuleDeployer(ModuleModel moduleModel) {
@@ -96,6 +99,18 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 return;
             }
             loadConfigs();
+
+            // read ModuleConfig
+            ModuleConfig moduleConfig = moduleModel.getConfigManager().getModule().orElseThrow(() -> new IllegalStateException("Default module config is not initialized"));
+            exportAsync = Boolean.TRUE.equals(moduleConfig.getExportAsync());
+            referAsync = Boolean.TRUE.equals(moduleConfig.getReferAsync());
+
+            // start in background
+            background = moduleConfig.getBackground();
+            if (background == null) {
+                // compatible with old usages
+                background = isExportBackground() || isReferBackground();
+            }
 
             initialized.set(true);
             if (logger.isInfoEnabled()) {
@@ -238,7 +253,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         if (sc.isExported()) {
             return;
         }
-        if (sc.shouldExportAsync()) {
+        if (exportAsync || sc.shouldExportAsync()) {
             ExecutorService executor = executorRepository.getServiceExportExecutor();
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
@@ -282,14 +297,13 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void referServices() {
         configManager.getReferences().forEach(rc -> {
             try {
-                // TODO, compatible with  ReferenceConfig.refer()
                 ReferenceConfig<?> referenceConfig = (ReferenceConfig<?>) rc;
                 if (!referenceConfig.isRefreshed()) {
                     referenceConfig.refresh();
                 }
 
                 if (rc.shouldInit()) {
-                    if (rc.shouldReferAsync()) {
+                    if (referAsync || rc.shouldReferAsync()) {
                         ExecutorService executor = executorRepository.getServiceReferExecutor();
                         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                             try {
@@ -353,11 +367,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     @Override
-    public boolean isAsync() {
-        if (async == null) {
-            async = isExportBackground() || isReferBackground();
-        }
-        return async;
+    public boolean isBackground() {
+        return background;
     }
 
     private boolean isExportBackground() {

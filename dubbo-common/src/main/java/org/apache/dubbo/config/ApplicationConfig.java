@@ -219,7 +219,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setName(String name) {
         this.name = name;
-        //this.updateIdIfAbsent(name);
     }
 
     @Parameter(key = APPLICATION_VERSION_KEY)

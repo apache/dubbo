@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.config.context;
 
-import org.apache.dubbo.common.config.CompositeConfiguration;
+import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
-import org.apache.dubbo.config.ConfigKeys;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Optional.ofNullable;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
 
 /**
@@ -48,29 +48,20 @@ public class ModuleConfigManager extends AbstractConfigManager {
 
     private Map<String, AbstractInterfaceConfig> serviceConfigCache = new ConcurrentHashMap<>();
 
-    private boolean ignoreDuplicatedInterface = false;
-
-    private AtomicBoolean inited = new AtomicBoolean(false);
-
 
     public ModuleConfigManager(ModuleModel moduleModel) {
-        super(moduleModel, Arrays.asList(ServiceConfigBase.class, ReferenceConfigBase.class, ProviderConfig.class, ConsumerConfig.class));
+        super(moduleModel, Arrays.asList(ModuleConfig.class, ServiceConfigBase.class, ReferenceConfigBase.class, ProviderConfig.class, ConsumerConfig.class));
     }
 
-    @Override
-    public void initialize() throws IllegalStateException {
-        super.initialize();
-        if (!inited.compareAndSet(false, true)) {
-            return;
-        }
-        CompositeConfiguration configuration = scopeModel.getModelEnvironment().getConfiguration();
+    // ModuleConfig correlative methods
 
-        String ignoreDuplicatedInterfaceStr = (String) configuration
-            .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_DUPLICATED_INTERFACE);
-        if (ignoreDuplicatedInterfaceStr != null) {
-            this.ignoreDuplicatedInterface = Boolean.parseBoolean(ignoreDuplicatedInterfaceStr);
-        }
-        logger.info("Config settings - ignore duplicated interface: " + ignoreDuplicatedInterface);
+    @DisableInject
+    public void setModule(ModuleConfig module) {
+        addConfig(module);
+    }
+
+    public Optional<ModuleConfig> getModule() {
+        return ofNullable(getSingleConfig(getTagName(ModuleConfig.class)));
     }
 
     // ServiceConfig correlative methods
@@ -167,6 +158,7 @@ public class ModuleConfigManager extends AbstractConfigManager {
 
     public void refreshAll() {
         // refresh all configs here,
+        getModule().ifPresent(ModuleConfig::refresh);
         getProviders().forEach(ProviderConfig::refresh);
         getConsumers().forEach(ConsumerConfig::refresh);
 
@@ -241,7 +233,7 @@ public class ModuleConfigManager extends AbstractConfigManager {
             if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
                 logger.warn(msg);
             }
-            if (!ignoreDuplicatedInterface) {
+            if (!this.ignoreDuplicatedInterface) {
                 throw new IllegalStateException(msg);
             }
         }
@@ -256,9 +248,13 @@ public class ModuleConfigManager extends AbstractConfigManager {
         // load dubbo.consumers.xxx
         loadConfigsOfTypeFromProps(ConsumerConfig.class);
 
+        // load dubbo.modules.xxx
+        loadConfigsOfTypeFromProps(ModuleConfig.class);
+
         // check configs
         checkDefaultAndValidateConfigs(ProviderConfig.class);
         checkDefaultAndValidateConfigs(ConsumerConfig.class);
+        checkDefaultAndValidateConfigs(ModuleConfig.class);
     }
 
 }
