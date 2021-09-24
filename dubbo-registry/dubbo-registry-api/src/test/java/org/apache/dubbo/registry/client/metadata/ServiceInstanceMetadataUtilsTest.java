@@ -33,6 +33,7 @@ import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -71,14 +72,21 @@ public class ServiceInstanceMetadataUtilsTest {
     private DefaultServiceInstance serviceInstance;
 
     @BeforeEach
-    public void setUp() {
+    public void init() {
         serviceInstance = new DefaultServiceInstance("test", "127.0.0.1", 8080, ApplicationModel.defaultModel());
     }
 
-    @AfterAll
-    public static void reset() {
-        ApplicationModel.defaultModel().destroy();
+    @BeforeAll
+    public static void setUp() {
+        ApplicationConfig applicationConfig = new ApplicationConfig("demo");
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
     }
+
+    @AfterAll
+    public static void clearUp() {
+        ApplicationModel.reset();
+    }
+
 
     @Test
     public void testMetadataServiceURLParameters() {
@@ -200,10 +208,7 @@ public class ServiceInstanceMetadataUtilsTest {
 
     private InMemoryServiceDiscovery prepare() throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchFieldException {
 
-        ApplicationConfig applicationConfig = new ApplicationConfig();
-        // Prevent NPE when calling the refreshMetadataAndInstance method (customizeInstance -> ServiceInstanceMetadataCustomizer.customize)
-        applicationConfig.setName("demo");
-        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
+
 
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel());
         // Prevent NPE  when calling the refreshMetadataAndInstance method (customizeInstance -> MetadataServiceURLParamsMetadataCustomizer.customize)
