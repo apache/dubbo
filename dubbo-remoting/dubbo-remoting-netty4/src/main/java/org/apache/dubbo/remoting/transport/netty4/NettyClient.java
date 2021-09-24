@@ -130,9 +130,7 @@ public class NettyClient extends AbstractClient {
 
     private boolean isFilteredAddress(String host) {
         // filter local address
-        if (StringUtils.isEquals(NetUtils.getLocalHost(), host) ||
-            "localhost".equals(host) ||
-            "127.0.0.1".equals(host)) {
+        if (StringUtils.isEquals(NetUtils.getLocalHost(), host) || NetUtils.isLocalHost(host)) {
             return true;
         }
         return false;
