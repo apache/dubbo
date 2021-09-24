@@ -1,2 +1,1 @@
-service-mapping=org.apache.dubbo.config.event.listener.ServiceNameMappingListener
 config-logging=org.apache.dubbo.config.event.listener.LoggingEventListener

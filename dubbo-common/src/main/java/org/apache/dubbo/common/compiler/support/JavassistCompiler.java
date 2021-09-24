@@ -28,6 +28,8 @@ import java.util.regex.Pattern;
  */
 public class JavassistCompiler extends AbstractCompiler {
 
+    public static final String NAME = "javassist";
+
     private static final Pattern IMPORT_PATTERN = Pattern.compile("import\\s+([\\w\\.\\*]+);\n");
 
     private static final Pattern EXTENDS_PATTERN = Pattern.compile("\\s+extends\\s+([\\w\\.]+)[^\\{]*\\{\n");

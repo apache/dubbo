@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_FORCE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 
 /**
  * Determines the zone information of current request.
@@ -35,14 +36,16 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_
 @Activate(value = "cluster:zone-aware")
 public class ZoneAwareClusterInterceptor implements ClusterInterceptor {
 
+    public static final String NAME = "zone-aware";
+
     @Override
     public void before(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
         RpcContext rpcContext = RpcContext.getContext();
         String zone = (String) rpcContext.getAttachment(REGISTRY_ZONE);
         String force = (String) rpcContext.getAttachment(REGISTRY_ZONE_FORCE);
         ExtensionLoader<ZoneDetector> loader = ExtensionLoader.getExtensionLoader(ZoneDetector.class);
-        if (StringUtils.isEmpty(zone) && loader.hasExtension("default")) {
-            ZoneDetector detector = loader.getExtension("default");
+        if (StringUtils.isEmpty(zone) && loader.hasExtension(DEFAULT_KEY)) {
+            ZoneDetector detector = loader.getExtension(DEFAULT_KEY);
             zone = detector.getZoneOfCurrentRequest(invocation);
             force = detector.isZoneForcingEnabled(invocation, zone);
         }

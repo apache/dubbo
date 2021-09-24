@@ -57,6 +57,13 @@ public class SslContexts {
                 sslClientContextBuilder.trustManager(sslConfig.getServerTrustCertCollectionPathStream());
                 sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
             }
+            if (sslConfig.getCiphers() != null) {
+                sslClientContextBuilder.ciphers(sslConfig.getCiphers());
+            }
+            if (sslConfig.getProtocols() != null) {
+                sslClientContextBuilder.protocols(sslConfig.getProtocols());
+            }
+
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or the certificate is invalid.", e);
         }
@@ -86,6 +93,12 @@ public class SslContexts {
                 } else {
                     builder.keyManager(clientCertChainFilePath, clientPrivateKeyFilePath);
                 }
+            }
+            if (sslConfig.getCiphers() != null) {
+                builder.ciphers(sslConfig.getCiphers());
+            }
+            if (sslConfig.getProtocols() != null) {
+                builder.protocols(sslConfig.getProtocols());
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or find invalid certificate.", e);

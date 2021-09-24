@@ -18,6 +18,7 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.utils.service.FooService;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,7 @@ public class ReferenceConfigCacheTest {
     public void setUp() throws Exception {
         MockReferenceConfig.setCounter(0);
         ReferenceConfigCache.CACHE_HOLDER.clear();
+        DubboBootstrap.reset();
     }
 
     @Test

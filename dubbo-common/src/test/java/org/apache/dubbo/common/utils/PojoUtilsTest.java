@@ -199,6 +199,11 @@ public class PojoUtilsTest {
         assertArrayObject(new Float[]{37F, -39F, 123456.7F});
 
         assertArrayObject(new Double[]{37D, -39D, 123456.7D});
+
+        assertObject(new int[][]{{37, -39, 12456}});
+        assertObject(new Integer[][][]{{{37, -39, 12456}}});
+
+        assertArrayObject(new Integer[]{37, -39, 12456});
     }
 
     @Test
@@ -755,6 +760,38 @@ public class PojoUtilsTest {
         assertEquals(setResult, setStr);
     }
 
+    @Test
+    public void testMapToPojo() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("gender", "male");
+        map.put("age", 40);
+
+        List<Map<String, Object>> children = new ArrayList<>();
+        Map<String, Object> child = new HashMap<>();
+        child.put("gender", "male");
+        child.put("age", 15);
+        children.add(child);
+        map.put("children", children);
+
+        Map<String, Object> features = new HashMap<>();
+        features.put("divorce", false);
+        features.put("money", 0);
+        features.put("height", "177cm");
+        map.put("features", features);
+
+        Parent parent = PojoUtils.mapToPojo(map, Parent.class);
+
+        assertEquals(parent.gender, "male");;
+        assertEquals(parent.getAge(), 40);
+        assertEquals(parent.getChildren().size(), 1);
+        assertEquals(parent.getChildren().get(0).gender, "male");
+        assertEquals(parent.getChildren().get(0).age, 15);
+        assertNotNull(parent.getFeatures());
+        assertEquals(parent.getFeatures().get("divorce"), "false");
+        assertEquals(parent.getFeatures().get("money"), "0");
+        assertEquals(parent.getFeatures().get("height"), "177cm");
+    }
+
     public enum Day {
         SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY
     }
@@ -837,7 +874,9 @@ public class PojoUtilsTest {
         String name;
         int age;
         Child child;
+        private List<Child> children;
         private String securityEmail;
+        private Map<String, String> features;
 
         public static Parent getNewParent() {
             return new Parent();
@@ -873,6 +912,22 @@ public class PojoUtilsTest {
 
         public void setChild(Child child) {
             this.child = child;
+        }
+
+        public List<Child> getChildren() {
+            return children;
+        }
+
+        public void setChildren(List<Child> children) {
+            this.children = children;
+        }
+
+        public Map<String, String> getFeatures() {
+            return features;
+        }
+
+        public void setFeatures(Map<String, String> features) {
+            this.features = features;
         }
     }
 

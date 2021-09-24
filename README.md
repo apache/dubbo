@@ -1,22 +1,23 @@
 # Apache Dubbo Project
 
-[![Build Status](https://travis-ci.org/apache/dubbo.svg?branch=master)](https://travis-ci.org/apache/dubbo)
-[![codecov](https://codecov.io/gh/apache/dubbo/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
-![maven](https://img.shields.io/maven-central/v/org.apache.dubbo/dubbo.svg)
-![license](https://img.shields.io/github/license/alibaba/dubbo.svg)
+[![Build Status](https://github.com/apache/dubbo/workflows/Build%20and%20Test/badge.svg?branch=master)](https://github.com/apache/dubbo/actions/workflows/build-and-test.yml?query=branch%3Amaster+)
+[![Build Status](https://api.travis-ci.com/apache/dubbo.svg?branch=master)](https://travis-ci.com/github/apache/dubbo)
+[![Codecov](https://codecov.io/gh/apache/dubbo/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
+![Maven](https://img.shields.io/maven-central/v/org.apache.dubbo/dubbo.svg)
+![License](https://img.shields.io/github/license/alibaba/dubbo.svg)
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo "Average time to resolve an issue")
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/apache/dubbo.svg)](http://isitmaintained.com/project/apache/dubbo "Percentage of issues still open")
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Apache%20Dubbo%20is%20a%20high-performance%2C%20java%20based%2C%20open%20source%20RPC%20framework.&url=http://dubbo.apache.org/&via=ApacheDubbo&hashtags=rpc,java,dubbo,micro-service)
-[![](https://img.shields.io/twitter/follow/ApacheDubbo.svg?label=Follow&style=social&logoWidth=0)](https://twitter.com/intent/follow?screen_name=ApacheDubbo)
+[![Twitter Follow](https://img.shields.io/twitter/follow/ApacheDubbo.svg?label=Follow&style=social&logoWidth=0)](https://twitter.com/intent/follow?screen_name=ApacheDubbo)
 [![Gitter](https://badges.gitter.im/alibaba/dubbo.svg)](https://gitter.im/alibaba/dubbo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Apache Dubbo is a high-performance, Java-based open-source RPC framework. Please visit [official site](http://dubbo.apache.org) for quick start and documentations, as well as the [wiki](https://github.com/apache/dubbo/wiki) for news, FAQ, and release notes.
+Apache Dubbo is a high-performance, Java-based open-source RPC framework. Please visit the [official site](http://dubbo.apache.org) for the quick start guide and documentation, as well as the [wiki](https://github.com/apache/dubbo/wiki) for news, FAQ, and release notes.
 
-We are now collecting Dubbo user info to help us to improve Dubbo further. Kindly support us by supplementing your information on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/dubbo/issues/1012), thanks :)
+We are now collecting Dubbo user info to help us to improve Dubbo further. Kindly support us by providing your usage information on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/dubbo/issues/1012), thanks :)
 
 ## Architecture
 
-![Architecture](http://dubbo.apache.org/img/architecture.png)
+![Architecture](https://dubbo.apache.org/imgs/architecture.png)
 
 ## Features
 
@@ -33,7 +34,7 @@ The following code snippet comes from [Dubbo Samples](https://github.com/apache/
 
 ```bash
 # git clone https://github.com/apache/dubbo-samples.git
-# cd dubbo-samples/java/dubbo-samples-api
+# cd dubbo-samples/dubbo-samples-api
 ```
 
 There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. We recommend referencing the samples in that directory by following the below-mentioned instructions: 
@@ -42,9 +43,9 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-sam
 
 ```xml
 <properties>
-    <dubbo.version>2.7.8</dubbo.version>
+    <dubbo.version>2.7.10</dubbo.version>
 </properties>
-    
+
 <dependencies>
     <dependency>
         <groupId>org.apache.dubbo</groupId>
@@ -167,10 +168,10 @@ The consumer will print out `hi, dubbo` on the screen.
 
 ### Next steps
 
-* [Your first Dubbo application](http://dubbo.apache.org/en-us/blog/dubbo-101.html) - A 101 tutorial to reveal more details, with the same code above.
-* [Dubbo user manual](http://dubbo.apache.org/docs/v2.7/user/preface/background/) - How to use Dubbo and all its features.
-* [Dubbo developer guide](http://dubbo.apache.org/docs/v2.7/dev/build/) - How to involve in Dubbo development.
-* [Dubbo admin manual](http://dubbo.apache.org/docs/v2.7/admin/install/provider-demo/) - How to admin and manage Dubbo services.
+* [Your first Dubbo application](https://dubbo.apache.org/blog/2018/08/07/dubbo-101/) - A 101 tutorial to reveal more details, with the same code above.
+* [Dubbo user manual](https://dubbo.apache.org/docs/v2.7/user/preface/background/) - How to use Dubbo and all its features.
+* [Dubbo developer guide](https://dubbo.apache.org/docs/v2.7/dev/build/) - How to involve in Dubbo development.
+* [Dubbo admin manual](https://dubbo.apache.org/docs/v2.7/admin/install/provider-demo/) - How to admin and manage Dubbo services.
 
 ## Building
 
@@ -182,11 +183,11 @@ If you want to try out the cutting-edge features, you can build with the followi
 
 ## Contact
 
-* Mailing list: 
+* Mailing list:
   * dev list: for dev/user discussion. [subscribe](mailto:dev-subscribe@dubbo.apache.org), [unsubscribe](mailto:dev-unsubscribe@dubbo.apache.org), [archive](https://lists.apache.org/list.html?dev@dubbo.apache.org),  [guide](https://github.com/apache/dubbo/wiki/Mailing-list-subscription-guide)
-  
+
 * Bugs: [Issues](https://github.com/apache/dubbo/issues/new?template=dubbo-issue-report-template.md)
-* Gitter: [Gitter channel](https://gitter.im/alibaba/dubbo) 
+* Gitter: [Gitter channel](https://gitter.im/alibaba/dubbo)
 * Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
 
 ## Contributing
@@ -228,10 +229,10 @@ Please report security vulnerabilities to [us](mailto:security@dubbo.apache.org)
 
 #### Language
 
+* [Go](https://github.com/dubbo/dubbo-go) (recommended)
 * [Node.js](https://github.com/apache/dubbo-js)
 * [Python](https://github.com/dubbo/py-client-for-apache-dubbo)
 * [PHP](https://github.com/apache/dubbo-php-framework)
-* [Go](https://github.com/dubbo/dubbo-go)
 * [Erlang](https://github.com/apache/dubbo-erlang)
 
 ## License

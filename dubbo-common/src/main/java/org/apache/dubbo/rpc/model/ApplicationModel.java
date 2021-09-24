@@ -25,6 +25,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -112,6 +113,15 @@ public class ApplicationModel {
         return application == null ? getName() : application;
     }
 
+    @Deprecated
+    public static String tryGetApplication() {
+        if (application != null) {
+            return application;
+        }
+        Optional<ApplicationConfig> appCfgOptional = getConfigManager().getApplication();
+        return appCfgOptional.isPresent() ? appCfgOptional.get().getName() : null;
+    }
+
     // Currently used by UT.
     @Deprecated
     public static void setApplication(String application) {
@@ -119,6 +129,7 @@ public class ApplicationModel {
     }
 
     // only for unit test
+    @Deprecated
     public static void reset() {
         getServiceRepository().destroy();
         getConfigManager().destroy();

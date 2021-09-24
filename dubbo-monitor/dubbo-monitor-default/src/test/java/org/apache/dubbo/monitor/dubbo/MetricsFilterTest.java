@@ -39,13 +39,14 @@ import com.alibaba.metrics.common.MetricObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PORT;
@@ -77,7 +78,6 @@ public class MetricsFilterTest {
         port = NetUtils.getAvailablePort();
     }
 
-    @BeforeEach
     void setUp() {
         serviceInvoker = mock(Invoker.class);
 
@@ -122,6 +122,46 @@ public class MetricsFilterTest {
     };
 
     @Test
+    public void testAll() {
+        List<Callable<Void>> testcases = new LinkedList<>();
+        testcases.add(() -> {
+            testConsumerSuccess();
+            return null;
+        });
+        testcases.add(() -> {
+            testConsumerTimeout();
+            return null;
+        });
+        testcases.add(() -> {
+            testProviderSuccess();
+            return null;
+        });
+        testcases.add(() -> {
+            testInvokeMetricsService();
+            return null;
+        });
+        testcases.add(() -> {
+            testInvokeMetricsMethodService();
+            return null;
+        });
+
+        for (Callable<Void> testcase : testcases) {
+            Throwable throwable = null;
+            for (int i = 0; i < 10; i++) {
+                try {
+                    setUp();
+                    testcase.call();
+                    throwable = null;
+                    break;
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                    throwable = t;
+                }
+            }
+            Assertions.assertNull(throwable);
+        }
+    }
+
     public void testConsumerSuccess() throws Exception {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
@@ -149,7 +189,6 @@ public class MetricsFilterTest {
 
     }
 
-    @Test
     public void testConsumerTimeout() {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
@@ -182,7 +221,6 @@ public class MetricsFilterTest {
 
     }
 
-    @Test
     public void testProviderSuccess() throws Exception {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
@@ -209,7 +247,6 @@ public class MetricsFilterTest {
         Assertions.assertEquals(100, dubboMethod.getMethodCountPerCategory(0).get("success").get(timestamp));
     }
 
-    @Test
     public void testInvokeMetricsService() {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
@@ -229,7 +266,7 @@ public class MetricsFilterTest {
                 //ignore
             }
         }
-        Protocol protocol = new DubboProtocol();
+        Protocol protocol = DubboProtocol.getDubboProtocol();
         URL metricUrl = URL.valueOf("dubbo://" + url.getHost() + ":" + url.getPort() + "/" + MetricsService.class.getName() + "?" + METRICS_PORT + "=" + port);
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, metricUrl);
         invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
@@ -254,9 +291,10 @@ public class MetricsFilterTest {
         Assertions.assertEquals(100.0, metricMap.get("bucket_count"));
         Assertions.assertEquals(100.0 / 5, metricMap.get("qps"));
         Assertions.assertEquals(50.0 / 100.0, metricMap.get("success_rate"));
+
+        invoker.destroy();
     }
 
-    @Test
     public void testInvokeMetricsMethodService() {
         IMetricManager metricManager = MetricManager.getIMetricManager();
         metricManager.clear();
@@ -284,7 +322,7 @@ public class MetricsFilterTest {
             }
         }
 
-        Protocol protocol = new DubboProtocol();
+        Protocol protocol = DubboProtocol.getDubboProtocol();
         URL metricUrl = URL.valueOf("dubbo://" + url.getHost() + ":" + url.getPort() + "/" + MetricsService.class.getName() + "?" + METRICS_PORT + "=" + port);
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, metricUrl);
         Invocation invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
@@ -329,5 +367,7 @@ public class MetricsFilterTest {
                 methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("success_rate"));
         Assertions.assertEquals(50.0 / 100.0,
                 methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("success_rate"));
+
+        invoker.destroy();
     }
 }

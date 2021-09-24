@@ -40,8 +40,8 @@ public class ReferenceCountManagedChannel extends ManagedChannel {
     /**
      * The reference count of current ExchangeClient, connection will be closed if all invokers destroyed.
      */
-    public void incrementAndGetCount() {
-        referenceCount.incrementAndGet();
+    public int incrementAndGetCount() {
+        return referenceCount.incrementAndGet();
     }
 
     @Override

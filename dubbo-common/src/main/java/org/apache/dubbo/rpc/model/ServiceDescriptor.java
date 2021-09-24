@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class ServiceDescriptor {
     private void initMethods() {
         Method[] methodsToExport = this.serviceInterfaceClass.getMethods();
         for (Method method : methodsToExport) {
-            method.setAccessible(true);
+            ReflectUtils.makeAccessible(method);
 
             List<MethodDescriptor> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
             methodModels.add(new MethodDescriptor(method));

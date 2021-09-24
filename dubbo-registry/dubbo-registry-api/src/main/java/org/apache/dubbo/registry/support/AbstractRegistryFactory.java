@@ -109,12 +109,25 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     }
 
-    @Override
-    public Registry getRegistry(URL url) {
+    private Registry getDefaultNopRegistryIfDestroyed() {
         if (destroyed.get()) {
             LOGGER.warn("All registry instances have been destroyed, failed to fetch any instance. " +
                     "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
             return DEFAULT_NOP_REGISTRY;
+        }
+        return null;
+    }
+
+    public static Registry getDefaultNopRegistryIfNotSupportServiceDiscovery() {
+        return DEFAULT_NOP_REGISTRY;
+    }
+
+    @Override
+    public Registry getRegistry(URL url) {
+
+        Registry defaultNopRegistry = getDefaultNopRegistryIfDestroyed();
+        if (null != defaultNopRegistry) {
+            return defaultNopRegistry;
         }
 
         url = URLBuilder.from(url)
@@ -126,6 +139,13 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
         try {
+            // double check
+            // fix https://github.com/apache/dubbo/issues/7265.
+            defaultNopRegistry = getDefaultNopRegistryIfDestroyed();
+            if (null != defaultNopRegistry) {
+                return defaultNopRegistry;
+            }
+
             Registry registry = REGISTRIES.get(key);
             if (registry != null) {
                 return registry;
@@ -209,8 +229,10 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     }
 
     // for unit test
-    public static void clearRegistryNotDestroy() {
+    @Deprecated
+    public static void reset() {
         REGISTRIES.clear();
+        destroyed.set(false);
     }
 
 }

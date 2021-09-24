@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
 import static org.apache.dubbo.common.utils.StringUtils.decodeHexByte;
 import static org.apache.dubbo.common.utils.Utf8Utils.decodeUtf8;
@@ -159,7 +160,7 @@ public final class URLStrParser {
      */
     public static URL parseEncodedStr(String encodedURLStr) {
         Map<String, String> parameters = null;
-        int pathEndIdx = encodedURLStr.indexOf("%3F");// '?'
+        int pathEndIdx = encodedURLStr.toUpperCase().indexOf("%3F");// '?'
         if (pathEndIdx >= 0) {
             parameters = parseEncodedParams(encodedURLStr, pathEndIdx + 3);
         } else {
@@ -223,14 +224,20 @@ public final class URLStrParser {
             valueStart = valueEnd + 1;
         }
 
+        String name;
+        String value;
         if (isEncoded) {
-            String name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
-            String value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
-            params.put(name, value);
+            name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
+            value = valueStart >= valueEnd ? name : decodeComponent(str, valueStart, valueEnd, false, tempBuf);
         } else {
-            String name = str.substring(nameStart, valueStart -1);
-            String value = str.substring(valueStart, valueEnd);
-            params.put(name, value);
+            name = str.substring(nameStart, valueStart - 1);
+            value = valueStart >= valueEnd ? name : str.substring(valueStart, valueEnd);
+        }
+
+        params.put(name, value);
+        // compatible with lower versions registering "default." keys
+        if (name.startsWith(DEFAULT_KEY_PREFIX)) {
+            params.putIfAbsent(name.substring(DEFAULT_KEY_PREFIX.length()), value);
         }
         return true;
     }

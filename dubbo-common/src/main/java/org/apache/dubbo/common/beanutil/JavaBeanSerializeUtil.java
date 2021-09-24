@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.LogHelper;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.SerializeClassChecker;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -318,7 +319,7 @@ public final class JavaBeanSerializeUtil {
             }
         }
         if (method != null) {
-            method.setAccessible(true);
+            ReflectUtils.makeAccessible(method);
         }
         return method;
     }
@@ -341,14 +342,14 @@ public final class JavaBeanSerializeUtil {
                 constructorArgs[i] = getConstructorArg(paramTypes[i]);
             }
             try {
-                constructor.setAccessible(true);
+                ReflectUtils.makeAccessible(constructor);
                 return constructor.newInstance(constructorArgs);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 LogHelper.warn(logger, e.getMessage(), e);
             }
         }
 
-        return cl.newInstance();
+        return cl.getDeclaredConstructor().newInstance();
     }
 
     public static Object getConstructorArg(Class<?> cl) {
@@ -464,6 +465,7 @@ public final class JavaBeanSerializeUtil {
         if (isReferenceType(name)) {
             name = name.substring(1, name.length() - 1);
         }
+        SerializeClassChecker.getInstance().validateClass(name);
         return Class.forName(name, false, loader);
     }
 

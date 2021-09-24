@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-
 import org.apache.dubbo.common.context.Lifecycle;
 
 import com.alibaba.spring.context.OnceApplicationContextEventListener;
@@ -51,6 +50,9 @@ public class DubboLifecycleComponentApplicationListener extends OnceApplicationC
 
     private List<Lifecycle> lifecycleComponents = emptyList();
 
+    public DubboLifecycleComponentApplicationListener() {
+    }
+
     public DubboLifecycleComponentApplicationListener(ApplicationContext applicationContext) {
         super(applicationContext);
     }
@@ -75,7 +77,6 @@ public class DubboLifecycleComponentApplicationListener extends OnceApplicationC
 
     private void initLifecycleComponents(ContextRefreshedEvent event) {
         ApplicationContext context = event.getApplicationContext();
-        ClassLoader classLoader = context.getClassLoader();
         lifecycleComponents = new LinkedList<>();
         // load the Beans of Lifecycle from ApplicationContext
         loadLifecycleComponents(lifecycleComponents, context);

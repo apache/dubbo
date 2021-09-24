@@ -25,6 +25,7 @@ import java.util.concurrent.ForkJoinPool;
  * @since 2.7.5
  */
 public class ParallelEventDispatcher extends AbstractEventDispatcher {
+    public static final String NAME = "parallel";
 
     public ParallelEventDispatcher() {
         super(ForkJoinPool.commonPool());

@@ -22,7 +22,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -38,6 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 
 /**
  * AbstractClient
@@ -48,13 +48,14 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private static final Logger logger = LoggerFactory.getLogger(AbstractClient.class);
     private final Lock connectLock = new ReentrantLock();
     private final boolean needReconnect;
+    //issue-7054:Consumer's executor is sharing globally.
     protected volatile ExecutorService executor;
     private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-
-        needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
+        // set default needReconnect true when channel is not connected
+        needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, true);
 
         initExecutor(url);
 
@@ -90,7 +91,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     private void initExecutor(URL url) {
-        url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
+        //issue-7054:Consumer's executor is sharing globally, thread name not require provider ip.
+        url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME);
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         executor = executorRepository.createExecutorIfAbsent(url);
     }
@@ -278,14 +280,6 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             }
 
             try {
-                if (executor != null) {
-                    ExecutorUtil.shutdownNow(executor, 100);
-                }
-            } catch (Throwable e) {
-                logger.warn(e.getMessage(), e);
-            }
-
-            try {
                 disconnect();
             } catch (Throwable e) {
                 logger.warn(e.getMessage(), e);
@@ -304,7 +298,6 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     @Override
     public void close(int timeout) {
-        ExecutorUtil.gracefulShutdown(executor, timeout);
         close();
     }
 

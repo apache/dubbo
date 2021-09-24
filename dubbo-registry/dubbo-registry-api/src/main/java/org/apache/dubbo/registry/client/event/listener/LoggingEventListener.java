@@ -58,11 +58,11 @@ public class LoggingEventListener extends GenericEventListener {
     }
 
     public void onEvent(ServiceInstancesChangedEvent event) {
-        info("The services'[name : %s] instances[size : %s] has been changed.", event.getServiceName(), event.getServiceInstances().size());
+        info("The service[name : %s] instances[size : %s] has been changed.", event.getServiceName(), event.getServiceInstances().size());
     }
 
     public void onEvent(ServiceInstancePreUnregisteredEvent event) {
-        info("%s is registering from %s...", event.getServiceInstance(), event.getSource());
+        info("%s is unregistering from %s...", event.getServiceInstance(), event.getSource());
     }
 
     public void onEvent(ServiceInstanceUnregisteredEvent event) {
