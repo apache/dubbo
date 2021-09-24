@@ -26,7 +26,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     private volatile boolean isDestroy;
 
-    protected ServiceInstance serviceInstance;
+    protected volatile ServiceInstance serviceInstance;
 
     @Override
     public final ServiceInstance getLocalInstance() {
