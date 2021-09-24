@@ -36,6 +36,8 @@ import java.util.function.Function;
 
 public class MultipleServiceDiscovery implements ServiceDiscovery {
     public static final String REGISTRY_PREFIX_KEY = "child.";
+    private static final String REGISTRY_TYPE = "registry-type";
+    private static final String SERVICE = "service";
     private final Map<String, ServiceDiscovery> serviceDiscoveries = new ConcurrentHashMap<>();
     private URL registryURL;
     private ServiceInstance serviceInstance;
@@ -51,7 +53,7 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
         for (String key : parameters.keySet()) {
             if (key.startsWith(REGISTRY_PREFIX_KEY)) {
                 URL url = URL.valueOf(registryURL.getParameter(key)).addParameter(CommonConstants.APPLICATION_KEY, applicationName)
-                        .addParameter("registry-type", "service");
+                    .addParameter(REGISTRY_TYPE, SERVICE);
                 ServiceDiscovery serviceDiscovery = ServiceDiscoveryFactory.getExtension(url).getServiceDiscovery(url);
                 serviceDiscovery.initialize(url);
                 serviceDiscoveries.put(key, serviceDiscovery);
@@ -94,14 +96,14 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+        throws NullPointerException, IllegalArgumentException {
         MultiServiceInstancesChangedListener multiListener = (MultiServiceInstancesChangedListener) listener;
 
         for (String registryKey : serviceDiscoveries.keySet()) {
             ServiceDiscovery serviceDiscovery = serviceDiscoveries.get(registryKey);
-            SingleServiceInstancesChangedListener singleListener = multiListener.getAndComputeIfAbsent(registryKey, k -> {
-                return new SingleServiceInstancesChangedListener(listener.getServiceNames(), serviceDiscovery, multiListener);
-            });
+            SingleServiceInstancesChangedListener singleListener = multiListener.getAndComputeIfAbsent(registryKey, k ->
+                new SingleServiceInstancesChangedListener(listener.getServiceNames(), serviceDiscovery, multiListener));
             serviceDiscovery.addServiceInstancesChangedListener(singleListener);
         }
     }
@@ -112,7 +114,8 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly) throws NullPointerException, IllegalArgumentException, UnsupportedOperationException {
+    public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly)
+        throws NullPointerException, IllegalArgumentException, UnsupportedOperationException {
 
         List<ServiceInstance> serviceInstanceList = new ArrayList<>();
         for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
@@ -165,7 +168,8 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
             singleListenerMap.put(registryKey, singleListener);
         }
 
-        public SingleServiceInstancesChangedListener getAndComputeIfAbsent(String registryKey, Function<String, SingleServiceInstancesChangedListener> func) {
+        public SingleServiceInstancesChangedListener getAndComputeIfAbsent(String registryKey,
+                                                                           Function<String, SingleServiceInstancesChangedListener> func) {
             return singleListenerMap.computeIfAbsent(registryKey, func);
         }
     }
@@ -174,7 +178,8 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
         private final MultiServiceInstancesChangedListener multiListener;
         volatile ServiceInstancesChangedEvent event;
 
-        public SingleServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery, MultiServiceInstancesChangedListener multiListener) {
+        public SingleServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery,
+                                                     MultiServiceInstancesChangedListener multiListener) {
             super(serviceNames, serviceDiscovery);
             this.multiListener = multiListener;
         }
