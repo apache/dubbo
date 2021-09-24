@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
@@ -46,12 +47,17 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -70,7 +76,9 @@ public class ServiceInstancesChangedListener {
     protected final Set<String> serviceNames;
     protected final ServiceDiscovery serviceDiscovery;
     protected URL url;
-    protected Map<String, NotifyListener> listeners;
+    protected Map<String, Set<NotifyListener>> listeners;
+    protected ConcurrentLinkedQueue<NotifyListenerWithKey> listenerQueue;
+
     protected AtomicBoolean destroyed = new AtomicBoolean(false);
 
     protected Map<String, List<ServiceInstance>> allInstances;
@@ -86,6 +94,7 @@ public class ServiceInstancesChangedListener {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
         this.listeners = new ConcurrentHashMap<>();
+        this.listenerQueue = new ConcurrentLinkedQueue<>();
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
         this.revisionToMetadata = new HashMap<>();
@@ -180,15 +189,44 @@ public class ServiceInstancesChangedListener {
     }
 
     public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
-        this.listeners.put(serviceKey, listener);
+        // Add to global listeners
+        if (!this.listeners.containsKey(serviceKey)) {
+            // synchronized method, no need to use DCL
+            this.listeners.put(serviceKey, new ConcurrentHashSet<>());
+        }
+        Set<NotifyListener> notifyListeners = this.listeners.get(serviceKey);
+
+        if (notifyListeners.add(listener)) {
+            // Add to notify queue
+            NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(serviceKey, listener);
+            listenerQueue.offer(listenerWithKey);
+        }
+
         List<URL> urls = getAddresses(serviceKey, listener.getConsumerUrl());
         if (CollectionUtils.isNotEmpty(urls)) {
             listener.notify(urls);
         }
     }
 
-    public void removeListener(String serviceKey) {
-        listeners.remove(serviceKey);
+    public synchronized void removeListener(String serviceKey, NotifyListener notifyListener) {
+        // synchronized method, no need to use DCL
+        Set<NotifyListener> notifyListeners = this.listeners.get(serviceKey);
+        if (notifyListeners != null) {
+            if (notifyListeners.contains(notifyListener)) {
+                // Remove from global listeners
+                notifyListeners.remove(notifyListener);
+
+                // Remove from notify queue
+                NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(serviceKey, notifyListener);
+                listenerQueue.remove(listenerWithKey);
+            }
+
+            // ServiceKey has no listener, remove set
+            if (notifyListeners.size() == 0) {
+                this.listeners.remove(serviceKey);
+            }
+        }
+
         logger.info("Interface listener of interface " + serviceKey + " removed.");
         if (listeners.isEmpty()) {
             logger.info("No interface listeners exist, will stop instance listener for " + this.getServiceNames());
@@ -387,7 +425,9 @@ public class ServiceInstancesChangedListener {
     }
 
     protected void notifyAddressChanged() {
-        listeners.forEach((key, notifyListener) -> {
+        listenerQueue.forEach(listenerWithKey -> {
+            String key = listenerWithKey.getServiceKey();
+            NotifyListener notifyListener = listenerWithKey.getNotifyListener();
             //FIXME, group wildcard match
             List<URL> urls = toUrlsWithEmpty(getAddresses(key, notifyListener.getConsumerUrl()));
             logger.info("Notify service " + key + " with urls " + urls.size());
@@ -454,6 +494,41 @@ public class ServiceInstancesChangedListener {
         public void run() {
             retryPermission.release();
             ServiceInstancesChangedListener.this.onEvent(retryEvent);
+        }
+    }
+
+    protected static class NotifyListenerWithKey {
+        private String serviceKey;
+        private NotifyListener notifyListener;
+
+        public NotifyListenerWithKey(String serviceKey, NotifyListener notifyListener) {
+            this.serviceKey = serviceKey;
+            this.notifyListener = notifyListener;
+        }
+
+        public String getServiceKey() {
+            return serviceKey;
+        }
+
+        public NotifyListener getNotifyListener() {
+            return notifyListener;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            NotifyListenerWithKey that = (NotifyListenerWithKey) o;
+            return Objects.equals(serviceKey, that.serviceKey) && Objects.equals(notifyListener, that.notifyListener);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(serviceKey, notifyListener);
         }
     }
 }
