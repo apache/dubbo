@@ -21,6 +21,8 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import java.util.List;
 
@@ -35,13 +37,21 @@ public class StandardMetadataServiceURLBuilderTest {
 
     private StandardMetadataServiceURLBuilder builder = new StandardMetadataServiceURLBuilder();
 
+
+    @BeforeAll
+    public static void setUp() {
+        ApplicationConfig applicationConfig = new ApplicationConfig("demo");
+        applicationConfig.setMetadataServicePort(7001);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
+    }
+
+    @AfterAll
+    public static void clearUp() {
+        ApplicationModel.reset();
+    }
+
     @Test
     public void testBuild() {
-        ApplicationConfig applicationConfig = new ApplicationConfig();
-        applicationConfig.setMetadataServicePort(7001);
-        ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
-        applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
-
         // test generateUrlWithoutMetadata
         List<URL> urls = builder.build(new DefaultServiceInstance("test", "127.0.0.1", 8080, ApplicationModel.defaultModel()));
         assertEquals(1, urls.size());
