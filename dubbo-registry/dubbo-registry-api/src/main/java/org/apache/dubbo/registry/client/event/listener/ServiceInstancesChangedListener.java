@@ -54,10 +54,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -337,7 +333,7 @@ public class ServiceInstancesChangedListener {
                 break;
             } else {// failed
                 logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                        + "&cluster=" + instance.getRegistryCluster() + ", wait for retry.");
+                    + "&cluster=" + instance.getRegistryCluster() + ", wait for retry.");
                 triedTimes++;
                 try {
                     Thread.sleep(1000);
