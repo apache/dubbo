@@ -29,9 +29,9 @@ public class ExecutableListener implements Runnable {
 
     private final Executor executor;
     private final CancellationListener listener;
-    private final CancellableContext context;
+    private final RpcServiceContext context;
 
-    public ExecutableListener(Executor executor, CancellationListener listener, CancellableContext context) {
+    public ExecutableListener(Executor executor, CancellationListener listener, RpcServiceContext context) {
         this.executor = executor;
         this.listener = listener;
         this.context = context;

@@ -27,6 +27,6 @@ public interface CancellationListener {
      *
      * @param context the newly cancelled context.
      */
-    void cancelled(CancellableContext context);
+    void cancelled(RpcServiceContext context);
 
 }

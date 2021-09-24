@@ -21,11 +21,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.CancellableContext;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
@@ -50,7 +50,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
     private List<HeaderFilter> headerFilters;
-    private CancellableContext cancellableContext;
+    private RpcServiceContext rpcServiceContext;
 
 
     protected AbstractServerStream(URL url) {
@@ -87,8 +87,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     @Override
     protected void onCancel(GrpcStatus status) {
         super.execute(() -> {
-            if (cancellableContext != null) {
-                cancellableContext.cancel(status.cause);
+            if (rpcServiceContext != null) {
+                rpcServiceContext.cancel(status.cause);
             }
         });
 
@@ -146,8 +146,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             inv = headerFilter.invoke(getInvoker(), inv);
         }
 
-        if (cancellableContext == null) {
-            cancellableContext = RpcContext.getCancellableContext();
+        if (rpcServiceContext == null) {
+            rpcServiceContext = RpcContext.getServiceContext();
         }
         return inv;
     }
@@ -243,8 +243,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return this;
     }
 
-    public void setCancellableContext(CancellableContext cancellableContext) {
-        this.cancellableContext = cancellableContext;
+    public void setRpcServiceContext(RpcServiceContext rpcServiceContext) {
+        this.rpcServiceContext = rpcServiceContext;
     }
 
 }
