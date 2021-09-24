@@ -176,7 +176,7 @@ public class FailoverClusterInvokerTest {
         given(invoker1.getUrl()).willReturn(url);
         given(invoker1.getInterface()).willReturn(FailoverClusterInvokerTest.class);
 
-        given(invoker2.invoke(invocation)).willThrow(new RpcException());
+        given(invoker2.invoke(invocation)).willThrow(new RpcException(RpcException.BIZ_EXCEPTION));
         given(invoker2.isAvailable()).willReturn(false);
         given(invoker2.getUrl()).willReturn(url);
         given(invoker2.getInterface()).willReturn(FailoverClusterInvokerTest.class);
