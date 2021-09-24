@@ -45,9 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.Collections;
 
@@ -121,6 +119,8 @@ public class NacosRegistry extends FailbackRegistry {
     private volatile ScheduledExecutorService scheduledExecutorService;
 
     private final NacosNamingServiceWrapper namingService;
+
+    private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, EventListener>> nacosListeners = new ConcurrentHashMap<>();
 
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
@@ -240,6 +240,19 @@ public class NacosRegistry extends FailbackRegistry {
         if (isAdminProtocol(url)) {
             shutdownServiceNamesLookup();
         }
+        else {
+            Set<String> serviceNames = getServiceNames(url, listener);
+
+            doUnsubscribe(url, listener, serviceNames);
+        }
+    }
+
+    private void doUnsubscribe(final URL url, final NotifyListener listener, final Set<String> serviceNames) {
+        execute(namingService -> {
+            for (String serviceName : serviceNames) {
+                unsubscribeEventListener(serviceName, url, listener);
+            }
+        });
     }
 
     private void shutdownServiceNamesLookup() {
@@ -495,26 +508,45 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void subscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
             throws NacosException {
-        EventListener eventListener = event -> {
-            if (event instanceof NamingEvent) {
-                NamingEvent e = (NamingEvent) event;
-                List<Instance> instances = e.getInstances();
+        ConcurrentMap<NotifyListener, EventListener> listeners = nacosListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
+        EventListener nacosListener = listeners.computeIfAbsent(listener, k -> {
+            EventListener eventListener = event -> {
+                if (event instanceof NamingEvent) {
+                    NamingEvent e = (NamingEvent) event;
+                    List<Instance> instances = e.getInstances();
 
 
-                if (isServiceNamesWithCompatibleMode(url)) {
+                    if (isServiceNamesWithCompatibleMode(url)) {
 
-                    // Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
-                    // in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
-                    NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
-                    instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
+                        // Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
+                        // in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
+                        NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
+                        instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
+                    }
+
+                    notifySubscriber(url, listener, instances);
                 }
-
-                notifySubscriber(url, listener, instances);
-            }
-        };
+            };
+            return eventListener;
+        });
         namingService.subscribe(serviceName,
                 getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP),
-                eventListener);
+                nacosListener);
+    }
+
+    private void unsubscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
+            throws NacosException {
+        ConcurrentMap<NotifyListener, EventListener> notifyListenerEventListenerConcurrentMap = nacosListeners.get(url);
+        if(notifyListenerEventListenerConcurrentMap == null){
+            return;
+        }
+        EventListener nacosListener = notifyListenerEventListenerConcurrentMap.get(listener);
+        if(nacosListener == null){
+            return;
+        }
+        namingService.unsubscribe(serviceName,
+                getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP),
+                nacosListener);
     }
 
     /**

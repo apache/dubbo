@@ -75,6 +75,9 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
 
     @Override
     public void destroy() {
+        //#8895 second question directory must destroy
+        this.directory.destroy();
+
         this.invoker.destroy();
     }
 
