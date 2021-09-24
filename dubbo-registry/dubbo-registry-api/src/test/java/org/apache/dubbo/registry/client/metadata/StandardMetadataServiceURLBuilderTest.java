@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Test;
@@ -41,13 +42,34 @@ public class StandardMetadataServiceURLBuilderTest {
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
 
+        // test generateUrlWithoutMetadata
         List<URL> urls = builder.build(new DefaultServiceInstance("test", "127.0.0.1", 8080, ApplicationModel.defaultModel()));
         assertEquals(1, urls.size());
-        assertEquals(urls.get(0).toString(), "dubbo://127.0.0.1:7001/org.apache.dubbo.metadata.MetadataService?getAndListenInstanceMetadata.1.callback=true&group=test&reconnect=false&side=consumer&timeout=5000&version=1.0.0");
+        URL url = urls.get(0);
+        assertEquals(url.getProtocol(), "dubbo");
+        assertEquals(url.getHost(), "127.0.0.1");
+        assertEquals(url.getPort(), 7001);
+        assertEquals(url.getServiceInterface(), MetadataService.class.getName());
+        assertEquals(url.getGroup(), "test");
+        assertEquals(url.getSide(), "consumer");
+        assertEquals(url.getVersion(), "1.0.0");
+        assertEquals(url.getParameters().get("getAndListenInstanceMetadata.1.callback"), "true");
+        assertEquals(url.getParameters().get("reconnect"), "false");
+        assertEquals(url.getParameters().get("timeout"), "5000");
 
+        // test generateWithMetadata
         urls = builder.build(serviceInstance);
         assertEquals(1, urls.size());
-        assertEquals(urls.get(0).toString(), "dubbo://127.0.0.1:20880/org.apache.dubbo.metadata.MetadataService?application=dubbo-provider-demo&dubbo=2.0.2&group=test&host=192.168.0.102&port=20880&protocol=dubbo&side=consumer&timeout=5000&timestamp=1564845042651&version=1.0.0");
+        url = urls.get(0);
+        assertEquals(url.getProtocol(), "rest");
+        assertEquals(url.getHost(), "127.0.0.1");
+        assertEquals(url.getPort(), 20880);
+        assertEquals(url.getServiceInterface(), MetadataService.class.getName());
+        assertEquals(url.getGroup(), "test");
+        assertEquals(url.getSide(), "consumer");
+        assertEquals(url.getVersion(), "1.0.0");
+        assertEquals(url.getApplication(), "dubbo-provider-demo");
+        assertEquals(url.getParameters().get("timeout"), "5000");
     }
 
 }
