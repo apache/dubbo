@@ -59,7 +59,11 @@ public class Main {
 
             final List<Container> containers = new ArrayList<Container>();
             for (int i = 0; i < args.length; i++) {
-                containers.add(LOADER.getExtension(args[i]));
+                Container container = LOADER.getExtension(args[i]);
+                if (container == null) {
+                    throw new IllegalArgumentException("Not find extension: " + args[i]);
+                }
+                containers.add(container);
             }
             logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo serivce.");
 
