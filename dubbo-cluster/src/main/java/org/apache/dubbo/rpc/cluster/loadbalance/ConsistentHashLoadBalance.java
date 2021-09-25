@@ -21,6 +21,11 @@ import org.apache.dubbo.common.io.Bytes;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -53,13 +58,23 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         String methodName = RpcUtils.getMethodName(invocation);
         String key = invokers.get(0).getUrl().getServiceKey() + "." + methodName;
         // using the hashcode of list to compute the hash only pay attention to the elements in the list
-        int invokersHashCode = invokers.hashCode();
+        int invokersHashCode = getCorrespondingHashCode(invokers);
         ConsistentHashSelector<T> selector = (ConsistentHashSelector<T>) selectors.get(key);
         if (selector == null || selector.identityHashCode != invokersHashCode) {
             selectors.put(key, new ConsistentHashSelector<T>(invokers, methodName, invokersHashCode));
             selector = (ConsistentHashSelector<T>) selectors.get(key);
         }
         return selector.select(invocation);
+    }
+
+    /**
+     * get hash code of invokers
+     * Make this method to public in order to use this method in test case
+     * @param invokers
+     * @return
+     */
+    public <T> int getCorrespondingHashCode(List<Invoker<T>> invokers){
+        return invokers.hashCode();
     }
 
     private static final class ConsistentHashSelector<T> {
@@ -71,6 +86,28 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         private final int identityHashCode;
 
         private final int[] argumentIndex;
+
+        /**
+         * key: server(invoker) address
+         * value: count of requests accept by certain server
+         */
+        private Map<String, Long> serverRequestCountMap = new HashMap<>();
+
+        /**
+         * count of total requests accept by all servers
+         */
+        private int totalRequestCount;
+
+        /**
+         * count of current servers(invokers)
+         */
+        private int serverCount;
+
+        /**
+         * the ratio which allow count of requests accept by each server
+         * overrate average (totalRequestCount/serverCount).
+         */
+        private double overloadRatioAllowed = 1.5F;
 
         ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode) {
             this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
@@ -92,6 +129,10 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                     }
                 }
             }
+
+            totalRequestCount = 0;
+            serverCount = invokers.size();
+            serverRequestCountMap.clear();
         }
 
         public Invoker<T> select(Invocation invocation) {
@@ -111,11 +152,47 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         private Invoker<T> selectForKey(long hash) {
+            ++totalRequestCount;
             Map.Entry<Long, Invoker<T>> entry = virtualInvokers.ceilingEntry(hash);
             if (entry == null) {
                 entry = virtualInvokers.firstEntry();
             }
+            String serverAddress = entry.getValue().getUrl().getAddress();
+            double overloadThread = ((double) totalRequestCount / (double) serverCount) * overloadRatioAllowed;
+
+            /**
+             * Find a valid server node:
+             * 1. Not have accept request yet
+             * or
+             * 2. Not have overloaded (request count already accept < thread (average request count * overloadRatioAllowed ))
+             */
+            while (serverRequestCountMap.containsKey(serverAddress)
+                    && serverRequestCountMap.get(serverAddress) >= overloadThread) {
+                /**
+                 * If server node is not valid, get next node
+                 */
+                entry = virtualInvokers.higherEntry(entry.getKey());
+                if(entry == null){
+                    entry = virtualInvokers.firstEntry();
+                }
+                serverAddress = entry.getValue().getUrl().getAddress();
+            }
+
+            if (!serverRequestCountMap.containsKey(serverAddress)) {
+                //
+                serverRequestCountMap.put(serverAddress, 1L);
+            } else {
+                serverRequestCountMap.put(serverAddress, serverRequestCountMap.get(entry.getValue().getUrl().getAddress()) + 1L);
+            }
             return entry.getValue();
+        }
+
+        private Map.Entry<Long, Invoker<T>> getNextInvokerNode(TreeMap<Long, Invoker<T>> virtualInvokers, Map.Entry<Long, Invoker<T>> entry){
+            Map.Entry<Long, Invoker<T>> nextEntry = virtualInvokers.higherEntry(entry.getKey());
+            if(entry == null){
+                return virtualInvokers.firstEntry();
+            }
+            return nextEntry;
         }
 
         private long hash(byte[] digest, int number) {
