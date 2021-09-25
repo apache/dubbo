@@ -18,12 +18,10 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,7 +35,7 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
      * invoke method with same params for 10000 times:
      * 1. count of request accept by each invoker will not
      * be higher than (overloadRatioAllowed * average + 1)
-     * 2.
+     *
      */
     @Test
     public void testConsistentHashLoadBalance() {
@@ -46,8 +44,8 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
         double overloadRatioAllowed = 1.5F;
         int serverCount = counter.size();
         double overloadThread = ((double) runs * overloadRatioAllowed)/((double) serverCount);
-        for (Invoker minvoker : counter.keySet()) {
-            Long count = counter.get(minvoker).get();
+        for (Invoker invoker : counter.keySet()) {
+            Long count = counter.get(invoker).get();
             Assertions.assertTrue(count < (overloadThread + 1L),
                     "count of request accept by each invoker will not be higher than (overloadRatioAllowed * average + 1)");
         }
