@@ -118,6 +118,20 @@ public class NetUtils {
         return port;
     }
 
+    /**
+     * Check the port whether is in use in os
+     * @param port
+     * @return
+     */
+    public static boolean isPortInUsed(int port) {
+        try (ServerSocket ignored = new ServerSocket(port)) {
+            return false;
+        } catch (IOException e) {
+            // continue
+        }
+        return true;
+    }
+
     public static boolean isInvalidPort(int port) {
         return port < MIN_PORT || port > MAX_PORT;
     }
