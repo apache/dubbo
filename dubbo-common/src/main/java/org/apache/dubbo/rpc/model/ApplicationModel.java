@@ -25,7 +25,6 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
