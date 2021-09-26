@@ -163,6 +163,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         errorResult.setErrorMessage("request future has been canceled.");
         this.doReceived(errorResult);
         FUTURES.remove(request.getId());
+        timeoutCheckTask.cancel();
         return true;
     }
 

@@ -40,7 +40,7 @@ public class MockServiceInstancesChangedListener extends ServiceInstancesChanged
         return super.getAddresses(serviceProtocolKey, consumerURL);
     }
 
-    public Map<String, NotifyListener> getServiceListeners () {
+    public Map<String, Set<NotifyListener>> getServiceListeners () {
        return listeners;
     }
 }

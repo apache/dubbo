@@ -250,8 +250,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (this.shouldExport()) {
             this.init();
 
-            // just do export, delay export is done by caller
-            doExport();
+            if (shouldDelay()) {
+                doDelayExport();
+            } else {
+                doExport();
+            }
         }
     }
 
