@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -57,6 +58,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
     private Invocation invocation;
 
     private volatile boolean hasDecoded;
+    private boolean checkSecurity;
 
     public DecodeableRpcResult(Channel channel, Response response, InputStream is, Invocation invocation, byte id) {
         Assert.notNull(channel, "channel == null");
@@ -67,6 +69,9 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         this.inputStream = is;
         this.invocation = invocation;
         this.serializationType = id;
+        // read configs, maybe run after scope model is destroyed
+        Configuration configuration = ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel());
+        this.checkSecurity = configuration != null ? configuration.getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true) : true;
     }
 
     @Override
@@ -123,7 +128,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
                 if (invocation != null) {
-                    if (ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel()).getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
+                    if (checkSecurity) {
                         Object serializationTypeObj = invocation.get(SERIALIZATION_ID_KEY);
                         if (serializationTypeObj != null) {
                             if ((byte) serializationTypeObj != serializationType) {
