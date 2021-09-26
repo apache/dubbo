@@ -1266,8 +1266,6 @@ public class DubboBootstrap {
                         unexportServices();
                         unreferServices();
                     }
-
-                    destroyRegistries();
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
                     clear();
@@ -1276,7 +1274,6 @@ public class DubboBootstrap {
                     ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
                     exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
                 }
-
                 DubboShutdownHook.destroyAll();
             } finally {
                 initialized.set(false);
@@ -1294,9 +1291,7 @@ public class DubboBootstrap {
     }
 
     private void destroyServiceDiscoveries() {
-        getServiceDiscoveries().forEach(serviceDiscovery -> {
-            execute(serviceDiscovery::destroy);
-        });
+        getServiceDiscoveries().forEach(serviceDiscovery -> execute(serviceDiscovery::destroy));
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ServiceDiscoveries have been destroyed.");
         }
