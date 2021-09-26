@@ -105,6 +105,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
+import static org.apache.dubbo.config.DubboShutdownHook.destroyProtocols;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
 import static org.apache.dubbo.metadata.WritableMetadataService.getDefaultExtension;
@@ -1259,6 +1260,7 @@ public class DubboBootstrap {
     public void destroy() {
         if (destroyLock.tryLock()) {
             try {
+                destroyProtocols();
                 if (destroyed.compareAndSet(false, true)) {
                     if (started.compareAndSet(true, false)) {
                         unregisterServiceInstance();
@@ -1270,13 +1272,12 @@ public class DubboBootstrap {
                     destroyRegistries();
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
-                    clear();
-                    shutdown();
+                    clearConfigManager();
+                    shutdownExecutor();
                     release();
                     ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
                     exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
                 }
-
                 DubboShutdownHook.destroyAll();
             } finally {
                 initialized.set(false);
@@ -1302,13 +1303,8 @@ public class DubboBootstrap {
         }
     }
 
-    private void clear() {
+    private void clearConfigManager() {
         clearConfigs();
-        clearApplicationModel();
-    }
-
-    private void clearApplicationModel() {
-
     }
 
     private void clearConfigs() {
@@ -1329,7 +1325,7 @@ public class DubboBootstrap {
         });
     }
 
-    private void shutdown() {
+    private void shutdownExecutor() {
         if (!executorService.isShutdown()) {
             // Shutdown executorService
             executorService.shutdown();
