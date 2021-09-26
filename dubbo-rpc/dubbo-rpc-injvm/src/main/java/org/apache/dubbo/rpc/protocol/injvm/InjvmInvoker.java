@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Constants;
@@ -25,12 +27,17 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
+import java.lang.reflect.Type;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -49,11 +56,15 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final ExecutorRepository executorRepository;
 
+    private final ParamDeepCopyUtil paramDeepCopyUtil;
+
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
         super(type, url);
         this.key = key;
         this.exporterMap = exporterMap;
         this.executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        this.paramDeepCopyUtil = url.getOrDefaultFrameworkModel().getExtensionLoader(ParamDeepCopyUtil.class)
+            .getExtension(url.getParameter("injvm-copy-util", DefaultParamDeepCopyUtil.NAME));
     }
 
     @Override
@@ -74,30 +85,117 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         }
         RpcContext.getServiceContext().setRemoteAddress(LOCALHOST_VALUE, 0);
         // Solve local exposure, the server opens the token, and the client call fails.
-        URL serverURL = exporter.getInvoker().getUrl();
+        Invoker<?> invoker = exporter.getInvoker();
+        URL serverURL = invoker.getUrl();
         boolean serverHasToken = serverURL.hasParameter(Constants.TOKEN_KEY);
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
-        if (isAsync(exporter.getInvoker().getUrl(), getUrl())) {
-            ((RpcInvocation) invocation).setInvokeMode(InvokeMode.ASYNC);
+
+        String desc = ReflectUtils.getDesc(invocation.getParameterTypes());
+
+        // recreate invocation ---> deep copy parameters
+        Invocation copiedInvocation = recreateInvocation(invocation, invoker, desc);
+
+        // store actual return type
+        Class<?> returnType = getReturnType(invocation, desc);
+
+        if (isAsync(invoker.getUrl(), getUrl())) {
+            ((RpcInvocation) copiedInvocation).setInvokeMode(InvokeMode.ASYNC);
             // use consumer executor
             ExecutorService executor = executorRepository.createExecutorIfAbsent(getUrl());
             CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
-                Result result = exporter.getInvoker().invoke(invocation);
+                Result result = invoker.invoke(copiedInvocation);
                 if (result.hasException()) {
                     return new AppResponse(result.getException());
                 } else {
+                    rebuildValue(returnType, result);
                     return new AppResponse(result.getValue());
                 }
             }, executor);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
             FutureContext.getContext().setCompatibleFuture(appResponseFuture);
-            AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, invocation);
+            AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, copiedInvocation);
             result.setExecutor(executor);
             return result;
         } else {
-            return exporter.getInvoker().invoke(invocation);
+            Result result = invoker.invoke(copiedInvocation);
+            if (result.hasException()) {
+                return result;
+            } else {
+                rebuildValue(returnType, result);
+                return result;
+            }
+        }
+    }
+
+    private Class<?> getReturnType(Invocation invocation, String desc) {
+        ServiceModel consumerServiceModel = getUrl().getServiceModel();
+        if (consumerServiceModel == null) {
+            return null;
+        }
+        MethodDescriptor consumerMethod = consumerServiceModel.getServiceModel().getMethod(invocation.getMethodName(), desc);
+        if (consumerMethod != null) {
+            Type[] returnTypes = consumerMethod.getReturnTypes();
+            if (ArrayUtils.isEmpty(returnTypes)) {
+                return  (Class<?>) returnTypes[0];
+            }
+        }
+        return null;
+    }
+
+    private Invocation recreateInvocation(Invocation invocation, Invoker<?> invoker, String desc) {
+        ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
+
+        ServiceModel providerServiceModel = invoker.getUrl().getServiceModel();
+
+        if (providerServiceModel == null) {
+            return invocation;
+        }
+        MethodDescriptor providerMethod = providerServiceModel.getServiceModel().getMethod(invocation.getMethodName(), desc);
+        Object[] realArgument = null;
+        if (providerMethod != null) {
+            Class<?>[] pts = providerMethod.getParameterClasses();
+            Object[] args = invocation.getArguments();
+
+            // switch ClassLoader
+            Thread.currentThread().setContextClassLoader(providerServiceModel.getClassLoader());
+
+            try {
+                // copy parameters
+                if (pts != null && args != null && pts.length == args.length) {
+                    realArgument = new Object[pts.length];
+                    for (int i = 0; i < pts.length; i++) {
+                        realArgument[i] = paramDeepCopyUtil.copy(getUrl(), args[i], pts[i]);
+                    }
+                }
+                if (realArgument == null) {
+                    realArgument = args;
+                }
+
+                return new RpcInvocation(invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
+                    pts, realArgument, new LinkedHashMap<>(invocation.getObjectAttachments()),
+                    invocation.getInvoker(), invocation.getAttributes());
+            } finally {
+                Thread.currentThread().setContextClassLoader(originClassLoader);
+            }
+        } else {
+            return invocation;
+        }
+    }
+
+    private Result rebuildValue(Class<?> returnType, Result result) {
+        Object originValue = result.getValue();
+        Object value = originValue;
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        try {
+            if (returnType != null) {
+                value = paramDeepCopyUtil.copy(getUrl(), originValue, returnType);
+            }
+            result.setValue(value);
+            return result;
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl);
         }
     }
 
