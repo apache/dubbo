@@ -387,14 +387,22 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             }
         });
 
-        // TODO shutdown all executor services
-//        for (ScheduledExecutorService executorService : scheduledExecutors.listItems()) {
-//            executorService.shutdown();
-//        }
-//
-//        for (ExecutorService executorService : executorServiceRing.listItems()) {
-//            executorService.shutdown();
-//        }
+        // shutdown all executor services
+        for (ScheduledExecutorService executorService : scheduledExecutors.listItems()) {
+            try {
+                executorService.shutdown();
+            } catch (Exception e) {
+                logger.warn("shutdown scheduledExecutors failed: " + e.getMessage(), e);
+            }
+        }
+
+        for (ExecutorService executorService : executorServiceRing.listItems()) {
+            try {
+                executorService.shutdown();
+            } catch (Exception e) {
+                logger.warn("shutdown executorServiceRing failed: " + e.getMessage(), e);
+            }
+        }
     }
 
     @Override
