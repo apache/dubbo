@@ -407,7 +407,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         // Local Invoke ( Support Cluster Filter / Filter )
         StaticDirectory<?> directory = new StaticDirectory<>(url, Collections.singletonList(withFilter));
-        invoker = Cluster.getCluster(url.getScopeModel(), Cluster.DEFAULT).join(directory);
+        invoker = Cluster.getCluster(url.getScopeModel(), Cluster.DEFAULT).join(directory, true);
 
         if (logger.isInfoEnabled()) {
             logger.info("Using in jvm service " + interfaceClass.getName());
@@ -475,7 +475,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             if (!UrlUtils.isRegistry(curUrl)){
                 List<Invoker<?>> invokers = new ArrayList<>();
                 invokers.add(invoker);
-                invoker = Cluster.getCluster(scopeModel, Cluster.DEFAULT).join(new StaticDirectory(curUrl, invokers));
+                invoker = Cluster.getCluster(scopeModel, Cluster.DEFAULT).join(new StaticDirectory(curUrl, invokers), true);
             }
         } else {
             List<Invoker<?>> invokers = new ArrayList<>();
@@ -497,7 +497,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 String cluster = registryUrl.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
                 // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker
                 // (RegistryDirectory, routing happens here) -> Invoker
-                invoker = Cluster.getCluster(registryUrl.getScopeModel(), cluster, false).join(new StaticDirectory(registryUrl, invokers));
+                invoker = Cluster.getCluster(registryUrl.getScopeModel(), cluster, false).join(new StaticDirectory(registryUrl, invokers), false);
             } else {
                 // not a registry url, must be direct invoke.
                 if (CollectionUtils.isEmpty(invokers)) {
@@ -505,7 +505,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 }
                 URL curUrl = invokers.get(0).getUrl();
                 String cluster = curUrl.getParameter(CLUSTER_KEY, Cluster.DEFAULT);
-                invoker = Cluster.getCluster(scopeModel, cluster).join(new StaticDirectory(curUrl, invokers));
+                invoker = Cluster.getCluster(scopeModel, cluster).join(new StaticDirectory(curUrl, invokers), true);
             }
         }
     }

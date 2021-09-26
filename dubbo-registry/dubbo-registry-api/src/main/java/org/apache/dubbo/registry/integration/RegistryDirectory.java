@@ -281,7 +281,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             for (List<Invoker<T>> groupList : groupMap.values()) {
                 StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
                 staticDirectory.buildRouterChain();
-                mergedInvokers.add(cluster.join(staticDirectory));
+                mergedInvokers.add(cluster.join(staticDirectory, false));
             }
         } else {
             mergedInvokers = invokers;
