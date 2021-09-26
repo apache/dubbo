@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.RpcException;
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
-import io.netty.handler.codec.http2.Http2Error;
 
 import java.util.List;
 import java.util.Map;
