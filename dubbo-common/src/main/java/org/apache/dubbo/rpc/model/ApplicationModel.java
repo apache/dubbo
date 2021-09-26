@@ -118,8 +118,7 @@ public class ApplicationModel {
         if (application != null) {
             return application;
         }
-        Optional<ApplicationConfig> appCfgOptional = getConfigManager().getApplication();
-        return appCfgOptional.map(ApplicationConfig::getName).orElse(null);
+        return getConfigManager().getApplication().map(ApplicationConfig::getName).orElse(null);
     }
 
     // Currently used by UT.
