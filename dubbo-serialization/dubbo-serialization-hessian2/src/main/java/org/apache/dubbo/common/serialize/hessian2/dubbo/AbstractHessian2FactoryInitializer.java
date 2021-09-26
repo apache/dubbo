@@ -23,10 +23,23 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractHessian2FactoryInitializer implements Hessian2FactoryInitializer {
     private static final Map<ClassLoader, SerializerFactory> CL_2_SERIALIZER_FACTORY = new ConcurrentHashMap<>();
+    private static volatile SerializerFactory SYSTEM_SERIALIZER_FACTORY;
 
     @Override
     public SerializerFactory getSerializerFactory() {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        if (classLoader == null) {
+            // system classloader
+            if (SYSTEM_SERIALIZER_FACTORY == null) {
+                synchronized (AbstractHessian2FactoryInitializer.class) {
+                    if (SYSTEM_SERIALIZER_FACTORY == null) {
+                        SYSTEM_SERIALIZER_FACTORY = createSerializerFactory();
+                    }
+                }
+            }
+            return SYSTEM_SERIALIZER_FACTORY;
+        }
+
         if (!CL_2_SERIALIZER_FACTORY.containsKey(classLoader)) {
             synchronized (AbstractHessian2FactoryInitializer.class) {
                 if (!CL_2_SERIALIZER_FACTORY.containsKey(classLoader)) {

@@ -97,9 +97,6 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         // recreate invocation ---> deep copy parameters
         Invocation copiedInvocation = recreateInvocation(invocation, invoker, desc);
 
-        // store actual return type
-        Class<?> returnType = getReturnType(invocation, desc);
-
         if (isAsync(invoker.getUrl(), getUrl())) {
             ((RpcInvocation) copiedInvocation).setInvokeMode(InvokeMode.ASYNC);
             // use consumer executor
@@ -109,7 +106,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                 if (result.hasException()) {
                     return new AppResponse(result.getException());
                 } else {
-                    rebuildValue(returnType, result);
+                    rebuildValue(invocation, desc, result);
                     return new AppResponse(result.getValue());
                 }
             }, executor);
@@ -123,22 +120,18 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
             if (result.hasException()) {
                 return result;
             } else {
-                rebuildValue(returnType, result);
+                rebuildValue(invocation, desc, result);
                 return result;
             }
         }
     }
 
-    private Class<?> getReturnType(Invocation invocation, String desc) {
-        ServiceModel consumerServiceModel = getUrl().getServiceModel();
-        if (consumerServiceModel == null) {
-            return null;
-        }
-        MethodDescriptor consumerMethod = consumerServiceModel.getServiceModel().getMethod(invocation.getMethodName(), desc);
+    private Class<?> getReturnType(ServiceModel consumerServiceModel, String methodName, String desc) {
+        MethodDescriptor consumerMethod = consumerServiceModel.getServiceModel().getMethod(methodName, desc);
         if (consumerMethod != null) {
             Type[] returnTypes = consumerMethod.getReturnTypes();
-            if (ArrayUtils.isEmpty(returnTypes)) {
-                return  (Class<?>) returnTypes[0];
+            if (ArrayUtils.isNotEmpty(returnTypes)) {
+                return (Class<?>) returnTypes[0];
             }
         }
         return null;
@@ -184,16 +177,20 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         }
     }
 
-    private Result rebuildValue(Class<?> returnType, Result result) {
+    private void rebuildValue(Invocation invocation, String desc, Result result) {
         Object originValue = result.getValue();
         Object value = originValue;
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
-            if (returnType != null) {
-                value = paramDeepCopyUtil.copy(getUrl(), originValue, returnType);
+            ServiceModel consumerServiceModel = getUrl().getServiceModel();
+            if (consumerServiceModel != null) {
+                Class<?> returnType = getReturnType(consumerServiceModel, invocation.getMethodName(), desc);
+                if (returnType != null) {
+                    Thread.currentThread().setContextClassLoader(consumerServiceModel.getClassLoader());
+                    value = paramDeepCopyUtil.copy(getUrl(), originValue, returnType);
+                }
             }
             result.setValue(value);
-            return result;
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }

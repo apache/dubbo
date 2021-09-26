@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.injvm;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.remoting.Constants;
 
@@ -38,14 +40,21 @@ public class DefaultParamDeepCopyUtil implements ParamDeepCopyUtil {
             url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            serialization.serialize(url, outputStream).writeObject(src);
+            ObjectOutput objectOutput = serialization.serialize(url, outputStream);
+            objectOutput.writeObject(src);
+            objectOutput.flushBuffer();
 
             try (ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray())) {
-                return serialization.deserialize(url, inputStream).readObject(targetClass);
+                ObjectInput objectInput = serialization.deserialize(url, inputStream);
+                return objectInput.readObject(targetClass);
+            } catch (ClassNotFoundException | IOException e) {
+                logger.error("Unable to deep copy parameter to target class.", e);
             }
-        } catch (ClassNotFoundException | IOException e) {
+
+        } catch (IOException e) {
             logger.error("Unable to deep copy parameter to target class.", e);
         }
+
 
         if (src.getClass().equals(targetClass)) {
             return (T) src;
