@@ -52,16 +52,14 @@ public class CancellationContext implements Closeable {
         addListenerInternal(new ExecutableListener(executor, cancellationListener, context));
     }
 
-    public void addListenerInternal(ExecutableListener executableListener) {
-        synchronized (this) {
-            if (isCancelled()) {
-                executableListener.deliver();
-            } else {
-                if (listeners == null) {
-                    listeners = new ArrayList<>();
-                }
-                listeners.add(executableListener);
+    public synchronized void addListenerInternal(ExecutableListener executableListener) {
+        if (isCancelled()) {
+            executableListener.deliver();
+        } else {
+            if (listeners == null) {
+                listeners = new ArrayList<>();
             }
+            listeners.add(executableListener);
         }
     }
 
@@ -94,13 +92,8 @@ public class CancellationContext implements Closeable {
         }
     }
 
-    public boolean isCancelled() {
-        synchronized (this) {
-            if (cancelled) {
-                return true;
-            }
-        }
-        return false;
+    public synchronized boolean isCancelled() {
+        return cancelled;
     }
 
     public List<ExecutableListener> getListeners() {
