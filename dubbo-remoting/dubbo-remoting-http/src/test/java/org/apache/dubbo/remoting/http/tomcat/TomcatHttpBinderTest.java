@@ -52,5 +52,6 @@ public class TomcatHttpBinderTest {
         assertThat(response, is("Tomcat"));
 
         httpServer.close();
+        assertThat(NetUtils.isPortInUsed(port), is(false));
     }
 }
