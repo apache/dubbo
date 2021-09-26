@@ -594,7 +594,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 isJvmRefer = false;
             } else {
                 // by default, reference local service if there is
-                isJvmRefer = InjvmProtocol.getInjvmProtocol().isInjvmRefer(tmpUrl);
+                isJvmRefer = InjvmProtocol.getInjvmProtocol(getScopeModel()).isInjvmRefer(tmpUrl);
             }
         } else {
             isJvmRefer = isInjvm();
