@@ -62,8 +62,8 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
 
     private void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame resetFrame) {
         AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
-        final TransportObserver observer = clientStream.asTransportObserver();
-        observer.onReset(Http2Error.valueOf(resetFrame.errorCode()));
+        clientStream.cancelByRemote(Http2Error.valueOf(resetFrame.errorCode()));
+        ctx.close();
     }
 
     private void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {

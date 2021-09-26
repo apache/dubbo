@@ -21,15 +21,12 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -39,7 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
-public class RpcServiceContext extends RpcContext implements Closeable {
+public class RpcServiceContext extends RpcContext {
 
     protected RpcServiceContext() {
     }
@@ -74,10 +71,6 @@ public class RpcServiceContext extends RpcContext implements Closeable {
     private AsyncContext asyncContext;
 
     private boolean remove = true;
-
-    private ArrayList<ExecutableListener> listeners;
-    private Throwable cancellationCause;
-    private boolean cancelled;
 
     /**
      * Get the request object of the underlying RPC protocol, e.g. HttpServletRequest
@@ -658,80 +651,4 @@ public class RpcServiceContext extends RpcContext implements Closeable {
         RpcServiceContext rpcContext = RpcContext.getServiceContext();
         rpcContext.setConsumerUrl(url);
     }
-
-
-    public void addListener(
-            final CancellationListener cancellationListener, final Executor executor) {
-        addListenerInternal(new ExecutableListener(executor, cancellationListener, this));
-    }
-
-    public void addListener(
-            final CancellationListener cancellationListener) {
-        addListenerInternal(new ExecutableListener(Runnable::run, cancellationListener, this));
-    }
-
-    public void addListenerInternal(ExecutableListener executableListener) {
-        synchronized (this) {
-            if (isCancelled()) {
-                executableListener.deliver();
-            } else {
-                if (listeners == null) {
-                    listeners = new ArrayList<>();
-                }
-                listeners.add(executableListener);
-            }
-        }
-    }
-
-    public boolean cancel(Throwable cause) {
-        boolean triggeredCancel = false;
-        synchronized (this) {
-            if (!cancelled) {
-                cancelled = true;
-                this.cancellationCause = cause;
-                triggeredCancel = true;
-            }
-        }
-        if (triggeredCancel) {
-            notifyAndClearListeners();
-        }
-        return triggeredCancel;
-    }
-
-    private void notifyAndClearListeners() {
-        ArrayList<ExecutableListener> tmpListeners;
-        synchronized (this) {
-            if (listeners == null) {
-                return;
-            }
-            tmpListeners = listeners;
-            listeners = null;
-        }
-        for (ExecutableListener tmpListener : tmpListeners) {
-            tmpListener.deliver();
-        }
-    }
-
-    public boolean isCancelled() {
-        synchronized (this) {
-            if (cancelled) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public ArrayList<ExecutableListener> getListeners() {
-        return listeners;
-    }
-
-    public Throwable getCancellationCause() {
-        return cancellationCause;
-    }
-
-    @Override
-    public void close() throws IOException {
-        cancel(null);
-    }
-
 }

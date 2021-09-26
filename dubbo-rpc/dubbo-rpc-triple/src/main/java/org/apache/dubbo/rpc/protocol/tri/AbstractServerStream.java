@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
@@ -34,6 +33,7 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.Message;
+import io.netty.handler.codec.http2.Http2Error;
 
 import java.util.Arrays;
 import java.util.List;
@@ -50,8 +50,6 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
     private List<HeaderFilter> headerFilters;
-    private RpcServiceContext rpcServiceContext;
-
 
     protected AbstractServerStream(URL url) {
         this(url, lookupProviderModel(url));
@@ -82,16 +80,6 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             executor = executorRepository.createExecutorIfAbsent(url);
         }
         return executor;
-    }
-
-    @Override
-    protected void onCancel(GrpcStatus status) {
-        super.execute(() -> {
-            if (rpcServiceContext != null) {
-                rpcServiceContext.cancel(status.cause);
-            }
-        });
-
     }
 
     public static AbstractServerStream unary(URL url) {
@@ -145,9 +133,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         for (HeaderFilter headerFilter : getHeaderFilters()) {
             inv = headerFilter.invoke(getInvoker(), inv);
         }
-
-        if (rpcServiceContext == null) {
-            rpcServiceContext = RpcContext.getServiceContext();
+        if (getCancellationContext() == null) {
+            setCancellationContext(RpcContext.getCancellationContext());
         }
         return inv;
     }
@@ -243,8 +230,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return this;
     }
 
-    public void setRpcServiceContext(RpcServiceContext rpcServiceContext) {
-        this.rpcServiceContext = rpcServiceContext;
+    @Override
+    protected void cancelByRemoteReset(Http2Error http2Error) {
+        getCancellationContext().cancel(null);
     }
-
 }

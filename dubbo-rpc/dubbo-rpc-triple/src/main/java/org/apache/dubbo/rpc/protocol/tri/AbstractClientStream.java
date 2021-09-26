@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.triple.TripleWrapper;
@@ -165,11 +166,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return metadata;
     }
 
-    @Override
-    protected void onCancel(GrpcStatus status) {
-        getTransportSubscriber().onReset(Http2Error.CANCEL);
-    }
-
     protected class ClientStreamObserver implements StreamObserver<Object> {
 
         @Override
@@ -192,4 +188,8 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         }
     }
 
+    @Override
+    protected void cancelByRemoteReset(Http2Error http2Error) {
+        DefaultFuture2.getFuture(getRequest().getId()).cancel();
+    }
 }

@@ -25,6 +25,7 @@ import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
@@ -74,14 +75,24 @@ public abstract class AbstractStream implements Stream {
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
-    private boolean cancel = false;
 
-    public boolean isCancel() {
-        return cancel;
+    private CancellationContext cancellationContext;
+    private boolean cancelled = false;
+
+    public boolean isCancelled() {
+        return cancelled;
     }
 
     protected AbstractStream(URL url) {
         this(url, allocateCallbackExecutor());
+    }
+
+    protected CancellationContext getCancellationContext() {
+        return cancellationContext;
+    }
+
+    protected void setCancellationContext(CancellationContext cancellationContext) {
+        this.cancellationContext = cancellationContext;
     }
 
     protected AbstractStream(URL url, Executor executor) {
@@ -126,19 +137,26 @@ public abstract class AbstractStream implements Stream {
         return this;
     }
 
-
-    final void cancel(Throwable cause) {
-        cancel(GrpcStatus.fromCode(Code.CANCELLED).withCause(cause));
+    /**
+     * local cancel
+     *
+     * @param cause cancel case
+     */
+    protected void cancel(Throwable cause) {
+        getCancellationContext().cancel(cause);
     }
 
-
-    final void cancel(GrpcStatus status){
-        cancel = true;
-        onCancel(status);
+    /**
+     * remote cancel
+     *
+     * @param http2Error {@link Http2Error}
+     */
+    protected final void cancelByRemote(Http2Error http2Error) {
+        cancelled = true;
+        cancelByRemoteReset(http2Error);
     }
 
-    protected abstract void onCancel(GrpcStatus status);
-
+    protected abstract void cancelByRemoteReset(Http2Error http2Error);
 
     protected abstract StreamObserver<Object> createStreamObserver();
 
@@ -168,7 +186,7 @@ public abstract class AbstractStream implements Stream {
         return transportSubscriber;
     }
 
-    public MethodDescriptor  getMethodDescriptor() {
+    public MethodDescriptor getMethodDescriptor() {
         return methodDescriptor;
     }
 

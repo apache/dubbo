@@ -84,6 +84,18 @@ public class RpcContext {
         }
     };
 
+    private static final InternalThreadLocal<CancellationContext> CANCELLATION_CONTEXT = new InternalThreadLocal<CancellationContext>() {
+        @Override
+        protected CancellationContext initialValue() {
+            return new CancellationContext();
+        }
+    };
+
+
+    public static CancellationContext getCancellationContext() {
+        return CANCELLATION_CONTEXT.get();
+    }
+
 
     private boolean remove = true;
 
@@ -202,6 +214,7 @@ public class RpcContext {
         }
         SERVER_LOCAL.remove();
         SERVICE_CONTEXT.remove();
+        CANCELLATION_CONTEXT.remove();
     }
 
     /**

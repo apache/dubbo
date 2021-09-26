@@ -37,6 +37,11 @@ public class ExecutableListener implements Runnable {
         this.context = context;
     }
 
+    public ExecutableListener(Executor executor, CancellationListener listener) {
+        this(executor, listener, null);
+    }
+
+
     public void deliver() {
         try {
             executor.execute(this);
@@ -53,7 +58,7 @@ public class ExecutableListener implements Runnable {
         return listener;
     }
 
-    public RpcContext getContext() {
+    public RpcServiceContext getContext() {
         return context;
     }
 
