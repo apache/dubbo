@@ -115,6 +115,7 @@ public class DubboShutdownHook extends Thread {
         dispatch(new DubboServiceDestroyedEvent(this));
         if (destroyed.compareAndSet(false, true)) {
             AbstractRegistryFactory.destroyAll();
+            destroyProtocols();
         }
     }
 

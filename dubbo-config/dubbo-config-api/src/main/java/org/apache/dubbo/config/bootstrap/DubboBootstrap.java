@@ -1260,7 +1260,6 @@ public class DubboBootstrap {
     public void destroy() {
         if (destroyLock.tryLock()) {
             try {
-                destroyProtocols();
                 if (destroyed.compareAndSet(false, true)) {
                     if (started.compareAndSet(true, false)) {
                         unregisterServiceInstance();
@@ -1268,17 +1267,16 @@ public class DubboBootstrap {
                         unexportServices();
                         unreferServices();
                     }
-
                     destroyRegistries();
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
+                    DubboShutdownHook.destroyAll();
                     clearConfigManager();
                     shutdownExecutor();
                     release();
                     ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
                     exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
                 }
-                DubboShutdownHook.destroyAll();
             } finally {
                 initialized.set(false);
                 destroyLock.unlock();
