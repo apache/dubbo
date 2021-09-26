@@ -120,8 +120,9 @@ public class NetUtils {
 
     /**
      * Check the port whether is in use in os
-     * @param port
-     * @return
+     * 
+     * @param port the port to check if in use
+     * @return is the given port in use or not
      */
     public static boolean isPortInUsed(int port) {
         try (ServerSocket ignored = new ServerSocket(port)) {
