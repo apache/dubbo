@@ -193,6 +193,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     public void close() {
         if (client != null) {
             client.close();
+            client = null;
         }
     }
 
@@ -200,6 +201,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     public void close(int timeout) {
         if (client != null) {
             client.close(timeout);
+            client = null;
         }
     }
 
