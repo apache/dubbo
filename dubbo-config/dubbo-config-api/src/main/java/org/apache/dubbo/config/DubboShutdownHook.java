@@ -87,7 +87,7 @@ public class DubboShutdownHook extends Thread {
      */
     public void unregister() {
         if (registered.compareAndSet(true, false)) {
-            if (!this.isAlive()) {
+            if (this.isAlive() || destroyed.get()) {
                 // DubboShutdownHook is running
                 return;
             }
