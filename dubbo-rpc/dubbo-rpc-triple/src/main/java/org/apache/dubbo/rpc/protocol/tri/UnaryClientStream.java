@@ -76,20 +76,6 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
         }
 
         @Override
-        public void onReset(Http2Error http2Error) {
-            // run in callback executor will truncate exception stack and avoid blocking netty's event loop
-            execute(() -> {
-                Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-                final AppResponse result = new AppResponse();
-                result.setException(new RpcException("server cancel"));
-                response.setResult(result);
-                response.setErrorMessage("server cancel");
-                response.setStatus(GrpcStatus.toDubboStatus(GrpcStatus.Code.CANCELLED));
-                DefaultFuture2.received(getConnection(), response);
-            });
-        }
-
-        @Override
         protected void onError(GrpcStatus status) {
             // run in callback executor will truncate exception stack and avoid blocking netty's event loop
             execute(() -> {
