@@ -1235,9 +1235,7 @@ public class DubboBootstrap {
 
     private void unregisterServiceInstance() {
         if (serviceInstance != null) {
-            getServiceDiscoveries().forEach(serviceDiscovery -> {
-                serviceDiscovery.unregister(serviceInstance);
-            });
+            getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.unregister(serviceInstance));
         }
     }
 
