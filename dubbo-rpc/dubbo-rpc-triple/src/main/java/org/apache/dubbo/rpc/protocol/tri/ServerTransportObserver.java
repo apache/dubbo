@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
@@ -32,16 +31,15 @@ import io.netty.handler.codec.http2.Http2Error;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class ServerTransportObserver implements TransportObserver {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerTransportObserver.class);
 
     private final ChannelHandlerContext ctx;
-    private final ChannelPromise promise;
     private boolean headerSent = false;
     private boolean resetSent = false;
 
-    public ServerTransportObserver(ChannelHandlerContext ctx, ChannelPromise promise) {
+    public ServerTransportObserver(ChannelHandlerContext ctx) {
         this.ctx = ctx;
-        this.promise = promise;
     }
 
     @Override
@@ -58,10 +56,11 @@ public class ServerTransportObserver implements TransportObserver {
             headers.status(OK.codeAsText());
             headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO);
         }
+        // If endStream is true, the channel will be closed, so you cannot listen for errors and continue sending any frame
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
                 .addListener(future -> {
                     if (!future.isSuccess()) {
-                        LOGGER.warn("write header error", future.cause());
+                        LOGGER.warn("send header error endStream=" + endStream, future.cause());
                     }
                 });
     }
@@ -89,7 +88,7 @@ public class ServerTransportObserver implements TransportObserver {
         ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, false))
                 .addListener(future -> {
                     if (!future.isSuccess()) {
-                        LOGGER.warn("write data error", future.cause());
+                        LOGGER.warn("send data error endStream=" + endStream, future.cause());
                     }
                 });
     }

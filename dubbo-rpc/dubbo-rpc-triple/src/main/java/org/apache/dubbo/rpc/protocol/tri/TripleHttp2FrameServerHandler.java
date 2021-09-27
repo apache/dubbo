@@ -33,7 +33,6 @@ import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -216,16 +215,11 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             stream = AbstractServerStream.unary(invoker.getUrl());
         }
         Channel channel = ctx.channel();
-        ChannelPromise promise = channel.newPromise();
-        promise.addListener(future -> {
-            if (!future.isSuccess()) {
-                exceptionCaught(ctx, future.cause());
-            }
-        });
+        // You can add listeners to ChannelPromise here if you want to listen for the result of sending a frame
         stream.service(providerModel.getServiceModel())
                 .invoker(invoker)
                 .methodName(methodName)
-                .subscribe(new ServerTransportObserver(ctx, promise));
+                .subscribe(new ServerTransportObserver(ctx));
         if (methodDescriptor != null) {
             stream.method(methodDescriptor);
         } else {
@@ -250,8 +244,4 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         return CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName);
     }
 
-    @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        super.write(ctx, msg, promise);
-    }
 }
