@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
@@ -201,7 +202,7 @@ public class MultipleRegistry extends AbstractRegistry {
                 urls.addAll(tmpUrls);
             }
         }
-        return urls;
+        return urls.stream().distinct().collect(Collectors.toList());
     }
 
     protected void init() {
