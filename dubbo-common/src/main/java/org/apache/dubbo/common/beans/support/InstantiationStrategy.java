@@ -47,15 +47,16 @@ public class InstantiationStrategy {
 
     public <T> T instantiate(Class<T> type) throws ReflectiveOperationException {
 
+        // should not use default constructor directly, maybe also has another constructor matched scope model arguments
         // 1. try default constructor
-        try {
-            return type.getConstructor().newInstance();
-        } catch (NoSuchMethodException e) {
-            // ignore no default constructor
-            if (!supportConstructorWithArguments) {
-                throw new IllegalArgumentException("Default constructor was not found for type: " + type.getName());
-            }
-        }
+//        try {
+//            return type.getConstructor().newInstance();
+//        } catch (NoSuchMethodException e) {
+//            // ignore no default constructor
+//            if (!supportConstructorWithArguments) {
+//                throw new IllegalArgumentException("Default constructor was not found for type: " + type.getName());
+//            }
+//        }
 
         // 2. use matched constructor if found
         List<Constructor> matchedConstructors = new ArrayList<>();
