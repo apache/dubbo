@@ -28,10 +28,10 @@ ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apa
 org.apache.dubbo.rpc.cluster.Cluster extension = (org.apache.dubbo.rpc.cluster.Cluster)scopeModel.getExtensionLoader(org.apache.dubbo.rpc.cluster.Cluster.class).getExtension(extName);
 return extension.join(arg0);
 }
-public org.apache.dubbo.rpc.cluster.Cluster getCluster(java.lang.String arg0)  {
-throw new UnsupportedOperationException("The method public static org.apache.dubbo.rpc.cluster.Cluster org.apache.dubbo.rpc.cluster.Cluster.getCluster(java.lang.String) of interface org.apache.dubbo.rpc.cluster.Cluster is not adaptive method!");
+public org.apache.dubbo.rpc.cluster.Cluster getCluster(org.apache.dubbo.rpc.model.ScopeModel arg0, java.lang.String arg1)  {
+throw new UnsupportedOperationException("The method public static org.apache.dubbo.rpc.cluster.Cluster org.apache.dubbo.rpc.cluster.Cluster.getCluster(org.apache.dubbo.rpc.model.ScopeModel,java.lang.String) of interface org.apache.dubbo.rpc.cluster.Cluster is not adaptive method!");
 }
-public org.apache.dubbo.rpc.cluster.Cluster getCluster(java.lang.String arg0, boolean arg1)  {
-throw new UnsupportedOperationException("The method public static org.apache.dubbo.rpc.cluster.Cluster org.apache.dubbo.rpc.cluster.Cluster.getCluster(java.lang.String,boolean) of interface org.apache.dubbo.rpc.cluster.Cluster is not adaptive method!");
+public org.apache.dubbo.rpc.cluster.Cluster getCluster(org.apache.dubbo.rpc.model.ScopeModel arg0, java.lang.String arg1, boolean arg2)  {
+throw new UnsupportedOperationException("The method public static org.apache.dubbo.rpc.cluster.Cluster org.apache.dubbo.rpc.cluster.Cluster.getCluster(org.apache.dubbo.rpc.model.ScopeModel,java.lang.String,boolean) of interface org.apache.dubbo.rpc.cluster.Cluster is not adaptive method!");
 }
 }

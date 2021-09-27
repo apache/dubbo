@@ -97,9 +97,10 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                 break;
             }
         }
-        if (zookeeperClient != null && zookeeperClient.isConnected()) {
-            writeToClientMap(addressList, zookeeperClient);
-        }
+        // It seems redundant code
+//        if (zookeeperClient != null && zookeeperClient.isConnected()) {
+//            writeToClientMap(addressList, zookeeperClient);
+//        }
         return zookeeperClient;
     }
 
@@ -177,5 +178,13 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      */
     public Map<String, ZookeeperClient> getZookeeperClientMap() {
         return zookeeperClientMap;
+    }
+
+    @Override
+    public void destroy() {
+        for (ZookeeperClient client : zookeeperClientMap.values()) {
+            client.close();
+        }
+        zookeeperClientMap.clear();
     }
 }

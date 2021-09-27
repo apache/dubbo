@@ -618,9 +618,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
         }
 
-        List<Exporter<?>> exporters = new ArrayList<>(bounds.values());
-        for (Exporter<?> exporter : exporters) {
+        List<ExporterChangeableWrapper<?>> exporters = new ArrayList<>(bounds.values());
+        for (ExporterChangeableWrapper<?> exporter : exporters) {
             exporter.unexport();
+            exporter.destroy();
         }
         bounds.clear();
     }
@@ -914,6 +915,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                     logger.warn(t.getMessage(), t);
                 }
             });
+        }
+
+        public void destroy() {
+            executor.shutdown();
         }
 
         public void setSubscribeUrl(URL subscribeUrl) {
