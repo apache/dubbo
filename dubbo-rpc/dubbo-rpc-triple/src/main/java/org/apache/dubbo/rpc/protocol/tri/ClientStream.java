@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 public class ClientStream extends AbstractClientStream implements Stream {
@@ -73,7 +72,6 @@ public class ClientStream extends AbstractClientStream implements Stream {
                     } else {
                         getStreamSubscriber().onError(status.asException());
                     }
-                    RpcContext.getServiceContext().getCancellableContext().release(getStreamSubscriber());
                 });
             }
         };

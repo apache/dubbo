@@ -29,7 +29,6 @@ public interface TripleConstant {
 
     String SERIALIZATION_KEY = "serialization";
     String TE_KEY = "te";
-    String CLIENT_STREAM_KEY = "clientStream";
     // each header size
     long DEFAULT_HEADER_LIST_SIZE = Http2CodecUtil.DEFAULT_HEADER_LIST_SIZE;
 

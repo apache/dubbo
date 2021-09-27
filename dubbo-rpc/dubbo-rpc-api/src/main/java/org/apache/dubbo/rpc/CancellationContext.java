@@ -17,10 +17,17 @@
 
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.stream.StreamObserver;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 
 public class CancellationContext implements Closeable {
@@ -28,6 +35,7 @@ public class CancellationContext implements Closeable {
     private ArrayList<ExecutableListener> listeners;
     private Throwable cancellationCause;
     private boolean cancelled;
+    private final static ConcurrentMap<StreamObserver<?>, CancellationContext> streamObserverContextMap = new ConcurrentHashMap<>();
 
     public void addListener(
             final CancellationListener cancellationListener, final Executor executor) {
@@ -63,6 +71,12 @@ public class CancellationContext implements Closeable {
         }
     }
 
+    public void registerStreamObserver(StreamObserver<?> streamObserver) {
+        if (Objects.nonNull(streamObserver)) {
+            streamObserverContextMap.put(streamObserver, this);
+        }
+    }
+
     public boolean cancel(Throwable cause) {
         boolean triggeredCancel = false;
         synchronized (this) {
@@ -76,6 +90,14 @@ public class CancellationContext implements Closeable {
             notifyAndClearListeners();
         }
         return triggeredCancel;
+    }
+
+    public boolean cancel(StreamObserver<?> streamObserver, Throwable cause) {
+        CancellationContext cancellationContext = streamObserverContextMap.remove(streamObserver);
+        if (Objects.nonNull(cancellationContext)) {
+            return cancellationContext.cancel(cause);
+        }
+        return false;
     }
 
     private void notifyAndClearListeners() {
@@ -107,5 +129,11 @@ public class CancellationContext implements Closeable {
     @Override
     public void close() throws IOException {
         cancel(null);
+        Map<StreamObserver<?>, CancellationContext> copyMap = Collections.synchronizedMap(streamObserverContextMap);
+        copyMap.entrySet().stream()
+            .filter(entry -> Objects.equals(entry.getValue(), this))
+            .map(Map.Entry::getKey)
+            .findFirst()
+            .ifPresent(streamObserverContextMap::remove);
     }
 }

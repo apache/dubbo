@@ -89,7 +89,7 @@ class ClientStreamTest {
         serviceImpl.serverStream("hello world", streamObserver);
         TimeUnit.SECONDS.sleep(1);
         // client stream cancel call
-        RpcContext.getServiceContext().getCancellableContext().cancel(streamObserver);
+        RpcContext.getCancellationContext().cancel(streamObserver, null);
 
         TimeUnit.SECONDS.sleep(3);
         Mockito.verify(streamObserver, Mockito.atMost(2)).onNext(any());

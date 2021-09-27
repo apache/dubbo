@@ -128,6 +128,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
                 stream.asStreamObserver().onNext(inv.getArguments()[0]);
                 stream.asStreamObserver().onCompleted();
             }
+            cancellationContext.registerStreamObserver(stream.getStreamSubscriber());
             response.setResult(result);
             DefaultFuture2.received(stream.getConnection(), response);
         }
