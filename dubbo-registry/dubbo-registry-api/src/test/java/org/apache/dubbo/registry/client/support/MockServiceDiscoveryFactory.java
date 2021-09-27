@@ -14,21 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.registry.client.support;
 
-package org.apache.dubbo.rpc.protocol.tri;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 
-import io.netty.handler.codec.http2.Http2Error;
-
-public interface TransportObserver {
-
-    void onMetadata(Metadata metadata, boolean endStream);
-
-    void onData(byte[] data, boolean endStream);
-
-    default void onReset(Http2Error http2Error) {
+public class MockServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
+    @Override
+    protected ServiceDiscovery createDiscovery(URL registryURL) {
+        return new MockServiceDiscovery();
     }
-
-    default void onComplete() {
-    }
-
 }

@@ -38,7 +38,7 @@ import java.util.concurrent.Future;
  * There are four kinds of RpcContext, which are ServerContext, ClientAttachment, ServerAttachment and ServiceContext.
  * <p/>
  * ServiceContext: Using to pass environment parameters in the whole invocation. For example, `remotingApplicationName`,
- *      `remoteAddress`, etc. {@link RpcServiceContext}
+ * `remoteAddress`, etc. {@link RpcServiceContext}
  * ClientAttachment, ServerAttachment and ServiceContext are using to transfer attachments.
  * Imaging a situation like this, A is calling B, and B will call C, after that, B wants to return some attachments back to A.
  * ClientAttachment is using to pass attachments to next hop as a consumer. ( A --> B , in A side)
@@ -83,6 +83,19 @@ public class RpcContext {
             return new RpcServiceContext();
         }
     };
+
+    private static final InternalThreadLocal<CancellationContext> CANCELLATION_CONTEXT = new InternalThreadLocal<CancellationContext>() {
+        @Override
+        protected CancellationContext initialValue() {
+            return new CancellationContext();
+        }
+    };
+
+
+    public static CancellationContext getCancellationContext() {
+        return CANCELLATION_CONTEXT.get();
+    }
+
 
     private boolean remove = true;
 
@@ -201,6 +214,7 @@ public class RpcContext {
         }
         SERVER_LOCAL.remove();
         SERVICE_CONTEXT.remove();
+        CANCELLATION_CONTEXT.remove();
     }
 
     /**

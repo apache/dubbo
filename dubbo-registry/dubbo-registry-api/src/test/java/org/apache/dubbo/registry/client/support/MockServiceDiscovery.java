@@ -14,21 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.registry.client.support;
 
-package org.apache.dubbo.rpc.protocol.tri;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
 
-import io.netty.handler.codec.http2.Http2Error;
+import java.util.Set;
 
-public interface TransportObserver {
+public class MockServiceDiscovery extends AbstractServiceDiscovery {
+    @Override
+    public void doInitialize(URL registryURL) throws Exception {
 
-    void onMetadata(Metadata metadata, boolean endStream);
-
-    void onData(byte[] data, boolean endStream);
-
-    default void onReset(Http2Error http2Error) {
     }
 
-    default void onComplete() {
+    @Override
+    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
+
     }
 
+    @Override
+    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+
+    }
+
+    @Override
+    public void doUnregister(ServiceInstance serviceInstance) {
+
+    }
+
+    @Override
+    public void doDestroy() throws Exception {
+
+    }
+
+    @Override
+    public Set<String> getServices() {
+        return null;
+    }
 }
