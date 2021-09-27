@@ -325,11 +325,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
         }
 
-        AbstractConfig.appendParameters(map, getMetrics());
         AbstractConfig.appendParameters(map, getApplication());
         AbstractConfig.appendParameters(map, getModule());
         AbstractConfig.appendParameters(map, consumer);
         AbstractConfig.appendParameters(map, this);
+        appendMetricsCompatible(map);
 
         MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
         if (metadataReportConfig != null && metadataReportConfig.isValid()) {

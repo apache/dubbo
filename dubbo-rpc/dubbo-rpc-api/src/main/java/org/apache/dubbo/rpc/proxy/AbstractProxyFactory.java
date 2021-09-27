@@ -38,7 +38,7 @@ import static org.apache.dubbo.rpc.Constants.INTERFACES;
  */
 public abstract class AbstractProxyFactory implements ProxyFactory {
     private static final Class<?>[] INTERNAL_INTERFACES = new Class<?>[]{
-            EchoService.class, Destroyable.class
+        EchoService.class, Destroyable.class
     };
 
     @Override
@@ -55,8 +55,13 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         if (config != null && config.length() > 0) {
             String[] types = COMMA_SPLIT_PATTERN.split(config);
             for (String type : types) {
-                ClassLoader classLoader = getClassLoader(invoker);
-                interfaces.add(ReflectUtils.forName(classLoader, type));
+                try {
+                    ClassLoader classLoader = getClassLoader(invoker);
+                    interfaces.add(ReflectUtils.forName(classLoader, type));
+                } catch (Throwable e) {
+                    // ignore
+                }
+
             }
         }
 

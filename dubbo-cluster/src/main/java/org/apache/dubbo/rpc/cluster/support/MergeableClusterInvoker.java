@@ -127,9 +127,9 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             Method method;
             try {
                 method = returnType.getMethod(merger, returnType);
-            } catch (NoSuchMethodException e) {
+            } catch (NoSuchMethodException | NullPointerException e) {
                 throw new RpcException("Can not merge result because missing method [ " + merger + " ] in class [ " +
-                        returnType.getName() + " ]");
+                    returnType.getName() + " ]");
             }
             if (!Modifier.isPublic(method.getModifiers())) {
                 method.setAccessible(true);

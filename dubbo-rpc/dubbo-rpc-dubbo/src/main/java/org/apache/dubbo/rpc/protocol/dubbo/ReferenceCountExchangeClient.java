@@ -31,6 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
 
@@ -46,6 +47,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private final AtomicInteger disconnectCount = new AtomicInteger(0);
     private final Integer warningPeriod = 50;
     private ExchangeClient client;
+    private int shutdownWaitTime = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 
     public ReferenceCountExchangeClient(ExchangeClient client) {
         this.client = client;
@@ -205,7 +207,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         /**
          * the order of judgment in the if statement cannot be changed.
          */
-        if (!(client instanceof LazyConnectExchangeClient) || client.isClosed()) {
+        if (!(client instanceof LazyConnectExchangeClient)) {
             // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
             URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
                     //.addParameter(RECONNECT_KEY, Boolean.FALSE)
@@ -229,6 +231,14 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     public int getCount(){
         return referenceCount.get();
+    }
+
+    public int getShutdownWaitTime() {
+        return shutdownWaitTime;
+    }
+
+    public void setShutdownWaitTime(int shutdownWaitTime) {
+        this.shutdownWaitTime = shutdownWaitTime;
     }
 }
 

@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.metadata.store;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -136,7 +137,10 @@ public class RemoteMetadataServiceImpl implements ScopeModelAware {
         try {
             String interfaceName = providerUrl.getServiceInterface();
             if (StringUtils.isNotEmpty(interfaceName)) {
-                Class interfaceClass = Class.forName(interfaceName);
+                ClassLoader classLoader = providerUrl.getServiceModel() != null ?
+                    providerUrl.getServiceModel().getClassLoader() :
+                    ClassUtils.getClassLoader();
+                Class interfaceClass = Class.forName(interfaceName, false, classLoader);
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
                     providerUrl.getParameters());
                 for (Map.Entry<String, MetadataReport> entry : getMetadataReports().entrySet()) {

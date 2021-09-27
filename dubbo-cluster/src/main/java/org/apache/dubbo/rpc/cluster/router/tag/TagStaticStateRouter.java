@@ -137,8 +137,6 @@ public class TagStaticStateRouter extends AbstractStateRouter {
         if (CollectionUtils.isEmpty(invokers)) {
             return;
         }
-
-        pool(invokers);
     }
 
 }

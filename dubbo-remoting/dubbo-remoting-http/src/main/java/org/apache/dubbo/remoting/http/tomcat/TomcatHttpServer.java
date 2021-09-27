@@ -88,6 +88,8 @@ public class TomcatHttpServer extends AbstractHttpServer {
 
         try {
             tomcat.stop();
+            // close port by destroy()
+            tomcat.destroy();
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
         }

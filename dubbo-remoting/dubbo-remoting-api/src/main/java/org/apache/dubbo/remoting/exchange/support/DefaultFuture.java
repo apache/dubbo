@@ -188,6 +188,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
         this.doReceived(errorResult);
         FUTURES.remove(id);
         CHANNELS.remove(id);
+        timeoutCheckTask.cancel();
         return true;
     }
 

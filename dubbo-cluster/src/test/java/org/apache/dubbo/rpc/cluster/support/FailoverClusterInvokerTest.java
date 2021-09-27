@@ -54,7 +54,7 @@ public class FailoverClusterInvokerTest {
     private final Invoker<FailoverClusterInvokerTest> invoker1 = mock(Invoker.class);
     private final Invoker<FailoverClusterInvokerTest> invoker2 = mock(Invoker.class);
     private final RpcInvocation invocation = new RpcInvocation();
-    private final Result result = new AppResponse();
+    private final Result expectedResult = new AppResponse();
     private final List<Invoker<FailoverClusterInvokerTest>> invokers = new ArrayList<>();
     private Directory<FailoverClusterInvokerTest> dic;
 
@@ -94,9 +94,9 @@ public class FailoverClusterInvokerTest {
         try {
             invoker.invoke(invocation);
             fail();
-        } catch (RpcException expected) {
-            assertEquals(0, expected.getCode());
-            assertFalse(expected.getCause() instanceof RpcException);
+        } catch (RpcException actualException) {
+            assertEquals(0, actualException.getCode());
+            assertFalse(actualException.getCause() instanceof RpcException);
         }
     }
 
@@ -107,15 +107,15 @@ public class FailoverClusterInvokerTest {
         given(invoker1.getUrl()).willReturn(url);
         given(invoker1.getInterface()).willReturn(FailoverClusterInvokerTest.class);
 
-        given(invoker2.invoke(invocation)).willReturn(result);
+        given(invoker2.invoke(invocation)).willReturn(expectedResult);
         given(invoker2.isAvailable()).willReturn(true);
         given(invoker2.getUrl()).willReturn(url);
         given(invoker2.getInterface()).willReturn(FailoverClusterInvokerTest.class);
 
         FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<>(dic);
         for (int i = 0; i < 100; i++) {
-            Result ret = invoker.invoke(invocation);
-            assertSame(result, ret);
+            Result actualResult = invoker.invoke(invocation);
+            assertSame(expectedResult, actualResult);
         }
     }
 
@@ -133,12 +133,12 @@ public class FailoverClusterInvokerTest {
 
         FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<>(dic);
         try {
-            Result ret = invoker.invoke(invocation);
-            assertSame(result, ret);
+            Result actualResult = invoker.invoke(invocation);
+            assertSame(expectedResult, actualResult);
             fail();
-        } catch (RpcException expected) {
-            assertTrue((expected.isTimeout() || expected.getCode() == 0));
-            assertTrue(expected.getMessage().indexOf((retries + 1) + " times") > 0);
+        } catch (RpcException actualException) {
+            assertTrue((actualException.isTimeout() || actualException.getCode() == 0));
+            assertTrue(actualException.getMessage().indexOf((retries + 1) + " times") > 0);
         }
     }
 
@@ -160,12 +160,12 @@ public class FailoverClusterInvokerTest {
 
         FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<>(dic);
         try {
-            Result ret = invoker.invoke(invocation);
-            assertSame(result, ret);
+            Result actualResult = invoker.invoke(invocation);
+            assertSame(expectedResult, actualResult);
             fail();
-        } catch (RpcException expected) {
-            assertTrue((expected.isTimeout() || expected.getCode() == 0));
-            assertTrue(expected.getMessage().indexOf((finalRetries + 1) + " times") > 0);
+        } catch (RpcException actualException) {
+            assertTrue((actualException.isTimeout() || actualException.getCode() == 0));
+            assertTrue(actualException.getMessage().indexOf((finalRetries + 1) + " times") > 0);
         }
     }
 
@@ -176,18 +176,18 @@ public class FailoverClusterInvokerTest {
         given(invoker1.getUrl()).willReturn(url);
         given(invoker1.getInterface()).willReturn(FailoverClusterInvokerTest.class);
 
-        given(invoker2.invoke(invocation)).willThrow(new RpcException());
+        given(invoker2.invoke(invocation)).willThrow(new RpcException(RpcException.BIZ_EXCEPTION));
         given(invoker2.isAvailable()).willReturn(false);
         given(invoker2.getUrl()).willReturn(url);
         given(invoker2.getInterface()).willReturn(FailoverClusterInvokerTest.class);
 
         FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<>(dic);
         try {
-            Result ret = invoker.invoke(invocation);
-            assertSame(result, ret);
+            Result actualResult = invoker.invoke(invocation);
+            assertSame(expectedResult, actualResult);
             fail();
-        } catch (RpcException expected) {
-            assertEquals(expected.getCode(), RpcException.BIZ_EXCEPTION);
+        } catch (RpcException actualException) {
+            assertEquals(RpcException.BIZ_EXCEPTION, actualException.getCode());
         }
     }
 
@@ -212,9 +212,9 @@ public class FailoverClusterInvokerTest {
             RpcInvocation inv = new RpcInvocation();
             inv.setMethodName("test");
             clusterInvoker.invoke(inv);
-        } catch (RpcException expected) {
-            assertTrue(expected.getCause() instanceof RpcException);
-            assertEquals(expected.getCode(), RpcException.TIMEOUT_EXCEPTION);
+        } catch (RpcException actualException) {
+            assertTrue(actualException.getCause() instanceof RpcException);
+            assertEquals(RpcException.TIMEOUT_EXCEPTION, actualException.getCode());
         }
     }
 
@@ -239,9 +239,9 @@ public class FailoverClusterInvokerTest {
             RpcInvocation inv = new RpcInvocation();
             inv.setMethodName("test");
             clusterInvoker.invoke(inv);
-        } catch (RpcException expected) {
-            assertTrue(expected.getCause() instanceof RpcException);
-            assertEquals(expected.getCode(), RpcException.TIMEOUT_EXCEPTION);
+        } catch (RpcException actualException) {
+            assertTrue(actualException.getCause() instanceof RpcException);
+            assertEquals(RpcException.TIMEOUT_EXCEPTION, actualException.getCode());
         }
     }
 
@@ -262,8 +262,8 @@ public class FailoverClusterInvokerTest {
         try {
             invoker.invoke(invocation);
             fail();
-        } catch (RpcException expected) {
-            assertFalse(expected.getCause() instanceof RpcException);
+        } catch (RpcException actualException) {
+            assertFalse(actualException.getCause() instanceof RpcException);
         }
     }
 

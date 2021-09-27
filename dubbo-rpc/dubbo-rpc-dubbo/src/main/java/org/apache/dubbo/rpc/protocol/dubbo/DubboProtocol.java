@@ -365,7 +365,9 @@ public class DubboProtocol extends AbstractProtocol {
             }
         }
 
-        return new DubboProtocolServer(server);
+        DubboProtocolServer protocolServer = new DubboProtocolServer(server);
+        loadServerProperties(protocolServer);
+        return protocolServer;
     }
 
     private void optimizeSerialization(URL url) throws RpcException {
@@ -593,8 +595,11 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private ReferenceCountExchangeClient buildReferenceCountExchangeClient(URL url) {
         ExchangeClient exchangeClient = initClient(url);
-
-        return new ReferenceCountExchangeClient(exchangeClient);
+        ReferenceCountExchangeClient client = new ReferenceCountExchangeClient(exchangeClient);
+        // read configs
+        int shutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(url.getScopeModel());
+        client.setShutdownWaitTime(shutdownTimeout);
+        return client;
     }
 
     /**
@@ -653,7 +658,7 @@ public class DubboProtocol extends AbstractProtocol {
                     logger.info("Closing dubbo server: " + server.getLocalAddress());
                 }
 
-                server.close(ConfigurationUtils.getServerShutdownTimeout(server.getUrl().getScopeModel()));
+                server.close(getServerShutdownTimeout(protocolServer));
 
             } catch (Throwable t) {
                 logger.warn("Close dubbo server [" + server.getLocalAddress()+ "] failed: " + t.getMessage(), t);
@@ -693,7 +698,7 @@ public class DubboProtocol extends AbstractProtocol {
                 logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
             }
 
-            client.close(ConfigurationUtils.getServerShutdownTimeout(client.getUrl().getScopeModel()));
+            client.close(client.getShutdownWaitTime());
 
             // TODO
             /*

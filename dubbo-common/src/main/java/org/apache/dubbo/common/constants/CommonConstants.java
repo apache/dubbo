@@ -321,10 +321,6 @@ public interface CommonConstants {
 
     String EXPORTER_LISTENER_KEY = "exporter.listener";
 
-    String METRICS_PORT = "metrics.port";
-
-    String METRICS_PROTOCOL = "metrics.protocol";
-
     /**
      * After simplify the registry, should add some parameter individually for provider.
      *

@@ -25,10 +25,11 @@ import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.WatchedEvent;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,12 +43,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 public class Curator5ZookeeperClientTest {
-    private TestingServer zkServer;
-    private Curator5ZookeeperClient curatorClient;
-    CuratorFramework client = null;
+    private static TestingServer zkServer;
+    private static Curator5ZookeeperClient curatorClient;
+    private static CuratorFramework client = null;
 
-    @BeforeEach
-    public void setUp() throws Exception {
+    @BeforeAll
+    public static void setUp() throws Exception {
         int zkServerPort = NetUtils.getAvailablePort();
         zkServer = new TestingServer(zkServerPort, true);
         curatorClient = new Curator5ZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:" +
@@ -76,8 +77,9 @@ public class Curator5ZookeeperClientTest {
     }
 
     @Test
+    @Timeout(value = 2)
     public void testChildrenListener() throws InterruptedException {
-        String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
+        String path = "/dubbo/org.apache.dubbo.demo.DemoListenerService/providers";
         curatorClient.create(path, false);
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         curatorClient.addTargetChildListener(path, new Curator5ZookeeperClient.CuratorWatcherImpl() {
@@ -95,17 +97,8 @@ public class Curator5ZookeeperClientTest {
     @Test
     public void testWithInvalidServer() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            curatorClient = new Curator5ZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service"));
+            curatorClient = new Curator5ZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:1/service?timeout=1000"));
             curatorClient.create("/testPath", true);
-        });
-    }
-
-    @Test
-    public void testWithStoppedServer() throws IOException {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            curatorClient.create("/testPath", true);
-            zkServer.stop();
-            curatorClient.delete("/testPath");
         });
     }
 
@@ -155,12 +148,6 @@ public class Curator5ZookeeperClientTest {
         assertEquals(curatorClient.getContent(path), content);
     }
 
-    @AfterEach
-    public void tearDown() throws Exception {
-        curatorClient.close();
-        zkServer.stop();
-    }
-
     @Test
     public void testAddTargetDataListener() throws Exception {
         String listenerPath = "/dubbo/service.name/configuration";
@@ -172,7 +159,6 @@ public class Curator5ZookeeperClientTest {
         Assertions.assertEquals(value, valueFromCache);
         final AtomicInteger atomicInteger = new AtomicInteger(0);
         curatorClient.addTargetDataListener(path + "/d.json", new Curator5ZookeeperClient.NodeCacheListenerImpl() {
-
             @Override
             public void nodeChanged() throws Exception {
                 atomicInteger.incrementAndGet();
@@ -189,7 +175,19 @@ public class Curator5ZookeeperClientTest {
         curatorClient.delete(path + "/d.json");
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNull(valueFromCache);
-        Thread.sleep(2000L);
+        Thread.sleep(200);
         Assertions.assertTrue(3L <= atomicInteger.get());
+    }
+
+
+    @AfterAll
+    public static void testWithStoppedServer() throws IOException {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            curatorClient.create("/testPath", true);
+            zkServer.stop();
+            curatorClient.delete("/testPath");
+        });
+        
+        curatorClient.close();
     }
 }
