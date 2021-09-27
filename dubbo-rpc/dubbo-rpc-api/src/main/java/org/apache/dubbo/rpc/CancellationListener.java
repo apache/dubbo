@@ -15,20 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc;
 
-import io.netty.handler.codec.http2.Http2Error;
+/**
+ * A listener notified on context cancellation.
+ */
+public interface CancellationListener {
 
-public interface TransportObserver {
-
-    void onMetadata(Metadata metadata, boolean endStream);
-
-    void onData(byte[] data, boolean endStream);
-
-    default void onReset(Http2Error http2Error) {
-    }
-
-    default void onComplete() {
-    }
+    /**
+     * Notifies that a context was cancelled.
+     *
+     * @param context the newly cancelled context.
+     */
+    void cancelled(RpcServiceContext context);
 
 }

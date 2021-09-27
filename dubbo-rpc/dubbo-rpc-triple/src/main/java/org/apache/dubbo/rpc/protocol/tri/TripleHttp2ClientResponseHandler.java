@@ -22,9 +22,11 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
+import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.handler.codec.http2.Http2ResetFrame;
 import io.netty.handler.codec.http2.Http2StreamFrame;
 
 public final class TripleHttp2ClientResponseHandler extends SimpleChannelInboundHandler<Http2StreamFrame> {
@@ -42,6 +44,8 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
             ctx.close();
             logger.debug(
                     "Event triggered, event name is: " + event.name() + ", last stream id is: " + event.lastStreamId());
+        } else if (evt instanceof Http2ResetFrame) {
+            onResetRead(ctx, (Http2ResetFrame) evt);
         }
     }
 
@@ -54,6 +58,12 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         } else {
             super.channelRead(ctx, msg);
         }
+    }
+
+    private void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame resetFrame) {
+        AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
+        clientStream.cancelByRemote(Http2Error.valueOf(resetFrame.errorCode()));
+        ctx.close();
     }
 
     private void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {
