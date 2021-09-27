@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -36,6 +37,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2SettingsFrame;
 import io.netty.util.ReferenceCountUtil;
@@ -88,6 +90,13 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         } else {
             stream = AbstractClientStream.stream(url);
         }
+        final CancellationContext cancellationContext = inv.getCancellationContext();
+        // for client cancel,send rst frame to server
+        cancellationContext.addListener(context -> {
+            stream.asTransportObserver().onReset(Http2Error.CANCEL);;
+        });
+        stream.setCancellationContext(cancellationContext);
+
         String ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY);
         if (StringUtils.isNotEmpty(ssl)) {
             ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(Boolean.parseBoolean(ssl));

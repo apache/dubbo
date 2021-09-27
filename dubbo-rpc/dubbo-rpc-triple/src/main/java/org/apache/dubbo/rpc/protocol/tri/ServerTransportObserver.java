@@ -17,19 +17,27 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
+import io.netty.handler.codec.http2.Http2Error;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class ServerTransportObserver implements TransportObserver {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerTransportObserver.class);
+
     private final ChannelHandlerContext ctx;
     private final ChannelPromise promise;
     private boolean headerSent = false;
+    private boolean resetSent = false;
 
     public ServerTransportObserver(ChannelHandlerContext ctx, ChannelPromise promise) {
         this.ctx = ctx;
@@ -38,6 +46,9 @@ public class ServerTransportObserver implements TransportObserver {
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
+        if (resetSent) {
+            return;
+        }
         final DefaultHttp2Headers headers = new DefaultHttp2Headers(true);
         metadata.forEach(e -> {
             headers.set(e.getKey(), e.getValue());
@@ -48,19 +59,38 @@ public class ServerTransportObserver implements TransportObserver {
             headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO);
         }
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
-            .addListener(future -> {
-                if (!future.isSuccess()) {
-                    promise.tryFailure(future.cause());
-                }
-            });
+                .addListener(future -> {
+                    if (!future.isSuccess()) {
+                        LOGGER.warn("write header error", future.cause());
+                    }
+                });
+    }
+
+    @Override
+    public void onReset(Http2Error http2Error) {
+        resetSent = true;
+        ctx.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
+                .addListener(future -> {
+                    if (!future.isSuccess()) {
+                        LOGGER.warn("write reset error", future.cause());
+                    }
+                });
     }
 
     @Override
     public void onData(byte[] data, boolean endStream) {
+        if (resetSent) {
+            return;
+        }
         ByteBuf buf = ctx.alloc().buffer();
         buf.writeByte(0);
         buf.writeInt(data.length);
         buf.writeBytes(data);
-        ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, false));
+        ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, false))
+                .addListener(future -> {
+                    if (!future.isSuccess()) {
+                        LOGGER.warn("write data error", future.cause());
+                    }
+                });
     }
 }

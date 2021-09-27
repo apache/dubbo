@@ -17,10 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.Status;
-import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
@@ -29,9 +25,16 @@ import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
+
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
+import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -73,8 +76,23 @@ public abstract class AbstractStream implements Stream {
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
 
+    private CancellationContext cancellationContext;
+    private boolean cancelled = false;
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
     protected AbstractStream(URL url) {
         this(url, allocateCallbackExecutor());
+    }
+
+    protected CancellationContext getCancellationContext() {
+        return cancellationContext;
+    }
+
+    protected void setCancellationContext(CancellationContext cancellationContext) {
+        this.cancellationContext = cancellationContext;
     }
 
     protected AbstractStream(URL url, Executor executor) {
@@ -118,6 +136,27 @@ public abstract class AbstractStream implements Stream {
         this.methodDescriptor = md;
         return this;
     }
+
+    /**
+     * local cancel
+     *
+     * @param cause cancel case
+     */
+    protected void cancel(Throwable cause) {
+        getCancellationContext().cancel(cause);
+    }
+
+    /**
+     * remote cancel
+     *
+     * @param http2Error {@link Http2Error}
+     */
+    protected final void cancelByRemote(Http2Error http2Error) {
+        cancelled = true;
+        cancelByRemoteReset(http2Error);
+    }
+
+    protected abstract void cancelByRemoteReset(Http2Error http2Error);
 
     protected abstract StreamObserver<Object> createStreamObserver();
 
@@ -198,12 +237,12 @@ public abstract class AbstractStream implements Stream {
         getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
-                + " method=" + getMethodName() +" onlyTrailers=" + onlyTrailers, status.cause);
+                    + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
         }
     }
 
     protected void transportError(GrpcStatus status, Map<String, Object> attachments) {
-        transportError(status, attachments,false);
+        transportError(status, attachments, false);
     }
 
     protected void transportError(GrpcStatus status) {
@@ -236,11 +275,11 @@ public abstract class AbstractStream implements Stream {
         if (throwable == null) {
             Status status = builder.build();
             metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                TripleUtil.encodeBase64ASCII(status.toByteArray()));
+                    TripleUtil.encodeBase64ASCII(status.toByteArray()));
             return metadata;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
-                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable,10))
+                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
                 // can not use now
                 // .setDetail(throwable.getMessage())
                 .build();
@@ -303,7 +342,7 @@ public abstract class AbstractStream implements Stream {
         }
     }
 
-    protected static abstract class AbstractTransportObserver implements TransportObserver {
+    protected abstract class AbstractTransportObserver implements TransportObserver {
         private Metadata headers;
         private Metadata trailers;
 
@@ -313,6 +352,11 @@ public abstract class AbstractStream implements Stream {
 
         public Metadata getTrailers() {
             return trailers;
+        }
+
+        @Override
+        public void onReset(Http2Error http2Error) {
+            getTransportSubscriber().onReset(http2Error);
         }
 
         @Override
@@ -343,7 +387,7 @@ public abstract class AbstractStream implements Stream {
 
     }
 
-    protected abstract static class UnaryTransportObserver extends AbstractTransportObserver implements TransportObserver {
+    protected abstract class UnaryTransportObserver extends AbstractTransportObserver implements TransportObserver {
         private byte[] data;
 
         public byte[] getData() {
@@ -362,7 +406,7 @@ public abstract class AbstractStream implements Stream {
             }
         }
 
-        protected abstract void doOnComplete() ;
+        protected abstract void doOnComplete();
 
 
         @Override

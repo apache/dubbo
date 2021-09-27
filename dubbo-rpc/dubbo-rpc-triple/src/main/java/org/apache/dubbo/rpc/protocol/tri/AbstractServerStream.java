@@ -17,13 +17,13 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.Message;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -31,6 +31,9 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
+
+import com.google.protobuf.Message;
+import io.netty.handler.codec.http2.Http2Error;
 
 import java.util.Arrays;
 import java.util.List;
@@ -119,8 +122,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
     protected RpcInvocation buildInvocation(Metadata metadata) {
         RpcInvocation inv = new RpcInvocation(getUrl().getServiceModel(),
-            getMethodName(), getServiceDescriptor().getServiceName(),
-            getUrl().getProtocolServiceKey(), getMethodDescriptor().getParameterClasses(), new Object[0]);
+                getMethodName(), getServiceDescriptor().getServiceName(),
+                getUrl().getProtocolServiceKey(), getMethodDescriptor().getParameterClasses(), new Object[0]);
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
         inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
 
@@ -129,6 +132,9 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
         for (HeaderFilter headerFilter : getHeaderFilters()) {
             inv = headerFilter.invoke(getInvoker(), inv);
+        }
+        if (getCancellationContext() == null) {
+            setCancellationContext(RpcContext.getCancellationContext());
         }
         return inv;
     }
@@ -224,4 +230,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return this;
     }
 
+    @Override
+    protected void cancelByRemoteReset(Http2Error http2Error) {
+        getCancellationContext().cancel(null);
+    }
 }
