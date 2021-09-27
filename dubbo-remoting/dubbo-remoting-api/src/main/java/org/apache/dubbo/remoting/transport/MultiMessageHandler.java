@@ -43,9 +43,13 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
             for (Object obj : list) {
                 try {
                     handler.received(channel, obj);
-                } catch (ExecutionException e) {
-                    logger.error("MultiMessageHandler received fail.", e);
-                    handler.caught(channel, e);
+                } catch (Throwable t) {
+                    logger.error("MultiMessageHandler received fail.", t);
+                    try {
+                        handler.caught(channel, t);
+                    } catch (Throwable t1) {
+                        logger.error("MultiMessageHandler caught fail.", t1);
+                    }
                 }
             }
         } else {
