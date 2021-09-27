@@ -403,6 +403,14 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 logger.warn("shutdown executorServiceRing failed: " + e.getMessage(), e);
             }
         }
+
+        // shutdown share executor
+        try {
+            SHARED_EXECUTOR.shutdown();
+        } catch (Exception e) {
+            logger.warn("shutdown shared executor failed: " + e.getMessage(), e);
+        }
+
     }
 
     @Override
