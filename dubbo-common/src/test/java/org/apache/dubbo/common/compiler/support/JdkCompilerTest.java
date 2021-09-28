@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -83,5 +87,18 @@ public class JdkCompilerTest extends JavaCodeTest {
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
         });
+    }
+
+    @Test
+    public void test_getCompileErrorMessage() {
+        Exception exception = null;
+        try{
+            JdkCompiler compiler = new JdkCompiler();
+            Class<?> clazz = compiler.compile(getSimpleCodeWithError(), JdkCompiler.class.getClassLoader());
+        }catch (Exception e){
+            exception = e;
+        }
+        assertNotNull(exception);
+        assertThat("can not acquire detail error message from exception.", exception.getMessage(), StringContains.containsString("public String sayHello( {"));
     }
 }

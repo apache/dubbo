@@ -17,17 +17,9 @@
 package org.apache.dubbo.common.compiler.support;
 
 
-import javax.tools.DiagnosticCollector;
-import javax.tools.FileObject;
-import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
+import javax.tools.*;
 import javax.tools.JavaFileObject.Kind;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
-import javax.tools.ToolProvider;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -122,9 +114,18 @@ public class JdkCompiler extends AbstractCompiler {
         Boolean result = compiler.getTask(null, javaFileManager, diagnosticCollector, options,
                 null, Collections.singletonList(javaFileObject)).call();
         if (result == null || !result) {
-            throw new IllegalStateException("Compilation failed. class: " + name + ", diagnostics: " + diagnosticCollector);
+            throw new IllegalStateException("Compilation failed. class: " + name + ", diagnostics: " + getCompileErrorMessage(diagnosticCollector));
         }
         return classLoader.loadClass(name);
+    }
+
+    private String getCompileErrorMessage(DiagnosticCollector<JavaFileObject> diagnostics) {
+        StringBuilder sb = new StringBuilder();
+        for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
+            sb.append("\n").append(diagnostic.toString());
+        }
+
+        return sb.toString();
     }
 
     private static final class JavaFileObjectImpl extends SimpleJavaFileObject {

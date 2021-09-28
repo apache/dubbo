@@ -98,4 +98,17 @@ public class JavaCodeTest {
         code.append("}");
         return code.toString();
     }
+
+    String getSimpleCodeWithError() {
+        StringBuilder code = new StringBuilder();
+        code.append("package org.apache.dubbo.common.compiler.support;");
+
+        code.append("public class HelloServiceImpl" + SUBFIX.getAndIncrement() + " implements HelloService {");
+        code.append("   public String sayHello( { ");
+        code.append("       return \"Hello world!\"; ");
+        code.append("   }");
+        code.append("}");
+        return code.toString();
+    }
+
 }
