@@ -192,4 +192,9 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     protected void cancelByRemoteReset(Http2Error http2Error) {
         DefaultFuture2.getFuture(getRequest().getId()).cancel();
     }
+
+    @Override
+    protected void cancelByLocal(Throwable throwable) {
+        getCancellationContext().cancel(throwable);
+    }
 }

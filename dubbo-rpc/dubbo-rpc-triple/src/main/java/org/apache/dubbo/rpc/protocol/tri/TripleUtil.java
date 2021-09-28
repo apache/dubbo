@@ -18,7 +18,9 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
@@ -103,6 +105,17 @@ public class TripleUtil {
             return false;
         }
         return contentType.startsWith(TripleConstant.APPLICATION_GRPC);
+    }
+
+
+    public static <T> StreamObserver<T> wrapperStreamObserver(StreamObserver<T> observer, CancellationContext context) {
+        if (observer instanceof AbstractStreamObserver) {
+            AbstractStreamObserver<T> streamObserver = ((AbstractStreamObserver<T>) observer);
+            streamObserver.setCancellationContext(context);
+            return streamObserver;
+        }
+        // consider wrapper to AbstractStreamObserver
+        return observer;
     }
 
     public static void responseErr(ChannelHandlerContext ctx, GrpcStatus status) {

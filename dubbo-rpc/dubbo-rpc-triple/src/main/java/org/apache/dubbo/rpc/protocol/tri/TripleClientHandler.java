@@ -81,7 +81,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final URL url = inv.getInvoker().getUrl();
         ConsumerModel consumerModel = inv.getServiceModel() != null ? (ConsumerModel) inv.getServiceModel() : (ConsumerModel) url.getServiceModel();
 
-        MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel,inv);
+        MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel, inv);
 
         ClassLoadUtil.switchContextLoader(consumerModel.getClassLoader());
         AbstractClientStream stream;
@@ -102,12 +102,12 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(Boolean.parseBoolean(ssl));
         }
         stream.service(consumerModel)
-            .connection(Connection.getConnectionFromChannel(ctx.channel()))
-            .method(methodDescriptor)
-            .methodName(methodDescriptor.getMethodName())
-            .request(req)
-            .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
-            .subscribe(new ClientTransportObserver(ctx, stream, promise));
+                .connection(Connection.getConnectionFromChannel(ctx.channel()))
+                .method(methodDescriptor)
+                .methodName(methodDescriptor.getMethodName())
+                .request(req)
+                .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
+                .subscribe(new ClientTransportObserver(ctx, stream, promise));
 
         if (methodDescriptor.isUnary()) {
             stream.asStreamObserver().onNext(inv);
@@ -117,13 +117,15 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             AppResponse result;
             // the stream method params is fixed
             if (methodDescriptor.getRpcType() == MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM
-                || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
-                final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[0];
-                stream.subscribe(streamObserver);
+                    || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
+                StreamObserver<Object> obServer = (StreamObserver<Object>) inv.getArguments()[0];
+                obServer = TripleUtil.wrapperStreamObserver(obServer, cancellationContext);
+                stream.subscribe(obServer);
                 result = new AppResponse(stream.asStreamObserver());
             } else {
-                final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[1];
-                stream.subscribe(streamObserver);
+                StreamObserver<Object> obServer = (StreamObserver<Object>) inv.getArguments()[1];
+                obServer = TripleUtil.wrapperStreamObserver(obServer, cancellationContext);
+                stream.subscribe(obServer);
                 result = new AppResponse();
                 stream.asStreamObserver().onNext(inv.getArguments()[0]);
                 stream.asStreamObserver().onCompleted();

@@ -142,8 +142,9 @@ public abstract class AbstractStream implements Stream {
      *
      * @param cause cancel case
      */
-    protected void cancel(Throwable cause) {
-        getCancellationContext().cancel(cause);
+    protected final void cancel(Throwable cause) {
+        cancelled = true;
+        cancelByLocal(cause);
     }
 
     /**
@@ -157,6 +158,8 @@ public abstract class AbstractStream implements Stream {
     }
 
     protected abstract void cancelByRemoteReset(Http2Error http2Error);
+
+    protected abstract void cancelByLocal(Throwable throwable);
 
     protected abstract StreamObserver<Object> createStreamObserver();
 

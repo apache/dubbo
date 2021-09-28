@@ -234,4 +234,10 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     protected void cancelByRemoteReset(Http2Error http2Error) {
         getCancellationContext().cancel(null);
     }
+
+
+    @Override
+    protected void cancelByLocal(Throwable throwable) {
+        asTransportObserver().onReset(Http2Error.CANCEL);
+    }
 }
