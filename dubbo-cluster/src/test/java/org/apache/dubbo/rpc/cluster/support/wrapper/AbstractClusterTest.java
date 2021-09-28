@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -65,7 +66,7 @@ public class AbstractClusterTest {
         when(directory.getUrl()).thenReturn(url);
         when(directory.getConsumerUrl()).thenReturn(consumerUrl);
         DemoCluster demoCluster = new DemoCluster();
-        Invoker<?> invoker = demoCluster.join(directory);
+        Invoker<?> invoker = demoCluster.join(directory, true);
         Assertions.assertTrue(invoker instanceof AbstractCluster.ClusterFilterInvoker);
         Assertions.assertTrue(((AbstractCluster.ClusterFilterInvoker<?>) invoker).getFilterInvoker()
             instanceof FilterChainBuilder.ClusterFilterChainNode);
@@ -75,8 +76,8 @@ public class AbstractClusterTest {
 
     static class DemoCluster extends AbstractCluster {
         @Override
-        public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-            return super.join(directory);
+        public <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException {
+            return super.join(directory, buildFilterChain);
         }
 
         @Override

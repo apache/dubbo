@@ -14,20 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster;
+package demo;
 
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
+public interface MultiClassLoaderService {
 
-@Deprecated
-public interface Cluster extends org.apache.dubbo.rpc.cluster.Cluster {
-
-    <T> com.alibaba.dubbo.rpc.Invoker<T> join(com.alibaba.dubbo.rpc.cluster.Directory<T> directory) throws
-            com.alibaba.dubbo.rpc.RpcException;
-
-    @Override
-    default <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException {
-        return null;
-    }
+    Object call(MultiClassLoaderServiceRequest innerRequest);
 }

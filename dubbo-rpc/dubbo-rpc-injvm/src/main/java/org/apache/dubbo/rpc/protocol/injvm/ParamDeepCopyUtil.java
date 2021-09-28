@@ -14,20 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.rpc.cluster;
+package org.apache.dubbo.rpc.protocol.injvm;
 
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-@Deprecated
-public interface Cluster extends org.apache.dubbo.rpc.cluster.Cluster {
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface ParamDeepCopyUtil {
 
-    <T> com.alibaba.dubbo.rpc.Invoker<T> join(com.alibaba.dubbo.rpc.cluster.Directory<T> directory) throws
-            com.alibaba.dubbo.rpc.RpcException;
-
-    @Override
-    default <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException {
-        return null;
-    }
+    <T> T copy(URL url, Object src, Class<T> targetClass);
 }
