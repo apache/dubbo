@@ -154,6 +154,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             if (entry == null) {
                 entry = virtualInvokers.firstEntry();
             }
+
             String serverAddress = entry.getValue().getUrl().getAddress();
 
             /**
@@ -182,10 +183,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                 /**
                  * If server node is not valid, get next node
                  */
-                entry = virtualInvokers.higherEntry(entry.getKey());
-                if(entry == null){
-                    entry = virtualInvokers.firstEntry();
-                }
+                entry = getNextInvokerNode(virtualInvokers, entry);
                 serverAddress = entry.getValue().getUrl().getAddress();
             }
             if (!serverRequestCountMap.containsKey(serverAddress)) {
@@ -196,6 +194,14 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
             totalRequestCount.incrementAndGet();
 
             return entry.getValue();
+        }
+
+        private Map.Entry<Long, Invoker<T>> getNextInvokerNode(TreeMap<Long, Invoker<T>> virtualInvokers, Map.Entry<Long, Invoker<T>> entry){
+            Map.Entry<Long, Invoker<T>> nextEntry = virtualInvokers.higherEntry(entry.getKey());
+            if(nextEntry == null){
+                return virtualInvokers.firstEntry();
+            }
+            return nextEntry;
         }
 
         private long hash(byte[] digest, int number) {
