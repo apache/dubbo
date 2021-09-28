@@ -30,7 +30,6 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -64,7 +63,7 @@ public class ContextFilter implements Filter, Filter.Listener {
     private static final Set<String> UNLOADING_KEYS;
 
     static {
-        UNLOADING_KEYS = new LinkedHashSet<>(16);
+        UNLOADING_KEYS = new HashSet<>(16);
         UNLOADING_KEYS.add(PATH_KEY);
         UNLOADING_KEYS.add(INTERFACE_KEY);
         UNLOADING_KEYS.add(GROUP_KEY);
