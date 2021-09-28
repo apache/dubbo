@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
@@ -120,7 +121,13 @@ public abstract class AbstractStream implements Stream {
 
     @Override
     public void execute(Runnable runnable) {
-        executor.execute(runnable);
+        executor.execute(() -> {
+            try {
+                runnable.run();
+            } catch (Throwable throwable) {
+                RpcContext.removeCancellationContext();
+            }
+        });
     }
 
     public String getMethodName() {

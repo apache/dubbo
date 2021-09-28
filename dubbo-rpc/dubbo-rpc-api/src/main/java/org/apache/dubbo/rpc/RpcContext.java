@@ -99,6 +99,13 @@ public class RpcContext {
         return CANCELLATION_CONTEXT.get();
     }
 
+    /**
+     * remove on stream onComplete or throw exception onNext / onError
+     */
+    public static void removeCancellationContext() {
+        CANCELLATION_CONTEXT.remove();
+    }
+
 
     private boolean remove = true;
 
@@ -217,6 +224,7 @@ public class RpcContext {
         }
         SERVER_LOCAL.remove();
         SERVICE_CONTEXT.remove();
+        CANCELLATION_CONTEXT.remove();
     }
 
     /**

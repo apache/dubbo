@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 
@@ -54,8 +55,8 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onError(Throwable throwable) {
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withCause(throwable)
-                .withDescription("Biz exception");
+                    .withCause(throwable)
+                    .withDescription("Biz exception");
             transportError(status);
         }
 
@@ -83,7 +84,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
                 subscribe((StreamObserver<Object>) result.getValue());
             } catch (Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Failed to create server's observer"));
+                        .withDescription("Failed to create server's observer"));
             }
         }
 
@@ -104,18 +105,23 @@ public class ServerStream extends AbstractServerStream implements Stream {
                     }
                 }
             } catch (Throwable t) {
+                RpcContext.removeCancellationContext();
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Deserialize request failed")
-                    .withCause(t));
+                        .withDescription("Deserialize request failed")
+                        .withCause(t));
             }
         }
 
         @Override
         public void onComplete() {
-            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
-                return;
+            try {
+                if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                    return;
+                }
+                getStreamSubscriber().onCompleted();
+            } finally {
+                RpcContext.removeCancellationContext();
             }
-            getStreamSubscriber().onCompleted();
         }
     }
 }
