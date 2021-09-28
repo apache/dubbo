@@ -90,7 +90,7 @@ public class JdkCompilerTest extends JavaCodeTest {
     }
 
     @Test
-    public void test_getCompileErrorMessage() {
+    public void testGetCompileClassWithError() {
         Exception exception = null;
         try{
             JdkCompiler compiler = new JdkCompiler();
