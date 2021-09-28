@@ -37,7 +37,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -291,7 +291,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     protected Map<String, Object> parseMetadataToAttachmentMap(Metadata metadata) {
-        Map<String, Object> attachments = new LinkedHashMap<>();
+        Map<String, Object> attachments = new HashMap<>();
         for (Map.Entry<CharSequence, CharSequence> header : metadata) {
             String key = header.getKey().toString();
             if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
