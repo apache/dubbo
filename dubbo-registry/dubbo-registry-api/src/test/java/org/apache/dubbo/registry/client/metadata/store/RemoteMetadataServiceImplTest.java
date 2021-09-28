@@ -17,54 +17,75 @@
 package org.apache.dubbo.registry.client.metadata.store;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.stubbing.Answer;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class RemoteMetadataServiceImplTest {
-    private static RemoteMetadataServiceImpl remoteMetadataService;
-    private static ApplicationModel scopeModel;
+
     private static final String REGISTRY_CLUSTER = "registry9103";
+    private static final String SERVICE_NAME = "A";
+    private RemoteMetadataServiceImpl remoteMetadataService;
+    private MetadataReport metadataReport;
+    private MetadataInfo metadataInfo;
+    private String reversion;
 
-    @BeforeAll
-    public static void setUp() {
-        ApplicationConfig applicationConfig = new ApplicationConfig();
-        applicationConfig.setName("A");
-        scopeModel = ApplicationModel.defaultModel();
-        scopeModel.getApplicationConfigManager().setApplication(applicationConfig);
+    @BeforeEach
+    public void setUp() {
+        ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
+        ScopeBeanFactory beanFactory = mock(ScopeBeanFactory.class);
+        MetadataReportInstance metadataReportInstance = mock(MetadataReportInstance.class);
+        metadataReport = mock(MetadataReport.class);
 
-        URL url = URL.valueOf("metadata://127.0.0.1:20880/TestService?version=1.0.0&metadata=mock&sync.report=true");
-        MetadataReportConfig metadataReportConfig = mock(MetadataReportConfig.class);
-        when(metadataReportConfig.getApplicationModel()).thenReturn(scopeModel);
-        when(metadataReportConfig.toUrl()).thenReturn(url);
-        when(metadataReportConfig.getScopeModel()).thenReturn(scopeModel);
-        when(metadataReportConfig.getRegistry()).thenReturn(REGISTRY_CLUSTER);
-        MetadataReportInstance metadataReportInstance = scopeModel.getBeanFactory().getBean(MetadataReportInstance.class);
-        metadataReportInstance.init(metadataReportConfig);
+        Map<String, MetadataReport> clusterToMetadataReport = new HashMap<>();
+        clusterToMetadataReport.put(REGISTRY_CLUSTER, metadataReport);
+        when(metadataReportInstance.getMetadataReports(anyBoolean())).thenReturn(clusterToMetadataReport);
+        when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
+        when(beanFactory.getBean(MetadataReportInstance.class)).thenReturn(metadataReportInstance);
+
+        metadataInfo = new MetadataInfo();
+        URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService");
+        metadataInfo.addService(new MetadataInfo.ServiceInfo(url));
+        reversion = metadataInfo.calAndGetRevision();
+        Map<String, MetadataInfo> clusterToMetadataInfo = new HashMap<>();
+        clusterToMetadataInfo.put(REGISTRY_CLUSTER, metadataInfo);
+
+        WritableMetadataService writableMetadataService = mock(WritableMetadataService.class);
+        when(applicationModel.getDefaultExtension(WritableMetadataService.class)).thenReturn(writableMetadataService);
+        when(writableMetadataService.getMetadataInfos()).thenReturn(clusterToMetadataInfo);
+        when(metadataReport.getAppMetadata(any(),any())).thenAnswer((Answer<MetadataInfo>) invocationOnMock -> {
+            SubscriberMetadataIdentifier identifier = invocationOnMock.getArgument(0, SubscriberMetadataIdentifier.class);
+            if (SERVICE_NAME.equals(identifier.getApplication()) && reversion.equals(identifier.getRevision())) {
+                return metadataInfo;
+            }
+            return null;
+        });
+
 
         remoteMetadataService = new RemoteMetadataServiceImpl();
-        remoteMetadataService.setScopeModel(scopeModel);
-    }
-
-    @AfterAll
-    public static void clearUp() {
-        ApplicationModel.reset();
+        remoteMetadataService.setScopeModel(applicationModel);
     }
 
     @Test
@@ -73,37 +94,41 @@ public class RemoteMetadataServiceImplTest {
         // test getMetadataReports
         Map<String, MetadataReport> metadataReports = remoteMetadataService.getMetadataReports();
         Assertions.assertTrue(metadataReports.containsKey(REGISTRY_CLUSTER));
-        Assertions.assertTrue(metadataReports.get(REGISTRY_CLUSTER) instanceof MockMetadataReport);
 
         // test publishMetadata
-        WritableMetadataService writableMetadataService = scopeModel.getDefaultExtension(WritableMetadataService.class);
-        URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?REGISTRY_CLUSTER=" + REGISTRY_CLUSTER);
-        writableMetadataService.exportURL(url);
-        remoteMetadataService.publishMetadata("A");
+        remoteMetadataService.publishMetadata(SERVICE_NAME);
+
+        ArgumentCaptor<SubscriberMetadataIdentifier> identifierArgumentCaptor = ArgumentCaptor.forClass(SubscriberMetadataIdentifier.class);
+        ArgumentCaptor<MetadataInfo> metadataInfoArgumentCaptor = ArgumentCaptor.forClass(MetadataInfo.class);
+        verify(metadataReport, times(1)).publishAppMetadata(identifierArgumentCaptor.capture(), metadataInfoArgumentCaptor.capture());
+        SubscriberMetadataIdentifier identifier = identifierArgumentCaptor.getValue();
+        Assertions.assertEquals(identifier.getRevision(), reversion);
+        Assertions.assertEquals(identifier.getApplication(), SERVICE_NAME);
 
         // test getMetadata
-        ServiceInstance serviceInstance = new DefaultServiceInstance();
+        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(SERVICE_NAME, "127.0.0.1", 20880, ApplicationModel.defaultModel());
         serviceInstance.setRegistryCluster(REGISTRY_CLUSTER);
-        Map<String, MetadataInfo> metadataInfos = writableMetadataService.getMetadataInfos();
-        MetadataInfo localMetadataInfo = metadataInfos.get(REGISTRY_CLUSTER);
-        String revision = localMetadataInfo.calAndGetRevision();
-        serviceInstance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, revision);
+        serviceInstance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, reversion);
 
         MetadataInfo remoteMetadataInfo = remoteMetadataService.getMetadata(serviceInstance);
-        Assertions.assertEquals(localMetadataInfo, remoteMetadataInfo);
+        Assertions.assertEquals(remoteMetadataInfo, metadataInfo);
+
+        serviceInstance.setServiceName("FAIL_SERVICE_NAME");
+        remoteMetadataInfo = remoteMetadataService.getMetadata(serviceInstance);
+        Assertions.assertNull(remoteMetadataInfo);
     }
 
     @Test
     public void testPublishServiceDefinition() {
+        // test provider publishServiceDefinition
         URL providerURL = URL.valueOf("dubbo://127.0.0.1:8888/org.apache.dubbo.registry.service.DemoService?side=provider");
         remoteMetadataService.publishServiceDefinition(providerURL);
+        verify(metadataReport, times(1)).storeProviderMetadata(any(),any());
 
+        // test consumer publishServiceDefinition
         URL consumerURL = URL.valueOf("dubbo://127.0.0.1:8888/org.apache.dubbo.registry.service.DemoService?side=consumer");
         remoteMetadataService.publishServiceDefinition(consumerURL);
-
-        Map<String, MetadataReport> metadataReports = remoteMetadataService.getMetadataReports();
-        MockMetadataReport metadataReport = (MockMetadataReport) metadataReports.get(REGISTRY_CLUSTER);
-        Assertions.assertEquals(metadataReport.store.size(),2);
+        verify(metadataReport, times(1)).storeConsumerMetadata(any(),any());
 
     }
 }
