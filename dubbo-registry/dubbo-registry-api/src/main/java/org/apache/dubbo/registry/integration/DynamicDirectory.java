@@ -238,7 +238,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         // unsubscribe.
         try {
             if (getSubscribeConsumerurl() != null && registry != null && registry.isAvailable()) {
-                //#8895 second question overwrite by child
+                //overwrite by child, so need call function
                 unSubscribe(getSubscribeConsumerurl());
             }
         } catch (Throwable t) {

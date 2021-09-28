@@ -75,7 +75,9 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
 
     @Override
     public void destroy() {
-        //#8895 second question directory must destroy
+        //directory need destroy, because do not have directory manager, so who get the directory need destroy
+        //directory need support destroy multi times
+        //other ClusterInvoker maybe also have directory, so it also destroy
         this.directory.destroy();
 
         this.invoker.destroy();
