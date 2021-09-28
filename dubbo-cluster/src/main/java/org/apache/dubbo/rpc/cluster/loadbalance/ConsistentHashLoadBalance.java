@@ -22,12 +22,12 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 
@@ -88,12 +88,12 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
          * key: server(invoker) address
          * value: count of requests accept by certain server
          */
-        private Map<String, Long> serverRequestCountMap = new HashMap<>();
+        private Map<String, AtomicLong> serverRequestCountMap = new ConcurrentHashMap<>();
 
         /**
          * count of total requests accept by all servers
          */
-        private int totalRequestCount;
+        private AtomicLong totalRequestCount;
 
         /**
          * count of current servers(invokers)
@@ -103,8 +103,9 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         /**
          * the ratio which allow count of requests accept by each server
          * overrate average (totalRequestCount/serverCount).
+         * 1.5 is recommended, in the future we can make this param configurable
          */
-        private double overloadRatioAllowed = 1.5F;
+        private static final double OVERLOAD_RATIO_THREAD = 1.5F;
 
         ConsistentHashSelector(List<Invoker<T>> invokers, String methodName, int identityHashCode) {
             this.virtualInvokers = new TreeMap<Long, Invoker<T>>();
@@ -127,7 +128,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                 }
             }
 
-            totalRequestCount = 0;
+            totalRequestCount = new AtomicLong(0);
             serverCount = invokers.size();
             serverRequestCountMap.clear();
         }
@@ -149,14 +150,27 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
         }
 
         private Invoker<T> selectForKey(long hash) {
-            ++totalRequestCount;
             Map.Entry<Long, Invoker<T>> entry = virtualInvokers.ceilingEntry(hash);
             if (entry == null) {
                 entry = virtualInvokers.firstEntry();
             }
             String serverAddress = entry.getValue().getUrl().getAddress();
-            double overloadThread = ((double) totalRequestCount / (double) serverCount) * overloadRatioAllowed;
 
+            /**
+             * The following part of codes aims to select suitable invoker.
+             * This part is not complete thread safety.
+             * However, in the scene of consumer-side load balance,
+             * thread race for this part of codes
+             * (execution time cost for this part of codes without any IO or
+             * network operation is very low) will rarely occur. And even in
+             * extreme case, a few requests are assigned to an invoker which
+             * is above OVERLOAD_RATIO_THREAD will not make a significant impact
+             * on the effect of this new algorithm.
+             * And make this part of codes synchronized will reduce efficiency of
+             * every request. In my opinion, this is not worth. So it is not a
+             * problem for this part is not complete thread safety.
+             */
+            double overloadThread = ((double) totalRequestCount.get() / (double) serverCount) * OVERLOAD_RATIO_THREAD;
             /**
              * Find a valid server node:
              * 1. Not have accept request yet
@@ -164,7 +178,7 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
              * 2. Not have overloaded (request count already accept < thread (average request count * overloadRatioAllowed ))
              */
             while (serverRequestCountMap.containsKey(serverAddress)
-                    && serverRequestCountMap.get(serverAddress) >= overloadThread) {
+                    && serverRequestCountMap.get(serverAddress).get() >= overloadThread) {
                 /**
                  * If server node is not valid, get next node
                  */
@@ -174,22 +188,14 @@ public class ConsistentHashLoadBalance extends AbstractLoadBalance {
                 }
                 serverAddress = entry.getValue().getUrl().getAddress();
             }
-
             if (!serverRequestCountMap.containsKey(serverAddress)) {
-                //
-                serverRequestCountMap.put(serverAddress, 1L);
+                serverRequestCountMap.put(serverAddress, new AtomicLong(1));
             } else {
-                serverRequestCountMap.put(serverAddress, serverRequestCountMap.get(entry.getValue().getUrl().getAddress()) + 1L);
+                serverRequestCountMap.get(serverAddress).incrementAndGet();
             }
-            return entry.getValue();
-        }
+            totalRequestCount.incrementAndGet();
 
-        private Map.Entry<Long, Invoker<T>> getNextInvokerNode(TreeMap<Long, Invoker<T>> virtualInvokers, Map.Entry<Long, Invoker<T>> entry){
-            Map.Entry<Long, Invoker<T>> nextEntry = virtualInvokers.higherEntry(entry.getKey());
-            if(entry == null){
-                return virtualInvokers.firstEntry();
-            }
-            return nextEntry;
+            return entry.getValue();
         }
 
         private long hash(byte[] digest, int number) {
