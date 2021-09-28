@@ -74,6 +74,8 @@ public class DubboShutdownHook extends Thread {
         if (registered.compareAndSet(false, true)) {
             try {
                 Runtime.getRuntime().addShutdownHook(this);
+            } catch (IllegalStateException e) {
+                logger.warn("register shutdown hook failed: " + e.getMessage());
             } catch (Exception e) {
                 logger.warn("register shutdown hook failed: " + e.getMessage(), e);
             }
@@ -85,8 +87,14 @@ public class DubboShutdownHook extends Thread {
      */
     public void unregister() {
         if (registered.compareAndSet(true, false)) {
+            if (this.isAlive() || destroyed.get()) {
+                // DubboShutdownHook is running
+                return;
+            }
             try {
                 Runtime.getRuntime().removeShutdownHook(this);
+            } catch (IllegalStateException e) {
+                logger.warn("unregister shutdown hook failed: " + e.getMessage());
             } catch (Exception e) {
                 logger.warn("unregister shutdown hook failed: " + e.getMessage(), e);
             }

@@ -30,8 +30,10 @@ import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -48,18 +50,26 @@ import java.util.Map;
 
 public class JavaConfigReferenceBeanTest {
 
-    private RegistryCenter multipleRegistryCenter;
+    private static RegistryCenter multipleRegistryCenter;
 
-    @BeforeEach
-    public void setUp() {
-        DubboBootstrap.reset();
+    @BeforeAll
+    public static void beforeAll() {
         multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
         multipleRegistryCenter.startup();
     }
 
+    @AfterAll
+    public static void afterAll() {
+        multipleRegistryCenter.shutdown();
+    }
+
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
+
     @AfterEach
     public void tearDown() {
-        multipleRegistryCenter.shutdown();
         DubboBootstrap.reset();
     }
 

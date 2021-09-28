@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -271,14 +272,23 @@ public class RouterChain<T> {
         if (firstBuildCache.compareAndSet(true,false)) {
             buildCache(notify);
         }
-        if (notify) {
-            if (loopPermitNotify.tryAcquire()) {
-                loopPool.submit(new NotifyLoopRunnable(true, loopPermitNotify));
+
+        try {
+            if (notify) {
+                if (loopPermitNotify.tryAcquire()) {
+                    loopPool.submit(new NotifyLoopRunnable(true, loopPermitNotify));
+                }
+            } else {
+                if (loopPermit.tryAcquire()) {
+                    loopPool.submit(new NotifyLoopRunnable(false, loopPermit));
+                }
             }
-        } else {
-            if (loopPermit.tryAcquire()) {
-                loopPool.submit(new NotifyLoopRunnable(false, loopPermit));
+        } catch (RejectedExecutionException e) {
+            if (loopPool.isShutdown()){
+                logger.warn("loopPool executor service is shutdown, ignoring notify loop");
+                return;
             }
+            throw e;
         }
     }
 
