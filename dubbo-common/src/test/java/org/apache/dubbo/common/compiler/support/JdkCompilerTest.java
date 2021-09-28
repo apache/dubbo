@@ -92,10 +92,10 @@ public class JdkCompilerTest extends JavaCodeTest {
     @Test
     public void testGetCompileClassWithError() {
         Exception exception = null;
-        try{
+        try {
             JdkCompiler compiler = new JdkCompiler();
-            Class<?> clazz = compiler.compile(getSimpleCodeWithError(), JdkCompiler.class.getClassLoader());
-        }catch (Exception e){
+            compiler.compile(getSimpleCodeWithError(), JdkCompiler.class.getClassLoader());
+        } catch (Exception e) {
             exception = e;
         }
         assertNotNull(exception);
