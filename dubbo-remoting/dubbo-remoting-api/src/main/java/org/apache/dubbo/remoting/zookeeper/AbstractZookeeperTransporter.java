@@ -97,10 +97,10 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                 break;
             }
         }
-        // It seems redundant code
-//        if (zookeeperClient != null && zookeeperClient.isConnected()) {
-//            writeToClientMap(addressList, zookeeperClient);
-//        }
+        // mapping new backup address
+        if (zookeeperClient != null && zookeeperClient.isConnected()) {
+            writeToClientMap(addressList, zookeeperClient);
+        }
         return zookeeperClient;
     }
 
