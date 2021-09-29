@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.CancellationContext;
 
-public abstract class AbstractStreamObserver<T> implements StreamObserver<T> {
+public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
 
     private CancellationContext cancellationContext;
 
@@ -38,6 +38,4 @@ public abstract class AbstractStreamObserver<T> implements StreamObserver<T> {
         }
         cancellationContext.cancel(throwable);
     }
-
-
 }

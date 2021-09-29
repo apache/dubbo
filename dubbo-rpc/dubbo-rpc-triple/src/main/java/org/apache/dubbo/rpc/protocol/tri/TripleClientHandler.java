@@ -119,12 +119,12 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             if (methodDescriptor.getRpcType() == MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM
                     || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
                 StreamObserver<Object> obServer = (StreamObserver<Object>) inv.getArguments()[0];
-                obServer = TripleUtil.wrapperStreamObserver(obServer, cancellationContext);
+                obServer = attachCancelContext(obServer, cancellationContext);
                 stream.subscribe(obServer);
                 result = new AppResponse(stream.asStreamObserver());
             } else {
                 StreamObserver<Object> obServer = (StreamObserver<Object>) inv.getArguments()[1];
-                obServer = TripleUtil.wrapperStreamObserver(obServer, cancellationContext);
+                obServer = attachCancelContext(obServer, cancellationContext);
                 stream.subscribe(obServer);
                 result = new AppResponse();
                 stream.asStreamObserver().onNext(inv.getArguments()[0]);
@@ -149,5 +149,15 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             }
         }
         throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+    }
+
+    public <T> StreamObserver<T> attachCancelContext(StreamObserver<T> observer, CancellationContext context) {
+        if (observer instanceof CancelableStreamObserver) {
+            CancelableStreamObserver<T> streamObserver = ((CancelableStreamObserver<T>) observer);
+            streamObserver.setCancellationContext(context);
+            return streamObserver;
+        }
+        // consider wrapper to AbstractStreamObserver
+        return observer;
     }
 }
