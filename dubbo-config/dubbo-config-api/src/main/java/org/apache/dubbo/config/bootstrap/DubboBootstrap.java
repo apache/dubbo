@@ -249,7 +249,7 @@ public final class DubboBootstrap {
     }
 
     public void destroy() {
-        applicationDeployer.destroy();
+        applicationModel.destroy();
     }
 
     public boolean isInitialized() {

@@ -120,6 +120,9 @@ public class FrameworkModel extends ScopeModel {
 
     synchronized void removeApplication(ApplicationModel model) {
         this.applicationModels.remove(model);
+    }
+
+    synchronized void tryDestroy() {
         if (applicationModels.size() == 0) {
             destroy();
         }

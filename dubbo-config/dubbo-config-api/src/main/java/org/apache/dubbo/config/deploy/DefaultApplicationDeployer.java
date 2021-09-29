@@ -55,6 +55,7 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -596,7 +597,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // start internal module
         ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
         if (!internalModuleDeployer.isRunning()) {
-            internalModuleDeployer.start();
+            CompletableFuture future = internalModuleDeployer.start();
+            try {
+                future.get();
+            } catch (Exception e) {
+                logger.warn("wait for internal module started failed: " + e.getMessage(), e);
+            }
         }
     }
 
@@ -783,6 +789,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public synchronized void destroy() {
+        // make sure destroy application model first
+        if (!applicationModel.isDestroyed()) {
+            applicationModel.destroy();
+            return;
+        }
         if (isStopping() || isStopped()) {
             return;
         }
@@ -797,15 +808,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             executeShutdownCallbacks();
 
-            applicationModel.destroy();
-
-            destroyProtocols();
-
             destroyRegistries();
             destroyServiceDiscoveries();
             destroyMetadataReports();
 
-            destroyServiceDiscoveries();
+            destroyFrameworkResources();
+
             destroyExecutorRepository();
             destroyDynamicConfigurations();
 
@@ -826,23 +834,44 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (isStarting()) {
             return;
         }
-        onStarting();
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+            if (moduleModel.getDeployer().isStarting()) {
+                onStarting();
+                break;
+            }
+        }
     }
 
     @Override
     public void checkStarted() {
+        // TODO improve state checking
+        int pending = 0, starting = 0, started = 0;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             if (moduleModel.getDeployer().isPending()) {
-                setPending();
+                pending++;
             } else if (moduleModel.getDeployer().isStarting()) {
-                return;
+                starting++;
+            } else if (moduleModel.getDeployer().isStarted()) {
+                started++;
             }
         }
-        // all modules has been started
-        onStarted();
+        if (started > 0 && (pending + starting == 0)) {
+            // all modules has been started
+            onStarted();
+        } else if (pending > 0 && (starting + starting == 0)) {
+            // all modules has not starting or started
+            setPending();
+        } else if (starting > 0 || (pending > 0 && started > 0 )) {
+            // any module is starting
+            // any module is pending and some is started
+            onStarting();
+        }
     }
 
     private void onStarting() {
+        if (isStarting()) {
+            return;
+        }
         setStarting();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is starting.");
@@ -850,6 +879,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onStarted() {
+        if (isStarted()) {
+            return;
+        }
         setStarted();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is ready.");
@@ -857,9 +889,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (startFuture != null) {
             startFuture.complete(true);
         }
+        // shutdown export/refer executor after started
+        executorRepository.shutdownServiceExportExecutor();
+        executorRepository.shutdownServiceReferExecutor();
     }
 
     private void onStopping() {
+        if (isStopping()) {
+            return;
+        }
         setStopping();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is stopping.");
@@ -867,6 +905,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onStopped() {
+        if (isStopped()) {
+            return;
+        }
         setStopped();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " has stopped.");
@@ -883,22 +924,32 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     /**
-     * Destroy all the protocols.
+     * Destroy all framework resources.
      */
-    private void destroyProtocols() {
+    private void destroyFrameworkResources() {
         FrameworkModel frameworkModel = applicationModel.getFrameworkModel();
         if (frameworkModel.getApplicationModels().isEmpty()) {
-            //TODO destroy protocol in framework scope
-            ExtensionLoader<Protocol> loader = frameworkModel.getExtensionLoader(Protocol.class);
-            for (String protocolName : loader.getLoadedExtensions()) {
-                try {
-                    Protocol protocol = loader.getLoadedExtension(protocolName);
-                    if (protocol != null) {
-                        protocol.destroy();
-                    }
-                } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
+            // destroy protocol in framework scope
+            destroyProtocols(frameworkModel);
+
+            //TODO destroy zookeeper clients
+            ZookeeperTransporter.getExtension(frameworkModel).destroy();
+        }
+    }
+
+    /**
+     * Destroy all the protocols.
+     */
+    private void destroyProtocols(FrameworkModel frameworkModel) {
+        ExtensionLoader<Protocol> loader = frameworkModel.getExtensionLoader(Protocol.class);
+        for (String protocolName : loader.getLoadedExtensions()) {
+            try {
+                Protocol protocol = loader.getLoadedExtension(protocolName);
+                if (protocol != null) {
+                    protocol.destroy();
                 }
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
             }
         }
     }

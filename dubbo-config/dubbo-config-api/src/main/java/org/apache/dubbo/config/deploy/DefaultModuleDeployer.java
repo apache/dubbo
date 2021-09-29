@@ -346,7 +346,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         } catch (Exception e) {
             logger.warn(getIdentifier() + " export services occurred an exception.");
         } finally {
-            executorRepository.shutdownServiceExportExecutor();
             logger.info(getIdentifier() + " export services finished.");
             asyncExportingFutures.clear();
         }
@@ -360,7 +359,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         } catch (Exception e) {
             logger.warn(getIdentifier() + " refer services occurred an exception.");
         } finally {
-            executorRepository.shutdownServiceReferExecutor();
             logger.info(getIdentifier() + " refer services finished.");
             asyncReferringFutures.clear();
         }
