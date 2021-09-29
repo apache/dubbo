@@ -260,13 +260,6 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
 
         assertDestroyed(DESTROY_ACTION);
 
-        if (isDestroyed()) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("It's ignored to stop current ServiceDiscovery, because it has been stopped.");
-            }
-            return;
-        }
-
         executeWithEvents(
                 of(new ServiceDiscoveryDestroyingEvent(this, serviceDiscovery)),
                 serviceDiscovery::destroy,
