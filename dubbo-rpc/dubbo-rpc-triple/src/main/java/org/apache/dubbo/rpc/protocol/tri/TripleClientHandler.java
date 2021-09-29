@@ -39,7 +39,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
-import io.netty.handler.codec.http2.Http2SettingsFrame;
 import io.netty.util.ReferenceCountUtil;
 
 import java.util.Arrays;
@@ -64,15 +63,11 @@ public class TripleClientHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (msg instanceof Http2SettingsFrame) {
-            // already handled
-        } else if (msg instanceof Http2GoAwayFrame) {
+        if (msg instanceof Http2GoAwayFrame) {
             final ConnectionHandler connectionHandler = ctx.pipeline().get(ConnectionHandler.class);
             connectionHandler.onGoAway(ctx.channel());
-            ReferenceCountUtil.release(msg);
-        } else {
-            ReferenceCountUtil.release(msg);
         }
+        ReferenceCountUtil.release(msg);
     }
 
     private void writeRequest(ChannelHandlerContext ctx, final Request req, final ChannelPromise promise) {
