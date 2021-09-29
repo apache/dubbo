@@ -20,10 +20,16 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizerHolder;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class ShutdownHookTest {
+
+    @BeforeEach
+    public void beforeEach() {
+        DubboBootstrap.reset();
+    }
 
     @Test
     public void testDisableShutdownHook(){
