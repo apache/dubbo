@@ -85,7 +85,7 @@ public class RpcContext {
     };
 
     /**
-     * consider move to service context but for stream cancel the service context can not get
+     * use by cancel call
      */
     private static final InternalThreadLocal<CancellationContext> CANCELLATION_CONTEXT = new InternalThreadLocal<CancellationContext>() {
         @Override
@@ -99,11 +99,12 @@ public class RpcContext {
         return CANCELLATION_CONTEXT.get();
     }
 
-    /**
-     * remove on stream onComplete or throw exception onNext / onError
-     */
     public static void removeCancellationContext() {
         CANCELLATION_CONTEXT.remove();
+    }
+
+    public static void restoreCancellationContext(CancellationContext oldContext) {
+        CANCELLATION_CONTEXT.set(oldContext);
     }
 
 

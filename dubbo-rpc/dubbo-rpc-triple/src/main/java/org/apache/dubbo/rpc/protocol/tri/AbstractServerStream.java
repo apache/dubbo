@@ -82,12 +82,20 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return executor;
     }
 
-    public static AbstractServerStream unary(URL url) {
+    public static UnaryServerStream unary(URL url) {
         return new UnaryServerStream(url);
     }
 
-    public static AbstractServerStream stream(URL url) {
+    public static ServerStream stream(URL url) {
         return new ServerStream(url);
+    }
+
+    public static AbstractServerStream newServerStream(URL url, boolean unary) {
+        AbstractServerStream stream = unary ? unary(url) : stream(url);
+        stream.execute(() -> {
+            RpcContext.restoreCancellationContext(stream.getCancellationContext());
+        });
+        return stream;
     }
 
     private static ProviderModel lookupProviderModel(URL url) {
@@ -133,9 +141,9 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         for (HeaderFilter headerFilter : getHeaderFilters()) {
             inv = headerFilter.invoke(getInvoker(), inv);
         }
-        if (getCancellationContext() == null) {
-            setCancellationContext(RpcContext.getCancellationContext());
-        }
+//        if (getCancellationContext() == null) {
+//            setCancellationContext(RpcContext.getCancellationContext());
+//        }
         return inv;
     }
 

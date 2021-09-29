@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 public class ClientStream extends AbstractClientStream implements Stream {
@@ -30,7 +29,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
-        return new ClientStreamObserver() {
+        ClientStreamObserver clientStreamObserver = new ClientStreamObserver() {
             boolean metaSent;
 
             @Override
@@ -49,6 +48,8 @@ public class ClientStream extends AbstractClientStream implements Stream {
                 transportError(throwable);
             }
         };
+        clientStreamObserver.setCancellationContext(getCancellationContext());
+        return clientStreamObserver;
     }
 
     @Override
@@ -68,16 +69,11 @@ public class ClientStream extends AbstractClientStream implements Stream {
                 execute(() -> {
                     final GrpcStatus status = extractStatusFromMeta(getHeaders());
 
-                    try {
-                        if (GrpcStatus.Code.isOk(status.code.code)) {
-                            getStreamSubscriber().onCompleted();
-                        } else {
-                            getStreamSubscriber().onError(status.asException());
-                        }
-                    } finally {
-                        RpcContext.removeCancellationContext();
+                    if (GrpcStatus.Code.isOk(status.code.code)) {
+                        getStreamSubscriber().onCompleted();
+                    } else {
+                        getStreamSubscriber().onError(status.asException());
                     }
-
                 });
             }
         };

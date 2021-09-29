@@ -37,7 +37,6 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2SettingsFrame;
 import io.netty.util.ReferenceCountUtil;
@@ -84,18 +83,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel, inv);
 
         ClassLoadUtil.switchContextLoader(consumerModel.getClassLoader());
-        AbstractClientStream stream;
-        if (methodDescriptor.isUnary()) {
-            stream = AbstractClientStream.unary(url);
-        } else {
-            stream = AbstractClientStream.stream(url);
-        }
-        final CancellationContext cancellationContext = inv.getCancellationContext();
-        // for client cancel,send rst frame to server
-        cancellationContext.addListener(context -> {
-            stream.asTransportObserver().onReset(Http2Error.CANCEL);;
-        });
-        stream.setCancellationContext(cancellationContext);
+        AbstractClientStream stream = AbstractClientStream.newClientStream(url, methodDescriptor.isUnary());
 
         String ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY);
         if (StringUtils.isNotEmpty(ssl)) {
@@ -119,12 +107,12 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             if (methodDescriptor.getRpcType() == MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM
                     || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
                 StreamObserver<Object> obServer = (StreamObserver<Object>) inv.getArguments()[0];
-                obServer = attachCancelContext(obServer, cancellationContext);
+                obServer = attachCancelContext(obServer, stream.getCancellationContext());
                 stream.subscribe(obServer);
                 result = new AppResponse(stream.asStreamObserver());
             } else {
                 StreamObserver<Object> obServer = (StreamObserver<Object>) inv.getArguments()[1];
-                obServer = attachCancelContext(obServer, cancellationContext);
+                obServer = attachCancelContext(obServer, stream.getCancellationContext());
                 stream.subscribe(obServer);
                 result = new AppResponse();
                 stream.asStreamObserver().onNext(inv.getArguments()[0]);
@@ -157,7 +145,6 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             streamObserver.setCancellationContext(context);
             return streamObserver;
         }
-        // consider wrapper to AbstractStreamObserver
         return observer;
     }
 }

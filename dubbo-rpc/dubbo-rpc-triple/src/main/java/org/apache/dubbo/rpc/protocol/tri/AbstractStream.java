@@ -77,7 +77,7 @@ public abstract class AbstractStream implements Stream {
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
 
-    private CancellationContext cancellationContext;
+    private final CancellationContext cancellationContext;
     private boolean cancelled = false;
 
     public boolean isCancelled() {
@@ -92,18 +92,15 @@ public abstract class AbstractStream implements Stream {
         return cancellationContext;
     }
 
-    protected void setCancellationContext(CancellationContext cancellationContext) {
-        this.cancellationContext = cancellationContext;
-    }
-
     protected AbstractStream(URL url, Executor executor) {
         this.url = url;
         this.executor = executor;
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
         this.multipleSerialization = url.getOrDefaultFrameworkModel().getExtensionLoader(MultipleSerialization.class)
                 .getExtension(value);
-        this.streamObserver = createStreamObserver();
         this.transportObserver = createTransportObserver();
+        this.cancellationContext = new CancellationContext();
+        this.streamObserver = createStreamObserver();
     }
 
     private static Executor allocateCallbackExecutor() {
@@ -150,8 +147,13 @@ public abstract class AbstractStream implements Stream {
      * @param cause cancel case
      */
     protected final void cancel(Throwable cause) {
-        cancelled = true;
+        cancel();
         cancelByLocal(cause);
+    }
+
+    private void cancel() {
+        cancelled = true;
+        execute(RpcContext::removeCancellationContext);
     }
 
     /**
@@ -160,7 +162,7 @@ public abstract class AbstractStream implements Stream {
      * @param http2Error {@link Http2Error}
      */
     protected final void cancelByRemote(Http2Error http2Error) {
-        cancelled = true;
+        cancel();
         cancelByRemoteReset(http2Error);
     }
 

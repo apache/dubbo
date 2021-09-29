@@ -77,51 +77,59 @@ public class ServerStream extends AbstractServerStream implements Stream {
             if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                 return;
             }
-            final RpcInvocation inv = buildInvocation(metadata);
-            inv.setArguments(new Object[]{asStreamObserver()});
-            final Result result = getInvoker().invoke(inv);
-            try {
-                subscribe((StreamObserver<Object>) result.getValue());
-            } catch (Throwable t) {
-                transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Failed to create server's observer"));
-            }
+            execute(() -> {
+                final RpcInvocation inv = buildInvocation(metadata);
+                inv.setArguments(new Object[]{asStreamObserver()});
+                final Result result = getInvoker().invoke(inv);
+                try {
+                    subscribe((StreamObserver<Object>) result.getValue());
+                } catch (Throwable t) {
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("Failed to create server's observer"));
+                }
+            });
+
         }
 
         @Override
         public void onData(byte[] in, boolean endStream) {
-            try {
-                if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
-                    RpcInvocation inv = buildInvocation(getHeaders());
-                    final Object[] arguments = deserializeRequest(in);
-                    if (arguments != null) {
-                        inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
-                        getInvoker().invoke(inv);
+            execute(() -> {
+                try {
+                    if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                        RpcInvocation inv = buildInvocation(getHeaders());
+                        final Object[] arguments = deserializeRequest(in);
+                        if (arguments != null) {
+                            inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
+                            getInvoker().invoke(inv);
+                        }
+                    } else {
+                        final Object[] arguments = deserializeRequest(in);
+                        if (arguments != null) {
+                            getStreamSubscriber().onNext(arguments[0]);
+                        }
                     }
-                } else {
-                    final Object[] arguments = deserializeRequest(in);
-                    if (arguments != null) {
-                        getStreamSubscriber().onNext(arguments[0]);
-                    }
+                } catch (Throwable t) {
+                    RpcContext.removeCancellationContext();
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("Deserialize request failed")
+                            .withCause(t));
                 }
-            } catch (Throwable t) {
-                RpcContext.removeCancellationContext();
-                transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Deserialize request failed")
-                        .withCause(t));
-            }
+            });
+
         }
 
         @Override
         public void onComplete() {
-            try {
-                if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
-                    return;
-                }
-                getStreamSubscriber().onCompleted();
-            } finally {
-                RpcContext.removeCancellationContext();
+            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                return;
             }
+            execute(() -> {
+                try {
+                    getStreamSubscriber().onCompleted();
+                } finally {
+                    RpcContext.removeCancellationContext();
+                }
+            });
         }
     }
 }

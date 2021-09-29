@@ -19,9 +19,10 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.triple.TripleWrapper;
@@ -50,8 +51,21 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return new UnaryClientStream(url);
     }
 
-    public static AbstractClientStream stream(URL url) {
+    public static ClientStream stream(URL url) {
         return new ClientStream(url);
+    }
+
+    public static AbstractClientStream newClientStream(URL url, boolean unary) {
+        AbstractClientStream stream = unary ? unary(url) : stream(url);
+        final CancellationContext cancellationContext = stream.getCancellationContext();
+        // for client cancel,send rst frame to server
+        cancellationContext.addListener(context -> {
+            stream.asTransportObserver().onReset(Http2Error.CANCEL);
+        });
+        stream.execute(() -> {
+            RpcContext.restoreCancellationContext(stream.getCancellationContext());
+        });
+        return stream;
     }
 
     public AbstractClientStream service(ConsumerModel model) {
@@ -166,7 +180,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return metadata;
     }
 
-    protected class ClientStreamObserver implements StreamObserver<Object> {
+    protected class ClientStreamObserver extends CancelableStreamObserver<Object> {
 
         @Override
         public void onNext(Object data) {
@@ -179,12 +193,16 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
         @Override
         public void onError(Throwable throwable) {
-
+            execute(RpcContext::removeCancellationContext);
         }
 
         @Override
         public void onCompleted() {
-            getTransportSubscriber().onComplete();
+            try {
+                getTransportSubscriber().onComplete();
+            } finally {
+                execute(RpcContext::removeCancellationContext);
+            }
         }
     }
 
