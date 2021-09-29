@@ -63,7 +63,7 @@ public class ContextFilter implements Filter, Filter.Listener {
     private static final Set<String> UNLOADING_KEYS;
 
     static {
-        UNLOADING_KEYS = new HashSet<>(128);
+        UNLOADING_KEYS = new HashSet<>(16);
         UNLOADING_KEYS.add(PATH_KEY);
         UNLOADING_KEYS.add(INTERFACE_KEY);
         UNLOADING_KEYS.add(GROUP_KEY);

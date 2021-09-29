@@ -30,7 +30,7 @@ public class AvailableCluster implements Cluster {
     public static final String NAME = "available";
 
     @Override
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+    public <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException {
         return new AvailableClusterInvoker<>(directory);
     }
 

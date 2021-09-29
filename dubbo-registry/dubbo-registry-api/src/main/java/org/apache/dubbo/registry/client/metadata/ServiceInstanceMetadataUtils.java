@@ -254,9 +254,9 @@ public class ServiceInstanceMetadataUtils {
                 ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
                 calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstanceForRegistry);
+                    LOGGER.debug("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstanceForRegistry);
                 }
-                // register metadata
+                // register service instance
                 serviceDiscovery.register(serviceInstanceForRegistry);
             });
         }
@@ -285,7 +285,7 @@ public class ServiceInstanceMetadataUtils {
                 instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
-            // customizes
+            // customize
             customizer.customize(instance);
         });
     }

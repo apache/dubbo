@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import demo.MultiClassLoaderService;
-import demo.MultiClassLoaderServiceImpl;
-import demo.MultiClassLoaderServiceRequest;
-import demo.MultiClassLoaderServiceResult;
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.NotFoundException;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.compiler.support.CtClassBuilder;
@@ -42,8 +35,10 @@ import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareClusterInvoker;
+import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -51,6 +46,14 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
+
+import demo.MultiClassLoaderService;
+import demo.MultiClassLoaderServiceImpl;
+import demo.MultiClassLoaderServiceRequest;
+import demo.MultiClassLoaderServiceResult;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -456,15 +459,15 @@ public class ReferenceConfigTest {
         URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
         parameters.put(INTERFACE_KEY, DemoService.class.getName());
-        Exporter<?> exporter = InjvmProtocol.getInjvmProtocol().export(proxy.getInvoker(service, DemoService.class, url));
-        InjvmProtocol.getInjvmProtocol().getExporterMap().put(DemoService.class.getName(), exporter);
+        Exporter<?> exporter = InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).export(proxy.getInvoker(service, DemoService.class, url));
+        InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).getExporterMap().put(DemoService.class.getName(), exporter);
         Assertions.assertTrue(referenceConfig.shouldJvmRefer(parameters));
 
         // verify that if the service has been exposed, and the cluster is configured with broadcast, local reference should not be made
         parameters.put(CLUSTER_KEY, BROADCAST_CLUSTER);
         Assertions.assertFalse(referenceConfig.shouldJvmRefer(parameters));
         parameters.clear();
-        InjvmProtocol.getInjvmProtocol().destroy();
+        InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).destroy();
     }
 
     @Test
@@ -490,9 +493,11 @@ public class ReferenceConfigTest {
             .initialize();
 
         referenceConfig.init();
-        Assertions.assertTrue(referenceConfig.getInvoker() instanceof ListenerInvokerWrapper);
-        Assertions.assertTrue(((ListenerInvokerWrapper<?>) referenceConfig.getInvoker()).getInvoker() instanceof InjvmInvoker);
-        URL url = ((ListenerInvokerWrapper<?>) referenceConfig.getInvoker()).getInvoker().getUrl();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
+        Invoker<?> withFilter = ((MockClusterInvoker<?>) referenceConfig.getInvoker()).getDirectory().getAllInvokers().get(0);
+        Assertions.assertTrue(withFilter instanceof ListenerInvokerWrapper);
+        Assertions.assertTrue(((ListenerInvokerWrapper<?>) withFilter).getInvoker() instanceof InjvmInvoker);
+        URL url = withFilter.getUrl();
         Assertions.assertEquals("application1", url.getParameter("application"));
         Assertions.assertEquals("value1", url.getParameter("key1"));
         Assertions.assertEquals("value2", url.getParameter("key2"));
@@ -714,14 +719,14 @@ public class ReferenceConfigTest {
             DemoService service = new DemoServiceImpl();
             URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
                 .addParameter(INTERFACE_KEY, DemoService.class.getName());
-            InjvmProtocol.getInjvmProtocol().export(proxy.getInvoker(service, DemoService.class, url));
+            InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).export(proxy.getInvoker(service, DemoService.class, url));
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
             // ignore
         } finally {
             rc.destroy();
-            InjvmProtocol.getInjvmProtocol().destroy();
+            InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).destroy();
             System.clearProperty("java.net.preferIPv4Stack");
 
         }

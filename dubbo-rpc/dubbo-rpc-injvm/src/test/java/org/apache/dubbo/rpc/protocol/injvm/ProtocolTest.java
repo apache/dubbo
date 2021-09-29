@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +38,7 @@ public class ProtocolTest {
     };
 
     static {
-        InjvmProtocol injvm = InjvmProtocol.getInjvmProtocol();
+        InjvmProtocol injvm = InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel());
     }
 
     ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getExtension("javassist");

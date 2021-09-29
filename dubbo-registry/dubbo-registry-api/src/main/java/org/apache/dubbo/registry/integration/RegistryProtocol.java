@@ -556,7 +556,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         directory.buildRouterChain(urlToRegistry);
         directory.subscribe(toSubscribeUrl(urlToRegistry));
 
-        return (ClusterInvoker<T>) cluster.join(directory);
+        return (ClusterInvoker<T>) cluster.join(directory, true);
     }
 
     public <T> void reRefer(ClusterInvoker<?> invoker, URL newSubscribeUrl) {
