@@ -166,9 +166,11 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                     realArgument = args;
                 }
 
-                return new RpcInvocation(invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
+                RpcInvocation copiedInvocation = new RpcInvocation(providerServiceModel, invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
                     pts, realArgument, new LinkedHashMap<>(invocation.getObjectAttachments()),
                     invocation.getInvoker(), invocation.getAttributes());
+                copiedInvocation.setInvoker(invoker);
+                return copiedInvocation;
             } finally {
                 Thread.currentThread().setContextClassLoader(originClassLoader);
             }
