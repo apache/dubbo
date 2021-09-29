@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -67,7 +68,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -589,6 +589,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     @Override
     public void destroy() {
+        // FIXME all application models in framework are removed at this moment
         for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
             for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
                 List<RegistryProtocolListener> listeners = moduleModel.getExtensionLoader(RegistryProtocolListener.class)
@@ -618,10 +619,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             }
         }
 
-        List<ExporterChangeableWrapper<?>> exporters = new ArrayList<>(bounds.values());
-        for (ExporterChangeableWrapper<?> exporter : exporters) {
+        List<Exporter<?>> exporters = new ArrayList<>(bounds.values());
+        for (Exporter<?> exporter : exporters) {
             exporter.unexport();
-            exporter.destroy();
         }
         bounds.clear();
     }
@@ -844,7 +844,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      */
     private class ExporterChangeableWrapper<T> implements Exporter<T> {
 
-        private final ExecutorService executor = newSingleThreadExecutor(new NamedThreadFactory("Exporter-Unexport", true));
+        private final ExecutorService executor;
 
         private final Invoker<T> originInvoker;
         private Exporter<T> exporter;
@@ -854,6 +854,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker) {
             this.exporter = exporter;
             this.originInvoker = originInvoker;
+            ExecutorRepository executorRepository = originInvoker.getUrl().getOrDefaultApplicationModel()
+                .getDefaultExtension(ExecutorRepository.class);
+            this.executor = executorRepository.nextScheduledExecutor();
         }
 
         public Invoker<T> getOriginInvoker() {
@@ -915,10 +918,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                     logger.warn(t.getMessage(), t);
                 }
             });
-        }
-
-        public void destroy() {
-            executor.shutdown();
         }
 
         public void setSubscribeUrl(URL subscribeUrl) {

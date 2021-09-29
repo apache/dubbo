@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,14 +77,21 @@ public class FrameworkModel extends ScopeModel {
             applicationModel.destroy();
         }
 
-        allInstances.remove(this);
-        if (defaultInstance == this) {
-            synchronized (FrameworkModel.class) {
+        synchronized (FrameworkModel.class) {
+            allInstances.remove(this);
+            if (defaultInstance == this) {
                 defaultInstance = null;
+            }
+            if (allInstances.isEmpty()) {
+                destroyGlobalResources();
             }
         }
 
         notifyDestroy();
+    }
+
+    private void destroyGlobalResources() {
+        GlobalResourcesRepository.getInstance().destroy();
     }
 
     public static FrameworkModel defaultModel() {

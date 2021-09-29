@@ -16,17 +16,19 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizerHolder;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class ShutdownHookTest {
+public class KeepRunningOnSpringClosedTest {
 
     @Test
-    public void testDisableShutdownHook(){
+    public void test(){
 
         // set KeepRunningOnSpringClosed flag for next spring context
         DubboSpringInitCustomizerHolder.get().addCustomizer(context-> {
@@ -42,16 +44,21 @@ public class ShutdownHookTest {
             providerContext.start();
 
             ModuleModel moduleModel = providerContext.getBean(ModuleModel.class);
-            Assertions.assertTrue(moduleModel.getDeployer().isStarted());
-            Assertions.assertEquals(true, DubboBootstrap.getInstance().isStarted());
-            Assertions.assertEquals(false, DubboBootstrap.getInstance().isStopped());
+            ModuleDeployer moduleDeployer = moduleModel.getDeployer();
+            Assertions.assertTrue(moduleDeployer.isStarted());
+
+            ApplicationDeployer applicationDeployer = moduleModel.getApplicationModel().getDeployer();
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(true, applicationDeployer.isStarted());
+            Assertions.assertEquals(false, applicationDeployer.isStopped());
 
             // close spring context
             providerContext.close();
 
             // expect dubbo bootstrap will not be destroyed after closing spring context
-            Assertions.assertEquals(true, DubboBootstrap.getInstance().isStarted());
-            Assertions.assertEquals(false, DubboBootstrap.getInstance().isStopped());
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(true, applicationDeployer.isStarted());
+            Assertions.assertEquals(false, applicationDeployer.isStopped());
         } finally {
             SysProps.clear();
         }

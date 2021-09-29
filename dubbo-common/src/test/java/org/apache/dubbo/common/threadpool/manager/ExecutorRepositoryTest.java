@@ -23,16 +23,12 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ExecutorRepositoryTest {
     private ExecutorRepository executorRepository = ApplicationModel.defaultModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     @Test
-    public void test() {
-        testGetExecutor();
-        testUpdateExecutor();
-    }
-
     public void testGetExecutor() {
         testGet(URL.valueOf("dubbo://127.0.0.1:23456"));
         testGet(URL.valueOf("dubbo://127.0.0.1:23456?side=consumer"));
@@ -54,6 +50,7 @@ public class ExecutorRepositoryTest {
         Assertions.assertNotEquals(executorService, executorRepository.getExecutor(url));
     }
 
+    @Test
     public void testUpdateExecutor() {
         URL url = URL.valueOf("dubbo://127.0.0.1:23456?threads=5");
         ThreadPoolExecutor executorService = (ThreadPoolExecutor) executorRepository.createExecutorIfAbsent(url);
@@ -75,7 +72,57 @@ public class ExecutorRepositoryTest {
 
         executorService.setCorePoolSize(5);
         executorRepository.updateThreadpool(url, executorService);
+    }
 
+    @Test
+    public void testSharedExecutor() throws Exception {
+        ExecutorService sharedExecutor = executorRepository.getSharedExecutor();
+        MockTask task1 = new MockTask(2000);
+        MockTask task2 = new MockTask(100);
+        MockTask task3 = new MockTask(200);
+        sharedExecutor.execute(task1);
+        sharedExecutor.execute(task2);
+        sharedExecutor.submit(task3);
 
+        Thread.sleep(100);
+        Assertions.assertTrue(task1.isRunning());
+        Assertions.assertFalse(task1.isDone());
+        Assertions.assertTrue(task2.isRunning());
+        Assertions.assertTrue(task2.isDone());
+        Assertions.assertTrue(task3.isRunning());
+        Assertions.assertFalse(task3.isDone());
+
+        Thread.sleep(200);
+        Assertions.assertTrue(task3.isDone());
+        Assertions.assertFalse(task1.isDone());
+    }
+
+    private static class MockTask implements Runnable {
+        private long waitTimeMS;
+        private AtomicBoolean running = new AtomicBoolean();
+        private AtomicBoolean done = new AtomicBoolean();
+
+        public MockTask(long waitTimeMS) {
+            this.waitTimeMS = waitTimeMS;
+        }
+
+        @Override
+        public void run() {
+            running.set(true);
+            try {
+                Thread.sleep(waitTimeMS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            done.set(true);
+        }
+
+        public boolean isDone() {
+            return done.get();
+        }
+
+        public boolean isRunning() {
+            return running.get();
+        }
     }
 }

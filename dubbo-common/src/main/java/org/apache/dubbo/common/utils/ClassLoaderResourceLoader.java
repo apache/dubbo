@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.resource.GlobalResourcesRepository;
+
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.net.URL;
@@ -28,25 +30,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class ClassLoaderResourceLoader {
-    private final static ExecutorService executorService =
-        new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-            60L, TimeUnit.SECONDS,
-            new SynchronousQueue<>(),
-            new NamedThreadFactory("DubboClassLoaderResourceLoader", true));
 
     private static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> classLoaderResourcesCache = null;
+
+    static {
+        // register resources destroy listener
+        GlobalResourcesRepository.getInstance().addDisposable(()-> destroy());
+    }
 
     public static Map<ClassLoader, Set<java.net.URL>> loadResources(String fileName, List<ClassLoader> classLoaders) {
         Map<ClassLoader, Set<java.net.URL>> resources = new ConcurrentHashMap<>();
         CountDownLatch countDownLatch = new CountDownLatch(classLoaders.size());
         for (ClassLoader classLoader : classLoaders) {
-            executorService.submit(()->{
+            GlobalResourcesRepository.getGlobalExecutorService().submit(() -> {
                 resources.put(classLoader, loadResources(fileName, classLoader));
                 countDownLatch.countDown();
             });
@@ -91,5 +89,10 @@ public class ClassLoaderResourceLoader {
         return urlCache.get(fileName);
     }
 
+    public static void destroy() {
+        if (classLoaderResourcesCache != null) {
+            classLoaderResourcesCache.clear();
+        }
+    }
 
 }

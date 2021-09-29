@@ -63,8 +63,11 @@ public class DubboBootstrapMultiInstanceTest {
     }
 
     @AfterAll
-    public static void afterAll() {
+    public static void afterAll() throws Exception {
         registryCenter.shutdown();
+
+        //FIXME debug
+        //Thread.sleep(10000);
     }
 
     @BeforeEach

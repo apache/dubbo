@@ -108,7 +108,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
         String localRawRule = moduleModel.getModelEnvironment().getLocalMigrationRule();
         if (!StringUtils.isEmpty(localRawRule)) {
-            localRuleMigrationFuture = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMigrationRuleDelayWorker", true))
+            localRuleMigrationFuture = moduleModel.getApplicationModel().getApplicationExecutorRepository().getSharedScheduledExecutor()
                 .schedule(() -> {
                     if (this.rawRule.equals(INIT)) {
                         this.process(new ConfigChangedEvent(null, null, localRawRule));
