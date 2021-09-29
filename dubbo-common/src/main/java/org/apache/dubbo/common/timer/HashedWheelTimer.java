@@ -92,6 +92,7 @@ public class HashedWheelTimer implements Timer {
     private static final AtomicIntegerFieldUpdater<HashedWheelTimer> WORKER_STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(HashedWheelTimer.class, "workerState");
 
+    private final ThreadFactory threadFactory;
     private final Worker worker = new Worker();
     private final Thread workerThread;
 
@@ -225,6 +226,8 @@ public class HashedWheelTimer implements Timer {
         if (threadFactory == null) {
             throw new NullPointerException("threadFactory");
         }
+        this.threadFactory = threadFactory;
+
         if (unit == null) {
             throw new NullPointerException("unit");
         }
@@ -521,18 +524,15 @@ public class HashedWheelTimer implements Timer {
             long deadline = tickDuration * (tick + 1);
 
             for (; ; ) {
+                // the currentTime will be negative only if the application must keep running last more than 262 years.
                 final long currentTime = System.nanoTime() - startTime;
                 long sleepTimeMs = (deadline - currentTime + 999999) / 1000000;
 
                 if (sleepTimeMs <= 0) {
-                    if (currentTime == Long.MIN_VALUE) {
-                        return -Long.MAX_VALUE;
-                    } else {
-                        return currentTime;
-                    }
+                    return currentTime;
                 }
                 if (isWindows()) {
-                    sleepTimeMs = sleepTimeMs / 10 * 10;
+                    sleepTimeMs = (sleepTimeMs + 9) / 10 * 10;
                 }
 
                 try {
@@ -548,6 +548,10 @@ public class HashedWheelTimer implements Timer {
         Set<Timeout> unprocessedTimeouts() {
             return Collections.unmodifiableSet(unprocessedTimeouts);
         }
+    }
+
+    public ThreadFactory threadFactory() {
+        return threadFactory;
     }
 
     private static final class HashedWheelTimeout implements Timeout {
@@ -644,13 +648,16 @@ public class HashedWheelTimer implements Timer {
                 return;
             }
 
-            try {
-                task.run(this);
-            } catch (Throwable t) {
-                if (logger.isWarnEnabled()) {
-                    logger.warn("An exception was thrown by " + TimerTask.class.getSimpleName() + '.', t);
+            // run timeout task at new thread to avoid the worker thread blocking
+            timer.threadFactory().newThread( () -> {
+                try {
+                    task.run(this);
+                } catch (Throwable t) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("An exception was thrown by " + TimerTask.class.getSimpleName() + '.', t);
+                    }
                 }
-            }
+            }).start();
         }
 
         @Override

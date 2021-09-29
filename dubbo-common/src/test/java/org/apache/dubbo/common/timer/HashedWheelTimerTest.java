@@ -40,6 +40,7 @@ public class HashedWheelTimerTest {
     private static class BlockTask implements TimerTask {
         @Override
         public void run(Timeout timeout) throws InterruptedException {
+            // current thread is a new thread which is different from the worker thread.
             this.wait();
         }
     }
@@ -47,6 +48,7 @@ public class HashedWheelTimerTest {
     private class ErrorTask implements TimerTask {
         @Override
         public void run(Timeout timeout) {
+            // current thread is a new thread which is different from the worker thread.
             errorTaskCountDownLatch.countDown();
             throw new RuntimeException("Test");
         }
@@ -61,7 +63,7 @@ public class HashedWheelTimerTest {
 
         @Override
         public void run(Timeout timeout) {
-            Assertions.assertThrows(RuntimeException.class, () -> timer.stop());
+            // current thread is a new thread which is different from the worker thread.
             tryStopTaskCountDownLatch.countDown();
         }
     }
@@ -157,8 +159,8 @@ public class HashedWheelTimerTest {
 
         List<Timeout> timeouts = new LinkedList<>();
         for (; timer.pendingTimeouts() < 8; ) {
-            // to trigger maxPendingTimeouts
-            timeout = timer.newTimeout(new BlockTask(), -1, TimeUnit.MILLISECONDS);
+            // ensure to trigger maxPendingTimeouts by setting delay to 50ms
+            timeout = timer.newTimeout(new BlockTask(), 50, TimeUnit.MILLISECONDS);
             timeouts.add(timeout);
             Assertions.assertNotNull(timeout.toString());
         }
