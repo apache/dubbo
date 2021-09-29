@@ -110,7 +110,7 @@ public class MigrationRuleListenerTest {
      * Test listener started without local rule and config center, INIT should be used and no scheduled task should be started.
      */
     @Test
-    public void testWithInitAndNoLocalRule() throws InterruptedException {
+    public void testWithInitAndNoLocalRule() {
         ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(null);
         ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setLocalMigrationRule("");
         ApplicationConfig applicationConfig = new ApplicationConfig();

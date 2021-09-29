@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -227,12 +228,19 @@ public class NacosRegistry extends FailbackRegistry {
                     subscribeEventListener(serviceName, url, listener);
                 }
             } else {
-                List<Instance> instances = new LinkedList<>();
                 for (String serviceName : serviceNames) {
+                    List<Instance> instances = new LinkedList<>();
                     instances.addAll(namingService.getAllInstances(serviceName
                         , getUrl().getGroup(Constants.DEFAULT_GROUP)));
-                    notifySubscriber(url, listener, instances);
-                    subscribeEventListener(serviceName, url, listener);
+                    String serviceInterface = serviceName;
+                    String[] segments = serviceName.split(SERVICE_NAME_SEPARATOR, -1);
+                    if (segments.length == 4) {
+                        serviceInterface = segments[SERVICE_INTERFACE_INDEX];
+                    }
+                    URL subscriberURL = url.setPath(serviceInterface).addParameters(INTERFACE_KEY, serviceInterface,
+                        CHECK_KEY, String.valueOf(false));
+                    notifySubscriber(subscriberURL, listener, instances);
+                    subscribeEventListener(serviceName, subscriberURL, listener);
                 }
             }
         }catch (Throwable cause){

@@ -556,7 +556,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         directory.buildRouterChain(urlToRegistry);
         directory.subscribe(toSubscribeUrl(urlToRegistry));
 
-        return (ClusterInvoker<T>) cluster.join(directory);
+        return (ClusterInvoker<T>) cluster.join(directory, true);
     }
 
     public <T> void reRefer(ClusterInvoker<?> invoker, URL newSubscribeUrl) {
@@ -604,9 +604,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
             if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
                 for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
+                    String applicationName = applicationModel.tryGetApplicationName();
+                    if (applicationName == null) {
+                        // already removed
+                        continue;
+                    }
                     if (moduleModel.getServiceRepository().getExportedServices().size() > 0) {
                         moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                            .removeListener(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX,
+                            .removeListener(applicationName + CONFIGURATORS_SUFFIX,
                                 getProviderConfigurationListener(moduleModel));
                     }
                 }
@@ -732,13 +737,14 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 return;
             }
             //The current, may have been merged many times
-            URL currentUrl = exporter.getInvoker().getUrl();
+            Invoker<?> exporterInvoker = exporter.getInvoker();
+            URL currentUrl = exporterInvoker == null ? null : exporterInvoker.getUrl();
             //Merged with this configuration
             URL newUrl = getConfiguredInvokerUrl(configurators, originUrl);
             newUrl = getConfiguredInvokerUrl(getProviderConfigurationListener(originUrl).getConfigurators(), newUrl);
             newUrl = getConfiguredInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
                 .getConfigurators(), newUrl);
-            if (!currentUrl.equals(newUrl)) {
+            if (!newUrl.equals(currentUrl)) {
                 if (newUrl.getParameter(Constants.NEED_REEXPORT, true)) {
                     RegistryProtocol.this.reExport(originInvoker, newUrl);
                 }

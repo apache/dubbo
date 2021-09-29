@@ -140,7 +140,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
-    private List<ServiceListener> serviceListeners = new ArrayList<>();
+    private final List<ServiceListener> serviceListeners = new ArrayList<>();
     private WritableMetadataService localMetadataService;
 
     public ServiceConfig() {
@@ -250,8 +250,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (this.shouldExport()) {
             this.init();
 
-            // just do export, delay export is done by caller
-            doExport();
+            if (shouldDelay()) {
+                doDelayExport();
+            } else {
+                doExport();
+            }
         }
     }
 
@@ -422,7 +425,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // append params with basic configs,
         ServiceConfig.appendRuntimeParameters(map);
-        AbstractConfig.appendParameters(map, getMetrics());
         AbstractConfig.appendParameters(map, getApplication());
         AbstractConfig.appendParameters(map, getModule());
         // remove 'default.' prefix for configs from ProviderConfig
@@ -430,6 +432,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         AbstractConfig.appendParameters(map, provider);
         AbstractConfig.appendParameters(map, protocolConfig);
         AbstractConfig.appendParameters(map, this);
+        appendMetricsCompatible(map);
+
         MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
         if (metadataReportConfig != null && metadataReportConfig.isValid()) {
             map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
@@ -661,6 +665,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();
+        local = local.setScopeModel(getScopeModel())
+            .setServiceModel(providerModel);
         doExportUrl(local, false);
         logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
     }
@@ -707,7 +713,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 if (logger.isDebugEnabled()) {
                     logger.info("No valid ip found from environment, try to get local host.");
                 }
-                hostToBind = getLocalHost();                
+                hostToBind = getLocalHost();
             }
         }
 
@@ -765,24 +771,24 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
 
-        // save bind port, used as url's key later
-        map.put(BIND_PORT_KEY, String.valueOf(portToBind));
-
         // registry port, not used as bind port by default
         String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
         Integer portToRegistry = parsePort(portToRegistryStr);
-        if (portToRegistry == null) {
-            portToRegistry = portToBind;
+        if (portToRegistry != null) {
+            portToBind = portToRegistry;
         }
 
-        return portToRegistry;
+        // save bind port, used as url's key later
+        map.put(BIND_PORT_KEY, String.valueOf(portToBind));
+
+        return portToBind;
     }
 
     private Integer parsePort(String configPort) {
         Integer port = null;
         if (configPort != null && configPort.length() > 0) {
             try {
-                Integer intPort = Integer.parseInt(configPort);
+                int intPort = Integer.parseInt(configPort);
                 if (isInvalidPort(intPort)) {
                     throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
                 }
@@ -824,10 +830,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     public void addServiceListener(ServiceListener listener) {
         this.serviceListeners.add(listener);
-    }
-
-    public boolean removeServiceListener(ServiceListener listener) {
-        return this.serviceListeners.remove(listener);
     }
 
     protected void onExported() {

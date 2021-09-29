@@ -32,10 +32,10 @@ public interface FieldUtils {
      *
      * @param declaredClass the declared class
      * @param fieldName     the name of {@link Field}
-     * @return if can't be found, return <code>null</code>
+     * @return if field can't be found, return <code>null</code>
      */
     static Field getDeclaredField(Class<?> declaredClass, String fieldName) {
-        Field field = null;
+        Field field;
         try {
             field = declaredClass.getDeclaredField(fieldName);
         } catch (NoSuchFieldException ignored) {

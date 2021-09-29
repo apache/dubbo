@@ -47,7 +47,6 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
 
     /**
      * Indicates that the Application is initialized or not.
-     * @return
      */
     boolean isInitialized();
 
@@ -55,7 +54,10 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
 
     ReferenceCache getReferenceCache();
 
-    boolean isAsync();
+    /**
+     * Whether start in background, do not await finish
+     */
+    boolean isBackground();
 
     void checkStarting();
 

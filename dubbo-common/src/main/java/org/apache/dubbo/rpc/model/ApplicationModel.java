@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -205,6 +206,9 @@ public class ApplicationModel extends ScopeModel {
         for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
             moduleModel.destroy();
         }
+
+        notifyDestroy();
+
         if (defaultInstance == this) {
             synchronized (ApplicationModel.class) {
                 frameworkModel.removeApplication(this);
@@ -218,8 +222,6 @@ public class ApplicationModel extends ScopeModel {
             deployer.destroy();
             deployer = null;
         }
-
-        notifyDestroy();
 
         if (environment != null) {
             environment.destroy();
@@ -273,6 +275,11 @@ public class ApplicationModel extends ScopeModel {
 
     public String getApplicationName() {
         return getCurrentConfig().getName();
+    }
+
+    public String tryGetApplicationName() {
+        Optional<ApplicationConfig> appCfgOptional = getApplicationConfigManager().getApplication();
+        return appCfgOptional.isPresent() ? appCfgOptional.get().getName() : null;
     }
 
     void addModule(ModuleModel moduleModel, boolean isInternal) {

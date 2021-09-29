@@ -51,6 +51,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 
 /**
@@ -173,7 +174,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The metrics configuration
      */
-    protected MetricsConfig metrics;
     protected MetadataReportConfig metadataReportConfig;
 
     protected ConfigCenterConfig configCenter;
@@ -221,9 +221,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (this.metadataReportConfig != null && this.metadataReportConfig.getScopeModel() != applicationModel) {
             this.metadataReportConfig.setScopeModel(applicationModel);
         }
-        if (this.metrics != null && this.metrics.getScopeModel() != applicationModel) {
-            this.metrics.setScopeModel(applicationModel);
-        }
         if (this.monitor != null && this.monitor.getScopeModel() != applicationModel) {
             this.monitor.setScopeModel(applicationModel);
         }
@@ -259,6 +256,21 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         map.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
             map.put(PID_KEY, String.valueOf(ConfigUtils.getPid()));
+        }
+    }
+
+    /**
+     * @deprecated After metrics config is refactored.
+     * This method should no longer use and will be deleted in the future.
+     */
+    @Deprecated
+    protected void appendMetricsCompatible(Map<String, String> map) {
+        MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
+        if (metricsConfig != null) {
+            if (!metricsConfig.getProtocol().equals(PROTOCOL_PROMETHEUS)) {
+                map.put("metrics.protocol", metricsConfig.getProtocol());
+                map.put("metrics.port", metricsConfig.getPort());
+            }
         }
     }
 
@@ -624,14 +636,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (module != null) {
             return module;
         }
-        return getConfigManager().getModule().orElse(null);
+        return getModuleConfigManager().getModule().orElse(null);
     }
 
     @Deprecated
     public void setModule(ModuleConfig module) {
         this.module = module;
         if (module != null) {
-            getConfigManager().setModule(module);
+            getModuleConfigManager().setModule(module);
         }
     }
 
@@ -778,22 +790,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.metadataReportConfig = metadataReportConfig;
         if (metadataReportConfig != null) {
             getConfigManager().addMetadataReport(metadataReportConfig);
-        }
-    }
-
-    @Deprecated
-    public MetricsConfig getMetrics() {
-        if (metrics != null) {
-            return metrics;
-        }
-        return getConfigManager().getMetrics().orElse(null);
-    }
-
-    @Deprecated
-    public void setMetrics(MetricsConfig metrics) {
-        this.metrics = metrics;
-        if (metrics != null) {
-            getConfigManager().setMetrics(metrics);
         }
     }
 

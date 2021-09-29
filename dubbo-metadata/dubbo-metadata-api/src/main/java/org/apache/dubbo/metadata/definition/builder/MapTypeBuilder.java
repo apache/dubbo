@@ -36,7 +36,7 @@ import static org.apache.dubbo.common.utils.TypeUtils.isParameterizedType;
 public class MapTypeBuilder implements TypeBuilder {
 
     @Override
-    public boolean accept(Type type, Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }

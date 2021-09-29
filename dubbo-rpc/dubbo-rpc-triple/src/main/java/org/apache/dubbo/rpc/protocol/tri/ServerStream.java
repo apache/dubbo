@@ -103,8 +103,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
                         getStreamSubscriber().onNext(arguments[0]);
                     }
                 }
-            } catch (
-                Throwable t) {
+            } catch (Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription("Deserialize request failed")
                     .withCause(t));

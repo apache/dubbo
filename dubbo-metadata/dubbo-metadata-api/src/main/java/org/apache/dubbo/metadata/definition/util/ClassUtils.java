@@ -50,7 +50,7 @@ public final class ClassUtils {
             return null;
         }
 
-        String path = codeSource.getLocation().toExternalForm();
+        String path = location.toExternalForm();
 
         if (path.endsWith(".jar") && path.contains("/")) {
             return path.substring(path.lastIndexOf('/') + 1);

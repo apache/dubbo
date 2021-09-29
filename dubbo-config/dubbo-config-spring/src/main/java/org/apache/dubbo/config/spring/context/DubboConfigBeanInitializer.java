@@ -40,6 +40,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,6 +67,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
     private ConfigManager configManager;
 
     @Autowired
+    @Qualifier("org.apache.dubbo.rpc.model.ModuleModel")
     private ModuleModel moduleModel;
 
     @Override
@@ -99,7 +101,6 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         //Make sure all these config beans are inited and registered to ConfigManager
         // load application configs
         loadConfigBeansOfType(ApplicationConfig.class, configManager);
-        loadConfigBeansOfType(ModuleConfig.class, configManager);
         loadConfigBeansOfType(RegistryConfig.class, configManager);
         loadConfigBeansOfType(ProtocolConfig.class, configManager);
         loadConfigBeansOfType(MonitorConfig.class, configManager);
@@ -109,6 +110,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         loadConfigBeansOfType(SslConfig.class, configManager);
 
         // load module configs
+        loadConfigBeansOfType(ModuleConfig.class, moduleModel.getConfigManager());
         loadConfigBeansOfType(ProviderConfig.class, moduleModel.getConfigManager());
         loadConfigBeansOfType(ConsumerConfig.class, moduleModel.getConfigManager());
 

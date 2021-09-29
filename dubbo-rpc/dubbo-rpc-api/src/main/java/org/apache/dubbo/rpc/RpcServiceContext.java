@@ -651,5 +651,4 @@ public class RpcServiceContext extends RpcContext {
         RpcServiceContext rpcContext = RpcContext.getServiceContext();
         rpcContext.setConsumerUrl(url);
     }
-
 }

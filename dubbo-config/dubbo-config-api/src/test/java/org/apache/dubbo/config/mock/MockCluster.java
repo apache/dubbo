@@ -23,7 +23,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 
 public class MockCluster implements Cluster {
     @Override
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+    public <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException {
         return null;
     }
 }

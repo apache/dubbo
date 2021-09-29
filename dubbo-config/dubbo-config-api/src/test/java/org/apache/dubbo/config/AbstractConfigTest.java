@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -938,6 +939,74 @@ public class AbstractConfigTest {
             Map<String, String> metaData = config.getMetaData();
             Assertions.assertEquals(0, metaData.size(), "Expect empty metadata for new instance but found: "+metaData +" of "+configClass.getSimpleName());
             System.out.println(configClass.getSimpleName()+" metadata is checked.");
+        }
+    }
+
+    @Test
+    public void testRefreshNested() {
+        try {
+            OuterConfig outerConfig = new OuterConfig();
+
+            Map<String, String> external = new HashMap<>();
+            external.put("dubbo.outer.a1", "1");
+            external.put("dubbo.outer.b.b1", "11");
+            external.put("dubbo.outer.b.b2", "12");
+            ApplicationModel.defaultModel().getModelEnvironment().initialize();
+            ApplicationModel.defaultModel().getModelEnvironment().setExternalConfigMap(external);
+
+            // refresh config
+            outerConfig.refresh();
+
+            Assertions.assertEquals(1, outerConfig.getA1());
+            Assertions.assertEquals(11, outerConfig.getB().getB1());
+            Assertions.assertEquals(12, outerConfig.getB().getB2());
+        } finally {
+            ApplicationModel.defaultModel().getModelEnvironment().destroy();
+        }
+    }
+
+    private static class OuterConfig extends AbstractConfig {
+        private Integer a1;
+
+        @Nested
+        private InnerConfig b;
+
+        public Integer getA1() {
+            return a1;
+        }
+
+        public void setA1(Integer a1) {
+            this.a1 = a1;
+        }
+
+        public InnerConfig getB() {
+            return b;
+        }
+
+        public void setB(InnerConfig b) {
+            this.b = b;
+        }
+    }
+
+    public static class InnerConfig {
+        private Integer b1;
+
+        private Integer b2;
+
+        public Integer getB1() {
+            return b1;
+        }
+
+        public void setB1(Integer b1) {
+            this.b1 = b1;
+        }
+
+        public Integer getB2() {
+            return b2;
+        }
+
+        public void setB2(Integer b2) {
+            this.b2 = b2;
         }
     }
 }
