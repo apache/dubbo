@@ -182,6 +182,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
 
     @Override
     public void destroy() {
+        // only destroy zk clients here
         for (ZookeeperClient client : zookeeperClientMap.values()) {
             client.close();
         }

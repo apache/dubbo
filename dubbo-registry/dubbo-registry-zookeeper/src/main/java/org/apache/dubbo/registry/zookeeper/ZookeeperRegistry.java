@@ -112,11 +112,8 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     @Override
     public void destroy() {
         super.destroy();
-        try {
-            zkClient.close();
-        } catch (Exception e) {
-            logger.warn("Failed to close zookeeper client " + getUrl() + ", cause: " + e.getMessage(), e);
-        }
+        // can not close zk client here for zk client is shared somewhere else
+        // see org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter.destroy
     }
 
     @Override
