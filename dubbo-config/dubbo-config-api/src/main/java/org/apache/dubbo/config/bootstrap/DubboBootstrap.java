@@ -54,8 +54,8 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -227,7 +227,7 @@ public final class DubboBootstrap {
      * @return
      */
     public DubboBootstrap start(boolean wait) {
-        CompletableFuture future = applicationDeployer.start();
+        Future future = applicationDeployer.start();
         if (wait) {
             try {
                 future.get();

@@ -19,7 +19,7 @@ package org.apache.dubbo.common.deploy;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * initialize and start application instance
@@ -33,8 +33,9 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
 
     /**
      * Starts the component.
+     * @return
      */
-    CompletableFuture start() throws IllegalStateException;
+    Future start() throws IllegalStateException;
 
     /**
      * Stops the component.

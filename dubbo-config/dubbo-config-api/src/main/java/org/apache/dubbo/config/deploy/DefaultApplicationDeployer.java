@@ -26,6 +26,7 @@ import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfi
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
@@ -71,6 +72,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -116,8 +118,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private ScheduledFuture<?> asyncMetadataFuture;
     private String identifier;
-    private CompletableFuture startFuture;
+    private volatile CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
+    private Object startedLock = new Object();
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -513,25 +516,26 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * @return
      */
     @Override
-    public synchronized CompletableFuture start() {
+    public synchronized Future start() {
+        CompletableFuture startFuture = getStartFuture();
+
+        // maybe call start again after add new module, check if any new module
+        boolean hasPendingModule = hasPendingModule();
+
         if (isStarting()) {
+            // currently is starting, maybe both start by module and application
+            // if has new modules, start them
+            if (hasPendingModule) {
+                startModules();
+            }
+            // if is starting, reuse previous startFuture
             return startFuture;
         }
-        startFuture = new CompletableFuture();
-        if (isStarted()) {
-            // maybe call start again after add new module, check if any new module
-            boolean hasNewModule = false;
-            for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-                if (moduleModel.getDeployer().isPending()) {
-                    hasNewModule = true;
-                    break;
-                }
-            }
-            // if no new module, just return
-            if (!hasNewModule) {
-                startFuture.complete(false);
-                return startFuture;
-            }
+
+        // if is started and no new module, just return
+        if (isStarted() && !hasPendingModule) {
+            completeStartFuture(false);
+            return startFuture;
         }
 
         onStarting();
@@ -543,27 +547,70 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return startFuture;
     }
 
-    private void doStart() {
-        // copy current modules, ignore new module during starting
-        List<ModuleModel> moduleModels = new ArrayList<>(applicationModel.getModuleModels());
-        List<CompletableFuture> futures = new ArrayList<>(moduleModels.size());
-
-        for (ModuleModel moduleModel : moduleModels) {
-            // export services in module
+    private boolean hasPendingModule() {
+        boolean found = false;
+        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             if (moduleModel.getDeployer().isPending()) {
-                CompletableFuture moduleFuture = moduleModel.getDeployer().start();
-                futures.add(moduleFuture);
+                found = true;
+                break;
             }
         }
+        return found;
+    }
+
+    private CompletableFuture getStartFuture() {
+        if (startFuture == null) {
+            synchronized (this) {
+                if (startFuture == null) {
+                    startFuture = new CompletableFuture();
+                }
+            }
+        }
+        return startFuture;
+    }
+
+
+    private void doStart() {
+        startModules();
 
         // prepare application instance
         prepareApplicationInstance();
 
-        // notify on each module started
-//        executorRepository.getSharedExecutor().submit(()-> {
-//            awaitDeployFinished(futures);
-//            onStarted();
-//        });
+        executorRepository.getSharedExecutor().submit(()-> {
+            while (true) {
+                // notify on each module started
+                synchronized (startedLock) {
+                    try {
+                        startedLock.wait(500);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                }
+
+                // if has new module, do start again
+                if (hasPendingModule()) {
+                    startModules();
+                    continue;
+                }
+
+                DeployState state = checkState();
+                if (!(state == DeployState.STARTING || state == DeployState.PENDING)) {
+                    // start finished or error
+                    break;
+                }
+            }
+        });
+    }
+
+    private void startModules() {
+        // copy current modules, ignore new module during starting
+        List<ModuleModel> moduleModels = new ArrayList<>(applicationModel.getModuleModels());
+        for (ModuleModel moduleModel : moduleModels) {
+            // export services in module
+            if (moduleModel.getDeployer().isPending()) {
+                moduleModel.getDeployer().start();
+            }
+        }
     }
 
     private void awaitDeployFinished(List<CompletableFuture> futures) {
@@ -597,7 +644,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // start internal module
         ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
         if (!internalModuleDeployer.isRunning()) {
-            CompletableFuture future = internalModuleDeployer.start();
+            Future future = internalModuleDeployer.start();
             try {
                 future.get();
             } catch (Exception e) {
@@ -713,7 +760,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
-            asyncMetadataFuture = executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
+            asyncMetadataFuture = executorRepository.getSharedScheduledExecutor().scheduleAtFixedRate(() -> {
                 InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
                 localMetadataService.blockUntilUpdated();
                 try {
@@ -845,27 +892,72 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     @Override
     public void checkStarted() {
         // TODO improve state checking
-        int pending = 0, starting = 0, started = 0;
+        DeployState _state = checkState();
+        switch (_state) {
+            case STARTED:
+                onStarted();
+                break;
+            case STARTING:
+                onStarting();
+                break;
+            case PENDING:
+                setPending();
+                break;
+        }
+
+        // notify started
+        synchronized (startedLock) {
+            startedLock.notifyAll();
+        }
+    }
+
+    private DeployState checkState() {
+        DeployState _state = DeployState.UNKNOWN;
+        int pending = 0, starting = 0, started = 0, stopping=0, stopped=0;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            if (moduleModel.getDeployer().isPending()) {
+            ModuleDeployer deployer = moduleModel.getDeployer();
+            if (deployer.isPending()) {
                 pending++;
-            } else if (moduleModel.getDeployer().isStarting()) {
+            } else if (deployer.isStarting()) {
                 starting++;
-            } else if (moduleModel.getDeployer().isStarted()) {
+            } else if (deployer.isStarted()) {
                 started++;
+            } else if (deployer.isStopping()) {
+                stopping ++;
+            } else if (deployer.isStopped()) {
+                stopped ++;
             }
         }
-        if (started > 0 && (pending + starting == 0)) {
-            // all modules has been started
-            onStarted();
-        } else if (pending > 0 && (starting + starting == 0)) {
-            // all modules has not starting or started
-            setPending();
-        } else if (starting > 0 || (pending > 0 && started > 0 )) {
+
+        if (started > 0) {
+            if (pending + starting + stopping + stopped == 0) {
+                // all modules have been started
+                _state = DeployState.STARTED;
+            }else  if (pending + starting > 0) {
+                // some module is pending and some is started
+                _state = DeployState.STARTING;
+            }else  if (stopping + stopped > 0) {
+                _state = DeployState.STOPPING;
+            }
+        } else if (starting > 0) {
             // any module is starting
-            // any module is pending and some is started
-            onStarting();
+            _state = DeployState.STARTING;
+        } else if (pending > 0) {
+            if (starting + starting + stopping + stopped == 0) {
+                // all modules have not starting or started
+                _state = DeployState.PENDING;
+            } else if (stopping + stopped > 0) {
+                // some is pending and some is stopping or stopped
+                _state = DeployState.STOPPING;
+            }
+        } else if (stopping > 0) {
+            // some is stopping and some stopped
+            _state = DeployState.STOPPING;
+        } else if (stopped > 0) {
+            // all modules are stopped
+            _state = DeployState.STOPPED;
         }
+        return _state;
     }
 
     private void onStarting() {
@@ -886,12 +978,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is ready.");
         }
-        if (startFuture != null) {
-            startFuture.complete(true);
-        }
+        completeStartFuture(true);
         // shutdown export/refer executor after started
         executorRepository.shutdownServiceExportExecutor();
         executorRepository.shutdownServiceReferExecutor();
+    }
+
+    private void completeStartFuture(boolean success) {
+        if (startFuture != null) {
+            startFuture.complete(success);
+            startFuture = null;
+        }
     }
 
     private void onStopping() {

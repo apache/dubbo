@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -260,7 +262,6 @@ public class DubboBootstrapMultiInstanceTest {
                 consumerBootstrap.destroy();
             }
         }
-
     }
 
     @Test
@@ -401,6 +402,85 @@ public class DubboBootstrapMultiInstanceTest {
             }
             if (consumerBootstrap != null) {
                 consumerBootstrap.destroy();
+            }
+        }
+    }
+
+    @Test
+    public void testBothStartByModuleAndByApplication() throws Exception {
+        String version1 = "1.0";
+        String version2 = "2.0";
+        String version3 = "3.0";
+
+        String serviceKey1 = DemoService.class.getName() + ":" + version1;
+        String serviceKey2 = DemoService.class.getName() + ":" + version2;
+        String serviceKey3 = DemoService.class.getName() + ":" + version3;
+
+        // provider app
+        DubboBootstrap providerBootstrap = null;
+        try {
+            providerBootstrap = DubboBootstrap.newInstance();
+
+            ServiceConfig serviceConfig1 = new ServiceConfig();
+            serviceConfig1.setInterface(DemoService.class);
+            serviceConfig1.setRef(new DemoServiceImpl());
+            serviceConfig1.setVersion(version1);
+
+            //provider module 1
+            providerBootstrap
+                .application("provider-app")
+                .registry(registryConfig)
+                .protocol(new ProtocolConfig("dubbo", -1))
+                .service(builder -> builder
+                    .interfaceClass(Greeting.class)
+                    .ref(new GreetingLocal2()))
+                .newModule()
+                .service(serviceConfig1)
+                .endModule();
+
+            // 1. start module1
+            ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
+            moduleDeployer1.start().get();
+            Assertions.assertEquals(DeployState.STARTED, moduleDeployer1.getState());
+
+            ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
+            ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
+            Assertions.assertEquals(DeployState.STARTING, applicationDeployer.getState());
+            ModuleModel defaultModule = applicationModel.getDefaultModule();
+            Assertions.assertEquals(DeployState.PENDING, defaultModule.getDeployer().getState());
+
+            // 2. start application
+            providerBootstrap.start();
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.STARTED, defaultModule.getDeployer().getState());
+            
+            // 3. add module2 and re-start application
+            ServiceConfig serviceConfig2 = new ServiceConfig();
+            serviceConfig2.setInterface(DemoService.class);
+            serviceConfig2.setRef(new DemoServiceImpl());
+            serviceConfig2.setVersion(version2);
+            ModuleModel moduleModel2 = providerBootstrap.newModule()
+                .service(serviceConfig2)
+                .getModuleModel();
+            providerBootstrap.start();
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.STARTED, moduleModel2.getDeployer().getState());
+            
+            // 4. add module3 and start module3
+            ServiceConfig serviceConfig3 = new ServiceConfig();
+            serviceConfig3.setInterface(DemoService.class);
+            serviceConfig3.setRef(new DemoServiceImpl());
+            serviceConfig3.setVersion(version3);
+            ModuleModel moduleModel3 = providerBootstrap.newModule()
+                .service(serviceConfig3)
+                .getModuleModel();
+            moduleModel3.getDeployer().start().get();
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.STARTED, moduleModel3.getDeployer().getState());
+
+        } finally {
+            if (providerBootstrap != null) {
+                providerBootstrap.stop();
             }
         }
     }

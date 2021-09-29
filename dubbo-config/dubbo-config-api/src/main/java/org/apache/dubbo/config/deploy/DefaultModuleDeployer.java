@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * Export/refer services of module
@@ -120,7 +121,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     @Override
-    public synchronized CompletableFuture start() throws IllegalStateException {
+    public synchronized Future start() throws IllegalStateException {
         if (isStarting() || isStarted()) {
             return startFuture;
         }
@@ -219,8 +220,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void onModuleStarted(CompletableFuture startFuture) {
         setStarted();
         logger.info(getIdentifier() + " has started.");
-        startFuture.complete(true);
         applicationDeployer.checkStarted();
+        startFuture.complete(true);
     }
 
     private void onModuleStopping() {
