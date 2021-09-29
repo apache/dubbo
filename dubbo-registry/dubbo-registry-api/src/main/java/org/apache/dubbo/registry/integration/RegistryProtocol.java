@@ -856,7 +856,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             this.originInvoker = originInvoker;
             ExecutorRepository executorRepository = originInvoker.getUrl().getOrDefaultApplicationModel()
                 .getDefaultExtension(ExecutorRepository.class);
-            this.executor = executorRepository.nextScheduledExecutor();
+            this.executor = executorRepository.getSharedScheduledExecutor();
         }
 
         public Invoker<T> getOriginInvoker() {
@@ -911,7 +911,11 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                     if (timeout > 0) {
                         logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. " +
                             "Usually, this is called when you use dubbo API");
-                        Thread.sleep(timeout);
+                        try {
+                            Thread.sleep(timeout);
+                        } catch (InterruptedException e) {
+                            logger.warn(e.getMessage(), e);
+                        }
                     }
                     exporter.unexport();
                 } catch (Throwable t) {

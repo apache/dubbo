@@ -79,9 +79,9 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     private ExecutorService poolRouterExecutor;
 
-    private static Ring<ExecutorService> executorServiceRing = new Ring<ExecutorService>();
+    private Ring<ExecutorService> executorServiceRing = new Ring<ExecutorService>();
 
-    private static final Object LOCK = new Object();
+    private final Object LOCK = new Object();
     private ExtensionAccessor extensionAccessor;
 
     private ApplicationModel applicationModel;
@@ -361,6 +361,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     @Override
     public void destroyAll() {
+        logger.info("destroying executor repository ..");
         shutdownExecutorService(poolRouterExecutor, "poolRouterExecutor");
         shutdownExecutorService(metadataRetryExecutor, "metadataRetryExecutor");
 
@@ -381,6 +382,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 });
             }
         });
+        data.clear();
 
         // scheduledExecutors
         shutdownExecutorServices(scheduledExecutors.listItems(), "scheduledExecutors");
