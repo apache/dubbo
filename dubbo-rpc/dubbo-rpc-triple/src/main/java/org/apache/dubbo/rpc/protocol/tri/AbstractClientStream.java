@@ -61,9 +61,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         cancellationContext.addListener(context -> {
             stream.asTransportObserver().onReset(Http2Error.CANCEL);
         });
-//        stream.execute(() -> {
-//            RpcContext.restoreCancellationContext(stream.getCancellationContext());
-//        });
         return stream;
     }
 
