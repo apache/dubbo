@@ -24,9 +24,7 @@ import org.apache.dubbo.remoting.api.Http2WireProtocol;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2FrameCodec;
 import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
@@ -85,12 +83,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
                         .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, 8192)))
                 .frameLogger(CLIENT_LOGGER)
                 .build();
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new SimpleChannelInboundHandler<Object>() {
-            @Override
-            protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
-                // empty
-            }
-        });
-        pipeline.addLast(codec, handler, new TripleClientHandler(frameworkModel));
+        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleClientHandler(frameworkModel));
+        pipeline.addLast(codec, handler, new TripleClientRequestHandler(frameworkModel));
     }
 }

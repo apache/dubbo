@@ -49,7 +49,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
  * The keys left are determined by:
  * <ul>
  *  <li>all keys specified by sources above</li>
- *  <li>keys specified in param fitlers</li>
+ *  <li>keys specified in param filters</li>
  * </ul>
  *
  *
