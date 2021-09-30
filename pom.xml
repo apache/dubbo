@@ -155,6 +155,7 @@
         <module>dubbo-spring-boot</module>
         <module>dubbo-native</module>
         <module>dubbo-test</module>
+        <module>dubbo-native-plugin</module>
     </modules>
 
     <dependencyManagement>
