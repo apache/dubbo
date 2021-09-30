@@ -26,6 +26,7 @@ import java.util.Locale;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -92,7 +93,7 @@ public class HashedWheelTimer implements Timer {
     private static final AtomicIntegerFieldUpdater<HashedWheelTimer> WORKER_STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(HashedWheelTimer.class, "workerState");
 
-    private final ThreadFactory threadFactory;
+    private final ExecutorService timeoutTaskThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private final Worker worker = new Worker();
     private final Thread workerThread;
 
@@ -226,8 +227,6 @@ public class HashedWheelTimer implements Timer {
         if (threadFactory == null) {
             throw new NullPointerException("threadFactory");
         }
-        this.threadFactory = threadFactory;
-
         if (unit == null) {
             throw new NullPointerException("unit");
         }
@@ -553,8 +552,8 @@ public class HashedWheelTimer implements Timer {
         }
     }
 
-    public ThreadFactory threadFactory() {
-        return threadFactory;
+    public ExecutorService timeoutTaskThreadPool() {
+        return timeoutTaskThreadPool;
     }
 
     private static final class HashedWheelTimeout implements Timeout {
@@ -652,7 +651,7 @@ public class HashedWheelTimer implements Timer {
             }
 
             // run timeout task at new thread to avoid the worker thread blocking
-            timer.threadFactory().newThread( () -> {
+            timer.timeoutTaskThreadPool().execute(() -> {
                 try {
                     task.run(this);
                 } catch (Throwable t) {
@@ -660,7 +659,7 @@ public class HashedWheelTimer implements Timer {
                         logger.warn("An exception was thrown by " + TimerTask.class.getSimpleName() + '.', t);
                     }
                 }
-            }).start();
+            });
         }
 
         @Override
