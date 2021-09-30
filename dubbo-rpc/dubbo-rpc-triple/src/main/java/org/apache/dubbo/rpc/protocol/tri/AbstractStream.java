@@ -98,8 +98,8 @@ public abstract class AbstractStream implements Stream {
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
         this.multipleSerialization = url.getOrDefaultFrameworkModel().getExtensionLoader(MultipleSerialization.class)
                 .getExtension(value);
-        this.transportObserver = createTransportObserver();
         this.cancellationContext = new CancellationContext();
+        this.transportObserver = createTransportObserver();
         this.streamObserver = createStreamObserver();
     }
 

@@ -23,7 +23,6 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -91,11 +90,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     }
 
     public static AbstractServerStream newServerStream(URL url, boolean unary) {
-        AbstractServerStream stream = unary ? unary(url) : stream(url);
-        stream.execute(() -> {
-            RpcContext.restoreCancellationContext(stream.getCancellationContext());
-        });
-        return stream;
+        return unary ? unary(url) : stream(url);
     }
 
     private static ProviderModel lookupProviderModel(URL url) {
@@ -141,9 +136,6 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         for (HeaderFilter headerFilter : getHeaderFilters()) {
             inv = headerFilter.invoke(getInvoker(), inv);
         }
-//        if (getCancellationContext() == null) {
-//            setCancellationContext(RpcContext.getCancellationContext());
-//        }
         return inv;
     }
 
