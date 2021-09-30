@@ -96,7 +96,7 @@ public class AccessLogFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
         if (scheduled.compareAndSet(false, true)) {
-            invoker.getUrl().getOrDefaultApplicationModel().getApplicationExecutorRepository().getSharedScheduledExecutor()
+            inv.getModuleModel().getApplicationModel().getApplicationExecutorRepository().getSharedScheduledExecutor()
                 .scheduleWithFixedDelay(this::writeLogToFile, LOG_OUTPUT_INTERVAL, LOG_OUTPUT_INTERVAL, TimeUnit.MILLISECONDS);
         }
         try {

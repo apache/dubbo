@@ -392,6 +392,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
         // shutdown share executor
         shutdownExecutorService(sharedExecutor, "sharedExecutor");
+        shutdownExecutorService(sharedScheduledExecutor, "sharedScheduledExecutor");
 
         // serviceDiscoveryAddressNotificationExecutorRing
         shutdownExecutorServices(serviceDiscoveryAddressNotificationExecutorRing.listItems(),
