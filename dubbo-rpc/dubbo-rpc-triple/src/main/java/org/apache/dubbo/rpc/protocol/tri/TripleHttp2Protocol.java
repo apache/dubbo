@@ -84,6 +84,6 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
                 .frameLogger(CLIENT_LOGGER)
                 .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleClientHandler(frameworkModel));
-        pipeline.addLast(codec, handler);
+        pipeline.addLast(codec, handler, new TripleClientRequestHandler(frameworkModel));
     }
 }
