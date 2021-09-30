@@ -531,8 +531,11 @@ public class HashedWheelTimer implements Timer {
                 if (sleepTimeMs <= 0) {
                     return currentTime;
                 }
-                if (isWindows()) {
-                    sleepTimeMs = (sleepTimeMs + 9) / 10 * 10;
+                if (isWindows()) {                    
+                    sleepTimeMs = sleepTimeMs / 10 * 10;
+                    if (sleepTimeMs == 0) {
+                        sleepTimeMs = 1;
+                    }
                 }
 
                 try {
