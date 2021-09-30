@@ -62,6 +62,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
 
         @Override
         public void onCompleted() {
+            execute();
             Metadata metadata = new DefaultMetadata();
             metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), "OK");
             metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
@@ -92,40 +93,35 @@ public class ServerStream extends AbstractServerStream implements Stream {
             if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                 return;
             }
-            execute(() -> {
+            try {
+                RpcContext.restoreCancellationContext(getCancellationContext());
+                final RpcInvocation inv = buildInvocation(metadata);
+                inv.setArguments(new Object[]{asStreamObserver()});
+                final Result result = getInvoker().invoke(inv);
                 try {
-                    RpcContext.restoreCancellationContext(getCancellationContext());
-                    final RpcInvocation inv = buildInvocation(metadata);
-                    inv.setArguments(new Object[]{asStreamObserver()});
-                    final Result result = getInvoker().invoke(inv);
-                    try {
-                        subscribe((StreamObserver<Object>) result.getValue());
-                    } catch (Throwable t) {
-                        transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                                .withDescription("Failed to create server's observer"));
-                    }
-                } finally {
-                    RpcContext.removeCancellationContext();
+                    subscribe((StreamObserver<Object>) result.getValue());
+                } catch (Throwable t) {
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("Failed to create server's observer"));
                 }
-            });
-
+            } finally {
+                RpcContext.removeCancellationContext();
+            }
         }
 
         @Override
         public void onData(byte[] in, boolean endStream) {
-            execute(() -> {
-                try {
-                    if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
-                        serverStreamOnData(in);
-                        return;
-                    }
-                    biStreamOnData(in);
-                } catch (Throwable t) {
-                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                            .withDescription("Deserialize request failed")
-                            .withCause(t));
+            try {
+                if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                    serverStreamOnData(in);
+                    return;
                 }
-            });
+                biStreamOnData(in);
+            } catch (Throwable t) {
+                transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription("Deserialize request failed")
+                        .withCause(t));
+            }
         }
 
         /**
@@ -173,9 +169,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
             if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                 return;
             }
-            execute(() -> {
-                getStreamSubscriber().onCompleted();
-            });
+            getStreamSubscriber().onCompleted();
         }
     }
 }
