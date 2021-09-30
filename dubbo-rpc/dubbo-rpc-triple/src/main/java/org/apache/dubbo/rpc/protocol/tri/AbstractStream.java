@@ -118,13 +118,7 @@ public abstract class AbstractStream implements Stream {
 
     @Override
     public void execute(Runnable runnable) {
-        executor.execute(() -> {
-            try {
-                runnable.run();
-            } catch (Throwable throwable) {
-                RpcContext.removeCancellationContext();
-            }
-        });
+        executor.execute(runnable);
     }
 
     public String getMethodName() {

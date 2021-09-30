@@ -22,7 +22,6 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.triple.TripleWrapper;
@@ -62,9 +61,9 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         cancellationContext.addListener(context -> {
             stream.asTransportObserver().onReset(Http2Error.CANCEL);
         });
-        stream.execute(() -> {
-            RpcContext.restoreCancellationContext(stream.getCancellationContext());
-        });
+//        stream.execute(() -> {
+//            RpcContext.restoreCancellationContext(stream.getCancellationContext());
+//        });
         return stream;
     }
 
@@ -193,16 +192,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
         @Override
         public void onError(Throwable throwable) {
-            execute(RpcContext::removeCancellationContext);
         }
 
         @Override
         public void onCompleted() {
-            try {
-                getTransportSubscriber().onComplete();
-            } finally {
-                execute(RpcContext::removeCancellationContext);
-            }
+            getTransportSubscriber().onComplete();
         }
     }
 
