@@ -78,6 +78,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Spring Web MVC -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>

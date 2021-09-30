@@ -33,26 +33,34 @@ import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * AbstractClusterInvokerTest
@@ -66,6 +74,7 @@ public class AbstractClusterInvokerTest {
     StaticDirectory<IHelloService> dic;
     RpcInvocation invocation = new RpcInvocation();
     URL url = URL.valueOf("registry://localhost:9090/org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest.IHelloService?refer=" + URL.encode("application=abstractClusterInvokerTest"));
+    URL consumerUrl = URL.valueOf("dubbo://localhost?application=abstractClusterInvokerTest&refer=application%3DabstractClusterInvokerTest");
 
     Invoker<IHelloService> invoker1;
     Invoker<IHelloService> invoker2;
@@ -81,12 +90,16 @@ public class AbstractClusterInvokerTest {
 
     @AfterEach
     public void teardown() throws Exception {
-        RpcContext.getContext().clearAttachments();
+        RpcContext.removeContext();
     }
 
     @SuppressWarnings({"unchecked"})
     @BeforeEach
     public void setUp() throws Exception {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("application", "abstractClusterInvokerTest");
+        url = url.putAttribute(REFER_KEY, attributes);
+
         invocation.setMethodName("sayHello");
 
         invoker1 = mock(Invoker.class);
@@ -142,15 +155,15 @@ public class AbstractClusterInvokerTest {
 
     }
 
-
+    @Disabled("RpcContext attachments will be set to Invocation twice, first in ConsumerContextFilter, second AbstractInvoker")
     @Test
     public void testBindingAttachment() {
         final String attachKey = "attach";
         final String attachValue = "value";
 
         // setup attachment
-        RpcContext.getContext().setAttachment(attachKey, attachValue);
-        Map<String, Object> attachments = RpcContext.getContext().getObjectAttachments();
+        RpcContext.getClientAttachment().setAttachment(attachKey, attachValue);
+        Map<String, Object> attachments = RpcContext.getClientAttachment().getObjectAttachments();
         Assertions.assertTrue( attachments != null && attachments.size() == 1,"set attachment failed!");
 
         cluster = new AbstractClusterInvoker(dic) {
@@ -226,15 +239,29 @@ public class AbstractClusterInvokerTest {
     @Test
     public void testCloseAvailablecheck() {
         LoadBalance lb = mock(LoadBalance.class);
-        Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
-        URL tmpUrl = url.addParameters(queryMap).removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
-        given(lb.select(invokers, tmpUrl, invocation)).willReturn(invoker1);
+        Map<String, String> queryMap = (Map<String, String> )url.getAttribute(REFER_KEY);
+        URL tmpUrl = turnRegistryUrlToConsumerUrl(url, queryMap);
+
+        when(lb.select(same(invokers), eq(tmpUrl), same(invocation))).thenReturn(invoker1);
         initlistsize5();
 
         Invoker sinvoker = cluster_nocheck.select(lb, invocation, invokers, selectedInvokers);
         Assertions.assertFalse(sinvoker.isAvailable());
         Assertions.assertEquals(invoker1, sinvoker);
 
+    }
+
+    private URL turnRegistryUrlToConsumerUrl(URL url, Map<String, String> queryMap) {
+        String host = StringUtils.isNotEmpty(queryMap.get("register.ip")) ? queryMap.get("register.ip") : this.url.getHost();
+        String path = queryMap.get(PATH_KEY);
+        String consumedProtocol = queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY);
+
+        URL consumerUrlFrom = this.url
+                .setHost(host)
+                .setPort(0)
+                .setProtocol(consumedProtocol)
+                .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
+        return consumerUrlFrom.addParameters(queryMap).removeParameter(MONITOR_KEY);
     }
 
     @Test
@@ -358,10 +385,10 @@ public class AbstractClusterInvokerTest {
 
     public void testSelect_multiInvokers(String lbname) throws Exception {
 
-        int min = 1000, max = 5000;
+        int min = 100, max = 500;
         Double d = (Math.random() * (max - min + 1) + min);
         int runs = d.intValue();
-        Assertions.assertTrue(runs > min);
+        Assertions.assertTrue(runs >= min);
         LoadBalance lb = ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(lbname);
         initlistsize5();
         for (int i = 0; i < runs; i++) {

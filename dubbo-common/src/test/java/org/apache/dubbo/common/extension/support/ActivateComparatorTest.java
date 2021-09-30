@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.common.extension.support;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -25,6 +27,13 @@ import java.util.List;
 
 public class ActivateComparatorTest {
 
+    private ActivateComparator activateComparator;
+
+    @BeforeEach
+    public void setup() {
+        activateComparator = new ActivateComparator(ApplicationModel.defaultModel().getExtensionDirector());
+    }
+
     @Test
     public void testActivateComparator(){
         Filter1 f1 = new Filter1();
@@ -32,19 +41,45 @@ public class ActivateComparatorTest {
         Filter3 f3 = new Filter3();
         Filter4 f4 = new Filter4();
         OldFilter5 f5 = new OldFilter5();
-        List<Filter0> filters = new ArrayList<>();
-        filters.add(f1);
-        filters.add(f2);
-        filters.add(f3);
-        filters.add(f4);
-        filters.add(f5);
+        List<Class<?>> filters = new ArrayList<>();
+        filters.add(f1.getClass());
+        filters.add(f2.getClass());
+        filters.add(f3.getClass());
+        filters.add(f4.getClass());
+        filters.add(f5.getClass());
 
-        Collections.sort(filters, ActivateComparator.COMPARATOR);
+        Collections.sort(filters, activateComparator);
 
-        Assertions.assertEquals(f4, filters.get(0));
-        Assertions.assertEquals(f5, filters.get(1));
-        Assertions.assertEquals(f3, filters.get(2));
-        Assertions.assertEquals(f2, filters.get(3));
-        Assertions.assertEquals(f1, filters.get(4));
+        Assertions.assertEquals(f4.getClass(), filters.get(0));
+        Assertions.assertEquals(f5.getClass(), filters.get(1));
+        Assertions.assertEquals(f3.getClass(), filters.get(2));
+        Assertions.assertEquals(f2.getClass(), filters.get(3));
+        Assertions.assertEquals(f1.getClass(), filters.get(4));
+    }
+
+    @Test
+    public void testFilterOrder() {
+        Order0Filter1 order0Filter1 = new Order0Filter1();
+        Order0Filter2 order0Filter2 = new Order0Filter2();
+
+        List<Class<?>> filters = null;
+
+        {
+            filters = new ArrayList<>();
+            filters.add(order0Filter1.getClass());
+            filters.add(order0Filter2.getClass());
+            filters.sort(activateComparator);
+            Assertions.assertEquals(order0Filter1.getClass(), filters.get(0));
+            Assertions.assertEquals(order0Filter2.getClass(), filters.get(1));
+        }
+
+        {
+            filters = new ArrayList<>();
+            filters.add(order0Filter2.getClass());
+            filters.add(order0Filter1.getClass());
+            filters.sort(activateComparator);
+            Assertions.assertEquals(order0Filter1.getClass(), filters.get(0));
+            Assertions.assertEquals(order0Filter2.getClass(), filters.get(1));
+        }
     }
 }

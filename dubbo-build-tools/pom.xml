@@ -27,4 +27,55 @@
       <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>0.13</version>
+                <executions>
+                    <execution>
+                        <id>verify.rat</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*.versionsBackup</exclude>
+                        <exclude>**/.idea/</exclude>
+                        <exclude>**/*.iml</exclude>
+                        <exclude>**/*.txt</exclude>
+                        <exclude>**/*.load</exclude>
+                        <exclude>**/*.flex</exclude>
+                        <exclude>**/*.fc</exclude>
+                        <exclude>**/*.javascript</exclude>
+                        <exclude>**/*.properties</exclude>
+                        <exclude>**/*.thrift</exclude>
+                        <exclude>**/*.sh</exclude>
+                        <exclude>**/*.bat</exclude>
+                        <exclude>**/*.md</exclude>
+                        <exclude>.git/</exclude>
+                        <exclude>.gitignore</exclude>
+                        <exclude>.repository/</exclude>
+                        <exclude>**/.settings/*</exclude>
+                        <exclude>**/.classpath</exclude>
+                        <exclude>**/.project</exclude>
+                        <exclude>**/target/**</exclude>
+                        <exclude>**/generated/**</exclude>
+                        <exclude>**/*.log</exclude>
+                        <exclude>CONTRIBUTING.md</exclude>
+                        <exclude>README.md</exclude>
+                        <exclude>**/codestyle/*</exclude>
+                        <exclude>**/resources/META-INF/**</exclude>
+                        <exclude>.github/**</exclude>
+                        <exclude>compiler/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

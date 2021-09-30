@@ -26,6 +26,8 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -108,10 +110,12 @@ public class ArrayTypeDefinitionBuilderTest extends AbstractAnnotationProcessing
     }
 
     static void buildAndAssertTypeDefinition(ProcessingEnvironment processingEnv, VariableElement field,
-                                             String expectedType, String compositeType, TypeDefinitionBuilder builder,
+                                             String expectedType, String compositeType, TypeBuilder builder,
                                              BiConsumer<TypeDefinition, TypeDefinition>... assertions) {
-        TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field);
-        TypeDefinition subTypeDefinition = typeDefinition.getItems().get(0);
+        Map<String, TypeDefinition> typeCache = new HashMap<>();
+        TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field, typeCache);
+        String subTypeName = typeDefinition.getItems().get(0);
+        TypeDefinition subTypeDefinition = typeCache.get(subTypeName);
         assertEquals(expectedType, typeDefinition.getType());
 //        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
         assertEquals(compositeType, subTypeDefinition.getType());

@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -44,7 +45,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
     @Override
     public void register(String service, URL url) {
         super.register(service, url);
-        String client = RpcContext.getContext().getRemoteAddressString();
+        String client = RpcContext.getServiceContext().getRemoteAddressString();
         Map<String, URL> urls = remoteRegistered.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
         urls.put(service, url);
         notify(service, getRegistered().get(service));
@@ -53,7 +54,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
     @Override
     public void unregister(String service, URL url) {
         super.unregister(service, url);
-        String client = RpcContext.getContext().getRemoteAddressString();
+        String client = RpcContext.getServiceContext().getRemoteAddressString();
         Map<String, URL> urls = remoteRegistered.get(client);
         if (urls != null && urls.size() > 0) {
             urls.remove(service);
@@ -63,16 +64,16 @@ public class SimpleRegistryService extends AbstractRegistryService {
 
     @Override
     public void subscribe(String service, URL url, NotifyListener listener) {
-        String client = RpcContext.getContext().getRemoteAddressString();
+        String client = RpcContext.getServiceContext().getRemoteAddressString();
         if (logger.isInfoEnabled()) {
             logger.info("[subscribe] service: " + service + ",client:" + client);
         }
         List<URL> urls = getRegistered().get(service);
         if ((RegistryService.class.getName() + ":0.0.0").equals(service)
                 && CollectionUtils.isEmpty(urls)) {
-            register(service, new URL("dubbo",
+            register(service, new ServiceConfigURL("dubbo",
                     NetUtils.getLocalHost(),
-                    RpcContext.getContext().getLocalPort(),
+                    RpcContext.getServiceContext().getLocalPort(),
                     RegistryService.class.getName(),
                     url.getParameters()));
             List<String> rs = registries;
@@ -97,7 +98,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
     @Override
     public void unsubscribe(String service, URL url, NotifyListener listener) {
         super.unsubscribe(service, url, listener);
-        String client = RpcContext.getContext().getRemoteAddressString();
+        String client = RpcContext.getServiceContext().getRemoteAddressString();
         Map<String, NotifyListener> listeners = remoteListeners.get(client);
         if (listeners != null && listeners.size() > 0) {
             listeners.remove(service);
@@ -109,7 +110,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
     }
 
     public void disconnect() {
-        String client = RpcContext.getContext().getRemoteAddressString();
+        String client = RpcContext.getServiceContext().getRemoteAddressString();
         if (logger.isInfoEnabled()) {
             logger.info("Disconnected " + client);
         }
@@ -123,9 +124,9 @@ public class SimpleRegistryService extends AbstractRegistryService {
         if (listeners != null && listeners.size() > 0) {
             for (Map.Entry<String, NotifyListener> entry : listeners.entrySet()) {
                 String service = entry.getKey();
-                super.unsubscribe(service, new URL("subscribe",
-                        RpcContext.getContext().getRemoteHost(),
-                        RpcContext.getContext().getRemotePort(),
+                super.unsubscribe(service, new ServiceConfigURL("subscribe",
+                        RpcContext.getServiceContext().getRemoteHost(),
+                        RpcContext.getServiceContext().getRemotePort(),
                         RegistryService.class.getName(), getSubscribed(service)), entry.getValue());
             }
         }

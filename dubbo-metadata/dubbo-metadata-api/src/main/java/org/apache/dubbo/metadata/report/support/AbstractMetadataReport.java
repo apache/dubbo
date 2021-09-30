@@ -61,18 +61,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.replace;
+import static org.apache.dubbo.metadata.report.support.Constants.CACHE;
 import static org.apache.dubbo.metadata.report.support.Constants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES;
+import static org.apache.dubbo.metadata.report.support.Constants.DUBBO_METADATA;
 import static org.apache.dubbo.metadata.report.support.Constants.RETRY_PERIOD_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.RETRY_TIMES_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.SYNC_REPORT_KEY;
+import static org.apache.dubbo.metadata.report.support.Constants.USER_HOME;
 
 /**
  *
@@ -103,7 +105,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
         // Start file save timer
-        String defaultFilename = System.getProperty("user.home") + "/.dubbo/dubbo-metadata-" + reportServerURL.getParameter(APPLICATION_KEY) + "-" + reportServerURL.getAddress().replaceAll(":", "-") + ".cache";
+        String defaultFilename = System.getProperty(USER_HOME) + DUBBO_METADATA +
+            reportServerURL.getApplication() + "-" +
+            replace(reportServerURL.getAddress(), ":", "-") + CACHE;
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
@@ -113,7 +117,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                     throw new IllegalArgumentException("Invalid service store file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
                 }
             }
-            // if this file exist, firstly delete it.
+            // if this file exists, firstly delete it.
             if (!initialized.getAndSet(true) && file.exists()) {
                 file.delete();
             }
@@ -122,7 +126,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         loadProperties();
         syncReport = reportServerURL.getParameter(SYNC_REPORT_KEY, false);
         metadataReportRetry = new MetadataReportRetry(reportServerURL.getParameter(RETRY_TIMES_KEY, DEFAULT_METADATA_REPORT_RETRY_TIMES),
-                reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
+            reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
         // cycle report the data switch
         if (reportServerURL.getParameter(CYCLE_REPORT_KEY, DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
@@ -273,7 +277,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    public void storeConsumerMetadataTask(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
+    protected void storeConsumerMetadataTask(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterMap);
@@ -290,6 +294,16 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             failedReports.put(consumerMetadataIdentifier, serviceParameterMap);
             metadataReportRetry.startRetryTask();
             logger.error("Failed to put consumer metadata " + consumerMetadataIdentifier + ";  " + serviceParameterMap + ", cause: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        if (reportCacheExecutor != null) {
+            reportCacheExecutor.shutdown();
+        }
+        if (metadataReportRetry != null) {
+            metadataReportRetry.destroy();
         }
     }
 
@@ -336,7 +350,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     String getProtocol(URL url) {
-        String protocol = url.getParameter(SIDE_KEY);
+        String protocol = url.getSide();
         protocol = protocol == null ? url.getProtocol() : protocol;
         return protocol;
     }
@@ -435,8 +449,14 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
 
         void cancelRetryTask() {
-            retryScheduledFuture.cancel(false);
+            if (retryScheduledFuture != null) {
+                retryScheduledFuture.cancel(false);
+            }
             retryExecutor.shutdown();
+        }
+
+        void destroy() {
+            cancelRetryTask();
         }
     }
 

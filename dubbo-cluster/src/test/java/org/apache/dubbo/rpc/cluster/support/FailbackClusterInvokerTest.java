@@ -54,7 +54,7 @@ import static org.mockito.Mockito.mock;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FailbackClusterInvokerTest {
 
-    List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<Invoker<FailbackClusterInvokerTest>>();
+    List<Invoker<FailbackClusterInvokerTest>> invokers = new ArrayList<>();
     URL url = URL.valueOf("test://test:11/test?retries=2&failbacktasks=2");
     Invoker<FailbackClusterInvokerTest> invoker = mock(Invoker.class);
     RpcInvocation invocation = new RpcInvocation();
@@ -101,13 +101,38 @@ public class FailbackClusterInvokerTest {
     }
 
     @Test
+    public void testInvokeWithIllegalRetriesParam() {
+        URL url = URL.valueOf("test://test:11/test?retries=-1&failbacktasks=2");
+        Directory<FailbackClusterInvokerTest> dic = mock(Directory.class);
+        given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
+        given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
+        invoker.invoke(invocation);
+        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
+        DubboAppender.clear();
+    }
+
+    @Test
+    public void testInvokeWithIllegalFailbacktasksParam() {
+        URL url = URL.valueOf("test://test:11/test?retries=2&failbacktasks=-1");
+        Directory<FailbackClusterInvokerTest> dic = mock(Directory.class);
+        given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
+        given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
+        invoker.invoke(invocation);
+        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
+        DubboAppender.clear();
+    }
+
+    @Test
     @Order(1)
     public void testInvokeException() {
         resetInvokerToException();
-        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
-                dic);
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         invoker.invoke(invocation);
-        Assertions.assertNull(RpcContext.getContext().getInvoker());
+        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
         DubboAppender.clear();
     }
 
@@ -117,8 +142,7 @@ public class FailbackClusterInvokerTest {
 
         resetInvokerToNoException();
 
-        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
-                dic);
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         Result ret = invoker.invoke(invocation);
         Assertions.assertSame(result, ret);
     }
@@ -139,8 +163,7 @@ public class FailbackClusterInvokerTest {
 
         resetInvokerToNoException();
 
-        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
-                dic);
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         LogUtil.start();
         DubboAppender.clear();
         invoker.invoke(invocation);
@@ -156,14 +179,13 @@ public class FailbackClusterInvokerTest {
 
         resetInvokerToException();
 
-        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
-                dic);
+        FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         LogUtil.start();
         DubboAppender.clear();
         invoker.invoke(invocation);
         invoker.invoke(invocation);
         invoker.invoke(invocation);
-        Assertions.assertNull(RpcContext.getContext().getInvoker());
+        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
 //        invoker.retryFailed();// when retry the invoker which get from failed map already is not the mocked invoker,so
         //Ensure that the main thread is online
         CountDownLatch countDown = new CountDownLatch(1);

@@ -16,20 +16,19 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 
 import java.util.Map;
-import java.util.SortedSet;
 
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-import static org.apache.dubbo.metadata.MetadataService.toURLs;
-import static org.apache.dubbo.metadata.WritableMetadataService.getDefaultExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceParameter;
 
+/**
+ * Used to interact with non-dubbo systems, also see {@link SpringCloudMetadataServiceURLBuilder}
+ */
 public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer {
 
     @Override
@@ -50,16 +49,7 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
     }
 
     private String resolveMetadataPropertyValue(ServiceInstance serviceInstance) {
-        WritableMetadataService writableMetadataService = getDefaultExtension();
-
-        String serviceInterface = MetadataService.class.getName();
-
-        String group = serviceInstance.getServiceName();
-
-        String version = MetadataService.VERSION;
-
-        SortedSet<String> urls = writableMetadataService.getExportedURLs(serviceInterface, group, version);
-
-        return getMetadataServiceParameter(toURLs(urls));
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
+        return getMetadataServiceParameter(writableMetadataService.getMetadataServiceURL());
     }
 }

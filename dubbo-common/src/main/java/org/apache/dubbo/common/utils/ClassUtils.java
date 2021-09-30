@@ -44,21 +44,6 @@ public class ClassUtils {
      */
     public static final String ARRAY_SUFFIX = "[]";
     /**
-     * Prefix for internal array class names: "[L"
-     */
-    private static final String INTERNAL_ARRAY_PREFIX = "[L";
-    /**
-     * Map with primitive type name as key and corresponding primitive type as
-     * value, for example: "int" -> "int.class".
-     */
-    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<String, Class<?>>(32);
-    /**
-     * Map with primitive wrapper type as key and corresponding primitive type
-     * as value, for example: Integer.class -> int.class.
-     */
-    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
-
-    /**
      * Simple Types including:
      * <ul>
      *     <li>{@link Void}</li>
@@ -79,22 +64,35 @@ public class ClassUtils {
      * @since 2.7.6
      */
     public static final Set<Class<?>> SIMPLE_TYPES = ofSet(
-            Void.class,
-            Boolean.class,
-            Character.class,
-            Byte.class,
-            Short.class,
-            Integer.class,
-            Long.class,
-            Float.class,
-            Double.class,
-            String.class,
-            BigDecimal.class,
-            BigInteger.class,
-            Date.class,
-            Object.class
+        Void.class,
+        Boolean.class,
+        Character.class,
+        Byte.class,
+        Short.class,
+        Integer.class,
+        Long.class,
+        Float.class,
+        Double.class,
+        String.class,
+        BigDecimal.class,
+        BigInteger.class,
+        Date.class,
+        Object.class
     );
-
+    /**
+     * Prefix for internal array class names: "[L"
+     */
+    private static final String INTERNAL_ARRAY_PREFIX = "[L";
+    /**
+     * Map with primitive type name as key and corresponding primitive type as
+     * value, for example: "int" -> "int.class".
+     */
+    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<String, Class<?>>(32);
+    /**
+     * Map with primitive wrapper type as key and corresponding primitive type
+     * as value, for example: Integer.class -> int.class.
+     */
+    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
     private static final char PACKAGE_SEPARATOR_CHAR = '.';
 
     static {
@@ -110,20 +108,20 @@ public class ClassUtils {
         Set<Class<?>> primitiveTypeNames = new HashSet<>(32);
         primitiveTypeNames.addAll(PRIMITIVE_WRAPPER_TYPE_MAP.values());
         primitiveTypeNames.addAll(Arrays
-                .asList(boolean[].class, byte[].class, char[].class, double[].class,
-                        float[].class, int[].class, long[].class, short[].class));
+            .asList(boolean[].class, byte[].class, char[].class, double[].class,
+                float[].class, int[].class, long[].class, short[].class));
         for (Class<?> primitiveTypeName : primitiveTypeNames) {
             PRIMITIVE_TYPE_NAME_MAP.put(primitiveTypeName.getName(), primitiveTypeName);
         }
     }
 
     public static Class<?> forNameWithThreadContextClassLoader(String name)
-            throws ClassNotFoundException {
+        throws ClassNotFoundException {
         return forName(name, Thread.currentThread().getContextClassLoader());
     }
 
     public static Class<?> forNameWithCallerClassLoader(String name, Class<?> caller)
-            throws ClassNotFoundException {
+        throws ClassNotFoundException {
         return forName(name, caller.getClassLoader());
     }
 
@@ -139,20 +137,25 @@ public class ClassUtils {
      */
     public static ClassLoader getClassLoader(Class<?> clazz) {
         ClassLoader cl = null;
-        try {
-            cl = Thread.currentThread().getContextClassLoader();
-        } catch (Throwable ex) {
-            // Cannot access thread context ClassLoader - falling back to system class loader...
+        if (!clazz.getName().startsWith("org.apache.dubbo")) {
+            cl = clazz.getClassLoader();
         }
         if (cl == null) {
-            // No thread context class loader -> use class loader of this class.
-            cl = clazz.getClassLoader();
+            try {
+                cl = Thread.currentThread().getContextClassLoader();
+            } catch (Throwable ex) {
+                // Cannot access thread context ClassLoader - falling back to system class loader...
+            }
             if (cl == null) {
-                // getClassLoader() returning null indicates the bootstrap ClassLoader
-                try {
-                    cl = ClassLoader.getSystemClassLoader();
-                } catch (Throwable ex) {
-                    // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                // No thread context class loader -> use class loader of this class.
+                cl = clazz.getClassLoader();
+                if (cl == null) {
+                    // getClassLoader() returning null indicates the bootstrap ClassLoader
+                    try {
+                        cl = ClassLoader.getSystemClassLoader();
+                    } catch (Throwable ex) {
+                        // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                    }
                 }
             }
         }
@@ -200,7 +203,7 @@ public class ClassUtils {
      * @see Class#forName(String, boolean, ClassLoader)
      */
     public static Class<?> forName(String name, ClassLoader classLoader)
-            throws ClassNotFoundException, LinkageError {
+        throws ClassNotFoundException, LinkageError {
 
         Class<?> clazz = resolvePrimitiveClassName(name);
         if (clazz != null) {
@@ -220,7 +223,7 @@ public class ClassUtils {
             String elementClassName = null;
             if (internalArrayMarker == 0) {
                 elementClassName = name
-                        .substring(INTERNAL_ARRAY_PREFIX.length(), name.length() - 1);
+                    .substring(INTERNAL_ARRAY_PREFIX.length(), name.length() - 1);
             } else if (name.startsWith("[")) {
                 elementClassName = name.substring(1);
             }
@@ -340,7 +343,7 @@ public class ClassUtils {
      */
     public static boolean isTypeMatch(Class<?> type, String value) {
         if ((type == boolean.class || type == Boolean.class)
-                && !("true".equals(value) || "false".equals(value))) {
+            && !("true".equals(value) || "false".equals(value))) {
             return false;
         }
         return true;
@@ -394,18 +397,18 @@ public class ClassUtils {
             if (isNotEmpty(interfaces)) {
                 // add current interfaces
                 Arrays.stream(interfaces)
-                        .filter(resolved::add)
-                        .forEach(cls -> {
-                            allInterfaces.add(cls);
-                            waitResolve.add(cls);
-                        });
+                    .filter(resolved::add)
+                    .forEach(cls -> {
+                        allInterfaces.add(cls);
+                        waitResolve.add(cls);
+                    });
             }
 
             // add all super classes to waitResolve
             getAllSuperClasses(clazz)
-                    .stream()
-                    .filter(resolved::add)
-                    .forEach(waitResolve::add);
+                .stream()
+                .filter(resolved::add)
+                .forEach(waitResolve::add);
 
             clazz = waitResolve.poll();
         }

@@ -69,6 +69,7 @@ public class DefaultValueParameterProcessor extends AbstractAnnotatedMethodParam
         }
     }
 
+    @Override
     public int getPriority() {
         return MIN_PRIORITY;
     }

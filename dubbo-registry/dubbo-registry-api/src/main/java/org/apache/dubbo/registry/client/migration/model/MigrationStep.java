@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.client.migration.model;
 
 public enum MigrationStep {
-    INTERFACE_FIRST,
+    FORCE_INTERFACE,
     APPLICATION_FIRST,
     FORCE_APPLICATION
 }

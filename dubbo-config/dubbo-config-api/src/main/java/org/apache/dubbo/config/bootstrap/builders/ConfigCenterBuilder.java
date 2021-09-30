@@ -48,7 +48,7 @@ public class ConfigCenterBuilder extends AbstractBuilder<ConfigCenterConfig, Con
         return getThis();
     }
 
-	public ConfigCenterBuilder address(String address) {
+    public ConfigCenterBuilder address(String address) {
         this.address = address;
         return getThis();
     }

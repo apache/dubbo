@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +38,7 @@ public class SpringCloudMetadataServiceURLBuilderTest {
 
     @Test
     public void testBuild() {
-        List<URL> urls = builder.build(new DefaultServiceInstance("127.0.0.1", "test", 8080));
+        List<URL> urls = builder.build(new DefaultServiceInstance("127.0.0.1", "test", 8080, ApplicationModel.defaultModel()));
         assertEquals(0, urls.size());
 
         urls = builder.build(serviceInstance);

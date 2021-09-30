@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
@@ -36,14 +37,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
@@ -51,11 +49,12 @@ import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 /**
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
  */
-@Activate(group = {PROVIDER, CONSUMER})
+@Activate(group = {PROVIDER})
 public class MonitorFilter implements Filter, Filter.Listener {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitorFilter.class);
     private static final String MONITOR_FILTER_START_TIME = "monitor_filter_start_time";
+    private static final String MONITOR_REMOTE_HOST_STORE = "monitor_remote_host_store";
 
     /**
      * The Concurrent counter
@@ -82,8 +81,9 @@ public class MonitorFilter implements Filter, Filter.Listener {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
+        if (invoker.getUrl().hasAttribute(MONITOR_KEY)) {
             invocation.put(MONITOR_FILTER_START_TIME, System.currentTimeMillis());
+            invocation.put(MONITOR_REMOTE_HOST_STORE, RpcContext.getServiceContext().getRemoteHost());
             getConcurrent(invoker, invocation).incrementAndGet(); // count up
         }
         return invoker.invoke(invocation); // proceed invocation chain
@@ -97,16 +97,16 @@ public class MonitorFilter implements Filter, Filter.Listener {
 
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
-            collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), (long) invocation.get(MONITOR_FILTER_START_TIME), false);
+        if (invoker.getUrl().hasAttribute(MONITOR_KEY)) {
+            collect(invoker, invocation, result, (String) invocation.get(MONITOR_REMOTE_HOST_STORE), (long) invocation.get(MONITOR_FILTER_START_TIME), false);
             getConcurrent(invoker, invocation).decrementAndGet(); // count down
         }
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
-            collect(invoker, invocation, null, RpcContext.getContext().getRemoteHost(), (long) invocation.get(MONITOR_FILTER_START_TIME), true);
+        if (invoker.getUrl().hasAttribute(MONITOR_KEY)) {
+            collect(invoker, invocation, null, (String) invocation.get(MONITOR_REMOTE_HOST_STORE), (long) invocation.get(MONITOR_FILTER_START_TIME), true);
             getConcurrent(invoker, invocation).decrementAndGet(); // count down
         }
     }
@@ -123,13 +123,16 @@ public class MonitorFilter implements Filter, Filter.Listener {
      */
     private void collect(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         try {
-            URL monitorUrl = invoker.getUrl().getUrlParameter(MONITOR_KEY);
-            Monitor monitor = monitorFactory.getMonitor(monitorUrl);
-            if (monitor == null) {
-                return;
+            Object monitorUrl;
+            monitorUrl = invoker.getUrl().getAttribute(MONITOR_KEY);
+            if(monitorUrl instanceof URL) {
+                Monitor monitor = monitorFactory.getMonitor((URL) monitorUrl);
+                if (monitor == null) {
+                    return;
+                }
+                URL statisticsURL = createStatisticsUrl(invoker, invocation, result, remoteHost, start, error);
+                monitor.collect(statisticsURL.toSerializableURL());
             }
-            URL statisticsURL = createStatisticsUrl(invoker, invocation, result, remoteHost, start, error);
-            monitor.collect(statisticsURL);
         } catch (Throwable t) {
             logger.warn("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
         }
@@ -150,15 +153,15 @@ public class MonitorFilter implements Filter, Filter.Listener {
         // ---- service statistics ----
         long elapsed = System.currentTimeMillis() - start; // invocation cost
         int concurrent = getConcurrent(invoker, invocation).get(); // current concurrent count
-        String application = invoker.getUrl().getParameter(APPLICATION_KEY);
+        String application = invoker.getUrl().getApplication();
         String service = invoker.getInterface().getName(); // service name
         String method = RpcUtils.getMethodName(invocation); // method name
-        String group = invoker.getUrl().getParameter(GROUP_KEY);
-        String version = invoker.getUrl().getParameter(VERSION_KEY);
+        String group = invoker.getUrl().getGroup();
+        String version = invoker.getUrl().getVersion();
 
         int localPort;
         String remoteKey, remoteValue;
-        if (CONSUMER_SIDE.equals(invoker.getUrl().getParameter(SIDE_KEY))) {
+        if (CONSUMER_SIDE.equals(invoker.getUrl().getSide())) {
             // ---- for service consumer ----
             localPort = 0;
             remoteKey = MonitorService.PROVIDER;
@@ -177,7 +180,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
             output = result.getAttachment(OUTPUT_KEY);
         }
 
-        return new URL(COUNT_PROTOCOL, NetUtils.getLocalHost(), localPort, service + PATH_SEPARATOR + method, MonitorService.APPLICATION, application, MonitorService.INTERFACE, service, MonitorService.METHOD, method, remoteKey, remoteValue, error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", MonitorService.ELAPSED, String.valueOf(elapsed), MonitorService.CONCURRENT, String.valueOf(concurrent), INPUT_KEY, input, OUTPUT_KEY, output, GROUP_KEY, group, VERSION_KEY, version);
+        return new ServiceConfigURL(COUNT_PROTOCOL, NetUtils.getLocalHost(), localPort, service + PATH_SEPARATOR + method, MonitorService.APPLICATION, application, MonitorService.INTERFACE, service, MonitorService.METHOD, method, remoteKey, remoteValue, error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1", MonitorService.ELAPSED, String.valueOf(elapsed), MonitorService.CONCURRENT, String.valueOf(concurrent), INPUT_KEY, input, OUTPUT_KEY, output, GROUP_KEY, group, VERSION_KEY, version);
     }
 
 

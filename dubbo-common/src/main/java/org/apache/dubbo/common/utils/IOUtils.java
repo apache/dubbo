@@ -16,9 +16,12 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +33,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -228,4 +233,38 @@ public class IOUtils {
         writeLines(new FileOutputStream(file, true), lines);
     }
 
+
+    /**
+     * use like spring code
+     * @param resourceLocation
+     * @return
+     */
+    public static URL getURL(String resourceLocation) throws FileNotFoundException {
+        Assert.notNull(resourceLocation, "Resource location must not be null");
+        if (resourceLocation.startsWith(CommonConstants.CLASSPATH_URL_PREFIX)) {
+            String path = resourceLocation.substring(CommonConstants.CLASSPATH_URL_PREFIX.length());
+            ClassLoader cl = ClassUtils.getClassLoader();
+            URL url = (cl != null ? cl.getResource(path) : ClassLoader.getSystemResource(path));
+            if (url == null) {
+                String description = "class path resource [" + path + "]";
+                throw new FileNotFoundException(description +
+                        " cannot be resolved to URL because it does not exist");
+            }
+            return url;
+        }
+        try {
+            // try URL
+            return new URL(resourceLocation);
+        }
+        catch (MalformedURLException ex) {
+            // no URL -> treat as file path
+            try {
+                return new File(resourceLocation).toURI().toURL();
+            }
+            catch (MalformedURLException ex2) {
+                throw new FileNotFoundException("Resource location [" + resourceLocation +
+                        "] is neither a URL not a well-formed file path");
+            }
+        }
+    }
 }

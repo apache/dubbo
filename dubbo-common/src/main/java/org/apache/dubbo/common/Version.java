@@ -73,6 +73,16 @@ public final class Version {
     }
 
     /**
+     * Compare versions
+     * @return the value {@code 0} if {@code version1 == version2};
+     *         a value less than {@code 0} if {@code version1 < version2}; and
+     *         a value greater than {@code 0} if {@code version1 > version2}
+     */
+    public static int compare(String version1, String version2) {
+        return Integer.compare (getIntVersion(version1), getIntVersion(version2));
+    }
+
+    /**
      * Check the framework release version number to decide if it's 2.7.0 or higher
      */
     public static boolean isRelease270OrHigher(String version) {
@@ -181,7 +191,12 @@ public final class Version {
                 return defaultVersion;
             }
 
-            String file = codeSource.getLocation().getFile();
+            URL location = codeSource.getLocation();
+            if (location == null){
+                logger.info("No location for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
+                return defaultVersion;
+            }
+            String file =  location.getFile();
             if (!StringUtils.isEmpty(file) && file.endsWith(".jar")) {
                 version = getFromFile(file);
             }

@@ -21,12 +21,14 @@ import org.apache.dubbo.cache.CacheFactory;
 import org.apache.dubbo.cache.support.threadlocal.ThreadLocalCache;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -48,12 +50,12 @@ public class CacheTest {
 
     @BeforeEach
     public void setUp() {
-//        ApplicationModel.getConfigManager().clear();
+        DubboBootstrap.reset();
     }
 
     @AfterEach
     public void tearDown() {
-//        ApplicationModel.getConfigManager().clear();
+//        ApplicationModel.defaultModel().getConfigManager().clear();
     }
 
     private void testCache(String type) throws Exception {
@@ -83,6 +85,7 @@ public class CacheTest {
                 // verify cache, same result is returned for multiple invocations (in fact, the return value increases
                 // on every invocation on the server side)
                 String fix = null;
+                cacheService.findCache("0");
                 for (int i = 0; i < 3; i++) {
                     String result = cacheService.findCache("0");
                     assertTrue(fix == null || fix.equals(result));
@@ -94,6 +97,7 @@ public class CacheTest {
                     // default cache.size is 1000 for LRU, should have cache expired if invoke more than 1001 times
                     for (int n = 0; n < 1001; n++) {
                         String pre = null;
+                        cacheService.findCache(String.valueOf(n));
                         for (int i = 0; i < 10; i++) {
                             String result = cacheService.findCache(String.valueOf(n));
                             assertTrue(pre == null || pre.equals(result));
@@ -129,7 +133,7 @@ public class CacheTest {
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("findCache.cache", "threadlocal");
-        URL url = new URL("dubbo", "127.0.0.1", 29582, "org.apache.dubbo.config.cache.CacheService", parameters);
+        URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 29582, "org.apache.dubbo.config.cache.CacheService", parameters);
 
         Invocation invocation = new RpcInvocation("findCache", CacheService.class.getName(), "", new Class[]{String.class}, new String[]{"0"}, null, null, null);
 

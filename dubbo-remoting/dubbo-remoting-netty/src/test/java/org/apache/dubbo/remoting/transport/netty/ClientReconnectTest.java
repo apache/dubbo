@@ -47,7 +47,7 @@ public class ClientReconnectTest {
             Client client = startClient(port, 200);
             Assertions.assertFalse(client.isConnected());
             RemotingServer server = startServer(port);
-            for (int i = 0; i < 100 && !client.isConnected(); i++) {
+            for (int i = 0; i < 1000 && !client.isConnected(); i++) {
                 Thread.sleep(10);
             }
             Assertions.assertTrue(client.isConnected());
@@ -70,7 +70,8 @@ public class ClientReconnectTest {
 
 
     public Client startClient(int port, int heartbeat) throws RemotingException {
-        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&client=netty3&" + Constants.HEARTBEAT_KEY + "=" + heartbeat;
+        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&client=netty3&" +
+                Constants.HEARTBEAT_KEY + "=" + heartbeat;
         return Exchangers.connect(url);
     }
 

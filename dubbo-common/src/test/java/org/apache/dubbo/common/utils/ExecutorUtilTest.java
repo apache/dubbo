@@ -18,6 +18,7 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -77,7 +78,7 @@ public class ExecutorUtilTest {
 
     @Test
     public void testSetThreadName() throws Exception {
-        URL url = new URL("dubbo", "localhost", 1234).addParameter(THREAD_NAME_KEY, "custom-thread");
+        URL url = new ServiceConfigURL("dubbo", "localhost", 1234).addParameter(THREAD_NAME_KEY, "custom-thread");
         url = ExecutorUtil.setThreadName(url, "default-name");
         assertThat(url.getParameter(THREAD_NAME_KEY), equalTo("custom-thread-localhost:1234"));
     }

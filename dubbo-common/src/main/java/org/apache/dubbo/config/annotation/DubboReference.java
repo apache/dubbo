@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.config.annotation;
 
+import org.apache.dubbo.common.constants.ClusterRules;
+import org.apache.dubbo.common.constants.LoadbalanceRules;
 import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -25,9 +28,43 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation used for referencing a Dubbo service
+ * An annotation used for referencing a Dubbo service.
+ * <p>
+ * <b>It is recommended to use @DubboReference on the @Bean method in the Java-config class, but not on the fields or setter methods to be injected.</b>
+ * </p>
+ *
+ * Step 1: Register ReferenceBean in Java-config class:
+ * <pre class="code">
+ * &#64;Configuration
+ * public class ReferenceConfiguration {
+ *     &#64;Bean
+ *     &#64;DubboReference(group = "demo")
+ *     public ReferenceBean&lt;HelloService&gt; helloService() {
+ *         return new ReferenceBean();
+ *     }
+ *
+ *     &#64;Bean
+ *     &#64;DubboReference(group = "demo", interfaceClass = HelloService.class)
+ *     public ReferenceBean&lt;GenericService&gt; genericHelloService() {
+ *         return new ReferenceBean();
+ *     }
+ * }
+ * </pre>
+ *
+ * Step 2: Inject ReferenceBean by @Autowired
+ * <pre class="code">
+ * public class FooController {
+ *     &#64;Autowired
+ *     private HelloService helloService;
+ *
+ *     &#64;Autowired
+ *     private GenericService genericHelloService;
+ * }
+ * </pre>
  *
  * @since 2.7.7
+ * @see org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder
+ * @see org.apache.dubbo.config.spring.ReferenceBean
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -66,12 +103,16 @@ public @interface DubboReference {
 
     /**
      * Whether to enable generic invocation, default value is false
+     * @deprecated Do not need specify generic value, judge by injection type and interface class
      */
+    @Deprecated
     boolean generic() default false;
 
     /**
      * When enable, prefer to call local service in the same JVM if it's present, default value is true
+     * @deprecated using scope="local" or scope="remote" instead
      */
+    @Deprecated
     boolean injvm() default true;
 
     /**
@@ -80,9 +121,10 @@ public @interface DubboReference {
     boolean check() default true;
 
     /**
-     * Whether eager initialize the reference bean when all properties are set, default value is false
+     * Whether eager initialize the reference bean when all properties are set, default value is true ( null as true)
+     * @see ReferenceConfigBase#shouldInit()
      */
-    boolean init() default false;
+    boolean init() default true;
 
     /**
      * Whether to make connection when the client is created, the default value is false
@@ -123,20 +165,21 @@ public @interface DubboReference {
 
     /**
      * Cluster strategy, legal values include: failover, failfast, failsafe, failback, forking
+     * you can use {@link org.apache.dubbo.common.constants.ClusterRules#FAIL_FAST} ……
      */
-    String cluster() default "";
+    String cluster() default ClusterRules.EMPTY;
 
     /**
      * Maximum connections service provider can accept, default value is 0 - connection is shared
      */
-    int connections() default 0;
+    int connections() default -1;
 
     /**
      * The callback instance limit peer connection
      * <p>
      * see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
-    int callbacks() default 0;
+    int callbacks() default -1;
 
     /**
      * Callback method name when connected, default value is empty string
@@ -163,14 +206,13 @@ public @interface DubboReference {
      * <p>
      * see Constants#DEFAULT_RETRIES
      */
-    int retries() default 2;
+    int retries() default -1;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
-     * <p>
-     * see Constants#DEFAULT_LOADBALANCE
+     * you can use {@link org.apache.dubbo.common.constants.LoadbalanceRules#RANDOM} ……
      */
-    String loadbalance() default "";
+    String loadbalance() default LoadbalanceRules.EMPTY;
 
     /**
      * Whether to enable async invocation, default value is false
@@ -180,7 +222,7 @@ public @interface DubboReference {
     /**
      * Maximum active requests allowed, default value is 0
      */
-    int actives() default 0;
+    int actives() default -1;
 
     /**
      * Whether the async request has already been sent, the default value is false
@@ -200,7 +242,7 @@ public @interface DubboReference {
     /**
      * Timeout value for service invocation, default value is 0
      */
-    int timeout() default 0;
+    int timeout() default -1;
 
     /**
      * Specify cache implementation for service invocation, legal values include: lru, threadlocal, jcache
@@ -222,13 +264,15 @@ public @interface DubboReference {
     String[] listener() default {};
 
     /**
-     * Customized parameter key-value pair, for example: {key1, value1, key2, value2}
+     * Customized parameter key-value pair, for example: {key1, value1, key2, value2} or {"key1=value1", "key2=value2"}
      */
     String[] parameters() default {};
 
     /**
      * Application associated name
+     * @deprecated Do not set it and use the global Application Config
      */
+    @Deprecated
     String application() default "";
 
     /**
@@ -276,7 +320,7 @@ public @interface DubboReference {
 
     /**
      * The id
-     *
+     * NOTE: The id attribute is ignored when using @DubboReference on @Bean method
      * @return default value is empty
      * @since 2.7.3
      */
@@ -286,6 +330,26 @@ public @interface DubboReference {
      * @return The service names that the Dubbo interface subscribed
      * @see RegistryConstants#SUBSCRIBED_SERVICE_NAMES_KEY
      * @since 2.7.8
+     * @deprecated using {@link DubboReference#providedBy()}
      */
+    @Deprecated
     String[] services() default {};
+
+    /**
+     * declares which app or service this interface belongs to
+     * @see RegistryConstants#PROVIDED_BY
+     */
+    String[] providedBy() default {};
+
+    /**
+     * the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
+     * @see org.apache.dubbo.rpc.Constants#SCOPE_LOCAL
+     * @see org.apache.dubbo.rpc.Constants#SCOPE_REMOTE
+     */
+    String scope() default "";
+
+    /**
+     * Weather the reference is refer asynchronously
+     */
+    boolean referAsync() default false;
 }

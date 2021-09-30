@@ -43,14 +43,14 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         HttpServletRequest request = ResteasyProviderFactory.getContextData(HttpServletRequest.class);
-        RpcContext.getContext().setRequest(request);
+        RpcContext.getServiceContext().setRequest(request);
 
         // this only works for servlet containers
-        if (request != null && RpcContext.getContext().getRemoteAddress() == null) {
-            RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+        if (request != null && RpcContext.getServiceContext().getRemoteAddress() == null) {
+            RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
         }
 
-        RpcContext.getContext().setResponse(ResteasyProviderFactory.getContextData(HttpServletResponse.class));
+        RpcContext.getServiceContext().setResponse(ResteasyProviderFactory.getContextData(HttpServletResponse.class));
 
         String headers = requestContext.getHeaderString(DUBBO_ATTACHMENT_HEADER);
         if (headers != null) {
@@ -60,7 +60,7 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
                     String key = header.substring(0, index);
                     String value = header.substring(index + 1);
                     if (!StringUtils.isEmpty(key)) {
-                        RpcContext.getContext().setAttachment(key.trim(), value.trim());
+                        RpcContext.getServerAttachment().setAttachment(key.trim(), value.trim());
                     }
                 }
             }
@@ -70,7 +70,7 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;
-        for (Map.Entry<String, Object> entry : RpcContext.getContext().getObjectAttachments().entrySet()) {
+        for (Map.Entry<String, Object> entry : RpcContext.getClientAttachment().getObjectAttachments().entrySet()) {
             String key = entry.getKey();
             String value = (String) entry.getValue();
             if (illegalHttpHeaderKey(key) || illegalHttpHeaderValue(value)) {

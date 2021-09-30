@@ -119,7 +119,7 @@ public class DubboMonitor implements Monitor {
                             MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent),
                             DEFAULT_PROTOCOL, protocol
                     );
-            monitorService.collect(url);
+            monitorService.collect(url.toSerializableURL());
 
             // reset
             long[] current;

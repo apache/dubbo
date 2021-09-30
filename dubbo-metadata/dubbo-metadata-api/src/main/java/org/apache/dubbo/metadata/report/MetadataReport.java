@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.report;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
@@ -49,22 +50,13 @@ public interface MetadataReport {
     }
 
     /**
-     * Service<-->Application Mapping -- START
-     **/
-    default Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
-        return Collections.emptySet();
-    }
-
-    default void registerServiceAppMapping(String serviceKey, String application, URL url) {
-        return;
-    }
-
-    /**
      * deprecated or need triage
      **/
     void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
 
     List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
+
+    void destroy();
 
     void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 
@@ -74,4 +66,26 @@ public interface MetadataReport {
 
     List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
 
+    default ConfigItem getConfigItem(String key, String group) {
+        return new ConfigItem();
+    }
+
+    default boolean registerServiceAppMapping(String serviceInterface, String defaultMappingGroup, String newConfigContent, Object ticket) {
+        return false;
+    }
+
+    default boolean registerServiceAppMapping(String serviceKey, String application, URL url) {
+        return false;
+    }
+
+    /**
+     * Service<-->Application Mapping -- START
+     **/
+    default Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+        return Collections.emptySet();
+    }
+
+    default Set<String> getServiceAppMapping(String serviceKey, URL url) {
+        return Collections.emptySet();
+    }
 }

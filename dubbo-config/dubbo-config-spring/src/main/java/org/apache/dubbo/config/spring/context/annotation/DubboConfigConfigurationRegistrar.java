@@ -17,15 +17,11 @@
 package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
-
+import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
-
-import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
-import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
 
 /**
  * Dubbo {@link AbstractConfig Config} {@link ImportBeanDefinitionRegistrar register}, which order can be configured
@@ -40,19 +36,21 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
-        AnnotationAttributes attributes = AnnotationAttributes.fromMap(
-                importingClassMetadata.getAnnotationAttributes(EnableDubboConfig.class.getName()));
+        // initialize dubbo beans
+        DubboSpringInitializer.initialize(registry);
 
-        boolean multiple = attributes.getBoolean("multiple");
+        // Config beans creating from props have move to ConfigManager
+//        AnnotationAttributes attributes = AnnotationAttributes.fromMap(
+//                importingClassMetadata.getAnnotationAttributes(EnableDubboConfig.class.getName()));
+//
+//        boolean multiple = attributes.getBoolean("multiple");
+//
+//        // Single Config Bindings
+//        registerBeans(registry, DubboConfigConfiguration.Single.class);
+//
+//        if (multiple) { // Since 2.6.6 https://github.com/apache/dubbo/issues/3193
+//            registerBeans(registry, DubboConfigConfiguration.Multiple.class);
+//        }
 
-        // Single Config Bindings
-        registerBeans(registry, DubboConfigConfiguration.Single.class);
-
-        if (multiple) { // Since 2.6.6 https://github.com/apache/dubbo/issues/3193
-            registerBeans(registry, DubboConfigConfiguration.Multiple.class);
-        }
-
-        // Since 2.7.6
-        registerCommonBeans(registry);
     }
 }

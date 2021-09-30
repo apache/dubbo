@@ -280,3 +280,10 @@ https://developers.google.com/protocol-buffers/ and is licensed under the follow
     of the input file used when generating it.  This code is not
     standalone and requires a support library to be linked with it.  This
     support library is itself covered by the above license.
+
+For the ca.proto in dubbo-registry-xds:
+
+This product contains a modified portion of 'Istio', an open platform to connect, manage, and secure microservices also
+ under a "Apache License 2.0" license, see https://github.com/istio/api/blob/master/LICENSE:
+
+ * security/v1alpha1/ca.proto

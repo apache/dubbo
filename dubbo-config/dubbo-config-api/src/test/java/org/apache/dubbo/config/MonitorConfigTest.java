@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -103,5 +104,12 @@ public class MonitorConfigTest {
         MonitorConfig monitor = new MonitorConfig();
         monitor.setInterval("100");
         assertThat(monitor.getInterval(), equalTo("100"));
+    }
+
+    @Test
+    public void testMetaData() {
+        MonitorConfig config = new MonitorConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
     }
 }

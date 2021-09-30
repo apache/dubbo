@@ -16,21 +16,75 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.isInstanceUpdated;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.resetInstanceUpdateKey;
+
 public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
-    protected ServiceInstance serviceInstance;
+    private volatile boolean isDestroy;
+
+    protected volatile ServiceInstance serviceInstance;
 
     @Override
-    public ServiceInstance getLocalInstance() {
+    public final ServiceInstance getLocalInstance() {
         return serviceInstance;
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public final void initialize(URL registryURL) throws Exception {
+        doInitialize(registryURL);
     }
 
+    public abstract void doInitialize(URL registryURL) throws Exception;
+
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public final void register(ServiceInstance serviceInstance) throws RuntimeException {
+        if (ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance) == null) {
+            ServiceInstanceMetadataUtils.calInstanceRevision(this, serviceInstance);
+        }
+        doRegister(serviceInstance);
         this.serviceInstance = serviceInstance;
+    }
+
+    public abstract void doRegister(ServiceInstance serviceInstance) throws RuntimeException;
+
+
+    @Override
+    public final void update(ServiceInstance serviceInstance) throws RuntimeException {
+        if (this.serviceInstance == null) {
+            this.register(serviceInstance);
+            return;
+        }
+        if (!isInstanceUpdated(serviceInstance)) {
+            return;
+        }
+        doUpdate(serviceInstance);
+        resetInstanceUpdateKey(serviceInstance);
+        this.serviceInstance = serviceInstance;
+    }
+
+    public abstract void doUpdate(ServiceInstance serviceInstance) throws RuntimeException;
+
+    @Override
+    public final void unregister(ServiceInstance serviceInstance) throws RuntimeException {
+        doUnregister(serviceInstance);
+    }
+
+    public abstract void doUnregister(ServiceInstance serviceInstance);
+
+    @Override
+    public final void destroy() throws Exception {
+        isDestroy = true;
+        doDestroy();
+    }
+
+    public abstract void doDestroy() throws Exception;
+
+    @Override
+    public final boolean isDestroy() {
+        return isDestroy;
     }
 }

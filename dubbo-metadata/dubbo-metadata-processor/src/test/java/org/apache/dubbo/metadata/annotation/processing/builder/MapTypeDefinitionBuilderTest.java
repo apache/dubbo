@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
@@ -61,11 +63,11 @@ public class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTe
     protected void beforeEach() {
         builder = new MapTypeDefinitionBuilder();
         TypeElement testType = getType(MapTypeModel.class);
-        stringsField = findField( testType, "strings");
-        colorsField = findField( testType, "colors");
-        primitiveTypeModelsField = findField( testType, "primitiveTypeModels");
-        modelsField = findField( testType, "models");
-        modelArraysField = findField( testType, "modelArrays");
+        stringsField = findField(testType, "strings");
+        colorsField = findField(testType, "colors");
+        primitiveTypeModelsField = findField(testType, "primitiveTypeModels");
+        modelsField = findField(testType, "models");
+        modelArraysField = findField(testType, "modelArrays");
 
         assertEquals("strings", stringsField.getSimpleName().toString());
         assertEquals("colors", colorsField.getSimpleName().toString());
@@ -119,11 +121,14 @@ public class MapTypeDefinitionBuilderTest extends AbstractAnnotationProcessingTe
 
     static void buildAndAssertTypeDefinition(ProcessingEnvironment processingEnv, VariableElement field,
                                              String expectedType, String keyType, String valueType,
-                                             TypeDefinitionBuilder builder,
+                                             TypeBuilder builder,
                                              BiConsumer<TypeDefinition, TypeDefinition>... assertions) {
-        TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field);
-        TypeDefinition keyTypeDefinition = typeDefinition.getItems().get(0);
-        TypeDefinition valueTypeDefinition = typeDefinition.getItems().get(1);
+        Map<String, TypeDefinition> typeCache = new HashMap<>();
+        TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, field, typeCache);
+        String keyTypeName = typeDefinition.getItems().get(0);
+        TypeDefinition keyTypeDefinition = typeCache.get(keyTypeName);
+        String valueTypeName = typeDefinition.getItems().get(1);
+        TypeDefinition valueTypeDefinition = typeCache.get(valueTypeName);
         assertEquals(expectedType, typeDefinition.getType());
 //        assertEquals(field.getSimpleName().toString(), typeDefinition.get$ref());
         assertEquals(keyType, keyTypeDefinition.getType());

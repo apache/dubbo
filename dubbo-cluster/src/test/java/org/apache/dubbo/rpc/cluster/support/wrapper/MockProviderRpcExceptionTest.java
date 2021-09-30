@@ -36,7 +36,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class MockProviderRpcExceptionTest {
 
@@ -53,7 +55,11 @@ public class MockProviderRpcExceptionTest {
     @Test
     public void testMockInvokerProviderRpcException() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloRpcService.class.getName());
-        url = url.addParameter(MOCK_KEY, "true").addParameter("invoke_return_error", "true");
+        url = url.addParameter(MOCK_KEY, "true").addParameter("invoke_return_error", "true")
+                .addParameter(REFER_KEY,
+                        URL.encode(PATH_KEY + "=" + MockProviderRpcExceptionTest.IHelloRpcService.class.getName()
+                                + "&" + "mock=true"
+                                + "&" + "proxy=jdk"));
         Invoker<IHelloRpcService> cluster = getClusterInvoker(url);
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething4");
@@ -130,7 +136,7 @@ public class MockProviderRpcExceptionTest {
             return "something3";
         }
 
-        public String getSomething4(){
+        public String getSomething4() {
             throw new RpcException("getSomething4|RpcException");
         }
 
@@ -176,7 +182,7 @@ public class MockProviderRpcExceptionTest {
             return "something3mock";
         }
 
-        public String getSomething4(){
+        public String getSomething4() {
             return "something4mock";
         }
 

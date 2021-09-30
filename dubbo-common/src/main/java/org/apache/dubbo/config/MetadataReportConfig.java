@@ -17,14 +17,16 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPARATOR;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 
 /**
@@ -35,22 +37,32 @@ import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 public class MetadataReportConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 55233L;
-    /**
-     * the value is : metadata-report
-     */
-    private static final String PREFIX_TAG = StringUtils.camelToSplitName(
-            MetadataReportConfig.class.getSimpleName().substring(0, MetadataReportConfig.class.getSimpleName().length() - 6), PROPERTIES_CHAR_SEPARATOR);
 
-    // Register center address
+    private String protocol;
+
+    /**
+     * metadata center address
+     */
     private String address;
 
-    // Username to login register center
+    /**
+     * Default port for metadata center
+     */
+    private Integer port;
+
+    /**
+     * Username to login metadata center
+     */
     private String username;
 
-    // Password to login register center
+    /**
+     * Password to login metadata center
+     */
     private String password;
 
-    // Request timeout in milliseconds for register center
+    /**
+     * Request timeout in milliseconds for metadata center
+     */
     private Integer timeout;
 
     /**
@@ -58,14 +70,16 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private String group;
 
-    // Customized parameters
+    /**
+     * Customized parameters
+     */
     private Map<String, String> parameters;
 
     private Integer retryTimes;
 
     private Integer retryPeriod;
     /**
-     * By default the metadatastore will store full metadata repeatedly every day .
+     * By default the metadata store will store full metadata repeatedly every day .
      */
     private Boolean cycleReport;
 
@@ -84,6 +98,19 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private String registry;
 
+    /**
+     * File for saving metadata center dynamic list
+     */
+    private String file;
+
+    /**
+     * Decide the behaviour when initial connection try fails,
+     * 'true' means interrupt the whole process once fail.
+     * The default value is true
+     */
+    private Boolean check;
+
+
     public MetadataReportConfig() {
     }
 
@@ -97,7 +124,7 @@ public class MetadataReportConfig extends AbstractConfig {
             throw new IllegalArgumentException("The address of metadata report is invalid.");
         }
         Map<String, String> map = new HashMap<String, String>();
-        URL url = URL.valueOf(address);
+        URL url = URL.valueOf(address, getScopeModel());
         // Issue : https://github.com/apache/dubbo/issues/6491
         // Append the parameters from address
         map.putAll(url.getParameters());
@@ -107,9 +134,17 @@ public class MetadataReportConfig extends AbstractConfig {
         map.putAll(convert(map, null));
         // put the protocol of URL as the "metadata"
         map.put("metadata", url.getProtocol());
-        return new URL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
-                url.getPort(), url.getPath(), map);
+        return new ServiceConfigURL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
+                url.getPort(), url.getPath(), map).setScopeModel(getScopeModel());
 
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
     @Parameter(excluded = true)
@@ -119,6 +154,31 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setAddress(String address) {
         this.address = address;
+        if (address != null) {
+            try {
+                URL url = URL.valueOf(address);
+
+                // Refactor since 2.7.8
+                updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());
+                updatePropertyIfAbsent(this::getPassword, this::setPassword, url.getPassword());
+                updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
+                updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
+
+                Map<String, String> params = url.getParameters();
+                if (CollectionUtils.isNotEmptyMap(params)) {
+                    params.remove(BACKUP_KEY);
+                }
+                updateParameters(params);
+            } catch (Exception ignored) {
+            }
+        }    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 
     public String getUsername() {
@@ -190,13 +250,7 @@ public class MetadataReportConfig extends AbstractConfig {
     }
 
     @Override
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return StringUtils.isNotEmpty(prefix) ? prefix : (DUBBO + "." + PREFIX_TAG);
-    }
-
-    @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isValid() {
         return StringUtils.isNotEmpty(address);
     }
@@ -223,5 +277,32 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setRegistry(String registry) {
         this.registry = registry;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
+    }
+
+    public void updateParameters(Map<String, String> parameters) {
+        if (CollectionUtils.isEmptyMap(parameters)) {
+            return;
+        }
+        if (this.parameters == null) {
+            this.parameters = parameters;
+        } else {
+            this.parameters.putAll(parameters);
+        }
+    }
+
+    public Boolean isCheck() {
+        return check;
+    }
+
+    public void setCheck(Boolean check) {
+        this.check = check;
     }
 }

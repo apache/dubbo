@@ -22,11 +22,14 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -40,6 +43,7 @@ import static org.apache.dubbo.common.function.Streams.filterFirst;
 import static org.apache.dubbo.common.utils.ClassUtils.getAllInheritedTypes;
 import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
 import static org.apache.dubbo.common.utils.CollectionUtils.first;
+import static org.apache.dubbo.common.utils.MethodUtils.findMethod;
 import static org.apache.dubbo.common.utils.MethodUtils.invokeMethod;
 
 /**
@@ -448,5 +452,90 @@ public interface AnnotationUtils {
     static boolean isAnyAnnotationPresent(Class<?> type,
                                           Class<? extends Annotation>... annotationTypes) {
         return isAnnotationPresent(type, false, annotationTypes);
+    }
+
+
+    /**
+     * Get the default value of attribute on the specified annotation
+     *
+     * @param annotation    {@link Annotation} object
+     * @param attributeName the name of attribute
+     * @param <T>           the type of value
+     * @return <code>null</code> if not found
+     * @since 2.7.9
+     */
+    static <T> T getDefaultValue(Annotation annotation, String attributeName) {
+        return getDefaultValue(annotation.annotationType(), attributeName);
+    }
+
+    /**
+     * Get the default value of attribute on the specified annotation
+     *
+     * @param annotationType the type of {@link Annotation}
+     * @param attributeName  the name of attribute
+     * @param <T>            the type of value
+     * @return <code>null</code> if not found
+     * @since 2.7.9
+     */
+    static <T> T getDefaultValue(Class<? extends Annotation> annotationType, String attributeName) {
+        Method method = findMethod(annotationType, attributeName);
+        return (T) (method == null ? null : method.getDefaultValue());
+    }
+
+    /**
+     * Filter default value of Annotation type
+     * @param annotationType annotation type from {@link Annotation#annotationType()}
+     * @param attributes
+     * @return
+     */
+    static Map<String, Object> filterDefaultValues(Class<? extends Annotation> annotationType, Map<String, Object> attributes) {
+        Map<String, Object> filteredAttributes = new LinkedHashMap<>(attributes.size());
+        attributes.forEach((key,val) -> {
+            if (!Objects.deepEquals(val, getDefaultValue(annotationType, key))) {
+                filteredAttributes.put(key, val);
+            }
+        });
+        // remove void class, compatible with spring 3.x
+        Object interfaceClassValue = filteredAttributes.get("interfaceClass");
+        if (interfaceClassValue instanceof String && StringUtils.isEquals((String) interfaceClassValue, "void")) {
+            filteredAttributes.remove("interfaceClass");
+        }
+        return filteredAttributes;
+    }
+
+    /**
+     * Filter default value of Annotation type
+     * @param annotation
+     * @param attributes
+     * @return
+     */
+    static Map<String, Object> filterDefaultValues(Annotation annotation, Map<String, Object> attributes) {
+        return filterDefaultValues(annotation.annotationType(), attributes);
+    }
+
+    /**
+     * Get attributes of annotation
+     * @param annotation
+     * @return
+     */
+    static Map<String, Object> getAttributes(Annotation annotation, boolean filterDefaultValue) {
+        Class<?> annotationType = annotation.annotationType();
+        Method[] methods = annotationType.getMethods();
+        Map<String, Object> attributes = new LinkedHashMap<>(methods.length);
+        for (Method method : methods) {
+            try {
+                if (method.getDeclaringClass() == Annotation.class) {
+                    continue;
+                }
+                String name = method.getName();
+                Object value = method.invoke(annotation);
+                if (!filterDefaultValue || !Objects.deepEquals(value, method.getDefaultValue())) {
+                    attributes.put(name, value);
+                }
+            } catch (Exception e) {
+                throw new IllegalStateException("get attribute value of annotation failed: " + method, e);
+            }
+        }
+        return attributes;
     }
 }

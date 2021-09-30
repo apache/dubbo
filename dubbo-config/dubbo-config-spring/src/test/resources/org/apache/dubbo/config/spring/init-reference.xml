@@ -24,8 +24,25 @@
     <!-- current application configuration -->
     <dubbo:application name="demo-consumer"/>
 
-    <!-- service configuration -->
-    <dubbo:reference id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService"
-                     url="dubbo://127.0.0.1:20813" init="true" scope="remote"/>
+    <dubbo:registry id="my-registry" address="zookeeper://localhost:2181" />
 
+    <dubbo:consumer id="my-consumer" registry="my-registry" group="demo" version="1.2.4" scope="remote" init="true"
+                    timeout="${call.timeout:foo100}" >
+        <dubbo:reference id="demoService2" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true"
+                         url="dubbo://127.0.0.1:20813" />
+    </dubbo:consumer>
+
+    <bean id="notifyService" class="org.apache.dubbo.config.spring.impl.NotifyService" />
+
+    <!-- service reference configuration -->
+    <dubbo:reference id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService" group="demo" version="1.2.3"
+                     url="dubbo://127.0.0.1:20813" init="true" timeout="${call.timeout:foo100}"
+                     scope="remote" protocol="dubbo" registry="my-registry" consumer="my-consumer" tag="demo_tag" >
+        <dubbo:parameter key="connec.timeout" value="${connection.timeout:foo1000}"/>
+        <dubbo:method name="sayName" retry="${sayName.retry:foo-retry}" oninvoke="notifyService.onInvoke"
+                      onreturn="notifyService.onReturn" onthrow="notifyService.onThrow">
+            <dubbo:argument index="0" callback="true" />
+            <dubbo:parameter key="access-token" value="my-token" />
+        </dubbo:method>
+    </dubbo:reference>
 </beans>

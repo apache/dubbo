@@ -54,7 +54,7 @@ public class ThreadPoolStatusChecker implements StatusChecker {
                 }
 
                 if (msg.length() > 0) {
-                    msg.append(";");
+                    msg.append(';');
                 }
                 msg.append("Pool status:").append(lvl).append(", max:").append(tp.getMaximumPoolSize()).append(", core:")
                         .append(tp.getCorePoolSize()).append(", largest:").append(tp.getLargestPoolSize()).append(", active:")

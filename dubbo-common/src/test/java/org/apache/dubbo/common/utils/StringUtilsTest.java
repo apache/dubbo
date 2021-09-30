@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.apache.dubbo.common.utils.StringUtils.splitToList;
 import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
+import static org.apache.dubbo.common.utils.StringUtils.startsWithIgnoreCase;
 import static org.apache.dubbo.common.utils.StringUtils.toCommaDelimitedString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -337,8 +339,44 @@ public class StringUtilsTest {
     public void testCamelToSplitName() throws Exception {
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("abCdEf", "-"));
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("AbCdEf", "-"));
-        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("ab-cd-ef", "-"));
         assertEquals("abcdef", StringUtils.camelToSplitName("abcdef", "-"));
+        //assertEquals("name", StringUtils.camelToSplitName("NAME", "-"));
+
+        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("ab-cd-ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("Ab-Cd-Ef", "-"));
+        assertEquals("Ab_Cd_Ef", StringUtils.camelToSplitName("Ab_Cd_Ef", "-"));
+        assertEquals("AB_CD_EF", StringUtils.camelToSplitName("AB_CD_EF", "-"));
+
+        assertEquals("ab.cd.ef", StringUtils.camelToSplitName("AbCdEf", "."));
+        //assertEquals("ab.cd.ef", StringUtils.camelToSplitName("ab-cd-ef", "."));
+    }
+
+    @Test
+    public void testSnakeCaseToSplitName() throws Exception {
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("Ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("ab_cd_ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("AB_CD_EF", "-"));
+        assertEquals("abcdef", StringUtils.snakeToSplitName("abcdef", "-"));
+        assertEquals("qosEnable", StringUtils.snakeToSplitName("qosEnable", "-"));
+        assertEquals("name", StringUtils.snakeToSplitName("NAME", "-"));
+    }
+
+    @Test
+    public void testConvertToSplitName() {
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("Ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab_cd_ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("AB_CD_EF", "-"));
+        assertEquals("abcdef", StringUtils.convertToSplitName("abcdef", "-"));
+        assertEquals("qos-enable", StringUtils.convertToSplitName("qosEnable", "-"));
+        assertEquals("name", StringUtils.convertToSplitName("NAME", "-"));
+
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("abCdEf", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("AbCdEf", "-"));
+
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab-cd-ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("Ab-Cd-Ef", "-"));
     }
 
     @Test
@@ -377,10 +415,16 @@ public class StringUtilsTest {
         assertEquals(2, legalMap.size());
         assertEquals("value2", legalMap.get("key2"));
 
+        String str = StringUtils.encodeParameters(legalMap);
+        assertEqualsWithoutSpaces(legalStr, str);
+
         String legalSpaceStr = "[{key1: value1}, {key2 :value2}]";
         Map<String, String> legalSpaceMap = StringUtils.parseParameters(legalSpaceStr);
         assertEquals(2, legalSpaceMap.size());
         assertEquals("value2", legalSpaceMap.get("key2"));
+
+        str = StringUtils.encodeParameters(legalSpaceMap);
+        assertEqualsWithoutSpaces(legalSpaceStr, str);
 
         String legalSpecialStr = "[{key-1: value*.1}, {key.2 :value*.-_2}]";
         Map<String, String> legalSpecialMap = StringUtils.parseParameters(legalSpecialStr);
@@ -388,9 +432,42 @@ public class StringUtilsTest {
         assertEquals("value*.1", legalSpecialMap.get("key-1"));
         assertEquals("value*.-_2", legalSpecialMap.get("key.2"));
 
+        str = StringUtils.encodeParameters(legalSpecialMap);
+        assertEqualsWithoutSpaces(legalSpecialStr, str);
+
         String illegalStr = "[{key=value},{aa:bb}]";
         Map<String, String> illegalMap = StringUtils.parseParameters(illegalStr);
         assertEquals(0, illegalMap.size());
+
+        str = StringUtils.encodeParameters(illegalMap);
+        assertEquals(null, str);
+
+        String emptyMapStr = "[]";
+        Map<String, String> emptyMap = StringUtils.parseParameters(emptyMapStr);
+        assertEquals(0, emptyMap.size());
+    }
+
+    @Test
+    public void testEncodeParameters() {
+        Map<String, String> nullValueMap = new LinkedHashMap<>();
+        nullValueMap.put("client", null);
+        String str = StringUtils.encodeParameters(nullValueMap);
+        assertEquals("[]", str);
+
+        Map<String, String> blankValueMap = new LinkedHashMap<>();
+        blankValueMap.put("client", " ");
+        str = StringUtils.encodeParameters(nullValueMap);
+        assertEquals("[]", str);
+
+        blankValueMap = new LinkedHashMap<>();
+        blankValueMap.put("client", "");
+        str = StringUtils.encodeParameters(nullValueMap);
+        assertEquals("[]", str);
+
+    }
+
+    private void assertEqualsWithoutSpaces(String expect, String actual) {
+        assertEquals(expect.replaceAll(" ", ""), actual.replaceAll(" ", ""));
     }
 
     /**
@@ -418,4 +495,11 @@ public class StringUtilsTest {
         assertEquals("one,two,three", value);
     }
 
+    @Test
+    public void testStartsWithIgnoreCase() {
+        assertTrue(startsWithIgnoreCase("dubbo.application.name", "dubbo.application."));
+        assertTrue(startsWithIgnoreCase("dubbo.Application.name", "dubbo.application."));
+        assertTrue(startsWithIgnoreCase("Dubbo.application.name", "dubbo.application."));
+
+    }
 }

@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
  * Default {@link HelloService} annotation with Spring's {@link Service}
  * and Dubbo's {@link org.apache.dubbo.config.annotation.Service}
  *
- * @since TODO
  */
 @Service
 @DubboService

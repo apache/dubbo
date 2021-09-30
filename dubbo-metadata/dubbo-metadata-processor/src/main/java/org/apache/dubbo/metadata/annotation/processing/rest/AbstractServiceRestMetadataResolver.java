@@ -215,7 +215,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
 
     protected MethodDefinition resolveMethodDefinition(ProcessingEnvironment processingEnv, TypeElement serviceType,
                                                        ExecutableElement method) {
-        return build(processingEnv, method);
+        return build(processingEnv, method, new HashMap<>());
     }
 
     protected void processAnnotatedMethodParameters(ExecutableElement method, TypeElement type,

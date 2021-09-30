@@ -16,19 +16,14 @@
  */
 package org.apache.dubbo.common.threadpool.event;
 
-import org.apache.dubbo.event.Event;
-
 /**
- * An {@link Event Dubbo event} when the Dubbo thread pool is exhausted.
- *
- * @see Event
+ * An Event when the Dubbo thread pool is exhausted.
  */
-public class ThreadPoolExhaustedEvent extends Event {
+public class ThreadPoolExhaustedEvent {
 
     final String msg;
 
-    public ThreadPoolExhaustedEvent(Object source, String msg) {
-        super(source);
+    public ThreadPoolExhaustedEvent(String msg) {
         this.msg = msg;
     }
 

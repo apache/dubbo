@@ -86,7 +86,7 @@ public class FailSafeClusterInvokerTest {
         resetInvokerToException();
         FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
         invoker.invoke(invocation);
-        Assertions.assertNull(RpcContext.getContext().getInvoker());
+        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
     }
 
     @Test()

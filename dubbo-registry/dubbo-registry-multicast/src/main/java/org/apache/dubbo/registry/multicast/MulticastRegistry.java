@@ -361,9 +361,7 @@ public class MulticastRegistry extends FailbackRegistry {
     private List<URL> toList(Set<URL> urls) {
         List<URL> list = new ArrayList<URL>();
         if (CollectionUtils.isNotEmpty(urls)) {
-            for (URL url : urls) {
-                list.add(url);
-            }
+            list.addAll(urls);
         }
         return list;
     }

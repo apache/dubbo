@@ -19,8 +19,12 @@ package org.apache.dubbo.metadata.definition.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import static org.apache.dubbo.metadata.definition.model.TypeDefinition.formatType;
+import static org.apache.dubbo.metadata.definition.model.TypeDefinition.formatTypes;
 
 /**
  * 2015/1/27.
@@ -30,7 +34,15 @@ public class MethodDefinition implements Serializable {
     private String name;
     private String[] parameterTypes;
     private String returnType;
+
+    /**
+     * @deprecated please use parameterTypes,
+     * and find TypeDefinition in org.apache.dubbo.metadata.definition.model.ServiceDefinition#types
+     */
+    @Deprecated
     private List<TypeDefinition> parameters;
+
+    private List<String> annotations;
 
     public String getName() {
         return name;
@@ -60,11 +72,22 @@ public class MethodDefinition implements Serializable {
     }
 
     public void setParameterTypes(String[] parameterTypes) {
-        this.parameterTypes = parameterTypes;
+        this.parameterTypes = formatTypes(parameterTypes);
     }
 
     public void setReturnType(String returnType) {
-        this.returnType = returnType;
+        this.returnType = formatType(returnType);
+    }
+
+    public List<String> getAnnotations() {
+        if (annotations == null) {
+            annotations = Collections.emptyList();
+        }
+        return annotations;
+    }
+
+    public void setAnnotations(List<String> annotations) {
+        this.annotations = annotations;
     }
 
     @Override
@@ -84,14 +107,11 @@ public class MethodDefinition implements Serializable {
         MethodDefinition that = (MethodDefinition) o;
         return Objects.equals(getName(), that.getName()) &&
                 Arrays.equals(getParameterTypes(), that.getParameterTypes()) &&
-                Objects.equals(getReturnType(), that.getReturnType()) &&
-                Objects.equals(getParameters(), that.getParameters());
+                Objects.equals(getReturnType(), that.getReturnType());
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(getName(), getReturnType(), getParameters());
-        result = 31 * result + Arrays.hashCode(getParameterTypes());
-        return result;
+        return Objects.hash(getName(), getReturnType(), Arrays.toString(getParameterTypes()));
     }
 }

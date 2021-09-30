@@ -30,13 +30,15 @@ public class ConfigConfigurationAdapter implements Configuration {
 
     private Map<String, String> metaData;
 
-    public ConfigConfigurationAdapter(AbstractConfig config) {
-        Map<String, String> configMetadata = config.getMetaData();
-        metaData = new HashMap<>(configMetadata.size());
-        for (Map.Entry<String, String> entry : configMetadata.entrySet()) {
-            String prefix = config.getPrefix().endsWith(".") ? config.getPrefix() : config.getPrefix() + ".";
-            String id = StringUtils.isEmpty(config.getId()) ? "" : config.getId() + ".";
-            metaData.put(prefix + id + entry.getKey(), entry.getValue());
+    public ConfigConfigurationAdapter(AbstractConfig config, String prefix) {
+         Map<String, String> configMetadata = config.getMetaData();
+        if (StringUtils.hasText(prefix)) {
+            metaData = new HashMap<>(configMetadata.size(), 1.0f);
+            for (Map.Entry<String, String> entry : configMetadata.entrySet()) {
+                metaData.put(prefix + "." + entry.getKey(), entry.getValue());
+            }
+        } else {
+            metaData = configMetadata;
         }
     }
 
@@ -45,4 +47,7 @@ public class ConfigConfigurationAdapter implements Configuration {
         return metaData.get(key);
     }
 
+    public Map<String, String> getProperties() {
+        return metaData;
+    }
 }

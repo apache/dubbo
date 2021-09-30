@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -215,5 +216,12 @@ public class ProviderConfigTest {
         ProviderConfig provider = new ProviderConfig();
         provider.setWait(10);
         assertThat(provider.getWait(), equalTo(10));
+    }
+
+    @Test
+    public void testMetaData() {
+        ProtocolConfig config = new ProtocolConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
     }
 }

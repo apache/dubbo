@@ -16,17 +16,54 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.probe.ReadinessProbe;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Cmd(name = "start",summary = "Judge if service has started? ")
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+@Cmd(name = "ready", summary = "Judge if service is ready to work? ")
 public class Ready implements BaseCommand {
+    private FrameworkModel frameworkModel;
+
+    public Ready(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        return DubboBootstrap.getInstance().isReady() ? "true" : "false";
+        String config = frameworkModel.getApplicationModels()
+            .stream()
+            .map(applicationModel -> applicationModel.getApplicationConfigManager().getApplication())
+            .map(o -> o.orElse(null))
+            .filter(Objects::nonNull)
+            .map(ApplicationConfig::getReadinessProbe)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(","));
+
+        URL url = URL.valueOf("application://")
+                .addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, config);
+        List<ReadinessProbe> readinessProbes = frameworkModel.getExtensionLoader(ReadinessProbe.class)
+                .getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION);
+        if (!readinessProbes.isEmpty()) {
+            for (ReadinessProbe readinessProbe : readinessProbes) {
+                if (!readinessProbe.check()) {
+                    // 503 Service Unavailable
+                    commandContext.setHttpCode(503);
+                    return "false";
+                }
+            }
+        }
+        // 200 OK
+        commandContext.setHttpCode(200);
+        return "true";
     }
 
 }

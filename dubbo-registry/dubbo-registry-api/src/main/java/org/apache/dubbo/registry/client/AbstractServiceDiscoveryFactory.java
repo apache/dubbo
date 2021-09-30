@@ -18,6 +18,9 @@ package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -31,6 +34,10 @@ import java.util.concurrent.ConcurrentMap;
 public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 
     private final ConcurrentMap<String, ServiceDiscovery> discoveries = new ConcurrentHashMap<>();
+
+    public List<ServiceDiscovery> getAllServiceDiscoveries() {
+        return Collections.unmodifiableList(new LinkedList<>(discoveries.values()));
+    }
 
     @Override
     public ServiceDiscovery getServiceDiscovery(URL registryURL) {

@@ -18,7 +18,10 @@ package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.config.annotation.Service;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.not;
@@ -26,6 +29,17 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.mockito.Mockito.mock;
 
 public class ServiceBeanTest {
+
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        DubboBootstrap.reset();
+    }
+
     @Test
     public void testGetService() {
         TestService service = mock(TestService.class);

@@ -16,14 +16,14 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,6 +50,8 @@ public abstract class Proxy {
     private static final AtomicLong PROXY_CLASS_COUNTER = new AtomicLong(0);
     private static final String PACKAGE_NAME = Proxy.class.getPackage().getName();
     private static final Map<ClassLoader, Map<String, Object>> PROXY_CACHE_MAP = new WeakHashMap<ClassLoader, Map<String, Object>>();
+    // cache class, avoid PermGen OOM.
+    private static final Map<ClassLoader, Map<String, Object>> PROXY_CLASS_MAP = new WeakHashMap<ClassLoader, Map<String, Object>>();
 
     private static final Object PENDING_GENERATION_MARKER = new Object();
 
@@ -59,24 +61,19 @@ public abstract class Proxy {
     /**
      * Get proxy.
      *
-     * @param ics interface class array.
-     * @return Proxy instance.
-     */
-    public static Proxy getProxy(Class<?>... ics) {
-        return getProxy(ClassUtils.getClassLoader(Proxy.class), ics);
-    }
-
-    /**
-     * Get proxy.
-     *
      * @param cl  class loader.
      * @param ics interface class array.
      * @return Proxy instance.
      */
-    public static Proxy getProxy(ClassLoader cl, Class<?>... ics) {
+    public static Proxy getProxy(Class<?>... ics) {
         if (ics.length > MAX_PROXY_COUNT) {
             throw new IllegalArgumentException("interface limit exceeded");
         }
+
+        // ClassLoader from App Interface should support load some class from Dubbo
+        ClassLoader cl = ics[0].getClassLoader();
+        ClassLoader appClassLoader = ics[0].getClassLoader();
+        ProtectionDomain domain = ics[0].getProtectionDomain();
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < ics.length; i++) {
@@ -103,8 +100,11 @@ public abstract class Proxy {
 
         // get cache by class loader.
         final Map<String, Object> cache;
+        // cache class
+        final Map<String, Object> classCache;
         synchronized (PROXY_CACHE_MAP) {
             cache = PROXY_CACHE_MAP.computeIfAbsent(cl, k -> new HashMap<>());
+            classCache = PROXY_CLASS_MAP.computeIfAbsent(cl, k -> new HashMap<>());
         }
 
         Proxy proxy = null;
@@ -118,14 +118,38 @@ public abstract class Proxy {
                     }
                 }
 
-                if (value == PENDING_GENERATION_MARKER) {
-                    try {
-                        cache.wait();
-                    } catch (InterruptedException e) {
+                // get Class by key.
+                Object clazzObj = classCache.get(key);
+                if (null == clazzObj || clazzObj instanceof Reference<?>) {
+                    Class<?> clazz = null;
+                    if (clazzObj instanceof Reference<?>) {
+                        clazz = (Class<?>) ((Reference<?>) clazzObj).get();
                     }
-                } else {
-                    cache.put(key, PENDING_GENERATION_MARKER);
-                    break;
+
+                    if (null == clazz) {
+                        if (value == PENDING_GENERATION_MARKER) {
+                            try {
+                                cache.wait();
+                            } catch (InterruptedException e) {
+                            }
+                        } else {
+                            cache.put(key, PENDING_GENERATION_MARKER);
+                            break;
+                        }
+                    } else {
+                        try {
+                            proxy = (Proxy) clazz.newInstance();
+                            return proxy;
+                        } catch (InstantiationException | IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        } finally {
+                            if (null == proxy) {
+                                cache.remove(key);
+                            } else {
+                                cache.put(key, new SoftReference<>(proxy));
+                            }
+                        }
+                    }
                 }
             }
             while (true);
@@ -158,9 +182,6 @@ public abstract class Proxy {
                     if (worked.contains(desc) || Modifier.isStatic(method.getModifiers())) {
                         continue;
                     }
-                    if (ics[i].isInterface() && Modifier.isStatic(method.getModifiers())) {
-                        continue;
-                    }
                     worked.add(desc);
 
                     int ix = methods.size();
@@ -173,7 +194,7 @@ public abstract class Proxy {
                     }
                     code.append(" Object ret = handler.invoke(this, methods[").append(ix).append("], args);");
                     if (!Void.TYPE.equals(rt)) {
-                        code.append(" return ").append(asArgument(rt, "ret")).append(";");
+                        code.append(" return ").append(asArgument(rt, "ret")).append(';');
                     }
 
                     methods.add(method);
@@ -190,9 +211,9 @@ public abstract class Proxy {
             ccp.setClassName(pcn);
             ccp.addField("public static java.lang.reflect.Method[] methods;");
             ccp.addField("private " + InvocationHandler.class.getName() + " handler;");
-            ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{InvocationHandler.class}, new Class<?>[0], "handler=$1;");
+            ccp.addConstructor(Modifier.PUBLIC, new Class<?>[] {InvocationHandler.class}, new Class<?>[0], "handler=$1;");
             ccp.addDefaultConstructor();
-            Class<?> clazz = ccp.toClass();
+            Class<?> clazz = ccp.toClass(appClassLoader, domain);
             clazz.getField("methods").set(null, methods.toArray(new Method[0]));
 
             // create Proxy class.
@@ -202,8 +223,12 @@ public abstract class Proxy {
             ccm.addDefaultConstructor();
             ccm.setSuperClass(Proxy.class);
             ccm.addMethod("public Object newInstance(" + InvocationHandler.class.getName() + " h){ return new " + pcn + "($1); }");
-            Class<?> pc = ccm.toClass();
+            Class<?> pc = ccm.toClass(appClassLoader, domain);
             proxy = (Proxy) pc.newInstance();
+
+            synchronized (classCache) {
+                classCache.put(key, new SoftReference<Class<?>>(pc));
+            }
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -220,7 +245,7 @@ public abstract class Proxy {
                 if (proxy == null) {
                     cache.remove(key);
                 } else {
-                    cache.put(key, new WeakReference<Proxy>(proxy));
+                    cache.put(key, new SoftReference<Proxy>(proxy));
                 }
                 cache.notifyAll();
             }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -41,7 +42,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FORKS;
 
 /**
  * NOTICE! This implementation does not work well with async call.
- *
+ * <p>
  * Invoke a specific number of invokers concurrently, usually used for demanding real-time operations, but need to waste more service resources.
  *
  * <a href="http://en.wikipedia.org/wiki/Fork_(topology)">Fork</a>
@@ -53,7 +54,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
      * which with the use of {@link org.apache.dubbo.common.threadlocal.InternalThreadLocal} in {@link RpcContext}.
      */
     private final ExecutorService executor = Executors.newCachedThreadPool(
-            new NamedInternalThreadFactory("forking-cluster-timer", true));
+        new NamedInternalThreadFactory("forking-cluster-timer", true));
 
     public ForkingClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -79,13 +80,14 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     }
                 }
             }
-            RpcContext.getContext().setInvokers((List) selected);
+            RpcContext.getServiceContext().setInvokers((List) selected);
             final AtomicInteger count = new AtomicInteger();
             final BlockingQueue<Object> ref = new LinkedBlockingQueue<>();
             for (final Invoker<T> invoker : selected) {
+                URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
                 executor.execute(() -> {
                     try {
-                        Result result = invoker.invoke(invocation);
+                        Result result = invokeWithContextAsync(invoker, invocation, consumerUrl);
                         ref.offer(result);
                     } catch (Throwable e) {
                         int value = count.incrementAndGet();
@@ -99,15 +101,18 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 Object ret = ref.poll(timeout, TimeUnit.MILLISECONDS);
                 if (ret instanceof Throwable) {
                     Throwable e = (Throwable) ret;
-                    throw new RpcException(e instanceof RpcException ? ((RpcException) e).getCode() : 0, "Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. Last error is: " + e.getMessage(), e.getCause() != null ? e.getCause() : e);
+                    throw new RpcException(e instanceof RpcException ? ((RpcException) e).getCode() : RpcException.UNKNOWN_EXCEPTION,
+                        "Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. " +
+                            "Last error is: " + e.getMessage(), e.getCause() != null ? e.getCause() : e);
                 }
                 return (Result) ret;
             } catch (InterruptedException e) {
-                throw new RpcException("Failed to forking invoke provider " + selected + ", but no luck to perform the invocation. Last error is: " + e.getMessage(), e);
+                throw new RpcException("Failed to forking invoke provider " + selected + ", " +
+                    "but no luck to perform the invocation. Last error is: " + e.getMessage(), e);
             }
         } finally {
             // clear attachments which is binding to current thread.
-            RpcContext.getContext().clearAttachments();
+            RpcContext.getClientAttachment().clearAttachments();
         }
     }
 }

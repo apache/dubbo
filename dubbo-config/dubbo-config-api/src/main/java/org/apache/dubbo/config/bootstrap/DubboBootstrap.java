@@ -16,26 +16,18 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
-import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
+import org.apache.dubbo.common.config.ReferenceCache;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployListenerAdapter;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.lang.ShutdownHookCallback;
-import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.concurrent.ScheduledCompletableFuture;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
-import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -45,7 +37,6 @@ import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
@@ -55,64 +46,23 @@ import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
 import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
-import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.config.utils.ReferenceConfigCache;
-import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.event.GenericEventListener;
-import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.MetadataServiceExporter;
-import org.apache.dubbo.metadata.WritableMetadataService;
-import org.apache.dubbo.metadata.report.MetadataReportFactory;
-import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
-import org.apache.dubbo.registry.client.metadata.MetadataUtils;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
-import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
-import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
-import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-import static org.apache.dubbo.common.function.ThrowableAction.execute;
-import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
-import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
-import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
-import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
-import static org.apache.dubbo.metadata.WritableMetadataService.getDefaultExtension;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.calInstanceRevision;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
-import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getServiceDiscoveries;
-import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
+import static java.util.Collections.singletonList;
 
 /**
  * See {@link ApplicationModel} and {@link ExtensionLoader} for why this class is designed to be singleton.
@@ -124,69 +74,32 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
  *
  * @since 2.7.5
  */
-public class DubboBootstrap extends GenericEventListener {
-
-    public static final String DEFAULT_REGISTRY_ID = "REGISTRY#DEFAULT";
-
-    public static final String DEFAULT_PROTOCOL_ID = "PROTOCOL#DEFAULT";
-
-    public static final String DEFAULT_SERVICE_ID = "SERVICE#DEFAULT";
-
-    public static final String DEFAULT_REFERENCE_ID = "REFERENCE#DEFAULT";
-
-    public static final String DEFAULT_PROVIDER_ID = "PROVIDER#DEFAULT";
-
-    public static final String DEFAULT_CONSUMER_ID = "CONSUMER#DEFAULT";
+public final class DubboBootstrap {
 
     private static final String NAME = DubboBootstrap.class.getSimpleName();
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DubboBootstrap.class);
 
+    private static volatile Map<ApplicationModel, DubboBootstrap> instanceMap = new ConcurrentHashMap<>();
     private static volatile DubboBootstrap instance;
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
+
+    private volatile BootstrapTakeoverMode takeoverMode = BootstrapTakeoverMode.AUTO;
 
     private final Lock lock = new ReentrantLock();
 
     private final Condition condition = lock.newCondition();
 
-    private final Lock destroyLock = new ReentrantLock();
+    private ExecutorRepository executorRepository;
 
-    private final ExecutorService executorService = newSingleThreadExecutor();
+    private final ApplicationModel applicationModel;
 
-    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
+    protected final ConfigManager configManager;
 
-    private final ExecutorRepository executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+    protected final Environment environment;
 
-    private final ConfigManager configManager;
-
-    private final Environment environment;
-
-    private ReferenceConfigCache cache;
-
-    private volatile boolean exportAsync;
-
-    private volatile boolean referAsync;
-
-    private AtomicBoolean initialized = new AtomicBoolean(false);
-
-    private AtomicBoolean started = new AtomicBoolean(false);
-
-    private AtomicBoolean ready = new AtomicBoolean(true);
-
-    private AtomicBoolean destroyed = new AtomicBoolean(false);
-
-    private volatile ServiceInstance serviceInstance;
-
-    private volatile MetadataService metadataService;
-
-    private volatile MetadataServiceExporter metadataServiceExporter;
-
-    private List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
-
-    private List<Future<?>> asyncExportingFutures = new ArrayList<>();
-
-    private List<CompletableFuture<Object>> asyncReferringFutures = new ArrayList<>();
+    private ApplicationDeployer applicationDeployer;
 
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
@@ -195,42 +108,284 @@ public class DubboBootstrap extends GenericEventListener {
         if (instance == null) {
             synchronized (DubboBootstrap.class) {
                 if (instance == null) {
-                    instance = new DubboBootstrap();
+                    instance = DubboBootstrap.getInstance(ApplicationModel.defaultModel());
                 }
             }
         }
         return instance;
     }
 
-    private DubboBootstrap() {
-        configManager = ApplicationModel.getConfigManager();
-        environment = ApplicationModel.getEnvironment();
+    public static DubboBootstrap getInstance(ApplicationModel applicationModel) {
+        return instanceMap.computeIfAbsent(applicationModel, _k -> new DubboBootstrap(applicationModel));
+    }
 
-        DubboShutdownHook.getDubboShutdownHook().register();
-        ShutdownHookCallbacks.INSTANCE.addCallback(new ShutdownHookCallback() {
+    public static DubboBootstrap newInstance() {
+        return getInstance(FrameworkModel.defaultModel().newApplication());
+    }
+
+    public static DubboBootstrap newInstance(FrameworkModel frameworkModel) {
+        return getInstance(frameworkModel.newApplication());
+    }
+
+    public static DubboBootstrap newInstance(ApplicationModel applicationModel) {
+        return getInstance(applicationModel);
+    }
+
+    /**
+     * Try reset dubbo status for new instance.
+     *
+     * @deprecated For testing purposes only
+     */
+    @Deprecated
+    public static void reset() {
+        reset(true);
+    }
+
+    /**
+     * Try reset dubbo status for new instance.
+     *
+     * @deprecated For testing purposes only
+     */
+    @Deprecated
+    public static void reset(boolean destroy) {
+        if (destroy) {
+            if (instance != null) {
+                instance.destroy();
+                instance = null;
+            }
+            AbstractMetadataReportFactory.destroy();
+            destroyAllProtocols();
+            FrameworkModel.destroyAll();
+        } else {
+            instance = null;
+        }
+
+        ApplicationModel.reset();
+    }
+
+    private DubboBootstrap(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        configManager = applicationModel.getApplicationConfigManager();
+        environment = applicationModel.getModelEnvironment();
+
+        executorRepository = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        applicationDeployer = applicationModel.getDeployer();
+        // listen deploy events
+        applicationDeployer.addDeployListener(new DeployListenerAdapter<ApplicationModel>() {
             @Override
-            public void callback() throws Throwable {
-                DubboBootstrap.this.destroy();
+            public void onStarted(ApplicationModel scopeModel) {
+                notifyStarted(applicationModel);
+            }
+
+            @Override
+            public void onStopped(ApplicationModel scopeModel) {
+                notifyStopped(applicationModel);
+            }
+
+            @Override
+            public void onFailure(ApplicationModel scopeModel, Throwable cause) {
+                notifyStopped(applicationModel);
             }
         });
+        // register DubboBootstrap bean
+        applicationModel.getBeanFactory().registerBean(this);
     }
 
-    public void unRegisterShutdownHook() {
-        DubboShutdownHook.getDubboShutdownHook().unregister();
+    private void notifyStarted(ApplicationModel applicationModel) {
+        ExtensionLoader<DubboBootstrapStartStopListener> exts = applicationModel.getExtensionLoader(DubboBootstrapStartStopListener.class);
+        exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(DubboBootstrap.this));
     }
 
-    private boolean isOnlyRegisterProvider() {
-        Boolean registerConsumer = getApplication().getRegisterConsumer();
-        return registerConsumer == null || !registerConsumer;
+    private void notifyStopped(ApplicationModel applicationModel) {
+        ExtensionLoader<DubboBootstrapStartStopListener> exts = applicationModel.getExtensionLoader(DubboBootstrapStartStopListener.class);
+        exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(DubboBootstrap.this));
+        executeMutually(() -> {
+            awaited.set(true);
+            condition.signalAll();
+        });
+        instanceMap.remove(applicationModel);
     }
 
-    private String getMetadataType() {
-        String type = getApplication().getMetadataType();
-        if (StringUtils.isEmpty(type)) {
-            type = DEFAULT_METADATA_STORAGE_TYPE;
+    /**
+     * Initialize
+     */
+    public void initialize() {
+        applicationDeployer.initialize();
+    }
+
+    /**
+     * Start dubbo application and wait for finish
+     */
+    public DubboBootstrap start() {
+        this.start(true);
+        return this;
+    }
+
+    /**
+     * Start dubbo application
+     * @param wait If true, wait for startup to complete, or else no waiting.
+     * @return
+     */
+    public DubboBootstrap start(boolean wait) {
+        CompletableFuture future = applicationDeployer.start();
+        if (wait) {
+            try {
+                future.get();
+            } catch (Exception e) {
+                throw new IllegalStateException("await dubbo application start finish failure", e);
+            }
         }
-        return type;
+        return this;
     }
+
+    /**
+     * Stop dubbo application
+     * @return
+     * @throws IllegalStateException
+     */
+    public DubboBootstrap stop() throws IllegalStateException {
+        destroy();
+        return this;
+    }
+
+    public void destroy() {
+        applicationDeployer.destroy();
+    }
+
+    public boolean isInitialized() {
+        return applicationDeployer.isInitialized();
+    }
+
+    public boolean isPending() {
+        return applicationDeployer.isPending();
+    }
+
+    /**
+     * @return true if the dubbo application is starting or has been started.
+     */
+    public boolean isRunning() {
+        return applicationDeployer.isRunning();
+    }
+
+    /**
+     * @return true if the dubbo application is starting.
+     * @see #isStarted()
+     */
+    public boolean isStarting() {
+        return applicationDeployer.isStarting();
+    }
+
+    /**
+     * @return true if the dubbo application has been started.
+     * @see #start()
+     * @see #isStarting()
+     */
+    public boolean isStarted() {
+        return applicationDeployer.isStarted();
+    }
+
+    /**
+     * @return true if the dubbo application is stopping.
+     * @see #isStopped()
+     */
+    public boolean isStopping() {
+        return applicationDeployer.isStopping();
+    }
+
+    /**
+     * @return true if the dubbo application is stopping.
+     * @see #isStopped()
+     */
+    public boolean isStopped() {
+        return applicationDeployer.isStopped();
+    }
+
+    /**
+     * Block current thread to be await.
+     *
+     * @return {@link DubboBootstrap}
+     */
+    public DubboBootstrap await() {
+        // if has been waited, no need to wait again, return immediately
+        if (!awaited.get()) {
+            if (!isStopped()) {
+                executeMutually(() -> {
+                    while (!awaited.get()) {
+                        if (logger.isInfoEnabled()) {
+                            logger.info(NAME + " awaiting ...");
+                        }
+                        try {
+                            condition.await();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                });
+            }
+        }
+        return this;
+    }
+
+    public ReferenceCache getCache() {
+        return applicationDeployer.getReferenceCache();
+    }
+
+    /**
+     * Destroy all the protocols.
+     */
+    private static void destroyProtocols(FrameworkModel frameworkModel) {
+        //TODO destroy protocol in framework scope
+        ExtensionLoader<Protocol> loader = frameworkModel.getExtensionLoader(Protocol.class);
+        for (String protocolName : loader.getLoadedExtensions()) {
+            try {
+                Protocol protocol = loader.getLoadedExtension(protocolName);
+                if (protocol != null) {
+                    protocol.destroy();
+                }
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
+        }
+    }
+
+    private static void destroyAllProtocols() {
+        for (FrameworkModel frameworkModel : FrameworkModel.getAllInstances()) {
+            destroyProtocols(frameworkModel);
+        }
+    }
+
+    private void executeMutually(Runnable runnable) {
+        try {
+            lock.lock();
+            runnable.run();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public ApplicationConfig getApplication() {
+        return configManager.getApplicationOrElseThrow();
+    }
+
+    public void setTakeoverMode(BootstrapTakeoverMode takeoverMode) {
+        //TODO this.started.set(false);
+        this.takeoverMode = takeoverMode;
+    }
+
+    public BootstrapTakeoverMode getTakeoverMode() {
+        return takeoverMode;
+    }
+
+    public ApplicationModel getApplicationModel() {
+        return applicationModel;
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+
+
+    // MetadataReportConfig correlative methods
 
     public DubboBootstrap metadataReport(MetadataReportConfig metadataReportConfig) {
         configManager.addMetadataReport(metadataReportConfig);
@@ -280,6 +435,7 @@ public class DubboBootstrap extends GenericEventListener {
      * @return current {@link DubboBootstrap} instance
      */
     public DubboBootstrap application(ApplicationConfig applicationConfig) {
+        applicationConfig.setScopeModel(applicationModel);
         configManager.setApplication(applicationConfig);
         return this;
     }
@@ -288,13 +444,13 @@ public class DubboBootstrap extends GenericEventListener {
     // {@link RegistryConfig} correlative methods
 
     /**
-     * Add an instance of {@link RegistryConfig} with {@link #DEFAULT_REGISTRY_ID default ID}
+     * Add an instance of {@link RegistryConfig}
      *
      * @param consumerBuilder the {@link Consumer} of {@link RegistryBuilder}
      * @return current {@link DubboBootstrap} instance
      */
     public DubboBootstrap registry(Consumer<RegistryBuilder> consumerBuilder) {
-        return registry(DEFAULT_REGISTRY_ID, consumerBuilder);
+        return registry(null, consumerBuilder);
     }
 
     /**
@@ -317,6 +473,7 @@ public class DubboBootstrap extends GenericEventListener {
      * @return current {@link DubboBootstrap} instance
      */
     public DubboBootstrap registry(RegistryConfig registryConfig) {
+        registryConfig.setScopeModel(applicationModel);
         configManager.addRegistry(registryConfig);
         return this;
     }
@@ -338,7 +495,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     // {@link ProtocolConfig} correlative methods
     public DubboBootstrap protocol(Consumer<ProtocolBuilder> consumerBuilder) {
-        return protocol(DEFAULT_PROTOCOL_ID, consumerBuilder);
+        return protocol(null, consumerBuilder);
     }
 
     public DubboBootstrap protocol(String id, Consumer<ProtocolBuilder> consumerBuilder) {
@@ -348,646 +505,208 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public DubboBootstrap protocol(ProtocolConfig protocolConfig) {
-        return protocols(asList(protocolConfig));
+        return protocols(singletonList(protocolConfig));
     }
 
     public DubboBootstrap protocols(List<ProtocolConfig> protocolConfigs) {
         if (CollectionUtils.isEmpty(protocolConfigs)) {
             return this;
         }
-        configManager.addProtocols(protocolConfigs);
+        for (ProtocolConfig protocolConfig : protocolConfigs) {
+            protocolConfig.setScopeModel(applicationModel);
+            configManager.addProtocol(protocolConfig);
+        }
         return this;
     }
 
     // {@link ServiceConfig} correlative methods
     public <S> DubboBootstrap service(Consumer<ServiceBuilder<S>> consumerBuilder) {
-        return service(DEFAULT_SERVICE_ID, consumerBuilder);
+        return service(null, consumerBuilder);
     }
 
     public <S> DubboBootstrap service(String id, Consumer<ServiceBuilder<S>> consumerBuilder) {
-        ServiceBuilder builder = createServiceBuilder(id);
-        consumerBuilder.accept(builder);
-        return service(builder.build());
+        return service(createServiceConfig(id, consumerBuilder));
     }
 
-    public DubboBootstrap service(ServiceConfig<?> serviceConfig) {
-        configManager.addService(serviceConfig);
-        return this;
+    private <S> ServiceConfig createServiceConfig(String id, Consumer<ServiceBuilder<S>> consumerBuilder) {
+        ServiceBuilder builder = createServiceBuilder(id);
+        consumerBuilder.accept(builder);
+        ServiceConfig serviceConfig = builder.build();
+        return serviceConfig;
     }
 
     public DubboBootstrap services(List<ServiceConfig> serviceConfigs) {
         if (CollectionUtils.isEmpty(serviceConfigs)) {
             return this;
         }
-        serviceConfigs.forEach(configManager::addService);
+        for (ServiceConfig serviceConfig : serviceConfigs) {
+            this.service(serviceConfig);
+        }
+        return this;
+    }
+
+    public DubboBootstrap service(ServiceConfig<?> serviceConfig) {
+        this.service(serviceConfig, applicationModel.getDefaultModule());
+        return this;
+    }
+
+    public DubboBootstrap service(ServiceConfig<?> serviceConfig, ModuleModel moduleModel) {
+        serviceConfig.setScopeModel(moduleModel);
+        moduleModel.getConfigManager().addService(serviceConfig);
         return this;
     }
 
     // {@link Reference} correlative methods
     public <S> DubboBootstrap reference(Consumer<ReferenceBuilder<S>> consumerBuilder) {
-        return reference(DEFAULT_REFERENCE_ID, consumerBuilder);
+        return reference(null, consumerBuilder);
     }
 
     public <S> DubboBootstrap reference(String id, Consumer<ReferenceBuilder<S>> consumerBuilder) {
-        ReferenceBuilder builder = createReferenceBuilder(id);
-        consumerBuilder.accept(builder);
-        return reference(builder.build());
+        return reference(createReferenceConfig(id, consumerBuilder));
     }
 
-    public DubboBootstrap reference(ReferenceConfig<?> referenceConfig) {
-        configManager.addReference(referenceConfig);
-        return this;
+    private <S> ReferenceConfig createReferenceConfig(String id, Consumer<ReferenceBuilder<S>> consumerBuilder) {
+        ReferenceBuilder builder = createReferenceBuilder(id);
+        consumerBuilder.accept(builder);
+        ReferenceConfig referenceConfig = builder.build();
+        return referenceConfig;
     }
 
     public DubboBootstrap references(List<ReferenceConfig> referenceConfigs) {
         if (CollectionUtils.isEmpty(referenceConfigs)) {
             return this;
         }
+        for (ReferenceConfig referenceConfig : referenceConfigs) {
+            this.reference(referenceConfig);
+        }
+        return this;
+    }
 
-        referenceConfigs.forEach(configManager::addReference);
+    public DubboBootstrap reference(ReferenceConfig<?> referenceConfig) {
+        return reference(referenceConfig, applicationModel.getDefaultModule());
+    }
+
+    public DubboBootstrap reference(ReferenceConfig<?> referenceConfig, ModuleModel moduleModel) {
+        referenceConfig.setScopeModel(moduleModel);
+        moduleModel.getConfigManager().addReference(referenceConfig);
         return this;
     }
 
     // {@link ProviderConfig} correlative methods
     public DubboBootstrap provider(Consumer<ProviderBuilder> builderConsumer) {
-        return provider(DEFAULT_PROVIDER_ID, builderConsumer);
+        provider(null, builderConsumer);
+        return this;
     }
 
     public DubboBootstrap provider(String id, Consumer<ProviderBuilder> builderConsumer) {
+        this.provider(createProviderConfig(id, builderConsumer));
+        return this;
+    }
+
+    private ProviderConfig createProviderConfig(String id, Consumer<ProviderBuilder> builderConsumer) {
         ProviderBuilder builder = createProviderBuilder(id);
         builderConsumer.accept(builder);
-        return provider(builder.build());
+        ProviderConfig providerConfig = builder.build();
+        return providerConfig;
     }
 
     public DubboBootstrap provider(ProviderConfig providerConfig) {
-        return providers(asList(providerConfig));
+        return this.provider(providerConfig, applicationModel.getDefaultModule());
     }
 
     public DubboBootstrap providers(List<ProviderConfig> providerConfigs) {
-        if (CollectionUtils.isEmpty(providerConfigs)) {
-            return this;
+        for (ProviderConfig providerConfig : providerConfigs) {
+            this.provider(providerConfig, applicationModel.getDefaultModule());
         }
+        return this;
+    }
 
-        providerConfigs.forEach(configManager::addProvider);
+    public DubboBootstrap provider(ProviderConfig providerConfig, ModuleModel moduleModel) {
+        providerConfig.setScopeModel(moduleModel);
+        moduleModel.getConfigManager().addProvider(providerConfig);
         return this;
     }
 
     // {@link ConsumerConfig} correlative methods
     public DubboBootstrap consumer(Consumer<ConsumerBuilder> builderConsumer) {
-        return consumer(DEFAULT_CONSUMER_ID, builderConsumer);
+        return consumer(null, builderConsumer);
     }
 
     public DubboBootstrap consumer(String id, Consumer<ConsumerBuilder> builderConsumer) {
+        return consumer(createConsumerConfig(id, builderConsumer));
+    }
+
+    private ConsumerConfig createConsumerConfig(String id, Consumer<ConsumerBuilder> builderConsumer) {
         ConsumerBuilder builder = createConsumerBuilder(id);
         builderConsumer.accept(builder);
-        return consumer(builder.build());
+        ConsumerConfig consumerConfig = builder.build();
+        return consumerConfig;
     }
 
     public DubboBootstrap consumer(ConsumerConfig consumerConfig) {
-        return consumers(asList(consumerConfig));
+        return this.consumer(consumerConfig, applicationModel.getDefaultModule());
     }
 
     public DubboBootstrap consumers(List<ConsumerConfig> consumerConfigs) {
-        if (CollectionUtils.isEmpty(consumerConfigs)) {
-            return this;
+        for (ConsumerConfig consumerConfig : consumerConfigs) {
+            this.consumer(consumerConfig, applicationModel.getDefaultModule());
         }
-
-        consumerConfigs.forEach(configManager::addConsumer);
         return this;
     }
 
+    public DubboBootstrap consumer(ConsumerConfig consumerConfig, ModuleModel moduleModel) {
+        consumerConfig.setScopeModel(moduleModel);
+        moduleModel.getConfigManager().addConsumer(consumerConfig);
+        return this;
+    }
+
+    public DubboBootstrap module(ModuleConfig moduleConfig) {
+        this.module(moduleConfig, applicationModel.getDefaultModule());
+        return this;
+    }
+
+    public DubboBootstrap module(ModuleConfig moduleConfig, ModuleModel moduleModel) {
+        moduleConfig.setScopeModel(moduleModel);
+        moduleModel.getConfigManager().setModule(moduleConfig);
+        return this;
+    }
+    // module configs end
+
     // {@link ConfigCenterConfig} correlative methods
     public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
-        return configCenters(asList(configCenterConfig));
+        configCenterConfig.setScopeModel(applicationModel);
+        configManager.addConfigCenter(configCenterConfig);
+        return this;
     }
 
     public DubboBootstrap configCenters(List<ConfigCenterConfig> configCenterConfigs) {
         if (CollectionUtils.isEmpty(configCenterConfigs)) {
             return this;
         }
-        configManager.addConfigCenters(configCenterConfigs);
+        for (ConfigCenterConfig configCenterConfig : configCenterConfigs) {
+            this.configCenter(configCenterConfig);
+        }
         return this;
     }
 
     public DubboBootstrap monitor(MonitorConfig monitor) {
+        monitor.setScopeModel(applicationModel);
         configManager.setMonitor(monitor);
         return this;
     }
 
     public DubboBootstrap metrics(MetricsConfig metrics) {
+        metrics.setScopeModel(applicationModel);
         configManager.setMetrics(metrics);
         return this;
     }
 
-    public DubboBootstrap module(ModuleConfig module) {
-        configManager.setModule(module);
-        return this;
-    }
-
     public DubboBootstrap ssl(SslConfig sslConfig) {
+        sslConfig.setScopeModel(applicationModel);
         configManager.setSsl(sslConfig);
         return this;
     }
 
-    public DubboBootstrap cache(ReferenceConfigCache cache) {
-        this.cache = cache;
-        return this;
-    }
-
-    public ReferenceConfigCache getCache() {
-        if (cache == null) {
-            cache = ReferenceConfigCache.getCache();
-        }
-        return cache;
-    }
-
-    public DubboBootstrap exportAsync() {
-        this.exportAsync = true;
-        return this;
-    }
-
-    public DubboBootstrap referAsync() {
-        this.referAsync = true;
-        return this;
-    }
-
-    @Deprecated
-    public void init() {
-        initialize();
-    }
-
-    /**
-     * Initialize
-     */
-    public void initialize() {
-        if (!initialized.compareAndSet(false, true)) {
-            return;
-        }
-
-        ApplicationModel.initFrameworkExts();
-
-        startConfigCenter();
-
-        loadRemoteConfigs();
-
-        checkGlobalConfigs();
-
-        // @since 2.7.8
-        startMetadataCenter();
-
-        initMetadataService();
-
-        initEventListener();
-
-        if (logger.isInfoEnabled()) {
-            logger.info(NAME + " has been initialized!");
-        }
-    }
-
-    private void checkGlobalConfigs() {
-        // check Application
-        ConfigValidationUtils.validateApplicationConfig(getApplication());
-
-        // check Metadata
-        Collection<MetadataReportConfig> metadatas = configManager.getMetadataConfigs();
-        if (CollectionUtils.isEmpty(metadatas)) {
-            MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
-            metadataReportConfig.refresh();
-            if (metadataReportConfig.isValid()) {
-                configManager.addMetadataReport(metadataReportConfig);
-                metadatas = configManager.getMetadataConfigs();
-            }
-        }
-        if (CollectionUtils.isNotEmpty(metadatas)) {
-            for (MetadataReportConfig metadataReportConfig : metadatas) {
-                metadataReportConfig.refresh();
-                ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
-            }
-        }
-
-        // check Provider
-        Collection<ProviderConfig> providers = configManager.getProviders();
-        if (CollectionUtils.isEmpty(providers)) {
-            configManager.getDefaultProvider().orElseGet(() -> {
-                ProviderConfig providerConfig = new ProviderConfig();
-                configManager.addProvider(providerConfig);
-                providerConfig.refresh();
-                return providerConfig;
-            });
-        }
-        for (ProviderConfig providerConfig : configManager.getProviders()) {
-            ConfigValidationUtils.validateProviderConfig(providerConfig);
-        }
-        // check Consumer
-        Collection<ConsumerConfig> consumers = configManager.getConsumers();
-        if (CollectionUtils.isEmpty(consumers)) {
-            configManager.getDefaultConsumer().orElseGet(() -> {
-                ConsumerConfig consumerConfig = new ConsumerConfig();
-                configManager.addConsumer(consumerConfig);
-                consumerConfig.refresh();
-                return consumerConfig;
-            });
-        }
-        for (ConsumerConfig consumerConfig : configManager.getConsumers()) {
-            ConfigValidationUtils.validateConsumerConfig(consumerConfig);
-        }
-
-        // check Monitor
-        ConfigValidationUtils.validateMonitorConfig(getMonitor());
-        // check Metrics
-        ConfigValidationUtils.validateMetricsConfig(getMetrics());
-        // check Module
-        ConfigValidationUtils.validateModuleConfig(getModule());
-        // check Ssl
-        ConfigValidationUtils.validateSslConfig(getSsl());
-    }
-
-    private void startConfigCenter() {
-
-        useRegistryAsConfigCenterIfNecessary();
-
-        Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
-
-        // check Config Center
-        if (CollectionUtils.isEmpty(configCenters)) {
-            ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
-            configCenterConfig.refresh();
-            if (configCenterConfig.isValid()) {
-                configManager.addConfigCenter(configCenterConfig);
-                configCenters = configManager.getConfigCenters();
-            }
-        } else {
-            for (ConfigCenterConfig configCenterConfig : configCenters) {
-                configCenterConfig.refresh();
-                ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
-            }
-        }
-
-        if (CollectionUtils.isNotEmpty(configCenters)) {
-            CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
-            for (ConfigCenterConfig configCenter : configCenters) {
-                compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
-            }
-            environment.setDynamicConfiguration(compositeDynamicConfiguration);
-        }
-        configManager.refreshAll();
-    }
-
-    private void startMetadataCenter() {
-
-        useRegistryAsMetadataCenterIfNecessary();
-
-        ApplicationConfig applicationConfig = getApplication();
-
-        String metadataType = applicationConfig.getMetadataType();
-        // FIXME, multiple metadata config support.
-        Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
-        if (CollectionUtils.isEmpty(metadataReportConfigs)) {
-            if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                throw new IllegalStateException("No MetadataConfig found, Metadata Center address is required when 'metadata=remote' is enabled.");
-            }
-            return;
-        }
-
-        for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
-            ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
-            if (!metadataReportConfig.isValid()) {
-                return;
-            }
-            MetadataReportInstance.init(metadataReportConfig);
-        }
-    }
-
-    /**
-     * For compatibility purpose, use registry as the default config center when
-     * there's no config center specified explicitly and
-     * useAsConfigCenter of registryConfig is null or true
-     */
-    private void useRegistryAsConfigCenterIfNecessary() {
-        // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-        if (environment.getDynamicConfiguration().isPresent()) {
-            return;
-        }
-
-        if (CollectionUtils.isNotEmpty(configManager.getConfigCenters())) {
-            return;
-        }
-
-        configManager
-                .getDefaultRegistries()
-                .stream()
-                .filter(this::isUsedRegistryAsConfigCenter)
-                .map(this::registryAsConfigCenter)
-                .forEach(configManager::addConfigCenter);
-    }
-
-    private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
-        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
-                DynamicConfigurationFactory.class);
-    }
-
-    private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
-        String protocol = registryConfig.getProtocol();
-        Integer port = registryConfig.getPort();
-        String id = "config-center-" + protocol + "-" + port;
-        ConfigCenterConfig cc = new ConfigCenterConfig();
-        cc.setId(id);
-        if (cc.getParameters() == null) {
-            cc.setParameters(new HashMap<>());
-        }
-        if (registryConfig.getParameters() != null) {
-            cc.getParameters().putAll(registryConfig.getParameters()); // copy the parameters
-        }
-        cc.getParameters().put(CLIENT_KEY, registryConfig.getClient());
-        cc.setProtocol(protocol);
-        cc.setPort(port);
-        cc.setGroup(registryConfig.getGroup());
-        cc.setAddress(getRegistryCompatibleAddress(registryConfig));
-        cc.setNamespace(registryConfig.getGroup());
-        cc.setUsername(registryConfig.getUsername());
-        cc.setPassword(registryConfig.getPassword());
-        if (registryConfig.getTimeout() != null) {
-            cc.setTimeout(registryConfig.getTimeout().longValue());
-        }
-        cc.setHighestPriority(false);
-        return cc;
-    }
-
-    private void useRegistryAsMetadataCenterIfNecessary() {
-
-        Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
-
-        if (CollectionUtils.isNotEmpty(metadataConfigs)) {
-            return;
-        }
-
-        configManager
-                .getDefaultRegistries()
-                .stream()
-                .filter(this::isUsedRegistryAsMetadataCenter)
-                .map(this::registryAsMetadataCenter)
-                .forEach(configManager::addMetadataReport);
-
-    }
-
-    private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
-        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
-                MetadataReportFactory.class);
-    }
-
-    /**
-     * Is used the specified registry as a center infrastructure
-     *
-     * @param registryConfig       the {@link RegistryConfig}
-     * @param usedRegistryAsCenter the configured value on
-     * @param centerType           the type name of center
-     * @param extensionClass       an extension class of a center infrastructure
-     * @return
-     * @since 2.7.8
-     */
-    private boolean isUsedRegistryAsCenter(RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
-                                           String centerType,
-                                           Class<?> extensionClass) {
-        final boolean supported;
-
-        Boolean configuredValue = usedRegistryAsCenter.get();
-        if (configuredValue != null) { // If configured, take its value.
-            supported = configuredValue.booleanValue();
-        } else {                       // Or check the extension existence
-            String protocol = registryConfig.getProtocol();
-            supported = supportsExtension(extensionClass, protocol);
-            if (logger.isInfoEnabled()) {
-                logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
-                        , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
-            }
-        }
-
-        if (logger.isInfoEnabled()) {
-            logger.info(format("The registry[%s] will be %s as the %s center", registryConfig,
-                    supported ? "used" : "not used", centerType));
-        }
-        return supported;
-    }
-
-    /**
-     * Supports the extension with the specified class and name
-     *
-     * @param extensionClass the {@link Class} of extension
-     * @param name           the name of extension
-     * @return if supports, return <code>true</code>, or <code>false</code>
-     * @since 2.7.8
-     */
-    private boolean supportsExtension(Class<?> extensionClass, String name) {
-        if (isNotEmpty(name)) {
-            ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
-            return extensionLoader.hasExtension(name);
-        }
-        return false;
-    }
-
-    private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
-        String protocol = registryConfig.getProtocol();
-        Integer port = registryConfig.getPort();
-        String id = "metadata-center-" + protocol + "-" + port;
-        MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
-        metadataReportConfig.setId(id);
-        if (metadataReportConfig.getParameters() == null) {
-            metadataReportConfig.setParameters(new HashMap<>());
-        }
-        if (registryConfig.getParameters() != null) {
-            metadataReportConfig.getParameters().putAll(registryConfig.getParameters()); // copy the parameters
-        }
-        metadataReportConfig.getParameters().put(CLIENT_KEY, registryConfig.getClient());
-        metadataReportConfig.setGroup(registryConfig.getGroup());
-        metadataReportConfig.setAddress(getRegistryCompatibleAddress(registryConfig));
-        metadataReportConfig.setUsername(registryConfig.getUsername());
-        metadataReportConfig.setPassword(registryConfig.getPassword());
-        metadataReportConfig.setTimeout(registryConfig.getTimeout());
-        return metadataReportConfig;
-    }
-
-    private String getRegistryCompatibleAddress(RegistryConfig registryConfig) {
-        String registryAddress = registryConfig.getAddress();
-        String[] addresses = REGISTRY_SPLIT_PATTERN.split(registryAddress);
-        if (ArrayUtils.isEmpty(addresses)) {
-            throw new IllegalStateException("Invalid registry address found.");
-        }
-        String address = addresses[0];
-        // since 2.7.8
-        // Issue : https://github.com/apache/dubbo/issues/6476
-        StringBuilder metadataAddressBuilder = new StringBuilder();
-        URL url = URL.valueOf(address);
-        String protocolFromAddress = url.getProtocol();
-        if (isEmpty(protocolFromAddress)) {
-            // If the protocol from address is missing, is like :
-            // "dubbo.registry.address = 127.0.0.1:2181"
-            String protocolFromConfig = registryConfig.getProtocol();
-            metadataAddressBuilder.append(protocolFromConfig).append("://");
-        }
-        metadataAddressBuilder.append(address);
-        return metadataAddressBuilder.toString();
-    }
-
-    private void loadRemoteConfigs() {
-        // registry ids to registry configs
-        List<RegistryConfig> tmpRegistries = new ArrayList<>();
-        Set<String> registryIds = configManager.getRegistryIds();
-        registryIds.forEach(id -> {
-            if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
-                tmpRegistries.add(configManager.getRegistry(id).orElseGet(() -> {
-                    RegistryConfig registryConfig = new RegistryConfig();
-                    registryConfig.setId(id);
-                    registryConfig.refresh();
-                    return registryConfig;
-                }));
-            }
-        });
-
-        configManager.addRegistries(tmpRegistries);
-
-        // protocol ids to protocol configs
-        List<ProtocolConfig> tmpProtocols = new ArrayList<>();
-        Set<String> protocolIds = configManager.getProtocolIds();
-        protocolIds.forEach(id -> {
-            if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
-                tmpProtocols.add(configManager.getProtocol(id).orElseGet(() -> {
-                    ProtocolConfig protocolConfig = new ProtocolConfig();
-                    protocolConfig.setId(id);
-                    protocolConfig.refresh();
-                    return protocolConfig;
-                }));
-            }
-        });
-
-        configManager.addProtocols(tmpProtocols);
-    }
-
-
-    /**
-     * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
-     */
-    private void initMetadataService() {
-        startMetadataCenter();
-        this.metadataService = getDefaultExtension();
-        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
-    }
-
-    /**
-     * Initialize {@link EventListener}
-     */
-    private void initEventListener() {
-        // Add current instance into listeners
-        addEventListener(this);
-    }
-
-    /**
-     * Start the bootstrap
-     */
-    public DubboBootstrap start() {
-        if (started.compareAndSet(false, true)) {
-            ready.set(false);
-            initialize();
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " is starting...");
-            }
-            // 1. export Dubbo Services
-            exportServices();
-
-            // Not only provider register
-            if (!isOnlyRegisterProvider() || hasExportedServices()) {
-                // 2. export MetadataService
-                exportMetadataService();
-                //3. Register the local ServiceInstance if required
-                registerServiceInstance();
-            }
-
-            referServices();
-            if (asyncExportingFutures.size() > 0) {
-                new Thread(() -> {
-                    try {
-                        this.awaitFinish();
-                    } catch (Exception e) {
-                        logger.warn(NAME + " exportAsync occurred an exception.");
-                    }
-                    ready.set(true);
-                    if (logger.isInfoEnabled()) {
-                        logger.info(NAME + " is ready.");
-                    }
-                }).start();
-            } else {
-                ready.set(true);
-                if (logger.isInfoEnabled()) {
-                    logger.info(NAME + " is ready.");
-                }
-            }
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " has started.");
-            }
-        }
-        return this;
-    }
-
-    private boolean hasExportedServices() {
-        return !metadataService.getExportedURLs().isEmpty();
-    }
-
-    /**
-     * Block current thread to be await.
-     *
-     * @return {@link DubboBootstrap}
-     */
-    public DubboBootstrap await() {
-        // if has been waited, no need to wait again, return immediately
-        if (!awaited.get()) {
-            if (!executorService.isShutdown()) {
-                executeMutually(() -> {
-                    while (!awaited.get()) {
-                        if (logger.isInfoEnabled()) {
-                            logger.info(NAME + " awaiting ...");
-                        }
-                        try {
-                            condition.await();
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                });
-            }
-        }
-        return this;
-    }
-
-    public DubboBootstrap awaitFinish() throws Exception {
-        logger.info(NAME + " waiting services exporting / referring ...");
-        if (exportAsync && asyncExportingFutures.size() > 0) {
-            CompletableFuture future = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
-            future.get();
-        }
-        if (referAsync && asyncReferringFutures.size() > 0) {
-            CompletableFuture future = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
-            future.get();
-        }
-
-        logger.info("Service export / refer finished.");
-        return this;
-    }
-
-    public boolean isInitialized() {
-        return initialized.get();
-    }
-
-    public boolean isStarted() {
-        return started.get();
-    }
-
-    public boolean isReady() {
-        return ready.get();
-    }
-
-    public DubboBootstrap stop() throws IllegalStateException {
-        destroy();
-        return this;
-    }
     /* serve for builder apis, begin */
 
     private ApplicationBuilder createApplicationBuilder(String name) {
@@ -1019,370 +738,139 @@ public class DubboBootstrap extends GenericEventListener {
     }
     /* serve for builder apis, end */
 
-    private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
-        if (configCenter.isValid()) {
-            if (!configCenter.checkOrUpdateInited()) {
-                return null;
-            }
-            DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
-            String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
-
-            String appGroup = getApplication().getName();
-            String appConfigContent = null;
-            if (isNotEmpty(appGroup)) {
-                appConfigContent = dynamicConfiguration.getProperties
-                        (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                                appGroup
-                        );
-            }
-            try {
-                environment.setConfigCenterFirst(configCenter.isHighestPriority());
-                environment.updateExternalConfigurationMap(parseProperties(configContent));
-                environment.updateAppExternalConfigurationMap(parseProperties(appConfigContent));
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
-            }
-            return dynamicConfiguration;
-        }
-        return null;
+    public Module newModule() {
+        return new Module(applicationModel.newModule());
     }
 
-    /**
-     * Add an instance of {@link EventListener}
-     *
-     * @param listener {@link EventListener}
-     * @return {@link DubboBootstrap}
-     */
-    public DubboBootstrap addEventListener(EventListener<?> listener) {
-        eventDispatcher.addEventListener(listener);
+    public Module newModule(ModuleConfig moduleConfig) {
+        ModuleModel moduleModel = applicationModel.newModule();
+        moduleConfig.setScopeModel(moduleModel);
+        moduleModel.getConfigManager().setModule(moduleConfig);
+        return new Module(moduleModel);
+    }
+
+    public DubboBootstrap endModule() {
         return this;
     }
 
-    /**
-     * export {@link MetadataService}
-     */
-    private void exportMetadataService() {
-        metadataServiceExporter.export();
-    }
 
-    private void unexportMetadataService() {
-        if (metadataServiceExporter != null && metadataServiceExporter.isExported()) {
-            metadataServiceExporter.unexport();
+    public class Module {
+        private ModuleModel moduleModel;
+        private DubboBootstrap bootstrap;
+
+        public Module(ModuleModel moduleModel) {
+            this.moduleModel = moduleModel;
+            this.bootstrap = DubboBootstrap.this;
         }
-    }
 
-    private void exportServices() {
-        configManager.getServices().forEach(sc -> {
-            // TODO, compatible with ServiceConfig.export()
-            ServiceConfig serviceConfig = (ServiceConfig) sc;
-            serviceConfig.setBootstrap(this);
+        public DubboBootstrap endModule() {
+            return this.bootstrap.endModule();
+        }
 
-            if (exportAsync) {
-                ExecutorService executor = executorRepository.getServiceExporterExecutor();
-                Future<?> future = executor.submit(() -> {
-                    sc.export();
-                    exportedServices.add(sc);
-                });
-                asyncExportingFutures.add(future);
-            } else {
-                sc.export();
-                exportedServices.add(sc);
+        public ModuleModel getModuleModel() {
+            return moduleModel;
+        }
+
+        public Module config(ModuleConfig moduleConfig) {
+            this.moduleModel.getConfigManager().setModule(moduleConfig);
+            return this;
+        }
+
+        // {@link ServiceConfig} correlative methods
+        public <S> Module service(Consumer<ServiceBuilder<S>> consumerBuilder) {
+            return service(null, consumerBuilder);
+        }
+
+        public <S> Module service(String id, Consumer<ServiceBuilder<S>> consumerBuilder) {
+            return service(createServiceConfig(id, consumerBuilder));
+        }
+
+        public Module services(List<ServiceConfig> serviceConfigs) {
+            if (CollectionUtils.isEmpty(serviceConfigs)) {
+                return this;
             }
-        });
-    }
-
-    private void unexportServices() {
-        exportedServices.forEach(sc -> {
-            configManager.removeConfig(sc);
-            sc.unexport();
-        });
-
-        asyncExportingFutures.forEach(future -> {
-            if (!future.isDone()) {
-                future.cancel(true);
+            for (ServiceConfig serviceConfig : serviceConfigs) {
+                this.service(serviceConfig);
             }
-        });
-        asyncExportingFutures.clear();
-        exportedServices.clear();
-    }
-
-    private void referServices() {
-        if (cache == null) {
-            cache = ReferenceConfigCache.getCache();
+            return this;
         }
 
-        configManager.getReferences().forEach(rc -> {
-            // TODO, compatible with  ReferenceConfig.refer()
-            ReferenceConfig referenceConfig = (ReferenceConfig) rc;
-            referenceConfig.setBootstrap(this);
+        public Module service(ServiceConfig<?> serviceConfig) {
+            DubboBootstrap.this.service(serviceConfig, moduleModel);
+            return this;
+        }
 
-            if (rc.shouldInit()) {
-                if (referAsync) {
-                    CompletableFuture<Object> future = ScheduledCompletableFuture.submit(
-                            executorRepository.getServiceExporterExecutor(),
-                            () -> cache.get(rc)
-                    );
-                    asyncReferringFutures.add(future);
-                } else {
-                    cache.get(rc);
-                }
+        // {@link Reference} correlative methods
+        public <S> Module reference(Consumer<ReferenceBuilder<S>> consumerBuilder) {
+            return reference(null, consumerBuilder);
+        }
+
+        public <S> Module reference(String id, Consumer<ReferenceBuilder<S>> consumerBuilder) {
+            return reference(createReferenceConfig(id, consumerBuilder));
+        }
+
+        public Module reference(ReferenceConfig<?> referenceConfig) {
+            DubboBootstrap.this.reference(referenceConfig, moduleModel);
+            return this;
+        }
+
+        public Module references(List<ReferenceConfig> referenceConfigs) {
+            if (CollectionUtils.isEmpty(referenceConfigs)) {
+                return this;
             }
-        });
-    }
-
-    private void unreferServices() {
-        if (cache == null) {
-            cache = ReferenceConfigCache.getCache();
-        }
-
-        asyncReferringFutures.forEach(future -> {
-            if (!future.isDone()) {
-                future.cancel(true);
+            for (ReferenceConfig referenceConfig : referenceConfigs) {
+                this.reference(referenceConfig);
             }
-        });
-        asyncReferringFutures.clear();
-        cache.destroyAll();
-    }
-
-    private void registerServiceInstance() {
-        if (CollectionUtils.isEmpty(getServiceDiscoveries())) {
-            return;
+            return this;
         }
 
-        ApplicationConfig application = getApplication();
+        // {@link ProviderConfig} correlative methods
+        public Module provider(Consumer<ProviderBuilder> builderConsumer) {
+            return provider(null, builderConsumer);
+        }
 
-        String serviceName = application.getName();
+        public Module provider(String id, Consumer<ProviderBuilder> builderConsumer) {
+            return provider(createProviderConfig(id, builderConsumer));
+        }
 
-        URL exportedURL = selectMetadataServiceExportedURL();
+        public Module provider(ProviderConfig providerConfig) {
+            DubboBootstrap.this.provider(providerConfig, moduleModel);
+            return this;
+        }
 
-        String host = exportedURL.getHost();
-
-        int port = exportedURL.getPort();
-
-        ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
-
-        doRegisterServiceInstance(serviceInstance);
-
-        // scheduled task for updating Metadata and ServiceInstance
-        executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
-            InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
-            localMetadataService.blockUntilUpdated();
-            ServiceInstanceMetadataUtils.refreshMetadataAndInstance();
-        }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MICROSECONDS);
-    }
-
-    private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
-        //FIXME
-        publishMetadataToRemote(serviceInstance);
-
-        getServiceDiscoveries().forEach(serviceDiscovery ->
-        {
-            calInstanceRevision(serviceDiscovery, serviceInstance);
-            // register metadata
-            serviceDiscovery.register(serviceInstance);
-        });
-    }
-
-    private void publishMetadataToRemote(ServiceInstance serviceInstance) {
-//        InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService)WritableMetadataService.getDefaultExtension();
-//        localMetadataService.blockUntilUpdated();
-        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
-        remoteMetadataService.publishMetadata(serviceInstance.getServiceName());
-    }
-
-    private URL selectMetadataServiceExportedURL() {
-
-        URL selectedURL = null;
-
-        SortedSet<String> urlValues = metadataService.getExportedURLs();
-
-        for (String urlValue : urlValues) {
-            URL url = URL.valueOf(urlValue);
-            if (MetadataService.class.getName().equals(url.getServiceInterface())) {
-                continue;
+        public Module providers(List<ProviderConfig> providerConfigs) {
+            if (CollectionUtils.isEmpty(providerConfigs)) {
+                return this;
             }
-            if ("rest".equals(url.getProtocol())) { // REST first
-                selectedURL = url;
-                break;
-            } else {
-                selectedURL = url; // If not found, take any one
+            for (ProviderConfig providerConfig : providerConfigs) {
+                DubboBootstrap.this.provider(providerConfig, moduleModel);
             }
+            return this;
         }
 
-        if (selectedURL == null && CollectionUtils.isNotEmpty(urlValues)) {
-            selectedURL = URL.valueOf(urlValues.iterator().next());
+        // {@link ConsumerConfig} correlative methods
+        public Module consumer(Consumer<ConsumerBuilder> builderConsumer) {
+            return consumer(null, builderConsumer);
         }
 
-        return selectedURL;
-    }
-
-    private void unregisterServiceInstance() {
-        if (serviceInstance != null) {
-            getServiceDiscoveries().forEach(serviceDiscovery -> {
-                serviceDiscovery.unregister(serviceInstance);
-            });
+        public Module consumer(String id, Consumer<ConsumerBuilder> builderConsumer) {
+            return consumer(createConsumerConfig(id, builderConsumer));
         }
-    }
 
-    private ServiceInstance createServiceInstance(String serviceName, String host, int port) {
-        this.serviceInstance = new DefaultServiceInstance(serviceName, host, port);
-        setMetadataStorageType(serviceInstance, getMetadataType());
+        public Module consumer(ConsumerConfig consumerConfig) {
+            DubboBootstrap.this.consumer(consumerConfig, moduleModel);
+            return this;
+        }
 
-        ExtensionLoader<ServiceInstanceCustomizer> loader =
-                ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
-        // FIXME, sort customizer before apply
-        loader.getSupportedExtensionInstances().forEach(customizer -> {
-            // customizes
-            customizer.customize(this.serviceInstance);
-        });
-
-        return this.serviceInstance;
-    }
-
-    public void destroy() {
-        if (destroyLock.tryLock()) {
-            try {
-                DubboShutdownHook.destroyAll();
-
-                if (started.compareAndSet(true, false)
-                        && destroyed.compareAndSet(false, true)) {
-
-                    unregisterServiceInstance();
-                    unexportMetadataService();
-                    unexportServices();
-                    unreferServices();
-
-                    destroyRegistries();
-                    DubboShutdownHook.destroyProtocols();
-                    destroyServiceDiscoveries();
-
-                    clear();
-                    shutdown();
-                    release();
-                }
-            } finally {
-                destroyLock.unlock();
+        public Module consumers(List<ConsumerConfig> consumerConfigs) {
+            if (CollectionUtils.isEmpty(consumerConfigs)) {
+                return this;
             }
-        }
-    }
-
-    private void destroyRegistries() {
-        AbstractRegistryFactory.destroyAll();
-    }
-
-    private void destroyServiceDiscoveries() {
-        getServiceDiscoveries().forEach(serviceDiscovery -> {
-            execute(serviceDiscovery::destroy);
-        });
-        if (logger.isDebugEnabled()) {
-            logger.debug(NAME + "'s all ServiceDiscoveries have been destroyed.");
-        }
-    }
-
-    private void clear() {
-        clearConfigs();
-        clearApplicationModel();
-    }
-
-    private void clearApplicationModel() {
-
-    }
-
-    private void clearConfigs() {
-        configManager.destroy();
-        if (logger.isDebugEnabled()) {
-            logger.debug(NAME + "'s configs have been clear.");
-        }
-    }
-
-    private void release() {
-        executeMutually(() -> {
-            while (awaited.compareAndSet(false, true)) {
-                if (logger.isInfoEnabled()) {
-                    logger.info(NAME + " is about to shutdown...");
-                }
-                condition.signalAll();
+            for (ConsumerConfig consumerConfig : consumerConfigs) {
+                DubboBootstrap.this.consumer(consumerConfig, moduleModel);
             }
-        });
-    }
-
-    private void shutdown() {
-        if (!executorService.isShutdown()) {
-            // Shutdown executorService
-            executorService.shutdown();
+            return this;
         }
     }
 
-    private void executeMutually(Runnable runnable) {
-        try {
-            lock.lock();
-            runnable.run();
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    public ApplicationConfig getApplication() {
-        ApplicationConfig application = configManager
-                .getApplication()
-                .orElseGet(() -> {
-                    ApplicationConfig applicationConfig = new ApplicationConfig();
-                    configManager.setApplication(applicationConfig);
-                    return applicationConfig;
-                });
-
-        application.refresh();
-        return application;
-    }
-
-    private MonitorConfig getMonitor() {
-        MonitorConfig monitor = configManager
-                .getMonitor()
-                .orElseGet(() -> {
-                    MonitorConfig monitorConfig = new MonitorConfig();
-                    configManager.setMonitor(monitorConfig);
-                    return monitorConfig;
-                });
-
-        monitor.refresh();
-        return monitor;
-    }
-
-    private MetricsConfig getMetrics() {
-        MetricsConfig metrics = configManager
-                .getMetrics()
-                .orElseGet(() -> {
-                    MetricsConfig metricsConfig = new MetricsConfig();
-                    configManager.setMetrics(metricsConfig);
-                    return metricsConfig;
-                });
-        metrics.refresh();
-        return metrics;
-    }
-
-    private ModuleConfig getModule() {
-        ModuleConfig module = configManager
-                .getModule()
-                .orElseGet(() -> {
-                    ModuleConfig moduleConfig = new ModuleConfig();
-                    configManager.setModule(moduleConfig);
-                    return moduleConfig;
-                });
-
-        module.refresh();
-        return module;
-    }
-
-    private SslConfig getSsl() {
-        SslConfig ssl = configManager
-                .getSsl()
-                .orElseGet(() -> {
-                    SslConfig sslConfig = new SslConfig();
-                    configManager.setSsl(sslConfig);
-                    return sslConfig;
-                });
-
-        ssl.refresh();
-        return ssl;
-    }
 }

@@ -34,7 +34,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
-import static org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping.buildGroup;
+import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationServiceNameMapping.buildGroup;
 import static org.apache.dubbo.metadata.ServiceNameMapping.getDefaultExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -64,13 +64,13 @@ public class ServiceNameMappingTest {
 
         applicationName = getClass().getSimpleName();
 
-        ApplicationModel.getConfigManager().setApplication(new ApplicationConfig(applicationName));
+        ApplicationModel.defaultModel().getConfigManager().setApplication(new ApplicationConfig(applicationName));
 
         configuration = new FileSystemDynamicConfiguration();
 
         FileUtils.deleteQuietly(configuration.getRootDirectory());
 
-        ApplicationModel.getEnvironment().setDynamicConfiguration(configuration);
+        ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(configuration);
 
         serviceNameMapping = getDefaultExtension();
     }

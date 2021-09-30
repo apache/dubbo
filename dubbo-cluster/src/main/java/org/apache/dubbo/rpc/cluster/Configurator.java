@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.util.ArrayList;
@@ -74,7 +73,7 @@ public interface Configurator extends Comparable<Configurator> {
             return Optional.empty();
         }
 
-        ConfiguratorFactory configuratorFactory = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
+        ConfiguratorFactory configuratorFactory = urls.get(0).getOrDefaultApplicationModel().getExtensionLoader(ConfiguratorFactory.class)
                 .getAdaptiveExtension();
 
         List<Configurator> configurators = new ArrayList<>(urls.size());

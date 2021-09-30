@@ -17,7 +17,10 @@
 package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
@@ -25,10 +28,13 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
-public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
+import java.util.concurrent.CountDownLatch;
 
-    public ServiceDiscoveryMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url) {
-        super(registryProtocol, cluster, registry, type, url);
+public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
+    private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryMigrationInvoker.class);
+
+    public ServiceDiscoveryMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
+        super(registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
     @Override
@@ -37,13 +43,20 @@ public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
     }
 
     @Override
-    public synchronized void fallbackToInterfaceInvoker() {
-        destroyServiceDiscoveryInvoker();
+    public boolean migrateToForceInterfaceInvoker(MigrationRule newRule) {
+        CountDownLatch latch = new CountDownLatch(0);
+        refreshServiceDiscoveryInvoker(latch);
+
+        setCurrentAvailableInvoker(getServiceDiscoveryInvoker());
+        return true;
     }
 
     @Override
-    public synchronized void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
-        refreshServiceDiscoveryInvoker();
+    public void migrateToApplicationFirstInvoker(MigrationRule newRule) {
+        CountDownLatch latch = new CountDownLatch(0);
+        refreshServiceDiscoveryInvoker(latch);
+
+        setCurrentAvailableInvoker(getServiceDiscoveryInvoker());
     }
 
     @Override

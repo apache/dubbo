@@ -18,6 +18,7 @@
 package org.apache.dubbo.config;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -38,7 +39,7 @@ public class ModuleConfigTest {
         ModuleConfig module = new ModuleConfig();
         module.setName("module-name");
         assertThat(module.getName(), equalTo("module-name"));
-        assertThat(module.getId(), equalTo("module-name"));
+        assertThat(module.getId(), equalTo(null));
         Map<String, String> parameters = new HashMap<String, String>();
         ModuleConfig.appendParameters(parameters, module);
         assertThat(parameters, hasEntry("module", "module-name"));
@@ -100,5 +101,12 @@ public class ModuleConfigTest {
         ModuleConfig module = new ModuleConfig();
         module.setDefault(true);
         assertThat(module.isDefault(), is(true));
+    }
+
+    @Test
+    public void testMetaData() {
+        MonitorConfig config = new MonitorConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
     }
 }

@@ -144,7 +144,7 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.common.extension.ExtensionFactory
+                                        META-INF/dubbo/internal/org.apache.dubbo.common.extension.ExtensionInjector
                                     </resource>
                                 </transformer>
                                 <transformer
@@ -299,12 +299,6 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.metadata.report.MetadataReportFactory
                                     </resource>
                                 </transformer>
-                                <!-- @since 2.7.5 -->
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.event.EventDispatcher
-                                    </resource>
-                                </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.MetadataServiceExporter
@@ -341,11 +335,6 @@
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.metadata.definition.builder.TypeBuilder
-                                    </resource>
-                                </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.event.EventListener
                                     </resource>
                                 </transformer>
                                 <transformer

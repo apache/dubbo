@@ -25,7 +25,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.apache.dubbo.common.utils.StringUtils.replace;
 import static org.apache.dubbo.common.utils.TypeUtils.getRawClass;
 import static org.apache.dubbo.common.utils.TypeUtils.isClass;
 import static org.apache.dubbo.common.utils.TypeUtils.isParameterizedType;
@@ -36,7 +35,7 @@ import static org.apache.dubbo.common.utils.TypeUtils.isParameterizedType;
 public class MapTypeBuilder implements TypeBuilder {
 
     @Override
-    public boolean accept(Type type, Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }
@@ -44,9 +43,9 @@ public class MapTypeBuilder implements TypeBuilder {
     }
 
     @Override
-    public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
+    public TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
         if (!(type instanceof ParameterizedType)) {
-            return new TypeDefinition(clazz.getName());
+            return new TypeDefinition(clazz.getCanonicalName());
         }
 
         ParameterizedType parameterizedType = (ParameterizedType) type;
@@ -59,15 +58,14 @@ public class MapTypeBuilder implements TypeBuilder {
                             + Arrays.toString(actualTypeArgs), type, actualTypeArgs));
         }
 
-        // Change since 2.7.6
-        /**
-         * Replacing <code>", "</code> to <code>","</code> will not change the semantic of
-         * {@link ParameterizedType#toString()}
-         * @see sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
-         */
-        String mapType = replace(type.toString(), ", ", ",");
+        String mapType = type.toString();
 
-        TypeDefinition typeDefinition = new TypeDefinition(mapType);
+        TypeDefinition td = typeCache.get(mapType);
+        if (td != null) {
+            return td;
+        }
+        td = new TypeDefinition(mapType);
+        typeCache.put(mapType, td);
 
         for (int i = 0; i < actualTypeArgsLength; i++) {
             Type actualType = actualTypeArgs[i];
@@ -79,9 +77,10 @@ public class MapTypeBuilder implements TypeBuilder {
             } else if (isClass(actualType)) {
                 item = TypeDefinitionBuilder.build(null, rawType, typeCache);
             }
-            typeDefinition.getItems().add(item);
+            if (item != null) {
+                td.getItems().add(item.getType());
+            }
         }
-
-        return typeDefinition;
+        return td;
     }
 }

@@ -31,6 +31,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.ScheduledFuture;
 import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -43,9 +44,12 @@ public class QosProcessHandler extends ByteToMessageDecoder {
     // true means to accept foreign IP
     private boolean acceptForeignIp;
 
+    private FrameworkModel frameworkModel;
+
     public static final String PROMPT = "dubbo>";
 
-    public QosProcessHandler(String welcome, boolean acceptForeignIp) {
+    public QosProcessHandler(FrameworkModel frameworkModel, String welcome, boolean acceptForeignIp) {
+        this.frameworkModel = frameworkModel;
         this.welcome = welcome;
         this.acceptForeignIp = acceptForeignIp;
     }
@@ -83,14 +87,15 @@ public class QosProcessHandler extends ByteToMessageDecoder {
             }
             p.addLast(new HttpServerCodec());
             p.addLast(new HttpObjectAggregator(1048576));
-            p.addLast(new HttpProcessHandler());
+            p.addLast(new HttpProcessHandler(frameworkModel));
             p.remove(this);
         } else {
             p.addLast(new LineBasedFrameDecoder(2048));
             p.addLast(new StringDecoder(CharsetUtil.UTF_8));
             p.addLast(new StringEncoder(CharsetUtil.UTF_8));
             p.addLast(new IdleStateHandler(0, 0, 5 * 60));
-            p.addLast(new TelnetProcessHandler());
+            p.addLast(new TelnetIdleEventHandler());
+            p.addLast(new TelnetProcessHandler(frameworkModel));
             p.remove(this);
         }
     }

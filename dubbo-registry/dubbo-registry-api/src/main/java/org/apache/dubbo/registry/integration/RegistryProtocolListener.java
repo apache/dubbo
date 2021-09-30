@@ -19,13 +19,15 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+
+import static org.apache.dubbo.common.extension.ExtensionScope.MODULE;
 
 /**
  * RegistryProtocol listener is introduced to provide a chance to user to customize or change export and refer behavior
  * of RegistryProtocol. For example: re-export or re-refer on the fly when certain condition meets.
  */
-@SPI
+@SPI(scope = MODULE)
 public interface RegistryProtocolListener {
     /**
      * Notify RegistryProtocol's listeners when a service is registered
@@ -41,9 +43,10 @@ public interface RegistryProtocolListener {
      *
      * @param registryProtocol RegistryProtocol instance
      * @param invoker          invoker
+     * @param url
      * @see RegistryProtocol#refer(Class, URL)
      */
-    <T> void onRefer(RegistryProtocol registryProtocol, Invoker<T> invoker);
+    void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url, URL registryURL);
 
     /**
      * Notify RegistryProtocol's listeners when the protocol is destroyed

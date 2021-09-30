@@ -30,13 +30,13 @@ import java.util.Map;
 public interface TypeBuilder extends Prioritized {
 
     /**
-     * Whether the build accept the type or class passed in.
+     * Whether the build accept the class passed in.
      */
-    boolean accept(Type type, Class<?> clazz);
+    boolean accept(Class<?> clazz);
 
     /**
      * Build type definition with the type or class.
      */
-    TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache);
+    TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache);
 
 }

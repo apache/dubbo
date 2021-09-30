@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -24,39 +25,110 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.AddressListener;
-import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.registry.Constants;
+import org.apache.dubbo.registry.ProviderFirstParams;
+import org.apache.dubbo.registry.integration.AbstractConfiguratorListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcServiceContext;
+import org.apache.dubbo.rpc.cluster.Configurator;
+import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_HASHMAP_LOAD_FACTOR;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
+import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
+import static org.apache.dubbo.rpc.model.ScopeModelUtil.getModuleModel;
 
-public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> implements NotifyListener {
+public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryDirectory.class);
 
-    // instance address to invoker mapping.
-    private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
-
-    private ServiceInstancesChangedListener listener;
+    /**
+     * instance address to invoker mapping.
+     * The initial value is null and the midway may be assigned to null, please use the local variable reference
+     */
+    private volatile Map<String, Invoker<T>> urlInvokerMap;
+    private volatile ReferenceConfigurationListener referenceConfigurationListener;
+    private volatile boolean enableConfigurationListen = true;
+    private volatile List<URL> originalUrls = null;
+    private volatile Map<String, String> overrideQueryMap;
+    private final Set<String> providerFirstParams;
+    private final ModuleModel moduleModel;
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
+        moduleModel = getModuleModel(url.getScopeModel());
+
+        Set<ProviderFirstParams> providerFirstParams = url.getOrDefaultApplicationModel().getExtensionLoader(ProviderFirstParams.class).getSupportedExtensionInstances();
+        if (CollectionUtils.isEmpty(providerFirstParams)) {
+            this.providerFirstParams = null;
+        } else {
+            if (providerFirstParams.size() == 1) {
+                this.providerFirstParams = Collections.unmodifiableSet(providerFirstParams.iterator().next().params());
+            } else {
+                Set<String> params = new HashSet<>();
+                for (ProviderFirstParams paramsFilter : providerFirstParams) {
+                    if (paramsFilter.params() == null) {
+                        break;
+                    }
+                    params.addAll(paramsFilter.params());
+                }
+                this.providerFirstParams = Collections.unmodifiableSet(params);
+            }
+        }
+
+    }
+
+    @Override
+    public void subscribe(URL url) {
+        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            enableConfigurationListen = true;
+            getConsumerConfigurationListener(moduleModel).addNotifyListener(this);
+            referenceConfigurationListener = new ReferenceConfigurationListener(this.moduleModel, this, url);
+        } else {
+            enableConfigurationListen = false;
+        }
+        super.subscribe(url);
+    }
+
+    private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
+        return moduleModel.getBeanFactory().getOrRegisterBean(ConsumerConfigurationListener.class,
+            type -> new ConsumerConfigurationListener(moduleModel));
+    }
+
+    @Override
+    public void unSubscribe(URL url) {
+        super.unSubscribe(url);
+        this.originalUrls = null;
+        if (moduleModel.getModelEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            getConsumerConfigurationListener(moduleModel).removeNotifyListener(this);
+            referenceConfigurationListener.stop();
+        }
+    }
+
+    @Override
+    public void buildRouterChain(URL url) {
+        this.setRouterChain(RouterChain.buildChain(url.addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)));
     }
 
     @Override
     public boolean isAvailable() {
-        if (isDestroyed()) {
+        if (isDestroyed() || this.forbidden) {
             return false;
         }
         Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
@@ -72,13 +144,14 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
 
     @Override
     public synchronized void notify(List<URL> instanceUrls) {
+        if (isDestroyed()) {
+            return;
+        }
         // Set the context of the address notification thread.
-        RpcContext.setRpcContext(getConsumerUrl());
+        RpcServiceContext.setRpcContext(getConsumerUrl());
 
-        /**
-         * 3.x added for extend URL address
-         */
-        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        //  3.x added for extend URL address
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
@@ -86,56 +159,144 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             }
         }
 
+        refreshOverrideAndInvoker(instanceUrls);
+    }
+
+    // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
+    private synchronized void refreshOverrideAndInvoker(List<URL> instanceUrls) {
+        // mock zookeeper://xxx?mock=return null
+        if (enableConfigurationListen) {
+            overrideDirectoryUrl();
+        }
         refreshInvoker(instanceUrls);
     }
 
-    private void refreshInvoker(List<URL> invokerUrls) {
-        Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty url list to clear address.");
-
-        if (invokerUrls.size() == 0) {
-            this.forbidden = true; // Forbid to access
-            this.invokers = Collections.emptyList();
-            routerChain.setInvokers(this.invokers);
-            destroyAllInvokers(); // Close all invokers
-            return;
+    // TODO: exact
+    private void overrideDirectoryUrl() {
+        // merge override parameters
+        this.overrideDirectoryUrl = directoryUrl;
+        List<Configurator> localAppDynamicConfigurators = getConsumerConfigurationListener(moduleModel).getConfigurators(); // local reference
+        doOverrideUrl(localAppDynamicConfigurators);
+        if (referenceConfigurationListener != null) {
+            List<Configurator> localDynamicConfigurators = referenceConfigurationListener.getConfigurators(); // local reference
+            doOverrideUrl(localDynamicConfigurators);
         }
+    }
 
-        this.forbidden = false; // Allow to access
-        Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
-        if (CollectionUtils.isEmpty(invokerUrls)) {
-            return;
-        }
-
-        Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
-
-        if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-            logger.error(new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
-            return;
-        }
-
-        List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-        // pre-route and build cache, notice that route cache should build on original Invoker list.
-        // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
-        routerChain.setInvokers(newInvokers);
-        this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
-        this.urlInvokerMap = newUrlInvokerMap;
-
-        if (oldUrlInvokerMap != null) {
-            try {
-                destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
-            } catch (Exception e) {
-                logger.warn("destroyUnusedInvokers error. ", e);
+    private void doOverrideUrl(List<Configurator> configurators) {
+        if (CollectionUtils.isNotEmpty(configurators)) {
+            for (Configurator configurator : configurators) {
+                this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
+                Map<String, String> newParams = new HashMap<>(this.overrideDirectoryUrl.getParameters());
+                directoryUrl.getParameters().forEach(newParams::remove);
+                this.overrideQueryMap = newParams;
             }
         }
     }
 
+    private InstanceAddressURL overrideWithConfigurator(InstanceAddressURL providerUrl) {
+        // override url with configurator from "app-name.configurators"
+        providerUrl = overrideWithConfigurators(getConsumerConfigurationListener(moduleModel).getConfigurators(), providerUrl);
+
+        // override url with configurator from configurators from "service-name.configurators"
+        if (referenceConfigurationListener != null) {
+            providerUrl = overrideWithConfigurators(referenceConfigurationListener.getConfigurators(), providerUrl);
+        }
+
+        return providerUrl;
+    }
+
+    private InstanceAddressURL overrideWithConfigurators(List<Configurator> configurators, InstanceAddressURL url) {
+        if (CollectionUtils.isNotEmpty(configurators)) {
+            // wrap url
+            OverrideInstanceAddressURL overrideInstanceAddressURL = new OverrideInstanceAddressURL(url);
+            if (overrideQueryMap != null) {
+                // override app-level configs
+                overrideInstanceAddressURL = (OverrideInstanceAddressURL) overrideInstanceAddressURL.addParameters(overrideQueryMap);
+            }
+            for (Configurator configurator : configurators) {
+                overrideInstanceAddressURL = (OverrideInstanceAddressURL) configurator.configure(overrideInstanceAddressURL);
+            }
+            return overrideInstanceAddressURL;
+        }
+        return url;
+    }
+
+    @Override
+    public boolean isServiceDiscovery() {
+        return true;
+    }
+
+    /**
+     * This implementation makes sure all application names related to serviceListener received address notification.
+     * <p>
+     * FIXME, make sure deprecated "interface-application" mapping item be cleared in time.
+     */
+    @Override
+    public boolean isNotificationReceived() {
+        return serviceListener == null || serviceListener.isDestroyed()
+            || serviceListener.getAllInstances().size() == serviceListener.getServiceNames().size();
+    }
+
+    private void refreshInvoker(List<URL> invokerUrls) {
+        Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty url list to clear address.");
+        this.originalUrls = invokerUrls;
+
+        if (invokerUrls.size() == 0) {
+            logger.info("Received empty url list...");
+            this.forbidden = true; // Forbid to access
+            this.invokers = Collections.emptyList();
+            routerChain.setInvokers(this.invokers);
+            destroyAllInvokers(); // Close all invokers
+        } else {
+            this.forbidden = false; // Allow accessing
+            if (CollectionUtils.isEmpty(invokerUrls)) {
+                return;
+            }
+
+            // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
+            Map<String, Invoker<T>> oldUrlInvokerMap = null;
+            if (this.urlInvokerMap != null) {
+                // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
+                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + this.urlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
+                this.urlInvokerMap.forEach(oldUrlInvokerMap::put);
+            }
+            Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
+            logger.info("Refreshed invoker size " + newUrlInvokerMap.size());
+
+            if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
+                logger.error(new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
+                return;
+            }
+            List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
+            // pre-route and build cache, notice that route cache should build on original Invoker list.
+            // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
+            routerChain.setInvokers(newInvokers);
+            this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
+            this.urlInvokerMap = newUrlInvokerMap;
+
+            if (oldUrlInvokerMap != null) {
+                try {
+                    destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
+                } catch (Exception e) {
+                    logger.warn("destroyUnusedInvokers error. ", e);
+                }
+            }
+        }
+
+        // notify invokers refreshed
+        this.invokersChanged();
+    }
+
     /**
      * Turn urls into invokers, and if url has been refer, will not re-reference.
+     * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
+     * @param oldUrlInvokerMap
      * @param urls
      * @return invokers
      */
-    private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
+    private Map<String, Invoker<T>> toInvokers(Map<String, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
         Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
@@ -145,18 +306,22 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             if (EMPTY_PROTOCOL.equals(instanceAddressURL.getProtocol())) {
                 continue;
             }
-            if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(instanceAddressURL.getProtocol())) {
+            if (!getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).hasExtension(instanceAddressURL.getProtocol())) {
                 logger.error(new IllegalStateException("Unsupported protocol " + instanceAddressURL.getProtocol() +
-                        " in notified url: " + instanceAddressURL + " from registry " + getUrl().getAddress() +
-                        " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
-                        ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
+                    " in notified url: " + instanceAddressURL + " from registry " + getUrl().getAddress() +
+                    " to consumer " + NetUtils.getLocalHost() + ", supported protocol: " +
+                    getUrl().getOrDefaultFrameworkModel().getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
 
-            // FIXME, some keys may need to be removed.
-            instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), queryMap);
+            instanceAddressURL.setProviderFirstParams(providerFirstParams);
 
-            Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.get(instanceAddressURL.getAddress());
+            // Override provider urls if needed
+            if (enableConfigurationListen) {
+                instanceAddressURL = overrideWithConfigurator(instanceAddressURL);
+            }
+
+            Invoker<T> invoker = oldUrlInvokerMap == null ? null : oldUrlInvokerMap.get(instanceAddressURL.getAddress());
             if (invoker == null || urlChanged(invoker, instanceAddressURL)) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
@@ -176,6 +341,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
                 }
             } else {
                 newUrlInvokerMap.put(instanceAddressURL.getAddress(), invoker);
+                oldUrlInvokerMap.remove(instanceAddressURL.getAddress(), invoker);
             }
         }
         return newUrlInvokerMap;
@@ -188,8 +354,19 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             return true;
         }
 
+        if (oldURL instanceof OverrideInstanceAddressURL || newURL instanceof OverrideInstanceAddressURL) {
+            if(!(oldURL instanceof OverrideInstanceAddressURL && newURL instanceof OverrideInstanceAddressURL)) {
+                // sub-class changed
+                return true;
+            } else {
+                if (!((OverrideInstanceAddressURL) oldURL).getOverrideParams().equals(((OverrideInstanceAddressURL) newURL).getOverrideParams())) {
+                    return true;
+                }
+            }
+        }
+
         return !oldURL.getMetadataInfo().getServiceInfo(getConsumerUrl().getProtocolServiceKey())
-                .equals(newURL.getMetadataInfo().getServiceInfo(getConsumerUrl().getProtocolServiceKey()));
+            .equals(newURL.getMetadataInfo().getServiceInfo(getConsumerUrl().getProtocolServiceKey()));
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
@@ -205,14 +382,16 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         if (localUrlInvokerMap != null) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
-                    invoker.destroy();
+                    invoker.destroyAll();
                 } catch (Throwable t) {
                     logger.warn("Failed to destroy service " + serviceKey + " to provider " + invoker.getUrl(), t);
                 }
             }
             localUrlInvokerMap.clear();
         }
-        invokers = null;
+
+        this.urlInvokerMap = null;
+        this.invokers = null;
     }
 
     /**
@@ -227,36 +406,85 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             destroyAllInvokers();
             return;
         }
-        // check deleted invoker
-        List<String> deleted = null;
-        if (oldUrlInvokerMap != null) {
-            Collection<Invoker<T>> newInvokers = newUrlInvokerMap.values();
-            for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
-                if (!newInvokers.contains(entry.getValue())) {
-                    if (deleted == null) {
-                        deleted = new ArrayList<>();
+
+        if (oldUrlInvokerMap == null || oldUrlInvokerMap.size() == 0) {
+            return;
+        }
+
+        for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
+            Invoker<T> invoker = entry.getValue();
+            if (invoker != null) {
+                try {
+                    invoker.destroyAll();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }
-                    deleted.add(entry.getKey());
+                } catch (Exception e) {
+                    logger.warn("destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
                 }
             }
         }
+        logger.info(oldUrlInvokerMap.size() + " deprecated invokers deleted.");
+    }
 
-        if (deleted != null) {
-            for (String addressKey : deleted) {
-                if (addressKey != null) {
-                    Invoker<T> invoker = oldUrlInvokerMap.remove(addressKey);
-                    if (invoker != null) {
-                        try {
-                            invoker.destroy();
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
-                            }
-                        } catch (Exception e) {
-                            logger.warn("destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
-                        }
-                    }
-                }
+    private class ReferenceConfigurationListener extends AbstractConfiguratorListener {
+        private final ServiceDiscoveryRegistryDirectory<?> directory;
+        private final URL url;
+
+        ReferenceConfigurationListener(ModuleModel moduleModel, ServiceDiscoveryRegistryDirectory<?> directory, URL url) {
+            super(moduleModel);
+            this.directory = directory;
+            this.url = url;
+            this.initWith(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
+        }
+
+        void stop() {
+            this.stopListen(DynamicConfiguration.getRuleKey(url) + CONFIGURATORS_SUFFIX);
+        }
+
+        @Override
+        protected void notifyOverrides() {
+            // to notify configurator/router changes
+            if (directory.originalUrls != null) {
+                URL backup = RpcContext.getServiceContext().getConsumerUrl();
+                RpcContext.getServiceContext().setConsumerUrl(directory.getConsumerUrl());
+                directory.refreshOverrideAndInvoker(directory.originalUrls);
+                RpcContext.getServiceContext().setConsumerUrl(backup);
             }
+        }
+    }
+
+    private static class ConsumerConfigurationListener extends AbstractConfiguratorListener {
+        private final List<ServiceDiscoveryRegistryDirectory<?>> listeners = new ArrayList<>();
+
+        ConsumerConfigurationListener(ModuleModel moduleModel) {
+            super(moduleModel);
+        }
+
+        void addNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
+            if (listeners.size() == 0) {
+                this.initWith(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
+            }
+            this.listeners.add(listener);
+        }
+
+        void removeNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
+            this.listeners.remove(listener);
+            if (listeners.size() == 0) {
+                this.stopListen(moduleModel.getApplicationModel().getApplicationName() + CONFIGURATORS_SUFFIX);
+            }
+        }
+
+        @Override
+        protected void notifyOverrides() {
+            listeners.forEach(listener -> {
+                if (listener.originalUrls != null) {
+                    URL backup = RpcContext.getServiceContext().getConsumerUrl();
+                    RpcContext.getServiceContext().setConsumerUrl(listener.getConsumerUrl());
+                    listener.refreshOverrideAndInvoker(listener.originalUrls);
+                    RpcContext.getServiceContext().setConsumerUrl(backup);
+                }
+            });
         }
     }
 }

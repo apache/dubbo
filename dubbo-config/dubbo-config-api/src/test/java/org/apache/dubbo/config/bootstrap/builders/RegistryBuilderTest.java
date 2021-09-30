@@ -220,7 +220,7 @@ class RegistryBuilderTest {
                 .transporter("transporter").server("server").client("client").cluster("cluster").group("group")
                 .version("version").timeout(1000).session(2000).file("file").wait(Integer.valueOf(10)).isCheck(true)
                 .isDynamic(false).register(true).subscribe(false).isDefault(true).simplified(false).extraKeys("A")
-                .parameter("default.num", "one").id("id").prefix("prefix");
+                .parameter("default.num", "one").id("id");
 
         RegistryConfig config = builder.build();
         RegistryConfig config2 = builder.build();
@@ -250,7 +250,6 @@ class RegistryBuilderTest {
         Assertions.assertTrue(config.getParameters().containsKey("default.num"));
         Assertions.assertEquals("one", config.getParameters().get("default.num"));
         Assertions.assertEquals("id", config.getId());
-        Assertions.assertEquals("prefix", config.getPrefix());
         Assertions.assertNotSame(config, config2);
     }
 }

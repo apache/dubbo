@@ -16,26 +16,44 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.config;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.ServiceBean;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+import java.util.Map;
+
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
+
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = MultipleServicesWithMethodConfigsTest.class)
+@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @ImportResource(locations = "classpath:/META-INF/spring/multiple-services-with-methods.xml")
 public class MultipleServicesWithMethodConfigsTest {
+
+    @BeforeAll
+    public static void setUp() {
+        DubboBootstrap.reset();
+    }
 
     @Autowired
     private ApplicationContext applicationContext;
 
     @Test
     public void test() {
-//        Map<String, MethodConfig> methodConfigs = applicationContext.getBeansOfType(MethodConfig.class);
-//        assertEquals(2, methodConfigs.size());
+
+        Map<String, ServiceBean> serviceBeanMap = applicationContext.getBeansOfType(ServiceBean.class);
+        for (ServiceBean serviceBean : serviceBeanMap.values()) {
+            Assertions.assertEquals(1, serviceBean.getMethods().size());
+        }
     }
 }
 

@@ -67,7 +67,7 @@ public class ConsumerConfiguration {
     }
 
     @Autowired
-    private DemoService autowiredDemoService;
+    private DemoService demoServiceFromAncestor;
 
     @Reference(version = "2.5.7", url = remoteURL)
     private DemoService demoService;

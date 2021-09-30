@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -29,15 +28,15 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
@@ -81,16 +80,17 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     @Override
     public Class<T> getInterface() {
-        return directory.getInterface();
+        return getDirectory().getInterface();
     }
 
     @Override
     public URL getUrl() {
-        return directory.getConsumerUrl();
+        return getDirectory().getConsumerUrl();
     }
 
+    @Override
     public URL getRegistryUrl() {
-        return directory.getUrl();
+        return getDirectory().getUrl();
     }
 
     @Override
@@ -99,9 +99,10 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (invoker != null) {
             return invoker.isAvailable();
         }
-        return directory.isAvailable();
+        return getDirectory().isAvailable();
     }
 
+    @Override
     public Directory<T> getDirectory() {
         return directory;
     }
@@ -109,7 +110,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     @Override
     public void destroy() {
         if (destroyed.compareAndSet(false, true)) {
-            directory.destroy();
+            getDirectory().destroy();
         }
     }
 
@@ -161,6 +162,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (sticky) {
             stickyInvoker = invoker;
         }
+
         return invoker;
     }
 
@@ -196,6 +198,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
                 logger.error("cluster reselect fail reason is :" + t.getMessage() + " if can not solve, you can set cluster.availablecheck=false in url", t);
             }
         }
+
         return invoker;
     }
 
@@ -254,10 +257,10 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         checkWhetherDestroyed();
 
         // binding attachments into invocation.
-        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
-        if (contextAttachments != null && contextAttachments.size() != 0) {
-            ((RpcInvocation) invocation).addObjectAttachments(contextAttachments);
-        }
+//        Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
+//        if (contextAttachments != null && contextAttachments.size() != 0) {
+//            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(contextAttachments);
+//        }
 
         List<Invoker<T>> invokers = list(invocation);
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
@@ -282,19 +285,46 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
                     + invocation.getMethodName() + " in the service " + getInterface().getName()
-                    + ". No provider available for the service " + directory.getConsumerUrl().getServiceKey()
-                    + " from registry " + directory.getUrl().getAddress()
+                    + ". No provider available for the service " + getDirectory().getConsumerUrl().getServiceKey()
+                    + " from registry " + getDirectory().getUrl().getAddress()
                     + " on the consumer " + NetUtils.getLocalHost()
                     + " using the dubbo version " + Version.getVersion()
                     + ". Please check if the providers have been started and registered.");
         }
     }
 
+    protected Result invokeWithContext(Invoker<T> invoker, Invocation invocation) {
+        setContext(invoker);
+        Result result;
+        try {
+            result = invoker.invoke(invocation);
+        } finally {
+            clearContext(invoker);
+        }
+        return result;
+    }
+
+    /**
+     * When using a thread pool to fork a child thread, ThreadLocal cannot be passed.
+     * In this scenario, please use the invokeWithContextAsync method.
+     * @return
+     */
+    protected Result invokeWithContextAsync(Invoker<T> invoker, Invocation invocation, URL consumerUrl) {
+       setContext(invoker, consumerUrl);
+        Result result;
+        try {
+            result = invoker.invoke(invocation);
+        } finally {
+            clearContext(invoker);
+        }
+       return result;
+    }
+
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
 
     protected List<Invoker<T>> list(Invocation invocation) throws RpcException {
-        return directory.list(invocation);
+        return getDirectory().list(invocation);
     }
 
     /**
@@ -309,14 +339,32 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
      * @return LoadBalance instance. if not need init, return null.
      */
     protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(invocation.getModuleModel());
         if (CollectionUtils.isNotEmpty(invokers)) {
-            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(
+            return applicationModel.getExtensionLoader(LoadBalance.class).getExtension(
                     invokers.get(0).getUrl().getMethodParameter(
                             RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE
                     )
             );
         } else {
-            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
+            return applicationModel.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
         }
+    }
+
+
+    private void setContext(Invoker<T> invoker) {
+        setContext(invoker, null);
+    }
+
+    private void setContext(Invoker<T> invoker, URL consumerUrl) {
+        RpcContext context = RpcContext.getServiceContext();
+        context.setInvoker(invoker)
+            .setConsumerUrl(null != consumerUrl ? consumerUrl : RpcContext.getServiceContext().getConsumerUrl());
+    }
+
+    private void clearContext(Invoker<T> invoker) {
+        // do nothing
+        RpcContext context = RpcContext.getServiceContext();
+        context.setInvoker(null);
     }
 }

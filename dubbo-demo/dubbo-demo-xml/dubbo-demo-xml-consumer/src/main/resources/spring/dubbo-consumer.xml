@@ -22,18 +22,22 @@
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
     <dubbo:application name="demo-consumer">
-        <dubbo:parameter key="mapping-type" value="metadata"/>
-        <dubbo:parameter key="enable-auto-migration" value="true"/>
     </dubbo:application>
 
-    <!--    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>-->
+    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
 
     <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
-    <dubbo:reference provided-by="demo-provider" id="demoService" check="false"
+    <dubbo:reference id="demoService" check="false"
                      interface="org.apache.dubbo.demo.DemoService"/>
 
-    <dubbo:reference provided-by="demo-provider" version="1.0.0" group="greeting" id="greetingService" check="false"
+    <dubbo:reference version="1.0.0" group="greeting" id="greetingService" check="false"
                      interface="org.apache.dubbo.demo.GreetingService"/>
+
+    <dubbo:reference protocol="rest" version="1.0.0" id="restDemoService" check="false"
+                     interface="org.apache.dubbo.demo.RestDemoService"/>
+
+    <dubbo:reference protocol="tri" version="1.0.0" id="tripleService" check="false"
+                     interface="org.apache.dubbo.demo.TripleService"/>
 
 </beans>

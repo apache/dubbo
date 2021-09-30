@@ -19,7 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,13 +36,11 @@ import static java.util.Collections.emptyList;
  *
  * @since 2.7.5
  */
-public class InMemoryServiceDiscovery implements ServiceDiscovery {
-
-    private final EventDispatcher dispatcher = EventDispatcher.getDefaultExtension();
+public class InMemoryServiceDiscovery extends AbstractServiceDiscovery {
 
     private Map<String, List<ServiceInstance>> repository = new HashMap<>();
 
-    private ServiceInstance serviceInstance;
+    private URL registryURL;
 
     @Override
     public Set<String> getServices() {
@@ -71,8 +69,8 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public ServiceInstance getLocalInstance() {
-        return serviceInstance;
+    public URL getUrl() {
+        return registryURL;
     }
 
     public String toString() {
@@ -80,8 +78,7 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
+    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
         String serviceName = serviceInstance.getServiceName();
         List<ServiceInstance> serviceInstances = repository.computeIfAbsent(serviceName, s -> new LinkedList<>());
         if (!serviceInstances.contains(serviceInstance)) {
@@ -90,24 +87,24 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
         unregister(serviceInstance);
         register(serviceInstance);
     }
 
     @Override
-    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         String serviceName = serviceInstance.getServiceName();
         List<ServiceInstance> serviceInstances = repository.computeIfAbsent(serviceName, s -> new LinkedList<>());
         serviceInstances.remove(serviceInstance);
     }
 
     @Override
-    public void initialize(URL registryURL) throws Exception {
-
+    public void doInitialize(URL registryURL) throws Exception {
+        this.registryURL = registryURL;
     }
 
     @Override
-    public void destroy() {
+    public void doDestroy() {
     }
 }

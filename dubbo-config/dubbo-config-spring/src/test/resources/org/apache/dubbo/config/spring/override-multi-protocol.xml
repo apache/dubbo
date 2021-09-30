@@ -30,9 +30,9 @@
 
     <!-- protocol configuration -->
     <dubbo:protocol name="dubbo" port="20813"/>
-    <dubbo:protocol name="rmi" port="10913"/>
+    <dubbo:protocol name="tri" port="50051"/>
 
-    <dubbo:provider protocol="dubbo,rmi"/>
+    <dubbo:provider protocol="dubbo,tri"/>
 
     <!-- service configuration -->
     <dubbo:service interface="org.apache.dubbo.config.spring.api.DemoService" ref="demoService"/>

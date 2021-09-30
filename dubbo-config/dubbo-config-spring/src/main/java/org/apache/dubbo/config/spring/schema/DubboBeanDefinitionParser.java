@@ -18,17 +18,25 @@ package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractServiceConfig;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MethodConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.nested.AggregationConfig;
+import org.apache.dubbo.config.nested.PrometheusConfig;
+import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -36,25 +44,30 @@ import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.TypedStringValue;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
-import org.springframework.core.env.Environment;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+import static org.apache.dubbo.config.spring.util.SpringCompatUtils.getPropertyValue;
 
 /**
  * AbstractBeanDefinitionParser
@@ -69,56 +82,53 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
     private static final String ONTHROW = "onthrow";
     private static final String ONINVOKE = "oninvoke";
     private static final String METHOD = "Method";
+    private static final String BEAN_NAME = "BEAN_NAME";
+    private static boolean resolvePlaceholdersEnabled = true;
     private final Class<?> beanClass;
-    private final boolean required;
+    private static Map<String, Map<String, Class>> beanPropsCache = new HashMap<>();
 
-    public DubboBeanDefinitionParser(Class<?> beanClass, boolean required) {
+    public DubboBeanDefinitionParser(Class<?> beanClass) {
         this.beanClass = beanClass;
-        this.required = required;
     }
 
     @SuppressWarnings("unchecked")
-    private static RootBeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean required) {
+    private static RootBeanDefinition parse(Element element, ParserContext parserContext, Class<?> beanClass, boolean registered) {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(beanClass);
         beanDefinition.setLazyInit(false);
-        String id = resolveAttribute(element, "id", parserContext);
-        if (StringUtils.isEmpty(id) && required) {
-            String generatedBeanName = resolveAttribute(element, "name", parserContext);
-            if (StringUtils.isEmpty(generatedBeanName)) {
-                if (ProtocolConfig.class.equals(beanClass)) {
-                    generatedBeanName = "dubbo";
-                } else {
-                    generatedBeanName = resolveAttribute(element, "interface", parserContext);
-                }
-            }
-            if (StringUtils.isEmpty(generatedBeanName)) {
-                generatedBeanName = beanClass.getName();
-            }
-            id = generatedBeanName;
-            int counter = 2;
-            while (parserContext.getRegistry().containsBeanDefinition(id)) {
-                id = generatedBeanName + (counter++);
+        // config id
+        String configId = resolveAttribute(element, "id", parserContext);
+        if (StringUtils.isNotEmpty(configId)) {
+            beanDefinition.getPropertyValues().addPropertyValue("id", configId);
+        }
+        // get id from name
+        if (StringUtils.isEmpty(configId)) {
+            configId = resolveAttribute(element, "name", parserContext);
+        }
+
+        String beanName = configId;
+        if (StringUtils.isEmpty(beanName)) {
+            // generate bean name
+            String prefix = beanClass.getName();
+            int counter = 0;
+            beanName = prefix + "#" + counter;
+            while (parserContext.getRegistry().containsBeanDefinition(beanName)) {
+                beanName = prefix + "#" + (counter++);
             }
         }
-        if (StringUtils.isNotEmpty(id)) {
-            if (parserContext.getRegistry().containsBeanDefinition(id)) {
-                throw new IllegalStateException("Duplicate spring bean id " + id);
-            }
-            parserContext.getRegistry().registerBeanDefinition(id, beanDefinition);
-            beanDefinition.getPropertyValues().addPropertyValue("id", id);
-        }
+        beanDefinition.setAttribute(BEAN_NAME, beanName);
+
         if (ProtocolConfig.class.equals(beanClass)) {
-            for (String name : parserContext.getRegistry().getBeanDefinitionNames()) {
-                BeanDefinition definition = parserContext.getRegistry().getBeanDefinition(name);
-                PropertyValue property = definition.getPropertyValues().getPropertyValue("protocol");
-                if (property != null) {
-                    Object value = property.getValue();
-                    if (value instanceof ProtocolConfig && id.equals(((ProtocolConfig) value).getName())) {
-                        definition.getPropertyValues().addPropertyValue("protocol", new RuntimeBeanReference(id));
-                    }
-                }
-            }
+//            for (String name : parserContext.getRegistry().getBeanDefinitionNames()) {
+//                BeanDefinition definition = parserContext.getRegistry().getBeanDefinition(name);
+//                PropertyValue property = definition.getPropertyValues().getPropertyValue("protocol");
+//                if (property != null) {
+//                    Object value = property.getValue();
+//                    if (value instanceof ProtocolConfig && beanName.equals(((ProtocolConfig) value).getName())) {
+//                        definition.getPropertyValues().addPropertyValue("protocol", new RuntimeBeanReference(beanName));
+//                    }
+//                }
+//            }
         } else if (ServiceBean.class.equals(beanClass)) {
             String className = resolveAttribute(element, "class", parserContext);
             if (StringUtils.isNotEmpty(className)) {
@@ -126,15 +136,214 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 classDefinition.setBeanClass(ReflectUtils.forName(className));
                 classDefinition.setLazyInit(false);
                 parseProperties(element.getChildNodes(), classDefinition, parserContext);
-                beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
+                beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, beanName + "Impl"));
             }
-        } else if (ProviderConfig.class.equals(beanClass)) {
-            parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
-        } else if (ConsumerConfig.class.equals(beanClass)) {
-            parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
         }
-        Set<String> props = new HashSet<>();
+
+
+        Map<String, Class> beanPropTypeMap = beanPropsCache.get(beanClass.getName());
+        if (beanPropTypeMap == null) {
+            beanPropTypeMap = new HashMap<>();
+            beanPropsCache.put(beanClass.getName(), beanPropTypeMap);
+            if (ReferenceBean.class.equals(beanClass)) {
+                //extract bean props from ReferenceConfig
+                getPropertyMap(ReferenceConfig.class, beanPropTypeMap);
+            } else {
+                getPropertyMap(beanClass, beanPropTypeMap);
+            }
+        }
+
         ManagedMap parameters = null;
+        Set<String> processedProps = new HashSet<>();
+        for (Map.Entry<String, Class> entry : beanPropTypeMap.entrySet()) {
+            String beanProperty = entry.getKey();
+            Class type = entry.getValue();
+            String property = StringUtils.camelToSplitName(beanProperty, "-");
+            processedProps.add(property);
+            if ("parameters".equals(property)) {
+                parameters = parseParameters(element.getChildNodes(), beanDefinition, parserContext);
+            } else if ("methods".equals(property)) {
+                parseMethods(beanName, element.getChildNodes(), beanDefinition, parserContext);
+            } else if ("arguments".equals(property)) {
+                parseArguments(beanName, element.getChildNodes(), beanDefinition, parserContext);
+            } else {
+                String value = resolveAttribute(element, property, parserContext);
+                if (value != null) {
+                    value = value.trim();
+                    if (value.length() > 0) {
+                        if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
+                            RegistryConfig registryConfig = new RegistryConfig();
+                            registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
+                            beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
+                        } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && AbstractServiceConfig.class.isAssignableFrom(beanClass))) {
+                            /**
+                             * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
+                             * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
+                             * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
+                             * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link ServiceConfig#setRegistries(List)}
+                             */
+                            beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
+                        } else {
+                            Object reference;
+                            if (isPrimitive(type)) {
+                                value = getCompatibleDefaultValue(property, value);
+                                reference = value;
+                            } else if (ONRETURN.equals(property) || ONTHROW.equals(property) || ONINVOKE.equals(property)) {
+                                int index = value.lastIndexOf(".");
+                                String ref = value.substring(0, index);
+                                String method = value.substring(index + 1);
+                                reference = new RuntimeBeanReference(ref);
+                                beanDefinition.getPropertyValues().addPropertyValue(property + METHOD, method);
+                            } else {
+                                if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
+                                    BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
+                                    if (!refBean.isSingleton()) {
+                                        throw new IllegalStateException("The exported service ref " + value + " must be singleton! Please set the " + value + " bean scope to singleton, eg: <bean id=\"" + value + "\" scope=\"singleton\" ...>");
+                                    }
+                                }
+                                reference = new RuntimeBeanReference(value);
+                            }
+                            if (reference != null) {
+                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        NamedNodeMap attributes = element.getAttributes();
+        int len = attributes.getLength();
+        for (int i = 0; i < len; i++) {
+            Node node = attributes.item(i);
+            String name = node.getLocalName();
+            if (!processedProps.contains(name)) {
+                if (parameters == null) {
+                    parameters = new ManagedMap();
+                }
+                String value = node.getNodeValue();
+                parameters.put(name, new TypedStringValue(value, String.class));
+            }
+        }
+        if (parameters != null) {
+            beanDefinition.getPropertyValues().addPropertyValue("parameters", parameters);
+        }
+
+        // post-process after parse attributes
+        if (ProviderConfig.class.equals(beanClass)) {
+            parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", beanName, beanDefinition);
+        } else if (ConsumerConfig.class.equals(beanClass)) {
+            parseNested(element, parserContext, ReferenceBean.class, true, "reference", "consumer", beanName, beanDefinition);
+        } else if (ReferenceBean.class.equals(beanClass)) {
+            configReferenceBean(element, parserContext, beanDefinition, null);
+        } else if (MetricsConfig.class.equals(beanClass)) {
+            parseMetrics(element, parserContext, beanDefinition);
+        }
+
+        // register bean definition
+        if (parserContext.getRegistry().containsBeanDefinition(beanName)) {
+            throw new IllegalStateException("Duplicate spring bean name: " + beanName);
+        }
+
+        if (registered) {
+            parserContext.getRegistry().registerBeanDefinition(beanName, beanDefinition);
+        }
+        return beanDefinition;
+    }
+
+    private static void parseMetrics(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition) {
+        NodeList childNodes = element.getChildNodes();
+        PrometheusConfig prometheus = null;
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            if (!(childNodes.item(i) instanceof Element)) {
+                continue;
+            }
+
+            Element child = (Element) childNodes.item(i);
+            if ("aggregation".equals(child.getNodeName()) || "aggregation".equals(child.getLocalName())) {
+                AggregationConfig aggregation = new AggregationConfig();
+                assignProperties(aggregation, child, parserContext);
+                beanDefinition.getPropertyValues().addPropertyValue("aggregation", aggregation);
+            } else if ("prometheus-exporter".equals(child.getNodeName()) || "prometheus-exporter".equals(child.getLocalName())) {
+                if (prometheus == null) {
+                    prometheus = new PrometheusConfig();
+                }
+
+                PrometheusConfig.Exporter exporter = new PrometheusConfig.Exporter();
+                assignProperties(exporter, child, parserContext);
+                prometheus.setExporter(exporter);
+            } else if ("prometheus-pushgateway".equals(child.getNodeName()) || "prometheus-pushgateway".equals(child.getLocalName())) {
+                if (prometheus == null) {
+                    prometheus = new PrometheusConfig();
+                }
+
+                PrometheusConfig.Pushgateway pushgateway = new PrometheusConfig.Pushgateway();
+                assignProperties(pushgateway, child, parserContext);
+                prometheus.setPushgateway(pushgateway);
+            }
+        }
+
+        if (prometheus != null) {
+            beanDefinition.getPropertyValues().addPropertyValue("prometheus", prometheus);
+        }
+    }
+
+    private static void assignProperties(Object obj, Element ele, ParserContext parserContext) {
+        Method[] methods = obj.getClass().getMethods();
+        for (Method method : methods) {
+            if (MethodUtils.isSetter(method)) {
+                String beanProperty = method.getName().substring(3, 4).toLowerCase() + method.getName().substring(4);
+                String property = StringUtils.camelToSplitName(beanProperty, "-");
+                String value = resolveAttribute(ele, property, parserContext);
+                if (StringUtils.isNotEmpty(value)) {
+                    try {
+                        Object v = ClassUtils.convertPrimitive(method.getParameterTypes()[0], value);
+                        method.invoke(obj, v);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void configReferenceBean(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition, BeanDefinition consumerDefinition) {
+        // process interface class
+        String interfaceName = resolveAttribute(element, ReferenceAttributes.INTERFACE, parserContext);
+        String generic = resolveAttribute(element, ReferenceAttributes.GENERIC, parserContext);
+        if (StringUtils.isBlank(generic) && consumerDefinition != null) {
+            // get generic from consumerConfig
+            generic = getPropertyValue(consumerDefinition.getPropertyValues(), ReferenceAttributes.GENERIC);
+        }
+        if (generic != null) {
+            generic = resolvePlaceholders(generic, parserContext);
+            beanDefinition.getPropertyValues().add(ReferenceAttributes.GENERIC, generic);
+        }
+        beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
+
+        Class interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
+        beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
+
+        // TODO Only register one reference bean for same (group, interface, version)
+
+        // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
+        // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()
+        GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
+        targetDefinition.setBeanClass(interfaceClass);
+        String beanName = (String) beanDefinition.getAttribute(BEAN_NAME);
+        beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, beanName+"_decorated"));
+
+        // signal object type since Spring 5.2
+        beanDefinition.setAttribute(Constants.OBJECT_TYPE_ATTRIBUTE, interfaceClass);
+
+        //mark property value as optional
+        List<PropertyValue> propertyValues = beanDefinition.getPropertyValues().getPropertyValueList();
+        for (PropertyValue propertyValue : propertyValues) {
+            propertyValue.setOptional(true);
+        }
+    }
+
+    private static void getPropertyMap(Class<?> beanClass, Map<String, Class> beanPropsMap) {
         for (Method setter : beanClass.getMethods()) {
             String name = setter.getName();
             if (name.length() > 3 && name.startsWith("set")
@@ -142,8 +351,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     && setter.getParameterTypes().length == 1) {
                 Class<?> type = setter.getParameterTypes()[0];
                 String beanProperty = name.substring(3, 4).toLowerCase() + name.substring(4);
-                String property = StringUtils.camelToSplitName(beanProperty, "-");
-                props.add(property);
                 // check the setter/getter whether match
                 Method getter = null;
                 try {
@@ -161,81 +368,22 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         || !type.equals(getter.getReturnType())) {
                     continue;
                 }
-                if ("parameters".equals(property)) {
-                    parameters = parseParameters(element.getChildNodes(), beanDefinition, parserContext);
-                } else if ("methods".equals(property)) {
-                    parseMethods(id, element.getChildNodes(), beanDefinition, parserContext);
-                } else if ("arguments".equals(property)) {
-                    parseArguments(id, element.getChildNodes(), beanDefinition, parserContext);
-                } else {
-                    String value = resolveAttribute(element, property, parserContext);
-                    if (value != null) {
-                        value = value.trim();
-                        if (value.length() > 0) {
-                            if ("registry".equals(property) && RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(value)) {
-                                RegistryConfig registryConfig = new RegistryConfig();
-                                registryConfig.setAddress(RegistryConfig.NO_AVAILABLE);
-                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, registryConfig);
-                            } else if ("provider".equals(property) || "registry".equals(property) || ("protocol".equals(property) && AbstractServiceConfig.class.isAssignableFrom(beanClass))) {
-                                /**
-                                 * For 'provider' 'protocol' 'registry', keep literal value (should be id/name) and set the value to 'registryIds' 'providerIds' protocolIds'
-                                 * The following process should make sure each id refers to the corresponding instance, here's how to find the instance for different use cases:
-                                 * 1. Spring, check existing bean by id, see{@link ServiceBean#afterPropertiesSet()}; then try to use id to find configs defined in remote Config Center
-                                 * 2. API, directly use id to find configs defined in remote Config Center; if all config instances are defined locally, please use {@link ServiceConfig#setRegistries(List)}
-                                 */
-                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty + "Ids", value);
-                            } else {
-                                Object reference;
-                                if (isPrimitive(type)) {
-                                    if ("async".equals(property) && "false".equals(value)
-                                            || "timeout".equals(property) && "0".equals(value)
-                                            || "delay".equals(property) && "0".equals(value)
-                                            || "version".equals(property) && "0.0.0".equals(value)
-                                            || "stat".equals(property) && "-1".equals(value)
-                                            || "reliable".equals(property) && "false".equals(value)) {
-                                        // backward compatibility for the default value in old version's xsd
-                                        value = null;
-                                    }
-                                    reference = value;
-                                } else if (ONRETURN.equals(property) || ONTHROW.equals(property) || ONINVOKE.equals(property)) {
-                                    int index = value.lastIndexOf(".");
-                                    String ref = value.substring(0, index);
-                                    String method = value.substring(index + 1);
-                                    reference = new RuntimeBeanReference(ref);
-                                    beanDefinition.getPropertyValues().addPropertyValue(property + METHOD, method);
-                                } else {
-                                    if ("ref".equals(property) && parserContext.getRegistry().containsBeanDefinition(value)) {
-                                        BeanDefinition refBean = parserContext.getRegistry().getBeanDefinition(value);
-                                        if (!refBean.isSingleton()) {
-                                            throw new IllegalStateException("The exported service ref " + value + " must be singleton! Please set the " + value + " bean scope to singleton, eg: <bean id=\"" + value + "\" scope=\"singleton\" ...>");
-                                        }
-                                    }
-                                    reference = new RuntimeBeanReference(value);
-                                }
-                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
-                            }
-                        }
-                    }
-                }
+                beanPropsMap.put(beanProperty, type);
             }
         }
-        NamedNodeMap attributes = element.getAttributes();
-        int len = attributes.getLength();
-        for (int i = 0; i < len; i++) {
-            Node node = attributes.item(i);
-            String name = node.getLocalName();
-            if (!props.contains(name)) {
-                if (parameters == null) {
-                    parameters = new ManagedMap();
-                }
-                String value = node.getNodeValue();
-                parameters.put(name, new TypedStringValue(value, String.class));
-            }
+    }
+
+    private static String getCompatibleDefaultValue(String property, String value) {
+        if ("async".equals(property) && "false".equals(value)
+                || "timeout".equals(property) && "0".equals(value)
+                || "delay".equals(property) && "0".equals(value)
+                || "version".equals(property) && "0.0.0".equals(value)
+                || "stat".equals(property) && "-1".equals(value)
+                || "reliable".equals(property) && "false".equals(value)) {
+            // backward compatibility for the default value in old version's xsd
+            value = null;
         }
-        if (parameters != null) {
-            beanDefinition.getPropertyValues().addPropertyValue("parameters", parameters);
-        }
-        return beanDefinition;
+        return value;
     }
 
     private static boolean isPrimitive(Class<?> cls) {
@@ -245,7 +393,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 || cls == String.class || cls == Date.class || cls == Class.class;
     }
 
-    private static void parseNested(Element element, ParserContext parserContext, Class<?> beanClass, boolean required, String tag, String property, String ref, BeanDefinition beanDefinition) {
+    private static void parseNested(Element element, ParserContext parserContext, Class<?> beanClass, boolean registered, String tag, String property, String ref, BeanDefinition beanDefinition) {
         NodeList nodeList = element.getChildNodes();
         if (nodeList == null) {
             return;
@@ -265,9 +413,14 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         beanDefinition.getPropertyValues().addPropertyValue("default", "false");
                     }
                 }
-                BeanDefinition subDefinition = parse((Element) node, parserContext, beanClass, required);
-                if (subDefinition != null && StringUtils.isNotEmpty(ref)) {
-                    subDefinition.getPropertyValues().addPropertyValue(property, new RuntimeBeanReference(ref));
+                RootBeanDefinition subDefinition = parse((Element) node, parserContext, beanClass, registered);
+                if (subDefinition != null) {
+                    if (StringUtils.isNotEmpty(ref)) {
+                        subDefinition.getPropertyValues().addPropertyValue(property, new RuntimeBeanReference(ref));
+                    }
+                    if (ReferenceBean.class.equals(beanClass)) {
+                        configReferenceBean((Element) node, parserContext, subDefinition, beanDefinition);
+                    }
                 }
             }
         }
@@ -411,12 +564,27 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     @Override
     public BeanDefinition parse(Element element, ParserContext parserContext) {
-        return parse(element, parserContext, beanClass, required);
+        return parse(element, parserContext, beanClass, true);
     }
 
     private static String resolveAttribute(Element element, String attributeName, ParserContext parserContext) {
         String attributeValue = element.getAttribute(attributeName);
-        Environment environment = parserContext.getReaderContext().getEnvironment();
-        return environment.resolvePlaceholders(attributeValue);
+        // Early resolve place holder may be wrong ( Before PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer )
+        //https://github.com/apache/dubbo/pull/6079
+        //https://github.com/apache/dubbo/issues/6035
+//        Environment environment = parserContext.getReaderContext().getEnvironment();
+//        return environment.resolvePlaceholders(attributeValue);
+        return attributeValue;
+    }
+
+    private static String resolvePlaceholders(String str, ParserContext parserContext) {
+        if (resolvePlaceholdersEnabled) {
+            try {
+                return parserContext.getReaderContext().getEnvironment().resolveRequiredPlaceholders(str);
+            } catch (NoSuchMethodError e) {
+                resolvePlaceholdersEnabled = false;
+            }
+        }
+        return str;
     }
 }

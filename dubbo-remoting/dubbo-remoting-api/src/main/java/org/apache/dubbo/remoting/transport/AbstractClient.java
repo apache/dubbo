@@ -18,11 +18,9 @@ package org.apache.dubbo.remoting.transport;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -38,6 +36,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 
 /**
  * AbstractClient
@@ -49,12 +48,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private final Lock connectLock = new ReentrantLock();
     private final boolean needReconnect;
     protected volatile ExecutorService executor;
-    private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+    private ExecutorRepository executorRepository;
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-
-        needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
+        executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        // set default needReconnect true when channel is not connected
+        needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, true);
 
         initExecutor(url);
 
@@ -66,6 +66,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
                     "Failed to start " + getClass().getSimpleName() + " " + NetUtils.getLocalAddress()
                             + " connect to the server " + getRemoteAddress() + ", cause: " + t.getMessage(), t);
         }
+
         try {
             // connect.
             connect();
@@ -89,7 +90,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     private void initExecutor(URL url) {
-        url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
+        /**
+         * Consumer's executor is shared globally, provider ip doesn't need to be part of the thread name.
+         *
+         * Instance of url is InstanceAddressURL, so addParameter actually adds parameters into ServiceInstance,
+         * which means params are shared among different services. Since client is shared among services this is currently not a problem.
+         */
+        url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME);
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         executor = executorRepository.createExecutorIfAbsent(url);
     }
@@ -179,27 +186,31 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     protected void connect() throws RemotingException {
-
         connectLock.lock();
 
         try {
-
             if (isConnected()) {
+                return;
+            }
+
+            if (isClosed() || isClosing()) {
+                logger.warn("No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: client status is closed or closing.");
                 return;
             }
 
             doConnect();
 
             if (!isConnected()) {
-                throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                        + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
+                throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                                + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
 
             } else {
                 if (logger.isInfoEnabled()) {
-                    logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                            + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                            + ", channel is " + this.getChannel());
+                    logger.info("Successfully connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                                    + ", channel is " + this.getChannel());
                 }
             }
 
@@ -207,9 +218,9 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             throw e;
 
         } catch (Throwable e) {
-            throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                    + ", cause: " + e.getMessage(), e);
+            throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                            + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                            + ", cause: " + e.getMessage(), e);
 
         } finally {
             connectLock.unlock();
@@ -254,37 +265,43 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     @Override
     public void close() {
-
-        try {
-            super.close();
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+        if (isClosed()) {
+            logger.warn("No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+            return;
         }
 
+        connectLock.lock();
         try {
-            if (executor != null) {
-                ExecutorUtil.shutdownNow(executor, 100);
+            if (isClosed()) {
+                logger.warn("No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+                return;
             }
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
 
-        try {
-            disconnect();
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
+            try {
+                super.close();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
 
-        try {
-            doClose();
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            try {
+                disconnect();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+
+            try {
+                doClose();
+            } catch (Throwable e) {
+                logger.warn(e.getMessage(), e);
+            }
+
+        } finally {
+            connectLock.unlock();
         }
     }
 
     @Override
     public void close(int timeout) {
-        ExecutorUtil.gracefulShutdown(executor, timeout);
         close();
     }
 

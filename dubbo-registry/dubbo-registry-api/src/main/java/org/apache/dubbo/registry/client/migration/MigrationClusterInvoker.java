@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.client.migration;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
@@ -28,11 +30,19 @@ public interface MigrationClusterInvoker<T> extends ClusterInvoker<T> {
 
     boolean isServiceDiscovery();
 
-    MigrationStep getCurrentStep();
+    MigrationStep getMigrationStep();
 
-    boolean invokersChanged();
+    void setMigrationStep(MigrationStep step);
 
-    void fallbackToInterfaceInvoker();
+    MigrationRule getMigrationRule();
 
-    void migrateToServiceDiscoveryInvoker(boolean forceMigrate);
+    void setMigrationRule(MigrationRule rule);
+
+    boolean migrateToForceInterfaceInvoker(MigrationRule newRule);
+
+    boolean migrateToForceApplicationInvoker(MigrationRule newRule);
+
+    void migrateToApplicationFirstInvoker(MigrationRule newRule);
+
+    void reRefer(URL newSubscribeUrl);
 }

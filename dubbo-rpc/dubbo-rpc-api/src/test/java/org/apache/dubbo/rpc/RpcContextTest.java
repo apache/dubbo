@@ -31,14 +31,14 @@ public class RpcContextTest {
     @Test
     public void testGetContext() {
 
-        RpcContext rpcContext = RpcContext.getContext();
+        RpcContext rpcContext = RpcContext.getClientAttachment();
         Assertions.assertNotNull(rpcContext);
 
-        RpcContext.removeContext();
+        RpcContext.removeClientAttachment();
         // if null, will return the initialize value.
         //Assertions.assertNull(RpcContext.getContext());
-        Assertions.assertNotNull(RpcContext.getContext());
-        Assertions.assertNotEquals(rpcContext, RpcContext.getContext());
+        Assertions.assertNotNull(RpcContext.getClientAttachment());
+        Assertions.assertNotEquals(rpcContext, RpcContext.getClientAttachment());
 
         RpcContext serverRpcContext = RpcContext.getServerContext();
         Assertions.assertNotNull(serverRpcContext);
@@ -50,7 +50,7 @@ public class RpcContextTest {
 
     @Test
     public void testAddress() {
-        RpcContext context = RpcContext.getContext();
+        RpcContext context = RpcContext.getServiceContext();
         context.setLocalAddress("127.0.0.1", 20880);
         Assertions.assertEquals(20880, context.getLocalAddress().getPort());
         Assertions.assertEquals("127.0.0.1:20880", context.getLocalAddressString());
@@ -70,7 +70,7 @@ public class RpcContextTest {
     @Test
     public void testCheckSide() {
 
-        RpcContext context = RpcContext.getContext();
+        RpcContext context = RpcContext.getServiceContext();
 
         //TODO fix npe
         //context.isProviderSide();
@@ -87,7 +87,7 @@ public class RpcContextTest {
     @Test
     public void testAttachments() {
 
-        RpcContext context = RpcContext.getContext();
+        RpcContext context = RpcContext.getClientAttachment();
         Map<String, Object> map = new HashMap<>();
         map.put("_11", "1111");
         map.put("_22", "2222");
@@ -115,7 +115,7 @@ public class RpcContextTest {
     @Test
     public void testObject() {
 
-        RpcContext context = RpcContext.getContext();
+        RpcContext context = RpcContext.getClientAttachment();
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("_11", "1111");
         map.put("_22", "2222");
@@ -139,12 +139,13 @@ public class RpcContextTest {
 
         map.keySet().forEach(context::remove);
         Assertions.assertNull(context.get("_11"));
+        RpcContext.removeContext();
     }
 
     @Test
     public void testAsync() {
 
-        RpcContext rpcContext = RpcContext.getContext();
+        RpcContext rpcContext = RpcContext.getServiceContext();
         Assertions.assertFalse(rpcContext.isAsyncStarted());
 
         AsyncContext asyncContext = RpcContext.startAsync();
@@ -160,7 +161,7 @@ public class RpcContextTest {
 
     @Test
     public void testAsyncCall() {
-        CompletableFuture<String> rpcFuture = RpcContext.getContext().asyncCall(() -> {
+        CompletableFuture<String> rpcFuture = RpcContext.getClientAttachment().asyncCall(() -> {
             throw new NullPointerException();
         });
 
@@ -180,7 +181,7 @@ public class RpcContextTest {
 
     @Test
     public void testObjectAttachment() {
-        RpcContext rpcContext = RpcContext.getContext();
+        RpcContext rpcContext = RpcContext.getClientAttachment();
 
         rpcContext.setAttachment("objectKey1", "value1");
         rpcContext.setAttachment("objectKey2", "value2");

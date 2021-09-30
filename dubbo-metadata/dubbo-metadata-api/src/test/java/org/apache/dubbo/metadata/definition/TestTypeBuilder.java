@@ -27,17 +27,18 @@ import java.util.Map;
  */
 public class TestTypeBuilder implements TypeBuilder {
     // it is smaller than the implements of TypeBuilder
+    @Override
     public int getPriority(){
         return -3;
     }
 
     @Override
-    public boolean accept(Type type, Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         return false;
     }
 
     @Override
-    public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
+    public TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
         return null;
     }
 }

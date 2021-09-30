@@ -18,6 +18,7 @@ package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.monitor.MonitorService;
 
 import org.hamcrest.MatcherAssert;
@@ -66,7 +67,7 @@ public class StatisticsTest {
 
     @Test
     public void testToString() {
-        Statistics statistics = new Statistics(new URL("dubbo", "10.20.153.10", 0));
+        Statistics statistics = new Statistics(new ServiceConfigURL("dubbo", "10.20.153.10", 0));
         statistics.setApplication("demo");
         statistics.setMethod("findPerson");
         statistics.setServer("10.20.153.10");

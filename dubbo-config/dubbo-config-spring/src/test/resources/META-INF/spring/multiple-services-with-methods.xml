@@ -37,7 +37,7 @@
     </dubbo:service>
 
     <dubbo:service interface="org.apache.dubbo.config.spring.api.DemoService"
-                   class="org.apache.dubbo.config.spring.impl.DemoServiceImpl_LongWaiting">
+                   class="org.apache.dubbo.config.spring.impl.DemoServiceImpl_LongWaiting" version="2.0.0">
         <dubbo:method name="sayName" timeout="1000" />
     </dubbo:service>
 

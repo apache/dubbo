@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
+import static java.util.Collections.emptySortedSet;
+
 import java.util.SortedSet;
 
 /**
@@ -67,6 +69,6 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
      */
     @Override
     public SortedSet<String> getConfigKeys(String group) {
-        return null;
+        return emptySortedSet();
     }
 }

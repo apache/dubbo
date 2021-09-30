@@ -18,6 +18,8 @@ package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.util.Map;
+
 /**
  * Configuration from system environment
  */
@@ -32,4 +34,7 @@ public class EnvironmentConfiguration implements Configuration {
         return value;
     }
 
+    public Map<String, String> getProperties() {
+        return System.getenv();
+    }
 }

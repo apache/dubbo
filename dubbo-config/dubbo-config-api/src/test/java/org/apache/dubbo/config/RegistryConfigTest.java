@@ -17,13 +17,22 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.hamcrest.CoreMatchers.is;
@@ -34,6 +43,17 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 
 public class RegistryConfigTest {
+
+    @BeforeEach
+    public void beforeEach() {
+        DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
+    }
+
     @Test
     public void testProtocol() throws Exception {
         RegistryConfig registry = new RegistryConfig();
@@ -185,6 +205,56 @@ public class RegistryConfigTest {
         registry1.setAddress("zookeeper://127.0.0.1:2182");
         registry2.setAddress("zookeeper://127.0.0.1:2183");
         Assertions.assertNotEquals(registry1, registry2);
+    }
+
+    @Test
+    public void testMetaData() {
+        RegistryConfig config = new RegistryConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
+    }
+
+    @Test
+    public void testOverrideConfigBySystemProps() {
+
+        SysProps.setProperty("dubbo.registry.address", "zookeeper://${zookeeper.address}:${zookeeper.port}");
+        SysProps.setProperty("dubbo.registry.useAsConfigCenter", "false");
+        SysProps.setProperty("dubbo.registry.useAsMetadataCenter", "false");
+        SysProps.setProperty("zookeeper.address", "localhost");
+        SysProps.setProperty("zookeeper.port", "2188");
+
+
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .initialize();
+        Collection<RegistryConfig> registries = ApplicationModel.defaultModel().getApplicationConfigManager().getRegistries();
+        Assertions.assertEquals(1, registries.size());
+        RegistryConfig registryConfig = registries.iterator().next();
+        Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());
+
+    }
+
+    public void testPreferredWithTrueValue() {
+        RegistryConfig registry = new RegistryConfig();
+        registry.setPreferred(true);
+        Map<String, String> map = new HashMap<>();
+        // process Parameter annotation
+        AbstractConfig.appendParameters(map, registry);
+        // Simulate the check that ZoneAwareClusterInvoker#doInvoke do
+        URL url = UrlUtils.parseURL("zookeeper://127.0.0.1:2181", map);
+        Assertions.assertTrue(url.getParameter(PREFERRED_KEY, false));
+    }
+
+    @Test
+    public void testPreferredWithFalseValue() {
+        RegistryConfig registry = new RegistryConfig();
+        registry.setPreferred(false);
+        Map<String, String> map = new HashMap<>();
+        // Process Parameter annotation
+        AbstractConfig.appendParameters(map, registry);
+        // Simulate the check that ZoneAwareClusterInvoker#doInvoke do
+        URL url = UrlUtils.parseURL("zookeeper://127.0.0.1:2181", map);
+        Assertions.assertFalse(url.getParameter(PREFERRED_KEY, false));
     }
 
 }

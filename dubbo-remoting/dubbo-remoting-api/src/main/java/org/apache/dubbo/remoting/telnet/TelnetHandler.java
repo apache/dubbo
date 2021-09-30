@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.telnet;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
@@ -23,7 +24,7 @@ import org.apache.dubbo.remoting.RemotingException;
 /**
  * TelnetHandler
  */
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface TelnetHandler {
 
     /**

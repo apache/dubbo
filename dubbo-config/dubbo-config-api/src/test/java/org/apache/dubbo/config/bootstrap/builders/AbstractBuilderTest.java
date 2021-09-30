@@ -34,13 +34,6 @@ class AbstractBuilderTest {
     }
 
     @Test
-    void prefix() {
-        Builder builder = new Builder();
-        builder.prefix("prefix");
-        Assertions.assertEquals("prefix", builder.build().getPrefix());
-    }
-
-    @Test
     void appendParameter() {
         Map<String, String> source = null;
 
@@ -96,13 +89,11 @@ class AbstractBuilderTest {
     void build() {
         Builder builder = new Builder();
         builder.id("id");
-        builder.prefix("prefix");
 
         Config config = builder.build();
         Config config2 = builder.build();
 
         Assertions.assertEquals("id", config.getId());
-        Assertions.assertEquals("prefix", config.getPrefix());
 
         Assertions.assertNotSame(config, config2);
     }

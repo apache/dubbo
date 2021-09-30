@@ -25,6 +25,7 @@ public class CommandContext {
     private Channel remote;
     private boolean isHttp;
     private Object originRequest;
+    private int httpCode = 200;
 
     public CommandContext(String commandName) {
         this.commandName = commandName;
@@ -74,5 +75,13 @@ public class CommandContext {
 
     public void setOriginRequest(Object originRequest) {
         this.originRequest = originRequest;
+    }
+
+    public int getHttpCode() {
+        return httpCode;
+    }
+
+    public void setHttpCode(int httpCode) {
+        this.httpCode = httpCode;
     }
 }

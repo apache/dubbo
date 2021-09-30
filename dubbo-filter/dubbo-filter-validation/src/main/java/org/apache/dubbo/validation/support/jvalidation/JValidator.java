@@ -185,13 +185,13 @@ public class JValidator implements Validator {
 
     private static String generateMethodParameterClassName(Class<?> clazz, Method method) {
         StringBuilder builder = new StringBuilder().append(clazz.getName())
-                .append("_")
+                .append('_')
                 .append(toUpperMethoName(method.getName()))
                 .append("Parameter");
 
         Class<?>[] parameterTypes = method.getParameterTypes();
         for (Class<?> parameterType : parameterTypes) {
-            builder.append("_").append(parameterType.getName());
+            builder.append('_').append(parameterType.getName());
         }
 
         return builder.toString();

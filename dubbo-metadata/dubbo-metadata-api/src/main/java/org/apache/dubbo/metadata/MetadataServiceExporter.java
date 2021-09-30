@@ -19,11 +19,12 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 /**
  * The exporter of {@link MetadataService}
@@ -33,7 +34,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * @see #unexport()
  * @since 2.7.5
  */
-@SPI(DEFAULT_METADATA_STORAGE_TYPE)
+@SPI(value = DEFAULT_METADATA_STORAGE_TYPE, scope = APPLICATION)
 public interface MetadataServiceExporter extends Prioritized {
 
     /**
@@ -83,8 +84,8 @@ public interface MetadataServiceExporter extends Prioritized {
      * @return non-null
      * @since 2.7.8
      */
-    static MetadataServiceExporter getExtension(String metadataType) {
-        return getExtensionLoader(MetadataServiceExporter.class).getOrDefaultExtension(metadataType);
+    static MetadataServiceExporter getExtension(ScopeModel scopeModel, String metadataType) {
+        return scopeModel.getExtensionLoader(MetadataServiceExporter.class).getOrDefaultExtension(metadataType);
     }
 
     /**
@@ -93,8 +94,8 @@ public interface MetadataServiceExporter extends Prioritized {
      * @return non-null
      * @since 2.7.8
      */
-    static MetadataServiceExporter getDefaultExtension() {
-        return getExtension(DEFAULT_METADATA_STORAGE_TYPE);
+    static MetadataServiceExporter getDefaultExtension(ScopeModel scopeModel) {
+        return getExtension(scopeModel, DEFAULT_METADATA_STORAGE_TYPE);
     }
 }
 

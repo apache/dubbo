@@ -131,13 +131,7 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
                 recycleTimeField = RoundRobinLoadBalance.class.getDeclaredField("RECYCLE_PERIOD");
                 recycleTimeField.setAccessible(true);
                 recycleTimeField.setInt(RoundRobinLoadBalance.class, 10);
-            } catch (NoSuchFieldException e) {
-                Assertions.assertTrue(true, "getField failed");
-            } catch (SecurityException e) {
-                Assertions.assertTrue(true, "getField failed");
-            } catch (IllegalArgumentException e) {
-                Assertions.assertTrue(true, "getField failed");
-            } catch (IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
                 Assertions.assertTrue(true, "getField failed");
             }
         }

@@ -18,15 +18,11 @@ package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 
-import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory.getDynamicConfigurationFactory;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * Dynamic Configuration
@@ -101,6 +97,17 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     }
 
     /**
+     * get configItem which contains content and stat info.
+     * @param key
+     * @param group
+     * @return
+     */
+    default ConfigItem getConfigItem(String key, String group) {
+        String content = getConfig(key, group);
+        return new ConfigItem(content, null);
+    }
+
+    /**
      * Get the configuration mapped to the given key and the given group. If the
      * configuration fails to fetch after timeout exceeds, IllegalStateException will be thrown.
      *
@@ -157,6 +164,19 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     }
 
     /**
+     * publish config mapped to this given key and given group with stat.
+     * @param key
+     * @param group
+     * @param content
+     * @param ticket
+     * @return
+     * @throws UnsupportedOperationException
+     */
+    default boolean publishConfigCas(String key, String group, String content, Object ticket) throws UnsupportedOperationException {
+        return false;
+    }
+
+    /**
      * Get the config keys by the specified group
      *
      * @param group the specified group
@@ -197,31 +217,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     @Override
     default void close() throws Exception {
         throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Find DynamicConfiguration instance
-     *
-     * @return DynamicConfiguration instance
-     */
-    static DynamicConfiguration getDynamicConfiguration() {
-        Optional<DynamicConfiguration> optional = ApplicationModel.getEnvironment().getDynamicConfiguration();
-        return optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
-                .getDefaultExtension()
-                .getDynamicConfiguration(null));
-    }
-
-    /**
-     * Get the instance of {@link DynamicConfiguration} by the specified connection {@link URL}
-     *
-     * @param connectionURL
-     * @return non-null
-     * @since 2.7.5
-     */
-    static DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
-        String protocol = connectionURL.getProtocol();
-        DynamicConfigurationFactory factory = getDynamicConfigurationFactory(protocol);
-        return factory.getDynamicConfiguration(connectionURL);
     }
 
     /**

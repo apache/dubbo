@@ -24,15 +24,21 @@ import org.apache.dubbo.auth.spi.Authenticator;
 import org.apache.dubbo.auth.utils.SignatureUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 public class AccessKeyAuthenticator implements Authenticator {
+    private ApplicationModel applicationModel;
+
+    public AccessKeyAuthenticator(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
     @Override
     public void sign(Invocation invocation, URL url) {
         String currentTime = String.valueOf(System.currentTimeMillis());
-        String consumer = url.getParameter(CommonConstants.APPLICATION_KEY);
+        String consumer = url.getApplication();
         AccessKeyPair accessKeyPair = getAccessKeyPair(invocation, url);
         invocation.setAttachment(Constants.REQUEST_SIGNATURE_KEY, getSignature(url, invocation, accessKeyPair.getSecretKey(), currentTime));
         invocation.setAttachment(Constants.REQUEST_TIMESTAMP_KEY, currentTime);
@@ -66,7 +72,7 @@ public class AccessKeyAuthenticator implements Authenticator {
     }
 
     AccessKeyPair getAccessKeyPair(Invocation invocation, URL url) {
-        AccessKeyStorage accessKeyStorage = ExtensionLoader.getExtensionLoader(AccessKeyStorage.class)
+        AccessKeyStorage accessKeyStorage = applicationModel.getExtensionLoader(AccessKeyStorage.class)
                 .getExtension(url.getParameter(Constants.ACCESS_KEY_STORAGE_KEY, Constants.DEFAULT_ACCESS_KEY_STORAGE));
 
         AccessKeyPair accessKeyPair = null;

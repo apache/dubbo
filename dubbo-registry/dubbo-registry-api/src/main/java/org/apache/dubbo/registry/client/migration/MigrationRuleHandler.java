@@ -16,51 +16,117 @@
  */
 package org.apache.dubbo.registry.client.migration;
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
-
-@Activate
 public class MigrationRuleHandler<T> {
+    public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleHandler.class);
-    private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
 
-    private MigrationInvoker<T> migrationInvoker;
+    private MigrationClusterInvoker<T> migrationInvoker;
+    private MigrationStep currentStep;
+    private Float currentThreshold = 0f;
+    private URL consumerURL;
 
-    public MigrationRuleHandler(MigrationInvoker<T> invoker) {
+    public MigrationRuleHandler(MigrationClusterInvoker<T> invoker, URL url) {
         this.migrationInvoker = invoker;
+        this.consumerURL = url;
     }
 
-    public void doMigrate(String rawRule) {
-        MigrationStep step = (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker)
-                ? MigrationStep.FORCE_APPLICATION
-                : MigrationStep.INTERFACE_FIRST;
-        if (StringUtils.isEmpty(rawRule)) {
-            logger.error("Find empty migration rule, will ignore.");
+    public synchronized void doMigrate(MigrationRule rule) {
+        if (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker) {
+            refreshInvoker(MigrationStep.FORCE_APPLICATION, 1.0f, rule);
             return;
-        } else if (INIT.equals(rawRule)) {
-            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
-        } else {
-            MigrationRule rule = MigrationRule.parse(rawRule);
-            step = rule.getStep();
         }
 
-        switch (step) {
-            case APPLICATION_FIRST:
-                migrationInvoker.migrateToServiceDiscoveryInvoker(false);
-                break;
-            case FORCE_APPLICATION:
-                migrationInvoker.migrateToServiceDiscoveryInvoker(true);
-                break;
-            case INTERFACE_FIRST:
-            default:
-                migrationInvoker.fallbackToInterfaceInvoker();
+        // initial step : APPLICATION_FIRST
+        MigrationStep step = MigrationStep.APPLICATION_FIRST;
+        float threshold = -1f;
+
+        try {
+            step = rule.getStep(consumerURL);
+            threshold = rule.getThreshold(consumerURL);
+        } catch (Exception e) {
+            logger.error("Failed to get step and threshold info from rule: " + rule, e);
         }
+
+        if (refreshInvoker(step, threshold, rule)) {
+            // refresh success, update rule
+            setMigrationRule(rule);
+        }
+    }
+
+    private boolean refreshInvoker(MigrationStep step, Float threshold, MigrationRule newRule) {
+        if (step == null || threshold == null) {
+            throw new IllegalStateException("Step or threshold of migration rule cannot be null");
+        }
+        MigrationStep originStep = currentStep;
+
+        if ((currentStep == null || currentStep != step) || !currentThreshold.equals(threshold)) {
+            boolean success = true;
+            switch (step) {
+                case APPLICATION_FIRST:
+                    migrationInvoker.migrateToApplicationFirstInvoker(newRule);
+                    break;
+                case FORCE_APPLICATION:
+                    success = migrationInvoker.migrateToForceApplicationInvoker(newRule);
+                    break;
+                case FORCE_INTERFACE:
+                default:
+                    success = migrationInvoker.migrateToForceInterfaceInvoker(newRule);
+            }
+
+            if (success) {
+                setCurrentStepAndThreshold(step, threshold);
+                logger.info("Succeed Migrated to " + step + " mode. Service Name: " + consumerURL.getDisplayServiceKey());
+                report(step, originStep, "true");
+            } else {
+                // migrate failed, do not save new step and rule
+                logger.warn("Migrate to " + step + " mode failed. Probably not satisfy the threshold you set "
+                        + threshold + ". Please try re-publish configuration if you still after check.");
+                report(step, originStep, "false");
+            }
+
+            return success;
+        }
+        // ignore if step is same with previous, will continue override rule for MigrationInvoker
+        return true;
+    }
+
+    private void report(MigrationStep step, MigrationStep originStep, String success) {
+        //TODO FrameworkStatusReporter
+//        if (FrameworkStatusReporter.hasReporter()) {
+//            FrameworkStatusReporter.reportMigrationStepStatus(
+//                    FrameworkStatusReporter.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
+//                            consumerURL.getGroup(), String.valueOf(originStep), String.valueOf(step), success));
+//        }
+    }
+
+    private void setMigrationRule(MigrationRule rule) {
+        this.migrationInvoker.setMigrationRule(rule);
+    }
+
+    private Float getMigrationThreshold(MigrationRule rule, Float threshold) {
+        Float configuredThreshold = rule.getThreshold(consumerURL);
+        threshold = configuredThreshold == null ? threshold : configuredThreshold;
+        return threshold;
+    }
+
+    private void setCurrentStepAndThreshold(MigrationStep currentStep, Float currentThreshold) {
+        if (currentThreshold != null) {
+            this.currentThreshold = currentThreshold;
+        }
+        if (currentStep != null) {
+            this.currentStep = currentStep;
+            this.migrationInvoker.setMigrationStep(currentStep);
+        }
+    }
+
+    // for test purpose
+    public MigrationStep getMigrationStep() {
+        return currentStep;
     }
 }

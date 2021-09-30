@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.common.logger;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
 import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.File;
 import java.util.Arrays;
@@ -79,9 +79,9 @@ public class LoggerFactory {
     private LoggerFactory() {
     }
 
-    public static void setLoggerAdapter(String loggerAdapter) {
+    public static void setLoggerAdapter(FrameworkModel frameworkModel, String loggerAdapter) {
         if (loggerAdapter != null && loggerAdapter.length() > 0) {
-            setLoggerAdapter(ExtensionLoader.getExtensionLoader(LoggerAdapter.class).getExtension(loggerAdapter));
+            setLoggerAdapter(frameworkModel.getExtensionLoader(LoggerAdapter.class).getExtension(loggerAdapter));
         }
     }
 
@@ -92,8 +92,10 @@ public class LoggerFactory {
      */
     public static void setLoggerAdapter(LoggerAdapter loggerAdapter) {
         if (loggerAdapter != null) {
-            Logger logger = loggerAdapter.getLogger(LoggerFactory.class.getName());
-            logger.info("using logger: " + loggerAdapter.getClass().getName());
+            if (loggerAdapter == LOGGER_ADAPTER) {
+                return;
+            }
+            loggerAdapter.getLogger(LoggerFactory.class.getName());
             LoggerFactory.LOGGER_ADAPTER = loggerAdapter;
             for (Map.Entry<String, FailsafeLogger> entry : LOGGERS.entrySet()) {
                 entry.getValue().setLogger(LOGGER_ADAPTER.getLogger(entry.getKey()));

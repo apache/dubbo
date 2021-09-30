@@ -37,7 +37,7 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public Integer hello(Integer a, Integer b) {
-        context = RpcContext.getContext().getObjectAttachments();
+        context = RpcContext.getServerAttachment().getObjectAttachments();
         return a + b;
     }
 
@@ -48,10 +48,5 @@ public class DemoServiceImpl implements DemoService {
 
     public static Map<String, Object> getAttachments() {
         return context;
-    }
-
-    @Override
-    public String getRemoteApplicationName() {
-        return RpcContext.getContext().getRemoteApplicationName();
     }
 }

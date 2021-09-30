@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -34,13 +35,15 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
-import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -49,13 +52,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InjvmProtocolTest {
 
-    static {
-        InjvmProtocol injvm = InjvmProtocol.getInjvmProtocol();
-    }
 
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
+    private final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private final ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private final List<Exporter<?>> exporters = new ArrayList<>();
 
     @AfterEach
     public void after() throws Exception {
@@ -76,51 +76,65 @@ public class InjvmProtocolTest {
         assertEquals(service.getSize(new String[]{"", "", ""}), 3);
         service.invoke("injvm://127.0.0.1/TestService", "invoke");
 
-        InjvmInvoker injvmInvoker = new InjvmInvoker(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService"), null, new HashMap<String, Exporter<?>>());
+        InjvmInvoker<?> injvmInvoker = new InjvmInvoker<>(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService"), null, new HashMap<>());
         assertFalse(injvmInvoker.isAvailable());
 
+    }
+
+    @Test
+    public void testLocalProtocolWithToken() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        Invoker<?> invoker = proxy.getInvoker(service, DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService?token=abc").addParameter(INTERFACE_KEY, DemoService.class.getName()));
+        assertTrue(invoker.isAvailable());
+        Exporter<?> exporter = protocol.export(invoker);
+        exporters.add(exporter);
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService").addParameter(INTERFACE_KEY, DemoService.class.getName())));
+        assertEquals(service.getSize(new String[]{"", "", ""}), 3);
     }
 
     @Test
     public void testIsInjvmRefer() throws Exception {
         DemoService service = new DemoServiceImpl();
         URL url = URL.valueOf("injvm://127.0.0.1/TestService")
-                .addParameter(INTERFACE_KEY, DemoService.class.getName());
+            .addParameter(INTERFACE_KEY, DemoService.class.getName());
         Exporter<?> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
         exporters.add(exporter);
 
         url = url.setProtocol("dubbo");
-        assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertTrue(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = url.addParameter(GROUP_KEY, "*")
-                .addParameter(VERSION_KEY, "*");
-        assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+            .addParameter(VERSION_KEY, "*");
+        assertTrue(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(SCOPE_KEY, SCOPE_LOCAL);
-        assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertTrue(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(LOCAL_PROTOCOL, true);
-        assertTrue(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertTrue(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(SCOPE_KEY, SCOPE_REMOTE);
-        assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertFalse(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(GENERIC_KEY, true);
-        assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
+        assertFalse(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
 
+        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter("cluster", "broadcast");
+        assertFalse(InjvmProtocol.getInjvmProtocol(FrameworkModel.defaultModel()).isInjvmRefer(url));
     }
 
-
     @Test
-    public void testRemoteApplicationName() throws Exception {
+    public void testLocalProtocolAsync() throws Exception {
         DemoService service = new DemoServiceImpl();
-        URL url = URL.valueOf("injvm://127.0.0.1/TestService").addParameter(INTERFACE_KEY, DemoService.class.getName()).addParameter("application", "consumer");
+        URL url = URL.valueOf("injvm://127.0.0.1/TestService")
+            .addParameter(ASYNC_KEY, true)
+            .addParameter(INTERFACE_KEY, DemoService.class.getName()).addParameter("application", "consumer");
         Invoker<?> invoker = proxy.getInvoker(service, DemoService.class, url);
         assertTrue(invoker.isAvailable());
         Exporter<?> exporter = protocol.export(invoker);
         exporters.add(exporter);
         service = proxy.getProxy(protocol.refer(DemoService.class, url));
-        assertEquals(service.getRemoteApplicationName(), "consumer");
+        assertNull(service.getAsyncResult());
     }
 
 }

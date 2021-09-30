@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class WrapperTest {
@@ -114,6 +115,26 @@ public class WrapperTest {
     }
 
     @Test
+    public void testOverloadMethod() throws Exception {
+        Wrapper w = Wrapper.getWrapper(I2.class);
+        assertEquals(2, w.getMethodNames().length);
+
+        Impl2 impl = new Impl2();
+
+        w.invokeMethod(impl, "setFloat", new Class[]{float.class}, new Object[]{1F});
+        assertEquals(1F, impl.getFloat1());
+        assertNull(impl.getFloat2());
+
+        w.invokeMethod(impl, "setFloat", new Class[]{Float.class}, new Object[]{2f});
+        assertEquals(1F, impl.getFloat1());
+        assertEquals(2F, impl.getFloat2());
+
+        w.invokeMethod(impl, "setFloat", new Class[]{Float.class}, new Object[]{null});
+        assertEquals(1F, impl.getFloat1());
+        assertNull(impl.getFloat2());
+    }
+
+    @Test
     public void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello",}, Wrapper.getWrapper(Parent1.class).getMethodNames());
 
@@ -139,6 +160,12 @@ public class WrapperTest {
         float getFloat();
 
         void setFloat(float f);
+    }
+
+    public interface I2 {
+        void setFloat(float f);
+
+        void setFloat(Float f);
     }
 
     public interface EmptyService {
@@ -188,6 +215,29 @@ public class WrapperTest {
 
         public void setFloat(float f) {
             fv = f;
+        }
+    }
+
+    public static class Impl2 implements I2 {
+        private float float1;
+        private Float float2;
+
+        @Override
+        public void setFloat(float f) {
+            this.float1 = f;
+        }
+
+        @Override
+        public void setFloat(Float f) {
+            this.float2 = f;
+        }
+
+        public float getFloat1() {
+            return float1;
+        }
+
+        public Float getFloat2() {
+            return float2;
         }
     }
 

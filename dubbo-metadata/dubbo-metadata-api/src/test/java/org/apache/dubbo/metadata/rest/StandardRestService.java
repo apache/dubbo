@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.annotation.DubboService;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -34,7 +34,7 @@ import java.util.Map;
 /**
  * JAX-RS {@link RestService}
  */
-@Service(version = "3.0.0", protocol = {"dubbo", "rest"}, group = "standard")
+@DubboService(version = "3.0.0", protocol = {"dubbo", "rest"}, group = "standard")
 @Path("/")
 public class StandardRestService implements RestService {
 

@@ -18,6 +18,8 @@ package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.demo.GreetingService;
+import org.apache.dubbo.demo.RestDemoService;
+import org.apache.dubbo.demo.TripleService;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -33,16 +35,50 @@ public class Application {
         context.start();
         DemoService demoService = context.getBean("demoService", DemoService.class);
         GreetingService greetingService = context.getBean("greetingService", GreetingService.class);
+        RestDemoService restDemoService = context.getBean("restDemoService", RestDemoService.class);
+        TripleService tripleService = context.getBean("tripleService", TripleService.class);
 
         new Thread(() -> {
             while (true) {
                 try {
                     String greetings = greetingService.hello();
                     System.out.println(greetings + " from separated thread.");
+                } catch (Exception e) {
+//                    e.printStackTrace();
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
+            }
+        }).start();
 
-                    Thread.sleep(100);
+        new Thread(() -> {
+            while (true) {
+                try {
+                    String restResult = restDemoService.sayHello("rest");
+                    System.out.println(restResult + " from separated thread.");
                 } catch (Exception e) {
                     e.printStackTrace();
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
+            }
+        }).start();
+
+        new Thread(() -> {
+            while (true) {
+                try {
+                    String restResult = tripleService.hello();
+                    System.out.println(restResult + " from separated thread.");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
                 }
             }
         }).start();
@@ -55,10 +91,10 @@ public class Application {
                 String greetings = greetingService.hello();
                 System.out.println("result: " + greetings);
             } catch (Exception e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
 
-            Thread.sleep(500);
+            Thread.sleep(5000);
         }
     }
 }

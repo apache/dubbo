@@ -24,10 +24,8 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
-import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -60,6 +58,7 @@ public final class ClassGenerator {
     private List<String> mFields;
     private List<String> mConstructors;
     private List<String> mMethods;
+    private ClassLoader mClassLoader;
     private Map<String, Method> mCopyMethods; // <method desc,method instance>
     private Map<String, Constructor<?>> mCopyConstructors; // <constructor desc,constructor instance>
     private boolean mDefaultConstructor = false;
@@ -67,16 +66,17 @@ public final class ClassGenerator {
     private ClassGenerator() {
     }
 
-    private ClassGenerator(ClassPool pool) {
+    private ClassGenerator(ClassLoader classLoader, ClassPool pool) {
+        mClassLoader = classLoader;
         mPool = pool;
     }
 
     public static ClassGenerator newInstance() {
-        return new ClassGenerator(getClassPool(Thread.currentThread().getContextClassLoader()));
+        return new ClassGenerator(Thread.currentThread().getContextClassLoader(), getClassPool(Thread.currentThread().getContextClassLoader()));
     }
 
     public static ClassGenerator newInstance(ClassLoader loader) {
-        return new ClassGenerator(getClassPool(loader));
+        return new ClassGenerator(loader, getClassPool(loader));
     }
 
     public static boolean isDynamicClass(Class<?> cl) {
@@ -91,7 +91,7 @@ public final class ClassGenerator {
         ClassPool pool = POOL_MAP.get(loader);
         if (pool == null) {
             pool = new ClassPool(true);
-            pool.appendClassPath(new LoaderClassPath(loader));
+            pool.insertClassPath(new CustomizedLoaderClassPath(loader));
             POOL_MAP.put(loader, pool);
         }
         return pool;
@@ -282,7 +282,7 @@ public final class ClassGenerator {
     }
 
     public Class<?> toClass() {
-        return toClass(ClassUtils.getClassLoader(ClassGenerator.class),
+        return toClass(mClassLoader,
                 getClass().getProtectionDomain());
     }
 
@@ -340,9 +340,7 @@ public final class ClassGenerator {
             return mCtc.toClass(loader, pd);
         } catch (RuntimeException e) {
             throw e;
-        } catch (NotFoundException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        } catch (CannotCompileException e) {
+        } catch (NotFoundException | CannotCompileException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }

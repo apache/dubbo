@@ -21,7 +21,6 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -34,7 +33,6 @@ import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -57,7 +55,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
 
     public TagRouter(URL url) {
         super(url);
-        this.priority = TAG_ROUTER_DEFAULT_PRIORITY;
+        this.setPriority(TAG_ROUTER_DEFAULT_PRIORITY);
     }
 
     @Override
@@ -77,11 +75,6 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
             logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the " +
                     "rule matches with the template, the raw rule is:\n ", e);
         }
-    }
-
-    @Override
-    public URL getUrl() {
-        return url;
     }
 
     @Override
@@ -161,7 +154,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
      * @return
      */
     private <T> List<Invoker<T>> filterUsingStaticTag(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        List<Invoker<T>> result = invokers;
+        List<Invoker<T>> result;
         // Dynamic param
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
                 invocation.getAttachment(TAG_KEY);
@@ -189,19 +182,11 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     private boolean isForceUseTag(Invocation invocation) {
-        return Boolean.valueOf(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
+        return Boolean.parseBoolean(invocation.getAttachment(FORCE_USE_TAG, this.getUrl().getParameter(FORCE_USE_TAG, "false")));
     }
 
     private <T> List<Invoker<T>> filterInvoker(List<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
-        boolean filter = false;
-        for (int i = 0; i < invokers.size(); ++i) {
-            Invoker<T> invoker = invokers.get(i);
-            if (!predicate.test(invoker)) {
-                filter = true;
-                break;
-            }
-        }
-        if (!filter) {
+        if (invokers.stream().allMatch(predicate)) {
             return invokers;
         }
 
@@ -227,8 +212,6 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 if ((ANYHOST_VALUE + ":" + port).equals(address)) {
                     return true;
                 }
-            } catch (UnknownHostException e) {
-                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
             } catch (Exception e) {
                 logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
             }
@@ -248,7 +231,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
 
         Invoker<T> invoker = invokers.get(0);
         URL url = invoker.getUrl();
-        String providerApplication = url.getParameter(CommonConstants.REMOTE_APPLICATION_KEY);
+        String providerApplication = url.getRemoteApplication();
 
         if (StringUtils.isEmpty(providerApplication)) {
             logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application " +
@@ -258,13 +241,13 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
 
         synchronized (this) {
             if (!providerApplication.equals(application)) {
-                if (!StringUtils.isEmpty(application)) {
-                    ruleRepository.removeListener(application + RULE_SUFFIX, this);
+                if (StringUtils.isNotEmpty(application)) {
+                    this.getRuleRepository().removeListener(application + RULE_SUFFIX, this);
                 }
                 String key = providerApplication + RULE_SUFFIX;
-                ruleRepository.addListener(key, this);
+                this.getRuleRepository().addListener(key, this);
                 application = providerApplication;
-                String rawRule = ruleRepository.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
+                String rawRule = this.getRuleRepository().getRule(key, DynamicConfiguration.DEFAULT_GROUP);
                 if (StringUtils.isNotEmpty(rawRule)) {
                     this.process(new ConfigChangedEvent(key, DynamicConfiguration.DEFAULT_GROUP, rawRule));
                 }
@@ -272,4 +255,10 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         }
     }
 
+    @Override
+    public void stop() {
+        if (StringUtils.isNotEmpty(application)) {
+            this.getRuleRepository().removeListener(application + RULE_SUFFIX, this);
+        }
+    }
 }

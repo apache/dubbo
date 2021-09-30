@@ -130,7 +130,7 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
 
     @Override
     public boolean removeConfig(String key, String group) {
-        return execute(() -> doRemoveConfig(key, group), -1L);
+        return Boolean.TRUE.equals(execute(() -> doRemoveConfig(key, group), -1L));
     }
 
     /**

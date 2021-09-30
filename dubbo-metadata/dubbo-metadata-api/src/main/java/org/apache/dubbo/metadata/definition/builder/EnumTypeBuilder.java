@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.metadata.definition.builder;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import java.lang.reflect.Method;
@@ -26,9 +29,10 @@ import java.util.Map;
  * 2015/1/27.
  */
 public class EnumTypeBuilder implements TypeBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(TypeDefinitionBuilder.class);
 
     @Override
-    public boolean accept(Type type, Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }
@@ -36,22 +40,29 @@ public class EnumTypeBuilder implements TypeBuilder {
     }
 
     @Override
-    public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
-        TypeDefinition td = new TypeDefinition(clazz.getCanonicalName());
+    public TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
+        String canonicalName = clazz.getCanonicalName();
+
+        TypeDefinition td = typeCache.get(canonicalName);
+        if (td != null) {
+            return td;
+        }
+        td = new TypeDefinition(canonicalName);
+        typeCache.put(canonicalName, td);
 
         try {
             Method methodValues = clazz.getDeclaredMethod("values");
+            methodValues.setAccessible(true);
             Object[] values = (Object[]) methodValues.invoke(clazz, new Object[0]);
             int length = values.length;
             for (int i = 0; i < length; i++) {
                 Object value = values[i];
                 td.getEnums().add(value.toString());
             }
+            return td;
         } catch (Throwable t) {
-            td.setId("-1");
+            logger.error("There is an error while process class " + clazz, t);
         }
-
-        typeCache.put(clazz, td);
         return td;
     }
 

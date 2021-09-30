@@ -18,10 +18,14 @@ package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +42,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
+import static org.apache.dubbo.rpc.Constants.ID_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -51,6 +56,7 @@ public class ServiceOrientedRegistryTest {
 
     private static final URL registryURL = valueOf("in-memory://localhost:12345")
             .addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)
+            .addParameter(ID_KEY, "org.apache.dubbo.config.RegistryConfig#0")
             .addParameter(SUBSCRIBED_SERVICE_NAMES_KEY, "a, b , c,d,e ,");
 
     private static final String SERVICE_INTERFACE = "org.apache.dubbo.metadata.MetadataService";
@@ -78,9 +84,19 @@ public class ServiceOrientedRegistryTest {
 
     @BeforeEach
     public void init() {
+        ApplicationModel.reset();
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        ModuleModel scopeModel = applicationModel.getDefaultModule();
+        registryURL.setScopeModel(scopeModel);
         registry = ServiceDiscoveryRegistry.create(registryURL);
-        metadataService = WritableMetadataService.getDefaultExtension();
+        metadataService = WritableMetadataService.getDefaultExtension(scopeModel);
         notifyListener = new MyNotifyListener();
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
+    }
+
+    @AfterAll
+    public static void clearUp() {
+        ApplicationModel.reset();
     }
 
     @Test
@@ -149,11 +165,15 @@ public class ServiceOrientedRegistryTest {
     @Test
     public void testSubscribe() {
 
-        registry.subscribe(url, new MyNotifyListener());
+        try {
+            registry.subscribe(url, new MyNotifyListener());
 
-        SortedSet<String> urls = metadataService.getSubscribedURLs();
+            SortedSet<String> urls = metadataService.getSubscribedURLs();
 
-        assertTrue(urls.isEmpty());
+            assertTrue(urls.isEmpty());
+        } finally {
+            metadataService.unsubscribeURL(url);
+        }
 
     }
 

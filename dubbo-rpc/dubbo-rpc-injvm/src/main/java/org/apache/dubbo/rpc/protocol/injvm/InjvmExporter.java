@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * InjvmExporter
  */
-class InjvmExporter<T> extends AbstractExporter<T> {
+public class InjvmExporter<T> extends AbstractExporter<T> {
 
     private final String key;
 
@@ -39,8 +39,7 @@ class InjvmExporter<T> extends AbstractExporter<T> {
     }
 
     @Override
-    public void unexport() {
-        super.unexport();
+    public void afterUnExport() {
         exporterMap.remove(key);
     }
 

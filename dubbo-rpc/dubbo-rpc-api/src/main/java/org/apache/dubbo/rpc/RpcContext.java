@@ -19,13 +19,9 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,96 +29,89 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
-import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
-
 
 /**
  * Thread local context. (API, ThreadLocal, ThreadSafe)
  * <p>
  * Note: RpcContext is a temporary state holder. States in RpcContext changes every time when request is sent or received.
- * For example: A invokes B, then B invokes C. On service B, RpcContext saves invocation info from A to B before B
- * starts invoking C, and saves invocation info from B to C after B invokes C.
+ * <p/>
+ * There are four kinds of RpcContext, which are ServerContext, ClientAttachment, ServerAttachment and ServiceContext.
+ * <p/>
+ * ServiceContext: Using to pass environment parameters in the whole invocation. For example, `remotingApplicationName`,
+ * `remoteAddress`, etc. {@link RpcServiceContext}
+ * ClientAttachment, ServerAttachment and ServiceContext are using to transfer attachments.
+ * Imaging a situation like this, A is calling B, and B will call C, after that, B wants to return some attachments back to A.
+ * ClientAttachment is using to pass attachments to next hop as a consumer. ( A --> B , in A side)
+ * ServerAttachment is using to fetch attachments from previous hop as a provider. ( A --> B , in B side)
+ * ServerContext is using to return some attachments back to client as a provider. ( A <-- B , in B side)
+ * The reason why using `ServiceContext` is to make API compatible with previous.
  *
  * @export
  * @see org.apache.dubbo.rpc.filter.ContextFilter
  */
 public class RpcContext {
 
+    private static final RpcContext AGENT = new RpcContext();
+
     /**
      * use internal thread local to improve performance
      */
-    // FIXME REQUEST_CONTEXT
-    private static final InternalThreadLocal<RpcContext> LOCAL = new InternalThreadLocal<RpcContext>() {
+    private static final InternalThreadLocal<RpcContextAttachment> SERVER_LOCAL = new InternalThreadLocal<RpcContextAttachment>() {
         @Override
-        protected RpcContext initialValue() {
-            return new RpcContext();
+        protected RpcContextAttachment initialValue() {
+            return new RpcContextAttachment();
         }
     };
 
-    // FIXME RESPONSE_CONTEXT
-    private static final InternalThreadLocal<RpcContext> SERVER_LOCAL = new InternalThreadLocal<RpcContext>() {
+    private static final InternalThreadLocal<RpcContextAttachment> CLIENT_ATTACHMENT = new InternalThreadLocal<RpcContextAttachment>() {
         @Override
-        protected RpcContext initialValue() {
-            return new RpcContext();
+        protected RpcContextAttachment initialValue() {
+            return new RpcContextAttachment();
         }
     };
 
-    protected final Map<String, Object> attachments = new HashMap<>();
-    private final Map<String, Object> values = new HashMap<String, Object>();
+    private static final InternalThreadLocal<RpcContextAttachment> SERVER_ATTACHMENT = new InternalThreadLocal<RpcContextAttachment>() {
+        @Override
+        protected RpcContextAttachment initialValue() {
+            return new RpcContextAttachment();
+        }
+    };
 
-    private List<URL> urls;
+    private static final InternalThreadLocal<RpcServiceContext> SERVICE_CONTEXT = new InternalThreadLocal<RpcServiceContext>() {
+        @Override
+        protected RpcServiceContext initialValue() {
+            return new RpcServiceContext();
+        }
+    };
 
-    private URL url;
+    private static final InternalThreadLocal<CancellationContext> CANCELLATION_CONTEXT = new InternalThreadLocal<CancellationContext>() {
+        @Override
+        protected CancellationContext initialValue() {
+            return new CancellationContext();
+        }
+    };
 
-    private String methodName;
 
-    private Class<?>[] parameterTypes;
+    public static CancellationContext getCancellationContext() {
+        return CANCELLATION_CONTEXT.get();
+    }
 
-    private Object[] arguments;
-
-    private InetSocketAddress localAddress;
-
-    private InetSocketAddress remoteAddress;
-
-    private String remoteApplicationName;
-
-    @Deprecated
-    private List<Invoker<?>> invokers;
-    @Deprecated
-    private Invoker<?> invoker;
-    @Deprecated
-    private Invocation invocation;
-
-    // now we don't use the 'values' map to hold these objects
-    // we want these objects to be as generic as possible
-    private Object request;
-    private Object response;
-    private AsyncContext asyncContext;
 
     private boolean remove = true;
-
 
     protected RpcContext() {
     }
 
     /**
-     * get server side context.
+     * get server side context. ( A <-- B , in B side)
      *
      * @return server context
      */
-    public static RpcContext getServerContext() {
+    public static RpcContextAttachment getServerContext() {
         return SERVER_LOCAL.get();
     }
 
-    public static void restoreServerContext(RpcContext oldServerContext) {
+    public static void restoreServerContext(RpcContextAttachment oldServerContext) {
         SERVER_LOCAL.set(oldServerContext);
     }
 
@@ -140,9 +129,55 @@ public class RpcContext {
      *
      * @return context
      */
+    @Deprecated
     public static RpcContext getContext() {
-        return LOCAL.get();
+        return AGENT;
     }
+
+    /**
+     * get consumer side attachment ( A --> B , in A side)
+     *
+     * @return context
+     */
+    public static RpcContextAttachment getClientAttachment() {
+        return CLIENT_ATTACHMENT.get();
+    }
+
+    /**
+     * get provider side attachment from consumer ( A --> B , in B side)
+     *
+     * @return context
+     */
+    public static RpcContextAttachment getServerAttachment() {
+        return SERVER_ATTACHMENT.get();
+    }
+
+    /**
+     * Using to pass environment parameters in the whole invocation. For example, `remotingApplicationName`,
+     * `remoteAddress`, etc. {@link RpcServiceContext}
+     *
+     * @return context
+     */
+    public static RpcServiceContext getServiceContext() {
+        return SERVICE_CONTEXT.get();
+    }
+
+    public static void removeServiceContext() {
+        SERVICE_CONTEXT.remove();
+    }
+
+    public static void removeClientAttachment() {
+        if (CLIENT_ATTACHMENT.get().canRemove()) {
+            CLIENT_ATTACHMENT.remove();
+        }
+    }
+
+    public static void removeServerAttachment() {
+        if (SERVER_ATTACHMENT.get().canRemove()) {
+            SERVER_ATTACHMENT.remove();
+        }
+    }
+
 
     public boolean canRemove() {
         return remove;
@@ -152,8 +187,8 @@ public class RpcContext {
         this.remove = remove;
     }
 
-    public static void restoreContext(RpcContext oldContext) {
-        LOCAL.set(oldContext);
+    public static void restoreContext(RpcContextAttachment oldContext) {
+        CLIENT_ATTACHMENT.set(oldContext);
     }
 
     /**
@@ -171,9 +206,15 @@ public class RpcContext {
      * @param checkCanRemove if need check before remove
      */
     public static void removeContext(boolean checkCanRemove) {
-        if (LOCAL.get().canRemove()) {
-            LOCAL.remove();
+        if (CLIENT_ATTACHMENT.get().canRemove()) {
+            CLIENT_ATTACHMENT.remove();
         }
+        if (SERVER_ATTACHMENT.get().canRemove()) {
+            SERVER_ATTACHMENT.remove();
+        }
+        SERVER_LOCAL.remove();
+        SERVICE_CONTEXT.remove();
+        CANCELLATION_CONTEXT.remove();
     }
 
     /**
@@ -182,11 +223,11 @@ public class RpcContext {
      * @return null if the underlying protocol doesn't provide support for getting request
      */
     public Object getRequest() {
-        return request;
+        return SERVICE_CONTEXT.get().getRequest();
     }
 
     public void setRequest(Object request) {
-        this.request = request;
+        SERVICE_CONTEXT.get().setRequest(request);
     }
 
     /**
@@ -196,7 +237,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> T getRequest(Class<T> clazz) {
-        return (request != null && clazz.isAssignableFrom(request.getClass())) ? (T) request : null;
+        return SERVICE_CONTEXT.get().getRequest(clazz);
     }
 
     /**
@@ -205,11 +246,11 @@ public class RpcContext {
      * @return null if the underlying protocol doesn't provide support for getting response
      */
     public Object getResponse() {
-        return response;
+        return SERVICE_CONTEXT.get().getResponse();
     }
 
     public void setResponse(Object response) {
-        this.response = response;
+        SERVICE_CONTEXT.get().setResponse(response);
     }
 
     /**
@@ -219,7 +260,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> T getResponse(Class<T> clazz) {
-        return (response != null && clazz.isAssignableFrom(response.getClass())) ? (T) response : null;
+        return SERVICE_CONTEXT.get().getResponse(clazz);
     }
 
     /**
@@ -228,7 +269,7 @@ public class RpcContext {
      * @return provider side.
      */
     public boolean isProviderSide() {
-        return !isConsumerSide();
+        return SERVICE_CONTEXT.get().isProviderSide();
     }
 
     /**
@@ -237,7 +278,7 @@ public class RpcContext {
      * @return consumer side.
      */
     public boolean isConsumerSide() {
-        return getUrl().getParameter(SIDE_KEY, PROVIDER_SIDE).equals(CONSUMER_SIDE);
+        return SERVICE_CONTEXT.get().isConsumerSide();
     }
 
     /**
@@ -248,7 +289,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> getCompletableFuture() {
-        return FutureContext.getContext().getCompletableFuture();
+        return SERVICE_CONTEXT.get().getCompletableFuture();
     }
 
     /**
@@ -259,7 +300,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> Future<T> getFuture() {
-        return FutureContext.getContext().getCompletableFuture();
+        return SERVICE_CONTEXT.get().getFuture();
     }
 
     /**
@@ -268,23 +309,23 @@ public class RpcContext {
      * @param future
      */
     public void setFuture(CompletableFuture<?> future) {
-        FutureContext.getContext().setFuture(future);
+        SERVICE_CONTEXT.get().setFuture(future);
     }
 
     public List<URL> getUrls() {
-        return urls == null && url != null ? (List<URL>) Arrays.asList(url) : urls;
+        return SERVICE_CONTEXT.get().getUrls();
     }
 
     public void setUrls(List<URL> urls) {
-        this.urls = urls;
+        SERVICE_CONTEXT.get().setUrls(urls);
     }
 
     public URL getUrl() {
-        return url;
+        return SERVICE_CONTEXT.get().getUrl();
     }
 
     public void setUrl(URL url) {
-        this.url = url;
+        SERVICE_CONTEXT.get().setUrl(url);
     }
 
     /**
@@ -293,11 +334,11 @@ public class RpcContext {
      * @return method name.
      */
     public String getMethodName() {
-        return methodName;
+        return SERVICE_CONTEXT.get().getMethodName();
     }
 
     public void setMethodName(String methodName) {
-        this.methodName = methodName;
+        SERVICE_CONTEXT.get().setMethodName(methodName);
     }
 
     /**
@@ -306,11 +347,11 @@ public class RpcContext {
      * @serial
      */
     public Class<?>[] getParameterTypes() {
-        return parameterTypes;
+        return SERVICE_CONTEXT.get().getParameterTypes();
     }
 
     public void setParameterTypes(Class<?>[] parameterTypes) {
-        this.parameterTypes = parameterTypes;
+        SERVICE_CONTEXT.get().setParameterTypes(parameterTypes);
     }
 
     /**
@@ -319,11 +360,11 @@ public class RpcContext {
      * @return arguments.
      */
     public Object[] getArguments() {
-        return arguments;
+        return SERVICE_CONTEXT.get().getArguments();
     }
 
     public void setArguments(Object[] arguments) {
-        this.arguments = arguments;
+        SERVICE_CONTEXT.get().setArguments(arguments);
     }
 
     /**
@@ -334,11 +375,7 @@ public class RpcContext {
      * @return context
      */
     public RpcContext setLocalAddress(String host, int port) {
-        if (port < 0) {
-            port = 0;
-        }
-        this.localAddress = InetSocketAddress.createUnresolved(host, port);
-        return this;
+        return SERVICE_CONTEXT.get().setLocalAddress(host, port);
     }
 
     /**
@@ -347,7 +384,7 @@ public class RpcContext {
      * @return local address
      */
     public InetSocketAddress getLocalAddress() {
-        return localAddress;
+        return SERVICE_CONTEXT.get().getLocalAddress();
     }
 
     /**
@@ -357,12 +394,11 @@ public class RpcContext {
      * @return context
      */
     public RpcContext setLocalAddress(InetSocketAddress address) {
-        this.localAddress = address;
-        return this;
+        return SERVICE_CONTEXT.get().setLocalAddress(address);
     }
 
     public String getLocalAddressString() {
-        return getLocalHost() + ":" + getLocalPort();
+        return SERVICE_CONTEXT.get().getLocalAddressString();
     }
 
     /**
@@ -371,11 +407,7 @@ public class RpcContext {
      * @return local host name
      */
     public String getLocalHostName() {
-        String host = localAddress == null ? null : localAddress.getHostName();
-        if (StringUtils.isEmpty(host)) {
-            return getLocalHost();
-        }
-        return host;
+        return SERVICE_CONTEXT.get().getLocalHostName();
     }
 
     /**
@@ -386,11 +418,7 @@ public class RpcContext {
      * @return context
      */
     public RpcContext setRemoteAddress(String host, int port) {
-        if (port < 0) {
-            port = 0;
-        }
-        this.remoteAddress = InetSocketAddress.createUnresolved(host, port);
-        return this;
+        return SERVICE_CONTEXT.get().setRemoteAddress(host, port);
     }
 
     /**
@@ -399,7 +427,7 @@ public class RpcContext {
      * @return remote address
      */
     public InetSocketAddress getRemoteAddress() {
-        return remoteAddress;
+        return SERVICE_CONTEXT.get().getRemoteAddress();
     }
 
     /**
@@ -409,17 +437,15 @@ public class RpcContext {
      * @return context
      */
     public RpcContext setRemoteAddress(InetSocketAddress address) {
-        this.remoteAddress = address;
-        return this;
+        return SERVICE_CONTEXT.get().setRemoteAddress(address);
     }
 
     public String getRemoteApplicationName() {
-        return remoteApplicationName;
+        return SERVICE_CONTEXT.get().getRemoteApplicationName();
     }
 
     public RpcContext setRemoteApplicationName(String remoteApplicationName) {
-        this.remoteApplicationName = remoteApplicationName;
-        return this;
+        return SERVICE_CONTEXT.get().setRemoteApplicationName(remoteApplicationName);
     }
 
     /**
@@ -428,7 +454,7 @@ public class RpcContext {
      * @return remote address string.
      */
     public String getRemoteAddressString() {
-        return getRemoteHost() + ":" + getRemotePort();
+        return SERVICE_CONTEXT.get().getRemoteAddressString();
     }
 
     /**
@@ -437,7 +463,7 @@ public class RpcContext {
      * @return remote host name
      */
     public String getRemoteHostName() {
-        return remoteAddress == null ? null : remoteAddress.getHostName();
+        return SERVICE_CONTEXT.get().getRemoteHostName();
     }
 
     /**
@@ -446,13 +472,7 @@ public class RpcContext {
      * @return local host
      */
     public String getLocalHost() {
-        String host = localAddress == null ? null :
-                localAddress.getAddress() == null ? localAddress.getHostName()
-                        : NetUtils.filterLocalHost(localAddress.getAddress().getHostAddress());
-        if (host == null || host.length() == 0) {
-            return NetUtils.getLocalHost();
-        }
-        return host;
+        return SERVICE_CONTEXT.get().getLocalHost();
     }
 
     /**
@@ -461,7 +481,7 @@ public class RpcContext {
      * @return port
      */
     public int getLocalPort() {
-        return localAddress == null ? 0 : localAddress.getPort();
+        return SERVICE_CONTEXT.get().getLocalPort();
     }
 
     /**
@@ -470,9 +490,7 @@ public class RpcContext {
      * @return remote host
      */
     public String getRemoteHost() {
-        return remoteAddress == null ? null :
-                remoteAddress.getAddress() == null ? remoteAddress.getHostName()
-                        : NetUtils.filterLocalHost(remoteAddress.getAddress().getHostAddress());
+        return SERVICE_CONTEXT.get().getRemoteHost();
     }
 
     /**
@@ -481,7 +499,7 @@ public class RpcContext {
      * @return remote port
      */
     public int getRemotePort() {
-        return remoteAddress == null ? 0 : remoteAddress.getPort();
+        return SERVICE_CONTEXT.get().getRemotePort();
     }
 
     /**
@@ -491,11 +509,11 @@ public class RpcContext {
      * @return attachment
      */
     public String getAttachment(String key) {
-        Object value = attachments.get(key);
-        if (value instanceof String) {
-            return (String) value;
+        String client = CLIENT_ATTACHMENT.get().getAttachment(key);
+        if (StringUtils.isEmpty(client)) {
+            return SERVER_ATTACHMENT.get().getAttachment(key);
         }
-        return null; // or JSON.toString(value);
+        return client;
     }
 
     /**
@@ -506,7 +524,11 @@ public class RpcContext {
      */
     @Experimental("Experiment api for supporting Object transmission")
     public Object getObjectAttachment(String key) {
-        return attachments.get(key);
+        Object client = CLIENT_ATTACHMENT.get().getObjectAttachment(key);
+        if (client == null) {
+            return SERVER_ATTACHMENT.get().getObjectAttachment(key);
+        }
+        return client;
     }
 
     /**
@@ -526,11 +548,8 @@ public class RpcContext {
 
     @Experimental("Experiment api for supporting Object transmission")
     public RpcContext setObjectAttachment(String key, Object value) {
-        if (value == null) {
-            attachments.remove(key);
-        } else {
-            attachments.put(key, value);
-        }
+        // TODO compatible with previous
+        CLIENT_ATTACHMENT.get().setObjectAttachment(key, value);
         return this;
     }
 
@@ -541,7 +560,7 @@ public class RpcContext {
      * @return context
      */
     public RpcContext removeAttachment(String key) {
-        attachments.remove(key);
+        CLIENT_ATTACHMENT.get().removeAttachment(key);
         return this;
     }
 
@@ -562,7 +581,10 @@ public class RpcContext {
      */
     @Experimental("Experiment api for supporting Object transmission")
     public Map<String, Object> getObjectAttachments() {
-        return attachments;
+        Map<String, Object> result = new HashMap<>((int) ((CLIENT_ATTACHMENT.get().attachments.size() + SERVER_ATTACHMENT.get().attachments.size()) / .75) + 1);
+        result.putAll(SERVER_ATTACHMENT.get().attachments);
+        result.putAll(CLIENT_ATTACHMENT.get().attachments);
+        return result;
     }
 
     /**
@@ -572,9 +594,9 @@ public class RpcContext {
      * @return context
      */
     public RpcContext setAttachments(Map<String, String> attachment) {
-        this.attachments.clear();
+        CLIENT_ATTACHMENT.get().attachments.clear();
         if (attachment != null && attachment.size() > 0) {
-            this.attachments.putAll(attachment);
+            CLIENT_ATTACHMENT.get().attachments.putAll(attachment);
         }
         return this;
     }
@@ -587,15 +609,15 @@ public class RpcContext {
      */
     @Experimental("Experiment api for supporting Object transmission")
     public RpcContext setObjectAttachments(Map<String, Object> attachment) {
-        this.attachments.clear();
+        CLIENT_ATTACHMENT.get().attachments.clear();
         if (attachment != null && attachment.size() > 0) {
-            this.attachments.putAll(attachment);
+            CLIENT_ATTACHMENT.get().attachments.putAll(attachment);
         }
         return this;
     }
 
     public void clearAttachments() {
-        this.attachments.clear();
+        CLIENT_ATTACHMENT.get().attachments.clear();
     }
 
     /**
@@ -603,8 +625,9 @@ public class RpcContext {
      *
      * @return values
      */
+    @Deprecated
     public Map<String, Object> get() {
-        return values;
+        return CLIENT_ATTACHMENT.get().get();
     }
 
     /**
@@ -614,12 +637,9 @@ public class RpcContext {
      * @param value
      * @return context
      */
+    @Deprecated
     public RpcContext set(String key, Object value) {
-        if (value == null) {
-            values.remove(key);
-        } else {
-            values.put(key, value);
-        }
+        CLIENT_ATTACHMENT.get().set(key, value);
         return this;
     }
 
@@ -629,8 +649,9 @@ public class RpcContext {
      * @param key
      * @return value
      */
+    @Deprecated
     public RpcContext remove(String key) {
-        values.remove(key);
+        CLIENT_ATTACHMENT.get().remove(key);
         return this;
     }
 
@@ -640,8 +661,9 @@ public class RpcContext {
      * @param key
      * @return value
      */
+    @Deprecated
     public Object get(String key) {
-        return values.get(key);
+        return CLIENT_ATTACHMENT.get().get(key);
     }
 
     /**
@@ -649,7 +671,7 @@ public class RpcContext {
      */
     @Deprecated
     public boolean isServerSide() {
-        return isProviderSide();
+        return SERVICE_CONTEXT.get().isServerSide();
     }
 
     /**
@@ -657,7 +679,7 @@ public class RpcContext {
      */
     @Deprecated
     public boolean isClientSide() {
-        return isConsumerSide();
+        return SERVICE_CONTEXT.get().isClientSide();
     }
 
     /**
@@ -666,19 +688,11 @@ public class RpcContext {
     @Deprecated
     @SuppressWarnings({"unchecked", "rawtypes"})
     public List<Invoker<?>> getInvokers() {
-        return invokers == null && invoker != null ? (List) Arrays.asList(invoker) : invokers;
+        return SERVICE_CONTEXT.get().getInvokers();
     }
 
     public RpcContext setInvokers(List<Invoker<?>> invokers) {
-        this.invokers = invokers;
-        if (CollectionUtils.isNotEmpty(invokers)) {
-            List<URL> urls = new ArrayList<URL>(invokers.size());
-            for (Invoker<?> invoker : invokers) {
-                urls.add(invoker.getUrl());
-            }
-            setUrls(urls);
-        }
-        return this;
+        return SERVICE_CONTEXT.get().setInvokers(invokers);
     }
 
     /**
@@ -686,15 +700,11 @@ public class RpcContext {
      */
     @Deprecated
     public Invoker<?> getInvoker() {
-        return invoker;
+        return SERVICE_CONTEXT.get().getInvoker();
     }
 
     public RpcContext setInvoker(Invoker<?> invoker) {
-        this.invoker = invoker;
-        if (invoker != null) {
-            setUrl(invoker.getUrl());
-        }
-        return this;
+        return SERVICE_CONTEXT.get().setInvoker(invoker);
     }
 
     /**
@@ -702,17 +712,11 @@ public class RpcContext {
      */
     @Deprecated
     public Invocation getInvocation() {
-        return invocation;
+        return SERVICE_CONTEXT.get().getInvocation();
     }
 
     public RpcContext setInvocation(Invocation invocation) {
-        this.invocation = invocation;
-        if (invocation != null) {
-            setMethodName(invocation.getMethodName());
-            setParameterTypes(invocation.getParameterTypes());
-            setArguments(invocation.getArguments());
-        }
-        return this;
+        return SERVICE_CONTEXT.get().setInvocation(invocation);
     }
 
     /**
@@ -723,30 +727,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> asyncCall(Callable<T> callable) {
-        try {
-            try {
-                setAttachment(ASYNC_KEY, Boolean.TRUE.toString());
-                final T o = callable.call();
-                //local invoke will return directly
-                if (o != null) {
-                    if (o instanceof CompletableFuture) {
-                        return (CompletableFuture<T>) o;
-                    }
-                    return CompletableFuture.completedFuture(o);
-                } else {
-                    // The service has a normal sync method signature, should get future from RpcContext.
-                }
-            } catch (Exception e) {
-                throw new RpcException(e);
-            } finally {
-                removeAttachment(ASYNC_KEY);
-            }
-        } catch (final RpcException e) {
-            CompletableFuture<T> exceptionFuture = new CompletableFuture<>();
-            exceptionFuture.completeExceptionally(e);
-            return exceptionFuture;
-        }
-        return ((CompletableFuture<T>) getContext().getFuture());
+        return SERVICE_CONTEXT.get().asyncCall(callable);
     }
 
     /**
@@ -755,15 +736,7 @@ public class RpcContext {
      * @param runnable
      */
     public void asyncCall(Runnable runnable) {
-        try {
-            setAttachment(RETURN_KEY, Boolean.FALSE.toString());
-            runnable.run();
-        } catch (Throwable e) {
-            // FIXME should put exception in future?
-            throw new RpcException("oneway call error ." + e.getMessage(), e);
-        } finally {
-            removeAttachment(RETURN_KEY);
-        }
+        SERVICE_CONTEXT.get().asyncCall(runnable);
     }
 
     /**
@@ -772,88 +745,58 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public static AsyncContext startAsync() throws IllegalStateException {
-        RpcContext currentContext = getContext();
-        if (currentContext.asyncContext == null) {
-            currentContext.asyncContext = new AsyncContextImpl();
-        }
-        currentContext.asyncContext.start();
-        return currentContext.asyncContext;
+        return RpcServiceContext.startAsync();
     }
 
     protected void setAsyncContext(AsyncContext asyncContext) {
-        this.asyncContext = asyncContext;
+        SERVICE_CONTEXT.get().setAsyncContext(asyncContext);
     }
 
     public boolean isAsyncStarted() {
-        if (this.asyncContext == null) {
-            return false;
-        }
-        return asyncContext.isAsyncStarted();
+        return SERVICE_CONTEXT.get().isAsyncStarted();
     }
 
     public boolean stopAsync() {
-        return asyncContext.stop();
+        return SERVICE_CONTEXT.get().stopAsync();
     }
 
     public AsyncContext getAsyncContext() {
-        return asyncContext;
+        return SERVICE_CONTEXT.get().getAsyncContext();
     }
 
-    // RPC service context updated before each service call.
-    private URL consumerUrl;
-
     public String getGroup() {
-        if (consumerUrl == null) {
-            return null;
-        }
-        return consumerUrl.getParameter(GROUP_KEY);
+        return SERVICE_CONTEXT.get().getGroup();
     }
 
     public String getVersion() {
-        if (consumerUrl == null) {
-            return null;
-        }
-        return consumerUrl.getParameter(VERSION_KEY);
+        return SERVICE_CONTEXT.get().getVersion();
     }
 
     public String getInterfaceName() {
-        if (consumerUrl == null) {
-            return null;
-        }
-        return consumerUrl.getServiceInterface();
+        return SERVICE_CONTEXT.get().getInterfaceName();
     }
 
     public String getProtocol() {
-        if (consumerUrl == null) {
-            return null;
-        }
-        return consumerUrl.getParameter(PROTOCOL_KEY, DUBBO);
+        return SERVICE_CONTEXT.get().getProtocol();
     }
 
     public String getServiceKey() {
-        if (consumerUrl == null) {
-            return null;
-        }
-        return consumerUrl.getServiceKey();
+        return SERVICE_CONTEXT.get().getServiceKey();
     }
 
     public String getProtocolServiceKey() {
-        if (consumerUrl == null) {
-            return null;
-        }
-        return consumerUrl.getProtocolServiceKey();
+        return SERVICE_CONTEXT.get().getProtocolServiceKey();
     }
 
     public URL getConsumerUrl() {
-        return consumerUrl;
+        return SERVICE_CONTEXT.get().getConsumerUrl();
     }
 
     public void setConsumerUrl(URL consumerUrl) {
-        this.consumerUrl = consumerUrl;
+        SERVICE_CONTEXT.get().setConsumerUrl(consumerUrl);
     }
 
     public static void setRpcContext(URL url) {
-        RpcContext rpcContext = RpcContext.getContext();
-        rpcContext.setConsumerUrl(url);
+        RpcServiceContext.setRpcContext(url);
     }
 }

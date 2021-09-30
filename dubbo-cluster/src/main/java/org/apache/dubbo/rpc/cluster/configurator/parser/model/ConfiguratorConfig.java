@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.cluster.configurator.parser.model;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -31,6 +33,26 @@ public class ConfiguratorConfig {
     private Boolean enabled = true;
     private List<ConfigItem> configs;
 
+    @SuppressWarnings("unchecked")
+    public static ConfiguratorConfig parseFromMap(Map<String, Object> map) {
+        ConfiguratorConfig configuratorConfig = new ConfiguratorConfig();
+        configuratorConfig.setConfigVersion((String) map.get("configVersion"));
+        configuratorConfig.setScope((String) map.get("scope"));
+        configuratorConfig.setKey((String) map.get("key"));
+
+        Object enabled = map.get("enabled");
+        if (enabled != null) {
+            configuratorConfig.setEnabled(Boolean.parseBoolean(enabled.toString()));
+        }
+
+        Object configs = map.get("configs");
+        if (configs != null && List.class.isAssignableFrom(configs.getClass())) {
+            configuratorConfig.setConfigs(((List<Map<String, Object>>) configs).stream()
+                    .map(ConfigItem::parseFromMap).collect(Collectors.toList()));
+        }
+
+        return configuratorConfig;
+    }
 
     public String getConfigVersion() {
         return configVersion;

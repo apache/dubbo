@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,14 +33,24 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.STARTUP_PROBE;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
@@ -109,11 +118,6 @@ public class ApplicationConfig extends AbstractConfig {
     private MonitorConfig monitor;
 
     /**
-     * Is default or not
-     */
-    private Boolean isDefault;
-
-    /**
      * Directory for saving thread dump
      */
     private String dumpDirectory;
@@ -159,6 +163,32 @@ public class ApplicationConfig extends AbstractConfig {
 
     private String repository;
 
+    private Boolean enableFileCache;
+
+    private Boolean publishInterface;
+
+    private Boolean publishInstance;
+
+    /**
+     * The preferred protocol(name) of this application
+     * convenient for places where it's hard to determine which is the preferred protocol
+     */
+    private String protocol;
+
+    /**
+     * Metadata Service, used in Service Discovery
+     */
+    private Integer metadataServicePort;
+
+    /**
+     * used to set extensions of probe in qos
+     */
+    private String livenessProbe;
+
+    private String readinessProbe;
+
+    private String startupProbe;
+
     public ApplicationConfig() {
     }
 
@@ -166,19 +196,32 @@ public class ApplicationConfig extends AbstractConfig {
         setName(name);
     }
 
-    @Parameter(key = APPLICATION_KEY, required = true, useKeyAsProperty = false)
+    @Override
+    protected void checkDefault() {
+        super.checkDefault();
+        if (protocol == null) {
+            protocol = DUBBO;
+        }
+        if (hostname == null) {
+            try {
+                hostname = InetAddress.getLocalHost().getHostName();
+            } catch (UnknownHostException e) {
+                LOGGER.warn("Failed to get the hostname of current instance.", e);
+                hostname = "UNKNOWN";
+            }
+        }
+    }
+
+    @Parameter(key = APPLICATION_KEY, required = true)
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-        if (StringUtils.isEmpty(id)) {
-            id = name;
-        }
     }
 
-    @Parameter(key = "application.version")
+    @Parameter(key = APPLICATION_VERSION_KEY)
     public String getVersion() {
         return version;
     }
@@ -218,15 +261,15 @@ public class ApplicationConfig extends AbstractConfig {
     public void setEnvironment(String environment) {
         if (environment != null) {
             if (!(DEVELOPMENT_ENVIRONMENT.equals(environment)
-                    || TEST_ENVIRONMENT.equals(environment)
-                    || PRODUCTION_ENVIRONMENT.equals(environment))) {
+                || TEST_ENVIRONMENT.equals(environment)
+                || PRODUCTION_ENVIRONMENT.equals(environment))) {
 
                 throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
-                        environment,
-                        DEVELOPMENT_ENVIRONMENT,
-                        TEST_ENVIRONMENT,
-                        PRODUCTION_ENVIRONMENT,
-                        PRODUCTION_ENVIRONMENT));
+                    environment,
+                    DEVELOPMENT_ENVIRONMENT,
+                    TEST_ENVIRONMENT,
+                    PRODUCTION_ENVIRONMENT,
+                    PRODUCTION_ENVIRONMENT));
             }
         }
         this.environment = environment;
@@ -287,15 +330,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setLogger(String logger) {
         this.logger = logger;
-        LoggerFactory.setLoggerAdapter(logger);
-    }
-
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
+        LoggerFactory.setLoggerAdapter(getApplicationModel().getFrameworkModel(), logger);
     }
 
     @Parameter(key = DUMP_DIRECTORY)
@@ -348,7 +383,7 @@ public class ApplicationConfig extends AbstractConfig {
      *
      * @return
      */
-    @Parameter(key = "qos-enable", excluded = true)
+    @Parameter(key = "qos-enable", excluded = true, attribute = false)
     public Boolean getQosEnableCompatible() {
         return getQosEnable();
     }
@@ -357,7 +392,7 @@ public class ApplicationConfig extends AbstractConfig {
         setQosEnable(qosEnable);
     }
 
-    @Parameter(key = "qos-host", excluded = true)
+    @Parameter(key = "qos-host", excluded = true, attribute = false)
     public String getQosHostCompatible() {
         return getQosHost();
     }
@@ -366,7 +401,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.setQosHost(qosHost);
     }
 
-    @Parameter(key = "qos-port", excluded = true)
+    @Parameter(key = "qos-port", excluded = true, attribute = false)
     public Integer getQosPortCompatible() {
         return getQosPort();
     }
@@ -375,7 +410,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.setQosPort(qosPort);
     }
 
-    @Parameter(key = "qos-accept-foreign-ip", excluded = true)
+    @Parameter(key = "qos-accept-foreign-ip", excluded = true, attribute = false)
     public Boolean getQosAcceptForeignIpCompatible() {
         return this.getQosAcceptForeignIp();
     }
@@ -403,19 +438,11 @@ public class ApplicationConfig extends AbstractConfig {
 
     @Parameter(excluded = true)
     public String getHostname() {
-        if (hostname == null) {
-            try {
-                hostname = InetAddress.getLocalHost().getHostName();
-            } catch (UnknownHostException e) {
-                LOGGER.warn("Failed to get the hostname of current instance.", e);
-                hostname = "UNKNOWN";
-            }
-        }
         return hostname;
     }
 
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isValid() {
         return !StringUtils.isEmpty(name);
     }
@@ -445,6 +472,78 @@ public class ApplicationConfig extends AbstractConfig {
         this.repository = repository;
     }
 
+    @Parameter(key = REGISTRY_LOCAL_FILE_CACHE_ENABLED)
+    public Boolean getEnableFileCache() {
+        return enableFileCache;
+    }
+
+    public void setEnableFileCache(Boolean enableFileCache) {
+        this.enableFileCache = enableFileCache;
+    }
+
+    @Parameter(key = REGISTRY_PUBLISH_INTERFACE_KEY)
+    public Boolean getPublishInterface() {
+        return publishInterface;
+    }
+
+    public void setPublishInterface(Boolean publishInterface) {
+        this.publishInterface = publishInterface;
+    }
+
+    @Parameter(key = REGISTRY_PUBLISH_INSTANCE_KEY)
+    public Boolean getPublishInstance() {
+        return publishInstance;
+    }
+
+    public void setPublishInstance(Boolean publishInstance) {
+        this.publishInstance = publishInstance;
+    }
+
+    @Parameter(excluded = true, key = APPLICATION_PROTOCOL_KEY)
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    @Parameter(key = METADATA_SERVICE_PORT_KEY)
+    public Integer getMetadataServicePort() {
+        return metadataServicePort;
+    }
+
+    public void setMetadataServicePort(Integer metadataServicePort) {
+        this.metadataServicePort = metadataServicePort;
+    }
+
+    @Parameter(key = LIVENESS_PROBE_KEY)
+    public String getLivenessProbe() {
+        return livenessProbe;
+    }
+
+    public void setLivenessProbe(String livenessProbe) {
+        this.livenessProbe = livenessProbe;
+    }
+
+    @Parameter(key = READINESS_PROBE_KEY)
+    public String getReadinessProbe() {
+        return readinessProbe;
+    }
+
+    public void setReadinessProbe(String readinessProbe) {
+        this.readinessProbe = readinessProbe;
+    }
+
+    @Parameter(key = STARTUP_PROBE)
+    public String getStartupProbe() {
+        return startupProbe;
+    }
+
+    public void setStartupProbe(String startupProbe) {
+        this.startupProbe = startupProbe;
+    }
+
     @Override
     public void refresh() {
         super.refresh();
@@ -456,7 +555,7 @@ public class ApplicationConfig extends AbstractConfig {
             parameters = new HashMap<>();
         }
 
-        Set<InfraAdapter> adapters = ExtensionLoader.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
+        Set<InfraAdapter> adapters = this.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(adapters)) {
             Map<String, String> inputParameters = new HashMap<>();
             inputParameters.put(APPLICATION_KEY, getName());
@@ -465,11 +564,14 @@ public class ApplicationConfig extends AbstractConfig {
                 Map<String, String> extraParameters = adapter.getExtraAttributes(inputParameters);
                 if (CollectionUtils.isNotEmptyMap(extraParameters)) {
                     extraParameters.forEach((key, value) -> {
-                        String prefix = this.getPrefix() + ".";
-                        if (key.startsWith(prefix)) {
-                            key = key.substring(prefix.length());
+                        for (String prefix : this.getPrefixes()) {
+                            prefix += ".";
+                            if (key.startsWith(prefix)) {
+                                key = key.substring(prefix.length());
+                            }
+                            parameters.put(key, value);
+                            break;
                         }
-                        parameters.put(key, value);
                     });
                 }
             }

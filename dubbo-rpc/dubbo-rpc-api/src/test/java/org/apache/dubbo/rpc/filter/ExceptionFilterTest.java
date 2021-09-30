@@ -47,7 +47,7 @@ public class ExceptionFilterTest {
     @Test
     public void testRpcException() {
         Logger logger = mock(Logger.class);
-        RpcContext.getContext().setRemoteAddress("127.0.0.1", 1234);
+        RpcContext.getServiceContext().setRemoteAddress("127.0.0.1", 1234);
         RpcException exception = new RpcException("TestRpcException");
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();

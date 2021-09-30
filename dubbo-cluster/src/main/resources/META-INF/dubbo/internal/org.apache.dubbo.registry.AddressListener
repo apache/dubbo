@@ -1,0 +1,1 @@
+mesh-rule=org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleAddressListenerInterceptor

@@ -18,30 +18,41 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.bytecode.Wrapper;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.NATIVE;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
+
 
 /**
  * AbstractDefaultConfig
@@ -52,6 +63,27 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = -1559314110797223229L;
 
+    /**
+     * The interface name of the exported service
+     */
+    protected String interfaceName;
+
+    /**
+     * The classLoader of interface belong to
+     */
+    protected ClassLoader interfaceClassLoader;
+
+    /**
+     * The remote service version the customer/provider side will reference
+     */
+    protected String version;
+
+    /**
+     * The remote service group the customer/provider side will reference
+     */
+    protected String group;
+    
+    protected ServiceMetadata serviceMetadata;
     /**
      * Local impl class name for the service interface
      */
@@ -68,7 +100,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected MonitorConfig monitor;
 
     /**
-     * Strategies for generating dynamic agents，there are two strategies can be choosed: jdk and javassist
+     * Strategies for generating dynamic agents，there are two strategies can be chosen: jdk and javassist
      */
     protected String proxy;
 
@@ -142,7 +174,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * The metrics configuration
      */
-    protected MetricsConfig metrics;
     protected MetadataReportConfig metadataReportConfig;
 
     protected ConfigCenterConfig configCenter;
@@ -174,10 +205,41 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return urls;
     }
 
+    @Override
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
+        // remove this config from old ConfigManager
+//        if (oldScopeModel != null && oldScopeModel instanceof ModuleModel) {
+//            ((ModuleModel)oldScopeModel).getConfigManager().removeConfig(this);
+//        }
+
+        // change referenced config's scope model
+        ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
+        if (this.configCenter != null && this.configCenter.getScopeModel() != applicationModel) {
+            this.configCenter.setScopeModel(applicationModel);
+        }
+        if (this.metadataReportConfig != null && this.metadataReportConfig.getScopeModel() != applicationModel) {
+            this.metadataReportConfig.setScopeModel(applicationModel);
+        }
+        if (this.monitor != null && this.monitor.getScopeModel() != applicationModel) {
+            this.monitor.setScopeModel(applicationModel);
+        }
+        if (this.metadataReportConfig != null && this.metadataReportConfig.getScopeModel() != applicationModel) {
+            this.metadataReportConfig.setScopeModel(applicationModel);
+        }
+        if (CollectionUtils.isNotEmpty(this.registries)) {
+            this.registries.forEach(registryConfig -> {
+                if (registryConfig.getScopeModel() != applicationModel) {
+                    registryConfig.setScopeModel(applicationModel);
+                }
+            });
+        }
+    }
+
     /**
      * Check whether the registry config is exists, and then conversion it to {@link RegistryConfig}
      */
-    public void checkRegistry() {
+    protected void checkRegistry() {
         convertRegistryIdsToRegistries();
 
         for (RegistryConfig registryConfig : registries) {
@@ -198,43 +260,155 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     /**
-     * Check whether the remote service interface and the methods meet with Dubbo's requirements.it mainly check, if the
-     * methods configured in the configuration file are included in the interface of remote service
-     *
-     * @param interfaceClass the interface of remote service
-     * @param methods        the methods configured
+     * @deprecated After metrics config is refactored.
+     * This method should no longer use and will be deleted in the future.
      */
-    public void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
-        // interface cannot be null
-        Assert.notNull(interfaceClass, new IllegalStateException("interface not allow null!"));
-
-        // to verify interfaceClass is an interface
-        if (!interfaceClass.isInterface()) {
-            throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
-        }
-        // check if methods exist in the remote service interface
-        if (CollectionUtils.isNotEmpty(methods)) {
-            for (MethodConfig methodBean : methods) {
-                methodBean.setService(interfaceClass.getName());
-                methodBean.setServiceId(this.getId());
-                methodBean.refresh();
-                String methodName = methodBean.getName();
-                if (StringUtils.isEmpty(methodName)) {
-                    throw new IllegalStateException("<dubbo:method> name attribute is required! Please check: " +
-                            "<dubbo:service interface=\"" + interfaceClass.getName() + "\" ... >" +
-                            "<dubbo:method name=\"\" ... /></<dubbo:reference>");
-                }
-
-                boolean hasMethod = Arrays.stream(interfaceClass.getMethods()).anyMatch(method -> method.getName().equals(methodName));
-                if (!hasMethod) {
-                    throw new IllegalStateException("The interface " + interfaceClass.getName()
-                            + " not found method " + methodName);
-                }
+    @Deprecated
+    protected void appendMetricsCompatible(Map<String, String> map) {
+        MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
+        if (metricsConfig != null) {
+            if (!metricsConfig.getProtocol().equals(PROTOCOL_PROMETHEUS)) {
+                map.put("metrics.protocol", metricsConfig.getProtocol());
+                map.put("metrics.port", metricsConfig.getPort());
             }
         }
     }
 
+    /**
+     * To obtain the method list in the port, use reflection when in native mode and javaassist otherwise.
+     * @param interfaceClass
+     * @return
+     */
+    protected String[] methods(Class<?> interfaceClass) {
+        boolean isNative = getEnvironment().getConfiguration().getBoolean(NATIVE, false);
+        if (isNative) {
+            return Arrays.stream(interfaceClass.getMethods()).map(Method::getName).toArray(String[]::new);
+        } else {
+            return Wrapper.getWrapper(interfaceClass).getMethodNames();
+        }
+    }
 
+    protected Environment getEnvironment() {
+        return getScopeModel().getModelEnvironment();
+    }
+
+    @Override
+    protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
+        if (StringUtils.hasText(interfaceName)) {
+            Class<?> interfaceClass = null;
+            try {
+                interfaceClass = ClassUtils.forName(interfaceName);
+            } catch (ClassNotFoundException e) {
+                // There may be no interface class when generic call
+                return;
+            }
+            if (!interfaceClass.isInterface()) {
+                throw new IllegalStateException(interfaceName+" is not an interface");
+            }
+
+            // Auto create MethodConfig/ArgumentConfig according to config props
+            Map<String, String> configProperties = subPropsConfiguration.getProperties();
+            Method[] methods = interfaceClass.getMethods();
+            for (Method method : methods) {
+                if (ConfigurationUtils.hasSubProperties(configProperties, method.getName())) {
+                    MethodConfig methodConfig = getMethodByName(method.getName());
+                    // Add method config if not found
+                    if (methodConfig == null) {
+                        methodConfig = new MethodConfig();
+                        methodConfig.setName(method.getName());
+                        this.addMethod(methodConfig);
+                    }
+                    // Add argument config
+                    // dubbo.service.{interfaceName}.{methodName}.{arg-index}.xxx=xxx
+                    java.lang.reflect.Parameter[] arguments = method.getParameters();
+                    for (int i = 0; i < arguments.length; i++) {
+                        if (getArgumentByIndex(methodConfig, i) == null &&
+                            hasArgumentConfigProps(configProperties, methodConfig.getName(), i)) {
+
+                            ArgumentConfig argumentConfig = new ArgumentConfig();
+                            argumentConfig.setIndex(i);
+                            methodConfig.addArgument(argumentConfig);
+                        }
+                    }
+                }
+            }
+
+            // refresh MethodConfigs
+            List<MethodConfig> methodConfigs = this.getMethods();
+            if (methodConfigs != null && methodConfigs.size() > 0) {
+                // whether ignore invalid method config
+                Object ignoreInvalidMethodConfigVal = getEnvironment().getConfiguration()
+                    .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_INVALID_METHOD_CONFIG, "false");
+                boolean ignoreInvalidMethodConfig = Boolean.parseBoolean(ignoreInvalidMethodConfigVal.toString());
+
+                Class<?> finalInterfaceClass = interfaceClass;
+                List<MethodConfig> validMethodConfigs = methodConfigs.stream().filter(methodConfig -> {
+                    methodConfig.setParentPrefix(preferredPrefix);
+                    methodConfig.setScopeModel(getScopeModel());
+                    methodConfig.refresh();
+                    // verify method config
+                    return verifyMethodConfig(methodConfig, finalInterfaceClass, ignoreInvalidMethodConfig);
+                }).collect(Collectors.toList());
+                this.setMethods(validMethodConfigs);
+            }
+        }
+
+    }
+
+    private boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
+        String methodName = methodConfig.getName();
+        if (StringUtils.isEmpty(methodName)) {
+            String msg = "<dubbo:method> name attribute is required! Please check: " +
+                "<dubbo:service interface=\"" + interfaceName + "\" ... >" +
+                "<dubbo:method name=\"\" ... /></<dubbo:reference>";
+            if (ignoreInvalidMethodConfig) {
+                logger.warn(msg);
+                return false;
+            } else {
+                throw new IllegalStateException(msg);
+            }
+        }
+
+        boolean hasMethod = Arrays.stream(interfaceClass.getMethods()).anyMatch(method -> method.getName().equals(methodName));
+        if (!hasMethod) {
+            String msg = "Found invalid method config, the interface " + interfaceClass.getName() + " not found method \""
+                + methodName + "\" : [" + methodConfig + "]";
+            if (ignoreInvalidMethodConfig) {
+                logger.warn(msg);
+                return false;
+            } else {
+                throw new IllegalStateException(msg);
+            }
+        }
+        return true;
+    }
+
+    private ArgumentConfig getArgumentByIndex(MethodConfig methodConfig, int argIndex) {
+        if (methodConfig.getArguments() != null && methodConfig.getArguments().size() > 0) {
+            for (ArgumentConfig argument : methodConfig.getArguments()) {
+                if (argument.getIndex() != null && argument.getIndex() == argIndex) {
+                    return argument;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean hasArgumentConfigProps(Map<String, String> configProperties, String methodName, int argIndex) {
+        String argPrefix = methodName + "." + argIndex + ".";
+        return ConfigurationUtils.hasSubProperties(configProperties, argPrefix);
+    }
+
+    protected MethodConfig getMethodByName(String name) {
+        if (methods != null && methods.size() > 0) {
+            for (MethodConfig methodConfig : methods) {
+                if (StringUtils.isEquals(methodConfig.getName(), name)) {
+                    return methodConfig;
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * Legitimacy check of stub, note that: the local will deprecated, and replace with <code>stub</code>
@@ -242,13 +416,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
      *                       side, it is the {@link Class} of the remote service interface
      */
-    public void checkStubAndLocal(Class<?> interfaceClass) {
+    protected void checkStubAndLocal(Class<?> interfaceClass) {
         verifyStubAndLocal(local, "Local", interfaceClass);
         verifyStubAndLocal(stub, "Stub", interfaceClass);
     }
-    
-    public void verifyStubAndLocal(String className, String label, Class<?> interfaceClass){
-    	if (ConfigUtils.isNotEmpty(className)) {
+
+    private void verifyStubAndLocal(String className, String label, Class<?> interfaceClass){
+        if (ConfigUtils.isNotEmpty(className)) {
             Class<?> localClass = ConfigUtils.isDefault(className) ?
                     ReflectUtils.forName(interfaceClass.getName() + label) : ReflectUtils.forName(className);
                         verify(interfaceClass, localClass);
@@ -274,15 +448,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         computeValidRegistryIds();
         if (StringUtils.isEmpty(registryIds)) {
             if (CollectionUtils.isEmpty(registries)) {
-                List<RegistryConfig> registryConfigs = ApplicationModel.getConfigManager().getDefaultRegistries();
-                if (registryConfigs.isEmpty()) {
-                    registryConfigs = new ArrayList<>();
-                    RegistryConfig registryConfig = new RegistryConfig();
-                    registryConfig.refresh();
-                    registryConfigs.add(registryConfig);
-                } else {
-                    registryConfigs = new ArrayList<>(registryConfigs);
-                }
+                List<RegistryConfig> registryConfigs = getConfigManager().getDefaultRegistries();
+                registryConfigs = new ArrayList<>(registryConfigs);
                 setRegistries(registryConfigs);
             }
         } else {
@@ -290,29 +457,24 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             List<RegistryConfig> tmpRegistries = new ArrayList<>();
             Arrays.stream(ids).forEach(id -> {
                 if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
-                    Optional<RegistryConfig> globalRegistry = ApplicationModel.getConfigManager().getRegistry(id);
+                    Optional<RegistryConfig> globalRegistry = getConfigManager().getRegistry(id);
                     if (globalRegistry.isPresent()) {
                         tmpRegistries.add(globalRegistry.get());
                     } else {
-                        RegistryConfig registryConfig = new RegistryConfig();
-                        registryConfig.setId(id);
-                        registryConfig.refresh();
-                        tmpRegistries.add(registryConfig);
+                        throw new IllegalStateException("Registry not found: " + id);
                     }
                 }
             });
-
-            if (tmpRegistries.size() > ids.length) {
-                throw new IllegalStateException("Too much registries found, the registries assigned to this service " +
-                        "are :" + registryIds + ", but got " + tmpRegistries.size() + " registries!");
-            }
-
             setRegistries(tmpRegistries);
         }
 
     }
 
-    public void completeCompoundConfigs(AbstractInterfaceConfig interfaceConfig) {
+    protected boolean notHasSelfRegistryProperty() {
+        return CollectionUtils.isEmpty(registries) && StringUtils.isEmpty(registryIds);
+    }
+
+    protected void completeCompoundConfigs(AbstractInterfaceConfig interfaceConfig) {
         if (interfaceConfig != null) {
             if (application == null) {
                 setApplication(interfaceConfig.getApplication());
@@ -320,15 +482,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if (module == null) {
                 setModule(interfaceConfig.getModule());
             }
-            if (registries == null) {
+            if (notHasSelfRegistryProperty()) {
                 setRegistries(interfaceConfig.getRegistries());
+                setRegistryIds(interfaceConfig.getRegistryIds());
             }
             if (monitor == null) {
                 setMonitor(interfaceConfig.getMonitor());
             }
         }
         if (module != null) {
-            if (registries == null) {
+            if (notHasSelfRegistryProperty()) {
                 setRegistries(module.getRegistries());
             }
             if (monitor == null) {
@@ -336,8 +499,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
         if (application != null) {
-            if (registries == null) {
+            if (notHasSelfRegistryProperty()) {
                 setRegistries(application.getRegistries());
+                setRegistryIds(application.getRegistryIds());
             }
             if (monitor == null) {
                 setMonitor(application.getMonitor());
@@ -346,10 +510,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
     
     protected void computeValidRegistryIds() {
-        if (StringUtils.isEmpty(getRegistryIds())) {
-            if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryIds())) {
-                setRegistryIds(getApplication().getRegistryIds());
-            }
+        if (application != null && notHasSelfRegistryProperty()) {
+            setRegistries(application.getRegistries());
+            setRegistryIds(application.getRegistryIds());
         }
     }
 
@@ -451,22 +614,21 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.layer = layer;
     }
 
+    /**
+     * Always use the global ApplicationConfig
+     */
     public ApplicationConfig getApplication() {
         if (application != null) {
             return application;
         }
-        return ApplicationModel.getConfigManager().getApplicationOrElseThrow();
+        return getConfigManager().getApplicationOrElseThrow();
     }
 
     @Deprecated
     public void setApplication(ApplicationConfig application) {
         this.application = application;
         if (application != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            configManager.getApplication().orElseGet(() -> {
-                configManager.setApplication(application);
-                return application;
-            });
+            getConfigManager().setApplication(application);
         }
     }
 
@@ -474,18 +636,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (module != null) {
             return module;
         }
-        return ApplicationModel.getConfigManager().getModule().orElse(null);
+        return getModuleConfigManager().getModule().orElse(null);
     }
 
     @Deprecated
     public void setModule(ModuleConfig module) {
         this.module = module;
         if (module != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            configManager.getModule().orElseGet(() -> {
-                configManager.setModule(module);
-                return module;
-            });
+            getModuleConfigManager().setModule(module);
         }
     }
 
@@ -522,20 +680,24 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return methods;
     }
 
-    // ======== Deprecated ========
-
     @SuppressWarnings("unchecked")
     public void setMethods(List<? extends MethodConfig> methods) {
-        this.methods = (List<MethodConfig>) methods;
+        this.methods = (methods != null) ? new ArrayList<>(methods) : null;
     }
 
+    public void addMethod(MethodConfig methodConfig) {
+        if (this.methods == null) {
+            this.methods = new ArrayList<>();
+        }
+        this.methods.add(methodConfig);
+    }
 
     public MonitorConfig getMonitor() {
         if (monitor != null) {
             return monitor;
         }
         // FIXME: instead of return null, we should set default monitor when getMonitor() return null in ConfigManager
-        return ApplicationModel.getConfigManager().getMonitor().orElse(null);
+        return getConfigManager().getMonitor().orElse(null);
     }
 
     @Deprecated
@@ -547,11 +709,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
         if (monitor != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            configManager.getMonitor().orElseGet(() -> {
-                configManager.setMonitor(monitor);
-                return monitor;
-            });
+            getConfigManager().setMonitor(monitor);
         }
     }
 
@@ -568,7 +726,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (configCenter != null) {
             return configCenter;
         }
-        Collection<ConfigCenterConfig> configCenterConfigs = ApplicationModel.getConfigManager().getConfigCenters();
+        Collection<ConfigCenterConfig> configCenterConfigs = getConfigManager().getConfigCenters();
         if (CollectionUtils.isNotEmpty(configCenterConfigs)) {
             return configCenterConfigs.iterator().next();
         }
@@ -579,12 +737,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setConfigCenter(ConfigCenterConfig configCenter) {
         this.configCenter = configCenter;
         if (configCenter != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            Collection<ConfigCenterConfig> configs = configManager.getConfigCenters();
-            if (CollectionUtils.isEmpty(configs)
-                    || configs.stream().noneMatch(existed -> existed.equals(configCenter))) {
-                configManager.addConfigCenter(configCenter);
-            }
+            getConfigManager().addConfigCenter(configCenter);
         }
     }
 
@@ -625,7 +778,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (metadataReportConfig != null) {
             return metadataReportConfig;
         }
-        Collection<MetadataReportConfig> metadataReportConfigs = ApplicationModel.getConfigManager().getMetadataConfigs();
+        Collection<MetadataReportConfig> metadataReportConfigs = getConfigManager().getMetadataConfigs();
         if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
             return metadataReportConfigs.iterator().next();
         }
@@ -636,36 +789,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
         this.metadataReportConfig = metadataReportConfig;
         if (metadataReportConfig != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            Collection<MetadataReportConfig> configs = configManager.getMetadataConfigs();
-            if (CollectionUtils.isEmpty(configs)
-                    || configs.stream().noneMatch(existed -> existed.equals(metadataReportConfig))) {
-                configManager.addMetadataReport(metadataReportConfig);
-            }
+            getConfigManager().addMetadataReport(metadataReportConfig);
         }
     }
 
-    @Deprecated
-    public MetricsConfig getMetrics() {
-        if (metrics != null) {
-            return metrics;
-        }
-        return ApplicationModel.getConfigManager().getMetrics().orElse(null);
-    }
-
-    @Deprecated
-    public void setMetrics(MetricsConfig metrics) {
-        this.metrics = metrics;
-        if (metrics != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            configManager.getMetrics().orElseGet(() -> {
-                configManager.setMetrics(metrics);
-                return metrics;
-            });
-        }
-    }
-
-    @Parameter(key = TAG_KEY, useKeyAsProperty = false)
+    @Parameter(key = TAG_KEY)
     public String getTag() {
         return tag;
     }
@@ -683,6 +811,53 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public SslConfig getSslConfig() {
-        return ApplicationModel.getConfigManager().getSsl().orElse(null);
+        return getConfigManager().getSsl().orElse(null);
+    }
+    
+    protected void initServiceMetadata(AbstractInterfaceConfig interfaceConfig) {
+        serviceMetadata.setVersion(getVersion(interfaceConfig));
+        serviceMetadata.setGroup(getGroup(interfaceConfig));
+        serviceMetadata.setDefaultGroup(getGroup(interfaceConfig));
+        serviceMetadata.setServiceInterfaceName(getInterface());
+    }
+    
+    public String getGroup(AbstractInterfaceConfig interfaceConfig) {
+        return StringUtils.isEmpty(getGroup()) ? (interfaceConfig != null ? interfaceConfig.getGroup() : getGroup()) : getGroup();
+    }
+
+    public String getVersion(AbstractInterfaceConfig interfaceConfig) {
+        return StringUtils.isEmpty(getVersion()) ? (interfaceConfig != null ? interfaceConfig.getVersion() : getVersion()) : getVersion();
+    }
+    
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+    
+    public String getInterface() {
+        return interfaceName;
+    }
+    
+    public void setInterface(String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
+
+    public ClassLoader getInterfaceClassLoader() {
+        return interfaceClassLoader;
+    }
+
+    public void setInterfaceClassLoader(ClassLoader interfaceClassLoader) {
+        this.interfaceClassLoader = interfaceClassLoader;
     }
 }

@@ -127,6 +127,25 @@ public class Request {
         }
     }
 
+    public Request copy() {
+        Request copy = new Request(mId);
+        copy.mVersion = this.mVersion;
+        copy.mTwoWay = this.mTwoWay;
+        copy.mEvent = this.mEvent;
+        copy.mBroken = this.mBroken;
+        copy.mData = this.mData;
+        return copy;
+    }
+
+    public Request copyWithoutData(){
+        Request copy = new Request(mId);
+        copy.mVersion = this.mVersion;
+        copy.mTwoWay = this.mTwoWay;
+        copy.mEvent = this.mEvent;
+        copy.mBroken = this.mBroken;
+        return copy;
+    }
+
     @Override
     public String toString() {
         return "Request [id=" + mId + ", version=" + mVersion + ", twoway=" + mTwoWay + ", event=" + mEvent

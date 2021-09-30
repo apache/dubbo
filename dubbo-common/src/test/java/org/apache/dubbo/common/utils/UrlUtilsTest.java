@@ -43,7 +43,12 @@ public class UrlUtilsTest {
 
     @Test
     public void testAddressNull() {
-        assertNull(UrlUtils.parseURL(null, null));
+        String exceptionMessage = "Address is not allowed to be empty, please re-enter.";
+        try {
+            UrlUtils.parseURL(null, null);
+        } catch (IllegalArgumentException illegalArgumentException) {
+            assertEquals(exceptionMessage, illegalArgumentException.getMessage());
+        }
     }
 
     @Test
@@ -133,7 +138,12 @@ public class UrlUtilsTest {
 
     @Test
     public void testParseUrlsAddressNull() {
-        assertNull(UrlUtils.parseURLs(null, null));
+        String exceptionMessage = "Address is not allowed to be empty, please re-enter.";
+        try {
+            UrlUtils.parseURLs(null, null);
+        } catch (IllegalArgumentException illegalArgumentException) {
+            assertEquals(exceptionMessage, illegalArgumentException.getMessage());
+        }
     }
 
     @Test
@@ -367,7 +377,7 @@ public class UrlUtilsTest {
     @Test
     public void testIsMatchUrlWithDefaultPrefix() {
         URL url = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?default.version=1.0.0&default.group=test");
-        assertEquals("1.0.0", url.getParameter("version"));
+        assertEquals("1.0.0", url.getVersion());
         assertEquals("1.0.0", url.getParameter("default.version"));
 
         URL consumerUrl = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?version=1.0.0&group=test");

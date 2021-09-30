@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.definition;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.metadata.definition.builder.DefaultTypeBuilder;
 import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
@@ -30,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
 
 /**
  * 2015/1/27.
@@ -45,26 +45,25 @@ public class TypeDefinitionBuilder {
         BUILDERS = new ArrayList<>(tbs);
     }
 
-    public static TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
-        TypeBuilder builder = getGenericTypeBuilder(type, clazz);
+    public static TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
+        TypeBuilder builder = getGenericTypeBuilder(clazz);
         TypeDefinition td;
-        if (builder != null) {
+
+        if (clazz.isPrimitive() || ClassUtils.isSimpleType(clazz)) { // changed since 2.7.6
+            td = new TypeDefinition(clazz.getCanonicalName());
+            typeCache.put(clazz.getCanonicalName(), td);
+        } else if (builder != null) {
             td = builder.build(type, clazz, typeCache);
-            td.setTypeBuilderName(builder.getClass().getName());
         } else {
             td = DefaultTypeBuilder.build(clazz, typeCache);
-            td.setTypeBuilderName(DefaultTypeBuilder.class.getName());
-        }
-        if (isSimpleType(clazz)) { // changed since 2.7.6
-            td.setProperties(null);
         }
         return td;
     }
 
-    private static TypeBuilder getGenericTypeBuilder(Type type, Class<?> clazz) {
+    private static TypeBuilder getGenericTypeBuilder(Class<?> clazz) {
         for (TypeBuilder builder : BUILDERS) {
             try {
-                if (builder.accept(type, clazz)) {
+                if (builder.accept(clazz)) {
                     return builder;
                 }
             } catch (NoClassDefFoundError cnfe) {
@@ -75,7 +74,7 @@ public class TypeDefinitionBuilder {
         return null;
     }
 
-    private Map<Class<?>, TypeDefinition> typeCache = new HashMap<>();
+    private Map<String, TypeDefinition> typeCache = new HashMap<>();
 
     public TypeDefinition build(Type type, Class<?> clazz) {
         return build(type, clazz, typeCache);

@@ -19,31 +19,26 @@ package org.apache.dubbo.metadata;
 import java.util.Set;
 
 public class MappingChangedEvent {
-    private String serviceKey;
-    private Set<String> apps;
-    private Set<String> oldApps;
+
+    private final String serviceKey;
+    private final Set<String> apps;
+
+    public MappingChangedEvent(String serviceKey, Set<String> apps) {
+        this.serviceKey = serviceKey;
+        this.apps = apps;
+    }
 
     public String getServiceKey() {
         return serviceKey;
-    }
-
-    public void setServiceKey(String serviceKey) {
-        this.serviceKey = serviceKey;
     }
 
     public Set<String> getApps() {
         return apps;
     }
 
-    public void setApps(Set<String> apps) {
-        this.apps = apps;
-    }
-
-    public Set<String> getOldApps() {
-        return oldApps;
-    }
-
-    public void setOldApps(Set<String> oldApps) {
-        this.oldApps = oldApps;
+    @Override
+    public String toString() {
+        return "{serviceKey: " + serviceKey + ", apps: " +
+                apps.toString() + "}";
     }
 }

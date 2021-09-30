@@ -20,21 +20,29 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_KEY;
-import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_KEY;
-import static org.apache.dubbo.config.Constants.ON_RETURN_INSTANCE_KEY;
-import static org.apache.dubbo.config.Constants.ON_RETURN_METHOD_KEY;
-import static org.apache.dubbo.config.Constants.ON_THROW_INSTANCE_KEY;
-import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_INSTANCE_ATTRIBUTE_KEY;
+import static org.apache.dubbo.config.Constants.ON_INVOKE_METHOD_ATTRIBUTE_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_INSTANCE_ATTRIBUTE_KEY;
+import static org.apache.dubbo.config.Constants.ON_RETURN_METHOD_ATTRIBUTE_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_INSTANCE_ATTRIBUTE_KEY;
+import static org.apache.dubbo.config.Constants.ON_THROW_METHOD_ATTRIBUTE_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -53,9 +61,12 @@ public class MethodConfigTest {
     private static final int EXECUTES = 5;
     private static final boolean DEPERECATED = true;
     private static final boolean STICKY = true;
-    private static final String ONINVOKE = "i";
-    private static final String ONTHROW = "t";
-    private static final String ONRETURN = "r";
+    private static final String ONINVOKE = "invokeNotify";
+    private static final String ONINVOKE_METHOD = "onInvoke";
+    private static final String ONTHROW = "throwNotify";
+    private static final String ONTHROW_METHOD = "onThrow";
+    private static final String ONRETURN = "returnNotify";
+    private static final String ONRETURN_METHOD = "onReturn";
     private static final String CACHE = "c";
     private static final String VALIDATION = "v";
     private static final int ARGUMENTS_INDEX = 24;
@@ -63,10 +74,22 @@ public class MethodConfigTest {
     private static final String ARGUMENTS_TYPE = "sss";
 
     @Reference(methods = {@Method(name = METHOD_NAME, timeout = TIMEOUT, retries = RETRIES, loadbalance = LOADBALANCE, async = ASYNC,
-            actives = ACTIVES, executes = EXECUTES, deprecated = DEPERECATED, sticky = STICKY, oninvoke = ONINVOKE, onthrow = ONTHROW, onreturn = ONRETURN, cache = CACHE, validation = VALIDATION,
+            actives = ACTIVES, executes = EXECUTES, deprecated = DEPERECATED, sticky = STICKY, oninvoke = ONINVOKE+"."+ONINVOKE_METHOD,
+            onthrow = ONTHROW+"."+ONTHROW_METHOD, onreturn = ONRETURN+"."+ONRETURN_METHOD, cache = CACHE, validation = VALIDATION,
             arguments = {@Argument(index = ARGUMENTS_INDEX, callback = ARGUMENTS_CALLBACK, type = ARGUMENTS_TYPE)})})
     private String testField;
 
+    @BeforeEach
+    public void beforeEach() {
+        DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
+    }
+
+    //TODO remove this test
     @Test
     public void testStaticConstructor() throws NoSuchFieldException {
         Method[] methods = this.getClass().getDeclaredField("testField").getAnnotation(Reference.class).methods();
@@ -83,8 +106,11 @@ public class MethodConfigTest {
         assertThat(DEPERECATED, equalTo(methodConfig.getDeprecated()));
         assertThat(STICKY, equalTo(methodConfig.getSticky()));
         assertThat(ONINVOKE, equalTo(methodConfig.getOninvoke()));
+        assertThat(ONINVOKE_METHOD, equalTo(methodConfig.getOninvokeMethod()));
         assertThat(ONTHROW, equalTo(methodConfig.getOnthrow()));
+        assertThat(ONTHROW_METHOD, equalTo(methodConfig.getOnthrowMethod()));
         assertThat(ONRETURN, equalTo(methodConfig.getOnreturn()));
+        assertThat(ONRETURN_METHOD, equalTo(methodConfig.getOnreturnMethod()));
         assertThat(CACHE, equalTo(methodConfig.getCache()));
         assertThat(VALIDATION, equalTo(methodConfig.getValidation()));
         assertThat(ARGUMENTS_INDEX, equalTo(methodConfig.getArguments().get(0).getIndex().intValue()));
@@ -153,14 +179,14 @@ public class MethodConfigTest {
         assertThat(method.getSticky(), is(true));
     }
 
-    @Test
+    //@Test
     public void testOnreturn() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setOnreturn("on-return-object");
-        assertThat(method.getOnreturn(), equalTo((Object) "on-return-object"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
-        MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) ON_RETURN_INSTANCE_KEY, (Object) "on-return-object"));
+        assertThat(method.getOnreturn(), equalTo("on-return-object"));
+        Map<String, String> attributes = new HashMap<>();
+        MethodConfig.appendAttributes(attributes, method);
+        assertThat(attributes, hasEntry(ON_RETURN_INSTANCE_ATTRIBUTE_KEY, "on-return-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -171,22 +197,22 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setOnreturnMethod("on-return-method");
         assertThat(method.getOnreturnMethod(), equalTo("on-return-method"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
-        MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) ON_RETURN_METHOD_KEY, (Object) "on-return-method"));
+        Map<String, String> attributes = new HashMap<>();
+        MethodConfig.appendAttributes(attributes, method);
+        assertThat(attributes, hasEntry((Object) ON_RETURN_METHOD_ATTRIBUTE_KEY, (Object) "on-return-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
 
-    @Test
+    //@Test
     public void testOnthrow() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setOnthrow("on-throw-object");
         assertThat(method.getOnthrow(), equalTo((Object) "on-throw-object"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
-        MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) ON_THROW_INSTANCE_KEY, (Object) "on-throw-object"));
+        Map<String, String> attributes = new HashMap<>();
+        MethodConfig.appendAttributes(attributes, method);
+        assertThat(attributes, hasEntry((Object) ON_THROW_INSTANCE_ATTRIBUTE_KEY, (Object) "on-throw-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -197,22 +223,22 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setOnthrowMethod("on-throw-method");
         assertThat(method.getOnthrowMethod(), equalTo("on-throw-method"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
-        MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) ON_THROW_METHOD_KEY, (Object) "on-throw-method"));
+        Map<String, String> attributes = new HashMap<>();
+        MethodConfig.appendAttributes(attributes, method);
+        assertThat(attributes, hasEntry((Object) ON_THROW_METHOD_ATTRIBUTE_KEY, (Object) "on-throw-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
     }
 
-    @Test
+    //@Test
     public void testOninvoke() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setOninvoke("on-invoke-object");
         assertThat(method.getOninvoke(), equalTo((Object) "on-invoke-object"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
-        MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) ON_INVOKE_INSTANCE_KEY, (Object) "on-invoke-object"));
+        Map<String, String> attributes = new HashMap<>();
+        MethodConfig.appendAttributes(attributes, method);
+        assertThat(attributes, hasEntry((Object) ON_INVOKE_INSTANCE_ATTRIBUTE_KEY, (Object) "on-invoke-object"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -223,9 +249,9 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setOninvokeMethod("on-invoke-method");
         assertThat(method.getOninvokeMethod(), equalTo("on-invoke-method"));
-        Map<String, Object> attribute = new HashMap<String, Object>();
-        MethodConfig.appendAttributes(attribute, method);
-        assertThat(attribute, hasEntry((Object) ON_INVOKE_METHOD_KEY, (Object) "on-invoke-method"));
+        Map<String, String> attributes = new HashMap<>();
+        MethodConfig.appendAttributes(attributes, method);
+        assertThat(attributes, hasEntry((Object) ON_INVOKE_METHOD_ATTRIBUTE_KEY, (Object) "on-invoke-method"));
         Map<String, String> parameters = new HashMap<String, String>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters.size(), is(0));
@@ -236,5 +262,211 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setReturn(true);
         assertThat(method.isReturn(), is(true));
+    }
+
+    @Test
+    public void testOverrideMethodConfigOfReference() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.timeout", "1234");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.sticky", "true");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".init", "false");
+
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setInterface(interfaceName);
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayName");
+        methodConfig.setTimeout(1000);
+        referenceConfig.setMethods(Arrays.asList(methodConfig));
+
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .reference(referenceConfig)
+            .initialize();
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("a", "1");
+        params.put("b", "2");
+
+        Assertions.assertEquals(1234, methodConfig.getTimeout());
+        Assertions.assertEquals(true, methodConfig.getSticky());
+        Assertions.assertEquals(params, methodConfig.getParameters());
+        Assertions.assertEquals(false, referenceConfig.isInit());
+
+    }
+
+    @Test
+    public void testAddMethodConfigOfReference() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.timeout", "1234");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.sticky", "true");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".init", "false");
+
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setInterface(interfaceName);
+
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .reference(referenceConfig)
+            .initialize();
+
+        List<MethodConfig> methodConfigs = referenceConfig.getMethods();
+        Assertions.assertEquals(1, methodConfigs.size());
+        MethodConfig methodConfig = methodConfigs.get(0);
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("a", "1");
+        params.put("b", "2");
+
+        Assertions.assertEquals(1234, methodConfig.getTimeout());
+        Assertions.assertEquals(true, methodConfig.getSticky());
+        Assertions.assertEquals(params, methodConfig.getParameters());
+        Assertions.assertEquals(false, referenceConfig.isInit());
+
+    }
+
+    @Test
+    public void testOverrideMethodConfigOfService() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.timeout", "1234");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.sticky", "true");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".group", "demo");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setInterface(interfaceName);
+        serviceConfig.setRef(new DemoServiceImpl());
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayName");
+        methodConfig.setTimeout(1000);
+        serviceConfig.setMethods(Arrays.asList(methodConfig));
+
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .service(serviceConfig)
+            .initialize();
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("a", "1");
+        params.put("b", "2");
+
+        Assertions.assertEquals(1234, methodConfig.getTimeout());
+        Assertions.assertEquals(true, methodConfig.getSticky());
+        Assertions.assertEquals(params, methodConfig.getParameters());
+        Assertions.assertEquals("demo", serviceConfig.getGroup());
+
+    }
+
+    @Test
+    public void testAddMethodConfigOfService() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.timeout", "1234");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.sticky", "true");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.0.callback", "true");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".group", "demo");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".echo", "non-method-config");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setInterface(interfaceName);
+        serviceConfig.setRef(new DemoServiceImpl());
+
+        Assertions.assertEquals(null, serviceConfig.getMethods());
+
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .service(serviceConfig)
+            .initialize();
+
+        List<MethodConfig> methodConfigs = serviceConfig.getMethods();
+        Assertions.assertEquals(1, methodConfigs.size());
+        MethodConfig methodConfig = methodConfigs.get(0);
+
+        List<ArgumentConfig> arguments = methodConfig.getArguments();
+        Assertions.assertEquals(1, arguments.size());
+        ArgumentConfig argumentConfig = arguments.get(0);
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("a", "1");
+        params.put("b", "2");
+
+        Assertions.assertEquals("demo", serviceConfig.getGroup());
+        Assertions.assertEquals(params, methodConfig.getParameters());
+        Assertions.assertEquals(1234, methodConfig.getTimeout());
+        Assertions.assertEquals(true, methodConfig.getSticky());
+        Assertions.assertEquals(0, argumentConfig.getIndex());
+        Assertions.assertEquals(true, argumentConfig.isCallback());
+
+    }
+
+    @Test
+    public void testVerifyMethodConfigOfService() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayHello.timeout", "1234");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".group", "demo");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setInterface(interfaceName);
+        serviceConfig.setRef(new DemoServiceImpl());
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayHello");
+        methodConfig.setTimeout(1000);
+        serviceConfig.setMethods(Arrays.asList(methodConfig));
+
+        try {
+            DubboBootstrap.getInstance()
+                .application("demo-app")
+                .service(serviceConfig)
+                .initialize();
+            Assertions.fail("Method config verification should failed");
+        } catch (Exception e) {
+            // ignore
+            Throwable cause = e.getCause();
+            Assertions.assertEquals(IllegalStateException.class, cause.getClass());
+            Assertions.assertTrue(cause.getMessage().contains("not found method"), cause.toString());
+        }
+    }
+
+    @Test
+    public void testIgnoreInvalidMethodConfigOfService() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayHello.timeout", "1234");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.timeout", "1234");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+        SysProps.setProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_INVALID_METHOD_CONFIG, "true");
+
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setInterface(interfaceName);
+        serviceConfig.setRef(new DemoServiceImpl());
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayHello");
+        methodConfig.setTimeout(1000);
+        serviceConfig.setMethods(Arrays.asList(methodConfig));
+
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .service(serviceConfig)
+            .initialize();
+
+        // expect sayHello method config will be ignore, and sayName method config will be create.
+        Assertions.assertEquals(1, serviceConfig.getMethods().size());
+        Assertions.assertEquals("sayName", serviceConfig.getMethods().get(0).getName());
+    }
+
+    @Test
+    public void testMetaData() {
+        MethodConfig methodConfig = new MethodConfig();
+        Map<String, String> metaData = methodConfig.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
     }
 }

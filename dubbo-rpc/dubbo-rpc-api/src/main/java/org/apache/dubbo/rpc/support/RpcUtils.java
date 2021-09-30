@@ -36,6 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY_LOWER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.Constants.$ECHO;
 import static org.apache.dubbo.rpc.Constants.$ECHO_PARAMETER_DESC;
@@ -43,6 +44,7 @@ import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
 import static org.apache.dubbo.rpc.Constants.ID_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
+
 /**
  * RpcUtils
  */
@@ -60,7 +62,7 @@ public class RpcUtils {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (StringUtils.isNotEmpty(service)) {
                     Method method = getMethodByService(invocation, service);
-                    return method.getReturnType();
+                    return method == null ? null : method.getReturnType();
                 }
             }
         } catch (Throwable t) {
@@ -100,7 +102,7 @@ public class RpcUtils {
      */
     public static void attachInvocationIdIfAsync(URL url, Invocation inv) {
         if (isAttachInvocationId(url, inv) && getInvocationId(inv) == null && inv instanceof RpcInvocation) {
-            ((RpcInvocation) inv).setAttachment(ID_KEY, String.valueOf(INVOKE_ID.getAndIncrement()));
+            inv.setAttachment(ID_KEY, String.valueOf(INVOKE_ID.getAndIncrement()));
         }
     }
 
@@ -156,6 +158,14 @@ public class RpcUtils {
 
     public static boolean isAsync(URL url, Invocation inv) {
         boolean isAsync;
+
+        if (inv instanceof RpcInvocation) {
+            RpcInvocation rpcInvocation = (RpcInvocation) inv;
+            if (rpcInvocation.getInvokeMode() != null) {
+                return rpcInvocation.getInvokeMode() == InvokeMode.ASYNC;
+            }
+        }
+
         if (Boolean.TRUE.toString().equals(inv.getAttachment(ASYNC_KEY))) {
             isAsync = true;
         } else {
@@ -189,6 +199,13 @@ public class RpcUtils {
     }
 
     public static InvokeMode getInvokeMode(URL url, Invocation inv) {
+        if (inv instanceof RpcInvocation) {
+            RpcInvocation rpcInvocation = (RpcInvocation) inv;
+            if (rpcInvocation.getInvokeMode() != null) {
+                return rpcInvocation.getInvokeMode();
+            }
+        }
+
         if (isReturnTypeFuture(inv)) {
             return InvokeMode.FUTURE;
         } else if (isAsync(url, inv)) {
@@ -221,7 +238,10 @@ public class RpcUtils {
 
     public static long getTimeout(Invocation invocation, long defaultTimeout) {
         long timeout = defaultTimeout;
-        Object genericTimeout = invocation.getObjectAttachment(TIMEOUT_ATTACHMENT_KEY);
+        Object genericTimeout = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_ATTACHMENT_KEY);
+        if(genericTimeout == null) {
+            genericTimeout = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_ATTACHMENT_KEY_LOWER);
+        }
         if (genericTimeout != null) {
             timeout = convertToNumber(genericTimeout, defaultTimeout);
         }

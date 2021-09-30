@@ -96,15 +96,15 @@ public class ScriptRouterTest {
         invokers.add(invoker3);
 
         String script = "function route(invokers, invocation, context){ " +
-                "	var result = new java.util.ArrayList(invokers.size()); " +
-                "	var targetHost = new java.util.ArrayList(); " +
-                "	targetHost.add(\"10.134.108.2\"); " +
-                "	for (var i = 0; i < invokers.length; i++) { " +
-                "		if(targetHost.contains(invokers[i].getUrl().getHost())){ " +
-                "			result.add(invokers[i]); " +
-                "		} " +
-                "	} " +
-                "	return result; " +
+                "    var result = new java.util.ArrayList(invokers.size()); " +
+                "    var targetHost = new java.util.ArrayList(); " +
+                "    targetHost.add(\"10.134.108.2\"); " +
+                "    for (var i = 0; i < invokers.length; i++) { " +
+                "        if(targetHost.contains(invokers[i].getUrl().getHost())){ " +
+                "            result.add(invokers[i]); " +
+                "        } " +
+                "    } " +
+                "    return result; " +
                 "} " +
                 "route(invokers, invocation, context) ";
 

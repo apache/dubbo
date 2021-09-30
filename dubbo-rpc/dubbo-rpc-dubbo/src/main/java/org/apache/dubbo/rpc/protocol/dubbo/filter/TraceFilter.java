@@ -101,7 +101,7 @@ public class TraceFilter implements Filter {
                             count = c.getAndIncrement();
                             if (count < max) {
                                 String prompt = channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
-                                channel.send("\r\n" + RpcContext.getContext().getRemoteAddress() + " -> "
+                                channel.send("\r\n" + RpcContext.getServiceContext().getRemoteAddress() + " -> "
                                         + invoker.getInterface().getName()
                                         + "." + invocation.getMethodName()
                                         + "(" + JSON.toJSONString(invocation.getArguments()) + ")" + " -> " + JSON.toJSONString(result.getValue())
