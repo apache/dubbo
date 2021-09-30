@@ -79,10 +79,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
 
-        // set cancel context to RpcInvocation to transport to stream
-//        final CancellationContext cancellationContext = RpcContext.getCancellationContext();
-//        inv.setCancellationContext(cancellationContext);
-
         final String methodName = RpcUtils.getMethodName(invocation);
         inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
         inv.setAttachment(PATH_KEY, getUrl().getPath());
