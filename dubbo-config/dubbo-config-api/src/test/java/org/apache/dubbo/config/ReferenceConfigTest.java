@@ -67,6 +67,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -981,9 +982,10 @@ public class ReferenceConfigTest {
         serviceConfig.export();
 
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-        basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
-        TestClassLoader classLoader1 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
-        TestClassLoader classLoader2 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
+        basePath = URLDecoder.decode(basePath, "UTF-8");
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        TestClassLoader classLoader1 = new TestClassLoader(classLoader, basePath);
+        TestClassLoader classLoader2 = new TestClassLoader(classLoader, basePath);
 
         Class<?> class1 = classLoader1.loadClass(DemoService.class.getName(), false);
         Class<?> class2 = classLoader2.loadClass(DemoService.class.getName(), false);
@@ -1031,12 +1033,16 @@ public class ReferenceConfigTest {
         Assertions.assertNotEquals(result1.getClass(), result2.getClass());
 
         applicationModel.destroy();
+        DubboBootstrap.getInstance().destroy();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
     }
 
     @Test
     public void testDifferentClassLoaderRequest() throws Exception {
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         TestClassLoader1 classLoader1 = new TestClassLoader1(basePath);
         TestClassLoader1 classLoader2 = new TestClassLoader1(basePath);
         TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
@@ -1089,6 +1095,9 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
 
         applicationModel.destroy();
+        DubboBootstrap.getInstance().destroy();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
     }
 
     private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
