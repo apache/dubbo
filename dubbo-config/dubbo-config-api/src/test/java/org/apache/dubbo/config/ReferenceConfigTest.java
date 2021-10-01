@@ -987,7 +987,10 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(classLoader2, result2.getClass().getClassLoader());
         Assertions.assertNotEquals(result1.getClass(), result2.getClass());
 
+        referenceConfig1.destroy();
+        referenceConfig2.destroy();
         applicationModel.destroy();
+        DubboBootstrap.getInstance().destroy();
     }
 
     @Test
