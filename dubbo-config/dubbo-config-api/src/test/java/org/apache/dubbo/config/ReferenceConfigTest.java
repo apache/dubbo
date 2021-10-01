@@ -120,6 +120,7 @@ import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 
 public class ReferenceConfigTest {
     private static String zkUrl1;
@@ -547,6 +548,48 @@ public class ReferenceConfigTest {
         Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
 
         dubboBootstrap.destroy();
+    }
+
+
+    /**
+     * Verify that the remote url is directly configured for remote reference
+     */
+    @Test
+    public void testCreateInvokerWithRemoteUrlForRemoteRefer() {
+
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setGeneric(Boolean.FALSE.toString());
+        referenceConfig.setProtocol("dubbo");
+        referenceConfig.setInit(true);
+        referenceConfig.setLazy(false);
+        referenceConfig.setInjvm(false);
+
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("key1", "value1");
+        parameters.put("key2", "value2");
+        applicationConfig.setParameters(parameters);
+
+        referenceConfig.refreshed.set(true);
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.getInterfaceClass();
+        referenceConfig.setCheck(false);
+
+        referenceConfig.setUrl("dubbo://127.0.0.1:20880");
+
+        dubboBootstrap
+            .application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
+
+        referenceConfig.init();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
+        Assertions.assertEquals(Boolean.TRUE, referenceConfig.getInvoker().getUrl().getAttribute(PEER_KEY));
+        dubboBootstrap.destroy();
+
     }
 
     /**
@@ -1072,6 +1115,7 @@ public class ReferenceConfigTest {
     private class InnerTest {
 
     }
+
     private static class TestClassLoader extends ClassLoader {
         private String basePath;
 
