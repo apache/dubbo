@@ -123,7 +123,7 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setName("hello");
         assertThat(method.getName(), equalTo("hello"));
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
         MethodConfig.appendParameters(parameters, method);
         assertThat(parameters, not(hasKey("name")));
     }
@@ -245,7 +245,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testOninvokeMethod() throws Exception {
+    public void testOnInvokeMethod() throws Exception {
         MethodConfig method = new MethodConfig();
         method.setOninvokeMethod("on-invoke-method");
         assertThat(method.getOninvokeMethod(), equalTo("on-invoke-method"));
