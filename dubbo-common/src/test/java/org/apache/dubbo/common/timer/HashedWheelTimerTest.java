@@ -42,7 +42,9 @@ public class HashedWheelTimerTest {
         @Override
         public void run(Timeout timeout) throws InterruptedException {
             // current thread is a new thread which is different from the worker thread.
-            this.wait();
+            synchronized (this) {
+                this.wait();
+            }
         }
     }
 
