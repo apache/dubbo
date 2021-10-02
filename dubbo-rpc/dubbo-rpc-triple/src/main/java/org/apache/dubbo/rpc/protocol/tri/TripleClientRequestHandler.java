@@ -45,6 +45,7 @@ import io.netty.channel.ChannelPromise;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 public class TripleClientRequestHandler extends ChannelDuplexHandler {
@@ -82,7 +83,7 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
 
         // get compressor
         String compressorStr = ConfigurationUtils
-            .getGlobalConfiguration(url.getScopeModel()).getString(CommonConstants.COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
+            .getGlobalConfiguration(url.getScopeModel()).getString(COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
         Compressor compressor = url.getOrDefaultApplicationModel().getExtensionLoader(Compressor.class).getExtension(compressorStr);
         stream.setCompressor(compressor);
         ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);

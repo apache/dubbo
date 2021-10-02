@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Constants;
 
@@ -27,7 +28,7 @@ import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
  * Configure it in files, pictures or other configurations that exist in the system properties
  * Configure {@link Constants#COMPRESSOR_KEY} in dubbo.properties、dubbo.yml or other configuration that exist in the system property
  */
-@SPI(DEFAULT_COMPRESSOR)
+@SPI(value = DEFAULT_COMPRESSOR, scope = ExtensionScope.FRAMEWORK)
 public interface Compressor {
 
     String DEFAULT_COMPRESSOR = "identity";
