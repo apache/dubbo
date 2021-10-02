@@ -19,6 +19,7 @@ package org.apache.dubbo.common.timer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -93,7 +94,10 @@ public class HashedWheelTimer implements Timer {
     private static final AtomicIntegerFieldUpdater<HashedWheelTimer> WORKER_STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(HashedWheelTimer.class, "workerState");
 
-    private final ExecutorService timeoutTaskThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private static final ExecutorService TIMER_TASK_EXECUTOR =
+            Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+            new NamedThreadFactory("HashedWheelTimerTask", true));
+
     private final Worker worker = new Worker();
     private final Thread workerThread;
 
@@ -552,10 +556,6 @@ public class HashedWheelTimer implements Timer {
         }
     }
 
-    public ExecutorService timeoutTaskThreadPool() {
-        return timeoutTaskThreadPool;
-    }
-
     private static final class HashedWheelTimeout implements Timeout {
 
         private static final int ST_INIT = 0;
@@ -651,7 +651,7 @@ public class HashedWheelTimer implements Timer {
             }
 
             // run timeout task at new thread to avoid the worker thread blocking
-            timer.timeoutTaskThreadPool().execute(() -> {
+            TIMER_TASK_EXECUTOR.execute(() -> {
                 try {
                     task.run(this);
                 } catch (Throwable t) {
