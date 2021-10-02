@@ -29,7 +29,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Now the threads that run timer tasks are different from the worker thread of HashedWheelTimer.  
+ * Now the threads that run timer tasks are separate from the worker thread of HashedWheelTimer.
  */
 public class HashedWheelTimerTest {
     private CountDownLatch tryStopTaskCountDownLatch = new CountDownLatch(1);

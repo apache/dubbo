@@ -652,7 +652,7 @@ public class HashedWheelTimer implements Timer {
                 return;
             }
 
-            // run timeout task at new thread to avoid the worker thread blocking
+            // run timeout task at separate thread to avoid the worker thread blocking
             TIMER_TASK_EXECUTOR.execute(() -> {
                 try {
                     task.run(this);
