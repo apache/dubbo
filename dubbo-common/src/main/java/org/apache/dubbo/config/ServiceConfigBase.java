@@ -186,7 +186,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         if (!interfaceClass.isInstance(ref)) {
             throw new IllegalStateException("The class "
                 + ref.getClass().getName() + getClassloaderDesc(ref.getClass()) + " unimplemented interface "
-                + interfaceClass + getClassloaderDesc(ref.getClass()) + "!");
+                + interfaceClass + getClassloaderDesc(interfaceClass) + "!");
         }
     }
 

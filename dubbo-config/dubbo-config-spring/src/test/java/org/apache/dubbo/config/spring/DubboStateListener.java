@@ -14,31 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol;
+package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.InvokerListener;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.config.spring.context.event.DubboApplicationStateEvent;
+import org.springframework.context.ApplicationListener;
 
-import java.util.concurrent.atomic.AtomicInteger;
+public class DubboStateListener implements ApplicationListener<DubboApplicationStateEvent> {
 
-
-public class CountInvokerListener implements InvokerListener {
-
-    private final static AtomicInteger counter = new AtomicInteger(0);
-
+    private DeployState state;
+    
     @Override
-    public void referred(Invoker<?> invoker) throws RpcException {
-        counter.set(0);
-        counter.incrementAndGet();
+    public void onApplicationEvent(DubboApplicationStateEvent event) {
+        state = event.getState();
     }
-
-    @Override
-    public void destroyed(Invoker<?> invoker) {
-
-    }
-
-    public static int getCounter() {
-        return counter.get();
+    
+    public DeployState getState() {
+        return state;
     }
 }
