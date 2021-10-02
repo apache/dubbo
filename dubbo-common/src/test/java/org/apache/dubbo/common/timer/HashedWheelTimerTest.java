@@ -153,6 +153,7 @@ public class HashedWheelTimerTest {
         timeout = timer.newTimeout(new EmptyTask(), 1000, TimeUnit.SECONDS);
         timeout.cancel();
         Assertions.assertTrue(timeout.isCancelled());
+
         List<Timeout> timeouts = new LinkedList<>();
         for (; timer.pendingTimeouts() < 8; ) {
             // ensure to trigger maxPendingTimeouts by setting delay to 50ms  
