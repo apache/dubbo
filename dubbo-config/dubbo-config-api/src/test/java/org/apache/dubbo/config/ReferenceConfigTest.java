@@ -67,6 +67,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -120,6 +121,7 @@ import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 
 public class ReferenceConfigTest {
     private static String zkUrl1;
@@ -549,6 +551,48 @@ public class ReferenceConfigTest {
         dubboBootstrap.destroy();
     }
 
+
+    /**
+     * Verify that the remote url is directly configured for remote reference
+     */
+    @Test
+    public void testCreateInvokerWithRemoteUrlForRemoteRefer() {
+
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setGeneric(Boolean.FALSE.toString());
+        referenceConfig.setProtocol("dubbo");
+        referenceConfig.setInit(true);
+        referenceConfig.setLazy(false);
+        referenceConfig.setInjvm(false);
+
+        DubboBootstrap dubboBootstrap = DubboBootstrap.newInstance(FrameworkModel.defaultModel());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("application1");
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("key1", "value1");
+        parameters.put("key2", "value2");
+        applicationConfig.setParameters(parameters);
+
+        referenceConfig.refreshed.set(true);
+        referenceConfig.setInterface(DemoService.class);
+        referenceConfig.getInterfaceClass();
+        referenceConfig.setCheck(false);
+
+        referenceConfig.setUrl("dubbo://127.0.0.1:20880");
+
+        dubboBootstrap
+            .application(applicationConfig)
+            .reference(referenceConfig)
+            .initialize();
+
+        referenceConfig.init();
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MockClusterInvoker);
+        Assertions.assertEquals(Boolean.TRUE, referenceConfig.getInvoker().getUrl().getAttribute(PEER_KEY));
+        dubboBootstrap.destroy();
+
+    }
+
     /**
      * Verify that the registry url is directly configured for remote reference
      */
@@ -938,9 +982,10 @@ public class ReferenceConfigTest {
         serviceConfig.export();
 
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-        basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
-        TestClassLoader classLoader1 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
-        TestClassLoader classLoader2 = new TestClassLoader(Thread.currentThread().getContextClassLoader(), basePath);
+        basePath = URLDecoder.decode(basePath, "UTF-8");
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        TestClassLoader classLoader1 = new TestClassLoader(classLoader, basePath);
+        TestClassLoader classLoader2 = new TestClassLoader(classLoader, basePath);
 
         Class<?> class1 = classLoader1.loadClass(DemoService.class.getName(), false);
         Class<?> class2 = classLoader2.loadClass(DemoService.class.getName(), false);
@@ -988,12 +1033,16 @@ public class ReferenceConfigTest {
         Assertions.assertNotEquals(result1.getClass(), result2.getClass());
 
         applicationModel.destroy();
+        DubboBootstrap.getInstance().destroy();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
     }
 
     @Test
     public void testDifferentClassLoaderRequest() throws Exception {
         String basePath = DemoService.class.getProtectionDomain().getCodeSource().getLocation().getFile();
         basePath = java.net.URLDecoder.decode(basePath, "UTF-8");
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         TestClassLoader1 classLoader1 = new TestClassLoader1(basePath);
         TestClassLoader1 classLoader2 = new TestClassLoader1(basePath);
         TestClassLoader2 classLoader3 = new TestClassLoader2(classLoader2, basePath);
@@ -1046,6 +1095,9 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(classLoader1, innerRequestReference.get().getClass().getClassLoader());
 
         applicationModel.destroy();
+        DubboBootstrap.getInstance().destroy();
+        Thread.currentThread().setContextClassLoader(classLoader);
+        Thread.currentThread().getContextClassLoader().loadClass(DemoService.class.getName());
     }
 
     private Class<?> compileCustomRequest(ClassLoader classLoader) throws NotFoundException, CannotCompileException {
@@ -1072,6 +1124,7 @@ public class ReferenceConfigTest {
     private class InnerTest {
 
     }
+
     private static class TestClassLoader extends ClassLoader {
         private String basePath;
 

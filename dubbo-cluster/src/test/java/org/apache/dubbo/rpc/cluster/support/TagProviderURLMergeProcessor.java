@@ -14,31 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol;
-
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.InvokerListener;
-import org.apache.dubbo.rpc.RpcException;
-
-import java.util.concurrent.atomic.AtomicInteger;
+package org.apache.dubbo.rpc.cluster.support;
 
 
-public class CountInvokerListener implements InvokerListener {
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.cluster.ProviderURLMergeProcessor;
 
-    private final static AtomicInteger counter = new AtomicInteger(0);
+import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
+
+public class TagProviderURLMergeProcessor implements ProviderURLMergeProcessor {
 
     @Override
-    public void referred(Invoker<?> invoker) throws RpcException {
-        counter.set(0);
-        counter.incrementAndGet();
+    public URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap) {
+        String tag = localParametersMap.get(TAG_KEY);
+        remoteUrl = remoteUrl.removeParameter(TAG_KEY);
+        remoteUrl = remoteUrl.addParameter(TAG_KEY, tag);
+        return remoteUrl;
     }
 
     @Override
-    public void destroyed(Invoker<?> invoker) {
-
-    }
-
-    public static int getCounter() {
-        return counter.get();
+    public Map<String, String> mergeLocalParams(Map<String, String> localMap) {
+        localMap.remove(TAG_KEY);
+        return ProviderURLMergeProcessor.super.mergeLocalParams(localMap);
     }
 }
