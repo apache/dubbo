@@ -55,7 +55,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware, ScopeModelAware {
     private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
 
-    private int DEFAULT_SCHEDULER_SIZE = Runtime.getRuntime().availableProcessors();
+    public static final int DEFAULT_SCHEDULER_SIZE = Runtime.getRuntime().availableProcessors();
 
     private final ExecutorService SHARED_EXECUTOR = Executors.newCachedThreadPool(new NamedThreadFactory("DubboSharedHandler", true));
 
