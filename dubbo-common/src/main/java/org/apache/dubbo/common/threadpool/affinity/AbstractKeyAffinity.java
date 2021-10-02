@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+
 package org.apache.dubbo.common.threadpool.affinity;
 
 import java.util.List;
@@ -25,10 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-/**
- * @author earthchen
- * @date 2021/10/2
- **/
 public abstract class AbstractKeyAffinity<K, V> implements KeyAffinity<K, V> {
 
     private final Map<K, KeyRef> mapping = new ConcurrentHashMap<>();
