@@ -42,28 +42,28 @@ public class ClusterUtils implements ScopeModelAware {
     public URL mergeUrl(URL remoteUrl, Map<String, String> localMap) {
 
         String ump = localMap.get(URL_MERGE_PROCESSOR_KEY);
-        ProviderURLMergeProcessor providerURLMergeProcessor;
+        ProviderURLMergeProcessor providerUrlMergeProcessor;
 
         if (StringUtils.isNotEmpty(ump)) {
-            providerURLMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
+            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
         } else {
-            providerURLMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
+            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
         }
 
-        return providerURLMergeProcessor.mergeUrl(remoteUrl, localMap);
+        return providerUrlMergeProcessor.mergeUrl(remoteUrl, localMap);
     }
 
     public Map<String, String> mergeLocalParams(Map<String, String> localMap) {
         String ump = localMap.get(URL_MERGE_PROCESSOR_KEY);
-        ProviderURLMergeProcessor providerURLMergeProcessor;
+        ProviderURLMergeProcessor providerUrlMergeProcessor;
 
         if (StringUtils.isNotEmpty(ump)) {
-            providerURLMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
+            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
         } else {
-            providerURLMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
+            providerUrlMergeProcessor = applicationModel.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
         }
 
-        return providerURLMergeProcessor.mergeLocalParams(localMap);
+        return providerUrlMergeProcessor.mergeLocalParams(localMap);
 
     }
 
