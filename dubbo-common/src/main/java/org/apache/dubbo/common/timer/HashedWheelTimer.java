@@ -94,11 +94,9 @@ public class HashedWheelTimer implements Timer {
     private static final AtomicIntegerFieldUpdater<HashedWheelTimer> WORKER_STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(HashedWheelTimer.class, "workerState");
 
-    /**
-     *  use cached thread pool to create timer task threads as needed.
-     */
     private static final ExecutorService TIMER_TASK_EXECUTOR =
-            Executors.newCachedThreadPool(new NamedThreadFactory("HashedWheelTimerTask", true));
+            Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+            new NamedThreadFactory("HashedWheelTimerTask", true));
 
     private final Worker worker = new Worker();
     private final Thread workerThread;
