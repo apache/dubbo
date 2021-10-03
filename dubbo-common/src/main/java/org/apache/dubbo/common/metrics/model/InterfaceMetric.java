@@ -68,6 +68,6 @@ public class InterfaceMetric extends BaseMetric {
             "interfaceName='" + interfaceName + '\'' +
             ", group='" + group + '\'' +
             ", version='" + version + '\'' +
-            '}';
+            "} " + super.toString();
     }
 }

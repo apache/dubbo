@@ -127,6 +127,8 @@
         <commons_lang3_version>3.8.1</commons_lang3_version>
         <protostuff_version>1.5.9</protostuff_version>
         <envoy_api_version>0.1.23</envoy_api_version>
+        <micrometer.version>1.7.4</micrometer.version>
+        <t_digest.version>3.3</t_digest.version>
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
@@ -740,6 +742,21 @@
                 <artifactId>kubernetes-server-mock</artifactId>
                 <scope>test</scope>
                 <version>${fabric8_kubernetes_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-core</artifactId>
+                <version>${micrometer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.micrometer</groupId>
+                <artifactId>micrometer-registry-prometheus</artifactId>
+                <version>${micrometer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.tdunning</groupId>
+                <artifactId>t-digest</artifactId>
+                <version>${t_digest.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

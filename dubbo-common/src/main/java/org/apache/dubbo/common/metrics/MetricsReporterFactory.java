@@ -15,22 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.collector;
+package org.apache.dubbo.common.metrics;
 
-import org.apache.dubbo.common.metrics.model.MetricSample;
-
-import java.util.List;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
 /**
- * Metrics Collector.
- * An interface of collector to collect framework internal metrics.
+ * The factory interface to create the instance of {@link MetricsReporter}.
  */
-public interface MetricsCollector {
+@SPI(value = "nop", scope = ExtensionScope.APPLICATION)
+public interface MetricsReporterFactory {
 
     /**
-     * Collect metrics as {@link MetricSample}
+     * Get metrics server.
      *
-     * @return List of MetricSample
+     * @param url URL
+     * @return Metrics server implementation.
      */
-    List<MetricSample> collect();
+    MetricsReporter createMetricsReporter(URL url);
 }

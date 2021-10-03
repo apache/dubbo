@@ -15,22 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.collector;
+package org.apache.dubbo.common.metrics.nop;
 
-import org.apache.dubbo.common.metrics.model.MetricSample;
-
-import java.util.List;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.metrics.MetricsReporter;
 
 /**
- * Metrics Collector.
- * An interface of collector to collect framework internal metrics.
+ * Metrics reporter without any operations.
  */
-public interface MetricsCollector {
+public class NopMetricsReporter implements MetricsReporter {
 
-    /**
-     * Collect metrics as {@link MetricSample}
-     *
-     * @return List of MetricSample
-     */
-    List<MetricSample> collect();
+    public NopMetricsReporter(URL url) {
+
+    }
 }

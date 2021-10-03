@@ -17,12 +17,15 @@
 
 package org.apache.dubbo.common.metrics.model;
 
+import java.util.Map;
 import java.util.Objects;
 
-public class BaseMetric {
+public class MetricSample {
     private String name;
     private String description;
     private String baseUnit;
+    private Type type;
+    private Map<String, String> tags;
 
     public String getName() {
         return name;
@@ -44,29 +47,55 @@ public class BaseMetric {
         return baseUnit;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
     public void setBaseUnit(String baseUnit) {
         this.baseUnit = baseUnit;
+    }
+
+    public Map<String, String> getTags() {
+        return tags;
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags = tags;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        BaseMetric that = (BaseMetric) o;
-        return Objects.equals(name, that.name) && Objects.equals(description, that.description) && Objects.equals(baseUnit, that.baseUnit);
+        MetricSample that = (MetricSample) o;
+        return Objects.equals(name, that.name) && Objects.equals(description, that.description) && Objects.equals(baseUnit, that.baseUnit) && type == that.type && Objects.equals(tags, that.tags);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, baseUnit);
+        return Objects.hash(name, description, baseUnit, type, tags);
     }
 
     @Override
     public String toString() {
-        return "BaseMetric{" +
+        return "MetricFamilySamples{" +
             "name='" + name + '\'' +
             ", description='" + description + '\'' +
             ", baseUnit='" + baseUnit + '\'' +
+            ", type=" + type +
+            ", tags=" + tags +
             '}';
+    }
+
+    enum Type {
+        COUNTER,
+        GAUGE,
+        LONG_TASK_TIMER,
+        TIMER,
+        DISTRIBUTION_SUMMARY
     }
 }

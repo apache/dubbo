@@ -1,2 +1,0 @@
-basic=org.apache.dubbo.common.metrics.collector.BasicMetricsCollector
-aggregation=org.apache.dubbo.common.metrics.collector.AggregationMetricsCollector

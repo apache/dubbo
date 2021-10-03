@@ -15,22 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.collector;
-
-import org.apache.dubbo.common.metrics.model.MetricSample;
-
-import java.util.List;
+package org.apache.dubbo.common.metrics;
 
 /**
- * Metrics Collector.
- * An interface of collector to collect framework internal metrics.
+ * Metrics Reporter.
+ * Report metrics to specific metrics server(e.g. Prometheus).
  */
-public interface MetricsCollector {
-
-    /**
-     * Collect metrics as {@link MetricSample}
-     *
-     * @return List of MetricSample
-     */
-    List<MetricSample> collect();
+public interface MetricsReporter {
 }

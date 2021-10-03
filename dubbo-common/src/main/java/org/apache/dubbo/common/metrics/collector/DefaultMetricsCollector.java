@@ -17,14 +17,19 @@
 
 package org.apache.dubbo.common.metrics.collector;
 
-import org.apache.dubbo.common.metrics.model.BaseMetric;
+import org.apache.dubbo.common.metrics.model.InterfaceMetric;
+import org.apache.dubbo.common.metrics.model.MetricSample;
 
 import java.util.List;
 
-public class AggregationMetricsCollector implements MetricsCollector {
+/**
+ * Default implementation of {@link MetricsCollector}
+ */
+public class DefaultMetricsCollector implements MetricsCollector {
 
     @Override
-    public List<BaseMetric> collect() {
+    public List<MetricSample> collect() {
+        InterfaceMetric metric = new InterfaceMetric();
         return null;
     }
 }

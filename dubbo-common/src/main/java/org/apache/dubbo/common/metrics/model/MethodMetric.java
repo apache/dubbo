@@ -78,6 +78,6 @@ public class MethodMetric extends BaseMetric {
             ", methodName='" + methodName + '\'' +
             ", group='" + group + '\'' +
             ", version='" + version + '\'' +
-            '}';
+            "} " + super.toString();
     }
 }

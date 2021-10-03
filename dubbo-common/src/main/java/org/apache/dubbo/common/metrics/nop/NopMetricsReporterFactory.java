@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.collector;
+package org.apache.dubbo.common.metrics.nop;
 
-import org.apache.dubbo.common.metrics.model.BaseMetric;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.metrics.MetricsReporter;
+import org.apache.dubbo.common.metrics.MetricsReporterFactory;
 
-import java.util.List;
-
-public class BasicMetricsCollector implements MetricsCollector {
+/**
+ * MetricsReporterFactory to create NopMetricsReporter.
+ */
+public class NopMetricsReporterFactory implements MetricsReporterFactory {
 
     @Override
-    public List<BaseMetric> collect() {
-        return null;
+    public MetricsReporter createMetricsReporter(URL url) {
+        return new NopMetricsReporter(url);
     }
 }

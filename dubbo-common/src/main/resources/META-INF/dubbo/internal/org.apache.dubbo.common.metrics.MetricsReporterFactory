@@ -1,0 +1,1 @@
+nop=org.apache.dubbo.common.metrics.nop.NopMetricsReporterFactory
