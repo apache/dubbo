@@ -25,6 +25,7 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,44 +39,72 @@ import redis.embedded.RedisServer;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.metadata.report.support.Constants.SYNC_REPORT_KEY;
+import static redis.embedded.RedisServer.newRedisServer;
 
-/**
- * 2018/10/9
- */
 public class RedisMetadataReportTest {
+
+    private static final String
+            REDIS_URL_TEMPLATE = "redis://%slocalhost:%d",
+            REDIS_PASSWORD = "チェリー",
+            REDIS_URL_AUTH_SECTION = "username:" + REDIS_PASSWORD + "@";
+
     RedisMetadataReport redisMetadataReport;
     RedisMetadataReport syncRedisMetadataReport;
     RedisServer redisServer;
     URL registryUrl;
 
     @BeforeEach
-    public void constructor(TestInfo testInfo) throws IOException {
-        int redisPort = NetUtils.getAvailablePort();
-        String methodName = testInfo.getTestMethod().get().getName();
-        if ("testAuthRedisMetadata".equals(methodName) || ("testWrongAuthRedisMetadata".equals(methodName))) {
-            String password = "チェリー";
-            redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
-            registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort);
-        } else {
-            redisServer = RedisServer.builder().port(redisPort).build();
-            registryUrl = URL.valueOf("redis://localhost:" + redisPort);
+    public void constructor(final TestInfo testInfo) throws IOException {
+        final boolean usesAuthentication = usesAuthentication(testInfo);
+        int redisPort = 0;
+        IOException exception = null;
+
+        for (int i = 0; i < 10; i++) {
+            try {
+                redisPort = NetUtils.getAvailablePort(30000 + new Random().nextInt(10000));
+                redisServer = newRedisServer()
+                        .port(redisPort)
+                        // set maxheap to fix Windows error 0x70 while starting redis
+                        .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
+                        .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
+                        .build();
+                this.redisServer.start();
+                exception = null;
+            } catch (IOException e) {
+                e.printStackTrace();
+                exception = e;
+            }
+            if (exception == null) {
+                break;
+            }
         }
 
-        this.redisServer.start();
+        Assertions.assertNull(exception);
+        registryUrl = newRedisUrl(usesAuthentication, redisPort);
         redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
-        URL asyncRegistryUrl = URL.valueOf("redis://localhost:" + redisPort + "?" + SYNC_REPORT_KEY + "=true");
-        syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
+        URL syncRegistryUrl = registryUrl.addParameter(SYNC_REPORT_KEY ,"true");
+        syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(syncRegistryUrl);
+    }
+
+    private static boolean usesAuthentication(final TestInfo testInfo) {
+        final String methodName = testInfo.getTestMethod().get().getName();
+        return "testAuthRedisMetadata".equals(methodName) || "testWrongAuthRedisMetadata".equals(methodName);
+    }
+
+    private static URL newRedisUrl(final boolean usesAuthentication, final int redisPort) {
+        final String urlAuthSection = usesAuthentication ? REDIS_URL_AUTH_SECTION : "";
+        return URL.valueOf(String.format(REDIS_URL_TEMPLATE, urlAuthSection, redisPort));
     }
 
     @AfterEach
     public void tearDown() throws Exception {
         this.redisServer.stop();
     }
-
 
     @Test
     public void testAsyncStoreProvider() throws ClassNotFoundException {

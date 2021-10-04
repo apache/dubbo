@@ -16,49 +16,75 @@
  */
 package org.apache.dubbo.metadata;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static java.util.Collections.emptySet;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
+import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
+import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 
 /**
  * The interface for Dubbo service name Mapping
  *
  * @since 2.7.5
  */
-@SPI("default")
+@SPI(value = "metadata", scope = APPLICATION)
 public interface ServiceNameMapping {
+
+    String DEFAULT_MAPPING_GROUP = "mapping";
 
     /**
      * Map the specified Dubbo service interface, group, version and protocol to current Dubbo service name
-     *
-     * @param serviceInterface the class name of Dubbo service interface
-     * @param group            the group of Dubbo service interface (optional)
-     * @param version          the version of Dubbo service interface version (optional)
-     * @param protocol         the protocol of Dubbo service interface exported (optional)
      */
-    void map(String serviceInterface, String group, String version, String protocol);
-
-    /**
-     * Get the service names from the specified Dubbo service interface, group, version and protocol
-     *
-     * @param serviceInterface the class name of Dubbo service interface
-     * @param group            the group of Dubbo service interface (optional)
-     * @param version          the version of Dubbo service interface version (optional)
-     * @param protocol         the protocol of Dubbo service interface exported (optional)
-     * @return
-     */
-    Set<String> get(String serviceInterface, String group, String version, String protocol);
-
+    boolean map(URL url);
 
     /**
      * Get the default extension of {@link ServiceNameMapping}
      *
      * @return non-null {@link ServiceNameMapping}
-     * @see DynamicConfigurationServiceNameMapping
      */
-    static ServiceNameMapping getDefaultExtension() {
-        return getExtensionLoader(ServiceNameMapping.class).getDefaultExtension();
+    static ServiceNameMapping getDefaultExtension(ScopeModel scopeModel) {
+        return ScopeModelUtil.getApplicationModel(scopeModel).getDefaultExtension(ServiceNameMapping.class);
     }
+
+    static String buildMappingKey(URL url) {
+        return buildGroup(url.getServiceInterface());
+    }
+
+    static String buildGroup(String serviceInterface) {
+        //the issue : https://github.com/apache/dubbo/issues/4671
+        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
+    }
+
+    static String toStringKeys(Set<String> serviceNames) {
+        return serviceNames.toString();
+    }
+
+    static Set<String> getAppNames(String content) {
+        if (StringUtils.isBlank(content)) {
+            return emptySet();
+        }
+        return new HashSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
+    }
+
+    /**
+     * 1.developer explicitly specifies the application name this interface belongs to
+     * 2.check Interface-App mapping
+     */
+    Set<String> getServices(URL subscribedURL);
+
+    /**
+     * 1.developer explicitly specifies the application name this interface belongs to
+     * 2.check Interface-App mapping
+     * 3.use the services specified in registry url.
+     */
+    Set<String> getAndListenServices(URL registryURL, URL subscribedURL, MappingListener listener);
 }

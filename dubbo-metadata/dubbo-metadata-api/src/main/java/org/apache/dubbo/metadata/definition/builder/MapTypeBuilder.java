@@ -25,13 +25,17 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
 
+import static org.apache.dubbo.common.utils.TypeUtils.getRawClass;
+import static org.apache.dubbo.common.utils.TypeUtils.isClass;
+import static org.apache.dubbo.common.utils.TypeUtils.isParameterizedType;
+
 /**
  * 2015/1/27.
  */
 public class MapTypeBuilder implements TypeBuilder {
 
     @Override
-    public boolean accept(Type type, Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }
@@ -39,30 +43,44 @@ public class MapTypeBuilder implements TypeBuilder {
     }
 
     @Override
-    public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
+    public TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
         if (!(type instanceof ParameterizedType)) {
-            return new TypeDefinition(clazz.getName());
+            return new TypeDefinition(clazz.getCanonicalName());
         }
 
         ParameterizedType parameterizedType = (ParameterizedType) type;
         Type[] actualTypeArgs = parameterizedType.getActualTypeArguments();
-        if (actualTypeArgs == null || actualTypeArgs.length != 2) {
+        int actualTypeArgsLength = actualTypeArgs == null ? 0 : actualTypeArgs.length;
+
+        if (actualTypeArgsLength != 2) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "[ServiceDefinitionBuilder] Map type [{0}] with unexpected amount of arguments [{1}]."
                             + Arrays.toString(actualTypeArgs), type, actualTypeArgs));
         }
 
-        for (Type actualType : actualTypeArgs) {
-            if (actualType instanceof ParameterizedType) {
+        String mapType = type.toString();
+
+        TypeDefinition td = typeCache.get(mapType);
+        if (td != null) {
+            return td;
+        }
+        td = new TypeDefinition(mapType);
+        typeCache.put(mapType, td);
+
+        for (int i = 0; i < actualTypeArgsLength; i++) {
+            Type actualType = actualTypeArgs[i];
+            TypeDefinition item = null;
+            Class<?> rawType = getRawClass(actualType);
+            if (isParameterizedType(actualType)) {
                 // Nested collection or map.
-                Class<?> rawType = (Class<?>) ((ParameterizedType) actualType).getRawType();
-                TypeDefinitionBuilder.build(actualType, rawType, typeCache);
-            } else if (actualType instanceof Class<?>) {
-                Class<?> actualClass = (Class<?>) actualType;
-                TypeDefinitionBuilder.build(null, actualClass, typeCache);
+                item = TypeDefinitionBuilder.build(actualType, rawType, typeCache);
+            } else if (isClass(actualType)) {
+                item = TypeDefinitionBuilder.build(null, rawType, typeCache);
+            }
+            if (item != null) {
+                td.getItems().add(item.getType());
             }
         }
-
-        return new TypeDefinition(type.toString());
+        return td;
     }
 }

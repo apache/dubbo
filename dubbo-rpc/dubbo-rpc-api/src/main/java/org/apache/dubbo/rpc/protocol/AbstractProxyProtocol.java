@@ -37,7 +37,9 @@ import org.apache.dubbo.rpc.RpcException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
@@ -87,8 +89,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
         exporter = new AbstractExporter<T>(invoker) {
             @Override
-            public void unexport() {
-                super.unexport();
+            public void afterUnExport() {
                 exporterMap.remove(uri);
                 if (runnable != null) {
                     try {
@@ -130,6 +131,13 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                     throw getRpcException(type, url, invocation, e);
                 }
             }
+
+            @Override
+            public void destroy() {
+                super.destroy();
+                target.destroy();
+                invokers.remove(this);
+            }
         };
         invokers.add(invoker);
         return invoker;
@@ -162,6 +170,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
         private RemotingServer server;
         private String address;
+        private Map<String, Object> attributes = new ConcurrentHashMap<>();
 
         public ProxyProtocolServer(RemotingServer server) {
             this.server = server;
@@ -190,6 +199,11 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         @Override
         public void close() {
             server.close();
+        }
+
+        @Override
+        public Map<String, Object> getAttributes() {
+            return attributes;
         }
     }
 

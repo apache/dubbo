@@ -31,15 +31,12 @@
     </properties>
     <modules>
         <module>dubbo-registry-api</module>
-        <module>dubbo-registry-default</module>
         <module>dubbo-registry-multicast</module>
         <module>dubbo-registry-zookeeper</module>
-        <module>dubbo-registry-redis</module>
-        <module>dubbo-registry-consul</module>
-        <module>dubbo-registry-etcd3</module>
         <module>dubbo-registry-nacos</module>
         <module>dubbo-registry-multiple</module>
-        <module>dubbo-registry-sofa</module>
-        <module>dubbo-registry-eureka</module>
+        <module>dubbo-registry-kubernetes</module>
+        <module>dubbo-registry-dns</module>
+        <module>dubbo-registry-xds</module>
     </modules>
 </project>

@@ -50,7 +50,7 @@ public class ContextFilterTest {
         given(invocation.getMethodName()).willReturn("$enumlength");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
         given(invocation.getArguments()).willReturn(new Object[]{"hello"});
-        given(invocation.getAttachments()).willReturn(null);
+        given(invocation.getObjectAttachments()).willReturn(null);
 
         invoker = mock(Invoker.class);
         given(invoker.isAvailable()).willReturn(true);
@@ -62,7 +62,7 @@ public class ContextFilterTest {
         given(invoker.getUrl()).willReturn(url);
 
         contextFilter.invoke(invoker, invocation);
-        assertNull(RpcContext.getContext().getInvoker());
+        assertNull(RpcContext.getServiceContext().getInvoker());
     }
 
     @Test
@@ -71,6 +71,6 @@ public class ContextFilterTest {
         Invoker<DemoService> invoker = new MyInvoker<DemoService>(url);
         Invocation invocation = new MockInvocation();
         Result result = contextFilter.invoke(invoker, invocation);
-        assertNull(RpcContext.getContext().getInvoker());
+        assertNull(RpcContext.getServiceContext().getInvoker());
     }
 }

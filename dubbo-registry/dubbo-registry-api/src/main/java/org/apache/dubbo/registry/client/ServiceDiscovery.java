@@ -21,13 +21,10 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,14 +34,15 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
-import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
+import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 /**
  * The common operations of Service Discovery
  *
  * @since 2.7.5
  */
-@SPI("zookeeper")
+@SPI(value = "zookeeper", scope = APPLICATION)
 public interface ServiceDiscovery extends Prioritized {
 
     // ==================================== Lifecycle ==================================== //
@@ -63,6 +61,8 @@ public interface ServiceDiscovery extends Prioritized {
      * @throws Exception If met with error
      */
     void destroy() throws Exception;
+
+    boolean isDestroy();
 
     // ==================================================================================== //
 
@@ -87,7 +87,7 @@ public interface ServiceDiscovery extends Prioritized {
     /**
      * Unregisters an instance of {@link ServiceInstance}.
      *
-     * @param serviceInstance an instance of {@link ServiceInstance} to be deregistered
+     * @param serviceInstance an instance of {@link ServiceInstance} to be unregistered
      * @throws RuntimeException if failed
      */
     void unregister(ServiceInstance serviceInstance) throws RuntimeException;
@@ -117,7 +117,7 @@ public interface ServiceDiscovery extends Prioritized {
      *
      * @param serviceName the service name
      * @return non-null {@link List}
-     * @throws NullPointerException if <code>serviceName</code> is <code>null</code> is <code>null</code>
+     * @throws NullPointerException if <code>serviceName</code> is <code>null</code>
      */
     default List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
 
@@ -142,13 +142,13 @@ public interface ServiceDiscovery extends Prioritized {
 
     /**
      * Gets the {@link Page pagination} of {@link ServiceInstance service instances} by the specified service name.
-     * It's equal to {@link #getInstances(String, int, int, boolean)} with <code>healthyOnly == true</code>
+     * It's equal to {@link #getInstances(String, int, int, boolean)} with <code>healthyOnly == false</code>
      *
      * @param serviceName the service name
      * @param offset      the offset of request , the number "0" indicates first page
      * @param pageSize    the number of request, the {@link Integer#MAX_VALUE max value} indicates the range is unlimited
      * @return non-null {@link Page} object
-     * @throws NullPointerException          if <code>serviceName</code> is <code>null</code> is <code>null</code>
+     * @throws NullPointerException          if <code>serviceName</code> is <code>null</code>
      * @throws IllegalArgumentException      if <code>offset</code> or <code>pageSize</code> is negative number
      * @throws UnsupportedOperationException if not supported
      */
@@ -166,7 +166,7 @@ public interface ServiceDiscovery extends Prioritized {
      * @param pageSize    the number of request, the {@link Integer#MAX_VALUE max value} indicates the range is unlimited
      * @param healthyOnly if <code>true</code> , filter healthy instances only
      * @return non-null {@link Page} object
-     * @throws NullPointerException          if <code>serviceName</code> is <code>null</code> is <code>null</code>
+     * @throws NullPointerException          if <code>serviceName</code> is <code>null</code>
      * @throws IllegalArgumentException      if <code>offset</code> or <code>pageSize</code> is negative number
      * @throws UnsupportedOperationException if not supported
      */
@@ -183,7 +183,7 @@ public interface ServiceDiscovery extends Prioritized {
      * @param requestSize  the number of request, the {@link Integer#MAX_VALUE max value} indicates the range is unlimited
      * @return non-null read-only {@link Map} whose key is the service name and value is
      * the {@link Page pagination} of {@link ServiceInstance service instances}
-     * @throws NullPointerException          if <code>serviceName</code> is <code>null</code> is <code>null</code>
+     * @throws NullPointerException          if <code>serviceName</code> is <code>null</code>
      * @throws IllegalArgumentException      if <code>offset</code> or <code>requestSize</code> is negative number
      * @throws UnsupportedOperationException if not supported
      */
@@ -196,42 +196,10 @@ public interface ServiceDiscovery extends Prioritized {
         return unmodifiableMap(instances);
     }
 
-    /**
-     * Add an instance of {@link ServiceInstancesChangedListener} for specified service
-     * <p>
-     * Default, Current method will be invoked by {@link ServiceDiscoveryRegistry#subscribe(URL, NotifyListener)
-     * the ServiceDiscoveryRegistry on the subscription}, and it's mandatory to
-     * {@link EventDispatcher#addEventListener(EventListener) add} the {@link ServiceInstancesChangedListener} argument
-     * into {@link EventDispatcher} whether the subclass implements same approach or not, thus this method is used to
-     * trigger or adapt the vendor's change notification mechanism typically, like Zookeeper Watcher,
-     * Nacos EventListener. If the registry observes the change, It's suggested that the implementation could invoke
-     * {@link #dispatchServiceInstancesChangedEvent(String)} method or variants
-     *
-     * @param listener an instance of {@link ServiceInstancesChangedListener}
-     * @throws NullPointerException
-     * @throws IllegalArgumentException
-     * @see EventPublishingServiceDiscovery
-     * @see EventDispatcher
-     */
-    default void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
-            throws NullPointerException, IllegalArgumentException {
-    }
-
-    /**
-     * Dispatch the {@link ServiceInstancesChangedEvent}
-     *
-     * @param serviceName the name of service whose service instances have been changed
-     */
     default void dispatchServiceInstancesChangedEvent(String serviceName) {
         dispatchServiceInstancesChangedEvent(serviceName, getInstances(serviceName));
     }
 
-    /**
-     * Dispatch the {@link ServiceInstancesChangedEvent}
-     *
-     * @param serviceName       the name of service whose service instances have been changed
-     * @param otherServiceNames the names of other services
-     */
     default void dispatchServiceInstancesChangedEvent(String serviceName, String... otherServiceNames) {
         dispatchServiceInstancesChangedEvent(serviceName, getInstances(serviceName));
         if (otherServiceNames != null) {
@@ -241,26 +209,56 @@ public interface ServiceDiscovery extends Prioritized {
         }
     }
 
-    /**
-     * Dispatch the {@link ServiceInstancesChangedEvent}
-     *
-     * @param serviceName      the name of service whose service instances have been changed
-     * @param serviceInstances the service instances have been changed
-     */
-    default void dispatchServiceInstancesChangedEvent(String serviceName, Collection<ServiceInstance> serviceInstances) {
+    default void dispatchServiceInstancesChangedEvent(String serviceName, List<ServiceInstance> serviceInstances) {
         dispatchServiceInstancesChangedEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
 
+    default void dispatchServiceInstancesChangedEvent(ServiceInstancesChangedEvent event) {}
+
     /**
-     * Dispatch the {@link ServiceInstancesChangedEvent}
+     * Add an instance of {@link ServiceInstancesChangedListener} for specified service
+     * <p>
+     * Default, Current method will be invoked by {@link ServiceDiscoveryRegistry#subscribe(URL, NotifyListener)
+     * the ServiceDiscoveryRegistry on the subscription}, this method is used to
+     * trigger or adapt the vendor's change notification mechanism typically, like Zookeeper Watcher,
+     * Nacos EventListener. If the registry observes the change, It's suggested that the implementation could invoke
+     * {@link #dispatchServiceInstancesChangedEvent(String)} method or variants
      *
-     * @param event the {@link ServiceInstancesChangedEvent}
+     * @param listener an instance of {@link ServiceInstancesChangedListener}
+     * @throws NullPointerException
+     * @throws IllegalArgumentException
      */
-    default void dispatchServiceInstancesChangedEvent(ServiceInstancesChangedEvent event) {
-        getDefaultExtension().dispatch(event);
+    default void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+            throws NullPointerException, IllegalArgumentException {
+    }
+
+    /**
+     * unsubscribe to instances change event.
+     *
+     * @param listener
+     * @throws IllegalArgumentException
+     */
+    default void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+            throws IllegalArgumentException {
+    }
+
+    default ServiceInstancesChangedListener createListener(Set<String> serviceNames) {
+        return new ServiceInstancesChangedListener(serviceNames, this);
     }
 
     // ==================================================================================== //
+
+//    String getKey(URL exportedURL);
+
+    default URL getUrl() {
+        return null;
+    }
+
+    ServiceInstance getLocalInstance();
+
+    default long getDelay() {
+        return getUrl().getParameter(REGISTRY_DELAY_NOTIFICATION_KEY, 5000);
+    }
 
     /**
      * A human-readable description of the implementation

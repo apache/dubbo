@@ -13,19 +13,24 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *//*
+
 package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.google.gson.Gson;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,14 +40,29 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+*/
 /**
+ * Test {@link MetadataReport#saveExportedURLs(String, String, String)} method
  *
- */
+ * @since 2.7.8
+ * <p>
+ * Test {@link MetadataReport#getExportedURLs(String, String)} method
+ * @since 2.7.8
+ * <p>
+ * Test {@link MetadataReport#getExportedURLsContent(String, String)} method
+ * @since 2.7.8
+ *//*
+
 public class AbstractMetadataReportTest {
 
     private NewMetadataReport abstractMetadataReport;
@@ -52,17 +72,25 @@ public class AbstractMetadataReportTest {
     public void before() {
         URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         abstractMetadataReport = new NewMetadataReport(url);
+        // set the simple name of current class as the application name
+        ApplicationModel.defaultModel().getConfigManager().setApplication(new ApplicationConfig(getClass().getSimpleName()));
+    }
+
+    @AfterEach
+    public void reset() {
+        // reset
+        ApplicationModel.reset();
     }
 
     @Test
     public void testGetProtocol() {
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic&side=provider");
         String protocol = abstractMetadataReport.getProtocol(url);
-        Assertions.assertEquals(protocol, "provider");
+        assertEquals(protocol, "provider");
 
         URL url2 = URL.valueOf("consumer://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         String protocol2 = abstractMetadataReport.getProtocol(url2);
-        Assertions.assertEquals(protocol2, "consumer");
+        assertEquals(protocol2, "consumer");
     }
 
     @Test
@@ -93,7 +121,7 @@ public class AbstractMetadataReportTest {
         URL singleUrl = URL.valueOf("redis://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.metadata.store.InterfaceNameTestService?version=1.0.0&application=singleTest");
         NewMetadataReport singleMetadataReport = new NewMetadataReport(singleUrl);
 
-        Assertions.assertFalse(singleMetadataReport.file.exists());
+        Assertions.assertFalse(singleMetadataReport.localCacheFile.exists());
 
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
@@ -102,8 +130,8 @@ public class AbstractMetadataReportTest {
         MetadataIdentifier providerMetadataIdentifier = storePrivider(singleMetadataReport, interfaceName, version, group, application);
 
         Thread.sleep(2000);
-        Assertions.assertTrue(singleMetadataReport.file.exists());
-        Assertions.assertTrue(singleMetadataReport.properties.containsKey(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
+        assertTrue(singleMetadataReport.localCacheFile.exists());
+        assertTrue(singleMetadataReport.properties.containsKey(providerMetadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY)));
     }
 
     @Test
@@ -117,22 +145,22 @@ public class AbstractMetadataReportTest {
         retryReport.metadataReportRetry.retryPeriod = 400L;
         URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         Assertions.assertNull(retryReport.metadataReportRetry.retryScheduledFuture);
-        Assertions.assertEquals(0, retryReport.metadataReportRetry.retryCounter.get());
-        Assertions.assertTrue(retryReport.store.isEmpty());
-        Assertions.assertTrue(retryReport.failedReports.isEmpty());
+        assertEquals(0, retryReport.metadataReportRetry.retryCounter.get());
+        assertTrue(retryReport.store.isEmpty());
+        assertTrue(retryReport.failedReports.isEmpty());
 
 
         storePrivider(retryReport, interfaceName, version, group, application);
         Thread.sleep(150);
 
-        Assertions.assertTrue(retryReport.store.isEmpty());
+        assertTrue(retryReport.store.isEmpty());
         Assertions.assertFalse(retryReport.failedReports.isEmpty());
         Assertions.assertNotNull(retryReport.metadataReportRetry.retryScheduledFuture);
         Thread.sleep(2000L);
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryCounter.get() != 0);
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryCounter.get() >= 3);
+        assertTrue(retryReport.metadataReportRetry.retryCounter.get() != 0);
+        assertTrue(retryReport.metadataReportRetry.retryCounter.get() >= 3);
         Assertions.assertFalse(retryReport.store.isEmpty());
-        Assertions.assertTrue(retryReport.failedReports.isEmpty());
+        assertTrue(retryReport.failedReports.isEmpty());
     }
 
     @Test
@@ -152,8 +180,8 @@ public class AbstractMetadataReportTest {
         Assertions.assertFalse(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
         Assertions.assertFalse(retryReport.metadataReportRetry.retryExecutor.isShutdown());
         Thread.sleep(1000L);
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
-        Assertions.assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown());
+        assertTrue(retryReport.metadataReportRetry.retryScheduledFuture.isCancelled());
+        assertTrue(retryReport.metadataReportRetry.retryExecutor.isShutdown());
 
     }
 
@@ -185,42 +213,42 @@ public class AbstractMetadataReportTest {
     @Test
     public void testPublishAll() throws ClassNotFoundException, InterruptedException {
 
-        Assertions.assertTrue(abstractMetadataReport.store.isEmpty());
-        Assertions.assertTrue(abstractMetadataReport.allMetadataReports.isEmpty());
+        assertTrue(abstractMetadataReport.store.isEmpty());
+        assertTrue(abstractMetadataReport.allMetadataReports.isEmpty());
         String interfaceName = "org.apache.dubbo.metadata.store.InterfaceNameTestService";
         String version = "1.0.0";
         String group = null;
         String application = "vic";
         MetadataIdentifier providerMetadataIdentifier1 = storePrivider(abstractMetadataReport, interfaceName, version, group, application);
         Thread.sleep(1000);
-        Assertions.assertEquals(abstractMetadataReport.allMetadataReports.size(), 1);
-        Assertions.assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier1)).getParameters().containsKey("testPKey"));
+        assertEquals(abstractMetadataReport.allMetadataReports.size(), 1);
+        assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier1)).getParameters().containsKey("testPKey"));
 
         MetadataIdentifier providerMetadataIdentifier2 = storePrivider(abstractMetadataReport, interfaceName, version + "_2", group + "_2", application);
         Thread.sleep(1000);
-        Assertions.assertEquals(abstractMetadataReport.allMetadataReports.size(), 2);
-        Assertions.assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().containsKey("testPKey"));
-        Assertions.assertEquals(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().get("version"), version + "_2");
+        assertEquals(abstractMetadataReport.allMetadataReports.size(), 2);
+        assertTrue(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().containsKey("testPKey"));
+        assertEquals(((FullServiceDefinition) abstractMetadataReport.allMetadataReports.get(providerMetadataIdentifier2)).getParameters().get("version"), version + "_2");
 
         Map<String, String> tmpMap = new HashMap<>();
         tmpMap.put("testKey", "value");
         MetadataIdentifier consumerMetadataIdentifier = storeConsumer(abstractMetadataReport, interfaceName, version + "_3", group + "_3", application, tmpMap);
         Thread.sleep(1000);
-        Assertions.assertEquals(abstractMetadataReport.allMetadataReports.size(), 3);
+        assertEquals(abstractMetadataReport.allMetadataReports.size(), 3);
 
         Map tmpMapResult = (Map) abstractMetadataReport.allMetadataReports.get(consumerMetadataIdentifier);
-        Assertions.assertEquals(tmpMapResult.get("testPKey"), "9090");
-        Assertions.assertEquals(tmpMapResult.get("testKey"), "value");
-        Assertions.assertEquals(3, abstractMetadataReport.store.size());
+        assertEquals(tmpMapResult.get("testPKey"), "9090");
+        assertEquals(tmpMapResult.get("testKey"), "value");
+        assertEquals(3, abstractMetadataReport.store.size());
 
         abstractMetadataReport.store.clear();
 
-        Assertions.assertEquals(0, abstractMetadataReport.store.size());
+        assertEquals(0, abstractMetadataReport.store.size());
 
         abstractMetadataReport.publishAll();
         Thread.sleep(200);
 
-        Assertions.assertEquals(3, abstractMetadataReport.store.size());
+        assertEquals(3, abstractMetadataReport.store.size());
 
         String v = abstractMetadataReport.store.get(providerMetadataIdentifier1.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
         Gson gson = new Gson();
@@ -244,9 +272,63 @@ public class AbstractMetadataReportTest {
             long t = abstractMetadataReport.calculateStartTime() + System.currentTimeMillis();
             Calendar c = Calendar.getInstance();
             c.setTimeInMillis(t);
-            Assertions.assertTrue(c.get(Calendar.HOUR_OF_DAY) >= 2);
-            Assertions.assertTrue(c.get(Calendar.HOUR_OF_DAY) <= 6);
+            assertTrue(c.get(Calendar.HOUR_OF_DAY) >= 2);
+            assertTrue(c.get(Calendar.HOUR_OF_DAY) <= 6);
         }
+    }
+
+    */
+/**
+ * Test {@link MetadataReport#saveExportedURLs(String, String, String)} method
+ *
+ * @since 2.7.8
+ * <p>
+ * Test {@link MetadataReport#getExportedURLs(String, String)} method
+ * @since 2.7.8
+ * <p>
+ * Test {@link MetadataReport#getExportedURLsContent(String, String)} method
+ * @since 2.7.8
+ *//*
+
+    @Test
+    public void testSaveExportedURLs() {
+        String serviceName = null;
+        String exportedServiceRevision = null;
+        String exportedURLsContent = null;
+        SortedSet<String> exportedURLs = null;
+        // Default methods return true
+        assertTrue(abstractMetadataReport.saveExportedURLs(exportedURLs));
+        assertTrue(abstractMetadataReport.saveExportedURLs(exportedServiceRevision, exportedURLs));
+        assertTrue(abstractMetadataReport.saveExportedURLs(serviceName, exportedServiceRevision, exportedURLs));
+        assertTrue(abstractMetadataReport.saveExportedURLs(serviceName, exportedServiceRevision, exportedURLsContent));
+    }
+
+    */
+/**
+ * Test {@link MetadataReport#getExportedURLs(String, String)} method
+ *
+ * @since 2.7.8
+ *//*
+
+    @Test
+    public void testGetExportedURLs() {
+        String serviceName = null;
+        String exportedServiceRevision = null;
+        assertEquals(emptySet(), abstractMetadataReport.getExportedURLs(serviceName, exportedServiceRevision));
+    }
+
+    */
+/**
+ * Test {@link MetadataReport#getExportedURLsContent(String, String)} method
+ *
+ * @since 2.7.8
+ *//*
+
+    @Test
+    public void testGetExportedURLsContent() {
+        String serviceName = null;
+        String exportedServiceRevision = null;
+        assertNull(abstractMetadataReport.getExportedURLsContent(serviceName, exportedServiceRevision));
     }
 
     private FullServiceDefinition toServiceDefinition(String v) {
@@ -256,8 +338,8 @@ public class AbstractMetadataReportTest {
     }
 
     private void checkParam(Map<String, String> map, String application, String version) {
-        Assertions.assertEquals(map.get("application"), application);
-        Assertions.assertEquals(map.get("version"), version);
+        assertEquals(map.get("application"), application);
+        assertEquals(map.get("version"), version);
     }
 
     private Map<String, String> queryUrlToMap(String urlQuery) {
@@ -387,3 +469,4 @@ public class AbstractMetadataReportTest {
 
 
 }
+*/

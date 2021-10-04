@@ -19,7 +19,6 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-registry</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

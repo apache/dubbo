@@ -16,21 +16,22 @@
  */
 package org.apache.dubbo.common.config.configcenter.file;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
 import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
+import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-
-import com.sun.nio.file.SensitivityWatchEventModifier;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,20 +41,20 @@ import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -68,14 +69,13 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.io.FileUtils.readFileToString;
-import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
  * File-System based {@link DynamicConfiguration} implementation
  *
  * @since 2.7.5
  */
-public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration {
+public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration {
 
     public static final String CONFIG_CENTER_DIR_PARAM_NAME = PARAM_NAME_PREFIX + "dir";
 
@@ -124,14 +124,14 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
      *
      * @see #detectPoolingBasedWatchService(Optional)
      */
-    private static final boolean basedPoolingWatchService;
+    private static final boolean BASED_POOLING_WATCH_SERVICE;
 
-    private static final WatchEvent.Modifier[] modifiers;
+    private static final WatchEvent.Modifier[] MODIFIERS;
 
     /**
      * the delay to action in seconds. If null, execute indirectly
      */
-    private static final Integer delay;
+    private static final Integer DELAY;
 
     /**
      * The thread pool for {@link WatchEvent WatchEvents} loop
@@ -139,15 +139,15 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
      *
      * @see ThreadPoolExecutor
      */
-    private static final ThreadPoolExecutor watchEventsLoopThreadPool;
+    private static final ThreadPoolExecutor WATCH_EVENTS_LOOP_THREAD_POOL;
 
     // static initialization
     static {
         watchService = newWatchService();
-        basedPoolingWatchService = detectPoolingBasedWatchService(watchService);
-        modifiers = initWatchEventModifiers();
-        delay = initDelay(modifiers);
-        watchEventsLoopThreadPool = newWatchEventsLoopThreadPool();
+        BASED_POOLING_WATCH_SERVICE = detectPoolingBasedWatchService(watchService);
+        MODIFIERS = initWatchEventModifiers();
+        DELAY = initDelay(MODIFIERS);
+        WATCH_EVENTS_LOOP_THREAD_POOL = newWatchEventsLoopThreadPool();
     }
 
     /**
@@ -168,6 +168,8 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     private final Set<File> processingDirectories;
 
     private final Map<File, List<ConfigurationListener>> listenersRepository;
+    private ScopeModel scopeModel;
+    private AtomicBoolean hasRegisteredShutdownHook = new AtomicBoolean();
 
     public FileSystemDynamicConfiguration() {
         this(new File(DEFAULT_CONFIG_CENTER_DIR_PATH));
@@ -194,63 +196,44 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
                                           String threadPoolPrefixName,
                                           int threadPoolSize,
                                           long keepAliveTime) {
-        super(threadPoolPrefixName, threadPoolSize, keepAliveTime);
+        super(rootDirectory.getAbsolutePath(), threadPoolPrefixName, threadPoolSize, keepAliveTime, DEFAULT_GROUP, -1L);
         this.rootDirectory = rootDirectory;
         this.encoding = encoding;
         this.processingDirectories = initProcessingDirectories();
-        this.listenersRepository = new LinkedHashMap<>();
+        this.listenersRepository = new HashMap<>();
+        registerDubboShutdownHook();
+    }
+
+    public FileSystemDynamicConfiguration(File rootDirectory, String encoding,
+                                          String threadPoolPrefixName,
+                                          int threadPoolSize,
+                                          long keepAliveTime,
+                                          ScopeModel scopeModel) {
+        super(rootDirectory.getAbsolutePath(), threadPoolPrefixName, threadPoolSize, keepAliveTime, DEFAULT_GROUP, -1L);
+        this.rootDirectory = rootDirectory;
+        this.encoding = encoding;
+        this.processingDirectories = initProcessingDirectories();
+        this.listenersRepository = new HashMap<>();
+        this.scopeModel = scopeModel;
+        registerDubboShutdownHook();
     }
 
     public FileSystemDynamicConfiguration(URL url) {
         this(initDirectory(url), getEncoding(url), getThreadPoolPrefixName(url), getThreadPoolSize(url),
-                getThreadPoolKeepAliveTime(url));
+                getThreadPoolKeepAliveTime(url), url.getScopeModel());
     }
 
     private Set<File> initProcessingDirectories() {
         return isBasedPoolingWatchService() ? new LinkedHashSet<>() : emptySet();
     }
 
-    @Override
-    public void addListener(String key, String group, ConfigurationListener listener) {
-        doInListener(key, group, (configFilePath, listeners) -> {
-
-            if (listeners.isEmpty()) { // If no element, it indicates watchService was registered before
-                ThrowableConsumer.execute(configFilePath, configFile -> {
-                    FileUtils.forceMkdirParent(configFile);
-                    // A rootDirectory to be watched
-                    File configDirectory = configFile.getParentFile();
-                    if (configDirectory != null) {
-                        // Register the configDirectory
-                        configDirectory.toPath().register(watchService.get(), INTEREST_PATH_KINDS, modifiers);
-                    }
-                });
-            }
-
-            // Add into cache
-            listeners.add(listener);
-        });
-    }
-
-    @Override
-    public void removeListener(String key, String group, ConfigurationListener listener) {
-        doInListener(key, group, (file, listeners) -> {
-            // Remove into cache
-            listeners.remove(listener);
-        });
-    }
-
-    public File groupDirectory(String group) {
-        String actualGroup = isBlank(group) ? DEFAULT_GROUP : group;
-        return new File(rootDirectory, actualGroup);
-    }
-
     public File configFile(String key, String group) {
-        return new File(groupDirectory(group), key);
+        return new File(buildPathKey(group, key));
     }
 
-    private void doInListener(String key, String group, BiConsumer<File, List<ConfigurationListener>> consumer) {
+    private void doInListener(String configFilePath, BiConsumer<File, List<ConfigurationListener>> consumer) {
         watchService.ifPresent(watchService -> {
-            File configFile = configFile(key, group);
+            File configFile = new File(configFilePath);
             executeMutually(configFile.getParentFile(), () -> {
                 // process the WatchEvents if not start
                 if (!isProcessingWatchEvents()) {
@@ -263,6 +246,28 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
                 // Nothing to return
                 return null;
             });
+        });
+    }
+
+    /**
+     * Register the Dubbo ShutdownHook
+     *
+     * @since 2.7.8
+     */
+    private void registerDubboShutdownHook() {
+        if (!hasRegisteredShutdownHook.compareAndSet(false, true)) {
+            return;
+        }
+        ShutdownHookCallbacks shutdownHookCallbacks = ScopeModelUtil.getApplicationModel(scopeModel).getBeanFactory().getBean(ShutdownHookCallbacks.class);
+        shutdownHookCallbacks.addCallback(() -> {
+            watchService.ifPresent(w -> {
+                try {
+                    w.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            getWatchEventsLoopThreadPool().shutdown();
         });
     }
 
@@ -360,47 +365,78 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     @Override
-    public boolean publishConfig(String key, String group, String content) {
-        return delay(key, group, configFile -> {
+    protected boolean doPublishConfig(String pathKey, String content) throws Exception {
+        return delay(pathKey, configFile -> {
             FileUtils.write(configFile, content, getEncoding());
             return true;
         });
     }
 
     @Override
-    public SortedSet<String> getConfigKeys(String group) {
-        File[] files = groupDirectory(group).listFiles(File::isFile);
+    protected String doGetConfig(String pathKey) throws Exception {
+        File configFile = new File(pathKey);
+        return getConfig(configFile);
+    }
+
+    @Override
+    protected boolean doRemoveConfig(String pathKey) throws Exception {
+        delay(pathKey, configFile -> {
+            String content = getConfig(configFile);
+            FileUtils.deleteQuietly(configFile);
+            return content;
+        });
+        return true;
+    }
+
+    @Override
+    protected Collection<String> doGetConfigKeys(String groupPath) {
+        File[] files = new File(groupPath).listFiles(File::isFile);
         if (files == null) {
             return new TreeSet<>();
         } else {
             return Stream.of(files)
                     .map(File::getName)
-                    .collect(TreeSet::new, Set::add, Set::addAll);
+                    .collect(Collectors.toList());
         }
     }
 
-    public String removeConfig(String key, String group) {
-        return delay(key, group, configFile -> {
+    @Override
+    protected void doAddListener(String pathKey, ConfigurationListener listener) {
+        doInListener(pathKey, (configFilePath, listeners) -> {
+            if (listeners.isEmpty()) { // If no element, it indicates watchService was registered before
+                ThrowableConsumer.execute(configFilePath, configFile -> {
+                    FileUtils.forceMkdirParent(configFile);
+                    // A rootDirectory to be watched
+                    File configDirectory = configFile.getParentFile();
+                    if (configDirectory != null) {
+                        // Register the configDirectory
+                        configDirectory.toPath().register(watchService.get(), INTEREST_PATH_KINDS, MODIFIERS);
+                    }
+                });
+            }
+            // Add into cache
+            listeners.add(listener);
+        });
+    }
 
-            String content = getConfig(configFile);
-
-            FileUtils.deleteQuietly(configFile);
-
-            return content;
+    @Override
+    protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
+        doInListener(pathKey, (file, listeners) -> {
+            // Remove into cache
+            listeners.remove(listener);
         });
     }
 
     /**
      * Delay action for {@link #configFile(String, String) config file}
      *
-     * @param key      the key to represent a configuration
-     * @param group    the group where the key belongs to
-     * @param function the customized {@link Function function} with {@link File}
-     * @param <V>      the computed value
+     * @param configFilePath the key to represent a configuration
+     * @param function       the customized {@link Function function} with {@link File}
+     * @param <V>            the computed value
      * @return
      */
-    protected <V> V delay(String key, String group, ThrowableFunction<File, V> function) {
-        File configFile = configFile(key, group);
+    protected <V> V delay(String configFilePath, ThrowableFunction<File, V> function) {
+        File configFile = new File(configFilePath);
         // Must be based on PoolingWatchService and has listeners under config file
         if (isBasedPoolingWatchService()) {
             File configDirectory = configFile.getParentFile();
@@ -411,8 +447,8 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
                         // wait for delay in seconds
                         long timeout = SECONDS.toMillis(delay);
                         if (logger.isDebugEnabled()) {
-                            logger.debug(format("The config[key : %s, group : %s] is about to delay in %d ms.",
-                                    key, group, timeout));
+                            logger.debug(format("The config[path : %s] is about to delay in %d ms.",
+                                    configFilePath, timeout));
                         }
                         configDirectory.wait(timeout);
                     }
@@ -440,9 +476,9 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     /**
-     * Is processing on {@link #groupDirectory(String) config rootDirectory}
+     * Is processing on {@link #buildGroupPath(String) config rootDirectory}
      *
-     * @param configDirectory {@link #groupDirectory(String) config rootDirectory}
+     * @param configDirectory {@link #buildGroupPath(String) config rootDirectory}
      * @return if processing , return <code>true</code>, or <code>false</code>
      */
     private boolean isProcessing(File configDirectory) {
@@ -458,12 +494,6 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
                 .filter(File::isDirectory)
                 .map(File::getName)
                 .collect(Collectors.toSet());
-    }
-
-    @Override
-    protected String doGetConfig(String key, String group) throws Exception {
-        File configFile = configFile(key, group);
-        return getConfig(configFile);
     }
 
     protected String getConfig(File configFile) {
@@ -485,7 +515,7 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     protected Integer getDelay() {
-        return delay;
+        return DELAY;
     }
 
     /**
@@ -497,18 +527,18 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
      * @see #detectPoolingBasedWatchService(Optional)
      */
     protected static boolean isBasedPoolingWatchService() {
-        return basedPoolingWatchService;
+        return BASED_POOLING_WATCH_SERVICE;
     }
 
     protected static ThreadPoolExecutor getWatchEventsLoopThreadPool() {
-        return watchEventsLoopThreadPool;
+        return WATCH_EVENTS_LOOP_THREAD_POOL;
     }
 
     protected ThreadPoolExecutor getWorkersThreadPool() {
         return super.getWorkersThreadPool();
     }
 
-    private <V> V executeMutually(Object mutex, Callable<V> callable) {
+    private <V> V executeMutually(final Object mutex, Callable<V> callable) {
         V value = null;
         synchronized (mutex) {
             try {
@@ -527,20 +557,15 @@ public class FileSystemDynamicConfiguration extends AbstractDynamicConfiguration
     }
 
     private static Integer initDelay(WatchEvent.Modifier[] modifiers) {
-        return Stream.of(modifiers)
-                .filter(modifier -> modifier instanceof SensitivityWatchEventModifier)
-                .map(SensitivityWatchEventModifier.class::cast)
-                .map(SensitivityWatchEventModifier::sensitivityValueInSeconds)
-                .max(Integer::compareTo)
-                .orElse(null);
+        if (isBasedPoolingWatchService()) {
+            return 2;
+        } else {
+            return null;
+        }
     }
 
     private static WatchEvent.Modifier[] initWatchEventModifiers() {
-        if (isBasedPoolingWatchService()) { // If based on PollingWatchService, High sensitivity will be used
-            return of(SensitivityWatchEventModifier.HIGH);
-        } else {
-            return of();
-        }
+        return of();
     }
 
     /**

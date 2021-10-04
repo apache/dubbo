@@ -26,55 +26,58 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 
 /**
  * ProviderModel is about published services
  */
-public class ProviderModel {
-    private final String serviceKey;
-    private final Object serviceInstance;
-    private final ServiceDescriptor serviceModel;
-    private final ServiceConfigBase<?> serviceConfig;
+public class ProviderModel extends ServiceModel {
     private final List<RegisterStatedURL> urls;
+    private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
 
     public ProviderModel(String serviceKey,
                          Object serviceInstance,
                          ServiceDescriptor serviceModel,
                          ServiceConfigBase<?> serviceConfig) {
+        super(serviceInstance, serviceKey, serviceModel, serviceConfig);
         if (null == serviceInstance) {
             throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
         }
 
-        this.serviceKey = serviceKey;
-        this.serviceInstance = serviceInstance;
-        this.serviceModel = serviceModel;
-        this.serviceConfig = serviceConfig;
         this.urls = new ArrayList<>(1);
     }
 
-    public String getServiceKey() {
-        return serviceKey;
+    public ProviderModel(String serviceKey,
+                         Object serviceInstance,
+                         ServiceDescriptor serviceModel,
+                         ServiceConfigBase<?> serviceConfig,
+                         ServiceMetadata serviceMetadata) {
+        super(serviceInstance, serviceKey, serviceModel, serviceConfig, serviceMetadata);
+        if (null == serviceInstance) {
+            throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
+        }
+
+        initMethod(serviceModel.getServiceInterfaceClass());
+        this.urls = new ArrayList<>(1);
     }
 
-    public Class<?> getServiceInterfaceClass() {
-        return serviceModel.getServiceInterfaceClass();
+    public ProviderModel(String serviceKey,
+                         Object serviceInstance,
+                         ServiceDescriptor serviceModel,
+                         ServiceConfigBase<?> serviceConfig,
+                         ModuleModel moduleModel,
+                         ServiceMetadata serviceMetadata) {
+        super(serviceInstance, serviceKey, serviceModel, serviceConfig, moduleModel, serviceMetadata);
+        if (null == serviceInstance) {
+            throw new IllegalArgumentException("Service[" + serviceKey + "]Target is NULL.");
+        }
+
+        initMethod(serviceModel.getServiceInterfaceClass());
+        this.urls = new ArrayList<>(1);
     }
 
     public Object getServiceInstance() {
-        return serviceInstance;
-    }
-
-    public Set<MethodDescriptor> getAllMethods() {
-        return serviceModel.getAllMethods();
-    }
-
-    public ServiceDescriptor getServiceModel() {
-        return serviceModel;
-    }
-
-    public ServiceConfigBase getServiceConfig() {
-        return serviceConfig;
+        return getProxyObject();
     }
 
     public List<RegisterStatedURL> getStatedUrl() {
@@ -123,26 +126,6 @@ public class ProviderModel {
         }
     }
 
-    /* *************** Start, metadata compatible **************** */
-
-    private ServiceMetadata serviceMetadata;
-    private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
-
-    public ProviderModel(String serviceKey,
-                         Object serviceInstance,
-                         ServiceDescriptor serviceModel,
-                         ServiceConfigBase<?> serviceConfig,
-                         ServiceMetadata serviceMetadata) {
-        this(serviceKey, serviceInstance, serviceModel, serviceConfig);
-
-        this.serviceMetadata = serviceMetadata;
-        initMethod(serviceModel.getServiceInterfaceClass());
-    }
-
-    public String getServiceName() {
-        return this.serviceMetadata.getServiceKey();
-    }
-
     public List<ProviderMethodModel> getAllMethodModels() {
         List<ProviderMethodModel> result = new ArrayList<ProviderMethodModel>();
         for (List<ProviderMethodModel> models : methods.values()) {
@@ -184,10 +167,23 @@ public class ProviderModel {
         }
     }
 
-    /**
-     * @return serviceMetadata
-     */
-    public ServiceMetadata getServiceMetadata() {
-        return serviceMetadata;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ProviderModel that = (ProviderModel) o;
+        return Objects.equals(urls, that.urls) && Objects.equals(methods, that.methods);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), urls, methods);
     }
 }

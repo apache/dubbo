@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
@@ -26,8 +24,6 @@ import org.apache.dubbo.rpc.Protocol;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setEndpoints;
 
 /**
@@ -40,21 +36,17 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
-
-        String metadataStoredType = getMetadataStorageType(serviceInstance);
-
-        WritableMetadataService writableMetadataService = getExtension(metadataStoredType);
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
 
         Map<String, Integer> protocols = new HashMap<>();
-        writableMetadataService.getExportedURLs()
-                .stream()
-                .map(URL::valueOf)
-                .filter(url -> !MetadataService.class.getName().equals(url.getServiceInterface()))
+        writableMetadataService.getExportedServiceURLs()
                 .forEach(url -> {
                     // TODO, same protocol listen on different ports will override with each other.
                     protocols.put(url.getProtocol(), url.getPort());
                 });
 
-        setEndpoints(serviceInstance, protocols);
+        if (protocols.size() > 0) {// set endpoints only for multi-protocol scenario
+            setEndpoints(serviceInstance, protocols);
+        }
     }
 }

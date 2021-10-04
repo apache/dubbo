@@ -20,10 +20,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -61,7 +65,8 @@ public class AdaptiveClassCodeGenerator {
                     + "String methodName = arg%d.getMethodName();\n";
 
 
-    private static final String CODE_EXTENSION_ASSIGNMENT = "%s extension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);\n";
+    private static final String CODE_SCOPE_MODEL_ASSIGNMENT = "ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), %s.class);\n";
+    private static final String CODE_EXTENSION_ASSIGNMENT = "%s extension = (%<s)scopeModel.getExtensionLoader(%s.class).getExtension(extName);\n";
 
     private static final String CODE_EXTENSION_METHOD_INVOKE_ARGUMENT = "arg%d";
 
@@ -75,7 +80,7 @@ public class AdaptiveClassCodeGenerator {
     }
 
     /**
-     * test if given type has at least one method annotated with <code>SPI</code>
+     * test if given type has at least one method annotated with <code>Adaptive</code>
      */
     private boolean hasAdaptiveMethod() {
         return Arrays.stream(type.getMethods()).anyMatch(m -> m.isAnnotationPresent(Adaptive.class));
@@ -99,7 +104,7 @@ public class AdaptiveClassCodeGenerator {
         for (Method method : methods) {
             code.append(generateMethod(method));
         }
-        code.append("}");
+        code.append('}');
 
         if (logger.isDebugEnabled()) {
             logger.debug(code.toString());
@@ -118,7 +123,10 @@ public class AdaptiveClassCodeGenerator {
      * generate imports
      */
     private String generateImports() {
-        return String.format(CODE_IMPORTS, ExtensionLoader.class.getName());
+        StringBuilder builder = new StringBuilder();
+        builder.append(String.format(CODE_IMPORTS, ScopeModel.class.getName()));
+        builder.append(String.format(CODE_IMPORTS, ScopeModelUtil.class.getName()));
+        return builder.toString();
     }
 
     /**
@@ -222,6 +230,7 @@ public class AdaptiveClassCodeGenerator {
             // check extName == null?
             code.append(generateExtNameNullCheck(value));
 
+            code.append(generateScopeModelAssignment());
             code.append(generateExtensionAssignment());
 
             // return statement
@@ -286,8 +295,12 @@ public class AdaptiveClassCodeGenerator {
     /**
      * @return
      */
+    private String generateScopeModelAssignment() {
+        return String.format(CODE_SCOPE_MODEL_ASSIGNMENT, type.getName());
+    }
+
     private String generateExtensionAssignment() {
-        return String.format(CODE_EXTENSION_ASSIGNMENT, type.getName(), ExtensionLoader.class.getSimpleName(), type.getName());
+        return String.format(CODE_EXTENSION_ASSIGNMENT, type.getName(), type.getName());
     }
 
     /**
@@ -344,6 +357,7 @@ public class AdaptiveClassCodeGenerator {
     private String generateUrlAssignmentIndirectly(Method method) {
         Class<?>[] pts = method.getParameterTypes();
 
+        Map<String, Integer> getterReturnUrl = new HashMap<>();
         // find URL getter method
         for (int i = 0; i < pts.length; ++i) {
             for (Method m : pts[i].getMethods()) {
@@ -353,15 +367,24 @@ public class AdaptiveClassCodeGenerator {
                         && !Modifier.isStatic(m.getModifiers())
                         && m.getParameterTypes().length == 0
                         && m.getReturnType() == URL.class) {
-                    return generateGetUrlNullCheck(i, pts[i], name);
+                    getterReturnUrl.put(name, i);
                 }
             }
         }
 
-        // getter method not found, throw
-        throw new IllegalStateException("Failed to create adaptive class for interface " + type.getName()
-                        + ": not found url parameter or url attribute in parameters of method " + method.getName());
+        if (getterReturnUrl.size() <= 0) {
+            // getter method not found, throw
+            throw new IllegalStateException("Failed to create adaptive class for interface " + type.getName()
+                    + ": not found url parameter or url attribute in parameters of method " + method.getName());
+        }
 
+        Integer index = getterReturnUrl.get("getUrl");
+        if (index != null) {
+            return generateGetUrlNullCheck(index, pts[index], "getUrl");
+        } else {
+            Map.Entry<String, Integer> entry = getterReturnUrl.entrySet().iterator().next();
+            return generateGetUrlNullCheck(entry.getValue(), pts[entry.getValue()], entry.getKey());
+        }
     }
 
     /**

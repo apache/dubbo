@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
@@ -37,6 +39,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
+
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
 public class DecodeableRpcResult extends AppResponse implements Codec, Decodeable {
 
@@ -72,7 +77,15 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     @Override
     public Object decode(Channel channel, InputStream input) throws IOException {
-        log.debug("Decoding in thread -- " + Thread.currentThread().getName());
+        if (log.isDebugEnabled()) {
+            Thread thread = Thread.currentThread();
+            log.debug("Decoding in thread -- [" + thread.getName() + "#" + thread.getId() + "]");
+        }
+
+        // switch TCCL
+        if (invocation != null && invocation.getServiceModel() != null) {
+            Thread.currentThread().setContextClassLoader(invocation.getServiceModel().getClassLoader());
+        }
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
                 .deserialize(channel.getUrl(), input);
 
@@ -110,6 +123,18 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
     public void decode() throws Exception {
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
+                if (invocation != null) {
+                    Configuration systemConfiguration = ConfigurationUtils.getSystemConfiguration(channel.getUrl().getScopeModel());
+                    if (systemConfiguration == null || systemConfiguration.getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
+                        Object serializationTypeObj = invocation.get(SERIALIZATION_ID_KEY);
+                        if (serializationTypeObj != null) {
+                            if ((byte) serializationTypeObj != serializationType) {
+                                throw new IOException("Unexpected serialization id:" + serializationType + " received from network, please check if the peer send the right id.");
+                            }
+                        }
+                    }
+                }
+
                 decode(channel, inputStream);
             } catch (Throwable e) {
                 if (log.isWarnEnabled()) {
@@ -127,7 +152,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         try {
             Type[] returnTypes;
             if (invocation instanceof RpcInvocation) {
-               returnTypes = ((RpcInvocation)invocation).getReturnTypes();
+                returnTypes = ((RpcInvocation) invocation).getReturnTypes();
             } else {
                 returnTypes = RpcUtils.getReturnTypes(invocation);
             }
@@ -156,7 +181,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
 
     private void handleAttachment(ObjectInput in) throws IOException {
         try {
-            setAttachments(in.readAttachments());
+            addObjectAttachments(in.readAttachments());
         } catch (ClassNotFoundException e) {
             rethrow(e);
         }

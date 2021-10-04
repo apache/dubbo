@@ -1,1 +1,0 @@
-etcd=org.apache.dubbo.metadata.store.etcd.EtcdMetadataReportFactory

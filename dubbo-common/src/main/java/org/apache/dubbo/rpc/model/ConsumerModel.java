@@ -17,199 +17,104 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * This model is bound to your reference's configuration, for example, group, version or method level configuration.
  */
-public class ConsumerModel {
-    private final String serviceKey;
-    private final ServiceDescriptor serviceModel;
-    private final ReferenceConfigBase<?> referenceConfig;
+public class ConsumerModel extends ServiceModel {
+    private final Set<String> apps = new TreeSet<>();
 
-    private Object proxyObject;
-
-    private final Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
+    private final Map<String, AsyncMethodInfo> methodConfigs;
+    private Map<Method, ConsumerMethodModel> methodModels = new HashMap<>();
 
     /**
-     *  This constructor create an instance of ConsumerModel and passed objects should not be null.
-     *  If service name, service instance, proxy object,methods should not be null. If these are null
-     *  then this constructor will throw {@link IllegalArgumentException}
-     * @param serviceKey Name of the service.
-     * @param proxyObject  Proxy object.
-     * @param attributes Attributes of methods.
-     */
-    public ConsumerModel(String serviceKey
-            , Object proxyObject
-            , ServiceDescriptor serviceModel
-            , ReferenceConfigBase<?> referenceConfig
-            , Map<String, Object> attributes) {
-
-        Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
-//        Assert.notNull(proxyObject, "Proxy object can't be null");
-
-        this.serviceKey = serviceKey;
-        this.proxyObject = proxyObject;
-        this.serviceModel = serviceModel;
-        this.referenceConfig = referenceConfig;
-
-        if (CollectionUtils.isNotEmptyMap(attributes)) {
-            attributes.forEach((method, object) -> {
-                methodConfigs.put(method, (AsyncMethodInfo) object);
-            });
-        }
-    }
-
-    /**
-     * Return the proxy object used by called while creating instance of ConsumerModel
-     * @return
-     */
-    public Object getProxyObject() {
-        return proxyObject;
-    }
-
-    public void setProxyObject(Object proxyObject) {
-        this.proxyObject = proxyObject;
-    }
-
-    /**
-     * Return all method models for the current service
+     * This constructor create an instance of ConsumerModel and passed objects should not be null.
+     * If service name, service instance, proxy object,methods should not be null. If these are null
+     * then this constructor will throw {@link IllegalArgumentException}
      *
-     * @return method model list
+     * @param serviceKey  Name of the service.
+     * @param proxyObject Proxy object.
      */
-    public Set<MethodDescriptor> getAllMethods() {
-        return serviceModel.getAllMethods();
+    public ConsumerModel(String serviceKey,
+                         Object proxyObject,
+                         ServiceDescriptor serviceModel,
+                         ReferenceConfigBase<?> referenceConfig,
+                         Map<String, AsyncMethodInfo> methodConfigs) {
+
+        super(proxyObject, serviceKey, serviceModel, referenceConfig);
+        Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
+
+        this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
     }
 
-    public Class<?> getServiceInterfaceClass() {
-        return serviceModel.getServiceInterfaceClass();
+    public ConsumerModel(String serviceKey,
+                         Object proxyObject,
+                         ServiceDescriptor serviceModel,
+                         ReferenceConfigBase<?> referenceConfig,
+                         ServiceMetadata metadata,
+                         Map<String, AsyncMethodInfo> methodConfigs) {
+
+        super(proxyObject, serviceKey, serviceModel, referenceConfig, metadata);
+        Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
+
+        this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
     }
 
-    public String getServiceKey() {
-        return serviceKey;
+    public ConsumerModel(String serviceKey,
+                         Object proxyObject,
+                         ServiceDescriptor serviceModel,
+                         ReferenceConfigBase<?> referenceConfig,
+                         ModuleModel moduleModel,
+                         ServiceMetadata metadata,
+                         Map<String, AsyncMethodInfo> methodConfigs) {
+
+        super(proxyObject, serviceKey, serviceModel, referenceConfig, moduleModel, metadata);
+        Assert.notEmptyString(serviceKey, "Service name can't be null or blank");
+
+        this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
     }
 
     public AsyncMethodInfo getMethodConfig(String methodName) {
         return methodConfigs.get(methodName);
     }
 
-    public ServiceDescriptor getServiceModel() {
-        return serviceModel;
+    public Set<String> getApps() {
+        return apps;
     }
 
-    public ReferenceConfigBase getReferenceConfig() {
-        return referenceConfig;
+    public AsyncMethodInfo getAsyncInfo(String methodName) {
+        return methodConfigs.get(methodName);
     }
 
-    public static class AsyncMethodInfo {
-        // callback instance when async-call is invoked
-        private Object oninvokeInstance;
-
-        // callback method when async-call is invoked
-        private Method oninvokeMethod;
-
-        // callback instance when async-call is returned
-        private Object onreturnInstance;
-
-        // callback method when async-call is returned
-        private Method onreturnMethod;
-
-        // callback instance when async-call has exception thrown
-        private Object onthrowInstance;
-
-        // callback method when async-call has exception thrown
-        private Method onthrowMethod;
-
-        public Object getOninvokeInstance() {
-            return oninvokeInstance;
+    public void initMethodModels() {
+        Class<?>[] interfaceList;
+        if (getProxyObject() == null) {
+            Class<?> serviceInterfaceClass = getReferenceConfig().getServiceInterfaceClass();
+            if (serviceInterfaceClass != null) {
+                interfaceList = new Class[]{serviceInterfaceClass};
+            } else {
+                interfaceList = new Class[0];
+            }
+        } else {
+            interfaceList = getProxyObject().getClass().getInterfaces();
         }
-
-        public void setOninvokeInstance(Object oninvokeInstance) {
-            this.oninvokeInstance = oninvokeInstance;
+        for (Class<?> interfaceClass : interfaceList) {
+            for (Method method : interfaceClass.getMethods()) {
+                methodModels.put(method, new ConsumerMethodModel(method));
+            }
         }
-
-        public Method getOninvokeMethod() {
-            return oninvokeMethod;
-        }
-
-        public void setOninvokeMethod(Method oninvokeMethod) {
-            this.oninvokeMethod = oninvokeMethod;
-        }
-
-        public Object getOnreturnInstance() {
-            return onreturnInstance;
-        }
-
-        public void setOnreturnInstance(Object onreturnInstance) {
-            this.onreturnInstance = onreturnInstance;
-        }
-
-        public Method getOnreturnMethod() {
-            return onreturnMethod;
-        }
-
-        public void setOnreturnMethod(Method onreturnMethod) {
-            this.onreturnMethod = onreturnMethod;
-        }
-
-        public Object getOnthrowInstance() {
-            return onthrowInstance;
-        }
-
-        public void setOnthrowInstance(Object onthrowInstance) {
-            this.onthrowInstance = onthrowInstance;
-        }
-
-        public Method getOnthrowMethod() {
-            return onthrowMethod;
-        }
-
-        public void setOnthrowMethod(Method onthrowMethod) {
-            this.onthrowMethod = onthrowMethod;
-        }
-    }
-
-
-    /* *************** Start, metadata compatible **************** */
-
-    private ServiceMetadata serviceMetadata;
-    private Map<Method, ConsumerMethodModel> methodModels = new IdentityHashMap<Method, ConsumerMethodModel>();
-
-    public ConsumerModel(String serviceKey
-            , Object proxyObject
-            , ServiceDescriptor serviceModel
-            , ReferenceConfigBase<?> referenceConfig
-            , Map<String, Object> attributes
-            , ServiceMetadata metadata) {
-
-        this(serviceKey, proxyObject, serviceModel, referenceConfig, attributes);
-        this.serviceMetadata = metadata;
-
-        for (Method method : metadata.getServiceType().getMethods()) {
-            methodModels.put(method, new ConsumerMethodModel(method, attributes));
-        }
-    }
-
-    public ClassLoader getClassLoader() {
-        return serviceMetadata.getServiceType().getClassLoader();
-    }
-
-    /**
-     * @return serviceMetadata
-     */
-    public ServiceMetadata getServiceMetadata() {
-        return serviceMetadata;
     }
 
     /**
@@ -234,15 +139,15 @@ public class ConsumerModel {
     }
 
     /**
-     * @param method   metodName
+     * @param method   methodName
      * @param argsType method arguments type
      * @return
      */
     public ConsumerMethodModel getMethodModel(String method, String[] argsType) {
         Optional<ConsumerMethodModel> consumerMethodModel = methodModels.entrySet().stream()
-                .filter(entry -> entry.getKey().getName().equals(method))
-                .map(Map.Entry::getValue).filter(methodModel -> Arrays.equals(argsType, methodModel.getParameterTypes()))
-                .findFirst();
+            .filter(entry -> entry.getKey().getName().equals(method))
+            .map(Map.Entry::getValue).filter(methodModel -> Arrays.equals(argsType, methodModel.getParameterTypes()))
+            .findFirst();
         return consumerMethodModel.orElse(null);
     }
 
@@ -255,9 +160,23 @@ public class ConsumerModel {
         return new ArrayList<>(methodModels.values());
     }
 
-    public String getServiceName() {
-        return this.serviceMetadata.getServiceKey();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ConsumerModel that = (ConsumerModel) o;
+        return Objects.equals(apps, that.apps) && Objects.equals(methodConfigs, that.methodConfigs) && Objects.equals(methodModels, that.methodModels);
     }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), apps, methodConfigs, methodModels);
+    }
 }

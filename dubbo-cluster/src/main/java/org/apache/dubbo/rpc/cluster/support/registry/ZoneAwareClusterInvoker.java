@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
@@ -31,14 +32,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_FORCE;
 import static org.apache.dubbo.common.constants.RegistryConstants.ZONE_KEY;
 
 /**
  * When there're more than one registry for subscription.
- *
+ * <p>
  * This extension provides a strategy to decide how to distribute traffics among them:
  * 1. registry marked as 'preferred=true' has the highest priority.
  * 2. check the zone the current request belongs, pick the registry that has the same zone first.
@@ -58,24 +58,27 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         // First, pick the invoker (XXXClusterInvoker) that comes from the local registry, distinguish by a 'preferred' key.
         for (Invoker<T> invoker : invokers) {
-            if (invoker.isAvailable() && invoker.getUrl().getParameter(REGISTRY_KEY + "." + PREFERRED_KEY, false)) {
-                return invoker.invoke(invocation);
+            ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
+            if (clusterInvoker.isAvailable() && clusterInvoker.getRegistryUrl()
+                    .getParameter(PREFERRED_KEY, false)) {
+                return clusterInvoker.invoke(invocation);
             }
         }
 
-        // providers in the registry with the same
-        String zone = (String) invocation.getAttachment(REGISTRY_ZONE);
+        // providers in the registry with the same zone
+        String zone = invocation.getAttachment(REGISTRY_ZONE);
         if (StringUtils.isNotEmpty(zone)) {
             for (Invoker<T> invoker : invokers) {
-                if (invoker.isAvailable() && zone.equals(invoker.getUrl().getParameter(REGISTRY_KEY + "." + ZONE_KEY))) {
-                    return invoker.invoke(invocation);
+                ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
+                if (clusterInvoker.isAvailable() && zone.equals(clusterInvoker.getRegistryUrl().getParameter(ZONE_KEY))) {
+                    return clusterInvoker.invoke(invocation);
                 }
             }
-            String force = (String) invocation.getAttachment(REGISTRY_ZONE_FORCE);
+            String force = invocation.getAttachment(REGISTRY_ZONE_FORCE);
             if (StringUtils.isNotEmpty(force) && "true".equalsIgnoreCase(force)) {
                 throw new IllegalStateException("No registry instance in zone or no available providers in the registry, zone: "
                         + zone
-                        + ", registries: " + invokers.stream().map(i -> i.getUrl().toString()).collect(Collectors.joining(",")));
+                        + ", registries: " + invokers.stream().map(invoker -> ((ClusterInvoker<T>) invoker).getRegistryUrl().toString()).collect(Collectors.joining(",")));
             }
         }
 
@@ -88,11 +91,14 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         // If none of the invokers has a preferred signal or is picked by the loadbalancer, pick the first one available.
         for (Invoker<T> invoker : invokers) {
-            if (invoker.isAvailable()) {
-                return invoker.invoke(invocation);
+            ClusterInvoker<T> clusterInvoker = (ClusterInvoker<T>) invoker;
+            if (clusterInvoker.isAvailable()) {
+                return clusterInvoker.invoke(invocation);
             }
         }
-        throw new RpcException("No provider available in " + invokers);
+
+        //if none available,just pick one
+        return invokers.get(0).invoke(invocation);
     }
 
 }

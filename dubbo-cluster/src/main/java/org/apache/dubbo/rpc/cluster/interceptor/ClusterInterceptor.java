@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 /**
  * Different from {@link Filter}, ClusterInterceptor works at the outmost layer, before one specific address/invoker is picked.
  */
+@Deprecated
 @SPI
 public interface ClusterInterceptor {
 
@@ -34,8 +35,8 @@ public interface ClusterInterceptor {
     void after(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
 
     /**
-     * Does not need to override this method, override {@link #before(AbstractClusterInvoker, Invocation)}
-     * and {@link #after(AbstractClusterInvoker, Invocation)}, methods to add your own logic expected to be
+     * Override this method or {@link #before(AbstractClusterInvoker, Invocation)}
+     * and {@link #after(AbstractClusterInvoker, Invocation)} methods to add your own logic expected to be
      * executed before and after invoke.
      *
      * @param clusterInvoker
@@ -49,7 +50,7 @@ public interface ClusterInterceptor {
 
     interface Listener {
 
-        void onResponse(Result appResponse, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
+        void onMessage(Result appResponse, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
 
         void onError(Throwable t, AbstractClusterInvoker<?> clusterInvoker, Invocation invocation);
     }

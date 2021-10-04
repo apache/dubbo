@@ -31,15 +31,16 @@ import java.util.Map;
  */
 public final class DefaultTypeBuilder {
 
-    public static TypeDefinition build(Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
-//        final String canonicalName = clazz.getCanonicalName();
-        final String name = clazz.getName();
+    public static TypeDefinition build(Class<?> clazz, Map<String, TypeDefinition> typeCache) {
+        final String canonicalName = clazz.getCanonicalName();
 
-        TypeDefinition td = new TypeDefinition(name);
         // Try to get a cached definition
-        if (typeCache.containsKey(clazz)) {
-            return typeCache.get(clazz);
+        TypeDefinition td = typeCache.get(canonicalName);
+        if (td != null) {
+            return td;
         }
+        td = new TypeDefinition(canonicalName);
+        typeCache.put(canonicalName, td);
 
         // Primitive type
         if (!JaketConfigurationUtils.needAnalyzing(clazz)) {
@@ -47,21 +48,15 @@ public final class DefaultTypeBuilder {
         }
 
         // Custom type
-        TypeDefinition ref = new TypeDefinition(name);
-        ref.set$ref(name);
-        typeCache.put(clazz, ref);
-
         List<Field> fields = ClassUtils.getNonStaticFields(clazz);
         for (Field field : fields) {
             String fieldName = field.getName();
             Class<?> fieldClass = field.getType();
             Type fieldType = field.getGenericType();
-
             TypeDefinition fieldTd = TypeDefinitionBuilder.build(fieldType, fieldClass, typeCache);
-            td.getProperties().put(fieldName, fieldTd);
+            td.getProperties().put(fieldName, fieldTd.getType());
         }
 
-        typeCache.put(clazz, td);
         return td;
     }
 

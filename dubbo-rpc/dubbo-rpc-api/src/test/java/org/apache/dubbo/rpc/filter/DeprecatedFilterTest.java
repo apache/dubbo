@@ -26,9 +26,8 @@ import org.apache.dubbo.rpc.support.MyInvoker;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * DeprecatedFilterTest.java

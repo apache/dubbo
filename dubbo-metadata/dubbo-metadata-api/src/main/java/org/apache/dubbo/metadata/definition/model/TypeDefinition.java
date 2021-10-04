@@ -19,57 +19,117 @@ package org.apache.dubbo.metadata.definition.model;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.apache.dubbo.common.utils.StringUtils.replace;
+
 /**
  * 2015/1/27.
  */
 public class TypeDefinition implements Serializable {
 
-    private String id;
+    /**
+     * the name of type
+     *
+     * @see Class#getCanonicalName()
+     * @see org.apache.dubbo.metadata.definition.util.ClassUtils#getCanonicalNameForParameterizedType(ParameterizedType) 
+     */
     private String type;
+
+    /**
+     * the items(generic parameter) of Map/List(ParameterizedType)
+     * <p>
+     * if this type is not ParameterizedType, the items is null or empty
+     */
     @SerializedName("items")
-    private List<TypeDefinition> items;
+    private List<String> items;
+
+    /**
+     * the enum's value
+     * <p>
+     * If this type is not enum, enums is null or empty
+     */
     @SerializedName("enum")
     private List<String> enums;
-    private String $ref;
-    private Map<String, TypeDefinition> properties;
-    private String typeBuilderName;
+
+    /**
+     * the key is property name,
+     * the value is property's type name
+     */
+    private Map<String, String> properties;
 
     public TypeDefinition() {
     }
 
     public TypeDefinition(String type) {
-        this.type = type;
+        this.setType(type);
     }
 
-    public String get$ref() {
-        return $ref;
+    /**
+     * Format the {@link String} array presenting Java types
+     *
+     * @param types the strings presenting Java types
+     * @return new String array of Java types after be formatted
+     * @since 2.7.9
+     */
+    public static String[] formatTypes(String[] types) {
+        String[] newTypes = new String[types.length];
+        for (int i = 0; i < types.length; i++) {
+            newTypes[i] = formatType(types[i]);
+        }
+        return newTypes;
+    }
+
+    /**
+     * Format the {@link String} presenting Java type
+     *
+     * @param type the String presenting type
+     * @return new String presenting Java type after be formatted
+     * @since 2.7.9
+     */
+    public static String formatType(String type) {
+        if (isGenericType(type)) {
+            return formatGenericType(type);
+        }
+        return type;
+    }
+
+    /**
+     * Replacing <code>", "</code> to <code>","</code> will not change the semantic of
+     * {@link ParameterizedType#toString()}
+     *
+     * @param type
+     * @return formatted type
+     * @see sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
+     */
+    private static String formatGenericType(String type) {
+        return replace(type, ", ", ",");
+    }
+
+    private static boolean isGenericType(String type) {
+        return type.contains("<") && type.contains(">");
     }
 
     public List<String> getEnums() {
         if (enums == null) {
-            enums = new ArrayList<String>();
+            enums = new ArrayList<>();
         }
         return enums;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public List<TypeDefinition> getItems() {
+    public List<String> getItems() {
         if (items == null) {
             items = new ArrayList<>();
         }
         return items;
     }
 
-    public Map<String, TypeDefinition> getProperties() {
+    public Map<String, String> getProperties() {
         if (properties == null) {
             properties = new HashMap<>();
         }
@@ -80,41 +140,25 @@ public class TypeDefinition implements Serializable {
         return type;
     }
 
-    public String getTypeBuilderName() {
-        return typeBuilderName;
-    }
-
-    public void set$ref(String $ref) {
-        this.$ref = $ref;
-    }
-
     public void setEnums(List<String> enums) {
         this.enums = enums;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setItems(List<TypeDefinition> items) {
+    public void setItems(List<String> items) {
         this.items = items;
     }
 
-    public void setProperties(Map<String, TypeDefinition> properties) {
+    public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 
     public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setTypeBuilderName(String typeBuilderName) {
-        this.typeBuilderName = typeBuilderName;
+        this.type = formatType(type);
     }
 
     @Override
     public String toString() {
-        return "TypeDefinition [id=" + id + ", type=" + type + ", properties=" + properties + ", $ref=" + $ref + "]";
+        return "TypeDefinition [type=" + type + ", properties=" + properties + "]";
     }
 
     @Override
@@ -126,16 +170,14 @@ public class TypeDefinition implements Serializable {
             return false;
         }
         TypeDefinition that = (TypeDefinition) o;
-        return Objects.equals(getId(), that.getId()) &&
-                Objects.equals(getType(), that.getType()) &&
+        return Objects.equals(getType(), that.getType()) &&
                 Objects.equals(getItems(), that.getItems()) &&
                 Objects.equals(getEnums(), that.getEnums()) &&
-                Objects.equals(get$ref(), that.get$ref()) &&
                 Objects.equals(getProperties(), that.getProperties());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getType(), getItems(), getEnums(), get$ref(), getProperties());
+        return Objects.hash(getType(), getItems(), getEnums(), getProperties());
     }
 }

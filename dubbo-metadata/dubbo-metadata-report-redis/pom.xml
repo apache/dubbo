@@ -19,7 +19,6 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-metadata</artifactId>
         <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -45,8 +44,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.kstyrc</groupId>
+            <groupId>com.github.codemonstur</groupId>
             <artifactId>embedded-redis</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

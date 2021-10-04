@@ -28,7 +28,7 @@ import java.util.Map;
 public class ArrayTypeBuilder implements TypeBuilder {
 
     @Override
-    public boolean accept(Type type, Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         if (clazz == null) {
             return false;
         }
@@ -36,13 +36,21 @@ public class ArrayTypeBuilder implements TypeBuilder {
     }
 
     @Override
-    public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
-        // Process the component type of an array.
-        Class<?> componentType = clazz.getComponentType();
-        TypeDefinitionBuilder.build(componentType, componentType, typeCache);
-
+    public TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
         final String canonicalName = clazz.getCanonicalName();
-        return new TypeDefinition(canonicalName);
+        TypeDefinition td = typeCache.get(canonicalName);
+        if (td != null) {
+            return td;
+        }
+        td = new TypeDefinition(canonicalName);
+        typeCache.put(canonicalName, td);
+        // Process the component type of array.
+        Class<?> componentType = clazz.getComponentType();
+        TypeDefinition itemTd = TypeDefinitionBuilder.build(componentType, componentType, typeCache);
+        if (itemTd != null) {
+            td.getItems().add(itemTd.getType());
+        }
+        return td;
     }
 
 }

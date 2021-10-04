@@ -24,14 +24,17 @@
     <dubbo:application name="demo-provider"/>
 
     <!-- registry center configuration -->
-    <dubbo:registry address="N/A"/>
+    <dubbo:registry address="${dubbo.registry.address:foo-address}"/>
 
     <!-- service protocol configuration -->
-    <dubbo:protocol name="dubbo" port="20813"/>
+    <dubbo:protocol name="${dubbo.protocol.name:foo-protocol}" port="${dubbo.protocol.port:20881}"/>
 
     <!-- service configuration -->
-    <dubbo:service interface="org.apache.dubbo.config.spring.api.DemoService" ref="demoService"/>
+    <dubbo:service interface="org.apache.dubbo.config.spring.api.DemoService" group="demo" version="1.2.3" ref="demoService"/>
+
+    <dubbo:service interface="org.apache.dubbo.config.spring.api.DemoService" group="demo" version="1.2.4" ref="demoService"/>
 
     <bean id="demoService" class="org.apache.dubbo.config.spring.impl.DemoServiceImpl"/>
 
+    <bean id="dubboEventListener" class="org.apache.dubbo.config.spring.DubboStateListener" />
 </beans>

@@ -24,7 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- *
+ * This is an abstraction specially customized for the sequence Dubbo retrieves properties.
  */
 public class CompositeConfiguration implements Configuration {
     private Logger logger = LoggerFactory.getLogger(CompositeConfiguration.class);
@@ -34,14 +34,26 @@ public class CompositeConfiguration implements Configuration {
      */
     private List<Configuration> configList = new LinkedList<Configuration>();
 
-    public CompositeConfiguration() {
+    //FIXME, consider change configList to SortedMap to replace this boolean status.
+    private boolean dynamicIncluded;
 
+    public CompositeConfiguration() {
     }
 
     public CompositeConfiguration(Configuration... configurations) {
+        this();
         if (configurations != null && configurations.length > 0) {
             Arrays.stream(configurations).filter(config -> !configList.contains(config)).forEach(configList::add);
         }
+    }
+
+    public void setDynamicIncluded(boolean dynamicIncluded) {
+        this.dynamicIncluded = dynamicIncluded;
+    }
+
+    //FIXME, consider change configList to SortedMap to replace this boolean status.
+    public boolean isDynamicIncluded() {
+        return dynamicIncluded;
     }
 
     public void addConfiguration(Configuration configuration) {
@@ -61,26 +73,17 @@ public class CompositeConfiguration implements Configuration {
 
     @Override
     public Object getInternalProperty(String key) {
-        Configuration firstMatchingConfiguration = null;
         for (Configuration config : configList) {
             try {
-                if (config.containsKey(key)) {
-                    firstMatchingConfiguration = config;
-                    break;
+                Object value = config.getProperty(key);
+                if (!ConfigurationUtils.isEmptyValue(value)) {
+                    return value;
                 }
             } catch (Exception e) {
                 logger.error("Error when trying to get value for key " + key + " from " + config + ", will continue to try the next one.");
             }
         }
-        if (firstMatchingConfiguration != null) {
-            return firstMatchingConfiguration.getProperty(key);
-        } else {
-            return null;
-        }
+        return null;
     }
 
-    @Override
-    public boolean containsKey(String key) {
-        return configList.stream().anyMatch(c -> c.containsKey(key));
-    }
 }

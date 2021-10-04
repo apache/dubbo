@@ -18,18 +18,12 @@ package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.util.Map;
+
 /**
  * Configuration from system environment
  */
-public class EnvironmentConfiguration extends AbstractPrefixConfiguration {
-
-    public EnvironmentConfiguration(String prefix, String id) {
-        super(prefix, id);
-    }
-
-    public EnvironmentConfiguration() {
-        this(null, null);
-    }
+public class EnvironmentConfiguration implements Configuration {
 
     @Override
     public Object getInternalProperty(String key) {
@@ -40,4 +34,7 @@ public class EnvironmentConfiguration extends AbstractPrefixConfiguration {
         return value;
     }
 
+    public Map<String, String> getProperties() {
+        return System.getenv();
+    }
 }

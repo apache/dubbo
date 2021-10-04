@@ -17,23 +17,25 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
-import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 /**
  * InjvmProtocol
@@ -43,17 +45,9 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     public static final String NAME = LOCAL_PROTOCOL;
 
     public static final int DEFAULT_PORT = 0;
-    private static InjvmProtocol INSTANCE;
 
-    public InjvmProtocol() {
-        INSTANCE = this;
-    }
-
-    public static InjvmProtocol getInjvmProtocol() {
-        if (INSTANCE == null) {
-            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(InjvmProtocol.NAME); // load
-        }
-        return INSTANCE;
+    public static InjvmProtocol getInjvmProtocol(ScopeModel scopeModel) {
+        return (InjvmProtocol) scopeModel.getExtensionLoader(Protocol.class).getExtension(InjvmProtocol.NAME, false);
     }
 
     static Exporter<?> getExporter(Map<String, Exporter<?>> map, URL key) {
@@ -111,6 +105,11 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
             // generic invocation is not local reference
             return false;
         } else if (getExporter(exporterMap, url) != null) {
+            // Broadcast cluster means that multiple machines will be called,
+            // which is not converted to injvm protocol at this time.
+            if (BROADCAST_CLUSTER.equalsIgnoreCase(url.getParameter(CLUSTER_KEY))) {
+                return false;
+            }
             // by default, go through local reference if there's the service exposed locally
             return true;
         } else {

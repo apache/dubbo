@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
 import java.text.ParseException;
@@ -50,30 +51,39 @@ import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
 
 /**
  * ConditionRouter
- *
+ * It supports the conditional routing configured by "override://", in 2.6.x,
+ * refer to https://dubbo.apache.org/en/docs/v2.7/user/examples/routing-rule/ .
+ * For 2.7.x and later, please refer to {@link org.apache.dubbo.rpc.cluster.router.condition.config.ServiceRouter}
+ * and {@link org.apache.dubbo.rpc.cluster.router.condition.config.AppRouter}
+ * refer to https://dubbo.apache.org/zh/docs/v2.7/user/examples/routing-rule/ .
  */
 public class ConditionRouter extends AbstractRouter {
     public static final String NAME = "condition";
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
     protected static final Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
+    protected static Pattern ARGUMENTS_PATTERN = Pattern.compile("arguments\\[([0-9]+)\\]");
     protected Map<String, MatchPair> whenCondition;
     protected Map<String, MatchPair> thenCondition;
 
     private boolean enabled;
 
     public ConditionRouter(String rule, boolean force, boolean enabled) {
-        this.force = force;
+        this.setForce(force);
         this.enabled = enabled;
-        this.init(rule);
+        if (enabled) {
+            this.init(rule);
+        }
     }
 
     public ConditionRouter(URL url) {
-        this.url = url;
-        this.priority = url.getParameter(PRIORITY_KEY, 0);
-        this.force = url.getParameter(FORCE_KEY, false);
+        this.setUrl(url);
+        this.setPriority(url.getParameter(PRIORITY_KEY, 0));
+        this.setForce(url.getParameter(FORCE_KEY, false));
         this.enabled = url.getParameter(ENABLED_KEY, true);
-        init(url.getParameterAndDecoded(RULE_KEY));
+        if (enabled) {
+            init(url.getParameterAndDecoded(RULE_KEY));
+        }
     }
 
     public void init(String rule) {
@@ -191,7 +201,7 @@ public class ConditionRouter extends AbstractRouter {
             }
             if (!result.isEmpty()) {
                 return result;
-            } else if (force) {
+            } else if (this.isForce()) {
                 logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
                 return result;
             }
@@ -205,12 +215,7 @@ public class ConditionRouter extends AbstractRouter {
     public boolean isRuntime() {
         // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
 //        return true;
-        return this.url.getParameter(RUNTIME_KEY, false);
-    }
-
-    @Override
-    public URL getUrl() {
-        return url;
+        return this.getUrl().getParameter(RUNTIME_KEY, false);
     }
 
     boolean matchWhen(URL url, Invocation invocation) {
@@ -226,6 +231,16 @@ public class ConditionRouter extends AbstractRouter {
         boolean result = false;
         for (Map.Entry<String, MatchPair> matchPair : condition.entrySet()) {
             String key = matchPair.getKey();
+
+            if (key.startsWith(Constants.ARGUMENTS)) {
+                if (!matchArguments(matchPair, invocation)) {
+                    return false;
+                } else {
+                    result = true;
+                    continue;
+                }
+            }
+
             String sampleValue;
             //get real invoked method name from invocation
             if (invocation != null && (METHOD_KEY.equals(key) || METHODS_KEY.equals(key))) {
@@ -236,9 +251,6 @@ public class ConditionRouter extends AbstractRouter {
                 sampleValue = url.getHost();
             } else {
                 sampleValue = sample.get(key);
-                if (sampleValue == null) {
-                    sampleValue = sample.get(key);
-                }
             }
             if (sampleValue != null) {
                 if (!matchPair.getValue().isMatch(sampleValue, param)) {
@@ -256,6 +268,45 @@ public class ConditionRouter extends AbstractRouter {
             }
         }
         return result;
+    }
+
+    /**
+     * analysis the arguments in the rule.
+     * Examples would be like this:
+     * "arguments[0]=1", whenCondition is that the first argument is equal to '1'.
+     * "arguments[1]=a", whenCondition is that the second argument is equal to 'a'.
+     * @param matchPair
+     * @param invocation
+     * @return
+     */
+    public boolean matchArguments(Map.Entry<String, MatchPair> matchPair, Invocation invocation) {
+        try {
+            // split the rule
+            String key = matchPair.getKey();
+            String[] expressArray = key.split("\\.");
+            String argumentExpress = expressArray[0];
+            final Matcher matcher = ARGUMENTS_PATTERN.matcher(argumentExpress);
+            if (!matcher.find()) {
+                return false;
+            }
+
+            //extract the argument index
+            int index = Integer.parseInt(matcher.group(1));
+            if (index < 0 || index > invocation.getArguments().length) {
+                return false;
+            }
+
+            //extract the argument value
+            Object object = invocation.getArguments()[index];
+
+            if (matchPair.getValue().isMatch(String.valueOf(object), null)) {
+                return true;
+            }
+        } catch (Exception e) {
+            logger.warn("Arguments match failed, matchPair[]" + matchPair + "] invocation[" + invocation + "]", e);
+        }
+
+        return false;
     }
 
     protected static final class MatchPair {

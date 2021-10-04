@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.rpc.cluster.Constants.TAGS_KEY;
+
 /**
  * %YAML1.2
  * ---
@@ -43,8 +45,22 @@ import java.util.stream.Collectors;
 public class TagRouterRule extends AbstractRouterRule {
     private List<Tag> tags;
 
-    private Map<String, List<String>> addressToTagnames = new HashMap<>();
-    private Map<String, List<String>> tagnameToAddresses = new HashMap<>();
+    private final Map<String, List<String>> addressToTagnames = new HashMap<>();
+    private final Map<String, List<String>> tagnameToAddresses = new HashMap<>();
+
+    @SuppressWarnings("unchecked")
+    public static TagRouterRule parseFromMap(Map<String, Object> map) {
+        TagRouterRule tagRouterRule = new TagRouterRule();
+        tagRouterRule.parseFromMap0(map);
+
+        Object tags = map.get(TAGS_KEY);
+        if (tags != null && List.class.isAssignableFrom(tags.getClass())) {
+            tagRouterRule.setTags(((List<Map<String, Object>>) tags).stream()
+                    .map(Tag::parseFromMap).collect(Collectors.toList()));
+        }
+
+        return tagRouterRule;
+    }
 
     public void init() {
         if (!isValid()) {

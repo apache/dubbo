@@ -61,7 +61,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public Object invoke(String service, String method) throws Exception {
-        System.out.println("RpcContext.getContext().getRemoteHost()=" + RpcContext.getContext().getRemoteHost());
+        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
         return service + ":" + method;
     }
 
@@ -119,5 +119,10 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public CompletableFuture<Map<String, String>> testReturnType5(String str) {
         return null;
+    }
+
+    @Override
+    public void $invoke(String s1, String s2) {
+
     }
 }

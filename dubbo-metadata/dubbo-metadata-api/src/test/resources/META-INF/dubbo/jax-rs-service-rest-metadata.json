@@ -1,0 +1,324 @@
+[
+  {
+    "serviceInterface": "org.apache.dubbo.metadata.rest.RestService",
+    "version": "3.0.0",
+    "group": "standard",
+    "meta": [
+      {
+        "method": {
+          "name": "form",
+          "parameterTypes": [
+            "java.lang.String"
+          ],
+          "returnType": "java.lang.String",
+          "parameters": [
+            {
+              "type": "java.lang.String",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            }
+          ]
+        },
+        "request": {
+          "method": "POST",
+          "path": "/form",
+          "params": {
+            "f": [
+              "{0}"
+            ]
+          },
+          "headers": {},
+          "consumes": [],
+          "produces": []
+        },
+        "indexToName": {
+          "0": [
+            "form"
+          ]
+        }
+      },
+      {
+        "method": {
+          "name": "headers",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.Integer"
+          ],
+          "returnType": "java.lang.String",
+          "parameters": [
+            {
+              "type": "java.lang.String",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            },
+            {
+              "type": "java.lang.String",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            },
+            {
+              "type": "java.lang.Integer",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            }
+          ]
+        },
+        "request": {
+          "method": "GET",
+          "path": "/headers",
+          "params": {
+            "v": [
+              "{2}"
+            ]
+          },
+          "headers": {
+            "h": [
+              "{0}"
+            ],
+            "h2": [
+              "{1}"
+            ]
+          },
+          "consumes": [],
+          "produces": []
+        },
+        "indexToName": {
+          "0": [
+            "header"
+          ],
+          "1": [
+            "header2"
+          ],
+          "2": [
+            "param"
+          ]
+        }
+      },
+      {
+        "method": {
+          "name": "param",
+          "parameterTypes": [
+            "java.lang.String"
+          ],
+          "returnType": "java.lang.String",
+          "parameters": [
+            {
+              "type": "java.lang.String",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            }
+          ]
+        },
+        "request": {
+          "method": "GET",
+          "path": "/param",
+          "params": {
+            "param": [
+              "{0}"
+            ]
+          },
+          "headers": {},
+          "consumes": [],
+          "produces": []
+        },
+        "indexToName": {
+          "0": [
+            "param"
+          ]
+        }
+      },
+      {
+        "method": {
+          "name": "params",
+          "parameterTypes": [
+            "int",
+            "java.lang.String"
+          ],
+          "returnType": "java.lang.String",
+          "parameters": [
+            {
+              "type": "int",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            },
+            {
+              "type": "java.lang.String",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            }
+          ]
+        },
+        "request": {
+          "method": "POST",
+          "path": "/params",
+          "params": {
+            "a": [
+              "{0}"
+            ],
+            "b": [
+              "{1}"
+            ]
+          },
+          "headers": {},
+          "consumes": [],
+          "produces": []
+        },
+        "indexToName": {
+          "0": [
+            "a"
+          ],
+          "1": [
+            "b"
+          ]
+        }
+      },
+      {
+        "method": {
+          "name": "pathVariables",
+          "parameterTypes": [
+            "java.lang.String",
+            "java.lang.String",
+            "java.lang.String"
+          ],
+          "returnType": "java.lang.String",
+          "parameters": [
+            {
+              "type": "java.lang.String",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            },
+            {
+              "type": "java.lang.String",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            },
+            {
+              "type": "java.lang.String",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            }
+          ]
+        },
+        "request": {
+          "method": "GET",
+          "path": "/path-variables/{p1}/{p2}",
+          "params": {
+            "v": [
+              "{2}"
+            ]
+          },
+          "headers": {},
+          "consumes": [],
+          "produces": []
+        },
+        "indexToName": {
+          "0": [
+            "path1"
+          ],
+          "1": [
+            "path2"
+          ],
+          "2": [
+            "param"
+          ]
+        }
+      },
+      {
+        "method": {
+          "name": "requestBodyMap",
+          "parameterTypes": [
+            "java.util.Map\u003cjava.lang.String,java.lang.Object\u003e",
+            "java.lang.String"
+          ],
+          "returnType": "org.apache.dubbo.metadata.rest.User",
+          "parameters": [
+            {
+              "type": "java.util.Map\u003cjava.lang.String,java.lang.Object\u003e",
+              "items": [
+                "java.lang.String",
+                "java.lang.Object"
+              ],
+              "enum": [],
+              "properties": {}
+            },
+            {
+              "type": "java.lang.String",
+              "items": [],
+              "enum": [],
+              "properties": {}
+            }
+          ]
+        },
+        "request": {
+          "method": "POST",
+          "path": "/request/body/map",
+          "params": {
+            "param": [
+              "{1}"
+            ]
+          },
+          "headers": {},
+          "consumes": [],
+          "produces": [
+            "application/json;charset\u003dUTF-8"
+          ]
+        },
+        "indexToName": {
+          "0": [
+            "data"
+          ],
+          "1": [
+            "param"
+          ]
+        }
+      },
+      {
+        "method": {
+          "name": "requestBodyUser",
+          "parameterTypes": [
+            "org.apache.dubbo.metadata.rest.User"
+          ],
+          "returnType": "java.util.Map\u003cjava.lang.String,java.lang.Object\u003e",
+          "parameters": [
+            {
+              "type": "org.apache.dubbo.metadata.rest.User",
+              "items": [],
+              "enum": [],
+              "properties": {
+                "name": "java.lang.String",
+                "id": "java.lang.Long",
+                "age": "java.lang.Integer"
+              }
+            }
+          ]
+        },
+        "request": {
+          "method": "POST",
+          "path": "/request/body/user",
+          "params": {},
+          "headers": {},
+          "consumes": [
+            "application/json;charset\u003dUTF-8"
+          ],
+          "produces": []
+        },
+        "indexToName": {
+          "0": [
+            "user"
+          ]
+        }
+      }
+    ]
+  }
+]

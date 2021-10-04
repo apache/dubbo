@@ -1,0 +1,52 @@
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+    http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd
+    ">
+
+    <!-- current application configuration -->
+    <dubbo:application name="demo-consumer"/>
+
+    <dubbo:registry id="my-registry" address="N/A" />
+
+    <dubbo:consumer id="my-consumer" registry="my-registry" group="demo" version="1.2.4" scope="remote"
+                    timeout="${call.timeout:foo100}" >
+        <dubbo:reference id="demoService2" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true"
+                         url="dubbo://127.0.0.1:20813" init="false" />
+        <!-- consumer parameters -->
+        <dubbo:parameter key="connec.timeout" value="${connection.timeout:foo1000}"/>
+    </dubbo:consumer>
+
+    <!-- service reference configuration -->
+    <dubbo:reference id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService" group="demo" version="1.2.3"
+                     url="dubbo://127.0.0.1:20813" timeout="${call.timeout:foo100}" init="false"
+                     scope="remote" protocol="dubbo" registry="my-registry" consumer="my-consumer" >
+        <dubbo:method name="sayName" retries="0">
+            <!-- method arguments -->
+            <dubbo:argument index="0" callback="true" />
+            <!-- method parameters -->
+            <dubbo:parameter key="b" value="2" />
+            <dubbo:parameter key="access-token" value="my-token" />
+        </dubbo:method>
+        <!-- reference parameters -->
+        <dubbo:parameter key="connec.timeout" value="${connection.timeout:foo1000}"/>
+    </dubbo:reference>
+
+</beans>

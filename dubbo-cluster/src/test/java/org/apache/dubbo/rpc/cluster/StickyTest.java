@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster;
 
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -59,9 +58,11 @@ public class StickyTest {
     @BeforeEach
     public void setUp() throws Exception {
         dic = mock(Directory.class);
+
         invocation = new RpcInvocation();
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(StickyTest.class);
 
@@ -70,7 +71,6 @@ public class StickyTest {
 
         clusterinvoker = new StickyClusterInvoker<StickyTest>(dic);
 
-        ExtensionLoader.resetExtensionLoader(LoadBalance.class);
     }
 
     @Test

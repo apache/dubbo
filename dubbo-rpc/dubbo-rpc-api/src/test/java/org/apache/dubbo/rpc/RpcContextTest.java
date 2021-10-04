@@ -23,20 +23,22 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class RpcContextTest {
 
     @Test
     public void testGetContext() {
 
-        RpcContext rpcContext = RpcContext.getContext();
+        RpcContext rpcContext = RpcContext.getClientAttachment();
         Assertions.assertNotNull(rpcContext);
 
-        RpcContext.removeContext();
+        RpcContext.removeClientAttachment();
         // if null, will return the initialize value.
         //Assertions.assertNull(RpcContext.getContext());
-        Assertions.assertNotNull(RpcContext.getContext());
-        Assertions.assertNotEquals(rpcContext, RpcContext.getContext());
+        Assertions.assertNotNull(RpcContext.getClientAttachment());
+        Assertions.assertNotEquals(rpcContext, RpcContext.getClientAttachment());
 
         RpcContext serverRpcContext = RpcContext.getServerContext();
         Assertions.assertNotNull(serverRpcContext);
@@ -48,7 +50,7 @@ public class RpcContextTest {
 
     @Test
     public void testAddress() {
-        RpcContext context = RpcContext.getContext();
+        RpcContext context = RpcContext.getServiceContext();
         context.setLocalAddress("127.0.0.1", 20880);
         Assertions.assertEquals(20880, context.getLocalAddress().getPort());
         Assertions.assertEquals("127.0.0.1:20880", context.getLocalAddressString());
@@ -68,7 +70,7 @@ public class RpcContextTest {
     @Test
     public void testCheckSide() {
 
-        RpcContext context = RpcContext.getContext();
+        RpcContext context = RpcContext.getServiceContext();
 
         //TODO fix npe
         //context.isProviderSide();
@@ -85,14 +87,14 @@ public class RpcContextTest {
     @Test
     public void testAttachments() {
 
-        RpcContext context = RpcContext.getContext();
-        Map<String, Object> map = new HashMap<String, Object>();
+        RpcContext context = RpcContext.getClientAttachment();
+        Map<String, Object> map = new HashMap<>();
         map.put("_11", "1111");
         map.put("_22", "2222");
         map.put(".33", "3333");
 
-        context.setAttachments(map);
-        Assertions.assertEquals(map, context.getAttachments());
+        context.setObjectAttachments(map);
+        Assertions.assertEquals(map, context.getObjectAttachments());
 
         Assertions.assertEquals("1111", context.getAttachment("_11"));
         context.setAttachment("_11", "11.11");
@@ -113,7 +115,7 @@ public class RpcContextTest {
     @Test
     public void testObject() {
 
-        RpcContext context = RpcContext.getContext();
+        RpcContext context = RpcContext.getClientAttachment();
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("_11", "1111");
         map.put("_22", "2222");
@@ -137,22 +139,67 @@ public class RpcContextTest {
 
         map.keySet().forEach(context::remove);
         Assertions.assertNull(context.get("_11"));
+        RpcContext.removeContext();
     }
 
     @Test
     public void testAsync() {
 
-        RpcContext rpcContext = RpcContext.getContext();
+        RpcContext rpcContext = RpcContext.getServiceContext();
         Assertions.assertFalse(rpcContext.isAsyncStarted());
 
         AsyncContext asyncContext = RpcContext.startAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());
 
         asyncContext.write(new Object());
-        Assertions.assertTrue(((AsyncContextImpl)asyncContext).getInternalFuture().isDone());
+        Assertions.assertTrue(((AsyncContextImpl) asyncContext).getInternalFuture().isDone());
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());
+        RpcContext.removeContext();
     }
 
+    @Test
+    public void testAsyncCall() {
+        CompletableFuture<String> rpcFuture = RpcContext.getClientAttachment().asyncCall(() -> {
+            throw new NullPointerException();
+        });
+
+        rpcFuture.whenComplete((rpcResult, throwable) -> {
+            System.out.println(throwable.toString());
+            Assertions.assertNull(rpcResult);
+            Assertions.assertTrue(throwable instanceof RpcException);
+            Assertions.assertTrue(throwable.getCause() instanceof NullPointerException);
+        });
+
+        Assertions.assertThrows(ExecutionException.class, rpcFuture::get);
+
+        rpcFuture = rpcFuture.exceptionally(throwable -> "mock success");
+
+        Assertions.assertEquals("mock success", rpcFuture.join());
+    }
+
+    @Test
+    public void testObjectAttachment() {
+        RpcContext rpcContext = RpcContext.getClientAttachment();
+
+        rpcContext.setAttachment("objectKey1", "value1");
+        rpcContext.setAttachment("objectKey2", "value2");
+        rpcContext.setAttachment("objectKey3", 1); // object
+
+        Assertions.assertEquals("value1", rpcContext.getObjectAttachment("objectKey1"));
+        Assertions.assertEquals("value2", rpcContext.getAttachment("objectKey2"));
+        Assertions.assertNull(rpcContext.getAttachment("objectKey3"));
+        Assertions.assertEquals(1, rpcContext.getObjectAttachment("objectKey3"));
+        Assertions.assertEquals(3, rpcContext.getObjectAttachments().size());
+
+        rpcContext.clearAttachments();
+        Assertions.assertEquals(0, rpcContext.getObjectAttachments().size());
+
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("mapKey1", 1);
+        map.put("mapKey2", "mapValue2");
+        rpcContext.setObjectAttachments(map);
+        Assertions.assertEquals(map, rpcContext.getObjectAttachments());
+    }
 }

@@ -106,7 +106,7 @@ public abstract class Mixin {
 
                 ccp.addField("private " + dcs[i].getName() + " d" + i + ";");
 
-                code.append("d").append(i).append(" = (").append(dcs[i].getName()).append(")$1[").append(i).append("];\n");
+                code.append('d').append(i).append(" = (").append(dcs[i].getName()).append(")$1[").append(i).append("];\n");
                 if (MixinAware.class.isAssignableFrom(dcs[i])) {
                     code.append("d").append(i).append(".setMixinInstance(this);\n");
                 }
@@ -174,7 +174,7 @@ public abstract class Mixin {
             ccm.setSuperClass(Mixin.class.getName());
             ccm.addMethod("public Object newInstance(Object[] delegates){ return new " + micn + "($1); }");
             Class<?> mixin = ccm.toClass();
-            return (Mixin) mixin.newInstance();
+            return (Mixin) mixin.getDeclaredConstructor().newInstance();
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

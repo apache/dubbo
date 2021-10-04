@@ -18,23 +18,44 @@ package org.apache.dubbo.rpc.cluster.governance;
 
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-public class DefaultGovernanceRuleRepositoryImpl implements GovernanceRuleRepository {
+public class DefaultGovernanceRuleRepositoryImpl implements GovernanceRuleRepository, ScopeModelAware {
 
-    private DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+    private ModuleModel moduleModel;
+
+    public DefaultGovernanceRuleRepositoryImpl(ModuleModel moduleModel) {
+        this.moduleModel = moduleModel;
+    }
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        dynamicConfiguration.addListener(key, group, listener);
+        DynamicConfiguration dynamicConfiguration = getDynamicConfiguration();
+        if (dynamicConfiguration != null) {
+            dynamicConfiguration.addListener(key, group, listener);
+        }
     }
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-        dynamicConfiguration.removeListener(key, group, listener);
+        DynamicConfiguration dynamicConfiguration = getDynamicConfiguration();
+        if (dynamicConfiguration != null) {
+            dynamicConfiguration.removeListener(key, group, listener);
+        }
     }
 
     @Override
     public String getRule(String key, String group, long timeout) throws IllegalStateException {
-        return dynamicConfiguration.getConfig(key, group, timeout);
+        DynamicConfiguration dynamicConfiguration = getDynamicConfiguration();
+        if (dynamicConfiguration != null) {
+            return dynamicConfiguration.getConfig(key, group, timeout);
+        }
+        return null;
     }
+
+    private DynamicConfiguration getDynamicConfiguration() {
+        return moduleModel.getModelEnvironment().getDynamicConfiguration().orElse(null);
+    }
+
 }

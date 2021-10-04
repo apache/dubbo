@@ -19,15 +19,33 @@ package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouterRule;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.rpc.cluster.Constants.CONDITIONS_KEY;
 
 /**
  *
  */
 public class ConditionRouterRule extends AbstractRouterRule {
-    public ConditionRouterRule() {
+    private List<String> conditions;
+
+    @SuppressWarnings("unchecked")
+    public static ConditionRouterRule parseFromMap(Map<String, Object> map) {
+        ConditionRouterRule conditionRouterRule = new ConditionRouterRule();
+        conditionRouterRule.parseFromMap0(map);
+
+        Object conditions = map.get(CONDITIONS_KEY);
+        if (conditions != null && List.class.isAssignableFrom(conditions.getClass())) {
+            conditionRouterRule.setConditions(((List<Object>) conditions).stream()
+                    .map(String::valueOf).collect(Collectors.toList()));
+        }
+
+        return conditionRouterRule;
     }
 
-    private List<String> conditions;
+    public ConditionRouterRule() {
+    }
 
     public List<String> getConditions() {
         return conditions;

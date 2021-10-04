@@ -30,9 +30,13 @@ public interface Constants {
 
     String LAYER_KEY = "layer";
 
+    // General
+
     /**
-     * General
+     * Config id
      */
+    String ID = "id";
+
     /**
      * Application name;
      */
@@ -89,18 +93,29 @@ public interface Constants {
 
     String SCOPE_NONE = "none";
 
+    String ON_INVOKE_METHOD_PARAMETER_KEY = "oninvoke.method";
 
-    String ON_INVOKE_METHOD_KEY = "oninvoke.method";
+    String ON_RETURN_METHOD_PARAMETER_KEY = "onreturn.method";
 
-    String ON_RETURN_METHOD_KEY = "onreturn.method";
+    String ON_THROW_METHOD_PARAMETER_KEY = "onthrow.method";
 
-    String ON_THROW_METHOD_KEY = "onthrow.method";
+    String ON_INVOKE_INSTANCE_PARAMETER_KEY = "oninvoke.instance";
 
-    String ON_INVOKE_INSTANCE_KEY = "oninvoke.instance";
+    String ON_RETURN_INSTANCE_PARAMETER_KEY = "onreturn.instance";
 
-    String ON_RETURN_INSTANCE_KEY = "onreturn.instance";
+    String ON_THROW_INSTANCE_PARAMETER_KEY = "onthrow.instance";
 
-    String ON_THROW_INSTANCE_KEY = "onthrow.instance";
+    String ON_INVOKE_METHOD_ATTRIBUTE_KEY = "oninvoke-method";
+
+    String ON_RETURN_METHOD_ATTRIBUTE_KEY = "onreturn-method";
+
+    String ON_THROW_METHOD_ATTRIBUTE_KEY = "onthrow-method";
+
+    String ON_INVOKE_INSTANCE_ATTRIBUTE_KEY = "oninvoke-instance";
+
+    String ON_RETURN_INSTANCE_ATTRIBUTE_KEY = "onreturn-instance";
+
+    String ON_THROW_INSTANCE_ATTRIBUTE_KEY = "onthrow-instance";
 
 
     // FIXME: is this still useful?
@@ -115,4 +130,12 @@ public interface Constants {
     String ZOOKEEPER_PROTOCOL = "zookeeper";
 
     String REGISTER_KEY = "register";
+
+    String MULTI_SERIALIZATION_KEY = "serialize.multiple";
+
+    String[] DOT_COMPATIBLE_KEYS = new String[]{"qos-enable", "qos-port", "qos-accept-foreign-ip"};
+
+    String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
+
+    String PARAMETERS = "parameters";
 }

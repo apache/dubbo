@@ -17,7 +17,9 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +33,7 @@ import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -66,7 +69,7 @@ public class UrlUtils {
 
     public static URL parseURL(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
-            return null;
+            throw new IllegalArgumentException("Address is not allowed to be empty, please re-enter.");
         }
         String url;
         if (address.contains("://") || address.contains(URL_PARAM_STARTING_SYMBOL)) {
@@ -78,7 +81,7 @@ public class UrlUtils {
                 StringBuilder backup = new StringBuilder();
                 for (int i = 1; i < addresses.length; i++) {
                     if (i > 1) {
-                        backup.append(",");
+                        backup.append(',');
                     }
                     backup.append(addresses[i]);
                 }
@@ -93,7 +96,7 @@ public class UrlUtils {
         String defaultPassword = defaults == null ? null : defaults.get(PASSWORD_KEY);
         int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get(PORT_KEY));
         String defaultPath = defaults == null ? null : defaults.get(PATH_KEY);
-        Map<String, String> defaultParameters = defaults == null ? null : new HashMap<String, String>(defaults);
+        Map<String, String> defaultParameters = defaults == null ? null : new HashMap<>(defaults);
         if (defaultParameters != null) {
             defaultParameters.remove(PROTOCOL_KEY);
             defaultParameters.remove(USERNAME_KEY);
@@ -102,7 +105,7 @@ public class UrlUtils {
             defaultParameters.remove(PORT_KEY);
             defaultParameters.remove(PATH_KEY);
         }
-        URL u = URL.valueOf(url);
+        URL u = URL.cacheableValueOf(url);
         boolean changed = false;
         String protocol = u.getProtocol();
         String username = u.getUsername();
@@ -110,8 +113,8 @@ public class UrlUtils {
         String host = u.getHost();
         int port = u.getPort();
         String path = u.getPath();
-        Map<String, String> parameters = new HashMap<String, String>(u.getParameters());
-        if ((protocol == null || protocol.length() == 0) && defaultProtocol != null && defaultProtocol.length() > 0) {
+        Map<String, String> parameters = new HashMap<>(u.getParameters());
+        if (protocol == null || protocol.length() == 0) {
             changed = true;
             protocol = defaultProtocol;
         }
@@ -156,18 +159,18 @@ public class UrlUtils {
             }
         }
         if (changed) {
-            u = new URL(protocol, username, password, host, port, path, parameters);
+            u = new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
         }
         return u;
     }
 
     public static List<URL> parseURLs(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {
-            return null;
+            throw new IllegalArgumentException("Address is not allowed to be empty, please re-enter.");
         }
         String[] addresses = REGISTRY_SPLIT_PATTERN.split(address);
         if (addresses == null || addresses.length == 0) {
-            return null; //here won't be empty
+            throw new IllegalArgumentException("Addresses is not allowed to be empty, please re-enter."); //here won't be empty
         }
         List<URL> registries = new ArrayList<URL>();
         for (String addr : addresses) {
@@ -181,7 +184,7 @@ public class UrlUtils {
         for (Map.Entry<String, Map<String, String>> entry : register.entrySet()) {
             String serviceName = entry.getKey();
             Map<String, String> serviceUrls = entry.getValue();
-            if (!serviceName.contains(":") && !serviceName.contains("/")) {
+            if (StringUtils.isNotContains(serviceName, ':') && StringUtils.isNotContains(serviceName, '/')) {
                 for (Map.Entry<String, String> entry2 : serviceUrls.entrySet()) {
                     String serviceUrl = entry2.getKey();
                     String serviceQuery = entry2.getValue();
@@ -197,11 +200,7 @@ public class UrlUtils {
                     if (version != null && version.length() > 0) {
                         name = name + ":" + version;
                     }
-                    Map<String, String> newUrls = newRegister.get(name);
-                    if (newUrls == null) {
-                        newUrls = new HashMap<String, String>();
-                        newRegister.put(name, newUrls);
-                    }
+                    Map<String, String> newUrls = newRegister.computeIfAbsent(name, k -> new HashMap<>());
                     newUrls.put(serviceUrl, StringUtils.toQueryString(params));
                 }
             } else {
@@ -216,7 +215,7 @@ public class UrlUtils {
         for (Map.Entry<String, String> entry : subscribe.entrySet()) {
             String serviceName = entry.getKey();
             String serviceQuery = entry.getValue();
-            if (!serviceName.contains(":") && !serviceName.contains("/")) {
+            if (StringUtils.isNotContains(serviceName, ':') && StringUtils.isNotContains(serviceName, '/')) {
                 Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
                 String group = params.get("group");
                 String version = params.get("version");
@@ -242,7 +241,7 @@ public class UrlUtils {
         for (Map.Entry<String, Map<String, String>> entry : register.entrySet()) {
             String serviceName = entry.getKey();
             Map<String, String> serviceUrls = entry.getValue();
-            if (serviceName.contains(":") || serviceName.contains("/")) {
+            if (StringUtils.isContains(serviceName, ':') && StringUtils.isContains(serviceName, '/')) {
                 for (Map.Entry<String, String> entry2 : serviceUrls.entrySet()) {
                     String serviceUrl = entry2.getKey();
                     String serviceQuery = entry2.getValue();
@@ -258,11 +257,7 @@ public class UrlUtils {
                         params.put("version", name.substring(i + 1));
                         name = name.substring(0, i);
                     }
-                    Map<String, String> newUrls = newRegister.get(name);
-                    if (newUrls == null) {
-                        newUrls = new HashMap<String, String>();
-                        newRegister.put(name, newUrls);
-                    }
+                    Map<String, String> newUrls = newRegister.computeIfAbsent(name, k -> new HashMap<String, String>());
                     newUrls.put(serviceUrl, StringUtils.toQueryString(params));
                 }
             } else {
@@ -277,7 +272,7 @@ public class UrlUtils {
         for (Map.Entry<String, String> entry : subscribe.entrySet()) {
             String serviceName = entry.getKey();
             String serviceQuery = entry.getValue();
-            if (serviceName.contains(":") || serviceName.contains("/")) {
+            if (StringUtils.isContains(serviceName, ':') && StringUtils.isContains(serviceName, '/')) {
                 Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
                 String name = serviceName;
                 int i = name.indexOf('/');
@@ -304,7 +299,7 @@ public class UrlUtils {
             for (Map.Entry<String, Map<String, String>> entry : notify.entrySet()) {
                 String serviceName = entry.getKey();
                 Map<String, String> serviceUrls = entry.getValue();
-                if (!serviceName.contains(":") && !serviceName.contains("/")) {
+                if (StringUtils.isNotContains(serviceName, ':') && StringUtils.isNotContains(serviceName, '/')) {
                     if (serviceUrls != null && serviceUrls.size() > 0) {
                         for (Map.Entry<String, String> entry2 : serviceUrls.entrySet()) {
                             String url = entry2.getKey();
@@ -321,11 +316,7 @@ public class UrlUtils {
                             if (version != null && version.length() > 0) {
                                 name = name + ":" + version;
                             }
-                            Map<String, String> newUrls = newNotify.get(name);
-                            if (newUrls == null) {
-                                newUrls = new HashMap<String, String>();
-                                newNotify.put(name, newUrls);
-                            }
+                            Map<String, String> newUrls = newNotify.computeIfAbsent(name, k -> new HashMap<String, String>());
                             newUrls.put(url, StringUtils.toQueryString(params));
                         }
                     }
@@ -343,7 +334,7 @@ public class UrlUtils {
         if (CollectionUtils.isNotEmpty(forbid)) {
             List<String> newForbid = new ArrayList<String>();
             for (String serviceName : forbid) {
-                if (!serviceName.contains(":") && !serviceName.contains("/")) {
+                if (StringUtils.isNotContains(serviceName, ':') && StringUtils.isNotContains(serviceName, '/')) {
                     for (URL url : subscribed) {
                         if (serviceName.equals(url.getServiceInterface())) {
                             newForbid.add(url.getServiceKey());
@@ -400,8 +391,8 @@ public class UrlUtils {
             return false;
         }
 
-        if (!isMatchCategory(providerUrl.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY),
-                consumerUrl.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY))) {
+        if (!isMatchCategory(providerUrl.getCategory(DEFAULT_CATEGORY),
+                consumerUrl.getCategory(DEFAULT_CATEGORY))) {
             return false;
         }
         if (!providerUrl.getParameter(ENABLED_KEY, true)
@@ -409,12 +400,12 @@ public class UrlUtils {
             return false;
         }
 
-        String consumerGroup = consumerUrl.getParameter(GROUP_KEY);
-        String consumerVersion = consumerUrl.getParameter(VERSION_KEY);
+        String consumerGroup = consumerUrl.getGroup();
+        String consumerVersion = consumerUrl.getVersion();
         String consumerClassifier = consumerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
 
-        String providerGroup = providerUrl.getParameter(GROUP_KEY);
-        String providerVersion = providerUrl.getParameter(VERSION_KEY);
+        String providerGroup = providerUrl.getGroup();
+        String providerVersion = providerUrl.getVersion();
         String providerClassifier = providerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
         return (ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
                 && (ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
@@ -463,10 +454,10 @@ public class UrlUtils {
     public static boolean isServiceKeyMatch(URL pattern, URL value) {
         return pattern.getParameter(INTERFACE_KEY).equals(
                 value.getParameter(INTERFACE_KEY))
-                && isItemMatch(pattern.getParameter(GROUP_KEY),
-                value.getParameter(GROUP_KEY))
-                && isItemMatch(pattern.getParameter(VERSION_KEY),
-                value.getParameter(VERSION_KEY));
+                && isItemMatch(pattern.getGroup(),
+                value.getGroup())
+                && isItemMatch(pattern.getVersion(),
+                value.getVersion());
     }
 
     public static List<URL> classifyUrls(List<URL> urls, Predicate<URL> predicate) {
@@ -475,22 +466,24 @@ public class UrlUtils {
 
     public static boolean isConfigurator(URL url) {
         return OVERRIDE_PROTOCOL.equals(url.getProtocol()) ||
-                CONFIGURATORS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY));
+                CONFIGURATORS_CATEGORY.equals(url.getCategory(DEFAULT_CATEGORY));
     }
 
     public static boolean isRoute(URL url) {
         return ROUTE_PROTOCOL.equals(url.getProtocol()) ||
-                ROUTERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY));
+                ROUTERS_CATEGORY.equals(url.getCategory(DEFAULT_CATEGORY));
     }
 
     public static boolean isProvider(URL url) {
         return !OVERRIDE_PROTOCOL.equals(url.getProtocol()) &&
                 !ROUTE_PROTOCOL.equals(url.getProtocol()) &&
-                PROVIDERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, PROVIDERS_CATEGORY));
+                PROVIDERS_CATEGORY.equals(url.getCategory(PROVIDERS_CATEGORY));
     }
 
     public static boolean isRegistry(URL url) {
-        return REGISTRY_PROTOCOL.equals(url.getProtocol()) || SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol());
+        return REGISTRY_PROTOCOL.equals(url.getProtocol())
+                || SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol())
+                || (url.getProtocol() != null && url.getProtocol().endsWith("-registry-protocol"));
     }
 
     /**
@@ -500,8 +493,16 @@ public class UrlUtils {
      * @return If it is, return <code>true</code>, or <code>false</code>
      * @since 2.7.5
      */
-    public static boolean isServiceDiscoveryRegistryType(URL url) {
-        return isServiceDiscoveryRegistryType(url == null ? emptyMap() : url.getParameters());
+    public static boolean hasServiceDiscoveryRegistryTypeKey(URL url) {
+        return hasServiceDiscoveryRegistryTypeKey(url == null ? emptyMap() : url.getParameters());
+    }
+
+    public static boolean hasServiceDiscoveryRegistryProtocol(URL url) {
+        return SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol());
+    }
+
+    public static boolean isServiceDiscoveryURL(URL url) {
+        return hasServiceDiscoveryRegistryProtocol(url) || hasServiceDiscoveryRegistryTypeKey(url);
     }
 
     /**
@@ -511,7 +512,7 @@ public class UrlUtils {
      * @return If it is, return <code>true</code>, or <code>false</code>
      * @since 2.7.5
      */
-    public static boolean isServiceDiscoveryRegistryType(Map<String, String> parameters) {
+    public static boolean hasServiceDiscoveryRegistryTypeKey(Map<String, String> parameters) {
         if (parameters == null || parameters.isEmpty()) {
             return false;
         }
@@ -539,13 +540,13 @@ public class UrlUtils {
      */
     public static String[] parseServiceKey(String serviceKey) {
         String[] arr = new String[3];
-        int i = serviceKey.indexOf("/");
+        int i = serviceKey.indexOf('/');
         if (i > 0) {
             arr[0] = serviceKey.substring(0, i);
             serviceKey = serviceKey.substring(i + 1);
         }
 
-        int j = serviceKey.indexOf(":");
+        int j = serviceKey.indexOf(':');
         if (j > 0) {
             arr[2] = serviceKey.substring(j + 1);
             serviceKey = serviceKey.substring(0, j);
@@ -553,4 +554,105 @@ public class UrlUtils {
         arr[1] = serviceKey;
         return arr;
     }
+
+    /**
+     * NOTICE: This method allocate too much objects, we can use {@link URLStrParser#parseDecodedStr(String)} instead.
+     * <p>
+     * Parse url string
+     *
+     * @param url URL string
+     * @return URL instance
+     * @see URL
+     */
+    public static URL valueOf(String url) {
+        if (url == null || (url = url.trim()).length() == 0) {
+            throw new IllegalArgumentException("url == null");
+        }
+        String protocol = null;
+        String username = null;
+        String password = null;
+        String host = null;
+        int port = 0;
+        String path = null;
+        Map<String, String> parameters = null;
+        int i = url.indexOf('?'); // separator between body and parameters
+        if (i >= 0) {
+            String[] parts = url.substring(i + 1).split("&");
+            parameters = new HashMap<>();
+            for (String part : parts) {
+                part = part.trim();
+                if (part.length() > 0) {
+                    int j = part.indexOf('=');
+                    if (j >= 0) {
+                        String key = part.substring(0, j);
+                        String value = part.substring(j + 1);
+                        parameters.put(key, value);
+                        // compatible with lower versions registering "default." keys
+                        if (key.startsWith(DEFAULT_KEY_PREFIX)) {
+                            parameters.putIfAbsent(key.substring(DEFAULT_KEY_PREFIX.length()), value);
+                        }
+                    } else {
+                        parameters.put(part, part);
+                    }
+                }
+            }
+            url = url.substring(0, i);
+        }
+        i = url.indexOf("://");
+        if (i >= 0) {
+            if (i == 0) {
+                throw new IllegalStateException("url missing protocol: \"" + url + "\"");
+            }
+            protocol = url.substring(0, i);
+            url = url.substring(i + 3);
+        } else {
+            // case: file:/path/to/file.txt
+            i = url.indexOf(":/");
+            if (i >= 0) {
+                if (i == 0) {
+                    throw new IllegalStateException("url missing protocol: \"" + url + "\"");
+                }
+                protocol = url.substring(0, i);
+                url = url.substring(i + 1);
+            }
+        }
+
+        i = url.indexOf('/');
+        if (i >= 0) {
+            path = url.substring(i + 1);
+            url = url.substring(0, i);
+        }
+        i = url.lastIndexOf('@');
+        if (i >= 0) {
+            username = url.substring(0, i);
+            int j = username.indexOf(':');
+            if (j >= 0) {
+                password = username.substring(j + 1);
+                username = username.substring(0, j);
+            }
+            url = url.substring(i + 1);
+        }
+        i = url.lastIndexOf(':');
+        if (i >= 0 && i < url.length() - 1) {
+            if (url.lastIndexOf('%') > i) {
+                // ipv6 address with scope id
+                // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
+                // see https://howdoesinternetwork.com/2013/ipv6-zone-id
+                // ignore
+            } else {
+                port = Integer.parseInt(url.substring(i + 1));
+                url = url.substring(0, i);
+            }
+        }
+        if (url.length() > 0) {
+            host = url;
+        }
+
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
+    }
+
+    public static boolean isConsumer(URL url) {
+        return url.getProtocol().equalsIgnoreCase("consumer") || url.getPort() == 0;
+    }
+
 }

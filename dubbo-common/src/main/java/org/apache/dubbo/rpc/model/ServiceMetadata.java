@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.ServiceDescriptor;
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
 
 import java.util.Map;
@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * data related to service level such as name, version, classloader of business service,
  * security info, etc. Also with a AttributeMap for extension.
  */
-public class ServiceMetadata extends ServiceDescriptor {
+public class ServiceMetadata extends BaseServiceMetadata {
 
     private String defaultGroup;
     private Class<?> serviceType;
@@ -73,7 +73,7 @@ public class ServiceMetadata extends ServiceDescriptor {
     }
 
     public void addAttachment(String key, Object value) {
-        this.attributeMap.put(key, value);
+        this.attachments.put(key, value);
     }
 
     public Class<?> getServiceType() {

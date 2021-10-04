@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.cluster.router.tag.model;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -24,6 +26,19 @@ import java.util.List;
 public class Tag {
     private String name;
     private List<String> addresses;
+
+    @SuppressWarnings("unchecked")
+    public static Tag parseFromMap(Map<String, Object> map) {
+        Tag tag = new Tag();
+        tag.setName((String) map.get("name"));
+
+        Object addresses = map.get("addresses");
+        if (addresses != null && List.class.isAssignableFrom(addresses.getClass())) {
+            tag.setAddresses(((List<Object>) addresses).stream().map(String::valueOf).collect(Collectors.toList()));
+        }
+
+        return tag;
+    }
 
     public String getName() {
         return name;

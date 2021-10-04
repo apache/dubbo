@@ -89,6 +89,10 @@ public interface Router extends Comparable<Router> {
      */
     int getPriority();
 
+    default void stop() {
+        //do nothing by default
+    }
+
     @Override
     default int compareTo(Router o) {
         if (o == null) {

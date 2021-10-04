@@ -1,4 +1,4 @@
-package org.apache.dubbo.rpc.protocol.grpc;/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,20 +14,17 @@ package org.apache.dubbo.rpc.protocol.grpc;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.grpc;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 
 import io.grpc.BindableService;
@@ -43,8 +40,6 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.rpc.Constants.INTERFACES;
-
 /**
  *
  */
@@ -54,8 +49,9 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
     public final static int DEFAULT_PORT = 50051;
 
-    /* <address, gRPC channel> */
-    private final ConcurrentMap<String, ManagedChannel> channelMap = new ConcurrentHashMap<>();
+    /* <address, gRPC channels> */
+    private final ConcurrentMap<String, ReferenceCountManagedChannel> channelMap = new ConcurrentHashMap<>();
+    private final Object lock = new Object();
 
     @Override
     protected <T> Runnable doExport(T proxiedImpl, Class<T> type, URL url) throws RpcException {
@@ -75,7 +71,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         GrpcRemotingServer grpcServer = (GrpcRemotingServer) protocolServer.getRemotingServer();
 
-        ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
+        FrameworkServiceRepository serviceRepository = frameworkModel.getServiceRepository();
         ProviderModel providerModel = serviceRepository.lookupExportedService(url.getServiceKey());
         if (providerModel == null) {
             throw new IllegalStateException("Service " + url.getServiceKey() + "should have already been stored in service repository, " +
@@ -101,11 +97,6 @@ public class GrpcProtocol extends AbstractProxyProtocol {
     }
 
     @Override
-    public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return super.export(new GrpcServerProxyInvoker<>(invoker));
-    }
-
-    @Override
     protected <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
         Class<?> enclosingClass = type.getEnclosingClass();
 
@@ -116,19 +107,24 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         final Method dubboStubMethod;
         try {
-            dubboStubMethod = enclosingClass.getDeclaredMethod("getDubboStub", Channel.class, CallOptions.class);
+            dubboStubMethod = enclosingClass.getDeclaredMethod("getDubboStub", Channel.class, CallOptions.class,
+                    URL.class, ReferenceConfigBase.class);
         } catch (NoSuchMethodException e) {
             throw new IllegalArgumentException("Does not find getDubboStub in " + enclosingClass.getName() + ", please use the customized protoc-gen-dubbo-java to update the generated classes.");
         }
 
         // Channel
-        ManagedChannel channel = channelMap.computeIfAbsent(url.getAddress(),
-                k -> GrpcOptionsUtils.buildManagedChannel(url)
-        );
+        ReferenceCountManagedChannel channel = getSharedChannel(url);
 
         // CallOptions
         try {
-            @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null, channel, GrpcOptionsUtils.buildCallOptions(url));
+            ReferenceConfigBase<?> referenceConfig = url.getServiceModel().getReferenceConfig();
+            @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null,
+                    channel,
+                    GrpcOptionsUtils.buildCallOptions(url),
+                    url,
+                    referenceConfig
+            );
             final Invoker<T> target = proxyFactory.getInvoker(stub, type, url);
             GrpcInvoker<T> grpcInvoker = new GrpcInvoker<>(type, url, target, channel);
             invokers.add(grpcInvoker);
@@ -152,6 +148,41 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         throw new UnsupportedOperationException("not used");
     }
 
+    /**
+     * Get shared channel connection
+     */
+    private ReferenceCountManagedChannel getSharedChannel(URL url) {
+        String key = url.getAddress();
+        ReferenceCountManagedChannel channel = channelMap.get(key);
+
+        if (channel != null && !channel.isTerminated()) {
+            channel.incrementAndGetCount();
+            return channel;
+        }
+
+        synchronized (lock) {
+            channel = channelMap.get(key);
+            // dubbo check
+            if (channel != null && !channel.isTerminated()) {
+                channel.incrementAndGetCount();
+            } else {
+                channel = new ReferenceCountManagedChannel(initChannel(url));
+                channelMap.put(key, channel);
+            }
+        }
+
+        return channel;
+    }
+
+    /**
+     * Create new connection
+     *
+     * @param url
+     */
+    private ManagedChannel initChannel(URL url) {
+        return GrpcOptionsUtils.buildManagedChannel(url);
+    }
+
     @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
@@ -160,9 +191,10 @@ public class GrpcProtocol extends AbstractProxyProtocol {
     @Override
     public void destroy() {
         serverMap.values().forEach(ProtocolServer::close);
-        channelMap.values().forEach(ManagedChannel::shutdown);
+        channelMap.values().forEach(ReferenceCountManagedChannel::shutdown);
         serverMap.clear();
         channelMap.clear();
+        super.destroy();
     }
 
     public class GrpcRemotingServer extends RemotingServerAdapter {
@@ -201,52 +233,6 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         @Override
         public void close() {
             originalServer.shutdown();
-        }
-    }
-
-    /**
-     * TODO, If IGreeter extends BindableService we can avoid the existence of this wrapper invoker.
-     *
-     * @param <T>
-     */
-    private class GrpcServerProxyInvoker<T> implements Invoker<T> {
-
-        private Invoker<T> invoker;
-
-        public GrpcServerProxyInvoker(Invoker<T> invoker) {
-            this.invoker = invoker;
-        }
-
-        @Override
-        public Class<T> getInterface() {
-            return invoker.getInterface();
-        }
-
-        @Override
-        public Result invoke(Invocation invocation) throws RpcException {
-            return invoker.invoke(invocation);
-        }
-
-        @Override
-        public URL getUrl() {
-            URL url = invoker.getUrl();
-            String interfaces = url.getParameter(INTERFACES);
-            if (StringUtils.isNotEmpty(interfaces)) {
-                interfaces += ("," + BindableService.class.getName());
-            } else {
-                interfaces = BindableService.class.getName();
-            }
-            return url.addParameter(INTERFACES, interfaces);
-        }
-
-        @Override
-        public boolean isAvailable() {
-            return invoker.isAvailable();
-        }
-
-        @Override
-        public void destroy() {
-            invoker.destroy();
         }
     }
 

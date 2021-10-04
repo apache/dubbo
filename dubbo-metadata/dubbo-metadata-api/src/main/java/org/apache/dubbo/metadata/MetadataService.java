@@ -18,7 +18,9 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -28,9 +30,10 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Collections.unmodifiableSortedSet;
 import static java.util.stream.StreamSupport.stream;
+import static org.apache.dubbo.common.URL.buildKey;
 
 /**
- * A framework interface of Dubbo Metadata Service defines the contract of Dubbo Services registartion and subscription
+ * A framework interface of Dubbo Metadata Service defines the contract of Dubbo Services registration and subscription
  * between Dubbo service providers and its consumers. The implementation will be exported as a normal Dubbo service that
  * the clients would subscribe, whose version comes from the {@link #version()} method and group gets from
  * {@link #serviceName()}, that means, The different Dubbo service(application) will export the different
@@ -90,7 +93,7 @@ public interface MetadataService {
      * @see #toSortedStrings(Stream)
      * @see URL#toFullString()
      */
-    default SortedSet<String> getSubscribedURLs(){
+    default SortedSet<String> getSubscribedURLs() {
         throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
 
@@ -160,12 +163,18 @@ public interface MetadataService {
      */
     SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol);
 
+    default Set<URL> getExportedServiceURLs() {
+        return Collections.emptySet();
+    }
+
     /**
      * Interface definition.
      *
      * @return
      */
-    String getServiceDefinition(String interfaceName, String version, String group);
+    default String getServiceDefinition(String interfaceName, String version, String group) {
+        return getServiceDefinition(buildKey(interfaceName, group, version));
+    }
 
     /**
      * Interface definition.
@@ -173,6 +182,10 @@ public interface MetadataService {
      * @return
      */
     String getServiceDefinition(String serviceKey);
+
+    MetadataInfo getMetadataInfo(String revision);
+
+    Map<String, MetadataInfo> getMetadataInfos();
 
     /**
      * Is the {@link URL} for the {@link MetadataService} or not?
@@ -219,5 +232,47 @@ public interface MetadataService {
      */
     static SortedSet<String> toSortedStrings(Stream<URL> stream) {
         return unmodifiableSortedSet(stream.map(URL::toFullString).collect(TreeSet::new, Set::add, Set::addAll));
+    }
+
+    /**
+     * Export Metadata in Service Instance of Service Discovery
+     * <p>
+     * Used for consumer to get Service Instance Metadata
+     * if Registry is unsupported with publishing metadata
+     *
+     * @param instanceMetadata {@link Map} of provider Service Instance Metadata
+     * @since 3.0
+     */
+    default void exportInstanceMetadata(String instanceMetadata) {
+        throw new UnsupportedOperationException("This operation is not supported for consumer.");
+    }
+
+    /**
+     * Get all Metadata listener from local
+     * <p>
+     * Used for consumer to get Service Instance Metadata
+     * if Registry is unsupported with publishing metadata
+     *
+     * @return {@link Map} of {@link InstanceMetadataChangedListener}
+     * @since 3.0
+     */
+    default Map<String, InstanceMetadataChangedListener> getInstanceMetadataChangedListenerMap() {
+        throw new UnsupportedOperationException("This operation is not supported for consumer.");
+    }
+
+    /**
+     * 1. Fetch Metadata in Service Instance of Service Discovery
+     * 2. Add a metadata change listener
+     * <p>
+     * Used for consumer to get Service Instance Metadata
+     * if Registry is unsupported with publishing metadata
+     *
+     * @param consumerId consumerId
+     * @param listener   {@link InstanceMetadataChangedListener} used to notify event
+     * @return {@link Map} of provider Service Instance Metadata
+     * @since 3.0
+     */
+    default String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
+        throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
 }

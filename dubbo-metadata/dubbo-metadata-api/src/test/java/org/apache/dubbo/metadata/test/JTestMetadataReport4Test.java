@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-
 /**
  * ZookeeperRegistry
  */
@@ -48,7 +46,7 @@ public class JTestMetadataReport4Test extends AbstractMetadataReport {
 
 
     private static String getProtocol(URL url) {
-        String protocol = url.getParameter(SIDE_KEY);
+        String protocol = url.getSide();
         protocol = protocol == null ? url.getProtocol() : protocol;
         return protocol;
     }

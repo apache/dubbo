@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -48,10 +49,8 @@ public class ClassUtils {
 
     public static Object newInstance(String name) {
         try {
-            return forName(name).newInstance();
-        } catch (InstantiationException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        } catch (IllegalAccessException e) {
+            return forName(name).getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
@@ -64,7 +63,7 @@ public class ClassUtils {
                 for (String pkg : packages) {
                     try {
                         return classForName(pkg + "." + className);
-                    } catch (ClassNotFoundException e2) {
+                    } catch (ClassNotFoundException ignore) {
                     }
                 }
             }
@@ -123,7 +122,7 @@ public class ClassUtils {
             if (className.indexOf('.') == -1) {
                 try {
                     return arrayForName("java.lang." + className);
-                } catch (ClassNotFoundException e2) {
+                } catch (ClassNotFoundException ignore) {
                     // ignore, let the original exception be thrown
                 }
             }
@@ -350,7 +349,7 @@ public class ClassUtils {
             StringBuilder buf = new StringBuilder(rightCode);
             for (int i = parameterClasses.length; i < types.length; i++) {
                 if (buf.length() > 0) {
-                    buf.append(",");
+                    buf.append(',');
                 }
                 Class<?> type = types[i];
                 String def;
@@ -431,7 +430,7 @@ public class ClassUtils {
         }
         return map;
     }
-    
+
     /**
      * get simple class name from qualified class name
      */
@@ -439,7 +438,6 @@ public class ClassUtils {
         if (null == qualifiedName) {
             return null;
         }
-        
         int i = qualifiedName.lastIndexOf('.');
         return i < 0 ? qualifiedName : qualifiedName.substring(i + 1);
     }

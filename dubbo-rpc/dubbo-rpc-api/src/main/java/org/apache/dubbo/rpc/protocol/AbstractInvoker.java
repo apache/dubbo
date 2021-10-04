@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol;
 
+import org.apache.dubbo.common.Node;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
@@ -26,6 +26,9 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.TimeoutException;
+import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
@@ -41,25 +44,48 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION;
+import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 
 /**
- * AbstractInvoker.
+ * This Invoker works on Consumer side.
  */
 public abstract class AbstractInvoker<T> implements Invoker<T> {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractInvoker.class);
 
+    /**
+     * Service interface type
+     */
     private final Class<T> type;
 
+    /**
+     * {@link Node} url
+     */
     private final URL url;
 
+    /**
+     * {@link Invoker} default attachment
+     */
     private final Map<String, Object> attachment;
 
+    /**
+     * {@link Node} available
+     */
     private volatile boolean available = true;
 
-    private AtomicBoolean destroyed = new AtomicBoolean(false);
+    /**
+     * {@link Node} destroy
+     */
+    private boolean destroyed = false;
+
+    // -- Constructor
 
     public AbstractInvoker(Class<T> type, URL url) {
         this(type, url, (Map<String, Object>) null);
@@ -78,14 +104,16 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         this.type = type;
         this.url = url;
-        this.attachment = attachment == null ? null : Collections.unmodifiableMap(attachment);
+        this.attachment = attachment == null
+            ? null
+            : Collections.unmodifiableMap(attachment);
     }
 
     private static Map<String, Object> convertAttachment(URL url, String[] keys) {
         if (ArrayUtils.isEmpty(keys)) {
             return null;
         }
-        Map<String, Object> attachment = new HashMap<String, Object>();
+        Map<String, Object> attachment = new HashMap<>();
         for (String key : keys) {
             String value = url.getParameter(key);
             if (value != null && value.length() > 0) {
@@ -94,6 +122,8 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         return attachment;
     }
+
+    // -- Public api
 
     @Override
     public Class<T> getInterface() {
@@ -110,67 +140,92 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         return available;
     }
 
+    @Override
+    public void destroy() {
+        this.destroyed = true;
+        setAvailable(false);
+    }
+
     protected void setAvailable(boolean available) {
         this.available = available;
     }
 
-    @Override
-    public void destroy() {
-        if (!destroyed.compareAndSet(false, true)) {
-            return;
-        }
-        setAvailable(false);
-    }
-
     public boolean isDestroyed() {
-        return destroyed.get();
+        return destroyed;
     }
 
     @Override
     public String toString() {
-        return getInterface() + " -> " + (getUrl() == null ? "" : getUrl().toString());
+        return getInterface() + " -> " + (getUrl() == null ? "" : getUrl().getAddress());
     }
 
     @Override
     public Result invoke(Invocation inv) throws RpcException {
         // if invoker is destroyed due to address refresh from registry, let's allow the current invoke to proceed
-        if (destroyed.get()) {
+        if (isDestroyed()) {
             logger.warn("Invoker for service " + this + " on consumer " + NetUtils.getLocalHost() + " is destroyed, "
-                    + ", dubbo version is " + Version.getVersion() + ", this invoker should not be used any longer");
+                + ", dubbo version is " + Version.getVersion() + ", this invoker should not be used any longer");
         }
+
         RpcInvocation invocation = (RpcInvocation) inv;
-        invocation.setInvoker(this);
+
+        // prepare rpc invocation
+        prepareInvocation(invocation);
+
+        // do invoke rpc invocation and return async result
+        AsyncRpcResult asyncResult = doInvokeAndReturn(invocation);
+
+        // wait rpc result if sync
+        waitForResultIfSync(asyncResult, invocation);
+
+        return asyncResult;
+    }
+
+    private void prepareInvocation(RpcInvocation inv) {
+        inv.setInvoker(this);
+
+        addInvocationAttachments(inv);
+
+        inv.setInvokeMode(RpcUtils.getInvokeMode(url, inv));
+
+        RpcUtils.attachInvocationIdIfAsync(getUrl(), inv);
+
+        Byte serializationId = CodecSupport.getIDByName(getUrl().getParameter(SERIALIZATION_KEY, DEFAULT_REMOTING_SERIALIZATION));
+        if (serializationId != null) {
+            inv.put(SERIALIZATION_ID_KEY, serializationId);
+        }
+    }
+
+    private void addInvocationAttachments(RpcInvocation invocation) {
+        // invoker attachment
         if (CollectionUtils.isNotEmptyMap(attachment)) {
-            invocation.addAttachmentsIfAbsent(attachment);
-        }
-        Map<String, Object> contextAttachments = RpcContext.getContext().getAttachments();
-        if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
-            /**
-             * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
-             * because the {@link RpcContext#setAttachment(String, Object)} is passed in the Filter when the call is triggered
-             * by the built-in retry mechanism of the Dubbo. The attachment to update RpcContext will no longer work, which is
-             * a mistake in most cases (for example, through Filter to RpcContext output traceId and spanId and other information).
-             */
-            invocation.addAttachments(contextAttachments);
+            invocation.addObjectAttachmentsIfAbsent(attachment);
         }
 
-        invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));
-        RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+        // client context attachment
+        Map<String, Object> clientContextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
+        if (CollectionUtils.isNotEmptyMap(clientContextAttachments)) {
+            invocation.addObjectAttachmentsIfAbsent(clientContextAttachments);
+        }
+    }
 
+    private AsyncRpcResult doInvokeAndReturn(RpcInvocation invocation) {
         AsyncRpcResult asyncResult;
         try {
             asyncResult = (AsyncRpcResult) doInvoke(invocation);
-        } catch (InvocationTargetException e) { // biz exception
+        } catch (InvocationTargetException e) {
             Throwable te = e.getTargetException();
-            if (te == null) {
-                asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
-            } else {
+            if (te != null) {
+                // if biz exception
                 if (te instanceof RpcException) {
                     ((RpcException) te).setCode(RpcException.BIZ_EXCEPTION);
                 }
                 asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, te, invocation);
+            } else {
+                asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
             }
         } catch (RpcException e) {
+            // if biz exception
             if (e.isBiz()) {
                 asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
             } else {
@@ -179,12 +234,58 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (Throwable e) {
             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
-        RpcContext.getContext().setFuture(new FutureAdapter(asyncResult.getResponseFuture()));
+
+        // set server context
+        RpcContext.getServiceContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
+
         return asyncResult;
     }
 
+    private void waitForResultIfSync(AsyncRpcResult asyncResult, RpcInvocation invocation) {
+        if (InvokeMode.SYNC != invocation.getInvokeMode()) {
+            return;
+        }
+        try {
+            /*
+             * NOTICE!
+             * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
+             * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
+             */
+            Object timeout = invocation.get(TIMEOUT_KEY);
+            if (timeout instanceof Integer) {
+                asyncResult.get((Integer) timeout, TimeUnit.MILLISECONDS);
+            } else {
+                asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+            }
+        } catch (InterruptedException e) {
+            throw new RpcException("Interrupted unexpectedly while waiting for remote result to return! method: " +
+                invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+        } catch (ExecutionException e) {
+            Throwable rootCause = e.getCause();
+            if (rootCause instanceof TimeoutException) {
+                throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " +
+                    invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            } else if (rootCause instanceof RemotingException) {
+                throw new RpcException(RpcException.NETWORK_EXCEPTION, "Failed to invoke remote method: " +
+                    invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            } else {
+                throw new RpcException(RpcException.UNKNOWN_EXCEPTION, "Fail to invoke remote method: " +
+                    invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            }
+        } catch (java.util.concurrent.TimeoutException e) {
+            throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " +
+                invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+        } catch (Throwable e) {
+            throw new RpcException(e.getMessage(), e);
+        }
+    }
+
+    // -- Protected api
+
     protected ExecutorService getCallbackExecutor(URL url, Invocation inv) {
-        ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getExecutor(url);
+        ExecutorService sharedExecutor = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension()
+            .getExecutor(url);
         if (InvokeMode.SYNC == RpcUtils.getInvokeMode(getUrl(), inv)) {
             return new ThreadlessExecutor(sharedExecutor);
         } else {
@@ -192,6 +293,8 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
     }
 
+    /**
+     * Specific implementation of the {@link #invoke(Invocation)} method
+     */
     protected abstract Result doInvoke(Invocation invocation) throws Throwable;
-
 }

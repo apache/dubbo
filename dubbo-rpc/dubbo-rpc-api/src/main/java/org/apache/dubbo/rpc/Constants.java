@@ -27,6 +27,7 @@ public interface Constants {
     String DEPRECATED_KEY = "deprecated";
 
     String $ECHO = "$echo";
+    String $ECHO_PARAMETER_DESC = "Ljava/lang/Object;";
 
     String RETURN_PREFIX = "return ";
 
@@ -70,6 +71,8 @@ public interface Constants {
 
     String TOKEN_KEY = "token";
 
+    String INTERFACE = "interface";
+
     String INTERFACES = "interfaces";
 
     String GENERIC_KEY = "generic";
@@ -85,4 +88,17 @@ public interface Constants {
     String INPUT_KEY = "input";
     String OUTPUT_KEY = "output";
 
+    String CONSUMER_MODEL = "consumerModel";
+    String METHOD_MODEL = "methodModel";
+
+    String SERIALIZATION_SECURITY_CHECK_KEY = "serialization.security.check";
+    String INVOCATION_KEY = "invocation";
+    String SERIALIZATION_ID_KEY = "serialization_id";
+
+    String H2_SETTINGS_HEADER_TABLE_SIZE_KEY = "dubbo.rpc.tri.header-table-size";
+    String H2_SETTINGS_ENABLE_PUSH_KEY = "dubbo.rpc.tri.enable-push";
+    String H2_SETTINGS_MAX_CONCURRENT_STREAMS_KEY = "dubbo.rpc.tri.max-concurrent-streams";
+    String H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY = "dubbo.rpc.tri.initial-window-size";
+    String H2_SETTINGS_MAX_FRAME_SIZE_KEY = "dubbo.rpc.tri.max-frame-size";
+    String H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY = "dubbo.rpc.tri.max-header-list-size";
 }

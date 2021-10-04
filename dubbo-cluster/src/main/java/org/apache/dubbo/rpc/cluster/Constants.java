@@ -32,6 +32,22 @@ public interface Constants {
 
     String FORCE_KEY = "force";
 
+    String RAW_RULE_KEY = "rawRule";
+
+    String VALID_KEY = "valid";
+
+    String ENABLED_KEY = "enabled";
+
+    String DYNAMIC_KEY = "dynamic";
+
+    String SCOPE_KEY = "scope";
+
+    String KEY_KEY = "key";
+
+    String CONDITIONS_KEY = "conditions";
+
+    String TAGS_KEY = "tags";
+
     /**
      * To decide whether to exclude unavailable invoker from the cluster
      */
@@ -91,12 +107,36 @@ public interface Constants {
      * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
      */
     String ROUTER_KEY = "router";
+
+    /**
+     * The key for state router
+     */
+    String STATE_ROUTER_KEY = "stateRouter";
     /**
      * The key name for reference URL in register center
      */
     String REFER_KEY = "refer";
+
+    String ATTRIBUTE_KEY = "attribute";
+
     /**
      * The key name for export URL in register center
      */
     String EXPORT_KEY = "export";
+
+    String PEER_KEY = "peer";
+
+    String CONSUMER_URL_KEY = "CONSUMER_URL";
+
+    /**
+     * prefix of arguments router key
+     */
+    String ARGUMENTS = "arguments";
+
+    String NEED_REEXPORT = "need-reexport";
+
+    /**
+     * The key of shortestResponseSlidePeriod
+     */
+    String SHORTEST_RESPONSE_SLIDE_PERIOD = "shortestResponseSlidePeriod";
 }

@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import org.apache.dubbo.common.serialize.ObjectOutput;
-
 import com.alibaba.com.caucho.hessian.io.Hessian2Output;
+import org.apache.dubbo.common.serialize.Cleanable;
+import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.common.serialize.hessian2.dubbo.Hessian2FactoryInitializer;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,12 +27,13 @@ import java.io.OutputStream;
 /**
  * Hessian2 object output implementation
  */
-public class Hessian2ObjectOutput implements ObjectOutput {
+public class Hessian2ObjectOutput implements ObjectOutput, Cleanable {
+
     private final Hessian2Output mH2o;
 
     public Hessian2ObjectOutput(OutputStream os) {
         mH2o = new Hessian2Output(os);
-        mH2o.setSerializerFactory(Hessian2SerializerFactory.SERIALIZER_FACTORY);
+        mH2o.setSerializerFactory(Hessian2FactoryInitializer.getInstance().getSerializerFactory());
     }
 
     @Override
@@ -92,5 +94,16 @@ public class Hessian2ObjectOutput implements ObjectOutput {
     @Override
     public void flushBuffer() throws IOException {
         mH2o.flushBuffer();
+    }
+
+    public OutputStream getOutputStream() throws IOException {
+        return mH2o.getBytesOutputStream();
+    }
+
+    @Override
+    public void cleanup() {
+        if(mH2o != null) {
+            mH2o.reset();
+        }
     }
 }

@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.config.spring.context.annotation.consumer.test;
 
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -37,14 +39,27 @@ public class TestConsumerConfiguration {
 
     private static final String remoteURL = "dubbo://127.0.0.1:12345?version=2.5.7";
 
-    @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
+    @Reference(id = "demoService",
+            version = "2.5.7",
+            url = remoteURL,
+            application = "dubbo-demo-application",
+            filter = "mymock")
     private DemoService demoService;
 
     @Autowired
+    @Qualifier("demoServiceImpl")
     private DemoService autowiredDemoService;
+
+    @Autowired
+    @Qualifier("demoService")
+    private DemoService autowiredReferDemoService;
 
     public DemoService getAutowiredDemoService() {
         return autowiredDemoService;
+    }
+
+    public DemoService getAutowiredReferDemoService() {
+        return autowiredReferDemoService;
     }
 
     public DemoService getDemoService() {
@@ -63,7 +78,7 @@ public class TestConsumerConfiguration {
 
     public static abstract class Ancestor {
 
-        @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
+        @DubboReference(version = "2.5.7", url = remoteURL,filter = "mymock", application = "dubbo-demo-application")
         private DemoService demoServiceFromAncestor;
 
         public DemoService getDemoServiceFromAncestor() {
@@ -83,7 +98,7 @@ public class TestConsumerConfiguration {
             return demoServiceFromParent;
         }
 
-        @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
+        @com.alibaba.dubbo.config.annotation.Reference(version = "2.5.7", url = remoteURL, filter = "mymock", application = "dubbo-demo-application")
         public void setDemoServiceFromParent(DemoService demoServiceFromParent) {
             this.demoServiceFromParent = demoServiceFromParent;
         }
@@ -92,7 +107,7 @@ public class TestConsumerConfiguration {
 
     public static class Child extends Parent {
 
-        @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
+        @Reference(version = "2.5.7", url = remoteURL, filter = "mymock", application = "dubbo-demo-application")
         private DemoService demoServiceFromChild;
 
         public DemoService getDemoServiceFromChild() {

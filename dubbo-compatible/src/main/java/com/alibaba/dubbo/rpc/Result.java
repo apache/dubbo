@@ -17,6 +17,7 @@
 
 package com.alibaba.dubbo.rpc;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -36,6 +37,31 @@ public interface Result extends org.apache.dubbo.rpc.Result {
     @Override
     default void setException(Throwable t) {
 
+    }
+
+    @Override
+    default Map<String, Object> getObjectAttachments() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    default void addObjectAttachments(Map<String, Object> map) {
+
+    }
+
+    @Override
+    default void setObjectAttachments(Map<String, Object> map) {
+
+    }
+
+    @Override
+    default Object getObjectAttachment(String key) {
+        return null;
+    }
+
+    @Override
+    default Object getObjectAttachment(String key, Object defaultValue) {
+        return null;
     }
 
     abstract class AbstractResult implements Result {
@@ -103,33 +129,43 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
-        public Map<String, Object> getAttachments() {
+        public Map<String, String> getAttachments() {
             return delegate.getAttachments();
         }
 
         @Override
-        public void addAttachments(Map<String, Object> map) {
+        public void addAttachments(Map<String, String> map) {
             delegate.addAttachments(map);
         }
 
         @Override
-        public void setAttachments(Map<String, Object> map) {
+        public void setAttachments(Map<String, String> map) {
             delegate.setAttachments(map);
         }
 
         @Override
         public String getAttachment(String key) {
-            return (String) delegate.getAttachment(key);
+            return delegate.getAttachment(key);
         }
 
         @Override
-        public String getAttachment(String key, Object defaultValue) {
-            return (String) delegate.getAttachment(key, defaultValue);
+        public String getAttachment(String key, String defaultValue) {
+            return delegate.getAttachment(key, defaultValue);
+        }
+
+        @Override
+        public void setAttachment(String key, String value) {
+            delegate.setAttachment(key, value);
         }
 
         @Override
         public void setAttachment(String key, Object value) {
             delegate.setAttachment(key, value);
+        }
+
+        @Override
+        public void setObjectAttachment(String key, Object value) {
+            delegate.setObjectAttachment(key, value);
         }
     }
 }

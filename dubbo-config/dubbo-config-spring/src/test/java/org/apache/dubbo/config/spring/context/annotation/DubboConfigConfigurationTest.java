@@ -21,6 +21,9 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +44,7 @@ public class DubboConfigConfigurationTest {
 
     @BeforeEach
     public void before() throws IOException {
+        DubboBootstrap.reset();
 
         context = new AnnotationConfigApplicationContext();
         ResourcePropertySource propertySource = new ResourcePropertySource("META-INF/config.properties");
@@ -79,20 +83,20 @@ public class DubboConfigConfigurationTest {
 
     @Test
     public void testMultiple() {
+        RegistryCenter singleRegistryCenter = new ZookeeperSingleRegistryCenter();
+        singleRegistryCenter.startup();
+        try{
+            context.register(DubboConfigConfiguration.Multiple.class);
+            context.refresh();
 
-        context.register(DubboConfigConfiguration.Multiple.class);
-        context.refresh();
+            RegistryConfig registry1 = context.getBean("registry1", RegistryConfig.class);
+            Assertions.assertEquals(2181, registry1.getPort());
 
-        // application
-        ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
-
-        ApplicationConfig applicationBean2 = context.getBean("applicationBean2", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application2", applicationBean2.getName());
-
-        ApplicationConfig applicationBean3 = context.getBean("applicationBean3", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application3", applicationBean3.getName());
-
+            RegistryConfig registry2 = context.getBean("registry2", RegistryConfig.class);
+            Assertions.assertEquals(2182, registry2.getPort());
+        }finally {
+            singleRegistryCenter.shutdown();
+        }
     }
 
 }

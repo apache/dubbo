@@ -42,13 +42,11 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 
 /**
  * Apollo implementation, https://github.com/ctripcorp/apollo
@@ -69,6 +67,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     private static final String APOLLO_CLUSTER_KEY = "apollo.cluster";
     private static final String APOLLO_PROTOCOL_PREFIX = "http://";
     private static final String APOLLO_APPLICATION_KEY = "application";
+    private static final String APOLLO_APPID_KEY = "app.id";
 
     private URL url;
     private Config dubboConfig;
@@ -81,18 +80,22 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         String configEnv = url.getParameter(APOLLO_ENV_KEY);
         String configAddr = getAddressWithProtocolPrefix(url);
         String configCluster = url.getParameter(CLUSTER_KEY);
-        if (configEnv != null) {
+        String configAppId = url.getParameter(APOLLO_APPID_KEY);
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_ENV_KEY)) && configEnv != null) {
             System.setProperty(APOLLO_ENV_KEY, configEnv);
         }
-        if (StringUtils.isEmpty(System.getProperty(APOLLO_ENV_KEY)) && !ANYHOST_VALUE.equals(configAddr)) {
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_ADDR_KEY)) && !ANYHOST_VALUE.equals(url.getHost())) {
             System.setProperty(APOLLO_ADDR_KEY, configAddr);
         }
-        if (configCluster != null) {
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_CLUSTER_KEY)) && configCluster != null) {
             System.setProperty(APOLLO_CLUSTER_KEY, configCluster);
+        }
+        if (StringUtils.isEmpty(System.getProperty(APOLLO_APPID_KEY)) && configAppId != null) {
+            System.setProperty(APOLLO_APPID_KEY, configAppId);
         }
 
         String namespace = url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP);
-        String apolloNamespace = StringUtils.isEmpty(namespace) ? url.getParameter(GROUP_KEY, DEFAULT_GROUP) : namespace;
+        String apolloNamespace = StringUtils.isEmpty(namespace) ? url.getGroup(DEFAULT_GROUP) : namespace;
         dubboConfig = ConfigService.getConfig(apolloNamespace);
         dubboConfigFile = ConfigService.getConfigFile(apolloNamespace, ConfigFileFormat.Properties);
 
@@ -150,7 +153,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         if (StringUtils.isNotEmpty(group)) {
-            if (group.equals(url.getParameter(APPLICATION_KEY))) {
+            if (group.equals(url.getApplication())) {
                 return ConfigService.getAppConfig().getProperty(key, null);
             } else {
                 return ConfigService.getConfig(group).getProperty(key, null);
@@ -176,7 +179,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         if (StringUtils.isEmpty(group)) {
             return dubboConfigFile.getContent();
         }
-        if (group.equals(url.getParameter(APPLICATION_KEY))) {
+        if (group.equals(url.getApplication())) {
             return ConfigService.getConfigFile(APOLLO_APPLICATION_KEY, ConfigFileFormat.Properties).getContent();
         }
 

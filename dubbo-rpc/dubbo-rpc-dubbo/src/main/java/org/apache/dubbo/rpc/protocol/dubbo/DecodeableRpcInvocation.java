@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -31,22 +32,29 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.BaseServiceMetadata.keyWithoutGroup;
 import static org.apache.dubbo.common.URL.buildKey;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeInvocationArgument;
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
 
@@ -62,7 +70,12 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
     private volatile boolean hasDecoded;
 
-    public DecodeableRpcInvocation(Channel channel, Request request, InputStream is, byte id) {
+    protected final FrameworkModel frameworkModel;
+
+    private CallbackServiceCodec callbackServiceCodec;
+
+    public DecodeableRpcInvocation(FrameworkModel frameworkModel, Channel channel, Request request, InputStream is, byte id) {
+        this.frameworkModel = frameworkModel;
         Assert.notNull(channel, "channel == null");
         Assert.notNull(request, "request == null");
         Assert.notNull(is, "inputStream == null");
@@ -70,6 +83,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         this.request = request;
         this.inputStream = is;
         this.serializationType = id;
+        callbackServiceCodec = new CallbackServiceCodec(frameworkModel);
     }
 
     @Override
@@ -94,10 +108,15 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         throw new UnsupportedOperationException();
     }
 
+    private void checkSerializationTypeFromRemote() {
+
+    }
+
     @Override
     public Object decode(Channel channel, InputStream input) throws IOException {
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
-                .deserialize(channel.getUrl(), input);
+            .deserialize(channel.getUrl(), input);
+        this.put(SERIALIZATION_ID_KEY, serializationType);
 
         String dubboVersion = in.readUTF();
         request.setVersion(dubboVersion);
@@ -105,30 +124,86 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
         String path = in.readUTF();
         setAttachment(PATH_KEY, path);
-        setAttachment(VERSION_KEY, in.readUTF());
+        String version = in.readUTF();
+        setAttachment(VERSION_KEY, version);
 
         setMethodName(in.readUTF());
 
         String desc = in.readUTF();
         setParameterTypesDesc(desc);
 
+        ClassLoader originClassLoader = Thread.currentThread().getContextClassLoader();
         try {
+            if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "true"))) {
+                CodecSupport.checkSerialization(frameworkModel.getServiceRepository(), path, version, serializationType);
+            }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
             Class<?>[] pts = DubboCodec.EMPTY_CLASS_ARRAY;
             if (desc.length() > 0) {
 //                if (RpcUtils.isGenericCall(path, getMethodName()) || RpcUtils.isEcho(path, getMethodName())) {
 //                    pts = ReflectUtils.desc2classArray(desc);
 //                } else {
-                ServiceRepository repository = ApplicationModel.getServiceRepository();
-                ServiceDescriptor serviceDescriptor = repository.lookupService(path);
+                FrameworkServiceRepository repository = frameworkModel.getServiceRepository();
+                List<ProviderModel> providerModels = repository.lookupExportedServicesWithoutGroup(keyWithoutGroup(path, version));
+                ServiceDescriptor serviceDescriptor = null;
+                if (CollectionUtils.isNotEmpty(providerModels)) {
+                    for (ProviderModel providerModel : providerModels) {
+                        serviceDescriptor = providerModel.getServiceModel();
+                        if (serviceDescriptor != null) {
+                            break;
+                        }
+                    }
+                }
+                if (serviceDescriptor == null) {
+                    // Unable to find ProviderModel from Exported Services
+                    for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
+                        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+                            serviceDescriptor = moduleModel.getServiceRepository().lookupService(path);
+                            if (serviceDescriptor != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
+
                 if (serviceDescriptor != null) {
                     MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);
                     if (methodDescriptor != null) {
                         pts = methodDescriptor.getParameterClasses();
                         this.setReturnTypes(methodDescriptor.getReturnTypes());
+
+                        // switch TCCL
+                        if (CollectionUtils.isNotEmpty(providerModels)) {
+                            if (providerModels.size() == 1) {
+                                Thread.currentThread().setContextClassLoader(providerModels.get(0).getClassLoader());
+                            } else {
+                                // try all providerModels' classLoader can load pts, use the first one
+                                for (ProviderModel providerModel : providerModels) {
+                                    ClassLoader classLoader = providerModel.getClassLoader();
+                                    boolean match = true;
+                                    for (Class<?> pt : pts) {
+                                        try {
+                                            if (!pt.equals(classLoader.loadClass(pt.getName()))) {
+                                                match = false;
+                                            }
+                                        } catch (ClassNotFoundException e) {
+                                            match = false;
+                                        }
+                                    }
+                                    if (match) {
+                                        Thread.currentThread().setContextClassLoader(classLoader);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
+
                 if (pts == DubboCodec.EMPTY_CLASS_ARRAY) {
+                    if (!RpcUtils.isGenericCall(desc, getMethodName()) && !RpcUtils.isEcho(desc, getMethodName())) {
+                        throw new IllegalArgumentException("Service not found:" + path + ", " + getMethodName());
+                    }
                     pts = ReflectUtils.desc2classArray(desc);
                 }
 //                }
@@ -148,27 +223,28 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 
             Map<String, Object> map = in.readAttachments();
             if (map != null && map.size() > 0) {
-                Map<String, Object> attachment = getAttachments();
+                Map<String, Object> attachment = getObjectAttachments();
                 if (attachment == null) {
-                    attachment = new HashMap<String, Object>();
+                    attachment = new HashMap<>();
                 }
                 attachment.putAll(map);
-                setAttachments(attachment);
+                setObjectAttachments(attachment);
             }
 
             //decode argument ,may be callback
             for (int i = 0; i < args.length; i++) {
-                args[i] = decodeInvocationArgument(channel, this, pts, i, args[i]);
+                args[i] = callbackServiceCodec.decodeInvocationArgument(channel, this, pts, i, args[i]);
             }
 
             setArguments(args);
             String targetServiceName = buildKey((String) getAttachment(PATH_KEY),
-                    (String) getAttachment(GROUP_KEY),
-                    (String) getAttachment(VERSION_KEY));
+                getAttachment(GROUP_KEY),
+                getAttachment(VERSION_KEY));
             setTargetServiceUniqueName(targetServiceName);
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read invocation data failed.", e));
         } finally {
+            Thread.currentThread().setContextClassLoader(originClassLoader);
             if (in instanceof Cleanable) {
                 ((Cleanable) in).cleanup();
             }

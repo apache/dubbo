@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.annotation;
 
+import org.apache.dubbo.config.ReferenceConfigBase;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,13 +26,16 @@ import java.lang.annotation.Target;
 
 /**
  * Reference
+ * <p>
  *
- * @export
+ * @see DubboReference
  * @since 2.7.0
+ * @deprecated Recommend {@link DubboReference} as the substitute
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
+@Deprecated
 public @interface Reference {
     /**
      * Interface class, default value is void.class
@@ -64,7 +69,9 @@ public @interface Reference {
 
     /**
      * Whether to enable generic invocation, default value is false
+     * @deprecated Do not need specify generic value, judge by injection type and interface class
      */
+    @Deprecated
     boolean generic() default false;
 
     /**
@@ -78,9 +85,10 @@ public @interface Reference {
     boolean check() default true;
 
     /**
-     * Whether eager initialize the reference bean when all properties are set, default value is false
+     * Whether eager initialize the reference bean when all properties are set, default value is true ( null as true)
+     * @see ReferenceConfigBase#shouldInit()
      */
-    boolean init() default false;
+    boolean init() default true;
 
     /**
      * Whether to make connection when the client is created, the default value is false
@@ -89,7 +97,7 @@ public @interface Reference {
 
     /**
      * Export an stub service for event dispatch, default value is false.
-     *
+     * <p>
      * see org.apache.dubbo.rpc.Constants#STUB_EVENT_METHODS_KEY
      */
     boolean stubevent() default false;
@@ -97,14 +105,14 @@ public @interface Reference {
     /**
      * Whether to reconnect if connection is lost, if not specify, reconnect is enabled by default, and the interval
      * for retry connecting is 2000 ms
-     *
+     * <p>
      * see org.apache.dubbo.remoting.Constants#DEFAULT_RECONNECT_PERIOD
      */
     String reconnect() default "";
 
     /**
      * Whether to stick to the same node in the cluster, the default value is false
-     *
+     * <p>
      * see Constants#DEFAULT_CLUSTER_STICKY
      */
     boolean sticky() default false;
@@ -127,14 +135,14 @@ public @interface Reference {
     /**
      * Maximum connections service provider can accept, default value is 0 - connection is shared
      */
-    int connections() default 0;
+    int connections() default -1;
 
     /**
      * The callback instance limit peer connection
-     *
+     * <p>
      * see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
-    int callbacks() default 0;
+    int callbacks() default -1;
 
     /**
      * Callback method name when connected, default value is empty string
@@ -158,14 +166,14 @@ public @interface Reference {
 
     /**
      * Service invocation retry times
-     *
+     * <p>
      * see Constants#DEFAULT_RETRIES
      */
-    int retries() default 2;
+    int retries() default -1;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
-     *
+     * <p>
      * see Constants#DEFAULT_LOADBALANCE
      */
     String loadbalance() default "";
@@ -178,7 +186,7 @@ public @interface Reference {
     /**
      * Maximum active requests allowed, default value is 0
      */
-    int actives() default 0;
+    int actives() default -1;
 
     /**
      * Whether the async request has already been sent, the default value is false
@@ -198,7 +206,7 @@ public @interface Reference {
     /**
      * Timeout value for service invocation, default value is 0
      */
-    int timeout() default 0;
+    int timeout() default -1;
 
     /**
      * Specify cache implementation for service invocation, legal values include: lru, threadlocal, jcache
@@ -207,14 +215,14 @@ public @interface Reference {
 
     /**
      * Filters for service invocation
-     *
+     * <p>
      * see Filter
      */
     String[] filter() default {};
 
     /**
      * Listeners for service exporting and unexporting
-     *
+     * <p>
      * see ExporterListener
      */
     String[] listener() default {};
@@ -226,7 +234,9 @@ public @interface Reference {
 
     /**
      * Application associated name
+     * @deprecated Do not set it and use the global Application Config
      */
+    @Deprecated
     String application() default "";
 
     /**

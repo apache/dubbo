@@ -45,9 +45,9 @@ public @interface Method {
 
     boolean sent() default true;
 
-    int actives() default 0;
+    int actives() default -1;
 
-    int executes() default 0;
+    int executes() default -1;
 
     boolean deprecated() default false;
 
@@ -65,5 +65,13 @@ public @interface Method {
 
     String validation() default "";
 
+    String merger() default "";
+
     Argument[] arguments() default {};
+
+    /**
+     * Customized parameter key-value pair, for example: {key1, value1, key2, value2} or {"key1=value1", "key2=value2"}
+     */
+    String[] parameters() default {};
+
 }

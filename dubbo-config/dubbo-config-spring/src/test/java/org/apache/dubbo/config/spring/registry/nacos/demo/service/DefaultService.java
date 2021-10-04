@@ -34,7 +34,7 @@ public class DefaultService implements DemoService {
     private String serviceName;
 
     public String sayName(String name) {
-        RpcContext rpcContext = RpcContext.getContext();
+        RpcContext rpcContext = RpcContext.getServiceContext();
         return String.format("Service [name :%s , protocol: %s , port : %d] %s(\"%s\") : Hello,%s",
                 serviceName,
                 rpcContext.getUrl().getProtocol(),

@@ -42,13 +42,13 @@ public class DeprecatedFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeprecatedFilter.class);
 
-    private static final Set<String> logged = new ConcurrentHashSet<String>();
+    private static final Set<String> LOGGED = new ConcurrentHashSet<String>();
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
-        if (!logged.contains(key)) {
-            logged.add(key);
+        if (!LOGGED.contains(key)) {
+            LOGGED.add(key);
             if (invoker.getUrl().getMethodParameter(invocation.getMethodName(), DEPRECATED_KEY, false)) {
                 LOGGER.error("The service method " + invoker.getInterface().getName() + "." + getMethodSignature(invocation) + " is DEPRECATED! Declare from " + invoker.getUrl());
             }
@@ -58,7 +58,7 @@ public class DeprecatedFilter implements Filter {
 
     private String getMethodSignature(Invocation invocation) {
         StringBuilder buf = new StringBuilder(invocation.getMethodName());
-        buf.append("(");
+        buf.append('(');
         Class<?>[] types = invocation.getParameterTypes();
         if (types != null && types.length > 0) {
             boolean first = true;
@@ -71,7 +71,7 @@ public class DeprecatedFilter implements Filter {
                 buf.append(type.getSimpleName());
             }
         }
-        buf.append(")");
+        buf.append(')');
         return buf.toString();
     }
 

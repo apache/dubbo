@@ -32,10 +32,6 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-report-zookeeper</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-demo-interface</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -65,11 +61,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-report-nacos</artifactId>
+            <artifactId>dubbo-metadata-report-zookeeper</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-metadata-report-zookeeper</artifactId>
+            <artifactId>dubbo-metadata-report-nacos</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -86,6 +82,14 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-hessian2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-jdk</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-triple</artifactId>
         </dependency>
     </dependencies>
 </project>

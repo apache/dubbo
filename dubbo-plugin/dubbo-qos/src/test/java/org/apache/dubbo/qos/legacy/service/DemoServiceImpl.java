@@ -62,7 +62,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public Object invoke(String service, String method) throws Exception {
-        System.out.println("RpcContext.getContext().getRemoteHost()=" + RpcContext.getContext().getRemoteHost());
+        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
         return service + ":" + method;
     }
 
@@ -124,6 +124,11 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public String getRemoteApplicationName() {
-        return RpcContext.getContext().getRemoteApplicationName();
+        return RpcContext.getServiceContext().getRemoteApplicationName();
+    }
+
+    @Override
+    public Map<Integer, Object> getMap(Map<Integer, Object> map) {
+        return map;
     }
 }

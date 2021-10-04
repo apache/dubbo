@@ -19,6 +19,9 @@ target/
 *.iml
 *.iws
 
+# visual-studio-code ignore
+.vscode/
+
 # temp ignore
 *.log
 *.cache
@@ -31,9 +34,6 @@ target/
 Thumbs.db
 *.orig
 
-# flatten ignore
-.flattened-pom.xml
-
 # license check result
 license-list
 
@@ -44,3 +44,4 @@ compiler/.gradle/*
 
 # protobuf
 dubbo-serialization/dubbo-serialization-protobuf/build/*
+dubbo-demo/dubbo-demo-triple/build/*

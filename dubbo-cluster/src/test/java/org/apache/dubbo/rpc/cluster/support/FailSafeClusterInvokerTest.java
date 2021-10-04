@@ -60,6 +60,7 @@ public class FailSafeClusterInvokerTest {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(DemoService.class);
         invocation.setMethodName("method1");
@@ -85,7 +86,7 @@ public class FailSafeClusterInvokerTest {
         resetInvokerToException();
         FailsafeClusterInvoker<DemoService> invoker = new FailsafeClusterInvoker<DemoService>(dic);
         invoker.invoke(invocation);
-        Assertions.assertNull(RpcContext.getContext().getInvoker());
+        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
     }
 
     @Test()
@@ -103,6 +104,7 @@ public class FailSafeClusterInvokerTest {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(null);
         given(dic.getInterface()).willReturn(DemoService.class);
 

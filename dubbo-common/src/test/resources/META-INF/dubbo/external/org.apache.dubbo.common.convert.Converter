@@ -1,0 +1,2 @@
+# org.apache.dubbo.common.convert.Converter
+string-to-boolean=org.apache.dubbo.common.extension.convert.String2BooleanConverter

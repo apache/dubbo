@@ -88,4 +88,45 @@ public interface Constants {
     String REGISTRY_RETRY_PERIOD_KEY = "retry.period";
 
     String SESSION_TIMEOUT_KEY = "session";
+
+    /**
+     * To decide the frequency of checking Distributed Service Discovery Registry callback hook (in ms)
+     */
+    String ECHO_POLLING_CYCLE_KEY = "echoPollingCycle";
+
+    /**
+     * Default value for check frequency: 60000 (ms)
+     */
+    int DEFAULT_ECHO_POLLING_CYCLE = 60000;
+
+    String MIGRATION_STEP_KEY = "migration.step";
+
+    String MIGRATION_DELAY_KEY = "migration.delay";
+
+    String MIGRATION_FORCE_KEY = "migration.force";
+
+    String MIGRATION_PROMOTION_KEY = "migration.promotion";
+
+    String MIGRATION_THRESHOLD_KEY = "migration.threshold";
+
+    String ENABLE_CONFIGURATION_LISTEN = "enable-configuration-listen";
+
+    /**
+     * MIGRATION_RULE_XXX from remote configuration
+     */
+    String MIGRATION_RULE_KEY = "key";
+
+    String MIGRATION_RULE_STEP_KEY ="step";
+
+    String MIGRATION_RULE_THRESHOLD_KEY = "threshold";
+
+    String MIGRATION_RULE_PROPORTION_KEY = "proportion";
+
+    String MIGRATION_RULE_DELAY_KEY = "delay";
+
+    String MIGRATION_RULE_FORCE_KEY = "force";
+
+    String MIGRATION_RULE_INTERFACES_KEY = "interfaces";
+
+    String MIGRATION_RULE_APPLICATIONS_KEY = "applications";
 }

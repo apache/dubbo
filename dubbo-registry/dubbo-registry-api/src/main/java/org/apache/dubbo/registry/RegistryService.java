@@ -74,7 +74,7 @@ public interface RegistryService {
      * Unsubscribe
      * <p>
      * Unsubscribing is required to support the contract:<br>
-     * 1. If don't subscribe, ignore it directly.<br>
+     * 1. If you don't subscribe, ignore it directly.<br>
      * 2. Unsubscribe by full URL match.<br>
      *
      * @param url      Subscription condition, not allowed to be empty, e.g. consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin

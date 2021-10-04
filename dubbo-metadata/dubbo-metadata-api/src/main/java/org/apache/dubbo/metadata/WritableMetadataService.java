@@ -18,12 +18,13 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.metadata.store.InMemoryWritableMetadataService;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Local {@link MetadataService} that extends {@link MetadataService} and provides the modification, which is used for
@@ -31,17 +32,8 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  *
  * @since 2.7.5
  */
-@SPI(DEFAULT_METADATA_STORAGE_TYPE)
+@SPI(value = "default", scope = ExtensionScope.APPLICATION)
 public interface WritableMetadataService extends MetadataService {
-    /**
-     * Gets the current Dubbo Service name
-     *
-     * @return non-null
-     */
-    @Override
-    default String serviceName() {
-        return ApplicationModel.getApplication();
-    }
 
     /**
      * Exports a {@link URL}
@@ -60,15 +52,6 @@ public interface WritableMetadataService extends MetadataService {
     boolean unexportURL(URL url);
 
     /**
-     * fresh Exports
-     *
-     * @return If success , return <code>true</code>
-     */
-    default boolean refreshMetadata(String exportedRevision, String subscribedRevision) {
-        return true;
-    }
-
-    /**
      * Subscribes a {@link URL}
      *
      * @param url a {@link URL}
@@ -84,19 +67,34 @@ public interface WritableMetadataService extends MetadataService {
      */
     boolean unsubscribeURL(URL url);
 
-    void publishServiceDefinition(URL providerUrl);
+    void publishServiceDefinition(URL url);
+
+    default void setMetadataServiceURL(URL url) {
+
+    }
+
+    default URL getMetadataServiceURL() {
+        return null;
+    }
+
+    void putCachedMapping(String serviceKey, Set<String> apps);
+
+    Set<String> getCachedMapping(String mappingKey);
+
+    Set<String> getCachedMapping(URL consumerURL);
+
+    Set<String> removeCachedMapping(String serviceKey);
+
+    Map<String, Set<String>> getCachedMapping();
+
+    MetadataInfo getDefaultMetadataInfo();
 
     /**
      * Get {@link ExtensionLoader#getDefaultExtension() the defautl extension} of {@link WritableMetadataService}
      *
      * @return non-null
-     * @see InMemoryWritableMetadataService
      */
-    static WritableMetadataService getDefaultExtension() {
-        return getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
-    }
-
-    static WritableMetadataService getExtension(String name) {
-        return getExtensionLoader(WritableMetadataService.class).getOrDefaultExtension(name);
+    static WritableMetadataService getDefaultExtension(ScopeModel scopeModel) {
+        return ScopeModelUtil.getExtensionLoader(WritableMetadataService.class, scopeModel).getDefaultExtension();
     }
 }

@@ -17,8 +17,10 @@
 package org.apache.dubbo.config.context;
 
 import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -28,8 +30,16 @@ public class ConfigConfigurationAdapter implements Configuration {
 
     private Map<String, String> metaData;
 
-    public ConfigConfigurationAdapter(AbstractConfig config) {
-        this.metaData = config.getMetaData();
+    public ConfigConfigurationAdapter(AbstractConfig config, String prefix) {
+         Map<String, String> configMetadata = config.getMetaData();
+        if (StringUtils.hasText(prefix)) {
+            metaData = new HashMap<>(configMetadata.size(), 1.0f);
+            for (Map.Entry<String, String> entry : configMetadata.entrySet()) {
+                metaData.put(prefix + "." + entry.getKey(), entry.getValue());
+            }
+        } else {
+            metaData = configMetadata;
+        }
     }
 
     @Override
@@ -37,4 +47,7 @@ public class ConfigConfigurationAdapter implements Configuration {
         return metaData.get(key);
     }
 
+    public Map<String, String> getProperties() {
+        return metaData;
+    }
 }

@@ -17,17 +17,35 @@
 
 package org.apache.dubbo.common.constants;
 
+import org.apache.dubbo.common.URL;
+
+import java.net.NetworkInterface;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
 public interface CommonConstants {
     String DUBBO = "dubbo";
 
+    String TRIPLE = "tri";
+
     String PROVIDER = "provider";
 
     String CONSUMER = "consumer";
 
     String APPLICATION_KEY = "application";
+
+    String APPLICATION_VERSION_KEY = "application.version";
+
+    String APPLICATION_PROTOCOL_KEY = "application-protocol";
+
+    String METADATA_SERVICE_PORT_KEY = "metadata-service-port";
+
+    String LIVENESS_PROBE_KEY = "liveness-probe";
+
+    String READINESS_PROBE_KEY = "readiness-probe";
+
+    String STARTUP_PROBE = "startup-probe";
 
     String REMOTE_APPLICATION_KEY = "remote.application";
 
@@ -39,7 +57,16 @@ public interface CommonConstants {
 
     String DEFAULT_DUBBO_PROPERTIES = "dubbo.properties";
 
+    String DUBBO_MIGRATION_KEY = "dubbo.migration.file";
+
+    String DEFAULT_DUBBO_MIGRATION_FILE = "dubbo-migration.yaml";
+
     String ANY_VALUE = "*";
+
+    /**
+     * @since 2.7.8
+     */
+    char COMMA_SEPARATOR_CHAR = ',';
 
     String COMMA_SEPARATOR = ",";
 
@@ -50,6 +77,8 @@ public interface CommonConstants {
     String PATH_SEPARATOR = "/";
 
     String PROTOCOL_SEPARATOR = "://";
+
+    String PROTOCOL_SEPARATOR_ENCODED = URL.encode(PROTOCOL_SEPARATOR);
 
     String REGISTRY_SEPARATOR = "|";
 
@@ -97,6 +126,8 @@ public interface CommonConstants {
 
     String IO_THREADS_KEY = "iothreads";
 
+    String KEEP_ALIVE_KEY = "keep.alive";
+
     int DEFAULT_QUEUES = 0;
 
     int DEFAULT_ALIVE = 60 * 1000;
@@ -105,15 +136,25 @@ public interface CommonConstants {
 
     int DEFAULT_TIMEOUT = 1000;
 
+    // used by invocation attachments to transfer timeout from Consumer to Provider.
+    // works as a replacement of TIMEOUT_KEY on wire, which seems to be totally useless in previous releases).
+    String TIMEOUT_ATTACHMENT_KEY = "_TO";
+
+    String TIMEOUT_ATTACHMENT_KEY_LOWER = "_to";
+
+    String TIME_COUNTDOWN_KEY = "timeout-countdown";
+
+    String ENABLE_TIMEOUT_COUNTDOWN_KEY = "enable-timeout-countdown";
+
     String REMOVE_VALUE_PREFIX = "-";
 
-    String PROPERTIES_CHAR_SEPERATOR = "-";
+    String PROPERTIES_CHAR_SEPARATOR = "-";
 
     String UNDERLINE_SEPARATOR = "_";
 
     String SEPARATOR_REGEX = "_|-";
 
-    String GROUP_CHAR_SEPERATOR = ":";
+    String GROUP_CHAR_SEPARATOR = ":";
 
     String HIDE_KEY_PREFIX = ".";
 
@@ -160,6 +201,8 @@ public interface CommonConstants {
 
     String FILE_KEY = "file";
 
+    String FILTER_KEY = "filter";
+
     String DUMP_DIRECTORY = "dump.directory";
 
     String CLASSIFIER_KEY = "classifier";
@@ -168,13 +211,25 @@ public interface CommonConstants {
 
     String REVISION_KEY = "revision";
 
-    String METADATA_REVISION = "metadata.revision";
+    String METADATA_KEY = "metadata-type";
 
-    String METADATA_KEY = "metadata";
+    String CONFIG_MAPPING_TYPE = "config";
+
+    String METADATA_MAPPING_TYPE = "metadata";
 
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
+
+    String GENERIC_KEY = "generic";
+
+    /**
+     * The composite metadata storage type includes {@link #DEFAULT_METADATA_STORAGE_TYPE "local"} and
+     * {@link #REMOTE_METADATA_STORAGE_TYPE "remote"}.
+     *
+     * @since 2.7.8
+     */
+    String COMPOSITE_METADATA_STORAGE_TYPE = "composite";
 
     /**
      * Consumer side 's proxy class
@@ -186,11 +241,18 @@ public interface CommonConstants {
      */
     String $INVOKE = "$invoke";
     String $INVOKE_ASYNC = "$invokeAsync";
+    String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
+    /**
+     * echo call
+     */
+    String $ECHO = "$echo";
     /**
      * package version in the manifest
      */
     String RELEASE_KEY = "release";
+
+    String PROTOBUF_MESSAGE_CLASS_NAME = "com.google.protobuf.Message";
 
     int MAX_PROXY_COUNT = 65535;
 
@@ -201,6 +263,20 @@ public interface CommonConstants {
     String HOST_KEY = "host";
     String PORT_KEY = "port";
     String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
+
+    /**
+     * broadcast cluster.
+     */
+    String BROADCAST_CLUSTER = "broadcast";
+
+    /**
+     * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
+     * the Dubbo application prefers
+     *
+     * @since 2.7.6
+     */
+    String DUBBO_PREFERRED_NETWORK_INTERFACE = "dubbo.network.interface.preferred";
+
     @Deprecated
     String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
     String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
@@ -222,6 +298,10 @@ public interface CommonConstants {
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
+    String HEADER_FILTER_KEY = "header.filter";
+
+    String INVOCATION_INTERCEPTOR_KEY = "invocation.interceptor";
+
     String INVOKER_LISTENER_KEY = "invoker.listener";
 
     String DUBBO_VERSION_KEY = "dubbo";
@@ -241,18 +321,16 @@ public interface CommonConstants {
 
     String EXPORTER_LISTENER_KEY = "exporter.listener";
 
-    String METRICS_PORT = "metrics.port";
-
-    String METRICS_PROTOCOL = "metrics.protocol";
-
     /**
-     * After simplify the registry, should add some paramter individually for provider.
+     * After simplify the registry, should add some parameter individually for provider.
      *
      * @since 2.7.0
      */
     String EXTRA_KEYS_KEY = "extra-keys";
 
     String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
+
+    String GENERIC_SERIALIZATION_GSON = "gson";
 
     String GENERIC_SERIALIZATION_DEFAULT = "true";
 
@@ -261,6 +339,14 @@ public interface CommonConstants {
     String GENERIC_RAW_RETURN = "raw.return";
 
     String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
+
+    String GENERIC_WITH_CLZ_KEY = "generic.include.class";
+
+    /**
+     * Whether to cache locally, default is true
+     */
+    String REGISTRY_LOCAL_FILE_CACHE_ENABLED = "file.cache";
+
 
     /**
      * The limit of callback service instances for one interface on every client
@@ -288,6 +374,106 @@ public interface CommonConstants {
 
     String REGISTER_KEY = "register";
 
-    String DUBBO_INVOCATION_PREFIX = "_DUBBO_IGNORE_ATTACH_";
+    String INTERFACES = "interfaces";
+
+    String SSL_ENABLED_KEY = "ssl-enabled";
+
+    String SERVICE_PATH_PREFIX = "service.path.prefix";
+
+    String PROTOCOL_SERVER_SERVLET = "servlet";
+
+    String PROTOCOL_SERVER = "server";
+
+    /**
+     * The parameter key for the class path of the ServiceNameMapping {@link Properties} file
+     *
+     * @since 2.7.8
+     */
+    String SERVICE_NAME_MAPPING_PROPERTIES_FILE_KEY = "service-name-mapping.properties-path";
+
+    /**
+     * The default class path of the ServiceNameMapping {@link Properties} file
+     *
+     * @since 2.7.8
+     */
+    String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
+
+    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
+
+    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
+
+    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+
+    String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
+
+    String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
+
+    String QOS_LIVE_PROBE_EXTENSION = "dubbo.application.liveness-probe";
+
+    String QOS_READY_PROBE_EXTENSION = "dubbo.application.readiness-probe";
+
+    String QOS_STARTUP_PROBE_EXTENSION = "dubbo.application.startup-probe";
+
+    String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
+
+    String CACHE_CLEAR_TASK_INTERVAL = "dubbo.application.url.cache.task.interval";
+    String CACHE_CLEAR_WAITING_THRESHOLD = "dubbo.application.url.cache.clear.waiting";
+
+    String CLUSTER_INTERCEPTOR_COMPATIBLE_KEY = "dubbo.application.cluster.interceptor.compatible";
+
+    String UTF8ENCODE = "UTF-8";
+
+    /**
+     * Pseudo URL prefix for loading from the class path: "classpath:".
+     */
+    String CLASSPATH_URL_PREFIX = "classpath:";
+
+    String DEFAULT_VERSION = "0.0.0";
+
+    String EXPORT_ASYNC_KEY = "export-async";
+
+    String REFER_ASYNC_KEY = "refer-async";
+
+    String EXPORT_BACKGROUND_KEY = "export-background";
+
+    String REFER_BACKGROUND_KEY = "refer-background";
+
+    String EXPORT_THREAD_NUM_KEY = "export-thread-num";
+
+    String REFER_THREAD_NUM_KEY = "refer-thread-num";
+
+    int DEFAULT_EXPORT_THREAD_NUM = 10;
+
+    int DEFAULT_REFER_THREAD_NUM = 10;
+
+    int DEFAULT_DELAY_NOTIFICATION_TIME = 5000;
+
+    int DEFAULT_DELAY_EXECUTE_TIMES = 10;
+
+    /**
+     * Url merge processor key
+     */
+    String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
+
+    /**
+     * use native image to compile dubbo's identifier
+     */
+    String NATIVE = "native";
+
+    String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
+
+    String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
+
+    String SCOPE_MODEL = "scopeModel";
+
+    String SERVICE_MODEL = "serviceModel";
+
+    /**
+     * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
+     * the Dubbo application will be ignored
+     *
+     * @since 2.7.6
+     */
+    String DUBBO_NETWORK_IGNORED_INTERFACE = "dubbo.network.interface.ignored";
 
 }

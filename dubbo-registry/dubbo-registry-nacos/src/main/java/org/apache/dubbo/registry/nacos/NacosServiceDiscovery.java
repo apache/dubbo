@@ -1,4 +1,4 @@
-package org.apache.dubbo.registry.nacos;/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,22 +14,25 @@ package org.apache.dubbo.registry.nacos;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
-import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +40,6 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
-import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.getGroup;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toInstance;
 
 /**
@@ -46,52 +48,61 @@ import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toIns
  * @see ServiceDiscovery
  * @since 2.7.5
  */
-public class NacosServiceDiscovery implements ServiceDiscovery {
+public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private String group;
+    private NacosNamingServiceWrapper namingService;
 
-    private NamingService namingService;
+    private URL registryURL;
 
     @Override
-    public void initialize(URL registryURL) throws Exception {
+    public void doInitialize(URL registryURL) throws Exception {
         this.namingService = createNamingService(registryURL);
-        this.group = getGroup(registryURL);
+        this.registryURL = registryURL;
     }
 
     @Override
-    public void destroy() {
-        this.namingService = null;
+    public void doDestroy() throws Exception {
+        this.namingService.shutdown();
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doRegister(ServiceInstance serviceInstance) {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
-            service.registerInstance(instance.getServiceName(), group, instance);
+            // Should not register real group for ServiceInstance
+            // Or will cause consumer unable to fetch all of the providers from every group
+            // Provider's group is invisible for consumer
+            service.registerInstance(instance.getServiceName(), Constants.DEFAULT_GROUP, instance);
         });
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        // TODO: Nacos should support
-        unregister(serviceInstance);
+    public void doUpdate(ServiceInstance serviceInstance) {
+        ServiceInstance oldInstance = this.serviceInstance;
+        unregister(oldInstance);
         register(serviceInstance);
     }
 
     @Override
-    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
-            service.deregisterInstance(instance.getServiceName(), group, instance);
+            // Should not register real group for ServiceInstance
+            // Or will cause consumer unable to fetch all of the providers from every group
+            // Provider's group is invisible for consumer
+            service.deregisterInstance(instance.getServiceName(), Constants.DEFAULT_GROUP, instance);
         });
     }
 
     @Override
     public Set<String> getServices() {
         return ThrowableFunction.execute(namingService, service -> {
-            ListView<String> view = service.getServicesOfServer(0, Integer.MAX_VALUE, group);
+            // Should not register real group for ServiceInstance
+            // Or will cause consumer unable to fetch all of the providers from every group
+            // Provider's group is invisible for consumer
+            ListView<String> view = service.getServicesOfServer(0, Integer.MAX_VALUE, Constants.DEFAULT_GROUP);
             return new LinkedHashSet<>(view.getData());
         });
     }
@@ -99,31 +110,40 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
-                service.selectInstances(serviceName, true)
-                        .stream().map(NacosNamingServiceUtils::toServiceInstance)
-                        .collect(Collectors.toList())
+            service.selectInstances(serviceName, Constants.DEFAULT_GROUP, true)
+                .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+                .collect(Collectors.toList())
         );
     }
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
-            throws NullPointerException, IllegalArgumentException {
-        execute(namingService, service -> {
-            service.subscribe(listener.getServiceName(), e -> { // Register Nacos EventListener
-                if (e instanceof NamingEvent) {
-                    NamingEvent event = (NamingEvent) e;
-                    handleEvent(event, listener);
-                }
-            });
-        });
+        throws NullPointerException, IllegalArgumentException {
+        execute(namingService, service -> listener.getServiceNames().forEach(serviceName -> {
+            try {
+                service.subscribe(serviceName, Constants.DEFAULT_GROUP, e -> { // Register Nacos EventListener
+                    if (e instanceof NamingEvent) {
+                        NamingEvent event = (NamingEvent) e;
+                        handleEvent(event, listener);
+                    }
+                });
+            } catch (NacosException e) {
+                logger.error("add nacos service instances changed listener fail ", e);
+            }
+        }));
+    }
+
+    @Override
+    public URL getUrl() {
+        return registryURL;
     }
 
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
         String serviceName = event.getServiceName();
-        Collection<ServiceInstance> serviceInstances = event.getInstances()
-                .stream()
-                .map(NacosNamingServiceUtils::toServiceInstance)
-                .collect(Collectors.toList());
-        dispatchServiceInstancesChangedEvent(serviceName, serviceInstances);
+        List<ServiceInstance> serviceInstances = event.getInstances()
+            .stream()
+            .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+            .collect(Collectors.toList());
+        listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
 }

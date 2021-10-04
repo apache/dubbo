@@ -1,2 +1,0 @@
-service-instance=org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstanceListener
-registry-logging=org.apache.dubbo.registry.client.event.listener.LoggingEventListener

@@ -16,7 +16,11 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.Map;
 
@@ -27,7 +31,7 @@ import java.util.Map;
  */
 public abstract class AbstractMethodConfig extends AbstractConfig {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 5809761483000878437L;
 
     /**
      * The timeout for remote invocation in milliseconds
@@ -62,7 +66,7 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
 
     /**
      * The name of mock class which gets called when a service fails to execute
-     *
+     * <p>
      * note that: the mock doesn't support on the provider side，and the mock is executed when a non-business exception
      * occurs after a remote service call
      */
@@ -94,6 +98,29 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
      * Forks for forking cluster
      */
     protected Integer forks;
+
+    public AbstractMethodConfig() {
+        super(ApplicationModel.defaultModel().getDefaultModule());
+    }
+
+    @Override
+    public ModuleModel getScopeModel() {
+        return (ModuleModel) scopeModel;
+    }
+
+    @Override
+    protected void checkScopeModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            throw new IllegalArgumentException("scopeModel cannot be null");
+        }
+        if (!(scopeModel instanceof ModuleModel)) {
+            throw new IllegalArgumentException("Invalid scope model, expect to be a ModuleModel but got: " + scopeModel);
+        }
+    }
+
+    protected ModuleConfigManager getModuleConfigManager() {
+        return getScopeModel().getConfigManager();
+    }
 
     public Integer getForks() {
         return forks;
@@ -157,18 +184,22 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
     }
 
     public void setMock(String mock) {
-        if (mock == null) {
-            return;
-        }
         this.mock = mock;
     }
 
-    public void setMock(Boolean mock) {
+    /**
+     * Set the property "mock"
+     *
+     * @param mock the value of mock
+     * @since 2.7.6
+     * @deprecated use {@link #setMock(String)} instead
+     */
+    @Deprecated
+    public void setMock(Object mock) {
         if (mock == null) {
-            setMock((String) null);
-        } else {
-            setMock(mock.toString());
+            return;
         }
+        this.setMock(String.valueOf(mock));
     }
 
     public String getMerger() {

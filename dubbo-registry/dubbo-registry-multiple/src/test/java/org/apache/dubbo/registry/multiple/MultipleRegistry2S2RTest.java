@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.redis.RedisRegistry;
 import org.apache.dubbo.registry.zookeeper.ZookeeperRegistry;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperClient;
@@ -30,7 +29,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import redis.embedded.RedisServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,19 +42,20 @@ public class MultipleRegistry2S2RTest {
     private static final String SERVICE2_NAME = "org.apache.dubbo.registry.MultipleService2S2R2";
 
     private static TestingServer zkServer;
-    private static RedisServer redisServer;
+    private static TestingServer zkServer2;
     static int zkServerPort;
-    static int redisServerPort;
+    static int zkServerPort2;
 
     private static String zookeeperRegistryURLStr;
-    private static String redisRegistryURLStr;
+    private static String zookeeperRegistryURLStr2;
 
     private static MultipleRegistry multipleRegistry;
     // for test content
     private static ZookeeperClient zookeeperClient;
+    private static ZookeeperClient zookeeperClient2;
 
     private static ZookeeperRegistry zookeeperRegistry;
-    private static RedisRegistry redisRegistry;
+    private static ZookeeperRegistry zookeeperRegistry2;
 
 
     @BeforeAll
@@ -65,27 +64,27 @@ public class MultipleRegistry2S2RTest {
         zkServer = new TestingServer(zkServerPort, true);
         zookeeperRegistryURLStr = "zookeeper://127.0.0.1:" + zkServerPort;
 
-        redisServerPort = NetUtils.getAvailablePort();
-        redisServer = new RedisServer(redisServerPort);
-        redisServer.start();
-        redisRegistryURLStr = "redis://127.0.0.1:" + redisServerPort;
+        zkServerPort2 = NetUtils.getAvailablePort();
+        zkServer2 = new TestingServer(zkServerPort2, true);
+        zookeeperRegistryURLStr2 = "zookeeper://127.0.0.1:" + zkServerPort2;
 
 
         URL url = URL.valueOf("multiple://127.0.0.1?application=vic&" +
-                MultipleRegistry.REGISTRY_FOR_SERVICE + "=" + zookeeperRegistryURLStr + "," + redisRegistryURLStr + "&"
-                + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + zookeeperRegistryURLStr + "," + redisRegistryURLStr);
+                MultipleRegistry.REGISTRY_FOR_SERVICE + "=" + zookeeperRegistryURLStr + "," + zookeeperRegistryURLStr2 + "&"
+                + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + zookeeperRegistryURLStr + "," + zookeeperRegistryURLStr2);
         multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(url);
 
         // for test validation
         zookeeperClient = new CuratorZookeeperClient(URL.valueOf(zookeeperRegistryURLStr));
         zookeeperRegistry = MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values());
-        redisRegistry = MultipleRegistryTestUtil.getRedisRegistry(multipleRegistry.getServiceRegistries().values());
+        zookeeperClient2 = new CuratorZookeeperClient(URL.valueOf(zookeeperRegistryURLStr2));
+        zookeeperRegistry2 = MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values());
     }
 
     @AfterAll
     public static void tearDown() throws Exception {
         zkServer.stop();
-        redisServer.stop();
+        zkServer2.stop();
     }
 
     @Test
@@ -93,36 +92,34 @@ public class MultipleRegistry2S2RTest {
 
         Assertions.assertEquals(2, multipleRegistry.origReferenceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperRegistryURLStr));
-        Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(redisRegistryURLStr));
+        Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperRegistryURLStr2));
 
         Assertions.assertEquals(2, multipleRegistry.origServiceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(zookeeperRegistryURLStr));
-        Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(redisRegistryURLStr));
+        Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(zookeeperRegistryURLStr2));
 
         Assertions.assertEquals(2, multipleRegistry.effectReferenceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(zookeeperRegistryURLStr));
-        Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(redisRegistryURLStr));
+        Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(zookeeperRegistryURLStr2));
 
         Assertions.assertEquals(2, multipleRegistry.effectServiceRegistryURLs.size());
         Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(zookeeperRegistryURLStr));
-        Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(redisRegistryURLStr));
+        Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(zookeeperRegistryURLStr2));
 
         Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(zookeeperRegistryURLStr));
-        Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(redisRegistryURLStr));
+        Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(zookeeperRegistryURLStr2));
         Assertions.assertEquals(2, multipleRegistry.getServiceRegistries().values().size());
 //        java.util.Iterator<Registry> registryIterable = multipleRegistry.getServiceRegistries().values().iterator();
 //        Registry firstRegistry = registryIterable.next();
 //        Registry secondRegistry = registryIterable.next();
         Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()));
-        Assertions.assertNotNull(MultipleRegistryTestUtil.getRedisRegistry(multipleRegistry.getServiceRegistries().values()));
         Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
-        Assertions.assertNotNull(MultipleRegistryTestUtil.getRedisRegistry(multipleRegistry.getReferenceRegistries().values()));
 
         Assertions.assertEquals(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()),
                 MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
 
-        Assertions.assertEquals(MultipleRegistryTestUtil.getRedisRegistry(multipleRegistry.getServiceRegistries().values()),
-                MultipleRegistryTestUtil.getRedisRegistry(multipleRegistry.getReferenceRegistries().values()));
+        Assertions.assertEquals(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()),
+                MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
 
         Assertions.assertEquals(multipleRegistry.getApplicationName(), "vic");
 
@@ -139,8 +136,6 @@ public class MultipleRegistry2S2RTest {
         List<String> providerList = zookeeperClient.getChildren(path);
         Assertions.assertTrue(!providerList.isEmpty());
         System.out.println(providerList.get(0));
-
-        Assertions.assertNotNull(MultipleRegistryTestUtil.getRedisHashContent(redisServerPort, path, serviceUrl.toFullString()));
 
         final List<URL> list = new ArrayList<URL>();
         multipleRegistry.subscribe(serviceUrl, new NotifyListener() {
@@ -172,8 +167,6 @@ public class MultipleRegistry2S2RTest {
         List<String> providerList = zookeeperClient.getChildren(path);
         Assertions.assertTrue(!providerList.isEmpty());
         System.out.println(providerList.get(0));
-
-        Assertions.assertNotNull(MultipleRegistryTestUtil.getRedisHashContent(redisServerPort, path, serviceUrl.toFullString()));
 
         final List<URL> list = new ArrayList<URL>();
         multipleRegistry.subscribe(serviceUrl, new NotifyListener() {

@@ -32,13 +32,10 @@
     </properties>
     <modules>
         <module>dubbo-remoting-api</module>
-        <module>dubbo-remoting-netty</module>
-        <module>dubbo-remoting-mina</module>
-        <module>dubbo-remoting-grizzly</module>
-        <module>dubbo-remoting-p2p</module>
         <module>dubbo-remoting-http</module>
+        <module>dubbo-remoting-netty</module>
         <module>dubbo-remoting-zookeeper</module>
+        <module>dubbo-remoting-zookeeper-curator5</module>
         <module>dubbo-remoting-netty4</module>
-        <module>dubbo-remoting-etcd3</module>
     </modules>
 </project>

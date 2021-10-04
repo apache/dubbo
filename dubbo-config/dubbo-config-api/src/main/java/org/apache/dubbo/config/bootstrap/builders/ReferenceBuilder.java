@@ -24,12 +24,14 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.common.utils.StringUtils.toCommaDelimitedString;
+
 /**
  * This is a builder for build {@link ReferenceConfigBase}.
  *
  * @since 2.7
  */
-public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfig, ReferenceBuilder<T>> {
+public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfig<T>, ReferenceBuilder<T>> {
     /**
      * The interface name of the reference service
      */
@@ -65,8 +67,15 @@ public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfi
      */
     private String protocol;
 
-    public static ReferenceBuilder newBuilder() {
-        return new ReferenceBuilder();
+    /**
+     * The string presenting the service names that the Dubbo interface subscribed
+     *
+     * @since 2.7.8
+     */
+    private String services;
+
+    public static <T> ReferenceBuilder<T> newBuilder() {
+        return new ReferenceBuilder<>();
     }
 
     public ReferenceBuilder<T> id(String id) {
@@ -119,6 +128,17 @@ public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfi
         return getThis();
     }
 
+    /**
+     * @param service       one service name
+     * @param otherServices other service names
+     * @return {@link ReferenceBuilder}
+     * @since 2.7.8
+     */
+    public ReferenceBuilder<T> services(String service, String... otherServices) {
+        this.services = toCommaDelimitedString(service, otherServices);
+        return getThis();
+    }
+
     public ReferenceConfig<T> build() {
         ReferenceConfig<T> reference = new ReferenceConfig<>();
         super.build(reference);
@@ -132,6 +152,8 @@ public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfi
         reference.setMethods(methods);
         reference.setConsumer(consumer);
         reference.setProtocol(protocol);
+        // @since 2.7.8
+        reference.setServices(services);
 
         return reference;
     }

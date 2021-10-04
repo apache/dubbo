@@ -25,9 +25,14 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TimeoutCountDown;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -35,7 +40,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
@@ -50,68 +57,93 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 @Activate(group = PROVIDER, order = -10000)
 public class ContextFilter implements Filter, Filter.Listener {
+
     private static final String TAG_KEY = "dubbo.tag";
+
+    private static final Set<String> UNLOADING_KEYS;
+
+    static {
+        UNLOADING_KEYS = new HashSet<>(16);
+        UNLOADING_KEYS.add(PATH_KEY);
+        UNLOADING_KEYS.add(INTERFACE_KEY);
+        UNLOADING_KEYS.add(GROUP_KEY);
+        UNLOADING_KEYS.add(VERSION_KEY);
+        UNLOADING_KEYS.add(DUBBO_VERSION_KEY);
+        UNLOADING_KEYS.add(TOKEN_KEY);
+        UNLOADING_KEYS.add(TIMEOUT_KEY);
+        UNLOADING_KEYS.add(TIMEOUT_ATTACHMENT_KEY);
+
+        // Remove async property to avoid being passed to the following invoke chain.
+        UNLOADING_KEYS.add(ASYNC_KEY);
+        UNLOADING_KEYS.add(TAG_KEY);
+        UNLOADING_KEYS.add(FORCE_USE_TAG);
+    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        Map<String, Object> attachments = invocation.getAttachments();
+        Map<String, Object> attachments = invocation.getObjectAttachments();
         if (attachments != null) {
-            attachments = new HashMap<>(attachments);
-            attachments.remove(PATH_KEY);
-            attachments.remove(INTERFACE_KEY);
-            attachments.remove(GROUP_KEY);
-            attachments.remove(VERSION_KEY);
-            attachments.remove(DUBBO_VERSION_KEY);
-            attachments.remove(TOKEN_KEY);
-            attachments.remove(TIMEOUT_KEY);
-            // Remove async property to avoid being passed to the following invoke chain.
-            attachments.remove(ASYNC_KEY);
-            attachments.remove(TAG_KEY);
-            attachments.remove(FORCE_USE_TAG);
+            Map<String, Object> newAttach = new HashMap<>(attachments.size());
+            for (Map.Entry<String, Object> entry : attachments.entrySet()) {
+                String key = entry.getKey();
+                if (!UNLOADING_KEYS.contains(key)) {
+                    newAttach.put(key, entry.getValue());
+                }
+            }
+            attachments = newAttach;
         }
-        RpcContext context = RpcContext.getContext();
 
-        context.setInvoker(invoker)
-                .setInvocation(invocation)
+        RpcContext.getServiceContext().setInvoker(invoker)
+                .setInvocation(invocation);
+
+        RpcContext context = RpcContext.getServerAttachment();
 //                .setAttachments(attachments)  // merged from dubbox
-                .setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort());
+        context.setLocalAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort());
+
         String remoteApplication = (String) invocation.getAttachment(REMOTE_APPLICATION_KEY);
         if (StringUtils.isNotEmpty(remoteApplication)) {
-            context.setRemoteApplicationName(remoteApplication);
+            RpcContext.getServiceContext().setRemoteApplicationName(remoteApplication);
         } else {
-            context.setRemoteApplicationName((String) RpcContext.getContext().getAttachment(REMOTE_APPLICATION_KEY));
-
+            RpcContext.getServiceContext().setRemoteApplicationName((String) context.getAttachment(REMOTE_APPLICATION_KEY));
         }
 
+        long timeout = RpcUtils.getTimeout(invocation, -1);
+        if (timeout != -1) {
+            // pass to next hop
+            RpcContext.getClientAttachment().setObjectAttachment(TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
+        }
 
         // merged from dubbox
         // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
         if (attachments != null) {
-            if (RpcContext.getContext().getAttachments() != null) {
-                RpcContext.getContext().getAttachments().putAll(attachments);
+            if (context.getObjectAttachments() != null) {
+                context.getObjectAttachments().putAll(attachments);
             } else {
-                RpcContext.getContext().setAttachments(attachments);
+                context.setObjectAttachments(attachments);
             }
         }
 
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
+
         try {
-            RpcContext.getContext().clearAfterEachInvoke(false);
+            context.clearAfterEachInvoke(false);
             return invoker.invoke(invocation);
         } finally {
-            RpcContext.getContext().clearAfterEachInvoke(true);
+            context.clearAfterEachInvoke(true);
+            RpcContext.removeServerAttachment();
+            RpcContext.removeServiceContext();
             // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
-            RpcContext.removeContext();
+            RpcContext.getClientAttachment().removeAttachment(TIME_COUNTDOWN_KEY);
             RpcContext.removeServerContext();
         }
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
-        appResponse.addAttachments(RpcContext.getServerContext().getAttachments());
+        appResponse.addObjectAttachments(RpcContext.getServerContext().getObjectAttachments());
     }
 
     @Override

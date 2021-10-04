@@ -17,11 +17,17 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_SERVICE_REFERENCE_PATH;
+import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
 /**
  * This class select one provider from multiple providers randomly.
@@ -47,22 +53,24 @@ public class RandomLoadBalance extends AbstractLoadBalance {
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         // Number of invokers
         int length = invokers.size();
+
+        if (!needWeightLoadBalance(invokers,invocation)){
+            return invokers.get(ThreadLocalRandom.current().nextInt(length));
+        }
+
         // Every invoker has the same weight?
         boolean sameWeight = true;
-        // the weight of every invokers
+        // the maxWeight of every invokers, the minWeight = 0 or the maxWeight of the last invoker
         int[] weights = new int[length];
-        // the first invoker's weight
-        int firstWeight = getWeight(invokers.get(0), invocation);
-        weights[0] = firstWeight;
         // The sum of weights
-        int totalWeight = firstWeight;
-        for (int i = 1; i < length; i++) {
+        int totalWeight = 0;
+        for (int i = 0; i < length; i++) {
             int weight = getWeight(invokers.get(i), invocation);
-            // save for later use
-            weights[i] = weight;
             // Sum
             totalWeight += weight;
-            if (sameWeight && weight != firstWeight) {
+            // save for later use
+            weights[i] = totalWeight;
+            if (sameWeight && totalWeight != weight * (i + 1)) {
                 sameWeight = false;
             }
         }
@@ -71,8 +79,7 @@ public class RandomLoadBalance extends AbstractLoadBalance {
             int offset = ThreadLocalRandom.current().nextInt(totalWeight);
             // Return a invoker based on the random value.
             for (int i = 0; i < length; i++) {
-                offset -= weights[i];
-                if (offset < 0) {
+                if (offset < weights[i]) {
                     return invokers.get(i);
                 }
             }
@@ -80,5 +87,30 @@ public class RandomLoadBalance extends AbstractLoadBalance {
         // If all invokers have the same weight value or totalWeight=0, return evenly.
         return invokers.get(ThreadLocalRandom.current().nextInt(length));
     }
+
+    private <T> boolean needWeightLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
+
+        Invoker invoker = invokers.get(0);
+        URL invokerUrl = invoker.getUrl();
+        // Multiple registry scenario, load balance among multiple registries.
+        if (REGISTRY_SERVICE_REFERENCE_PATH.equals(invokerUrl.getServiceInterface())) {
+            String weight = invokerUrl.getParameter(REGISTRY_KEY + "." + WEIGHT_KEY);
+            if (StringUtils.isNotEmpty(weight)) {
+                return true;
+            }
+        } else {
+            String weight = invokerUrl.getMethodParameter(invocation.getMethodName(), WEIGHT_KEY);
+            if (StringUtils.isNotEmpty(weight)) {
+                return true;
+            }else {
+                String timeStamp = invoker.getUrl().getParameter(TIMESTAMP_KEY);
+                if (StringUtils.isNotEmpty(timeStamp)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
 }

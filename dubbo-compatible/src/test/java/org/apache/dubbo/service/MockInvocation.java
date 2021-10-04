@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.service;
 
+import org.apache.dubbo.rpc.AttachmentsAdapter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,12 +38,27 @@ public class MockInvocation implements Invocation {
 
     private String arg0;
 
+    private Map<String, Object> attachments;
+
     public MockInvocation(String arg0) {
         this.arg0 = arg0;
+
+        attachments = new HashMap<>();
+        attachments.put(PATH_KEY, "dubbo");
+        attachments.put(GROUP_KEY, "dubbo");
+        attachments.put(VERSION_KEY, "1.0.0");
+        attachments.put(DUBBO_VERSION_KEY, "1.0.0");
+        attachments.put(TOKEN_KEY, "sfag");
+        attachments.put(TIMEOUT_KEY, "1000");
     }
 
     @Override
     public String getTargetServiceUniqueName() {
+        return null;
+    }
+
+    @Override
+    public String getProtocolServiceKey() {
         return null;
     }
 
@@ -62,25 +79,43 @@ public class MockInvocation implements Invocation {
         return new Object[]{arg0};
     }
 
-    public Map<String, Object> getAttachments() {
-        Map<String, Object> attachments = new HashMap<String, Object>();
-        attachments.put(PATH_KEY, "dubbo");
-        attachments.put(GROUP_KEY, "dubbo");
-        attachments.put(VERSION_KEY, "1.0.0");
-        attachments.put(DUBBO_VERSION_KEY, "1.0.0");
-        attachments.put(TOKEN_KEY, "sfag");
-        attachments.put(TIMEOUT_KEY, "1000");
+    public Map<String, String> getAttachments() {
+        return new AttachmentsAdapter.ObjectToStringMap(attachments);
+    }
+
+    @Override
+    public Map<String, Object> getObjectAttachments() {
         return attachments;
     }
 
     @Override
-    public void setAttachment(String key, Object value) {
+    public void setAttachment(String key, String value) {
+        setObjectAttachment(key, value);
+    }
 
+    @Override
+    public void setAttachment(String key, Object value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
+    public void setObjectAttachment(String key, Object value) {
+        attachments.put(key, value);
+    }
+
+    @Override
+    public void setAttachmentIfAbsent(String key, String value) {
+        setObjectAttachmentIfAbsent(key, value);
     }
 
     @Override
     public void setAttachmentIfAbsent(String key, Object value) {
+        setObjectAttachmentIfAbsent(key, value);
+    }
 
+    @Override
+    public void setObjectAttachmentIfAbsent(String key, Object value) {
+        attachments.put(key, value);
     }
 
     public Invoker<?> getInvoker() {
@@ -98,16 +133,39 @@ public class MockInvocation implements Invocation {
     }
 
     @Override
+    public void setServiceModel(ServiceModel serviceModel) {
+
+    }
+
+    @Override
+    public ServiceModel getServiceModel() {
+        return null;
+    }
+
+    @Override
     public Map<Object, Object> getAttributes() {
         return null;
     }
 
-    public Object getAttachment(String key) {
-        return getAttachments().get(key);
+    public String getAttachment(String key) {
+        return (String) getObjectAttachments().get(key);
     }
 
-    public Object getAttachment(String key, Object defaultValue) {
-        return getAttachments().get(key);
+    @Override
+    public Object getObjectAttachment(String key) {
+        return attachments.get(key);
     }
 
+    public String getAttachment(String key, String defaultValue) {
+        return (String) getObjectAttachments().get(key);
+    }
+
+    @Override
+    public Object getObjectAttachment(String key, Object defaultValue) {
+        Object result = attachments.get(key);
+        if (result == null) {
+            return defaultValue;
+        }
+        return result;
+    }
 }

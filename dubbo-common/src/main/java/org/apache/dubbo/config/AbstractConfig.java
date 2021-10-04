@@ -17,36 +17,52 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.CompositeConfiguration;
-import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.FieldUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
-import javax.annotation.PostConstruct;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
 import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
+import static org.apache.dubbo.config.Constants.PARAMETERS;
 
 /**
  * Utility methods and public methods for parsing configuration
@@ -59,54 +75,71 @@ public abstract class AbstractConfig implements Serializable {
     private static final long serialVersionUID = 4267533505537413570L;
 
     /**
-     * The legacy properties container
+     * tag name cache, speed up get tag name frequently
      */
-    private static final Map<String, String> LEGACY_PROPERTIES = new HashMap<String, String>();
+    private static final Map<Class, String> tagNameCache = new ConcurrentHashMap<>();
+
+    /**
+     * attributed getter method cache for equals(), hashCode() and toString()
+     */
+    private static final Map<Class, List<Method>> attributedMethodCache = new ConcurrentHashMap<>();
 
     /**
      * The suffix container
      */
     private static final String[] SUFFIXES = new String[]{"Config", "Bean", "ConfigBase"};
 
-    static {
-        LEGACY_PROPERTIES.put("dubbo.protocol.name", "dubbo.service.protocol");
-        LEGACY_PROPERTIES.put("dubbo.protocol.host", "dubbo.service.server.host");
-        LEGACY_PROPERTIES.put("dubbo.protocol.port", "dubbo.service.server.port");
-        LEGACY_PROPERTIES.put("dubbo.protocol.threads", "dubbo.service.max.thread.pool.size");
-        LEGACY_PROPERTIES.put("dubbo.consumer.timeout", "dubbo.service.invoke.timeout");
-        LEGACY_PROPERTIES.put("dubbo.consumer.retries", "dubbo.service.max.retry.providers");
-        LEGACY_PROPERTIES.put("dubbo.consumer.check", "dubbo.service.allow.no.provider");
-        LEGACY_PROPERTIES.put("dubbo.service.url", "dubbo.service.address");
-    }
-
     /**
      * The config id
      */
-    protected String id;
-    protected String prefix;
+    private String id;
 
     protected final AtomicBoolean refreshed = new AtomicBoolean(false);
 
-    private static String convertLegacyValue(String key, String value) {
-        if (value != null && value.length() > 0) {
-            if ("dubbo.service.max.retry.providers".equals(key)) {
-                return String.valueOf(Integer.parseInt(value) - 1);
-            } else if ("dubbo.service.allow.no.provider".equals(key)) {
-                return String.valueOf(!Boolean.parseBoolean(value));
-            }
-        }
-        return value;
+    /**
+     * Is default config or not
+     */
+    protected Boolean isDefault;
+
+    /**
+     * The scope model of this config instance.
+     * <p>
+     * <b>NOTE:</b> the model maybe changed during config processing,
+     * the extension spi instance needs to be reinitialized after changing the model!
+     */
+    protected ScopeModel scopeModel;
+
+    public AbstractConfig() {
+        this(ApplicationModel.defaultModel());
+    }
+
+    public AbstractConfig(ScopeModel scopeModel) {
+        this.setScopeModel(scopeModel);
     }
 
     public static String getTagName(Class<?> cls) {
-        String tag = cls.getSimpleName();
-        for (String suffix : SUFFIXES) {
-            if (tag.endsWith(suffix)) {
-                tag = tag.substring(0, tag.length() - suffix.length());
-                break;
+        return tagNameCache.computeIfAbsent(cls, (key) -> {
+            String tag = cls.getSimpleName();
+            for (String suffix : SUFFIXES) {
+                if (tag.endsWith(suffix)) {
+                    tag = tag.substring(0, tag.length() - suffix.length());
+                    break;
+                }
             }
+            return StringUtils.camelToSplitName(tag, "-");
+        });
+    }
+
+    public static String getPluralTagName(Class<?> cls) {
+        String tagName = getTagName(cls);
+        if (tagName.endsWith("y")) {
+            // e.g. registry -> registries
+            return tagName.substring(0, tagName.length() - 1) + "ies";
+        } else if (tagName.endsWith("s")) {
+            // e.g. metrics -> metricses
+            return tagName + "es";
         }
-        return StringUtils.camelToSplitName(tag, "-");
+        return tagName + "s";
     }
 
     public static void appendParameters(Map<String, String> parameters, Object config) {
@@ -115,135 +148,104 @@ public abstract class AbstractConfig implements Serializable {
 
     @SuppressWarnings("unchecked")
     public static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
+        appendParameters0(parameters, config, prefix, true);
+    }
+
+    /**
+     * Put attributes of specify 'config' into 'parameters' argument
+     *
+     * @param parameters
+     * @param config
+     */
+    public static void appendAttributes(Map<String, String> parameters, Object config) {
+        appendParameters0(parameters, config, null, false);
+    }
+
+    private static void appendParameters0(Map<String, String> parameters, Object config, String prefix, boolean asParameters) {
         if (config == null) {
             return;
         }
-        Method[] methods = config.getClass().getMethods();
-        for (Method method : methods) {
+        // If asParameters=false, it means append attributes, ignore @Parameter annotation's attributes except 'append' and 'attribute'
+
+        // How to select the appropriate one from multiple getter methods of the property?
+        // e.g. Using String getGeneric() or Boolean isGeneric()? Judge by field type ?
+        // Currently, use @Parameter.attribute() to determine whether it is an attribute.
+
+        BeanInfo beanInfo = getBeanInfo(config.getClass());
+        for (MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
+            Method method = methodDescriptor.getMethod();
             try {
                 String name = method.getName();
                 if (MethodUtils.isGetter(method)) {
-                    Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
+                    if (method.getReturnType() == Object.class) {
                         continue;
                     }
                     String key;
-                    if (parameter != null && parameter.key().length() > 0) {
-                        key = parameter.key();
-                    } else {
+                    Parameter parameter = method.getAnnotation(Parameter.class);
+                    if (asParameters) {
+                        if (parameter != null && parameter.excluded()) {
+                            continue;
+                        }
+                        // get parameter key
                         key = calculatePropertyFromGetter(name);
+                        if (parameter != null && parameter.key().length() > 0) {
+                            key = parameter.key();
+                        }
+                    } else { // as attributes
+                        // filter non attribute
+                        if (parameter != null && !parameter.attribute()) {
+                            continue;
+                        }
+                        // get attribute name
+                        String propertyName = calculateAttributeFromGetter(method.getName());
+                        // convert camelCase/snake_case to kebab-case
+                        key = StringUtils.convertToSplitName(propertyName, "-");
                     }
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
-                        if (parameter != null && parameter.escaped()) {
+                        if (asParameters && parameter != null && parameter.escaped()) {
                             str = URL.encode(str);
                         }
                         if (parameter != null && parameter.append()) {
                             String pre = parameters.get(key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
+                                //Remove duplicate values
+                                Set<String> set = StringUtils.splitToSet(str, ',');
+                                str = StringUtils.join(set, ",");
                             }
                         }
                         if (prefix != null && prefix.length() > 0) {
                             key = prefix + "." + key;
                         }
                         parameters.put(key, str);
-                    } else if (parameter != null && parameter.required()) {
+                    } else if (asParameters && parameter != null && parameter.required()) {
                         throw new IllegalStateException(config.getClass().getSimpleName() + "." + key + " == null");
                     }
                 } else if (isParametersGetter(method)) {
-                    Map<String, String> map = (Map<String, String>) method.invoke(config, new Object[0]);
-                    parameters.putAll(convert(map, prefix));
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
-    }
-
-    @Deprecated
-    protected static void appendAttributes(Map<String, Object> parameters, Object config) {
-        appendAttributes(parameters, config, null);
-    }
-
-    @Deprecated
-    protected static void appendAttributes(Map<String, Object> parameters, Object config, String prefix) {
-        if (config == null) {
-            return;
-        }
-        Method[] methods = config.getClass().getMethods();
-        for (Method method : methods) {
-            try {
-                Parameter parameter = method.getAnnotation(Parameter.class);
-                if (parameter == null || !parameter.attribute()) {
-                    continue;
-                }
-                String name = method.getName();
-                if (MethodUtils.isGetter(method)) {
-                    String key;
-                    if (parameter.key().length() > 0) {
-                        key = parameter.key();
+                    Map<String, String> map = (Map<String, String>) method.invoke(config);
+                    map = convert(map, prefix);
+                    if (asParameters) {
+                        // put all parameters to url
+                        parameters.putAll(map);
                     } else {
-                        key = calculateAttributeFromGetter(name);
-                    }
-                    Object value = method.invoke(config);
-                    if (value != null) {
-                        if (prefix != null && prefix.length() > 0) {
-                            key = prefix + "." + key;
+                        // encode parameters to string for config overriding, see AbstractConfig#refresh()
+                        String key = calculatePropertyFromGetter(name);
+                        String encodeParameters = StringUtils.encodeParameters(map);
+                        if (encodeParameters != null) {
+                            parameters.put(key, encodeParameters);
                         }
-                        parameters.put(key, value);
                     }
+                } else if (isNestedGetter(config, method)) {
+                    Object inner = method.invoke(config);
+                    String fieldName = MethodUtils.extractFieldName(method);
+                    String nestedPrefix = prefix == null ? fieldName : prefix + "." + fieldName;
+                    appendParameters0(parameters, inner, nestedPrefix, asParameters);
                 }
             } catch (Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
+                throw new IllegalStateException("Append parameters failed: " + e.getMessage(), e);
             }
-        }
-    }
-
-    public static ConsumerModel.AsyncMethodInfo convertMethodConfig2AsyncInfo(MethodConfig methodConfig) {
-        if (methodConfig == null || (methodConfig.getOninvoke() == null && methodConfig.getOnreturn() == null && methodConfig.getOnthrow() == null)) {
-            return null;
-        }
-
-        //check config conflict
-        if (Boolean.FALSE.equals(methodConfig.isReturn()) && (methodConfig.getOnreturn() != null || methodConfig.getOnthrow() != null)) {
-            throw new IllegalStateException("method config error : return attribute must be set true when onreturn or onthrow has been set.");
-        }
-
-        ConsumerModel.AsyncMethodInfo asyncMethodInfo = new ConsumerModel.AsyncMethodInfo();
-
-        asyncMethodInfo.setOninvokeInstance(methodConfig.getOninvoke());
-        asyncMethodInfo.setOnreturnInstance(methodConfig.getOnreturn());
-        asyncMethodInfo.setOnthrowInstance(methodConfig.getOnthrow());
-
-        try {
-            String oninvokeMethod = methodConfig.getOninvokeMethod();
-            if (StringUtils.isNotEmpty(oninvokeMethod)) {
-                asyncMethodInfo.setOninvokeMethod(getMethodByName(methodConfig.getOninvoke().getClass(), oninvokeMethod));
-            }
-
-            String onreturnMethod = methodConfig.getOnreturnMethod();
-            if (StringUtils.isNotEmpty(onreturnMethod)) {
-                asyncMethodInfo.setOnreturnMethod(getMethodByName(methodConfig.getOnreturn().getClass(), onreturnMethod));
-            }
-
-            String onthrowMethod = methodConfig.getOnthrowMethod();
-            if (StringUtils.isNotEmpty(onthrowMethod)) {
-                asyncMethodInfo.setOnthrowMethod(getMethodByName(methodConfig.getOnthrow().getClass(), onthrowMethod));
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-
-        return asyncMethodInfo;
-    }
-
-    private static Method getMethodByName(Class<?> clazz, String methodName) {
-        try {
-            return ReflectUtils.findMethodByMethodName(clazz, methodName);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
         }
     }
 
@@ -254,20 +256,9 @@ public abstract class AbstractConfig implements Serializable {
         }).collect(Collectors.toSet());
     }
 
-    private static String extractPropertyName(Class<?> clazz, Method setter) throws Exception {
-        String propertyName = setter.getName().substring("set".length());
-        Method getter = null;
-        try {
-            getter = clazz.getMethod("get" + propertyName);
-        } catch (NoSuchMethodException e) {
-            getter = clazz.getMethod("is" + propertyName);
-        }
-        Parameter parameter = getter.getAnnotation(Parameter.class);
-        if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.useKeyAsProperty()) {
-            propertyName = parameter.key();
-        } else {
-            propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
-        }
+    protected static String extractPropertyName(String setter) {
+        String propertyName = setter.substring("set".length());
+        propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
         return propertyName;
     }
 
@@ -307,20 +298,63 @@ public abstract class AbstractConfig implements Serializable {
     private static boolean isParametersGetter(Method method) {
         String name = method.getName();
         return ("getParameters".equals(name)
-                && Modifier.isPublic(method.getModifiers())
-                && method.getParameterTypes().length == 0
-                && method.getReturnType() == Map.class);
+            && Modifier.isPublic(method.getModifiers())
+            && method.getParameterTypes().length == 0
+            && method.getReturnType() == Map.class);
     }
 
     private static boolean isParametersSetter(Method method) {
         return ("setParameters".equals(method.getName())
-                && Modifier.isPublic(method.getModifiers())
-                && method.getParameterCount() == 1
-                && Map.class == method.getParameterTypes()[0]
-                && method.getReturnType() == void.class);
+            && Modifier.isPublic(method.getModifiers())
+            && method.getParameterCount() == 1
+            && Map.class == method.getParameterTypes()[0]
+            && method.getReturnType() == void.class);
     }
 
-    private static Map<String, String> convert(Map<String, String> parameters, String prefix) {
+    private static boolean isNestedGetter(Object obj, Method method) {
+        String name = method.getName();
+        boolean isGetter = (name.startsWith("get") || name.startsWith("is"))
+            && !"get".equals(name) && !"is".equals(name)
+            && !"getClass".equals(name) && !"getObject".equals(name)
+            && Modifier.isPublic(method.getModifiers())
+            && method.getParameterTypes().length == 0
+            && (!method.getReturnType().isPrimitive() && !isSimpleType(method.getReturnType()));
+
+        if (!isGetter) {
+            return false;
+        } else {
+            // Extract fieldName only when necessary.
+            String fieldName = MethodUtils.extractFieldName(method);
+            Field field = FieldUtils.getDeclaredField(obj.getClass(), fieldName);
+            return field != null && field.isAnnotationPresent(Nested.class);
+        }
+    }
+
+    private static boolean isNestedSetter(Object obj, Method method) {
+        boolean isSetter = method.getName().startsWith("set")
+            && !"set".equals(method.getName())
+            && Modifier.isPublic(method.getModifiers())
+            && method.getParameterCount() == 1
+            && method.getParameterTypes()[0] != null
+            && (!method.getParameterTypes()[0].isPrimitive() && !isSimpleType(method.getParameterTypes()[0]));
+
+        if (!isSetter) {
+            return false;
+        } else {
+            // Extract fieldName only when necessary.
+            String fieldName = MethodUtils.extractFieldName(method);
+            Field field = FieldUtils.getDeclaredField(obj.getClass(), fieldName);
+            return field != null && field.isAnnotationPresent(Nested.class);
+        }
+    }
+
+    /**
+     * @param parameters the raw parameters
+     * @param prefix     the prefix
+     * @return the parameters whose raw key will replace "-" to "."
+     * @revised 2.7.8 "private" to be "protected"
+     */
+    protected static Map<String, String> convert(Map<String, String> parameters, String prefix) {
         if (parameters == null || parameters.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -332,14 +366,79 @@ public abstract class AbstractConfig implements Serializable {
             String value = entry.getValue();
             result.put(pre + key, value);
             // For compatibility, key like "registry-type" will has a duplicate key "registry.type"
-            if (key.contains("-")) {
+            if (Arrays.binarySearch(Constants.DOT_COMPATIBLE_KEYS, key) >= 0) {
                 result.put(pre + key.replace('-', '.'), value);
             }
         }
         return result;
     }
 
-    @Parameter(excluded = true)
+    public ApplicationModel getApplicationModel() {
+        if (scopeModel instanceof ApplicationModel) {
+            return (ApplicationModel) scopeModel;
+        } else if (scopeModel instanceof ModuleModel) {
+            return ((ModuleModel) scopeModel).getApplicationModel();
+        } else {
+            throw new IllegalStateException("scope model is invalid: " + scopeModel);
+        }
+    }
+
+    public ScopeModel getScopeModel() {
+        return scopeModel;
+    }
+
+    public final void setScopeModel(ScopeModel scopeModel) {
+        if (this.scopeModel != scopeModel) {
+            checkScopeModel(scopeModel);
+            ScopeModel oldScopeModel = this.scopeModel;
+            this.scopeModel = scopeModel;
+            // reinitialize spi extension and change referenced config's scope model
+            this.postProcessAfterScopeModelChanged(oldScopeModel, this.scopeModel);
+        }
+    }
+
+    protected void checkScopeModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            throw new IllegalArgumentException("scopeModel cannot be null");
+        }
+        if (!(scopeModel instanceof ApplicationModel)) {
+            throw new IllegalArgumentException("Invalid scope model, expect to be a ApplicationModel but got: " + scopeModel);
+        }
+    }
+
+    /**
+     * Subclass should override this method to initialize its SPI extensions and change referenced config's scope model.
+     * <p>
+     * For example:
+     * <pre>
+     * protected void postProcessAfterScopeModelChanged() {
+     *   super.postProcessAfterScopeModelChanged();
+     *   // re-initialize spi extension
+     *   this.protocol = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+     *   // change referenced config's scope model
+     *   if (this.providerConfig != null && this.providerConfig.getScopeModel() != scopeModel) {
+     *     this.providerConfig.setScopeModel(scopeModel);
+     *   }
+     * }
+     * </pre>
+     * @param oldScopeModel
+     * @param newScopeModel
+     */
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        // remove this config from old ConfigManager
+//        if (oldScopeModel != null && oldScopeModel instanceof ApplicationModel) {
+//           ((ApplicationModel)oldScopeModel).getApplicationConfigManager().removeConfig(this);
+//        }
+    }
+
+    protected <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        if (scopeModel == null) {
+            throw new IllegalStateException("scopeModel is not initialized");
+        }
+        return scopeModel.getExtensionLoader(type);
+    }
+
+    @Parameter(excluded = true, attribute = true)
     public String getId() {
         return id;
     }
@@ -348,20 +447,21 @@ public abstract class AbstractConfig implements Serializable {
         this.id = id;
     }
 
-    public void updateIdIfAbsent(String value) {
-        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(id)) {
-            this.id = value;
-        }
-    }
-
+    /**
+     * Copy attributes from annotation
+     *
+     * @param annotationClass
+     * @param annotation
+     */
     protected void appendAnnotation(Class<?> annotationClass, Object annotation) {
         Method[] methods = annotationClass.getMethods();
         for (Method method : methods) {
             if (method.getDeclaringClass() != Object.class
-                    && method.getReturnType() != void.class
-                    && method.getParameterTypes().length == 0
-                    && Modifier.isPublic(method.getModifiers())
-                    && !Modifier.isStatic(method.getModifiers())) {
+                && method.getDeclaringClass() != Annotation.class
+                && method.getReturnType() != void.class
+                && method.getParameterTypes().length == 0
+                && Modifier.isPublic(method.getModifiers())
+                && !Modifier.isStatic(method.getModifiers())) {
                 try {
                     String property = method.getName();
                     if ("interfaceClass".equals(property) || "interfaceName".equals(property)) {
@@ -393,131 +493,286 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     /**
-     * Should be called after Config was fully initialized.
-     * // FIXME: this method should be completely replaced by appendParameters
-     *
-     * @return
-     * @see AbstractConfig#appendParameters(Map, Object, String)
      * <p>
-     * Notice! This method should include all properties in the returning map, treat @Parameter differently compared to appendParameters.
+     * <b>The new instance of the AbstractConfig subclass should return empty metadata.</b>
+     * The purpose is is to get the attributes set by the user instead of the default value when the {@link #refresh()} method handles attribute overrides.
+     * </p>
+     *
+     * <p><b>The default value of the field should be set in the {@link #checkDefault()} method</b>,
+     * which will be called at the end of {@link #refresh()}, so that it will not affect the behavior of attribute overrides.</p>
+     *
+     * <p></p>
+     * Should be called after Config was fully initialized.
+     * <p>
+     * Notice! This method should include all properties in the returning map, treat @Parameter differently compared to appendParameters?
+     * </p>
+     * // FIXME: this method should be completely replaced by appendParameters?
+     * // -- Url parameter may use key, but props override only use property name. So replace it with appendAttributes().
+     *
+     * @see AbstractConfig#checkDefault()
+     * @see AbstractConfig#appendParameters(Map, Object, String)
      */
     public Map<String, String> getMetaData() {
         Map<String, String> metaData = new HashMap<>();
-        Method[] methods = this.getClass().getMethods();
-        for (Method method : methods) {
-            try {
-                String name = method.getName();
-                if (MethodUtils.isMetaMethod(method)) {
-                    String key;
-                    Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (parameter != null && parameter.key().length() > 0 && parameter.useKeyAsProperty()) {
-                        key = parameter.key();
-                    } else {
-                        key = calculateAttributeFromGetter(name);
-                    }
-                    // treat url and configuration differently, the value should always present in configuration though it may not need to present in url.
-                    //if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
-                    if (method.getReturnType() == Object.class) {
-                        metaData.put(key, null);
-                        continue;
-                    }
-
-                    /**
-                     * Attributes annotated as deprecated should not override newly added replacement.
-                     */
-                    if (MethodUtils.isDeprecated(method) && metaData.get(key) != null) {
-                        continue;
-                    }
-
-                    Object value = method.invoke(this);
-                    String str = String.valueOf(value).trim();
-                    if (value != null && str.length() > 0) {
-                        metaData.put(key, str);
-                    } else {
-                        metaData.put(key, null);
-                    }
-                } else if (isParametersGetter(method)) {
-                    Map<String, String> map = (Map<String, String>) method.invoke(this, new Object[0]);
-                    metaData.putAll(convert(map, ""));
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
+        appendAttributes(metaData, this);
         return metaData;
     }
 
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return StringUtils.isNotEmpty(prefix) ? prefix : (CommonConstants.DUBBO + "." + getTagName(this.getClass()));
-    }
-
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
-    }
-
-    public void refresh() {
-        Environment env = ApplicationModel.getEnvironment();
+    private static BeanInfo getBeanInfo(Class cls) {
+        BeanInfo beanInfo = null;
         try {
-            CompositeConfiguration compositeConfiguration = env.getConfiguration(getPrefix(), getId());
-            Configuration config = new ConfigConfigurationAdapter(this);
-            if (env.isConfigCenterFirst()) {
-                // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(4, config);
-            } else {
-                // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(2, config);
-            }
+            beanInfo = Introspector.getBeanInfo(cls);
+        } catch (IntrospectionException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+        return beanInfo;
+    }
 
-            // loop methods, get override value and set the new value back to method
-            Method[] methods = getClass().getMethods();
-            for (Method method : methods) {
-                if (MethodUtils.isSetter(method)) {
-                    try {
-                        String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
-                        // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
-                        if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
-                            method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
-                        }
-                    } catch (NoSuchMethodException e) {
-                        logger.info("Failed to override the property " + method.getName() + " in " +
-                                this.getClass().getSimpleName() +
-                                ", please make sure every property has getter/setter method provided.");
-                    }
-                } else if (isParametersSetter(method)) {
-                    String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
-                    if (StringUtils.isNotEmpty(value)) {
-                        Map<String, String> map = invokeGetParameters(getClass(), this);
-                        map = map == null ? new HashMap<>() : map;
-                        map.putAll(convert(StringUtils.parseParameters(value), ""));
-                        invokeSetParameters(getClass(), this, map);
-                    }
+    private static boolean isWritableProperty(BeanInfo beanInfo, String key) {
+        for (PropertyDescriptor propertyDescriptor : beanInfo.getPropertyDescriptors()) {
+            if (key.equals(propertyDescriptor.getName())) {
+                return propertyDescriptor.getWriteMethod() != null;
+            }
+        }
+        return false;
+    }
+
+    @Parameter(excluded = true, attribute = false)
+    public List<String> getPrefixes() {
+        List<String> prefixes = new ArrayList<>();
+        if (StringUtils.hasText(this.getId())) {
+            // dubbo.{tag-name}s.{id}
+            prefixes.add(CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + this.getId());
+        }
+
+        // check name
+        String name = ReflectUtils.getProperty(this, "getName");
+        if (StringUtils.hasText(name)) {
+            // dubbo.{tag-name}s.{name}
+            String prefix = CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + name;
+            if (!prefixes.contains(prefix)) {
+                prefixes.add(prefix);
+            }
+        }
+
+        // dubbo.{tag-name}
+        prefixes.add(getTypePrefix(this.getClass()));
+        return prefixes;
+    }
+
+    public static String getTypePrefix(Class<? extends AbstractConfig> cls) {
+        return CommonConstants.DUBBO + "." + getTagName(cls);
+    }
+
+    /**
+     * Dubbo config property override
+     */
+    public void refresh() {
+        refreshed.set(true);
+        try {
+            // check and init before do refresh
+            preProcessRefresh();
+
+            Environment environment = getScopeModel().getModelEnvironment();
+            List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
+
+            // Search props starts with PREFIX in order
+            String preferredPrefix = null;
+            for (String prefix : getPrefixes()) {
+                if (ConfigurationUtils.hasSubProperties(configurationMaps, prefix)) {
+                    preferredPrefix = prefix;
+                    break;
                 }
             }
+            if (preferredPrefix == null) {
+                preferredPrefix = getPrefixes().get(0);
+            }
+            // Extract sub props (which key was starts with preferredPrefix)
+            Collection<Map<String, String>> instanceConfigMaps = environment.getConfigurationMaps(this, preferredPrefix);
+            Map<String, String> subProperties = ConfigurationUtils.getSubProperties(instanceConfigMaps, preferredPrefix);
+            InmemoryConfiguration subPropsConfiguration = new InmemoryConfiguration(subProperties);
+
+            if (logger.isDebugEnabled()) {
+                String idOrName = "";
+                if (StringUtils.hasText(this.getId())) {
+                    idOrName = "[id=" + this.getId() + "]";
+                } else {
+                    String name = ReflectUtils.getProperty(this, "getName");
+                    if (StringUtils.hasText(name)) {
+                        idOrName = "[name=" + name + "]";
+                    }
+                }
+                logger.debug("Refreshing " + this.getClass().getSimpleName() + idOrName +
+                    " with prefix [" + preferredPrefix +
+                    "], extracted props: " + subProperties);
+            }
+
+            assignProperties(this, environment, subProperties, subPropsConfiguration);
+
+            // process extra refresh of sub class, e.g. refresh method configs
+            processExtraRefresh(preferredPrefix, subPropsConfiguration);
+
         } catch (Exception e) {
-            logger.error("Failed to override ", e);
+            logger.error("Failed to override field value of config bean: " + this, e);
+            throw new IllegalStateException("Failed to override field value of config bean: " + this, e);
         }
+
+        postProcessRefresh();
+    }
+
+    private void assignProperties(Object obj, Environment environment, Map<String, String> properties, InmemoryConfiguration configuration) {
+        // loop methods, get override value and set the new value back to method
+        Method[] methods = obj.getClass().getMethods();
+        for (Method method : methods) {
+            if (MethodUtils.isSetter(method)) {
+                String propertyName = extractPropertyName(method.getName());
+                // convert camelCase/snake_case to kebab-case
+                String kebabPropertyName = StringUtils.convertToSplitName(propertyName, "-");
+
+                try {
+                    String value = StringUtils.trim(configuration.getString(kebabPropertyName));
+                    // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
+                    if (StringUtils.hasText(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value) &&
+                        !isIgnoredAttribute(obj.getClass(), propertyName)) {
+                        value = environment.resolvePlaceholders(value);
+                        method.invoke(obj, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
+                    }
+                } catch (Exception e) {
+                    logger.info("Failed to override the property " + method.getName() + " in " +
+                        obj.getClass().getSimpleName() +
+                        ", please make sure every property has getter/setter method provided.");
+                }
+            } else if (isParametersSetter(method)) {
+                String propertyName = extractPropertyName(method.getName());
+                String value = StringUtils.trim(configuration.getString(propertyName));
+                Map<String, String> parameterMap = null;
+                if (StringUtils.hasText(value)) {
+                    parameterMap = StringUtils.parseParameters(value);
+                } else {
+                    // in this case, maybe parameters.item3=value3.
+                    parameterMap = ConfigurationUtils.getSubProperties(properties, PARAMETERS);
+                }
+                invokeSetParameters(convert(parameterMap, ""), obj);
+            } else if (isNestedSetter(obj, method)) {
+                try {
+                    Class<?> clazz = method.getParameterTypes()[0];
+                    Object inner = clazz.getDeclaredConstructor().newInstance();
+                    String fieldName = MethodUtils.extractFieldName(method);
+                    Map<String, String> subProperties = ConfigurationUtils.getSubProperties(properties, fieldName);
+                    InmemoryConfiguration subPropsConfiguration = new InmemoryConfiguration(subProperties);
+                    assignProperties(inner, environment, subProperties, subPropsConfiguration);
+                    method.invoke(obj, inner);
+                } catch (ReflectiveOperationException e) {
+                    throw new IllegalStateException("Cannot assign nested class when refreshing config: " + obj.getClass().getName(), e);
+                }
+            }
+        }
+    }
+
+    private void invokeSetParameters(Map<String, String> values, Object obj) {
+        if (CollectionUtils.isEmptyMap(values)) {
+            return;
+        }
+        Map<String, String> map = invokeGetParameters(obj.getClass(), obj);
+        map = map == null ? new HashMap<>() : map;
+        map.putAll(values);
+        invokeSetParameters(obj.getClass(), obj, map);
+    }
+
+    private boolean isIgnoredAttribute(Class<?> clazz, String propertyName) {
+        Method getter = null;
+        String capitalizePropertyName = propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+        try {
+            getter = clazz.getMethod("get" + capitalizePropertyName);
+        } catch (NoSuchMethodException e) {
+            try {
+                getter = clazz.getMethod("is" + capitalizePropertyName);
+            } catch (NoSuchMethodException ex) {
+            }
+        }
+
+        if (getter == null) {
+            // no getter method
+            return true;
+        }
+
+        Parameter parameter = getter.getAnnotation(Parameter.class);
+        // not an attribute
+        return parameter != null && !parameter.attribute();
+    }
+
+    protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
+        // process extra refresh
+    }
+
+    protected void preProcessRefresh() {
+        // pre-process refresh
+    }
+
+    protected void postProcessRefresh() {
+        // post-process refresh
+        checkDefault();
+    }
+
+    /**
+     * Check and set default value for some fields.
+     * <p>
+     * This method will be called at the end of {@link #refresh()}, as a post-initializer.
+     * </p>
+     * <p>NOTE: </p>
+     * <p>
+     * To distinguish between user-set property values and default property values,
+     * do not initialize default value at field declare statement. <b>If the field has a default value,
+     * it should be set in the checkDefault() method</b>, which will be called at the end of {@link #refresh()},
+     * so that it will not affect the behavior of attribute overrides.</p>
+     *
+     * @see AbstractConfig#getMetaData()
+     * @see AbstractConfig#appendAttributes(Map, Object)
+     */
+    protected void checkDefault() {
+    }
+
+    @Parameter(excluded = true, attribute = false)
+    public boolean isRefreshed() {
+        return refreshed.get();
+    }
+
+    /**
+     * FIXME check @Parameter(required=true) and any conditions that need to match.
+     */
+    @Parameter(excluded = true, attribute = false)
+    public boolean isValid() {
+        return true;
+    }
+
+    @Parameter(excluded = true, attribute = false)
+    public Boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
     }
 
     @Override
     public String toString() {
         try {
+
             StringBuilder buf = new StringBuilder();
             buf.append("<dubbo:");
             buf.append(getTagName(getClass()));
-            Method[] methods = getClass().getMethods();
-            for (Method method : methods) {
+            for (Method method : getAttributedMethods()) {
                 try {
                     if (MethodUtils.isGetter(method)) {
                         String name = method.getName();
                         String key = calculateAttributeFromGetter(name);
                         Object value = method.invoke(this);
                         if (value != null) {
-                            buf.append(" ");
+                            buf.append(' ');
                             buf.append(key);
                             buf.append("=\"");
-                            buf.append(value);
-                            buf.append("\"");
+                            buf.append(key.equals("password") ? "******" : value);
+                            buf.append('\"');
                         }
                     }
                 } catch (Exception e) {
@@ -532,53 +787,92 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    /**
-     * FIXME check @Parameter(required=true) and any conditions that need to match.
-     */
-    @Parameter(excluded = true)
-    public boolean isValid() {
-        return true;
-    }
-
-
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj.getClass().getName().equals(this.getClass().getName()))) {
+        if (obj == null || obj.getClass() != this.getClass()) {
             return false;
         }
+        if (obj == this) {
+            return true;
+        }
 
-        Method[] methods = this.getClass().getMethods();
-        for (Method method1 : methods) {
-            if (MethodUtils.isGetter(method1)) {
-                Parameter parameter = method1.getAnnotation(Parameter.class);
-                if (parameter != null && parameter.excluded()) {
-                    continue;
+        for (Method method : getAttributedMethods()) {
+            // ignore compare 'id' value
+            if ("getId".equals(method.getName())) {
+                continue;
+            }
+            try {
+                Object value1 = method.invoke(this);
+                Object value2 = method.invoke(obj);
+                if (!Objects.equals(value1, value2)) {
+                    return false;
                 }
-                try {
-                    Method method2 = obj.getClass().getMethod(method1.getName(), method1.getParameterTypes());
-                    Object value1 = method1.invoke(this, new Object[]{});
-                    Object value2 = method2.invoke(obj, new Object[]{});
-                    if (!Objects.equals(value1, value2)) {
-                        return false;
-                    }
-                } catch (Exception e) {
-                    return true;
-                }
+            } catch (Exception e) {
+                throw new IllegalStateException("compare config instances failed", e);
             }
         }
         return true;
     }
 
+    @Override
+    public int hashCode() {
+        int hashCode = 1;
+
+        for (Method method : getAttributedMethods()) {
+            // ignore compare 'id' value
+            if ("getId".equals(method.getName())) {
+                continue;
+            }
+            try {
+                Object value = method.invoke(this);
+                if (value != null) {
+                    hashCode = 31 * hashCode + value.hashCode();
+                }
+            } catch (Exception ignored) {
+                //ignored
+            }
+        }
+
+        if (hashCode == 0) {
+            hashCode = 1;
+        }
+        return hashCode;
+    }
+
+    private List<Method> getAttributedMethods() {
+        Class<? extends AbstractConfig> cls = this.getClass();
+        return attributedMethodCache.computeIfAbsent(cls, (key) -> computeAttributedMethods());
+    }
+
     /**
-     * Add {@link AbstractConfig instance} into {@link ConfigManager}
-     * <p>
-     * Current method will invoked by Spring or Java EE container automatically, or should be triggered manually.
+     * compute attributed getter methods, subclass can override this method to add/remove attributed methods
      *
-     * @see ConfigManager#addConfig(AbstractConfig)
-     * @since 2.7.5
+     * @return
      */
-    @PostConstruct
-    public void addIntoConfigManager() {
-        ApplicationModel.getConfigManager().addConfig(this);
+    protected List<Method> computeAttributedMethods() {
+        Class<? extends AbstractConfig> cls = this.getClass();
+        BeanInfo beanInfo = getBeanInfo(cls);
+        List<Method> methods = new ArrayList<>(beanInfo.getMethodDescriptors().length);
+        for (MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
+            Method method = methodDescriptor.getMethod();
+            if (MethodUtils.isGetter(method)) {
+                // filter non attribute
+                Parameter parameter = method.getAnnotation(Parameter.class);
+                if (parameter != null && !parameter.attribute()) {
+                    continue;
+                }
+                String propertyName = calculateAttributeFromGetter(method.getName());
+                // filter non writable property, exclude non property methods, fix #4225
+                if (!isWritableProperty(beanInfo, propertyName)) {
+                    continue;
+                }
+                methods.add(method);
+            }
+        }
+        return methods;
+    }
+
+    protected ConfigManager getConfigManager() {
+        return getApplicationModel().getApplicationConfigManager();
     }
 }

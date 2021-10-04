@@ -100,6 +100,7 @@ public class PrioritizedTest {
             this.value = value;
         }
 
+        @Override
         public int getPriority() {
             return value;
         }

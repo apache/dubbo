@@ -26,25 +26,28 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACES;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CONFIG_VERSION_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 
 /**
  * AbstractOverrideConfigurator
  */
 public abstract class AbstractConfigurator implements Configurator {
+
+    private static final String TILDE = "~";
 
     private final URL configuratorUrl;
 
@@ -66,20 +69,21 @@ public abstract class AbstractConfigurator implements Configurator {
         if (!configuratorUrl.getParameter(ENABLED_KEY, true) || configuratorUrl.getHost() == null || url == null || url.getHost() == null) {
             return url;
         }
-        /**
+        /*
          * This if branch is created since 2.7.0.
          */
         String apiVersion = configuratorUrl.getParameter(CONFIG_VERSION_KEY);
         if (StringUtils.isNotEmpty(apiVersion)) {
-            String currentSide = url.getParameter(SIDE_KEY);
-            String configuratorSide = configuratorUrl.getParameter(SIDE_KEY);
+            String currentSide = url.getSide();
+            String configuratorSide = configuratorUrl.getSide();
             if (currentSide.equals(configuratorSide) && CONSUMER.equals(configuratorSide) && 0 == configuratorUrl.getPort()) {
                 url = configureIfMatch(NetUtils.getLocalHost(), url);
-            } else if (currentSide.equals(configuratorSide) && PROVIDER.equals(configuratorSide) && url.getPort() == configuratorUrl.getPort()) {
+            } else if (currentSide.equals(configuratorSide) && PROVIDER.equals(configuratorSide) &&
+                    url.getPort() == configuratorUrl.getPort()) {
                 url = configureIfMatch(url.getHost(), url);
             }
         }
-        /**
+        /*
          * This else branch is deprecated and is left only to keep compatibility with versions before 2.7.0
          */
         else {
@@ -95,13 +99,18 @@ public abstract class AbstractConfigurator implements Configurator {
             if (url.getPort() == configuratorUrl.getPort()) {
                 return configureIfMatch(url.getHost(), url);
             }
-        } else {// override url don't have a port, means the ip override url specify is a consumer address or 0.0.0.0
-            // 1.If it is a consumer ip address, the intention is to control a specific consumer instance, it must takes effect at the consumer side, any provider received this override url should ignore;
-            // 2.If the ip is 0.0.0.0, this override url can be used on consumer, and also can be used on provider
-            if (url.getParameter(SIDE_KEY, PROVIDER).equals(CONSUMER)) {
-                return configureIfMatch(NetUtils.getLocalHost(), url);// NetUtils.getLocalHost is the ip address consumer registered to registry.
-            } else if (url.getParameter(SIDE_KEY, CONSUMER).equals(PROVIDER)) {
-                return configureIfMatch(ANYHOST_VALUE, url);// take effect on all providers, so address must be 0.0.0.0, otherwise it won't flow to this if branch
+        } else {
+            /*
+             *  override url don't have a port, means the ip override url specify is a consumer address or 0.0.0.0.
+             *  1.If it is a consumer ip address, the intention is to control a specific consumer instance, it must takes effect at the consumer side, any provider received this override url should ignore.
+             *  2.If the ip is 0.0.0.0, this override url can be used on consumer, and also can be used on provider.
+             */
+            if (url.getSide(PROVIDER).equals(CONSUMER)) {
+                // NetUtils.getLocalHost is the ip address consumer registered to registry.
+                return configureIfMatch(NetUtils.getLocalHost(), url);
+            } else if (url.getSide(CONSUMER).equals(PROVIDER)) {
+                // take effect on all providers, so address must be 0.0.0.0, otherwise it won't flow to this if branch
+                return configureIfMatch(ANYHOST_VALUE, url);
             }
         }
         return url;
@@ -112,9 +121,8 @@ public abstract class AbstractConfigurator implements Configurator {
             // TODO, to support wildcards
             String providers = configuratorUrl.getParameter(OVERRIDE_PROVIDERS_KEY);
             if (StringUtils.isEmpty(providers) || providers.contains(url.getAddress()) || providers.contains(ANYHOST_VALUE)) {
-                String configApplication = configuratorUrl.getParameter(APPLICATION_KEY,
-                        configuratorUrl.getUsername());
-                String currentApplication = url.getParameter(APPLICATION_KEY, url.getUsername());
+                String configApplication = configuratorUrl.getApplication(configuratorUrl.getUsername());
+                String currentApplication = url.getApplication(url.getUsername());
                 if (configApplication == null || ANY_VALUE.equals(configApplication)
                         || configApplication.equals(currentApplication)) {
                     Set<String> conditionKeys = new HashSet<String>();
@@ -128,13 +136,17 @@ public abstract class AbstractConfigurator implements Configurator {
                     conditionKeys.add(SIDE_KEY);
                     conditionKeys.add(CONFIG_VERSION_KEY);
                     conditionKeys.add(COMPATIBLE_CONFIG_KEY);
+                    conditionKeys.add(INTERFACES);
                     for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
-                        if (key.startsWith("~") || APPLICATION_KEY.equals(key) || SIDE_KEY.equals(key)) {
-                            conditionKeys.add(key);
+                        boolean startWithTilde = startWithTilde(key);
+                        if (startWithTilde || APPLICATION_KEY.equals(key) || SIDE_KEY.equals(key)) {
+                            if (startWithTilde) {
+                                conditionKeys.add(key);
+                            }
                             if (value != null && !ANY_VALUE.equals(value)
-                                    && !value.equals(url.getParameter(key.startsWith("~") ? key.substring(1) : key))) {
+                                    && !value.equals(url.getParameter(startWithTilde ? key.substring(1) : key))) {
                                 return url;
                             }
                         }
@@ -144,6 +156,13 @@ public abstract class AbstractConfigurator implements Configurator {
             }
         }
         return url;
+    }
+
+    private boolean startWithTilde(String key) {
+        if (StringUtils.isNotEmpty(key) && key.startsWith(TILDE)) {
+            return true;
+        }
+        return false;
     }
 
     protected abstract URL doConfigure(URL currentUrl, URL configUrl);

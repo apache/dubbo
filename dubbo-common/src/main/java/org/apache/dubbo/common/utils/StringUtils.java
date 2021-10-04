@@ -24,16 +24,21 @@ import com.alibaba.fastjson.JSON;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.lang.String.valueOf;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_REGEX;
@@ -57,7 +62,11 @@ public final class StringUtils {
     private static final Logger logger = LoggerFactory.getLogger(StringUtils.class);
     private static final Pattern KVP_PATTERN = Pattern.compile("([_.a-zA-Z0-9][-_.a-zA-Z0-9]*)[=](.*)"); //key value pair pattern.
     private static final Pattern INT_PATTERN = Pattern.compile("^\\d+$");
+    private static final Pattern PARAMETERS_PATTERN = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
+    private static final Pattern PAIR_PARAMETERS_PATTERN = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
     private static final int PAD_LIMIT = 8192;
+    private static final byte[] HEX2B;
+
 
     /**
      * @since 2.7.5
@@ -85,6 +94,33 @@ public final class StringUtils {
     public static final char HYPHEN_CHAR = '-';
 
     public static final String HYPHEN = valueOf(HYPHEN_CHAR);
+
+    static {
+        HEX2B = new byte[128];
+        Arrays.fill(HEX2B, (byte) -1);
+        HEX2B['0'] = (byte) 0;
+        HEX2B['1'] = (byte) 1;
+        HEX2B['2'] = (byte) 2;
+        HEX2B['3'] = (byte) 3;
+        HEX2B['4'] = (byte) 4;
+        HEX2B['5'] = (byte) 5;
+        HEX2B['6'] = (byte) 6;
+        HEX2B['7'] = (byte) 7;
+        HEX2B['8'] = (byte) 8;
+        HEX2B['9'] = (byte) 9;
+        HEX2B['A'] = (byte) 10;
+        HEX2B['B'] = (byte) 11;
+        HEX2B['C'] = (byte) 12;
+        HEX2B['D'] = (byte) 13;
+        HEX2B['E'] = (byte) 14;
+        HEX2B['F'] = (byte) 15;
+        HEX2B['a'] = (byte) 10;
+        HEX2B['b'] = (byte) 11;
+        HEX2B['c'] = (byte) 12;
+        HEX2B['d'] = (byte) 13;
+        HEX2B['e'] = (byte) 14;
+        HEX2B['f'] = (byte) 15;
+    }
 
     private StringUtils() {
     }
@@ -390,6 +426,15 @@ public final class StringUtils {
     }
 
     /**
+     * Check the cs String whether contains non whitespace characters.
+     * @param cs
+     * @return
+     */
+    public static boolean hasText(CharSequence cs) {
+        return !isBlank(cs);
+    }
+
+    /**
      * is empty string.
      *
      * @param str source string.
@@ -506,6 +551,14 @@ public final class StringUtils {
 
     public static boolean isContains(String values, String value) {
         return isNotEmpty(values) && isContains(COMMA_SPLIT_PATTERN.split(values), value);
+    }
+
+    public static boolean isContains(String str, char ch) {
+        return isNotEmpty(str) && str.indexOf(ch) >= 0;
+    }
+
+    public static boolean isNotContains(String str, char ch) {
+        return !isContains(str, ch);
     }
 
     /**
@@ -625,23 +678,77 @@ public final class StringUtils {
      * @return string array.
      */
     public static String[] split(String str, char ch) {
-        List<String> list = null;
-        char c;
+        if (isEmpty(str)) {
+            return EMPTY_STRING_ARRAY;
+        }
+        return splitToList0(str, ch).toArray(EMPTY_STRING_ARRAY);
+    }
+
+    private static List<String> splitToList0(String str, char ch) {
+        List<String> result = new ArrayList<>();
         int ix = 0, len = str.length();
         for (int i = 0; i < len; i++) {
-            c = str.charAt(i);
-            if (c == ch) {
-                if (list == null) {
-                    list = new ArrayList<String>();
-                }
-                list.add(str.substring(ix, i));
+            if (str.charAt(i) == ch) {
+                result.add(str.substring(ix, i));
                 ix = i + 1;
             }
         }
-        if (ix > 0) {
-            list.add(str.substring(ix));
+
+        if (ix >= 0) {
+            result.add(str.substring(ix));
         }
-        return list == null ? EMPTY_STRING_ARRAY : (String[]) list.toArray(EMPTY_STRING_ARRAY);
+        return result;
+    }
+
+    /**
+     * Splits String around matches of the given character.
+     * <p>
+     * Note: Compare with {@link StringUtils#split(String, char)}, this method reduce memory copy.
+     */
+    public static List<String> splitToList(String str, char ch) {
+        if (isEmpty(str)) {
+            return Collections.emptyList();
+        }
+        return splitToList0(str, ch);
+    }
+
+    /**
+     * Split the specified value to be a {@link Set}
+     *
+     * @param value         the content to be split
+     * @param separatorChar a char to separate
+     * @return non-null read-only {@link Set}
+     * @since 2.7.8
+     */
+    public static Set<String> splitToSet(String value, char separatorChar) {
+        return splitToSet(value, separatorChar, false);
+    }
+
+    /**
+     * Split the specified value to be a {@link Set}
+     *
+     * @param value         the content to be split
+     * @param separatorChar a char to separate
+     * @param trimElements  require to trim the elements or not
+     * @return non-null read-only {@link Set}
+     * @since 2.7.8
+     */
+    public static Set<String> splitToSet(String value, char separatorChar, boolean trimElements) {
+        List<String> values = splitToList(value, separatorChar);
+        int size = values.size();
+
+        if (size < 1) { // empty condition
+            return emptySet();
+        }
+
+        if (!trimElements) { // Do not require to trim the elements
+            return new LinkedHashSet(values);
+        }
+
+        return unmodifiableSet(values
+                .stream()
+                .map(String::trim)
+                .collect(LinkedHashSet::new, Set::add, Set::addAll));
     }
 
     /**
@@ -742,7 +849,7 @@ public final class StringUtils {
     }
 
     public static String getQueryStringValue(String qs, String key) {
-        Map<String, String> map = StringUtils.parseQueryString(qs);
+        Map<String, String> map = parseQueryString(qs);
         return map.get(key);
     }
 
@@ -763,12 +870,12 @@ public final class StringUtils {
         StringBuilder buf = new StringBuilder();
         String group = ps.get(GROUP_KEY);
         if (isNotEmpty(group)) {
-            buf.append(group).append("/");
+            buf.append(group).append('/');
         }
         buf.append(ps.get(INTERFACE_KEY));
         String version = ps.get(VERSION_KEY);
         if (isNotEmpty(group)) {
-            buf.append(":").append(version);
+            buf.append(':').append(version);
         }
         return buf.toString();
     }
@@ -781,10 +888,10 @@ public final class StringUtils {
                 String value = entry.getValue();
                 if (isNoneEmpty(key, value)) {
                     if (buf.length() > 0) {
-                        buf.append("&");
+                        buf.append('&');
                     }
                     buf.append(key);
-                    buf.append("=");
+                    buf.append('=');
                     buf.append(value);
                 }
             }
@@ -796,6 +903,15 @@ public final class StringUtils {
         if (isEmpty(camelName)) {
             return camelName;
         }
+        if (!isWord(camelName)) {
+            // convert Ab-Cd-Ef to ab-cd-ef
+            if (isSplitCase(camelName, split.charAt(0))) {
+                return camelName.toLowerCase();
+            }
+            // not camel case
+            return camelName;
+        }
+
         StringBuilder buf = null;
         for (int i = 0; i < camelName.length(); i++) {
             char ch = camelName.charAt(i);
@@ -814,7 +930,64 @@ public final class StringUtils {
                 buf.append(ch);
             }
         }
-        return buf == null ? camelName : buf.toString();
+        return buf == null ? camelName.toLowerCase() : buf.toString().toLowerCase();
+    }
+
+    private static boolean isSplitCase(String str, char separator) {
+        if (str == null) {
+            return false;
+        }
+        return str.chars().allMatch(ch -> (ch == separator) || isWord((char)ch) );
+    }
+
+    private static boolean isWord(String str) {
+        if (str == null) {
+            return false;
+        }
+        return str.chars().allMatch(ch -> isWord((char)ch));
+    }
+
+    private static boolean isWord(char ch) {
+        if ((ch >= 'A' && ch <= 'Z') ||
+                (ch >= 'a' && ch <= 'z') ||
+                (ch >= '0' && ch <= '9')) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Convert snake_case or SNAKE_CASE to kebab-case.
+     * <p>
+     * NOTE: Return itself if it's not a snake case.
+     * @param snakeName
+     * @param split
+     * @return
+     */
+    public static String snakeToSplitName(String snakeName, String split) {
+        String lowerCase = snakeName.toLowerCase();
+        if (isSnakeCase(snakeName)) {
+            return replace(lowerCase, "_", split);
+        }
+        return snakeName;
+    }
+
+    protected static boolean isSnakeCase(String str) {
+        return str.contains("_") || str.equals(str.toLowerCase()) || str.equals(str.toUpperCase());
+    }
+
+    /**
+     * Convert camelCase or snake_case/SNAKE_CASE to kebab-case
+     * @param str
+     * @param split
+     * @return
+     */
+    public static String convertToSplitName(String str, String split) {
+        if (isSnakeCase(str)) {
+            return snakeToSplitName(str, split);
+        } else {
+            return camelToSplitName(str, split);
+        }
     }
 
     public static String toArgumentString(Object[] args) {
@@ -953,14 +1126,15 @@ public final class StringUtils {
     }
 
     /**
+     * Decode parameters string to map
      * @param rawParameters format like '[{a:b},{c:d}]'
      * @return
      */
     public static Map<String, String> parseParameters(String rawParameters) {
-        Pattern pattern = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
-        Pattern pairPattern = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
-
-        Matcher matcher = pattern.matcher(rawParameters);
+        if (StringUtils.isBlank(rawParameters)) {
+            return Collections.emptyMap();
+        }
+        Matcher matcher = PARAMETERS_PATTERN.matcher(rawParameters);
         if (!matcher.matches()) {
             return Collections.emptyMap();
         }
@@ -970,11 +1144,84 @@ public final class StringUtils {
 
         Map<String, String> parameters = new HashMap<>();
         for (String pair : pairArr) {
-            Matcher pairMatcher = pairPattern.matcher(pair);
+            Matcher pairMatcher = PAIR_PARAMETERS_PATTERN.matcher(pair);
             if (pairMatcher.matches()) {
                 parameters.put(pairMatcher.group(1), pairMatcher.group(2));
             }
         }
         return parameters;
+    }
+
+    /**
+     * Encode parameters map to string, like '[{a:b},{c:d}]'
+     * @param params
+     * @return
+     */
+    public static String encodeParameters(Map<String, String> params) {
+        if (params == null || params.isEmpty()) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        params.forEach((key,value) -> {
+            // {key:value},
+            if (hasText(value)) {
+                sb.append('{').append(key).append(':').append(value).append("},");
+            }
+        });
+        // delete last separator ','
+        if (sb.charAt(sb.length() - 1) == ',') {
+            sb.deleteCharAt(sb.length()-1);
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
+    public static int decodeHexNibble(final char c) {
+        // Character.digit() is not used here, as it addresses a larger
+        // set of characters (both ASCII and full-width latin letters).
+        byte[] hex2b = HEX2B;
+        return c < hex2b.length ? hex2b[c] : -1;
+    }
+
+    /**
+     * Decode a 2-digit hex byte from within a string.
+     */
+    public static byte decodeHexByte(CharSequence s, int pos) {
+        int hi = decodeHexNibble(s.charAt(pos));
+        int lo = decodeHexNibble(s.charAt(pos + 1));
+        if (hi == -1 || lo == -1) {
+            throw new IllegalArgumentException(String.format(
+                    "invalid hex byte '%s' at index %d of '%s'", s.subSequence(pos, pos + 2), pos, s));
+        }
+        return (byte) ((hi << 4) + lo);
+    }
+
+    /**
+     * Create the common-delimited {@link String} by one or more {@link String} members
+     *
+     * @param one    one {@link String}
+     * @param others others {@link String}
+     * @return <code>null</code> if <code>one</code> or <code>others</code> is <code>null</code>
+     * @since 2.7.8
+     */
+    public static String toCommaDelimitedString(String one, String... others) {
+        String another = arrayToDelimitedString(others, COMMA_SEPARATOR);
+        return isEmpty(another) ? one : one + COMMA_SEPARATOR + another;
+    }
+
+    /**
+     * Test str whether starts with the prefix ignore case.
+     * @param str
+     * @param prefix
+     * @return
+     */
+    public static boolean startsWithIgnoreCase(String str, String prefix) {
+        if (str == null || prefix == null || str.length() < prefix.length()) {
+            return false;
+        }
+        // return str.substring(0, prefix.length()).equalsIgnoreCase(prefix);
+        return str.regionMatches(true, 0, prefix, 0, prefix.length());
     }
 }

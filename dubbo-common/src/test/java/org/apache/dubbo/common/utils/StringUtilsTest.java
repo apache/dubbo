@@ -19,22 +19,33 @@ package org.apache.dubbo.common.utils;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
+import static org.apache.dubbo.common.utils.StringUtils.splitToList;
+import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
+import static org.apache.dubbo.common.utils.StringUtils.startsWithIgnoreCase;
+import static org.apache.dubbo.common.utils.StringUtils.toCommaDelimitedString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StringUtilsTest {
@@ -220,9 +231,50 @@ public class StringUtilsTest {
 
     @Test
     public void testSplit() throws Exception {
-        String s = "d,1,2,4";
-        assertEquals(StringUtils.split(s, ',').length, 4);
+        String str = "d,1,2,4";
+
+        assertEquals(4, StringUtils.split(str, ',').length);
+        assertArrayEquals(str.split(","), StringUtils.split(str, ','));
+
+        assertEquals(1, StringUtils.split(str, 'a').length);
+        assertArrayEquals(str.split("a"), StringUtils.split(str, 'a'));
+
+        assertEquals(0, StringUtils.split("", 'a').length);
+        assertEquals(0, StringUtils.split(null, 'a').length);
+
+        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", ':')));
+        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", 'o')));
     }
+
+    @Test
+    public void testSplitToList() throws Exception {
+        String str = "d,1,2,4";
+
+        assertEquals(4, splitToList(str, ',').size());
+        assertEquals(asList(str.split(",")), splitToList(str, ','));
+
+        assertEquals(1, splitToList(str, 'a').size());
+        assertEquals(asList(str.split("a")), splitToList(str, 'a'));
+
+        assertEquals(0, splitToList("", 'a').size());
+        assertEquals(0, splitToList(null, 'a').size());
+    }
+
+    /**
+     * Test {@link StringUtils#splitToSet(String, char, boolean)}
+     *
+     * @since 2.7.8
+     */
+    @Test
+    public void testSplitToSet() {
+        String value = "1# 2#3 #4#3";
+        Set<String> values = splitToSet(value, '#', false);
+        assertEquals(ofSet("1", " 2", "3 ", "4", "3"), values);
+
+        values = splitToSet(value, '#', true);
+        assertEquals(ofSet("1", "2", "3", "4"), values);
+    }
+
 
     @Test
     public void testTranslate() throws Exception {
@@ -237,6 +289,16 @@ public class StringUtilsTest {
         assertThat(StringUtils.isContains("", "b"), is(false));
         assertThat(StringUtils.isContains(new String[]{"a", "b", "c"}, "b"), is(true));
         assertThat(StringUtils.isContains((String[]) null, null), is(false));
+
+        assertTrue(StringUtils.isContains("abc", 'a'));
+        assertFalse(StringUtils.isContains("abc", 'd'));
+        assertFalse(StringUtils.isContains("", 'a'));
+        assertFalse(StringUtils.isContains(null, 'a'));
+
+        assertTrue(StringUtils.isNotContains("abc", 'd'));
+        assertFalse(StringUtils.isNotContains("abc", 'a'));
+        assertTrue(StringUtils.isNotContains("", 'a'));
+        assertTrue(StringUtils.isNotContains(null, 'a'));
     }
 
     @Test
@@ -277,8 +339,44 @@ public class StringUtilsTest {
     public void testCamelToSplitName() throws Exception {
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("abCdEf", "-"));
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("AbCdEf", "-"));
-        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("ab-cd-ef", "-"));
         assertEquals("abcdef", StringUtils.camelToSplitName("abcdef", "-"));
+        //assertEquals("name", StringUtils.camelToSplitName("NAME", "-"));
+
+        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("ab-cd-ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("Ab-Cd-Ef", "-"));
+        assertEquals("Ab_Cd_Ef", StringUtils.camelToSplitName("Ab_Cd_Ef", "-"));
+        assertEquals("AB_CD_EF", StringUtils.camelToSplitName("AB_CD_EF", "-"));
+
+        assertEquals("ab.cd.ef", StringUtils.camelToSplitName("AbCdEf", "."));
+        //assertEquals("ab.cd.ef", StringUtils.camelToSplitName("ab-cd-ef", "."));
+    }
+
+    @Test
+    public void testSnakeCaseToSplitName() throws Exception {
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("Ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("ab_cd_ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("AB_CD_EF", "-"));
+        assertEquals("abcdef", StringUtils.snakeToSplitName("abcdef", "-"));
+        assertEquals("qosEnable", StringUtils.snakeToSplitName("qosEnable", "-"));
+        assertEquals("name", StringUtils.snakeToSplitName("NAME", "-"));
+    }
+
+    @Test
+    public void testConvertToSplitName() {
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("Ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab_cd_ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("AB_CD_EF", "-"));
+        assertEquals("abcdef", StringUtils.convertToSplitName("abcdef", "-"));
+        assertEquals("qos-enable", StringUtils.convertToSplitName("qosEnable", "-"));
+        assertEquals("name", StringUtils.convertToSplitName("NAME", "-"));
+
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("abCdEf", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("AbCdEf", "-"));
+
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab-cd-ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("Ab-Cd-Ef", "-"));
     }
 
     @Test
@@ -317,10 +415,16 @@ public class StringUtilsTest {
         assertEquals(2, legalMap.size());
         assertEquals("value2", legalMap.get("key2"));
 
+        String str = StringUtils.encodeParameters(legalMap);
+        assertEqualsWithoutSpaces(legalStr, str);
+
         String legalSpaceStr = "[{key1: value1}, {key2 :value2}]";
         Map<String, String> legalSpaceMap = StringUtils.parseParameters(legalSpaceStr);
         assertEquals(2, legalSpaceMap.size());
         assertEquals("value2", legalSpaceMap.get("key2"));
+
+        str = StringUtils.encodeParameters(legalSpaceMap);
+        assertEqualsWithoutSpaces(legalSpaceStr, str);
 
         String legalSpecialStr = "[{key-1: value*.1}, {key.2 :value*.-_2}]";
         Map<String, String> legalSpecialMap = StringUtils.parseParameters(legalSpecialStr);
@@ -328,9 +432,74 @@ public class StringUtilsTest {
         assertEquals("value*.1", legalSpecialMap.get("key-1"));
         assertEquals("value*.-_2", legalSpecialMap.get("key.2"));
 
+        str = StringUtils.encodeParameters(legalSpecialMap);
+        assertEqualsWithoutSpaces(legalSpecialStr, str);
+
         String illegalStr = "[{key=value},{aa:bb}]";
         Map<String, String> illegalMap = StringUtils.parseParameters(illegalStr);
         assertEquals(0, illegalMap.size());
+
+        str = StringUtils.encodeParameters(illegalMap);
+        assertEquals(null, str);
+
+        String emptyMapStr = "[]";
+        Map<String, String> emptyMap = StringUtils.parseParameters(emptyMapStr);
+        assertEquals(0, emptyMap.size());
     }
 
+    @Test
+    public void testEncodeParameters() {
+        Map<String, String> nullValueMap = new LinkedHashMap<>();
+        nullValueMap.put("client", null);
+        String str = StringUtils.encodeParameters(nullValueMap);
+        assertEquals("[]", str);
+
+        Map<String, String> blankValueMap = new LinkedHashMap<>();
+        blankValueMap.put("client", " ");
+        str = StringUtils.encodeParameters(nullValueMap);
+        assertEquals("[]", str);
+
+        blankValueMap = new LinkedHashMap<>();
+        blankValueMap.put("client", "");
+        str = StringUtils.encodeParameters(nullValueMap);
+        assertEquals("[]", str);
+
+    }
+
+    private void assertEqualsWithoutSpaces(String expect, String actual) {
+        assertEquals(expect.replaceAll(" ", ""), actual.replaceAll(" ", ""));
+    }
+
+    /**
+     * Test {@link StringUtils#toCommaDelimitedString(String, String...)}
+     * @since 2.7.8
+     */
+    @Test
+    public void testToCommaDelimitedString() {
+        String value = toCommaDelimitedString(null);
+        assertNull(value);
+
+        value = toCommaDelimitedString(null, null);
+        assertNull(value);
+
+        value = toCommaDelimitedString("");
+        assertEquals("", value);
+
+        value = toCommaDelimitedString("one");
+        assertEquals("one", value);
+
+        value = toCommaDelimitedString("one", "two");
+        assertEquals("one,two", value);
+
+        value = toCommaDelimitedString("one", "two", "three");
+        assertEquals("one,two,three", value);
+    }
+
+    @Test
+    public void testStartsWithIgnoreCase() {
+        assertTrue(startsWithIgnoreCase("dubbo.application.name", "dubbo.application."));
+        assertTrue(startsWithIgnoreCase("dubbo.Application.name", "dubbo.application."));
+        assertTrue(startsWithIgnoreCase("Dubbo.application.name", "dubbo.application."));
+
+    }
 }

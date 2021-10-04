@@ -30,10 +30,9 @@
     <modules>
         <module>dubbo-metadata-api</module>
         <module>dubbo-metadata-definition-protobuf</module>
+        <module>dubbo-metadata-processor</module>
         <module>dubbo-metadata-report-zookeeper</module>
         <module>dubbo-metadata-report-redis</module>
-        <module>dubbo-metadata-report-consul</module>
-        <module>dubbo-metadata-report-etcd</module>
         <module>dubbo-metadata-report-nacos</module>
     </modules>
 

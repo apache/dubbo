@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,7 +56,7 @@ public class GenericFilterTest {
         person.put("name", "dubbo");
         person.put("age", 10);
 
-        RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), genericInvoke.getParameterTypes(),
+        RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), "", genericInvoke.getParameterTypes(),
                 new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
@@ -76,6 +77,8 @@ public class GenericFilterTest {
 
     @Test
     public void testInvokeWithJavaException() throws Exception {
+        // temporary enable native java generic serialize
+        System.setProperty(ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
         Assertions.assertThrows(RpcException.class, () -> {
             Method genericInvoke = GenericService.class.getMethods()[0];
 
@@ -83,7 +86,7 @@ public class GenericFilterTest {
             person.put("name", "dubbo");
             person.put("age", 10);
 
-            RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), genericInvoke.getParameterTypes(),
+            RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), "", genericInvoke.getParameterTypes(),
                     new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
             invocation.setAttachment(GENERIC_KEY, GENERIC_SERIALIZATION_NATIVE_JAVA);
 
@@ -96,6 +99,7 @@ public class GenericFilterTest {
 
             genericFilter.invoke(invoker, invocation);
         });
+        System.clearProperty(ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE);
     }
 
     @Test
@@ -107,7 +111,7 @@ public class GenericFilterTest {
         person.put("name", "dubbo");
         person.put("age", 10);
 
-        RpcInvocation invocation = new RpcInvocation("sayHi", GenericService.class.getName(), genericInvoke.getParameterTypes()
+        RpcInvocation invocation = new RpcInvocation("sayHi", GenericService.class.getName(), "", genericInvoke.getParameterTypes()
                 , new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
@@ -131,7 +135,7 @@ public class GenericFilterTest {
         person.put("name", "dubbo");
         person.put("age", 10);
 
-        RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), genericInvoke.getParameterTypes()
+        RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), "", genericInvoke.getParameterTypes()
                 , new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}});
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +

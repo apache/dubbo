@@ -16,34 +16,37 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.transport.AbstractClient;
-import org.apache.dubbo.remoting.utils.UrlUtils;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.concurrent.DefaultThreadFactory;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.SslClientTlsHandler;
+import org.apache.dubbo.remoting.transport.AbstractClient;
+import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.dubbo.remoting.Constants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
+import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.eventLoopGroup;
+import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.socketChannelClass;
 
 /**
  * NettyClient.
@@ -54,7 +57,7 @@ public class NettyClient extends AbstractClient {
     /**
      * netty client bootstrap
      */
-    private static final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
+    private static final EventLoopGroup EVENT_LOOP_GROUP = eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker");
 
     private static final String SOCKS_PROXY_HOST = "socksProxyHost";
 
@@ -76,9 +79,9 @@ public class NettyClient extends AbstractClient {
      * It wil init and start netty.
      */
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
-    	// you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
-    	// the handler will be warped: MultiMessageHandler->HeartbeatHandler->handler
-    	super(url, wrapChannelHandler(url, handler));
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
+        // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
+        super(url, wrapChannelHandler(url, handler));
     }
 
     /**
@@ -90,22 +93,22 @@ public class NettyClient extends AbstractClient {
     protected void doOpen() throws Throwable {
         final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
         bootstrap = new Bootstrap();
-        bootstrap.group(nioEventLoopGroup)
+        bootstrap.group(EVENT_LOOP_GROUP)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
                 //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
-                .channel(NioSocketChannel.class);
+                .channel(socketChannelClass());
 
-        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(3000, getConnectTimeout()));
-        bootstrap.handler(new ChannelInitializer() {
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(DEFAULT_CONNECT_TIMEOUT, getConnectTimeout()));
+        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
             @Override
-            protected void initChannel(Channel ch) throws Exception {
+            protected void initChannel(SocketChannel ch) throws Exception {
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
 
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
-                    ch.pipeline().addLast("negotiation", SslHandlerInitializer.sslClientHandler(getUrl(), nettyClientHandler));
+                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(getUrl()));
                 }
 
                 NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
@@ -115,14 +118,22 @@ public class NettyClient extends AbstractClient {
                         .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
                         .addLast("handler", nettyClientHandler);
 
-                String socksProxyHost = ConfigUtils.getProperty(SOCKS_PROXY_HOST);
-                if(socksProxyHost != null) {
-                    int socksProxyPort = Integer.parseInt(ConfigUtils.getProperty(SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
+                String socksProxyHost = ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_HOST);
+                if(socksProxyHost != null && !isFilteredAddress(getUrl().getHost())) {
+                    int socksProxyPort = Integer.parseInt(ConfigurationUtils.getProperty(getUrl().getOrDefaultApplicationModel(), SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
                     Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
                     ch.pipeline().addFirst(socks5ProxyHandler);
                 }
             }
         });
+    }
+
+    private boolean isFilteredAddress(String host) {
+        // filter local address
+        if (StringUtils.isEquals(NetUtils.getLocalHost(), host) || NetUtils.isLocalHost(host)) {
+            return true;
+        }
+        return false;
     }
 
     @Override

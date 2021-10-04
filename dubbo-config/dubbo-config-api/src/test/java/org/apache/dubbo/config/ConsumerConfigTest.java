@@ -17,13 +17,33 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collection;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 public class ConsumerConfigTest {
+
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
+    }
+
     @Test
     public void testTimeout() throws Exception {
         try {
@@ -77,5 +97,160 @@ public class ConsumerConfigTest {
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setQueues(5);
         assertThat(consumer.getQueues(), equalTo(5));
+    }
+
+    @Test
+    public void testOverrideConfigSingle() {
+        SysProps.setProperty("dubbo.consumer.check", "false");
+        SysProps.setProperty("dubbo.consumer.group", "demo");
+        SysProps.setProperty("dubbo.consumer.threads", "10");
+
+        try {
+            ConsumerConfig consumerConfig = new ConsumerConfig();
+            consumerConfig.setGroup("groupA");
+            consumerConfig.setThreads(20);
+            consumerConfig.setCheck(true);
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .consumer(consumerConfig)
+                    .initialize();
+
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
+            Assertions.assertEquals(1, consumers.size());
+            Assertions.assertEquals(consumerConfig, consumers.iterator().next());
+            Assertions.assertEquals(false, consumerConfig.isCheck());
+            Assertions.assertEquals("demo", consumerConfig.getGroup());
+            Assertions.assertEquals(10, consumerConfig.getThreads());
+        } finally {
+            SysProps.clear();
+        }
+    }
+
+    @Test
+    public void testOverrideConfigByPluralityId() {
+        SysProps.setProperty("dubbo.consumer.group", "demoA");  //ignore
+        SysProps.setProperty("dubbo.consumers.consumerA.check", "false");
+        SysProps.setProperty("dubbo.consumers.consumerA.group", "demoB");
+        SysProps.setProperty("dubbo.consumers.consumerA.threads", "10");
+
+        try {
+            ConsumerConfig consumerConfig = new ConsumerConfig();
+            consumerConfig.setId("consumerA");
+            consumerConfig.setGroup("groupA");
+            consumerConfig.setThreads(20);
+            consumerConfig.setCheck(true);
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .consumer(consumerConfig)
+                    .initialize();
+
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
+            Assertions.assertEquals(1, consumers.size());
+            Assertions.assertEquals(consumerConfig, consumers.iterator().next());
+            Assertions.assertEquals(false, consumerConfig.isCheck());
+            Assertions.assertEquals("demoB", consumerConfig.getGroup());
+            Assertions.assertEquals(10, consumerConfig.getThreads());
+        } finally {
+            SysProps.clear();
+        }
+    }
+
+    @Test
+    public void testOverrideConfigBySingularId() {
+        // override success
+        SysProps.setProperty("dubbo.consumer.group", "demoA");
+        SysProps.setProperty("dubbo.consumer.threads", "15");
+        // ignore singular format: dubbo.{tag-name}.{config-id}.{config-item}={config-value}
+        SysProps.setProperty("dubbo.consumer.consumerA.check", "false");
+        SysProps.setProperty("dubbo.consumer.consumerA.group", "demoB");
+        SysProps.setProperty("dubbo.consumer.consumerA.threads", "10");
+
+        try {
+            ConsumerConfig consumerConfig = new ConsumerConfig();
+            consumerConfig.setId("consumerA");
+            consumerConfig.setGroup("groupA");
+            consumerConfig.setThreads(20);
+            consumerConfig.setCheck(true);
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .consumer(consumerConfig)
+                    .initialize();
+
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
+            Assertions.assertEquals(1, consumers.size());
+            Assertions.assertEquals(consumerConfig, consumers.iterator().next());
+            Assertions.assertEquals(true, consumerConfig.isCheck());
+            Assertions.assertEquals("demoA", consumerConfig.getGroup());
+            Assertions.assertEquals(15, consumerConfig.getThreads());
+        } finally {
+            SysProps.clear();
+        }
+    }
+
+    @Test
+    public void testOverrideConfigByDubboProps() {
+        ApplicationModel.defaultModel().getDefaultModule();
+        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.check", "false");
+        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.group", "demo");
+        ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().setProperty("dubbo.consumers.consumerA.threads", "10");
+
+        try {
+            ConsumerConfig consumerConfig = new ConsumerConfig();
+            consumerConfig.setId("consumerA");
+            //
+            consumerConfig.setGroup("groupA");
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .consumer(consumerConfig)
+                    .initialize();
+
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getDefaultModule().getConfigManager().getConsumers();
+            Assertions.assertEquals(1, consumers.size());
+            Assertions.assertEquals(consumerConfig, consumers.iterator().next());
+            Assertions.assertEquals(false, consumerConfig.isCheck());
+            Assertions.assertEquals("groupA", consumerConfig.getGroup());
+            Assertions.assertEquals(10, consumerConfig.getThreads());
+        } finally {
+            ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
+        }
+    }
+
+    @Test
+    public void testReferenceAndConsumerConfigOverlay() {
+        SysProps.setProperty("dubbo.consumer.group", "demo");
+        SysProps.setProperty("dubbo.consumer.threads", "12");
+        SysProps.setProperty("dubbo.consumer.timeout", "1234");
+        SysProps.setProperty("dubbo.consumer.init", "false");
+        SysProps.setProperty("dubbo.consumer.check", "false");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+
+        try {
+            ReferenceConfig referenceConfig = new ReferenceConfig();
+            referenceConfig.setInterface(DemoService.class);
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .reference(referenceConfig)
+                    .initialize();
+
+            Assertions.assertEquals("demo", referenceConfig.getGroup());
+            Assertions.assertEquals(1234, referenceConfig.getTimeout());
+            Assertions.assertEquals(false, referenceConfig.isInit());
+            Assertions.assertEquals(false, referenceConfig.isCheck());
+        } finally {
+        }
+
+    }
+
+    @Test
+    public void testMetaData() {
+        ConsumerConfig consumerConfig = new ConsumerConfig();
+        Map<String, String> metaData = consumerConfig.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+
     }
 }

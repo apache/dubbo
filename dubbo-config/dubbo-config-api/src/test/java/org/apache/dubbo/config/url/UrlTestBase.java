@@ -51,7 +51,7 @@ public class UrlTestBase {
     private static final int TESTVALUE5 = 8;
     private static final int TESTVALUE6 = 9;
     private static final int TESTVALUE7 = 10;
-    protected ApplicationConfig application = new ApplicationConfig();
+    protected ApplicationConfig application;
     protected RegistryConfig regConfForProvider;
     protected RegistryConfig regConfForService;
     protected ProviderConfig provConf;
@@ -60,55 +60,55 @@ public class UrlTestBase {
     protected MethodConfig methodConfForService;
     protected ServiceConfig<DemoService> servConf;
     protected Object servConfTable[][] = {
-            {"proxy", "proxy", "string", "javassist", "jdk", "javassist", "", "", "", ""},
-            {"actives", "actives", "int", 0, 90, "", "", "", "", ""},
-            {"executes", "executes", "int", 0, 90, "", "", "", "", ""},
-            {"deprecated", "deprecated", "boolean", false, true, "", "", "", "", ""},
-            {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
-            {"accesslog", "accesslog", "string", "", "haominTest", "", "", "", "", ""},
-            {"document", "document", "string", "", "http://dubbo.apache.org/zh-cn/docs/user/quick-start.html?testquery=你好你好", "", "", "", "", ""},
-            {"weight", "weight", "int", 0, 90, "", "", "", "", ""},
+        {"proxy", "proxy", "string", "javassist", "jdk", "javassist", "", "", "", ""},
+        {"actives", "actives", "int", 0, 90, "", "", "", "", ""},
+        {"executes", "executes", "int", 0, 90, "", "", "", "", ""},
+        {"deprecated", "deprecated", "boolean", false, true, "", "", "", "", ""},
+        {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
+        {"accesslog", "accesslog", "string", "", "haominTest", "", "", "", "", ""},
+        {"document", "document", "string", "", "http://dubbo.apache.org/zh-cn/docs/user/quick-start.html?testquery=你好你好", "", "", "", "", ""},
+        {"weight", "weight", "int", 0, 90, "", "", "", "", ""},
 
-            //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
-            //{"listener", "listener", "string", "", "", "", "", "", "", ""},
+        //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
+        //{"listener", "listener", "string", "", "", "", "", "", "", ""},
 
     };
     protected Object regConfForServiceTable[][] = {
-            //            {"timeout", "registry.timeout", "int", 5000, 9000, "", "", "", "", ""},
-            //            {"file", "registry.file", "string", "", "regConfForServiceTable.log", "", "", "", "", ""},
-            //            {"wait", "registry.wait", "int", 0, 9000, "", "", "", "", ""},
-            //            {"transport", "registry.transporter", "string", "netty", "mina", "", "", "", "", ""},
-            //            {"subscribe", "subscribe", "boolean", true, false, "", "", "", "", ""},
-            {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
+        //            {"timeout", "registry.timeout", "int", 5000, 9000, "", "", "", "", ""},
+        //            {"file", "registry.file", "string", "", "regConfForServiceTable.log", "", "", "", "", ""},
+        //            {"wait", "registry.wait", "int", 0, 9000, "", "", "", "", ""},
+        //            {"transport", "registry.transporter", "string", "netty", "mina", "", "", "", "", ""},
+        //            {"subscribe", "subscribe", "boolean", true, false, "", "", "", "", ""},
+        {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
     };
     protected Object provConfTable[][] = {{"cluster", "cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"connections", "connections", "int", 0, 60, "", "", "", "", ""}, {"retries", "retries", "int", 2, 60, "", "", "", "", ""}, {"timeout", "timeout", "int", 5000, 60, "", "", "", "", ""},
-            //change by fengting listener 没有缺省值
-            //{"listener", "exporter.listener", "string", "", "", "", "", "", "", ""},
-            //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
+        //change by fengting listener 没有缺省值
+        //{"listener", "exporter.listener", "string", "", "", "", "", "", "", ""},
+        //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
 
     };
     protected Object methodConfForServiceTable[][] = {
-            {"actives", "sayName.actives", "int", 0, 90, "", "", "", "", ""},
-            {"executes", "sayName.executes", "int", 0, 90, "", "", "", "", ""},
-            {"deprecated", "sayName.deprecated", "boolean", false, true, "", "", "", "", ""},
-            {"async", "sayName.async", "boolean", false, true, "", "", "", "", ""},
-            {"timeout", "sayName.timeout", "int", 0, 90, "", "", "", "", ""},
+        {"actives", "sayName.actives", "int", 0, 90, "", "", "", "", ""},
+        {"executes", "sayName.executes", "int", 0, 90, "", "", "", "", ""},
+        {"deprecated", "sayName.deprecated", "boolean", false, true, "", "", "", "", ""},
+        {"async", "sayName.async", "boolean", false, true, "", "", "", "", ""},
+        {"timeout", "sayName.timeout", "int", 0, 90, "", "", "", "", ""},
     };
     protected DemoService demoService = new DemoServiceImpl();
     private Object appConfForProviderTable[][] = {
-            {"", "", "", "", "", "", "", "", "", ""},
+        {"", "", "", "", "", "", "", "", "", ""},
     };
     private Object appConfForServiceTable[][] = {
-            {"", "", "", "", "", "", "", "", "", ""},
+        {"", "", "", "", "", "", "", "", "", ""},
     };
     private Object regConfForProviderTable[][] = {
-            {"", "", "", "", "", "", "", "", "", ""},
+        {"", "", "", "", "", "", "", "", "", ""},
     };
     private Object protoConfForProviderTable[][] = {
-            {"", "", "", "", "", "", "", "", "", ""},
+        {"", "", "", "", "", "", "", "", "", ""},
     };
     private Object protoConfForServiceTable[][] = {
-            {"", "", "", "", "", "", "", "", "", ""},
+        {"", "", "", "", "", "", "", "", "", ""},
     };
 
     // ======================================================
@@ -144,6 +144,8 @@ public class UrlTestBase {
         servConf = new ServiceConfig<DemoService>();
 
 //        provConf.setApplication(appConfForProvider);
+        application = new ApplicationConfig();
+        application.setMetadataServicePort(20881);
         servConf.setApplication(application);
 
         provConf.setRegistry(regConfForProvider);

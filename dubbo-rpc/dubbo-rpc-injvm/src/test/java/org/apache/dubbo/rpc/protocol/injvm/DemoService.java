@@ -39,6 +39,5 @@ public interface DemoService {
 
     Type enumlength(Type... types);
 
-
-    String getRemoteApplicationName();
+    String getAsyncResult();
 }

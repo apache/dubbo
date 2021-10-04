@@ -259,9 +259,7 @@ class J2oVisitor implements JSONVisitor {
             try {
                 mValue = mType.newInstance();
                 mWrapper = Wrapper.getWrapper(mType);
-            } catch (IllegalAccessException e) {
-                throw new ParseException(StringUtils.toString(e));
-            } catch (InstantiationException e) {
+            } catch (IllegalAccessException | InstantiationException e) {
                 throw new ParseException(StringUtils.toString(e));
             }
         }
@@ -304,9 +302,7 @@ class J2oVisitor implements JSONVisitor {
                             field.setAccessible(true);
                         }
                         field.set(mValue, obj);
-                    } catch (NoSuchFieldException e) {
-                        throw new ParseException(StringUtils.toString(e));
-                    } catch (IllegalAccessException e) {
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
                         throw new ParseException(StringUtils.toString(e));
                     }
                 } else if (!CLASS_PROPERTY.equals(name)) {

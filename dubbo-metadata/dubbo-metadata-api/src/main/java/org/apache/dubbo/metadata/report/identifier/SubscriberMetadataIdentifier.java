@@ -18,7 +18,6 @@ package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.common.URL;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 
 /**
@@ -38,7 +37,7 @@ public class SubscriberMetadataIdentifier extends BaseApplicationMetadataIdentif
 
 
     public SubscriberMetadataIdentifier(URL url) {
-        this.application = url.getParameter(APPLICATION_KEY, "");
+        this.application = url.getApplication("");
         this.revision = url.getParameter(REVISION_KEY, "");
     }
 

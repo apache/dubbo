@@ -16,8 +16,41 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  *
  */
 public class EnvironmentTest {
+
+    @Test
+    public void testResolvePlaceholders1() {
+        Environment environment = ApplicationModel.defaultModel().getModelEnvironment();
+
+        Map<String, String> externalMap = new LinkedHashMap<>();
+        externalMap.put("zookeeper.address", "127.0.0.1");
+        externalMap.put("zookeeper.port", "2181");
+        environment.updateAppExternalConfigMap(externalMap);
+
+        Map<String, String> sysprops = new LinkedHashMap<>();
+        sysprops.put("zookeeper.address", "192.168.10.1");
+        System.getProperties().putAll(sysprops);
+
+        try {
+            String s = environment.resolvePlaceholders("zookeeper://${zookeeper.address}:${zookeeper.port}");
+            assertEquals("zookeeper://192.168.10.1:2181", s);
+        } finally {
+            for (String key : sysprops.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+
+    }
 }

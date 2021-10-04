@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
 
 /**
@@ -59,11 +60,11 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     /**
      * Lazy create connection
      */
-    protected Boolean lazy = false;
+    protected Boolean lazy;
 
     protected String reconnect;
 
-    protected Boolean sticky = false;
+    protected Boolean sticky;
 
     /**
      * Whether to support event in stub.
@@ -71,20 +72,30 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     //TODO solve merge problem
     protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
 
-    /**
-     * The remote service version the customer side will reference
-     */
-    protected String version;
 
-    /**
-     * The remote service group the customer side will reference
-     */
-    protected String group;
 
     /**
      * declares which app or service this interface belongs to
      */
     protected String providedBy;
+
+    protected String router;
+
+    /**
+     * Weather the reference is refer asynchronously
+     * @deprecated
+     * @see ModuleConfig#referAsync
+     */
+    @Deprecated
+    private Boolean referAsync;
+
+    @Override
+    protected void checkDefault() {
+        super.checkDefault();
+        if (sticky == null) {
+            sticky = false;
+        }
+    }
 
     public Boolean isCheck() {
         return check;
@@ -103,7 +114,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     }
 
     @Deprecated
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public Boolean isGeneric() {
         return this.generic != null ? ProtocolUtils.isGeneric(generic) : null;
     }
@@ -210,21 +221,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.sticky = sticky;
     }
 
-    public String getVersion() {
-        return version;
-    }
 
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
 
     @Parameter(key = "provided-by")
     public String getProvidedBy() {
@@ -233,5 +230,25 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     public void setProvidedBy(String providedBy) {
         this.providedBy = providedBy;
+    }
+
+    @Parameter(key = "router", append = true)
+    public String getRouter() {
+        return router;
+    }
+
+    public void setRouter(String router) {
+        this.router = router;
+    }
+
+    @Deprecated
+    @Parameter(key = REFER_ASYNC_KEY)
+    public Boolean getReferAsync() {
+        return referAsync;
+    }
+
+    @Deprecated
+    public void setReferAsync(Boolean referAsync) {
+        this.referAsync = referAsync;
     }
 }

@@ -17,11 +17,13 @@
 package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import org.junit.jupiter.api.AfterAll;
@@ -78,14 +80,14 @@ public class ChangeTelnetHandlerTest {
 
     @Test
     public void testChangeSimpleName() throws RemotingException {
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
         String result = change.telnet(mockChannel, "DemoService");
         assertEquals("Used the DemoService as default.\r\nYou can cancel default service by command: cd /", result);
     }
 
     @Test
     public void testChangeName() throws RemotingException {
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
         String result = change.telnet(mockChannel, "org.apache.dubbo.qos.legacy.service.DemoService");
         assertEquals("Used the org.apache.dubbo.qos.legacy.service.DemoService as default.\r\nYou can cancel default service by command: cd /",
                 result);
@@ -93,7 +95,7 @@ public class ChangeTelnetHandlerTest {
 
     @Test
     public void testChangePath() throws RemotingException {
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
         String result = change.telnet(mockChannel, "demo");
         assertEquals("Used the demo as default.\r\nYou can cancel default service by command: cd /", result);
     }

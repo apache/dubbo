@@ -99,7 +99,7 @@ public class LoggingFilter implements ContainerRequestFilter, ClientRequestFilte
                     msg.append(", ");
                 }
             }
-            msg.append("\n");
+            msg.append('\n');
         }
         logger.info(msg.toString());
     }

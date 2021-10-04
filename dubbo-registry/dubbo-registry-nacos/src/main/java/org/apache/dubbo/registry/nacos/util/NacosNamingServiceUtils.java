@@ -16,42 +16,29 @@
  */
 package org.apache.dubbo.registry.nacos.util;
 
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.pojo.Instance;
+import com.alibaba.nacos.api.naming.utils.NamingUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
-import com.alibaba.nacos.api.naming.pojo.Instance;
-
+import java.util.Map;
 import java.util.Properties;
 
-import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
-import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
-import static com.alibaba.nacos.api.PropertyKeyConst.CONFIG_LONG_POLL_TIMEOUT;
-import static com.alibaba.nacos.api.PropertyKeyConst.CONFIG_RETRY_TIME;
-import static com.alibaba.nacos.api.PropertyKeyConst.CONTEXT_PATH;
-import static com.alibaba.nacos.api.PropertyKeyConst.ENABLE_REMOTE_SYNC_CONFIG;
-import static com.alibaba.nacos.api.PropertyKeyConst.ENCODE;
-import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
-import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT_PORT;
-import static com.alibaba.nacos.api.PropertyKeyConst.IS_USE_CLOUD_NAMESPACE_PARSING;
-import static com.alibaba.nacos.api.PropertyKeyConst.IS_USE_ENDPOINT_PARSING_RULE;
-import static com.alibaba.nacos.api.PropertyKeyConst.MAX_RETRY;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_CLIENT_BEAT_THREAD_COUNT;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_POLLING_THREAD_COUNT;
-import static com.alibaba.nacos.api.PropertyKeyConst.RAM_ROLE_NAME;
-import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
-import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 
 /**
  * The utilities class for {@link NamingService}
@@ -61,6 +48,7 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 public class NacosNamingServiceUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(NacosNamingServiceUtils.class);
+    private static String NACOS_GROUP_KEY = "nacos.group";
 
     /**
      * Convert the {@link ServiceInstance} to {@link Instance}
@@ -71,11 +59,10 @@ public class NacosNamingServiceUtils {
      */
     public static Instance toInstance(ServiceInstance serviceInstance) {
         Instance instance = new Instance();
-        instance.setInstanceId(serviceInstance.getId());
         instance.setServiceName(serviceInstance.getServiceName());
         instance.setIp(serviceInstance.getHost());
         instance.setPort(serviceInstance.getPort());
-        instance.setMetadata(serviceInstance.getMetadata());
+        instance.setMetadata(serviceInstance.getSortedMetadata());
         instance.setEnabled(serviceInstance.isEnabled());
         instance.setHealthy(serviceInstance.isHealthy());
         return instance;
@@ -88,24 +75,16 @@ public class NacosNamingServiceUtils {
      * @return non-null
      * @since 2.7.5
      */
-    public static ServiceInstance toServiceInstance(Instance instance) {
-        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(instance.getInstanceId(),
-                instance.getServiceName(), instance.getIp(), instance.getPort());
+    public static ServiceInstance toServiceInstance(URL registryUrl, Instance instance) {
+        DefaultServiceInstance serviceInstance =
+            new DefaultServiceInstance(
+                NamingUtils.getServiceName(instance.getServiceName()),
+                instance.getIp(), instance.getPort(),
+                ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
         serviceInstance.setMetadata(instance.getMetadata());
         serviceInstance.setEnabled(instance.isEnabled());
         serviceInstance.setHealthy(instance.isHealthy());
         return serviceInstance;
-    }
-
-    /**
-     * The group of {@link NamingService} to register
-     *
-     * @param connectionURL {@link URL connection url}
-     * @return non-null, "default" as default
-     * @since 2.7.5
-     */
-    public static String getGroup(URL connectionURL) {
-        return connectionURL.getParameter("nacos.group", DEFAULT_GROUP);
     }
 
     /**
@@ -115,7 +94,7 @@ public class NacosNamingServiceUtils {
      * @return {@link NamingService}
      * @since 2.7.5
      */
-    public static NamingService createNamingService(URL connectionURL) {
+    public static NacosNamingServiceWrapper createNamingService(URL connectionURL) {
         Properties nacosProperties = buildNacosProperties(connectionURL);
         NamingService namingService;
         try {
@@ -126,7 +105,7 @@ public class NacosNamingServiceUtils {
             }
             throw new IllegalStateException(e);
         }
-        return namingService;
+        return new NacosNamingServiceWrapper(namingService);
     }
 
     private static Properties buildNacosProperties(URL url) {
@@ -138,14 +117,14 @@ public class NacosNamingServiceUtils {
 
     private static void setServerAddr(URL url, Properties properties) {
         StringBuilder serverAddrBuilder =
-                new StringBuilder(url.getHost()) // Host
-                        .append(":")
-                        .append(url.getPort()); // Port
+            new StringBuilder(url.getHost()) // Host
+                .append(':')
+                .append(url.getPort()); // Port
 
         // Append backup parameter as other servers
         String backup = url.getParameter(BACKUP_KEY);
-        if (backup != null) {
-            serverAddrBuilder.append(",").append(backup);
+        if (StringUtils.isNotEmpty(backup)) {
+            serverAddrBuilder.append(',').append(backup);
         }
 
         String serverAddr = serverAddrBuilder.toString();
@@ -153,32 +132,15 @@ public class NacosNamingServiceUtils {
     }
 
     private static void setProperties(URL url, Properties properties) {
-        putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
-        putPropertyIfAbsent(url, properties, IS_USE_CLOUD_NAMESPACE_PARSING);
-        putPropertyIfAbsent(url, properties, IS_USE_ENDPOINT_PARSING_RULE);
-        putPropertyIfAbsent(url, properties, ENDPOINT);
-        putPropertyIfAbsent(url, properties, ENDPOINT_PORT);
-        putPropertyIfAbsent(url, properties, NAMESPACE);
-        putPropertyIfAbsent(url, properties, ACCESS_KEY);
-        putPropertyIfAbsent(url, properties, SECRET_KEY);
-        putPropertyIfAbsent(url, properties, RAM_ROLE_NAME);
-        putPropertyIfAbsent(url, properties, CONTEXT_PATH);
-        putPropertyIfAbsent(url, properties, CLUSTER_NAME);
-        putPropertyIfAbsent(url, properties, ENCODE);
-        putPropertyIfAbsent(url, properties, CONFIG_LONG_POLL_TIMEOUT);
-        putPropertyIfAbsent(url, properties, CONFIG_RETRY_TIME);
-        putPropertyIfAbsent(url, properties, MAX_RETRY);
-        putPropertyIfAbsent(url, properties, ENABLE_REMOTE_SYNC_CONFIG);
-        putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
-        putPropertyIfAbsent(url, properties, NAMING_CLIENT_BEAT_THREAD_COUNT);
-        putPropertyIfAbsent(url, properties, NAMING_POLLING_THREAD_COUNT);
-    }
+        putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME, null);
 
-    private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
-        String propertyValue = url.getParameter(propertyName);
-        if (StringUtils.isNotEmpty(propertyValue)) {
-            properties.setProperty(propertyName, propertyValue);
-        }
+        // @since 2.7.8 : Refactoring
+        // Get the parameters from constants
+        Map<String, String> parameters = url.getParameters(of(PropertyKeyConst.class));
+        // Put all parameters
+        properties.putAll(parameters);
+
+        putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
     }
 
     private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName, String defaultValue) {
@@ -186,7 +148,10 @@ public class NacosNamingServiceUtils {
         if (StringUtils.isNotEmpty(propertyValue)) {
             properties.setProperty(propertyName, propertyValue);
         } else {
-            properties.setProperty(propertyName, defaultValue);
+            // when defaultValue is empty, we should not set empty value
+            if (StringUtils.isNotEmpty(defaultValue)) {
+                properties.setProperty(propertyName, defaultValue);
+            }
         }
     }
 }

@@ -21,6 +21,10 @@ public interface RegistryConstants {
 
     String REGISTRY_KEY = "registry";
 
+    String REGISTRY_CLUSTER_KEY = "REGISTRY_CLUSTER";
+
+    String REGISTRY_CLUSTER_TYPE_KEY = "registry-cluster-type";
+
     String REGISTRY_PROTOCOL = "registry";
 
     String DYNAMIC_KEY = "dynamic";
@@ -39,6 +43,8 @@ public interface RegistryConstants {
 
     String CONFIGURATORS_CATEGORY = "configurators";
 
+    String ALL_CATEGORIES = "providers,configurators,routers";
+
     String DYNAMIC_CONFIGURATORS_CATEGORY = "dynamicconfigurators";
 
     String APP_DYNAMIC_CONFIGURATORS_CATEGORY = "appdynamicconfigurators";
@@ -49,10 +55,29 @@ public interface RegistryConstants {
 
     String ROUTE_PROTOCOL = "route";
 
+    String ROUTE_SCRIPT_PROTOCOL = "script";
+
     String OVERRIDE_PROTOCOL = "override";
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";
 
+    String REGISTRY_PUBLISH_INTERFACE_KEY = "publish-interface";
+
+    String REGISTRY_PUBLISH_INSTANCE_KEY = "publish-instance";
+
+    String REGISTER_MODE_KEY = "register-mode";
+
+    String DUBBO_REGISTER_MODE_DEFAULT_KEY = "dubbo.application.register-mode";
+
+    String DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY = "dubbo.application.publish-interface";
+
+    String DUBBO_PUBLISH_INSTANCE_DEFAULT_KEY = "dubbo.application.publish-instance";
+
+    String DEFAULT_REGISTER_MODE_INTERFACE = "interface";
+
+    String DEFAULT_REGISTER_MODE_INSTANCE = "instance";
+
+    String DEFAULT_REGISTER_MODE_ALL = "all";
     /**
      * The parameter key of Dubbo Registry type
      *
@@ -76,6 +101,8 @@ public interface RegistryConstants {
 
     /**
      * The parameter key of the subscribed service names for Service-Oriented Registry
+     * <p>
+     * If there is a multiple-values, the  "comma" is the separator.
      *
      * @since 2.7.5
      */
@@ -100,4 +127,9 @@ public interface RegistryConstants {
     String REGISTRY_ZONE = "registry_zone";
     String REGISTRY_ZONE_FORCE = "registry_zone_force";
     String ZONE_KEY = "zone";
+
+    String REGISTRY_SERVICE_REFERENCE_PATH = "org.apache.dubbo.registry.RegistryService";
+    String INIT = "INIT";
+
+    float DEFAULT_HASHMAP_LOAD_FACTOR = 0.75f;
 }

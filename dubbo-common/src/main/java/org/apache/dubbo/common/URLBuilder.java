@@ -16,15 +16,19 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public final class URLBuilder {
+import static org.apache.dubbo.common.constants.CommonConstants.SCOPE_MODEL;
+
+public final class URLBuilder extends ServiceConfigURL {
     private String protocol;
 
     private String username;
@@ -41,6 +45,8 @@ public final class URLBuilder {
 
     private Map<String, String> parameters;
 
+    private Map<String, Object> attributes;
+
     private Map<String, Map<String, String>> methodParameters;
 
     public URLBuilder() {
@@ -51,6 +57,7 @@ public final class URLBuilder {
         port = 0;
         path = null;
         parameters = new HashMap<>();
+        attributes = new HashMap<>();
         methodParameters = new HashMap<>();
     }
 
@@ -83,8 +90,9 @@ public final class URLBuilder {
                       String password,
                       String host,
                       int port,
-                      String path, Map<String, String> parameters) {
-        this(protocol, username, password, host, port, path, parameters, URL.toMethodParameters(parameters));
+                      String path,
+                      Map<String, String> parameters) {
+        this(protocol, username, password, host, port, path, parameters, null);
     }
 
     public URLBuilder(String protocol,
@@ -92,8 +100,9 @@ public final class URLBuilder {
                       String password,
                       String host,
                       int port,
-                      String path, Map<String, String> parameters,
-                      Map<String, Map<String, String>> methodParameters) {
+                      String path,
+                      Map<String, String> parameters,
+                      Map<String, Object> attributes) {
         this.protocol = protocol;
         this.username = username;
         this.password = password;
@@ -101,7 +110,7 @@ public final class URLBuilder {
         this.port = port;
         this.path = path;
         this.parameters = parameters != null ? parameters : new HashMap<>();
-        this.methodParameters = (methodParameters != null ? methodParameters : new HashMap<>());
+        this.attributes = attributes != null ? attributes : new HashMap<>();
     }
 
     public static URLBuilder from(URL url) {
@@ -112,7 +121,7 @@ public final class URLBuilder {
         int port = url.getPort();
         String path = url.getPath();
         Map<String, String> parameters = new HashMap<>(url.getParameters());
-        Map<String, Map<String, String>> methodParameters = new HashMap<>(url.getMethodParameters());
+        Map<String, Object> attributes = new HashMap<>(url.getAttributes());
         return new URLBuilder(
                 protocol,
                 username,
@@ -121,14 +130,14 @@ public final class URLBuilder {
                 port,
                 path,
                 parameters,
-                methodParameters);
+                attributes);
     }
 
-    public URL build() {
+    public ServiceConfigURL build() {
         if (StringUtils.isEmpty(username) && StringUtils.isNotEmpty(password)) {
             throw new IllegalArgumentException("Invalid url, password without username!");
         }
-        port = port < 0 ? 0 : port;
+        port = Math.max(port, 0);
         // trim the leading "/"
         int firstNonSlash = 0;
         if (path != null) {
@@ -141,19 +150,21 @@ public final class URLBuilder {
                 path = path.substring(firstNonSlash);
             }
         }
-        if (CollectionUtils.isEmptyMap(methodParameters)) {
-            return new URL(protocol, username, password, host, port, path, parameters);
-        } else {
-            return new URL(protocol, username, password, host, port, path, parameters, methodParameters);
-        }
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters, attributes);
     }
 
+    @Override
+    public URLBuilder putAttribute(String key, Object obj) {
+        attributes.put(key, obj);
+        return this;
+    }
 
     public URLBuilder setProtocol(String protocol) {
         this.protocol = protocol;
         return this;
     }
 
+    @Override
     public URLBuilder setUsername(String username) {
         this.username = username;
         return this;
@@ -164,16 +175,19 @@ public final class URLBuilder {
         return this;
     }
 
+    @Override
     public URLBuilder setHost(String host) {
         this.host = host;
         return this;
     }
 
+    @Override
     public URLBuilder setPort(int port) {
         this.port = port;
         return this;
     }
 
+    @Override
     public URLBuilder setAddress(String address) {
         int i = address.lastIndexOf(':');
         String host;
@@ -189,11 +203,19 @@ public final class URLBuilder {
         return this;
     }
 
+    @Override
     public URLBuilder setPath(String path) {
         this.path = path;
         return this;
     }
 
+    @Override
+    public URLBuilder setScopeModel(ScopeModel scopeModel) {
+        this.attributes.put(SCOPE_MODEL, scopeModel);
+        return this;
+    }
+
+    @Override
     public URLBuilder addParameterAndEncoded(String key, String value) {
         if (StringUtils.isEmpty(value)) {
             return this;
@@ -271,6 +293,7 @@ public final class URLBuilder {
         return this;
     }
 
+    @Override
     public URLBuilder addParameterIfAbsent(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
@@ -293,6 +316,7 @@ public final class URLBuilder {
         return this;
     }
 
+    @Override
     public URLBuilder addParameters(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
@@ -325,14 +349,18 @@ public final class URLBuilder {
         return this;
     }
 
+    @Override
     public URLBuilder addParametersIfAbsent(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
         }
-        this.parameters.putAll(parameters);
+        for(Map.Entry<String, String> entry : parameters.entrySet()) {
+            this.parameters.putIfAbsent(entry.getKey(), entry.getValue());
+        }
         return this;
     }
 
+    @Override
     public URLBuilder addParameters(String... pairs) {
         if (pairs == null || pairs.length == 0) {
             return this;
@@ -348,6 +376,7 @@ public final class URLBuilder {
         return addParameters(map);
     }
 
+    @Override
     public URLBuilder addParameterString(String query) {
         if (StringUtils.isEmpty(query)) {
             return this;
@@ -355,6 +384,7 @@ public final class URLBuilder {
         return addParameters(StringUtils.parseQueryString(query));
     }
 
+    @Override
     public URLBuilder removeParameter(String key) {
         if (StringUtils.isEmpty(key)) {
             return this;
@@ -362,6 +392,7 @@ public final class URLBuilder {
         return removeParameters(key);
     }
 
+    @Override
     public URLBuilder removeParameters(Collection<String> keys) {
         if (CollectionUtils.isEmpty(keys)) {
             return this;
@@ -369,6 +400,7 @@ public final class URLBuilder {
         return removeParameters(keys.toArray(new String[0]));
     }
 
+    @Override
     public URLBuilder removeParameters(String... keys) {
         if (keys == null || keys.length == 0) {
             return this;
@@ -379,16 +411,19 @@ public final class URLBuilder {
         return this;
     }
 
+    @Override
     public URLBuilder clearParameters() {
         parameters.clear();
         return this;
     }
 
+    @Override
     public boolean hasParameter(String key) {
         String value = getParameter(key);
         return StringUtils.isNotEmpty(value);
     }
 
+    @Override
     public boolean hasMethodParameter(String method, String key) {
         if (method == null) {
             String suffix = "." + key;

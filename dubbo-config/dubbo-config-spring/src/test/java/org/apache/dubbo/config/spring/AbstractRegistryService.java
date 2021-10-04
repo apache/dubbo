@@ -100,11 +100,7 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
-        List<URL> urls = registered.get(service);
-        if (urls == null) {
-            registered.putIfAbsent(service, new CopyOnWriteArrayList<URL>());
-            urls = registered.get(service);
-        }
+        List<URL> urls = registered.computeIfAbsent(service, k -> new CopyOnWriteArrayList<>());
         if (!urls.contains(url)) {
             urls.add(url);
         }
@@ -164,12 +160,8 @@ public abstract class AbstractRegistryService implements RegistryService {
         if (listener == null) {
             return;
         }
-        List<NotifyListener> listeners = notifyListeners.get(service);
-        if (listeners == null) {
-            notifyListeners.putIfAbsent(service, new CopyOnWriteArrayList<NotifyListener>());
-            listeners = notifyListeners.get(service);
-        }
-        if (listeners != null && !listeners.contains(listener)) {
+        List<NotifyListener> listeners = notifyListeners.computeIfAbsent(service, k -> new CopyOnWriteArrayList<>());
+        if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
     }

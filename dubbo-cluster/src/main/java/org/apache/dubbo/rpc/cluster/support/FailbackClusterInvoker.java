@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
@@ -27,6 +28,7 @@ import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
@@ -73,36 +75,41 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         failbackTasks = failbackTasksConfig;
     }
 
-    private void addFailed(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, Invoker<T> lastInvoker) {
+    private void addFailed(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, Invoker<T> lastInvoker, URL consumerUrl) {
         if (failTimer == null) {
             synchronized (this) {
                 if (failTimer == null) {
                     failTimer = new HashedWheelTimer(
-                            new NamedThreadFactory("failback-cluster-timer", true),
-                            1,
-                            TimeUnit.SECONDS, 32, failbackTasks);
+                        new NamedThreadFactory("failback-cluster-timer", true),
+                        1,
+                        TimeUnit.SECONDS, 32, failbackTasks);
                 }
             }
         }
-        RetryTimerTask retryTimerTask = new RetryTimerTask(loadbalance, invocation, invokers, lastInvoker, retries, RETRY_FAILED_PERIOD);
+        RetryTimerTask retryTimerTask = new RetryTimerTask(loadbalance, invocation, invokers, lastInvoker, retries, RETRY_FAILED_PERIOD, consumerUrl);
         try {
             failTimer.newTimeout(retryTimerTask, RETRY_FAILED_PERIOD, TimeUnit.SECONDS);
         } catch (Throwable e) {
-            logger.error("Failback background works error,invocation->" + invocation + ", exception: " + e.getMessage());
+            logger.error("Failback background works error, invocation->" + invocation + ", exception: " + e.getMessage());
         }
     }
 
     @Override
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         Invoker<T> invoker = null;
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
         try {
             checkInvokers(invokers, invocation);
             invoker = select(loadbalance, invocation, invokers, null);
-            return invoker.invoke(invocation);
+            // Asynchronous call method must be used here, because failback will retry in the background.
+            // Then the serviceContext will be cleared after the call is completed.
+            return invokeWithContextAsync(invoker, invocation, consumerUrl);
         } catch (Throwable e) {
             logger.error("Failback to invoke method " + invocation.getMethodName() + ", wait for retry in background. Ignored exception: "
-                    + e.getMessage() + ", ", e);
-            addFailed(loadbalance, invocation, invokers, invoker);
+                + e.getMessage() + ", ", e);
+            if (retries > 0) {
+                addFailed(loadbalance, invocation, invokers, invoker, consumerUrl);
+            }
             return AsyncRpcResult.newDefaultAsyncResult(null, null, invocation); // ignore
         }
     }
@@ -126,14 +133,17 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         private final long tick;
         private Invoker<T> lastInvoker;
         private int retryTimes = 0;
+        private URL consumerUrl;
 
-        RetryTimerTask(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, Invoker<T> lastInvoker, int retries, long tick) {
+        RetryTimerTask(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, Invoker<T> lastInvoker,
+                       int retries, long tick, URL consumerUrl) {
             this.loadbalance = loadbalance;
             this.invocation = invocation;
             this.invokers = invokers;
             this.retries = retries;
             this.tick = tick;
-            this.lastInvoker=lastInvoker;
+            this.lastInvoker = lastInvoker;
+            this.consumerUrl = consumerUrl;
         }
 
         @Override
@@ -141,7 +151,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 Invoker<T> retryInvoker = select(loadbalance, invocation, invokers, Collections.singletonList(lastInvoker));
                 lastInvoker = retryInvoker;
-                retryInvoker.invoke(invocation);
+                invokeWithContextAsync(retryInvoker, invocation, consumerUrl);
             } catch (Throwable e) {
                 logger.error("Failed retry to invoke method " + invocation.getMethodName() + ", waiting again.", e);
                 if ((++retryTimes) >= retries) {
