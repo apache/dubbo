@@ -147,24 +147,6 @@ public class AsyncRpcResult implements Result {
         return new AppResponse();
     }
 
-    /**
-     * This method will always return after a maximum 'timeout' waiting:
-     * 1. if value returns before timeout, return normally.
-     * 2. if no value returns after timeout, throw TimeoutException.
-     *
-     * @return
-     * @throws InterruptedException
-     * @throws ExecutionException
-     */
-    @Override
-    public Result get() throws InterruptedException, ExecutionException {
-        if (executor != null) {
-            ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
-            threadlessExecutor.waitAndDrain();
-        }
-        return responseFuture.get();
-    }
-
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         if (executor != null) {

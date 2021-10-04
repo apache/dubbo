@@ -135,7 +135,11 @@ public interface Result extends Serializable {
 
     <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn);
 
-    Result get() throws InterruptedException, ExecutionException;
-
+    /**
+     * NOTICE!
+     * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
+     * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
+     * see https://bugs.openjdk.java.net/browse/JDK-8227018
+     */
     Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
 }

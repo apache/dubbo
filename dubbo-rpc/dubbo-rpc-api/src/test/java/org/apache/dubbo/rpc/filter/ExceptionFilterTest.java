@@ -32,6 +32,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -128,7 +130,7 @@ public class ExceptionFilterTest {
 
         Result asyncResult = exceptionFilter.invoke(invoker, invocation);
 
-        AppResponse appResponse = (AppResponse) asyncResult.get();
+        AppResponse appResponse = (AppResponse) asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
         exceptionFilter.onMessage(appResponse, invoker, invocation);
 
         Assertions.assertFalse(appResponse.getException() instanceof HessianException);

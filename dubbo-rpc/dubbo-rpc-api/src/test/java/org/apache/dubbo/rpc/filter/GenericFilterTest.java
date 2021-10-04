@@ -35,6 +35,7 @@ import org.mockito.Mockito;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
@@ -66,7 +67,7 @@ public class GenericFilterTest {
 
         Result asyncResult = genericFilter.invoke(invoker, invocation);
 
-        AppResponse appResponse = (AppResponse) asyncResult.get();
+        AppResponse appResponse = (AppResponse) asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
         genericFilter.onMessage(appResponse, invoker, invocation);
         Assertions.assertEquals(HashMap.class, appResponse.getValue().getClass());
         Assertions.assertEquals(10, ((HashMap) appResponse.getValue()).get("age"));

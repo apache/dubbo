@@ -35,6 +35,7 @@ import org.mockito.Mockito;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -66,7 +67,7 @@ public class GenericImplFilterTest {
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Result asyncResult = genericImplFilter.invoke(invoker, invocation);
-        Result result = asyncResult.get();
+        Result result = asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
         genericImplFilter.onMessage(result, invoker, invocation);
 
         Assertions.assertEquals(Person.class, result.getValue().getClass());
@@ -89,7 +90,7 @@ public class GenericImplFilterTest {
         when(invoker.getInterface()).thenReturn(DemoService.class);
 
         Result asyncResult = genericImplFilter.invoke(invoker, invocation);
-        Result result = asyncResult.get();
+        Result result = asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
         genericImplFilter.onMessage(result, invoker, invocation);
         Assertions.assertEquals(RuntimeException.class, result.getException().getClass());
 

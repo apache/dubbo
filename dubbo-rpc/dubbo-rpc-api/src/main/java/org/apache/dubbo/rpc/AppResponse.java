@@ -169,11 +169,6 @@ public class AppResponse implements Result {
     }
 
     @Override
-    public Result get() throws InterruptedException, ExecutionException {
-        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
-    }
-
-    @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
     }

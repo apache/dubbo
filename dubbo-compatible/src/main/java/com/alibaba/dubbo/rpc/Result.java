@@ -56,11 +56,6 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         }
 
         @Override
-        public org.apache.dubbo.rpc.Result get() throws InterruptedException, ExecutionException {
-            return null;
-        }
-
-        @Override
         public org.apache.dubbo.rpc.Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }

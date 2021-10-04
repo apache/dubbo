@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -122,7 +123,7 @@ public class ActiveLimitFilterTest {
                         }
                         try {
                             Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
-                            Result result = asyncResult.get();
+                            Result result = asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
                             activeLimitFilter.onMessage(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();
@@ -170,7 +171,7 @@ public class ActiveLimitFilterTest {
                         }
                         try {
                             Result asyncResult = activeLimitFilter.invoke(invoker, invocation);
-                            Result result = asyncResult.get();
+                            Result result = asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
                             activeLimitFilter.onMessage(result, invoker, invocation);
                         } catch (RpcException expected) {
                             count.incrementAndGet();

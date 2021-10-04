@@ -29,6 +29,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
@@ -105,7 +107,7 @@ public class CompatibleFilterFilterTest {
         given(invoker.getUrl()).willReturn(url);
 
         Result asyncResult = compatibleFilter.invoke(invoker, invocation);
-        AppResponse appResponse = (AppResponse) asyncResult.get();
+        AppResponse appResponse = (AppResponse) asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
         compatibleFilter.onMessage(appResponse, invoker, invocation);
         assertEquals(Type.High, appResponse.getValue());
     }
@@ -127,7 +129,7 @@ public class CompatibleFilterFilterTest {
         given(invoker.getUrl()).willReturn(url);
 
         Result asyncResult = compatibleFilter.invoke(invoker, invocation);
-        AppResponse appResponse = (AppResponse) asyncResult.get();
+        AppResponse appResponse = (AppResponse) asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
         compatibleFilter.onMessage(appResponse, invoker, invocation);
         assertEquals(Type.High, appResponse.getValue());
     }
