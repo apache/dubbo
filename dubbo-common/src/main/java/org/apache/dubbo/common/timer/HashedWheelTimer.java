@@ -241,9 +241,6 @@ public class HashedWheelTimer implements Timer {
      * @param tickDuration         the duration between tick
      * @param unit                 the time unit of the {@code tickDuration}
      * @param ticksPerWheel        the size of the wheel
-     * @param leakDetection        {@code true} if leak detection should be enabled always,
-     *                             if false it will only be enabled if the worker thread is not
-     *                             a daemon thread.
      * @param maxPendingTimeouts   The maximum number of pending timeouts after which call to
      *                             {@code newTimeout} will result in
      *                             {@link java.util.concurrent.RejectedExecutionException}
