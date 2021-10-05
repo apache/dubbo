@@ -22,6 +22,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.RemotingException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -49,7 +50,8 @@ public class MultiplexProtocolConnectionManagerTest {
             Connection connect = connectionManager.connect(url);
         }
         {
-            URL url = URL.valueOf("tri://127.0.0.1:8080?foo=bar");
+            // URL address should be different, otherwise the same connection will be reused.
+            URL url = URL.valueOf("tri://127.0.0.1:8081?foo=bar");
             Connection connect = connectionManager.connect(url);
         }
 
@@ -58,7 +60,8 @@ public class MultiplexProtocolConnectionManagerTest {
             public void accept(Connection connection) {
                 try {
                     Assertions.assertEquals("empty", connection.getUrl().getProtocol());
-                } catch (Exception e) {
+                } catch (AssertionFailedError e) {
+                    // AssertionFailedError is an Error that could not be catched as Exception.
                     Assertions.assertEquals("tri", connection.getUrl().getProtocol());
                 }
 
