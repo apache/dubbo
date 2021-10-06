@@ -15,22 +15,29 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.nop;
+package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.metrics.MetricsReporter;
+import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.common.metrics.collector.MetricsCollector;
+import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Metrics reporter without any operations.
+ * AbstractMetricsReporter.
  */
-public class NopMetricsReporter implements MetricsReporter {
+public abstract class AbstractMetricsReporter implements MetricsReporter {
 
-    public NopMetricsReporter(URL url) {
+    protected final URL url;
+    protected final List<MetricsCollector> collectors = new ArrayList<>();
 
-    }
+    public AbstractMetricsReporter(URL url) {
+        this.url = url;
 
-    @Override
-    public void init() {
-
+        collectors.add(DefaultMetricsCollector.getInstance());
+        collectors.add(AggregateMetricsCollector.getInstance());
     }
 }

@@ -17,7 +17,9 @@
 
 package org.apache.dubbo.common.metrics.collector;
 
-import org.apache.dubbo.common.metrics.model.MetricSample;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 
 import java.util.List;
 
@@ -25,6 +27,7 @@ import java.util.List;
  * Metrics Collector.
  * An interface of collector to collect framework internal metrics.
  */
+@SPI(value = "default", scope = ExtensionScope.APPLICATION)
 public interface MetricsCollector {
 
     /**

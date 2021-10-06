@@ -15,22 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.nop;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.metrics.MetricsReporter;
+package org.apache.dubbo.common.metrics.event;
 
 /**
- * Metrics reporter without any operations.
+ * BaseMetricsEvent.
  */
-public class NopMetricsReporter implements MetricsReporter {
+public class BaseMetricsEvent {
 
-    public NopMetricsReporter(URL url) {
+    protected transient Object source;
 
+    public BaseMetricsEvent(Object source) {
+        if (source == null)
+            throw new IllegalArgumentException("null source");
+
+        this.source = source;
     }
 
-    @Override
-    public void init() {
+    public Object getSource() {
+        return source;
+    }
 
+    public String toString() {
+        return getClass().getName() + "[source=" + source + "]";
     }
 }

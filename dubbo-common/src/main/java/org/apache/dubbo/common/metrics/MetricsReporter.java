@@ -22,4 +22,9 @@ package org.apache.dubbo.common.metrics;
  * Report metrics to specific metrics server(e.g. Prometheus).
  */
 public interface MetricsReporter {
+
+    /**
+     * Initialize metrics reporter.
+     */
+    void init();
 }

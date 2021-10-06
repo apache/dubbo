@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.nested.AggregationConfig;
 import org.apache.dubbo.config.nested.PrometheusConfig;
@@ -25,9 +24,6 @@ import org.apache.dubbo.config.support.Nested;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 /**
  * MetricsConfig
@@ -65,14 +61,11 @@ public class MetricsConfig extends AbstractConfig {
         Map<String, String> map = new HashMap<>();
         appendParameters(map, this);
 
-        // use 'prometheus' as the default metrics service.
-        if (StringUtils.isEmpty(map.get(PROTOCOL_KEY))) {
-            map.put(PROTOCOL_KEY, PROTOCOL_PROMETHEUS);
-        }
-
         // ignore address parameter, use specified url in each metrics server config
         // the address "localhost" here is meaningless
-        return UrlUtils.parseURL("localhost", map);
+        URL url = UrlUtils.parseURL("localhost", map);
+        url = url.setScopeModel(getScopeModel());
+        return url;
     }
 
     public String getProtocol() {

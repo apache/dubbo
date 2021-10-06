@@ -129,6 +129,7 @@
         <envoy_api_version>0.1.23</envoy_api_version>
         <micrometer.version>1.7.4</micrometer.version>
         <t_digest.version>3.3</t_digest.version>
+        <prometheus_client.version>0.10.0</prometheus_client.version>
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
@@ -743,6 +744,8 @@
                 <scope>test</scope>
                 <version>${fabric8_kubernetes_version}</version>
             </dependency>
+
+            <!-- metrics related dependencies-->
             <dependency>
                 <groupId>io.micrometer</groupId>
                 <artifactId>micrometer-core</artifactId>
@@ -757,6 +760,11 @@
                 <groupId>com.tdunning</groupId>
                 <artifactId>t-digest</artifactId>
                 <version>${t_digest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.prometheus</groupId>
+                <artifactId>simpleclient</artifactId>
+                <version>${prometheus_client.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

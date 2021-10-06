@@ -31,6 +31,9 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.metrics.MetricsReporter;
+import org.apache.dubbo.common.metrics.MetricsReporterFactory;
+import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -39,6 +42,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
@@ -203,6 +207,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             initMetadataService();
 
+            initMetricsReporter();
+
+            initMetricsService();
+
             initialized.set(true);
 
             if (logger.isInfoEnabled()) {
@@ -295,6 +303,24 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 continue;
             }
             metadataReportInstance.init(metadataReportConfig);
+        }
+    }
+
+    private void initMetricsService() {
+        // TODO
+    }
+
+    private void initMetricsReporter() {
+        DefaultMetricsCollector collector = DefaultMetricsCollector.getInstance();
+        MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
+        if (metricsConfig != null) {
+            collector.setCollectEnabled(true);
+            String protocol = metricsConfig.getProtocol();
+            if (StringUtils.isNotEmpty(protocol)) {
+                MetricsReporterFactory metricsReporterFactory = getExtensionLoader(MetricsReporterFactory.class).getAdaptiveExtension();
+                MetricsReporter metricsReporter = metricsReporterFactory.createMetricsReporter(metricsConfig.toUrl());
+                metricsReporter.init();
+            }
         }
     }
 

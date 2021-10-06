@@ -15,29 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metrics.quantile;
-
-import com.tdunning.math.stats.TDigest;
+package org.apache.dubbo.metrics.aggregate;
 
 import java.util.concurrent.TimeUnit;
 
 /**
- * Wrapper around TDigest.
- *
- * Maintains a ring buffer of TDigest to provide quantiles over a sliding windows of time.
+ * Wrapper around Counter like Long and Integer.
+ * <p>
+ * Maintains a ring buffer of Counter to provide count over a sliding windows of time.
  */
-public class TimeWindowTDigest {
-    private final double compression;
-    private final TDigest[] ringBuffer;
+public class TimeWindowCounter {
+    private final Long[] ringBuffer;
     private int currentBucket;
     private long lastRotateTimestampMillis;
     private final long durationBetweenRotatesMillis;
 
-    public TimeWindowTDigest(double compression, long timeWindowSeconds, int bucketNum) {
-        this.compression = compression;
-        this.ringBuffer = new TDigest[bucketNum];
+    public TimeWindowCounter(int bucketNum, int timeWindowSeconds) {
+        this.ringBuffer = new Long[bucketNum];
         for (int i = 0; i < bucketNum; i++) {
-            this.ringBuffer[i] = TDigest.createDigest(compression);
+            this.ringBuffer[i] = 0L;
         }
 
         this.currentBucket = 0;
@@ -45,22 +41,36 @@ public class TimeWindowTDigest {
         this.durationBetweenRotatesMillis = TimeUnit.SECONDS.toMillis(timeWindowSeconds) / bucketNum;
     }
 
-    public synchronized double quantile(double q) {
-        TDigest currentBucket = rotate();
-        return currentBucket.quantile(q);
+    public synchronized double get() {
+        return rotate();
     }
 
-    public synchronized void add(double value) {
+    public synchronized void increment() {
+        this.increment(1L);
+    }
+
+    public synchronized void increment(Long step) {
         rotate();
-        for (TDigest bucket : ringBuffer) {
-            bucket.add(value);
+        for (int i = 0; i < ringBuffer.length; i++) {
+            ringBuffer[i] = ringBuffer[i] + step;
         }
     }
 
-    private TDigest rotate() {
+    public synchronized void decrement() {
+        this.decrement(1L);
+    }
+
+    public synchronized void decrement(Long step) {
+        rotate();
+        for (int i = 0; i < ringBuffer.length; i++) {
+            ringBuffer[i] = ringBuffer[i] - step;
+        }
+    }
+
+    private Long rotate() {
         long timeSinceLastRotateMillis = System.currentTimeMillis() - lastRotateTimestampMillis;
         while (timeSinceLastRotateMillis > durationBetweenRotatesMillis) {
-            ringBuffer[currentBucket] = TDigest.createDigest(compression);
+            ringBuffer[currentBucket] = 0L;
             if (++currentBucket >= ringBuffer.length) {
                 currentBucket = 0;
             }

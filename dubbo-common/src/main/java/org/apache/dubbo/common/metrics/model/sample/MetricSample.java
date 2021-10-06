@@ -15,17 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.model;
+package org.apache.dubbo.common.metrics.model.sample;
 
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * MetricSample.
+ */
 public class MetricSample {
-    private String name;
-    private String description;
-    private String baseUnit;
-    private Type type;
-    private Map<String, String> tags;
+    protected String name;
+    protected String description;
+    protected Map<String, String> tags;
+    protected Type type;
+    protected String baseUnit;
+
+    public MetricSample(String name, String description, Map<String, String> tags, Type type) {
+        this(name, description, tags, type, null);
+    }
+
+    public MetricSample(String name, String description, Map<String, String> tags, Type type, String baseUnit) {
+        this.name = name;
+        this.description = description;
+        this.tags = tags;
+        this.type = type;
+        this.baseUnit = baseUnit;
+    }
 
     public String getName() {
         return name;
@@ -43,8 +58,12 @@ public class MetricSample {
         this.description = description;
     }
 
-    public String getBaseUnit() {
-        return baseUnit;
+    public Map<String, String> getTags() {
+        return tags;
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags = tags;
     }
 
     public Type getType() {
@@ -55,16 +74,12 @@ public class MetricSample {
         this.type = type;
     }
 
+    public String getBaseUnit() {
+        return baseUnit;
+    }
+
     public void setBaseUnit(String baseUnit) {
         this.baseUnit = baseUnit;
-    }
-
-    public Map<String, String> getTags() {
-        return tags;
-    }
-
-    public void setTags(Map<String, String> tags) {
-        this.tags = tags;
     }
 
     @Override
@@ -82,7 +97,7 @@ public class MetricSample {
 
     @Override
     public String toString() {
-        return "MetricFamilySamples{" +
+        return "MetricSample{" +
             "name='" + name + '\'' +
             ", description='" + description + '\'' +
             ", baseUnit='" + baseUnit + '\'' +
@@ -91,7 +106,7 @@ public class MetricSample {
             '}';
     }
 
-    enum Type {
+    public enum Type {
         COUNTER,
         GAUGE,
         LONG_TASK_TIMER,

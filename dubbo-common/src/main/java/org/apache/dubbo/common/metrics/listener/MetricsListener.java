@@ -15,22 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.nop;
+package org.apache.dubbo.common.metrics.listener;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.metrics.MetricsReporter;
+import org.apache.dubbo.common.metrics.event.BaseMetricsEvent;
 
 /**
- * Metrics reporter without any operations.
+ * Metrics Listener.
  */
-public class NopMetricsReporter implements MetricsReporter {
+public interface MetricsListener {
 
-    public NopMetricsReporter(URL url) {
-
-    }
-
-    @Override
-    public void init() {
-
-    }
+    /**
+     * notify event.
+     *
+     * @param event BaseMetricsEvent
+     */
+    void onEvent(BaseMetricsEvent event);
 }

@@ -18,6 +18,7 @@
 package org.apache.dubbo.common.metrics;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
@@ -28,10 +29,11 @@ import org.apache.dubbo.common.extension.SPI;
 public interface MetricsReporterFactory {
 
     /**
-     * Get metrics server.
+     * Create metrics reporter.
      *
      * @param url URL
-     * @return Metrics server implementation.
+     * @return Metrics reporter implementation.
      */
+    @Adaptive({"protocol"})
     MetricsReporter createMetricsReporter(URL url);
 }

@@ -15,22 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.nop;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.metrics.MetricsReporter;
+package org.apache.dubbo.common.metrics.event;
 
 /**
- * Metrics reporter without any operations.
+ * RTChangedEvent.
  */
-public class NopMetricsReporter implements MetricsReporter {
+public class RTChangedEvent extends BaseMetricsEvent {
+    private Long rt;
 
-    public NopMetricsReporter(URL url) {
-
+    public RTChangedEvent(Object source, Long rt) {
+        super(source);
+        this.rt = rt;
     }
 
-    @Override
-    public void init() {
+    public Long getRt() {
+        return rt;
+    }
 
+    public void setRt(Long rt) {
+        this.rt = rt;
     }
 }

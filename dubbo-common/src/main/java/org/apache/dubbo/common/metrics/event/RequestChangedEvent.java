@@ -15,22 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.nop;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.metrics.MetricsReporter;
+package org.apache.dubbo.common.metrics.event;
 
 /**
- * Metrics reporter without any operations.
+ * RequestChangedEvent.
  */
-public class NopMetricsReporter implements MetricsReporter {
+public class RequestChangedEvent extends BaseMetricsEvent {
+    private Type type;
 
-    public NopMetricsReporter(URL url) {
-
+    public RequestChangedEvent(Object source, Type type) {
+        super(source);
+        this.type = type;
     }
 
-    @Override
-    public void init() {
+    public Type getType() {
+        return type;
+    }
 
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public enum Type {
+        TOTAL,
+        SUCCEED,
+        FAILED,
+        PROCESSING
     }
 }

@@ -15,22 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.nop;
+package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.metrics.MetricsReporter;
+import org.apache.dubbo.common.metrics.MetricsReporterFactory;
 
 /**
- * Metrics reporter without any operations.
+ * MetricsReporterFactory to create PrometheusMetricsReporter.
  */
-public class NopMetricsReporter implements MetricsReporter {
-
-    public NopMetricsReporter(URL url) {
-
-    }
+public class PrometheusMetricsReporterFactory implements MetricsReporterFactory {
 
     @Override
-    public void init() {
-
+    public MetricsReporter createMetricsReporter(URL url) {
+        return new PrometheusMetricsReporter(url);
     }
 }

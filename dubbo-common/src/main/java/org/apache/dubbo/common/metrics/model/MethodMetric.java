@@ -17,13 +17,31 @@
 
 package org.apache.dubbo.common.metrics.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 
 public class MethodMetric extends BaseMetric {
     private String interfaceName;
     private String methodName;
     private String group;
     private String version;
+
+    public MethodMetric() {
+
+    }
+
+    public MethodMetric(String interfaceName, String methodName, String group, String version) {
+        this.interfaceName = interfaceName;
+        this.methodName = methodName;
+        this.group = group;
+        this.version = version;
+    }
 
     public String getInterfaceName() {
         return interfaceName;
@@ -55,6 +73,15 @@ public class MethodMetric extends BaseMetric {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Map<String, String> getTags() {
+        Map<String, String> tags = new HashMap<>();
+        tags.put(TAG_INTERFACE_KEY, interfaceName);
+        tags.put(TAG_METHOD_KEY, methodName);
+        tags.put(TAG_GROUP_KEY, group);
+        tags.put(TAG_VERSION_KEY, version);
+        return tags;
     }
 
     @Override

@@ -24,6 +24,21 @@ public class BaseMetric {
     private String description;
     private String baseUnit;
 
+    public BaseMetric() {
+
+    }
+
+    public BaseMetric(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
+    public BaseMetric(String name, String description, String baseUnit) {
+        this.name = name;
+        this.description = description;
+        this.baseUnit = baseUnit;
+    }
+
     public String getName() {
         return name;
     }

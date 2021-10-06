@@ -266,8 +266,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     @Deprecated
     protected void appendMetricsCompatible(Map<String, String> map) {
         MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
-        if (metricsConfig != null) {
-            if (!metricsConfig.getProtocol().equals(PROTOCOL_PROMETHEUS)) {
+        if (metricsConfig != null && StringUtils.isNotEmpty(metricsConfig.getProtocol())) {
+            if (!PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
                 map.put("metrics.protocol", metricsConfig.getProtocol());
                 map.put("metrics.port", metricsConfig.getPort());
             }
