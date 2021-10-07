@@ -766,6 +766,11 @@
                 <artifactId>simpleclient</artifactId>
                 <version>${prometheus_client.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.prometheus</groupId>
+                <artifactId>simpleclient_pushgateway</artifactId>
+                <version>${prometheus_client.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

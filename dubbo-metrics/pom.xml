@@ -33,11 +33,4 @@
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-        </dependency>
-    </dependencies>
 </project>

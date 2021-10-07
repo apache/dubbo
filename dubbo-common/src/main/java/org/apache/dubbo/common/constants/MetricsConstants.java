@@ -62,4 +62,11 @@ public interface MetricsConstants {
 
     String PROMETHEUS_PUSHGATEWAY_JOB_KEY = "prometheus.pushgateway.job";
 
+    int PROMETHEUS_DEFAULT_METRICS_PORT = 20888;
+
+    String PROMETHEUS_DEFAULT_METRICS_PATH = "/metrics";
+
+    int PROMETHEUS_DEFAULT_PUSH_INTERVAL = 30;
+
+    String PROMETHEUS_DEFAULT_JOB_NAME = "default_dubbo_job";
 }
