@@ -551,7 +551,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            //checkInterfaceAndMethods(interfaceClass, getMethods());
         }
 
         checkStubAndLocal(interfaceClass);

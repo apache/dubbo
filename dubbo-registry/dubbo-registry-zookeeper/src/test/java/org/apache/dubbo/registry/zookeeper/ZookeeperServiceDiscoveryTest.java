@@ -85,8 +85,21 @@ public class ZookeeperServiceDiscoveryTest {
 
         DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
 
+        CountDownLatch latch = new CountDownLatch(1);
+
+        // Add Listener
+        discovery.addServiceInstancesChangedListener(
+                new ServiceInstancesChangedListener(Sets.newSet(SERVICE_NAME), discovery) {
+            @Override
+            public void onEvent(ServiceInstancesChangedEvent event) {
+                latch.countDown();
+            }
+        });
+
         discovery.register(serviceInstance);
 
+        latch.await();
+        
         List<ServiceInstance> serviceInstances = discovery.getInstances(SERVICE_NAME);
 
         assertTrue(serviceInstances.contains(serviceInstance));

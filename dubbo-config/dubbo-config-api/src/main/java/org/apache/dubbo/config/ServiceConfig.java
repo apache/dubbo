@@ -317,7 +317,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            //checkInterfaceAndMethods(interfaceClass, getMethods());
             checkRef();
             generic = Boolean.FALSE.toString();
         }

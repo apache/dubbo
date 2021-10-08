@@ -14,31 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol;
 
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.InvokerListener;
-import org.apache.dubbo.rpc.RpcException;
+package org.apache.dubbo.common.utils;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import static org.apache.dubbo.common.constants.CommonConstants.NATIVE;
 
+public abstract class NativeUtils {
 
-public class CountInvokerListener implements InvokerListener {
-
-    private final static AtomicInteger counter = new AtomicInteger(0);
-
-    @Override
-    public void referred(Invoker<?> invoker) throws RpcException {
-        counter.set(0);
-        counter.incrementAndGet();
+    public static boolean isNative() {
+        return Boolean.parseBoolean(System.getProperty(NATIVE, "false"));
     }
 
-    @Override
-    public void destroyed(Invoker<?> invoker) {
-
-    }
-
-    public static int getCounter() {
-        return counter.get();
-    }
 }

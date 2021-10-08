@@ -501,7 +501,6 @@ public class ServiceInstancesChangedListenerTest {
             String rawURL = (String)obj;
             DefaultServiceInstance instance = new DefaultServiceInstance();
             final URL dubboUrl = URL.valueOf(rawURL);
-            instance = new DefaultServiceInstance();
             instance.setRawAddress(rawURL);
             instance.setHost(dubboUrl.getHost());
             instance.setEnabled(true);

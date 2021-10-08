@@ -20,6 +20,7 @@ import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 
 import java.io.IOException;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -28,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -76,9 +78,15 @@ public class ClassLoaderResourceLoader {
             Enumeration<URL> urls = null;
             try {
                 urls = currentClassLoader.getResources(fileName);
+                boolean isNative = NativeUtils.isNative();
                 if (urls != null) {
                     while (urls.hasMoreElements()) {
-                        set.add(urls.nextElement());
+                        URL url = urls.nextElement();
+                        if (isNative) {
+                            //In native mode, the address of each URL is the same instead of different paths, so it is necessary to set the ref to make it different
+                            setRef(url);
+                        }
+                        set.add(url);
                     }
                 }
             } catch (IOException e) {
@@ -94,5 +102,15 @@ public class ClassLoaderResourceLoader {
             classLoaderResourcesCache.clear();
         }
     }
+
+    private static void setRef(URL url) {
+        try {
+            Field field = URL.class.getDeclaredField("ref");
+            field.setAccessible(true);
+            field.set(url, UUID.randomUUID().toString());
+        } catch (Throwable ignore) {
+        }
+    }
+
 
 }

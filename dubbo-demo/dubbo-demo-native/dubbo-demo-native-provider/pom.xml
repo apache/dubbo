@@ -128,6 +128,7 @@
                                 --no-fallback
 
                                 --initialize-at-build-time=org.slf4j.MDC
+                                --initialize-at-build-time=org.apache.log4j.MDC
                                 --initialize-at-build-time=org.slf4j.LoggerFactory
                                 --initialize-at-build-time=org.slf4j.impl.StaticLoggerBinder
                                 --initialize-at-build-time=org.apache.log4j.helpers.Loader
@@ -138,6 +139,7 @@
                                 --initialize-at-build-time=org.slf4j.impl.Log4jLoggerFactory
                                 --initialize-at-build-time=org.slf4j.impl.Log4jLoggerAdapter
                                 --initialize-at-build-time=org.eclipse.collections.api.factory.Sets
+                                --initialize-at-build-time=io.netty.util.internal.logging.Log4JLogger
 
 
 
@@ -152,7 +154,6 @@
                                 --initialize-at-run-time=io.netty.channel.unix.Errors
                                 --initialize-at-run-time=io.netty.channel.unix.IovArray
                                 --initialize-at-run-time=io.netty.channel.unix.Limits
-                                --initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger
                                 --initialize-at-run-time=io.netty.channel.unix.Socket
                                 --initialize-at-run-time=io.netty.channel.ChannelHandlerMask
 
