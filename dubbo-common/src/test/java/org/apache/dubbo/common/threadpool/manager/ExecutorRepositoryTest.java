@@ -84,7 +84,7 @@ public class ExecutorRepositoryTest {
         sharedExecutor.execute(task2);
         sharedExecutor.submit(task3);
 
-        Thread.sleep(100);
+        Thread.sleep(150);
         Assertions.assertTrue(task1.isRunning());
         Assertions.assertFalse(task1.isDone());
         Assertions.assertTrue(task2.isRunning());
