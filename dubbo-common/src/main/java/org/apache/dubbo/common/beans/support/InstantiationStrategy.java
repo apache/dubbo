@@ -33,7 +33,6 @@ import java.util.List;
  */
 public class InstantiationStrategy {
 
-    private boolean supportConstructorWithArguments;
     private ScopeModelAccessor scopeModelAccessor;
 
     public InstantiationStrategy() {
@@ -42,21 +41,18 @@ public class InstantiationStrategy {
 
     public InstantiationStrategy(ScopeModelAccessor scopeModelAccessor) {
         this.scopeModelAccessor = scopeModelAccessor;
-        this.supportConstructorWithArguments = (this.scopeModelAccessor != null);
     }
 
     public <T> T instantiate(Class<T> type) throws ReflectiveOperationException {
 
         // should not use default constructor directly, maybe also has another constructor matched scope model arguments
-        // 1. try default constructor
-//        try {
-//            return type.getConstructor().newInstance();
-//        } catch (NoSuchMethodException e) {
-//            // ignore no default constructor
-//            if (!supportConstructorWithArguments) {
-//                throw new IllegalArgumentException("Default constructor was not found for type: " + type.getName());
-//            }
-//        }
+        // 1. try get default constructor
+        Constructor<T> defaultConstructor = null;
+        try {
+            defaultConstructor = type.getConstructor();
+        } catch (NoSuchMethodException e) {
+            // ignore no default constructor
+        }
 
         // 2. use matched constructor if found
         List<Constructor> matchedConstructors = new ArrayList<>();
@@ -66,22 +62,35 @@ public class InstantiationStrategy {
                 matchedConstructors.add(constructor);
             }
         }
+        // remove default constructor from matchedConstructors
+        if (defaultConstructor != null) {
+            matchedConstructors.remove(defaultConstructor);
+        }
+
+        // match order:
+        // 1. the only matched constructor with parameters
+        // 2. default constructor if absent
+
+        Constructor targetConstructor;
         if (matchedConstructors.size() > 1) {
             throw new IllegalArgumentException("Expect only one but found " +
                 matchedConstructors.size() + " matched constructors for type: " + type.getName() +
                 ", matched constructors: " + matchedConstructors);
-        } else if (matchedConstructors.size() == 0) {
+        } else if (matchedConstructors.size() == 1) {
+            targetConstructor = matchedConstructors.get(0);
+        } else if (defaultConstructor != null) {
+            targetConstructor = defaultConstructor;
+        } else {
             throw new IllegalArgumentException("None matched constructor was found for type: " + type.getName());
         }
 
         // create instance with arguments
-        Constructor constructor = matchedConstructors.get(0);
-        Class[] parameterTypes = constructor.getParameterTypes();
+        Class[] parameterTypes = targetConstructor.getParameterTypes();
         Object[] args = new Object[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             args[i] = getArgumentValueForType(parameterTypes[i]);
         }
-        return (T) constructor.newInstance(args);
+        return (T) targetConstructor.newInstance(args);
     }
 
     private boolean isMatched(Constructor<?> constructor) {
