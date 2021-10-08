@@ -29,7 +29,6 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -79,10 +78,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
-
-        // set cancel context to RpcInvocation to transport to stream
-        final CancellationContext cancellationContext = RpcContext.getCancellationContext();
-        inv.setCancellationContext(cancellationContext);
 
         final String methodName = RpcUtils.getMethodName(invocation);
         inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());

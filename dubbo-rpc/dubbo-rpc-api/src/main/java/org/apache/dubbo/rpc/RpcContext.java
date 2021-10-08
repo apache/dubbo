@@ -84,6 +84,9 @@ public class RpcContext {
         }
     };
 
+    /**
+     * use by cancel call
+     */
     private static final InternalThreadLocal<CancellationContext> CANCELLATION_CONTEXT = new InternalThreadLocal<CancellationContext>() {
         @Override
         protected CancellationContext initialValue() {
@@ -94,6 +97,14 @@ public class RpcContext {
 
     public static CancellationContext getCancellationContext() {
         return CANCELLATION_CONTEXT.get();
+    }
+
+    public static void removeCancellationContext() {
+        CANCELLATION_CONTEXT.remove();
+    }
+
+    public static void restoreCancellationContext(CancellationContext oldContext) {
+        CANCELLATION_CONTEXT.set(oldContext);
     }
 
 

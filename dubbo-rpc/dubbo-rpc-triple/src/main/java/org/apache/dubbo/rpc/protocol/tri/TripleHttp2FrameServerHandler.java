@@ -208,12 +208,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
                 methodDescriptor = methodDescriptors.get(0);
             }
         }
-        final AbstractServerStream stream;
-        if (methodDescriptor != null && methodDescriptor.isStream()) {
-            stream = AbstractServerStream.stream(invoker.getUrl());
-        } else {
-            stream = AbstractServerStream.unary(invoker.getUrl());
-        }
+        boolean isUnary = methodDescriptor != null && methodDescriptor.isUnary();
+        final AbstractServerStream stream = AbstractServerStream.newServerStream(invoker.getUrl(), isUnary);
+
         Channel channel = ctx.channel();
         // You can add listeners to ChannelPromise here if you want to listen for the result of sending a frame
         stream.service(providerModel.getServiceModel())
