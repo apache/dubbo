@@ -30,7 +30,8 @@ import java.util.concurrent.CountDownLatch;
 public class Application {
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("dubbo.application.logger", "jdk");
+        System.setProperty("dubbo.application.logger", "log4j");
+        System.setProperty("native", "true");
         if (isClassic(args)) {
             startWithExport();
         } else {
@@ -68,7 +69,16 @@ public class Application {
         ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
-        service.setApplication(new ApplicationConfig("dubbo-demo-api-provider"));
+
+        ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-api-provider");
+        applicationConfig.setQosEnable(false);
+        applicationConfig.setCompiler("jdk");
+
+        Map<String, String> m = new HashMap<>(1);
+        m.put("proxy", "jdk");
+        applicationConfig.setParameters(m);
+
+        service.setApplication(applicationConfig);
         service.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
         service.export();
 
