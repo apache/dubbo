@@ -67,7 +67,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> zkListeners = new ConcurrentHashMap<>();
 
-    private final ZookeeperClient zkClient;
+    private ZookeeperClient zkClient;
 
     public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
@@ -106,19 +106,27 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        return zkClient.isConnected();
+        return zkClient != null && zkClient.isConnected();
     }
 
     @Override
     public void destroy() {
         super.destroy();
-        // can not close zk client here for zk client is shared somewhere else
-        // see org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter.destroy
+        // Just release zkClient reference, but can not close zk client here for zk client is shared somewhere else.
+        // See org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter#destroy()
+        zkClient = null;
+    }
+
+    private void checkDestroyed() {
+        if (zkClient == null) {
+            throw new IllegalStateException("registry is destroyed");
+        }
     }
 
     @Override
     public void doRegister(URL url) {
         try {
+            checkDestroyed();
             zkClient.create(toUrlPath(url), url.getParameter(DYNAMIC_KEY, true));
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -128,6 +136,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     @Override
     public void doUnregister(URL url) {
         try {
+            checkDestroyed();
             zkClient.delete(toUrlPath(url));
         } catch (Throwable e) {
             throw new RpcException("Failed to unregister " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -137,6 +146,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     @Override
     public void doSubscribe(final URL url, final NotifyListener listener) {
         try {
+            checkDestroyed();
             if (ANY_VALUE.equals(url.getServiceInterface())) {
                 String root = toRootPath();
                 boolean check = url.getParameter(CHECK_KEY, false);
@@ -190,6 +200,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
+        checkDestroyed();
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
             ChildListener zkListener = listeners.remove(listener);
@@ -216,6 +227,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
             throw new IllegalArgumentException("lookup url == null");
         }
         try {
+            checkDestroyed();
             List<String> providers = new ArrayList<>();
             for (String path : toCategoriesPath(url)) {
                 List<String> children = zkClient.getChildren(path);
