@@ -37,7 +37,7 @@ import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -166,9 +166,11 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                     realArgument = args;
                 }
 
-                return new RpcInvocation(invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
-                    pts, realArgument, new LinkedHashMap<>(invocation.getObjectAttachments()),
+                RpcInvocation copiedInvocation = new RpcInvocation(providerServiceModel, invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
+                    pts, realArgument, new HashMap<>(invocation.getObjectAttachments()),
                     invocation.getInvoker(), invocation.getAttributes());
+                copiedInvocation.setInvoker(invoker);
+                return copiedInvocation;
             } finally {
                 Thread.currentThread().setContextClassLoader(originClassLoader);
             }

@@ -101,8 +101,8 @@ public class RemoteMetadataServiceImpl implements ScopeModelAware {
             metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
         }
         Map<String, String> params = new HashMap<>(instance.getExtendParams());
-        if (instance.getRegistryCluster() != null && !instance.getRegistryCluster().equalsIgnoreCase(params.get(REGISTRY_CLUSTER_KEY))) {
-            params.put(REGISTRY_CLUSTER_KEY, instance.getRegistryCluster());
+        if (registryCluster != null && !registryCluster.equalsIgnoreCase(params.get(REGISTRY_CLUSTER_KEY))) {
+            params.put(REGISTRY_CLUSTER_KEY, registryCluster);
         }
         return metadataReport.getAppMetadata(identifier, params);
     }
