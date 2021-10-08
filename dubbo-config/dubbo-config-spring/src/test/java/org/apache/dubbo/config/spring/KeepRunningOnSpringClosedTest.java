@@ -35,13 +35,19 @@ public class KeepRunningOnSpringClosedTest {
             context.setKeepRunningOnSpringClosed(true);
         });
 
+        ClassPathXmlApplicationContext providerContext = null;
         try {
-            ClassPathXmlApplicationContext providerContext;
             String resourcePath = "org/apache/dubbo/config/spring";
             providerContext = new ClassPathXmlApplicationContext(
                 resourcePath + "/demo-provider.xml",
                 resourcePath + "/demo-provider-properties.xml");
             providerContext.start();
+
+            // Expect 1: dubbo application state is STARTED after spring context start finish.
+            // No need check and wait
+
+            DubboStateListener dubboStateListener = providerContext.getBean(DubboStateListener.class);
+            Assertions.assertEquals(DeployState.STARTED, dubboStateListener.getState());
 
             ModuleModel moduleModel = providerContext.getBean(ModuleModel.class);
             ModuleDeployer moduleDeployer = moduleModel.getDeployer();
@@ -55,12 +61,15 @@ public class KeepRunningOnSpringClosedTest {
             // close spring context
             providerContext.close();
 
-            // expect dubbo bootstrap will not be destroyed after closing spring context
+            // Expect 2: dubbo application will not be destroyed after closing spring context cause setKeepRunningOnSpringClosed(true)
             Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
             Assertions.assertEquals(true, applicationDeployer.isStarted());
             Assertions.assertEquals(false, applicationDeployer.isStopped());
         } finally {
             SysProps.clear();
+            if (providerContext != null) {
+                providerContext.close();
+            }
         }
     }
 }
