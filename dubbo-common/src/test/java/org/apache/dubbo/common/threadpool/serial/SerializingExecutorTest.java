@@ -27,6 +27,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 public class SerializingExecutorTest {
 
@@ -62,7 +63,7 @@ public class SerializingExecutorTest {
                 Assertions.assertEquals(num, index);
             });
         }
-        downLatch.await();
+        downLatch.await(3, TimeUnit.SECONDS);
         Assertions.assertEquals(total, map.get("val"));
     }
 }
