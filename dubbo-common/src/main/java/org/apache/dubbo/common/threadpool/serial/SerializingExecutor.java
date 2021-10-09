@@ -39,7 +39,7 @@ public final class SerializingExecutor implements Executor, Runnable {
      */
     private final AtomicBoolean atomicBoolean = new AtomicBoolean();
 
-    private Executor executor;
+    private final Executor executor;
 
     private final Queue<Runnable> runQueue = new ConcurrentLinkedQueue<>();
 
@@ -49,14 +49,6 @@ public final class SerializingExecutor implements Executor, Runnable {
      * @param executor Executor in which tasks should be run. Must not be null.
      */
     public SerializingExecutor(Executor executor) {
-        this.executor = executor;
-    }
-
-    /**
-     * Only call this from this SerializingExecutor Runnable, so that the executor is immediately
-     * visible to this SerializingExecutor executor.
-     */
-    public void setExecutor(Executor executor) {
         this.executor = executor;
     }
 
@@ -102,8 +94,7 @@ public final class SerializingExecutor implements Executor, Runnable {
     public void run() {
         Runnable r;
         try {
-            Executor oldExecutor = executor;
-            while (oldExecutor == executor && (r = runQueue.poll()) != null) {
+            while ((r = runQueue.poll()) != null) {
                 try {
                     r.run();
                 } catch (RuntimeException e) {
