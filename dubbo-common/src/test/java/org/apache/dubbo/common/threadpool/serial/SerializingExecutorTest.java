@@ -51,7 +51,6 @@ public class SerializingExecutorTest {
             final int index = i;
             Thread.sleep(ThreadLocalRandom.current().nextInt(sleepMillis));
             serializingExecutor.execute(() -> {
-                System.out.println("threadName=" + Thread.currentThread().getName());
                 try {
                     Thread.sleep(ThreadLocalRandom.current().nextInt(sleepMillis));
                 } catch (InterruptedException e) {
@@ -59,8 +58,8 @@ public class SerializingExecutorTest {
                 }
                 downLatch.countDown();
                 int num = map.get("val");
-                Assertions.assertEquals(num, index);
                 map.put("val", num + 1);
+                Assertions.assertEquals(num, index);
             });
         }
         downLatch.await();
