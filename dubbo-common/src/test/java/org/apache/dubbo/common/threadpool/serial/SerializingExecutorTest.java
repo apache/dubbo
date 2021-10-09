@@ -57,9 +57,9 @@ public class SerializingExecutorTest {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                downLatch.countDown();
                 int num = map.get("val");
                 map.put("val", num + 1);
+                downLatch.countDown();
                 Assertions.assertEquals(num, index);
             });
         }
