@@ -324,7 +324,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
             metadataSemaphore.drainPermits();
             updateLock.writeLock().lock();
         } catch (InterruptedException e) {
-            logger.warn("metadata refresh thread has been interrupted unexpectedly while waiting for update.", e);
+            if (!applicationModel.getDeployer().isStopping()) {
+                logger.warn("metadata refresh thread has been interrupted unexpectedly while waiting for update.", e);
+            }
         }
     }
 
