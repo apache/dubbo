@@ -224,7 +224,7 @@ public class ApplicationModel extends ScopeModel {
         }
 
         if (environment != null) {
-            environment.destroy();
+            // just set null here, destroy environment at DefaultApplicationDeployer destroyDynamicConfigurations().
             environment = null;
         }
         if (configManager != null) {

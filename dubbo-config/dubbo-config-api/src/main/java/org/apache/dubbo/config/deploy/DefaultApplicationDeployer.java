@@ -924,8 +924,21 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void destroyDynamicConfigurations() {
         // TODO only destroy DynamicConfiguration of this application
         // DynamicConfiguration may be cached somewhere, and maybe used during destroy
-        // destroy them may cause some troubles, so just clear instances cache
-        // ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
+        // destroy them may cause some troubles,
+        // but let them go also cause troubles such as configCenter connection leak.
+        if (environment.getDynamicConfiguration().isPresent() &&
+            environment.getDynamicConfiguration().get() instanceof CompositeDynamicConfiguration) {
+            CompositeDynamicConfiguration compositeDynamicConfiguration =
+                    (CompositeDynamicConfiguration) environment.getDynamicConfiguration().get();
+            compositeDynamicConfiguration.getInnerConfigurations().forEach(dynamicConfiguration -> {
+                try {
+                    dynamicConfiguration.close();
+                } catch (Throwable ignored) {
+                    logger.warn(ignored.getMessage(), ignored);
+                }
+            });
+            environment.destroy();
+        }
     }
 
     private ApplicationConfig getApplication() {
