@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
@@ -76,7 +77,7 @@ public abstract class AbstractStream implements Stream {
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
 
-    private CancellationContext cancellationContext;
+    private final CancellationContext cancellationContext;
     private boolean cancelled = false;
 
     public boolean isCancelled() {
@@ -91,18 +92,15 @@ public abstract class AbstractStream implements Stream {
         return cancellationContext;
     }
 
-    protected void setCancellationContext(CancellationContext cancellationContext) {
-        this.cancellationContext = cancellationContext;
-    }
-
     protected AbstractStream(URL url, Executor executor) {
         this.url = url;
         this.executor = executor;
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
         this.multipleSerialization = url.getOrDefaultFrameworkModel().getExtensionLoader(MultipleSerialization.class)
                 .getExtension(value);
-        this.streamObserver = createStreamObserver();
+        this.cancellationContext = new CancellationContext();
         this.transportObserver = createTransportObserver();
+        this.streamObserver = createStreamObserver();
     }
 
     private static Executor allocateCallbackExecutor() {
@@ -142,8 +140,14 @@ public abstract class AbstractStream implements Stream {
      *
      * @param cause cancel case
      */
-    protected void cancel(Throwable cause) {
-        getCancellationContext().cancel(cause);
+    protected final void cancel(Throwable cause) {
+        cancel();
+        cancelByLocal(cause);
+    }
+
+    private void cancel() {
+        cancelled = true;
+        execute(RpcContext::removeCancellationContext);
     }
 
     /**
@@ -152,11 +156,13 @@ public abstract class AbstractStream implements Stream {
      * @param http2Error {@link Http2Error}
      */
     protected final void cancelByRemote(Http2Error http2Error) {
-        cancelled = true;
+        cancel();
         cancelByRemoteReset(http2Error);
     }
 
     protected abstract void cancelByRemoteReset(Http2Error http2Error);
+
+    protected abstract void cancelByLocal(Throwable throwable);
 
     protected abstract StreamObserver<Object> createStreamObserver();
 

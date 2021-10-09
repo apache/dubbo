@@ -23,7 +23,6 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -82,12 +81,16 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return executor;
     }
 
-    public static AbstractServerStream unary(URL url) {
+    public static UnaryServerStream unary(URL url) {
         return new UnaryServerStream(url);
     }
 
-    public static AbstractServerStream stream(URL url) {
+    public static ServerStream stream(URL url) {
         return new ServerStream(url);
+    }
+
+    public static AbstractServerStream newServerStream(URL url, boolean unary) {
+        return unary ? unary(url) : stream(url);
     }
 
     private static ProviderModel lookupProviderModel(URL url) {
@@ -132,9 +135,6 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
         for (HeaderFilter headerFilter : getHeaderFilters()) {
             inv = headerFilter.invoke(getInvoker(), inv);
-        }
-        if (getCancellationContext() == null) {
-            setCancellationContext(RpcContext.getCancellationContext());
         }
         return inv;
     }
@@ -233,5 +233,11 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     @Override
     protected void cancelByRemoteReset(Http2Error http2Error) {
         getCancellationContext().cancel(null);
+    }
+
+
+    @Override
+    protected void cancelByLocal(Throwable throwable) {
+        asTransportObserver().onReset(Http2Error.CANCEL);
     }
 }

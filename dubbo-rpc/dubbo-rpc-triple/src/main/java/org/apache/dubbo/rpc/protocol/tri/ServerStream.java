@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 
@@ -54,8 +55,8 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onError(Throwable throwable) {
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withCause(throwable)
-                .withDescription("Biz exception");
+                    .withCause(throwable)
+                    .withDescription("Biz exception");
             transportError(status);
         }
 
@@ -70,20 +71,40 @@ public class ServerStream extends AbstractServerStream implements Stream {
 
     private class StreamTransportObserver extends AbstractTransportObserver implements TransportObserver {
 
+        /**
+         * for server stream the method only save header
+         * <p>
+         * for bi stream run api impl code and put observer to streamSubscriber
+         *
+         * <pre class="code">
+         * public StreamObserver<GreeterRequest> biStream(StreamObserver<GreeterReply> replyStream) {
+         *      // happen on this
+         *      // you can add cancel listener on use {@link RpcContext#getCancellationContext()}
+         *      return new StreamObserver<GreeterRequest>() {
+         *          // ...
+         *      };
+         * }
+         * </pre>
+         */
         @Override
         public void onMetadata(Metadata metadata, boolean endStream) {
             super.onMetadata(metadata, endStream);
             if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                 return;
             }
-            final RpcInvocation inv = buildInvocation(metadata);
-            inv.setArguments(new Object[]{asStreamObserver()});
-            final Result result = getInvoker().invoke(inv);
             try {
-                subscribe((StreamObserver<Object>) result.getValue());
-            } catch (Throwable t) {
-                transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Failed to create server's observer"));
+                RpcContext.restoreCancellationContext(getCancellationContext());
+                final RpcInvocation inv = buildInvocation(metadata);
+                inv.setArguments(new Object[]{asStreamObserver()});
+                final Result result = getInvoker().invoke(inv);
+                try {
+                    subscribe((StreamObserver<Object>) result.getValue());
+                } catch (Throwable t) {
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("Failed to create server's observer"));
+                }
+            } finally {
+                RpcContext.removeCancellationContext();
             }
         }
 
@@ -91,25 +112,57 @@ public class ServerStream extends AbstractServerStream implements Stream {
         public void onData(byte[] in, boolean endStream) {
             try {
                 if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
-                    RpcInvocation inv = buildInvocation(getHeaders());
-                    final Object[] arguments = deserializeRequest(in);
-                    if (arguments != null) {
-                        inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
-                        getInvoker().invoke(inv);
-                    }
-                } else {
-                    final Object[] arguments = deserializeRequest(in);
-                    if (arguments != null) {
-                        getStreamSubscriber().onNext(arguments[0]);
-                    }
+                    serverStreamOnData(in);
+                    return;
                 }
+                biStreamOnData(in);
             } catch (Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Deserialize request failed")
-                    .withCause(t));
+                        .withDescription("Deserialize request failed")
+                        .withCause(t));
             }
         }
 
+        /**
+         * call observer onNext
+         */
+        private void biStreamOnData(byte[] in) {
+            final Object[] arguments = deserializeRequest(in);
+            if (arguments != null) {
+                getStreamSubscriber().onNext(arguments[0]);
+            }
+        }
+
+        /**
+         * call api impl code
+         *
+         * <pre class="code">
+         * public void cancelServerStream(GreeterRequest request, StreamObserver<GreeterReply> replyStream) {
+         *      // happen on this
+         *      // you can add cancel listener on use {@link RpcContext#getCancellationContext()}
+         *      // if you want listener cancel,plz do not call onCompleted()
+         *     }
+         * </pre>
+         */
+        private void serverStreamOnData(byte[] in) {
+            try {
+                RpcContext.restoreCancellationContext(getCancellationContext());
+                RpcInvocation inv = buildInvocation(getHeaders());
+                final Object[] arguments = deserializeRequest(in);
+                if (arguments != null) {
+                    inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
+                    getInvoker().invoke(inv);
+                }
+            } finally {
+                RpcContext.removeCancellationContext();
+            }
+        }
+
+        /**
+         * for server stream the method do nothing
+         * <p>
+         * for bi stream call onCompleted
+         */
         @Override
         public void onComplete() {
             if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
