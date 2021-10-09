@@ -62,6 +62,7 @@ public class ShutdownHookTest {
             Assertions.assertEquals(true, DubboBootstrap.getInstance().isStarted());
             Assertions.assertEquals(false, DubboBootstrap.getInstance().isStopped());
         } finally {
+            DubboBootstrap.getInstance().destroy();
             SysProps.clear();
         }
     }
