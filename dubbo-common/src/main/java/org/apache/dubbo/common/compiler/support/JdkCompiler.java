@@ -110,7 +110,7 @@ public class JdkCompiler extends AbstractCompiler {
     }
 
     @Override
-    public Class<?> doCompile(String name, String sourceCode) throws Throwable {
+    public Class<?> doCompile(ClassLoader ignored, String name, String sourceCode) throws Throwable {
         int i = name.lastIndexOf('.');
         String packageName = i < 0 ? "" : name.substring(0, i);
         String className = i < 0 ? name : name.substring(i + 1);
