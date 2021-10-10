@@ -36,12 +36,6 @@
                 <xsd:documentation><![CDATA[ The max active requests. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="connections" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation>
-                    <![CDATA[ The exclusive connections. default share one connection. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
         <xsd:attribute name="loadbalance" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The method load balance. ]]></xsd:documentation>
