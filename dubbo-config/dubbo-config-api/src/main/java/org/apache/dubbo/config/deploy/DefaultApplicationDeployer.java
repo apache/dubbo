@@ -926,10 +926,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // DynamicConfiguration may be cached somewhere, and maybe used during destroy
         // destroy them may cause some troubles,
         // but let them go also cause troubles such as configCenter connection leak.
-        if (environment.getDynamicConfiguration().isPresent() &&
-            environment.getDynamicConfiguration().get() instanceof CompositeDynamicConfiguration) {
-            CompositeDynamicConfiguration compositeDynamicConfiguration =
-                    (CompositeDynamicConfiguration) environment.getDynamicConfiguration().get();
+        Optional<DynamicConfiguration> opt = environment.getDynamicConfiguration()
+                .filter(v -> v instanceof CompositeDynamicConfiguration);
+        if (opt.isPresent()) {
+            CompositeDynamicConfiguration compositeDynamicConfiguration = (CompositeDynamicConfiguration) opt.get();
             compositeDynamicConfiguration.getInnerConfigurations().forEach(dynamicConfiguration -> {
                 try {
                     dynamicConfiguration.close();
@@ -937,8 +937,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     logger.warn(ignored.getMessage(), ignored);
                 }
             });
-            environment.destroy();
         }
+        environment.destroy();
     }
 
     private ApplicationConfig getApplication() {
