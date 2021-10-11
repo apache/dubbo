@@ -18,12 +18,14 @@
 package org.apache.dubbo.stub;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -38,10 +40,7 @@ import io.grpc.examples.helloworld.HelloReply;
 import io.grpc.examples.helloworld.HelloRequest;
 import io.netty.channel.ChannelFuture;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class GreeterStub {
     private static final String SERVICE_NAME = "org.apache.dubbo.sample.tri.PbGreeter";
@@ -60,8 +59,8 @@ public class GreeterStub {
     static <ReqT, RespT> void asyncCall(Connection connection, MethodDescriptor method, ReqT request, StreamObserver<RespT> responseObserver) {
         RpcInvocation invocation = new RpcInvocation();
         invocation.setArguments(new Object[]{request, responseObserver});
-        // TODO remove this
-        invocation.setObjectAttachment("application", "applictaion");
+        invocation.setObjectAttachment(CommonConstants.PATH_KEY, SERVICE_NAME);
+        invocation.put(CommonConstants.TIMEOUT_KEY, 3000);
         invocation.setServiceName(SERVICE_NAME);
         invocation.setMethodName(method.getMethodName());
         invocation.setParameterTypes(method.getRealParameterClasses());
@@ -112,15 +111,15 @@ public class GreeterStub {
         } catch (RemotingException e) {
             e.printStackTrace();
         }
-        try {
-            df.get(3, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        }
+        df.thenApply(response -> (AppResponse) response)
+            .thenAccept(response -> {
+                if (response.hasException()) {
+                    responseObserver.onError(response.getException());
+                } else {
+                    responseObserver.onNext((RespT) response.getValue());
+                    responseObserver.onCompleted();
+                }
+            });
     }
 
     public static MethodDescriptor getSayHelloMethod() {
@@ -131,7 +130,7 @@ public class GreeterStub {
             if (sayHelloMethod != null) {
                 return sayHelloMethod;
             }
-            sayHelloMethod = new MethodDescriptor("sayHello", HelloRequest.class, HelloReply.class, MethodDescriptor.RpcType.UNARY);
+            sayHelloMethod = new MethodDescriptor("greet", HelloRequest.class, HelloReply.class, MethodDescriptor.RpcType.UNARY);
         }
         return sayHelloMethod;
     }

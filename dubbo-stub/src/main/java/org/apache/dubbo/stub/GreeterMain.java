@@ -56,6 +56,6 @@ public class GreeterMain {
             }
         });
 
-        latch.await(3, TimeUnit.SECONDS);
+        latch.await(30, TimeUnit.SECONDS);
     }
 }
