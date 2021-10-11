@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -151,14 +152,14 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         List<String> addressList = new ArrayList<String>();
         String urlAddr = null;
         List<String> backupAddrs = null;
-        if (url.getParameter(RemotingConstants.APPLICATION_KEY) == null) {
+        if (url.getParameter(CommonConstants.APPLICATION_KEY) == null) {
             urlAddr = url.getAddress();
             backupAddrs = url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST);
         } else {
-            urlAddr = url.getAddress() + "?application=" + url.getParameter(RemotingConstants.APPLICATION_KEY);
+            urlAddr = url.getAddress() + "?application=" + url.getParameter(CommonConstants.APPLICATION_KEY);
             backupAddrs = (List<String>) url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST)
                     .stream()
-                    .map(v -> v + "?application=" + url.getParameter(RemotingConstants.APPLICATION_KEY))
+                    .map(v -> v + "?application=" + url.getParameter(CommonConstants.APPLICATION_KEY))
                     .collect(Collectors.toList());
         }
         addressList.add(urlAddr);
