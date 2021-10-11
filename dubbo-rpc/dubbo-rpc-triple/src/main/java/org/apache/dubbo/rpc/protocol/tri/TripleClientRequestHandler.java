@@ -67,9 +67,14 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
         final URL url = inv.getInvoker().getUrl();
         ConsumerModel consumerModel = inv.getServiceModel() != null ? (ConsumerModel) inv.getServiceModel() : (ConsumerModel) url.getServiceModel();
 
-        MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel, inv);
+        MethodDescriptor methodDescriptor;
+        if (consumerModel != null) {
+            methodDescriptor = getTriMethodDescriptor(consumerModel, inv);
+            ClassLoadUtil.switchContextLoader(consumerModel.getClassLoader());
+        } else {
+            methodDescriptor = (MethodDescriptor) inv.get("method_descriptor");
+        }
 
-        ClassLoadUtil.switchContextLoader(consumerModel.getClassLoader());
         final AbstractClientStream stream = AbstractClientStream.newClientStream(url, methodDescriptor.isUnary());
 
         String ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY);

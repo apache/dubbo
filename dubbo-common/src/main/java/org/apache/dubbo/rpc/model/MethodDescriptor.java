@@ -67,6 +67,23 @@ public class MethodDescriptor {
     private final Class<?>[] realParameterClasses;
     private final Class<?> realReturnClass;
 
+    public MethodDescriptor(String methodName, Class<?> realParameterClasses, Class<?> realReturnClass, RpcType type) {
+        this.realParameterClasses = new Class<?>[]{realParameterClasses};
+        this.realReturnClass = realReturnClass;
+        this.returnClass = realReturnClass;
+        this.parameterClasses = this.realParameterClasses;
+        this.rpcType = type;
+        this.wrap = false;
+        this.generic = false;
+        this.methodName = methodName;
+        this.paramDesc = ReflectUtils.getDesc(parameterClasses);
+        this.compatibleParamSignatures = Stream.of(parameterClasses)
+                .map(Class::getName)
+                .toArray(String[]::new);
+        this.returnTypes = new Type[]{returnClass, returnClass};
+        this.method = null;
+    }
+
     public MethodDescriptor(Method method) {
         this.method = method;
         this.methodName = method.getName();
