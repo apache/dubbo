@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
@@ -53,7 +54,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     public ZookeeperClient connect(URL url) {
         ZookeeperClient zookeeperClient;
         // address format: {[username:password@]address}
-        List<String> addressList = getURLBackupAddress(url);
+        List<String> addressList = getURLBackupAddressWithApplicationName(url);
         // The field define the zookeeper server , including protocol, host, port, username, password
         if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
             logger.info("find valid zookeeper client from the cache for address: " + url);
@@ -109,10 +110,59 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @param url such as:zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999
      * @return such as 127.0.0.1:2181,127.0.0.1:8989,127.0.0.1:9999
      */
+    @SuppressWarnings("unchecked")
     public List<String> getURLBackupAddress(URL url) {
         List<String> addressList = new ArrayList<String>();
         addressList.add(url.getAddress());
         addressList.addAll(url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST));
+
+        String authPrefix = null;
+        if (StringUtils.isNotEmpty(url.getUsername())) {
+            StringBuilder buf = new StringBuilder();
+            buf.append(url.getUsername());
+            if (StringUtils.isNotEmpty(url.getPassword())) {
+                buf.append(':');
+                buf.append(url.getPassword());
+            }
+            buf.append('@');
+            authPrefix = buf.toString();
+        }
+
+        if (StringUtils.isNotEmpty(authPrefix)) {
+            List<String> authedAddressList = new ArrayList<>(addressList.size());
+            for (String addr : addressList) {
+                authedAddressList.add(authPrefix + addr);
+            }
+            return authedAddressList;
+        }
+
+
+        return addressList;
+    }
+
+    /**
+     * get all zookeeper urls with application name (such as :zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999)
+     *
+     * @param url such as:zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999
+     * @return such as 127.0.0.1:2181?application=provider,127.0.0.1:8989,127.0.0.1:9999
+     */
+    @SuppressWarnings("unchecked")
+    private List<String> getURLBackupAddressWithApplicationName(URL url) {
+        List<String> addressList = new ArrayList<String>();
+        String urlAddr = null;
+        List<String> backupAddrs = null;
+        if (url.getParameter(RemotingConstants.APPLICATION_KEY) == null) {
+            urlAddr = url.getAddress();
+            backupAddrs = url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST);
+        } else {
+            urlAddr = url.getAddress() + "?application=" + url.getParameter(RemotingConstants.APPLICATION_KEY);
+            backupAddrs = (List<String>) url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST)
+                    .stream()
+                    .map(v -> v + "?application=" + url.getParameter(RemotingConstants.APPLICATION_KEY))
+                    .collect(Collectors.toList());
+        }
+        addressList.add(urlAddr);
+        addressList.addAll(backupAddrs);
 
         String authPrefix = null;
         if (StringUtils.isNotEmpty(url.getUsername())) {
