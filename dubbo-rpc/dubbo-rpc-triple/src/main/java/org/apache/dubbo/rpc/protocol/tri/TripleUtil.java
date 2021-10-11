@@ -157,11 +157,6 @@ public class TripleUtil {
         return map;
     }
 
-    public static boolean overEachHeaderListSize(String str) {
-        return TripleConstant.DEFAULT_HEADER_LIST_SIZE <= str.length();
-    }
-
-
     public static Object[] unwrapReq(URL url, TripleWrapper.TripleRequestWrapper wrap,
                                      MultipleSerialization multipleSerialization) {
         String serializeType = convertHessianFromWrapper(wrap.getSerializeType());
