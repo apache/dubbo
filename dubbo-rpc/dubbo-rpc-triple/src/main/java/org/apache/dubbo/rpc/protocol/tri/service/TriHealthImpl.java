@@ -53,7 +53,7 @@ public class TriHealthImpl implements Health {
     // such Multimap would require extra lines and the end result is not significantly simpler, thus I
     // would rather not have the Guava collections dependency.
     private final HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>>
-            watchers = new HashMap<>();
+        watchers = new HashMap<>();
 
     public TriHealthImpl() {
         // Copy of what Go and C++ do.
@@ -76,7 +76,7 @@ public class TriHealthImpl implements Health {
             HealthCheckResponse.ServingStatus status = statusMap.get(service);
             responseObserver.onNext(getResponseForWatch(status));
             IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers =
-                    watchers.get(service);
+                watchers.get(service);
             if (serviceWatchers == null) {
                 serviceWatchers = new IdentityHashMap<>();
                 watchers.put(service, serviceWatchers);
@@ -84,18 +84,18 @@ public class TriHealthImpl implements Health {
             serviceWatchers.put(responseObserver, Boolean.TRUE);
         }
         RpcContext.getCancellationContext()
-                .addListener(context -> {
-                    synchronized (watchLock) {
-                        IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers =
-                                watchers.get(service);
-                        if (serviceWatchers != null) {
-                            serviceWatchers.remove(responseObserver);
-                            if (serviceWatchers.isEmpty()) {
-                                watchers.remove(service);
-                            }
+            .addListener(context -> {
+                synchronized (watchLock) {
+                    IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers =
+                        watchers.get(service);
+                    if (serviceWatchers != null) {
+                        serviceWatchers.remove(responseObserver);
+                        if (serviceWatchers.isEmpty()) {
+                            watchers.remove(service);
                         }
                     }
-                });
+                }
+            });
     }
 
     void setStatus(String service, HealthCheckResponse.ServingStatus status) {
@@ -144,7 +144,7 @@ public class TriHealthImpl implements Health {
     private void notifyWatchers(String service, HealthCheckResponse.ServingStatus status) {
         HealthCheckResponse response = getResponseForWatch(status);
         IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean> serviceWatchers =
-                watchers.get(service);
+            watchers.get(service);
         if (serviceWatchers != null) {
             for (StreamObserver<HealthCheckResponse> responseObserver : serviceWatchers.keySet()) {
                 responseObserver.onNext(response);
@@ -154,6 +154,6 @@ public class TriHealthImpl implements Health {
 
     private static HealthCheckResponse getResponseForWatch(HealthCheckResponse.ServingStatus recordedStatus) {
         return HealthCheckResponse.newBuilder().setStatus(
-                recordedStatus == null ? HealthCheckResponse.ServingStatus.SERVICE_UNKNOWN : recordedStatus).build();
+            recordedStatus == null ? HealthCheckResponse.ServingStatus.SERVICE_UNKNOWN : recordedStatus).build();
     }
 }
