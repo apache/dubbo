@@ -60,6 +60,8 @@ public class TripleUtil {
             "tri_server_stream");
     public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
             "tri_client_stream");
+    public static final AttributeKey<Compressor> COMPRESSOR_KEY = AttributeKey.newInstance(
+            "tri_compressor");
 
     // Some exceptions are not very useful and add too much noise to the log
     private static final Set<String> QUIET_EXCEPTIONS = new HashSet<>();
@@ -93,6 +95,15 @@ public class TripleUtil {
 
     public static AbstractClientStream getClientStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleUtil.CLIENT_STREAM_KEY).get();
+    }
+
+    public static Compressor getCompressor(ChannelHandlerContext ctx) {
+        return ctx.channel().attr(COMPRESSOR_KEY).get();
+    }
+
+    public static int calcCompressFlag(ChannelHandlerContext ctx) {
+        Compressor compressor = getCompressor(ctx);
+        return null == compressor ? 0 : 1;
     }
 
     /**
@@ -347,6 +358,15 @@ public class TripleUtil {
             return "hessian2";
         }
         return serializeType;
+    }
+
+    public static String calcAcceptEncoding(URL url) {
+        Set<String> supportedEncodingSet = url.getOrDefaultApplicationModel().getExtensionLoader(Compressor.class).getSupportedExtensions();
+        if (supportedEncodingSet.isEmpty()) {
+            return null;
+        }
+
+        return String.join(",", supportedEncodingSet);
     }
 
 }

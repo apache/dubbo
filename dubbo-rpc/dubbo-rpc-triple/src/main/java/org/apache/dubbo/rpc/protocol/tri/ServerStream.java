@@ -45,7 +45,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onNext(Object data) {
             if (!headersSent) {
-                getTransportSubscriber().onMetadata(new DefaultMetadata(), false);
+                getTransportSubscriber().onMetadata(createRequestMeta(), false);
                 headersSent = true;
             }
             final byte[] bytes = encodeResponse(data);
