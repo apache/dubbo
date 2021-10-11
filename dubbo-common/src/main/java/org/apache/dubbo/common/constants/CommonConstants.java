@@ -304,6 +304,8 @@ public interface CommonConstants {
 
     String INVOKER_LISTENER_KEY = "invoker.listener";
 
+    String REGISTRY_PROTOCOL_LISTENER_KEY = "registry.protocol.listener";
+
     String DUBBO_VERSION_KEY = "dubbo";
 
     String TAG_KEY = "dubbo.tag";
