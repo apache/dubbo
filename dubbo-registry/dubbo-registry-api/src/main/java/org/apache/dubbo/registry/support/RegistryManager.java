@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,7 +66,7 @@ public class RegistryManager {
      * @return all registries
      */
     public Collection<Registry> getRegistries() {
-        return Collections.unmodifiableCollection(new LinkedList<>(registries.values()));
+        return Collections.unmodifiableCollection(new HashSet<>(registries.values()));
     }
 
     public Registry getRegistry(String key) {
