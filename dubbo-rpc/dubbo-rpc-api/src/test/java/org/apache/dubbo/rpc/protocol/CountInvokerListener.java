@@ -29,6 +29,7 @@ public class CountInvokerListener implements InvokerListener {
 
     @Override
     public void referred(Invoker<?> invoker) throws RpcException {
+        counter.set(0);
         counter.incrementAndGet();
     }
 

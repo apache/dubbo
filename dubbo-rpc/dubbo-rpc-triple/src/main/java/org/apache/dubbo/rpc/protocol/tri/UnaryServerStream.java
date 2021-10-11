@@ -113,7 +113,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                         }
                         return;
                     }
-                    Metadata metadata = new DefaultMetadata();
+                    Metadata metadata = createRequestMeta();
                     metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
                     getTransportSubscriber().onMetadata(metadata, false);
 

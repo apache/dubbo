@@ -18,10 +18,12 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.triple.TripleWrapper;
@@ -33,6 +35,8 @@ import io.netty.handler.codec.http2.Http2Error;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+
+import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
     private ConsumerModel consumerModel;
@@ -50,8 +54,18 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return new UnaryClientStream(url);
     }
 
-    public static AbstractClientStream stream(URL url) {
+    public static ClientStream stream(URL url) {
         return new ClientStream(url);
+    }
+
+    public static AbstractClientStream newClientStream(URL url, boolean unary) {
+        AbstractClientStream stream = unary ? unary(url) : stream(url);
+        final CancellationContext cancellationContext = stream.getCancellationContext();
+        // for client cancel,send rst frame to server
+        cancellationContext.addListener(context -> {
+            stream.asTransportObserver().onReset(Http2Error.CANCEL);
+        });
+        return stream;
     }
 
     public AbstractClientStream service(ConsumerModel model) {
@@ -100,7 +114,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         }
         out = TripleUtil.pack(obj);
 
-        return out;
+        return super.compress(out);
     }
 
     private TripleWrapper.TripleRequestWrapper getRequestWrapper(Object value) {
@@ -158,7 +172,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                         (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
                 .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
                         (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
-                .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), inv.getInvoker().getUrl().getGroup());
+                .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), inv.getInvoker().getUrl().getGroup())
+                .putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
+                    ConfigurationUtils.getGlobalConfiguration(inv.getInvoker().getUrl().getScopeModel()).getString(Constants.COMPRESSOR_KEY, DEFAULT_COMPRESSOR))
+                .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(),
+                    TripleUtil.calcAcceptEncoding(inv.getInvoker().getUrl()));
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {
             convertAttachment(metadata, attachments);
@@ -166,7 +184,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return metadata;
     }
 
-    protected class ClientStreamObserver implements StreamObserver<Object> {
+    protected class ClientStreamObserver extends CancelableStreamObserver<Object> {
 
         @Override
         public void onNext(Object data) {
@@ -179,7 +197,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
         @Override
         public void onError(Throwable throwable) {
-
         }
 
         @Override
@@ -191,5 +208,10 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     @Override
     protected void cancelByRemoteReset(Http2Error http2Error) {
         DefaultFuture2.getFuture(getRequest().getId()).cancel();
+    }
+
+    @Override
+    protected void cancelByLocal(Throwable throwable) {
+        getCancellationContext().cancel(throwable);
     }
 }

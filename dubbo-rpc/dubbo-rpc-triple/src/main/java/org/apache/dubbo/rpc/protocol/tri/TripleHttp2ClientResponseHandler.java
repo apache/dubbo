@@ -69,6 +69,21 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     private void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {
         Http2Headers headers = msg.headers();
         AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
+
+        CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
+        if (null != messageEncoding) {
+            String compressorStr = messageEncoding.toString();
+            Compressor compressor = clientStream.getUrl().getOrDefaultApplicationModel()
+                .getExtensionLoader(Compressor.class).getExtension(compressorStr);
+            if (null == compressor) {
+                throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                    .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
+                    .asException();
+            } else {
+                clientStream.setCompressor(compressor);
+                ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
+            }
+        }
         final TransportObserver observer = clientStream.asTransportObserver();
         observer.onMetadata(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {

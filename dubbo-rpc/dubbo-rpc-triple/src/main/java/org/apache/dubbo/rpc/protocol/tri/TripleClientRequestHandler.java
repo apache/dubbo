@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -36,10 +37,12 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2Error;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
+import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 public class TripleClientRequestHandler extends ChannelDuplexHandler {
 
@@ -64,33 +67,30 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
         final URL url = inv.getInvoker().getUrl();
         ConsumerModel consumerModel = inv.getServiceModel() != null ? (ConsumerModel) inv.getServiceModel() : (ConsumerModel) url.getServiceModel();
 
-        MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel,inv);
+        MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel, inv);
 
         ClassLoadUtil.switchContextLoader(consumerModel.getClassLoader());
-        AbstractClientStream stream;
-        if (methodDescriptor.isUnary()) {
-            stream = AbstractClientStream.unary(url);
-        } else {
-            stream = AbstractClientStream.stream(url);
-        }
-        final CancellationContext cancellationContext = inv.getCancellationContext();
-        // for client cancel,send rst frame to server
-        cancellationContext.addListener(context -> {
-            stream.asTransportObserver().onReset(Http2Error.CANCEL);;
-        });
-        stream.setCancellationContext(cancellationContext);
+        final AbstractClientStream stream = AbstractClientStream.newClientStream(url, methodDescriptor.isUnary());
 
         String ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY);
         if (StringUtils.isNotEmpty(ssl)) {
             ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(Boolean.parseBoolean(ssl));
         }
+
+        // get compressor
+        String compressorStr = ConfigurationUtils
+            .getGlobalConfiguration(url.getScopeModel()).getString(COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
+        Compressor compressor = url.getOrDefaultApplicationModel().getExtensionLoader(Compressor.class).getExtension(compressorStr);
+        stream.setCompressor(compressor);
+        ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
+
         stream.service(consumerModel)
-            .connection(Connection.getConnectionFromChannel(ctx.channel()))
-            .method(methodDescriptor)
-            .methodName(methodDescriptor.getMethodName())
-            .request(req)
-            .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
-            .subscribe(new ClientTransportObserver(ctx, stream, promise));
+                .connection(Connection.getConnectionFromChannel(ctx.channel()))
+                .method(methodDescriptor)
+                .methodName(methodDescriptor.getMethodName())
+                .request(req)
+                .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
+                .subscribe(new ClientTransportObserver(ctx, stream, promise));
 
         if (methodDescriptor.isUnary()) {
             stream.asStreamObserver().onNext(inv);
@@ -100,13 +100,15 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
             AppResponse result;
             // the stream method params is fixed
             if (methodDescriptor.getRpcType() == MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM
-                || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
-                final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[0];
-                stream.subscribe(streamObserver);
+                    || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
+                StreamObserver<Object> obServer = (StreamObserver<Object>) inv.getArguments()[0];
+                obServer = attachCancelContext(obServer, stream.getCancellationContext());
+                stream.subscribe(obServer);
                 result = new AppResponse(stream.asStreamObserver());
             } else {
-                final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[1];
-                stream.subscribe(streamObserver);
+                StreamObserver<Object> obServer = (StreamObserver<Object>) inv.getArguments()[1];
+                obServer = attachCancelContext(obServer, stream.getCancellationContext());
+                stream.subscribe(obServer);
                 result = new AppResponse();
                 stream.asStreamObserver().onNext(inv.getArguments()[0]);
                 stream.asStreamObserver().onCompleted();
@@ -117,7 +119,7 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
     }
 
     /**
-     * Get the trI protocol special MethodDescriptor
+     * Get the tri protocol special MethodDescriptor
      */
     private MethodDescriptor getTriMethodDescriptor(ConsumerModel consumerModel, RpcInvocation inv) {
         List<MethodDescriptor> methodDescriptors = consumerModel.getServiceModel().getMethods(inv.getMethodName());
@@ -130,5 +132,15 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
             }
         }
         throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+    }
+
+
+    public <T> StreamObserver<T> attachCancelContext(StreamObserver<T> observer, CancellationContext context) {
+        if (observer instanceof CancelableStreamObserver) {
+            CancelableStreamObserver<T> streamObserver = ((CancelableStreamObserver<T>) observer);
+            streamObserver.setCancellationContext(context);
+            return streamObserver;
+        }
+        return observer;
     }
 }

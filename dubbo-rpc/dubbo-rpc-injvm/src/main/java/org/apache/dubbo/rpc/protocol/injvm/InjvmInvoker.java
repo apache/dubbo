@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -145,7 +146,17 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (providerServiceModel == null) {
             return invocation;
         }
-        MethodDescriptor providerMethod = providerServiceModel.getServiceModel().getMethod(invocation.getMethodName(), desc);
+        String methodName = invocation.getMethodName();
+        if(CommonConstants.$INVOKE.equals(methodName)) {
+            // generic invoke, skip copy arguments
+            RpcInvocation copiedInvocation = new RpcInvocation(providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
+                invocation.getParameterTypes(), invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
+                invocation.getInvoker(), invocation.getAttributes());
+            copiedInvocation.setInvoker(invoker);
+            return copiedInvocation;
+        }
+
+        MethodDescriptor providerMethod = providerServiceModel.getServiceModel().getMethod(methodName, desc);
         Object[] realArgument = null;
         if (providerMethod != null) {
             Class<?>[] pts = providerMethod.getParameterClasses();
@@ -166,7 +177,7 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                     realArgument = args;
                 }
 
-                RpcInvocation copiedInvocation = new RpcInvocation(providerServiceModel, invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
+                RpcInvocation copiedInvocation = new RpcInvocation(providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                     pts, realArgument, new HashMap<>(invocation.getObjectAttachments()),
                     invocation.getInvoker(), invocation.getAttributes());
                 copiedInvocation.setInvoker(invoker);
