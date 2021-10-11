@@ -148,7 +148,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @return such as 127.0.0.1:2181?application=provider,127.0.0.1:8989,127.0.0.1:9999
      */
     @SuppressWarnings("unchecked")
-    private List<String> getURLBackupAddressWithApplicationName(URL url) {
+    public List<String> getURLBackupAddressWithApplicationName(URL url) {
         List<String> addressList = new ArrayList<String>();
         String urlAddr = null;
         List<String> backupAddrs = null;
