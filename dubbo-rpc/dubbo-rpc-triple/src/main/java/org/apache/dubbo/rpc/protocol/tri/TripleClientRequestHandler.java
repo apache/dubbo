@@ -84,18 +84,21 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
 
         // get compressor
         String compressorStr = ConfigurationUtils
-            .getGlobalConfiguration(url.getScopeModel()).getString(COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
-        Compressor compressor = url.getOrDefaultApplicationModel().getExtensionLoader(Compressor.class).getExtension(compressorStr);
-        stream.setCompressor(compressor);
-        ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
+            .getGlobalConfiguration(url.getScopeModel()).getString(COMPRESSOR_KEY);
+
+        if (null != compressorStr && !compressorStr.equals(DEFAULT_COMPRESSOR)) {
+            Compressor compressor = url.getOrDefaultApplicationModel().getExtensionLoader(Compressor.class).getExtension(compressorStr);
+            stream.setCompressor(compressor);
+            ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
+        }
 
         stream.service(consumerModel)
-                .connection(Connection.getConnectionFromChannel(ctx.channel()))
-                .method(methodDescriptor)
-                .methodName(methodDescriptor.getMethodName())
-                .request(req)
-                .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
-                .subscribe(new ClientTransportObserver(ctx, stream, promise));
+            .connection(Connection.getConnectionFromChannel(ctx.channel()))
+            .method(methodDescriptor)
+            .methodName(methodDescriptor.getMethodName())
+            .request(req)
+            .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
+            .subscribe(new ClientTransportObserver(ctx, stream, promise));
 
         if (methodDescriptor.isUnary()) {
             stream.asStreamObserver().onNext(inv);
@@ -105,7 +108,7 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
             AppResponse result;
             // the stream method params is fixed
             if (methodDescriptor.getRpcType() == MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM
-                    || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
+                || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
                 StreamObserver<Object> obServer = (StreamObserver<Object>) inv.getArguments()[0];
                 obServer = attachCancelContext(obServer, stream.getCancellationContext());
                 stream.subscribe(obServer);
