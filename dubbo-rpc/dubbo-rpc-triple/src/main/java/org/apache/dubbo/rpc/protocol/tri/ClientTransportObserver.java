@@ -104,7 +104,7 @@ public class ClientTransportObserver implements TransportObserver {
             return;
         }
         ByteBuf buf = ctx.alloc().buffer();
-        buf.writeByte(0);
+        buf.writeByte(TripleUtil.calcCompressFlag(ctx));
         buf.writeInt(data.length);
         buf.writeBytes(data);
         streamChannel.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))

@@ -49,7 +49,7 @@ class UnaryClientStreamTest {
         when(inv.getInvoker()).thenReturn(mockInvoker);
         // no subscriber
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
-        verify(mockInvoker, times(2)).getUrl();
+        verify(mockInvoker, times(4)).getUrl();
 
         TransportObserver transportObserver = Mockito.mock(TransportObserver.class);
         stream.subscribe(transportObserver);

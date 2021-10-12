@@ -154,7 +154,7 @@ public class FailbackRegistryTest {
 
     @Test
     public void testRecover() throws Exception {
-        CountDownLatch countDownLatch = new CountDownLatch(4);
+        CountDownLatch countDownLatch = new CountDownLatch(6);
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listener = new NotifyListener() {
             @Override
@@ -237,6 +237,24 @@ public class FailbackRegistryTest {
         @Override
         public boolean isAvailable() {
             return true;
+        }
+
+        @Override
+        public void removeFailedRegisteredTask(URL url) {
+            if (bad) {
+                throw new RuntimeException("can not invoke!");
+            }
+            super.removeFailedRegisteredTask(url);
+            latch.countDown();
+        }
+
+        @Override
+        public void removeFailedSubscribedTask(URL url, NotifyListener listener) {
+            if (bad) {
+                throw new RuntimeException("can not invoke!");
+            }
+            super.removeFailedSubscribedTask(url, listener);
+            latch.countDown();
         }
 
     }
