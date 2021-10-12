@@ -805,10 +805,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             destroyProtocols();
 
             destroyRegistries();
-            destroyServiceDiscoveries();
             destroyMetadataReports();
 
-            destroyServiceDiscoveries();
             destroyExecutorRepository();
             destroyDynamicConfigurations();
 
@@ -903,19 +901,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     logger.warn(t.getMessage(), t);
                 }
             }
-        }
-    }
-
-    private void destroyServiceDiscoveries() {
-        RegistryManager.getInstance(applicationModel).getServiceDiscoveries().forEach(serviceDiscovery -> {
-            try {
-                serviceDiscovery.destroy();
-            } catch (Throwable ignored) {
-                logger.warn(ignored.getMessage(), ignored);
-            }
-        });
-        if (logger.isDebugEnabled()) {
-            logger.debug(getIdentifier() + "'s all ServiceDiscoveries have been destroyed.");
         }
     }
 
