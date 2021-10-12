@@ -28,18 +28,18 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class MultiplexProtocolConnectionManagerTest {
-    private ConnectionManager connectionManager = ExtensionLoader.getExtensionLoader(ConnectionManager.class).getExtension("multiple");
+    private ConnectionManager connectionManager = ExtensionLoader.getExtensionLoader(ConnectionManager.class).getExtension(MultiplexProtocolConnectionManager.NAME);
 
     @Test
     public void testConnect() throws Exception {
         URL url = URL.valueOf("empty://127.0.0.1:8080?foo=bar");
-        Connection connect = connectionManager.connect(url);
-        Assertions.assertNotNull(connect);
+        Connection connection = connectionManager.connect(url);
+        Assertions.assertNotNull(connection);
         Field protocolsField = connectionManager.getClass().getDeclaredField("protocols");
         protocolsField.setAccessible(true);
         Map protocolMap = (Map) protocolsField.get(connectionManager);
         Assertions.assertNotNull(protocolMap.get(url.getProtocol()));
-        connect.close();
+        connection.close();
     }
 
     @Test
