@@ -33,6 +33,8 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.metrics.MetricsReporter;
 import org.apache.dubbo.common.metrics.MetricsReporterFactory;
+import org.apache.dubbo.common.metrics.MetricsService;
+import org.apache.dubbo.common.metrics.MetricsServiceExporter;
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -116,6 +118,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private volatile MetadataService metadataService;
 
     private volatile MetadataServiceExporter metadataServiceExporter;
+    private volatile MetricsServiceExporter metricsServiceExporter;
 
     private ScheduledFuture<?> asyncMetadataFuture;
     private String identifier;
@@ -307,7 +310,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void initMetricsService() {
-        // TODO
+        this.metricsServiceExporter = getExtensionLoader(MetricsServiceExporter.class).getDefaultExtension();
+        metricsServiceExporter.init();
     }
 
     private void initMetricsReporter() {
@@ -619,6 +623,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void prepareInternalModule() {
         // export MetadataService
         exportMetadataService();
+        // export MetricsService
+        exportMetricsService();
         // start internal module
         ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
         if (!internalModuleDeployer.isRunning()) {
@@ -704,6 +710,26 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      */
     private void exportMetadataService() {
         metadataServiceExporter.export();
+    }
+
+    /**
+     * export {@link MetricsService}
+     */
+    private void exportMetricsService() {
+        metricsServiceExporter.export();
+    }
+
+    /**
+     * unexport {@link MetricsService}
+     */
+    private void unexportMetricsService() {
+        if (metricsServiceExporter != null) {
+            try {
+                metricsServiceExporter.unexport();
+            } catch (Exception ignored) {
+                // ignored
+            }
+        }
     }
 
     private void unexportMetadataService() {
@@ -817,6 +843,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             unRegisterShutdownHook();
             unregisterServiceInstance();
             unexportMetadataService();
+            unexportMetricsService();
             if (asyncMetadataFuture != null) {
                 asyncMetadataFuture.cancel(true);
             }

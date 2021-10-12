@@ -15,22 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.collector;
+package org.apache.dubbo.common.metrics;
 
-import org.apache.dubbo.common.metrics.model.sample.MetricSample;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-import java.util.List;
+import static org.apache.dubbo.common.metrics.MetricsService.DEFAULT_EXTENSION_NAME;
 
 /**
- * Metrics Collector.
- * An interface of collector to collect framework internal metrics.
+ * Metrics Service.
+ * Provide an interface to get metrics from {@link org.apache.dubbo.common.metrics.collector.MetricsCollector}
  */
-public interface MetricsCollector {
+@SPI(value = DEFAULT_EXTENSION_NAME, scope = ExtensionScope.APPLICATION)
+public interface MetricsService {
 
     /**
-     * Collect metrics as {@link MetricSample}
-     *
-     * @return List of MetricSample
+     * Default {@link MetricsService} extension name.
      */
-    List<MetricSample> collect();
+    String DEFAULT_EXTENSION_NAME = "default";
+
+    /**
+     * The contract version of {@link MetricsService}, the future update must make sure compatible.
+     */
+    String VERSION = "1.0.0";
 }

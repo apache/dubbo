@@ -15,22 +15,12 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.collector;
+package org.apache.dubbo.metrics;
 
-import org.apache.dubbo.common.metrics.model.sample.MetricSample;
-
-import java.util.List;
+import org.apache.dubbo.common.metrics.MetricsService;
 
 /**
- * Metrics Collector.
- * An interface of collector to collect framework internal metrics.
+ * Default implementation of {@link MetricsService}
  */
-public interface MetricsCollector {
-
-    /**
-     * Collect metrics as {@link MetricSample}
-     *
-     * @return List of MetricSample
-     */
-    List<MetricSample> collect();
+public class DefaultMetricsService implements MetricsService {
 }
