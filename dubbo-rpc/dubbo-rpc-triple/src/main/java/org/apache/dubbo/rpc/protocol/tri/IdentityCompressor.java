@@ -14,19 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.impl;
 
-public class NotifyService {
+package org.apache.dubbo.rpc.protocol.tri;
 
-    public void onInvoke(Object[] params) {
-        System.out.println("invoke param-0: " + params[0]);
+/**
+ * Default compressor
+ */
+public class IdentityCompressor implements Compressor {
+
+    public static final Compressor NONE = new IdentityCompressor();
+
+    @Override
+    public String getMessageEncoding() {
+        return "identity";
     }
 
-    public void onReturn(Object result, Object[] params) {
-        System.out.println("invoke param-0: " + params[0] + ", return: " + result);
+    @Override
+    public byte[] compress(byte[] payloadByteArr) {
+        return payloadByteArr;
     }
 
-    public void onThrow(Throwable t, Object[] params) {
-        System.out.println("invoke param-0: " + params[0] + ", throw: " + t.getMessage());
+    @Override
+    public byte[] decompress(byte[] payloadByteArr) {
+        return payloadByteArr;
     }
 }

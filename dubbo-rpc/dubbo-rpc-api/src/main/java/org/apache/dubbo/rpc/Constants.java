@@ -55,6 +55,8 @@ public interface Constants {
 
     String STUB_EVENT_METHODS_KEY = "dubbo.stub.event.methods";
 
+    String COMPRESSOR_KEY = "dubbo.rpc.tri.compressor";
+
     String PROXY_KEY = "proxy";
 
     String EXECUTES_KEY = "executes";
