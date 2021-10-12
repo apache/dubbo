@@ -175,7 +175,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), getUrl().getGroup())
             .putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
                 ConfigurationUtils.getCachedDynamicProperty(inv.getModuleModel(), Constants.COMPRESSOR_KEY, DEFAULT_COMPRESSOR))
-            .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.geader(),
+            .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(),
                 TripleUtil.calcAcceptEncoding(getUrl()));
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {
