@@ -20,7 +20,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -31,8 +30,6 @@ import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class UnaryClientStreamTest {
@@ -46,12 +43,8 @@ class UnaryClientStreamTest {
         when(inv.getModuleModel()).thenReturn(ApplicationModel.defaultModel().getDefaultModule());
         // no invoker
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
-        final Invoker mockInvoker = Mockito.mock(Invoker.class);
-        when(mockInvoker.getUrl()).thenReturn(url);
-        when(inv.getInvoker()).thenReturn(mockInvoker);
         // no subscriber
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
-        verify(mockInvoker, times(3)).getUrl();
 
         TransportObserver transportObserver = Mockito.mock(TransportObserver.class);
         stream.subscribe(transportObserver);
