@@ -57,15 +57,17 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class TripleUtil {
 
     public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance(
-            "tri_server_stream");
+        "tri_server_stream");
     public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
-            "tri_client_stream");
+        "tri_client_stream");
     public static final AttributeKey<Compressor> COMPRESSOR_KEY = AttributeKey.newInstance(
-            "tri_compressor");
-
+        "tri_compressor");
+    public static final String LANGUAGE = "java";
     // Some exceptions are not very useful and add too much noise to the log
     private static final Set<String> QUIET_EXCEPTIONS = new HashSet<>();
     private static final Set<Class<?>> QUIET_EXCEPTIONS_CLASS = new HashSet<>();
+    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
+    private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 
     static {
         QUIET_EXCEPTIONS.add("NativeIoException");
@@ -83,12 +85,6 @@ public class TripleUtil {
         return false;
     }
 
-
-    public static final String LANGUAGE = "java";
-
-    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
-    private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
-
     public static AbstractServerStream getServerStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).get();
     }
@@ -103,7 +99,10 @@ public class TripleUtil {
 
     public static int calcCompressFlag(ChannelHandlerContext ctx) {
         Compressor compressor = getCompressor(ctx);
-        return null == compressor ? 0 : 1;
+        if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
+            return 0;
+        }
+        return 1;
     }
 
     /**
@@ -176,7 +175,7 @@ public class TripleUtil {
             for (int i = 0; i < arguments.length; i++) {
                 final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getArgs(i).toByteArray());
                 Object obj = multipleSerialization.deserialize(url,
-                        serializeType, wrap.getArgTypes(i), bais);
+                    serializeType, wrap.getArgTypes(i), bais);
                 arguments[i] = obj;
             }
             return arguments;
@@ -190,8 +189,8 @@ public class TripleUtil {
                                                                MultipleSerialization multipleSerialization) {
         try {
             final TripleWrapper.TripleResponseWrapper.Builder builder = TripleWrapper.TripleResponseWrapper.newBuilder()
-                    .setType(desc.getReturnClass().getName())
-                    .setSerializeType(convertHessianToWrapper(serializeType));
+                .setType(desc.getReturnClass().getName())
+                .setSerializeType(convertHessianToWrapper(serializeType));
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             multipleSerialization.serialize(url, serializeType, desc.getReturnClass().getName(), resp, bos);
             builder.setData(ByteString.copyFrom(bos.toByteArray()));
@@ -207,9 +206,9 @@ public class TripleUtil {
                                                                      MultipleSerialization serialization) {
         try {
             final TripleWrapper.TripleExceptionWrapper.Builder builder = TripleWrapper.TripleExceptionWrapper.newBuilder()
-                    .setLanguage(LANGUAGE)
-                    .setClassName(throwable.getClass().getName())
-                    .setSerialization(serializeType);
+                .setLanguage(LANGUAGE)
+                .setClassName(throwable.getClass().getName())
+                .setSerialization(serializeType);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             serialization.serialize(url, serializeType, builder.getClassName(), throwable, bos);
             builder.setData(ByteString.copyFrom(bos.toByteArray()));
@@ -246,8 +245,8 @@ public class TripleUtil {
                                                              MultipleSerialization multipleSerialization) {
         try {
             final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
-                    .addArgTypes(type)
-                    .setSerializeType(convertHessianToWrapper(serializeType));
+                .addArgTypes(type)
+                .setSerializeType(convertHessianToWrapper(serializeType));
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             multipleSerialization.serialize(url, serializeType, type, req, bos);
             builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
@@ -263,7 +262,7 @@ public class TripleUtil {
         try {
             String serializationName = (String) invocation.getObjectAttachment(Constants.SERIALIZATION_KEY);
             final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
-                    .setSerializeType(convertHessianToWrapper(serializationName));
+                .setSerializeType(convertHessianToWrapper(serializationName));
             for (int i = 0; i < invocation.getArguments().length; i++) {
                 final String clz = invocation.getParameterTypes()[i].getName();
                 builder.addArgTypes(clz);
@@ -314,14 +313,14 @@ public class TripleUtil {
     }
 
     public static String encodeWrapper(URL url, Object obj, String serializeType, MultipleSerialization serialization)
-            throws IOException {
+        throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         serialization.serialize(url, serializeType, obj.getClass().getName(), obj, bos);
         final TripleWrapper.TripleRequestWrapper wrap = TripleWrapper.TripleRequestWrapper.newBuilder()
-                .setSerializeType(convertHessianToWrapper(serializeType))
-                .addArgTypes(obj.getClass().getName())
-                .addArgs(ByteString.copyFrom(bos.toByteArray()))
-                .build();
+            .setSerializeType(convertHessianToWrapper(serializeType))
+            .addArgTypes(obj.getClass().getName())
+            .addArgs(ByteString.copyFrom(bos.toByteArray()))
+            .build();
         return encodeBase64ASCII(wrap.toByteArray());
     }
 
@@ -335,7 +334,7 @@ public class TripleUtil {
     }
 
     public static Object decodeObjFromHeader(URL url, CharSequence value, MultipleSerialization serialization)
-            throws InvalidProtocolBufferException {
+        throws InvalidProtocolBufferException {
         final byte[] decode = decodeASCIIByte(value);
         final TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(decode);
         final Object[] objects = TripleUtil.unwrapReq(url, wrapper, serialization);

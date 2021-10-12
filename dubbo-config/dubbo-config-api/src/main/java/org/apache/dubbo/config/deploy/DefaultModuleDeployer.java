@@ -219,8 +219,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void onModuleStarted(CompletableFuture startFuture) {
         setStarted();
         logger.info(getIdentifier() + " has started.");
-        startFuture.complete(true);
-        applicationDeployer.checkStarted();
+        applicationDeployer.checkStarted(startFuture);
     }
 
     private void onModuleStopping() {
