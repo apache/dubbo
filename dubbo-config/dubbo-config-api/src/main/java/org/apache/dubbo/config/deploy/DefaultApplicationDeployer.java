@@ -117,6 +117,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private String identifier;
     private CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
+    private CompositeDynamicConfiguration compositeDynamicConfiguration;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -256,7 +257,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
 
         if (CollectionUtils.isNotEmpty(configCenters)) {
-            CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
+            compositeDynamicConfiguration = new CompositeDynamicConfiguration();
             for (ConfigCenterConfig configCenter : configCenters) {
                 // Pass config from ConfigCenterBean to environment
                 environment.updateExternalConfigMap(configCenter.getExternalConfiguration());
@@ -266,6 +267,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
+        } else {
+            compositeDynamicConfiguration = null;
         }
 
         configManager.refreshAll();
@@ -929,10 +932,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // DynamicConfiguration may be cached somewhere, and maybe used during destroy
         // destroy them may cause some troubles,
         // but let them go also cause troubles such as configCenter connection leak.
-        Optional<DynamicConfiguration> opt = environment.getDynamicConfiguration()
-                .filter(v -> v instanceof CompositeDynamicConfiguration);
-        if (opt.isPresent()) {
-            CompositeDynamicConfiguration compositeDynamicConfiguration = (CompositeDynamicConfiguration) opt.get();
+        if (compositeDynamicConfiguration != null) {
             compositeDynamicConfiguration.getInnerConfigurations().forEach(dynamicConfiguration -> {
                 try {
                     dynamicConfiguration.close();
@@ -941,7 +941,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 }
             });
         }
-        environment.destroy();
     }
 
     private ApplicationConfig getApplication() {
