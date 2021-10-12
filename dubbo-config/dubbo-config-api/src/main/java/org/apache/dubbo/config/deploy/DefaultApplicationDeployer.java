@@ -940,6 +940,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     logger.warn(ignored.getMessage(), ignored);
                 }
             });
+            compositeDynamicConfiguration = null;
         }
     }
 
