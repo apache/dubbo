@@ -17,8 +17,6 @@
 package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
@@ -32,7 +30,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
  * AbstractZookeeperTransporter is abstract implements of ZookeeperTransporter.
@@ -111,55 +111,33 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @param url such as:zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999
      * @return such as 127.0.0.1:2181,127.0.0.1:8989,127.0.0.1:9999
      */
-    @SuppressWarnings("unchecked")
     public List<String> getURLBackupAddress(URL url) {
-        List<String> addressList = new ArrayList<String>();
-        addressList.add(url.getAddress());
-        addressList.addAll(url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST));
-
-        String authPrefix = null;
-        if (StringUtils.isNotEmpty(url.getUsername())) {
-            StringBuilder buf = new StringBuilder();
-            buf.append(url.getUsername());
-            if (StringUtils.isNotEmpty(url.getPassword())) {
-                buf.append(':');
-                buf.append(url.getPassword());
-            }
-            buf.append('@');
-            authPrefix = buf.toString();
-        }
-
-        if (StringUtils.isNotEmpty(authPrefix)) {
-            List<String> authedAddressList = new ArrayList<>(addressList.size());
-            for (String addr : addressList) {
-                authedAddressList.add(authPrefix + addr);
-            }
-            return authedAddressList;
-        }
-
-
-        return addressList;
+        return getURLBackupAddressInternal(url, false);
     }
 
     /**
      * get all zookeeper urls with application name (such as :zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999)
      *
      * @param url such as:zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999
-     * @return such as 127.0.0.1:2181?application=provider,127.0.0.1:8989,127.0.0.1:9999
+     * @return such as 127.0.0.1:2181?application=provider,127.0.0.1:8989?application=consumer,127.0.0.1:9999?application=consumer
      */
-    @SuppressWarnings("unchecked")
     public List<String> getURLBackupAddressWithApplicationName(URL url) {
+        return getURLBackupAddressInternal(url, true);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> getURLBackupAddressInternal(URL url, boolean withApplicationName) {
         List<String> addressList = new ArrayList<String>();
         String urlAddr = null;
         List<String> backupAddrs = null;
-        if (url.getParameter(CommonConstants.APPLICATION_KEY) == null) {
+        if (!withApplicationName || url.getParameter(APPLICATION_KEY) == null) {
             urlAddr = url.getAddress();
-            backupAddrs = url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST);
+            backupAddrs = url.getParameter(BACKUP_KEY, Collections.EMPTY_LIST);
         } else {
-            urlAddr = url.getAddress() + "?application=" + url.getParameter(CommonConstants.APPLICATION_KEY);
-            backupAddrs = (List<String>) url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST)
+            urlAddr = url.getAddress() + "?" + APPLICATION_KEY + "=" + url.getParameter(APPLICATION_KEY);
+            backupAddrs = (List<String>) url.getParameter(BACKUP_KEY, Collections.EMPTY_LIST)
                     .stream()
-                    .map(v -> v + "?application=" + url.getParameter(CommonConstants.APPLICATION_KEY))
+                    .map(v -> v + "?" + APPLICATION_KEY + "=" + url.getParameter(APPLICATION_KEY))
                     .collect(Collectors.toList());
         }
         addressList.add(urlAddr);
@@ -213,8 +191,8 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         if (url.getParameter(TIMEOUT_KEY) != null) {
             parameterMap.put(TIMEOUT_KEY, url.getParameter(TIMEOUT_KEY));
         }
-        if (url.getParameter(RemotingConstants.BACKUP_KEY) != null) {
-            parameterMap.put(RemotingConstants.BACKUP_KEY, url.getParameter(RemotingConstants.BACKUP_KEY));
+        if (url.getParameter(BACKUP_KEY) != null) {
+            parameterMap.put(BACKUP_KEY, url.getParameter(BACKUP_KEY));
         }
 
         return new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(),

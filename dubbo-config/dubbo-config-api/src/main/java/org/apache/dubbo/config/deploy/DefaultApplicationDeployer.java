@@ -77,6 +77,7 @@ import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
@@ -627,7 +628,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             DynamicConfiguration dynamicConfiguration = null;
             try {
-                dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+                URL url = configCenter.toUrl();
+                url = url.addParameterIfAbsent(APPLICATION_KEY, applicationModel.getCurrentConfig().getName());
+                dynamicConfiguration = getDynamicConfiguration(url);
             } catch (Exception e) {
                 if (!configCenter.isCheck()) {
                     logger.warn("The configuration center failed to initialize", e);
