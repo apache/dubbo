@@ -77,9 +77,9 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
             ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(Boolean.parseBoolean(ssl));
         }
 
-        // get compressor
+        // Compressor can not be set by dynamic config
         String compressorStr = ConfigurationUtils
-            .getGlobalConfiguration(url.getScopeModel()).getString(COMPRESSOR_KEY);
+            .getCachedDynamicProperty(inv.getModuleModel(),COMPRESSOR_KEY,DEFAULT_COMPRESSOR);
 
         if (null != compressorStr && !compressorStr.equals(DEFAULT_COMPRESSOR)) {
             Compressor compressor = url.getOrDefaultApplicationModel().getExtensionLoader(Compressor.class).getExtension(compressorStr);
