@@ -175,6 +175,16 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         }
     }
 
+    /**
+     * create basic meta data
+     */
+    protected Metadata createRequestMeta() {
+        Metadata metadata = new DefaultMetadata();
+        metadata.putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(), super.getCompressor().getMessageEncoding())
+                .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), TripleUtil.calcAcceptEncoding(invoker.getUrl()));
+        return metadata;
+    }
+
     protected byte[] encodeResponse(Object value) {
         final com.google.protobuf.Message message;
         if (getMethodDescriptor().isNeedWrap()) {
@@ -183,7 +193,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         } else {
             message = (Message) value;
         }
-        return TripleUtil.pack(message);
+        byte[] out = TripleUtil.pack(message);
+        return super.compress(out);
     }
 
     @Override

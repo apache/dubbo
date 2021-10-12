@@ -223,6 +223,20 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             // Then you need to find the corresponding parameter according to the request body
             stream.methods(methodDescriptors);
         }
+        CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
+        if (null != messageEncoding) {
+            String compressorStr = messageEncoding.toString();
+            Compressor compressor = invoker.getUrl().getOrDefaultApplicationModel().
+                getExtensionLoader(Compressor.class).getExtension(compressorStr);
+            if (null == compressor) {
+                TripleUtil.responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(),
+                    GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
+                        .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
+            } else {
+                stream.setCompressor(compressor);
+                ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
+            }
+        }
         final TransportObserver observer = stream.asTransportObserver();
         observer.onMetadata(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {
