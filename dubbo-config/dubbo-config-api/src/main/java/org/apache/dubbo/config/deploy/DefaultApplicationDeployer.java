@@ -791,13 +791,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             unRegisterShutdownHook();
             unregisterServiceInstance();
             unexportMetadataService();
+            if (asyncMetadataFuture != null) {
+                asyncMetadataFuture.cancel(true);
+            }
 
             executeShutdownCallbacks();
 
             applicationModel.destroy();
-            if (asyncMetadataFuture != null) {
-                asyncMetadataFuture.cancel(true);
-            }
 
             destroyProtocols();
 
@@ -863,6 +863,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onStopping() {
+        applicationModel.setStopping();
         setStopping();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is stopping.");
