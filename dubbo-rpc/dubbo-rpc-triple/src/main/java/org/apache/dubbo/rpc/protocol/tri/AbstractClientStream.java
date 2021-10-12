@@ -167,16 +167,16 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             .put(TripleHeaderEnum.TIMEOUT.getHeader(), inv.get(CommonConstants.TIMEOUT_KEY) + "m")
             .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
-        metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), inv.getInvoker().getUrl().getVersion())
+        metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), getUrl().getVersion())
             .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
                 (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
             .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
                 (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
-            .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), inv.getInvoker().getUrl().getGroup())
+            .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), getUrl().getGroup())
             .putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
                 ConfigurationUtils.getCachedDynamicProperty(inv.getModuleModel(), Constants.COMPRESSOR_KEY, DEFAULT_COMPRESSOR))
-            .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(),
-                TripleUtil.calcAcceptEncoding(inv.getInvoker().getUrl()));
+            .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.geader(),
+                TripleUtil.calcAcceptEncoding(getUrl()));
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {
             convertAttachment(metadata, attachments);
