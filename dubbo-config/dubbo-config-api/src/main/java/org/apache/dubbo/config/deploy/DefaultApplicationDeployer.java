@@ -832,7 +832,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public void checkStarted() {
+    public void checkStarted(CompletableFuture checkerStartFuture) {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             if (moduleModel.getDeployer().isPending()) {
                 setPending();
@@ -841,7 +841,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
         }
         // all modules has been started
-        onStarted();
+        onStarted(checkerStartFuture);
     }
 
     private void onStarting() {
@@ -851,13 +851,16 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private void onStarted() {
+    private void onStarted(CompletableFuture checkerStartFuture) {
         setStarted();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is ready.");
         }
         if (startFuture != null) {
             startFuture.complete(true);
+        }
+        if (checkerStartFuture != null) {
+            checkerStartFuture.complete(true);
         }
     }
 
