@@ -93,13 +93,13 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         } catch (RejectedExecutionException e) {
             LOGGER.error("Consumer's thread pool is full", e);
             getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
-                    .withDescription("Consumer's thread pool is full").asException());
+                .withDescription("Consumer's thread pool is full").asException());
         } catch (Throwable t) {
             LOGGER.error("Consumer submit request to thread pool error ", t);
             getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(t)
-                    .withDescription("Consumer's error")
-                    .asException());
+                .withCause(t)
+                .withDescription("Consumer's error")
+                .asException());
         }
     }
 
@@ -144,11 +144,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             }
             if (getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleResponseWrapper wrapper = TripleUtil.unpack(data,
-                        TripleWrapper.TripleResponseWrapper.class);
+                    TripleWrapper.TripleResponseWrapper.class);
                 if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
                     throw new UnsupportedOperationException("Received inconsistent serialization type from server, " +
-                            "reject to deserialize! Expected:" + getSerializeType() +
-                            " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()));
+                        "reject to deserialize! Expected:" + getSerializeType() +
+                        " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()));
                 }
                 return TripleUtil.unwrapResp(getUrl(), wrapper, getMultipleSerialization());
             } else {
@@ -162,26 +162,36 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     protected Metadata createRequestMeta(RpcInvocation inv) {
         Metadata metadata = new DefaultMetadata();
         metadata.put(TripleHeaderEnum.PATH_KEY.getHeader(), "/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName())
-                .put(TripleHeaderEnum.AUTHORITY_KEY.getHeader(), getUrl().getAddress())
-                .put(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
-                .put(TripleHeaderEnum.TIMEOUT.getHeader(), inv.get(CommonConstants.TIMEOUT_KEY) + "m")
-                .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+            .put(TripleHeaderEnum.AUTHORITY_KEY.getHeader(), getUrl().getAddress())
+            .put(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+            .put(TripleHeaderEnum.TIMEOUT.getHeader(), inv.get(CommonConstants.TIMEOUT_KEY) + "m")
+            .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
-        metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), inv.getInvoker().getUrl().getVersion())
-                .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
-                        (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
-                .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
-                        (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
-                .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), inv.getInvoker().getUrl().getGroup())
-                .putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
-                    ConfigurationUtils.getGlobalConfiguration(inv.getInvoker().getUrl().getScopeModel()).getString(Constants.COMPRESSOR_KEY, DEFAULT_COMPRESSOR))
-                .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(),
-                    TripleUtil.calcAcceptEncoding(inv.getInvoker().getUrl()));
+        metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), getUrl().getVersion())
+            .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
+                (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
+            .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
+                (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
+            .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), getUrl().getGroup())
+            .putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(),
+                ConfigurationUtils.getCachedDynamicProperty(inv.getModuleModel(), Constants.COMPRESSOR_KEY, DEFAULT_COMPRESSOR))
+            .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(),
+                TripleUtil.calcAcceptEncoding(getUrl()));
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {
             convertAttachment(metadata, attachments);
         }
         return metadata;
+    }
+
+    @Override
+    protected void cancelByRemoteReset(Http2Error http2Error) {
+        DefaultFuture2.getFuture(getRequest().getId()).cancel();
+    }
+
+    @Override
+    protected void cancelByLocal(Throwable throwable) {
+        getCancellationContext().cancel(throwable);
     }
 
     protected class ClientStreamObserver extends CancelableStreamObserver<Object> {
@@ -203,15 +213,5 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         public void onCompleted() {
             getTransportSubscriber().onComplete();
         }
-    }
-
-    @Override
-    protected void cancelByRemoteReset(Http2Error http2Error) {
-        DefaultFuture2.getFuture(getRequest().getId()).cancel();
-    }
-
-    @Override
-    protected void cancelByLocal(Throwable throwable) {
-        getCancellationContext().cancel(throwable);
     }
 }
