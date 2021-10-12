@@ -126,7 +126,8 @@ public class ConfigurationUtils {
         return timeout;
     }
 
-    public static String getCachedDynamicProperty(ScopeModel scopeModel, String key, String defaultValue) {
+    public static String getCachedDynamicProperty(ScopeModel realScopeModel, String key, String defaultValue) {
+        ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(realScopeModel);
         ConfigurationCache configurationCache = scopeModel.getBeanFactory().getBean(ConfigurationCache.class);
         String value = configurationCache.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(scopeModel, _k, ""));
         return StringUtils.isEmpty(value) ? defaultValue : value;
