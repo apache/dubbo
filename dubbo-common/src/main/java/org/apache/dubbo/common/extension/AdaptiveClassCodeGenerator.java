@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -90,6 +91,14 @@ public class AdaptiveClassCodeGenerator {
      * generate and return class code
      */
     public String generate() {
+        return this.generate(false);
+    }
+
+    /**
+     * generate and return class code
+     * @param sort - whether sort methods
+     */
+    public String generate(boolean sort) {
         // no need to generate adaptive class since there's no adaptive method found.
         if (!hasAdaptiveMethod()) {
             throw new IllegalStateException("No adaptive method exist on extension " + type.getName() + ", refuse to create the adaptive class!");
@@ -101,6 +110,9 @@ public class AdaptiveClassCodeGenerator {
         code.append(generateClassDeclaration());
 
         Method[] methods = type.getMethods();
+        if (sort) {
+            Arrays.sort(methods, Comparator.comparing(Method::toString));
+        }
         for (Method method : methods) {
             code.append(generateMethod(method));
         }
