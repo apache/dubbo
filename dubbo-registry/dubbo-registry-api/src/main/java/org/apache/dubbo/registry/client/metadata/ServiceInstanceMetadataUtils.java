@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -31,8 +32,6 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.RegistryManager;
-
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -254,7 +253,6 @@ public class ServiceInstanceMetadataUtils {
             RegistryManager registryManager = serviceInstance.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
             registryManager.getServiceDiscoveries().forEach(serviceDiscovery ->
             {
-                // copy instance for each registry to make sure instance in each registry can evolve independently
                 ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
                 calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
                 if (LOGGER.isDebugEnabled()) {
@@ -275,8 +273,6 @@ public class ServiceInstanceMetadataUtils {
                 LOGGER.warn("Refreshing of service instance started, but instance hasn't been registered yet.");
                 instance = serviceInstance;
             }
-            // copy instance again, in case the same instance accidently shared among registries
-            instance = new DefaultServiceInstance((DefaultServiceInstance) instance);
             calInstanceRevision(serviceDiscovery, instance);
             customizeInstance(instance);
             if (serviceInstance.getPort() > 0) {
