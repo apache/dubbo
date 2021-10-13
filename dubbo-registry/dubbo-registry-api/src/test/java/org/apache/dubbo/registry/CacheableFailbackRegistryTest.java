@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CacheableFallbackRegistryTest {
+public class CacheableFailbackRegistryTest {
 
     static String service;
     static URL serviceUrl;
@@ -142,7 +142,7 @@ public class CacheableFallbackRegistryTest {
     }
 
     @Test
-    public void testRemove() throws Exception {
+    public void testRemove() {
         final AtomicReference<Integer> resCount = new AtomicReference<>(0);
         registry = new MockCacheableRegistryImpl(registryUrl);
         URL url = URLStrParser.parseEncodedStr(urlStr);

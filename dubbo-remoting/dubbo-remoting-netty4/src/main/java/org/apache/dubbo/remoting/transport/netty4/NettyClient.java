@@ -45,8 +45,8 @@ import java.net.InetSocketAddress;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
-import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.eventLoopGroup;
-import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.socketChannelClass;
+import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.eventLoopGroup;
+import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelClass;
 
 /**
  * NettyClient.

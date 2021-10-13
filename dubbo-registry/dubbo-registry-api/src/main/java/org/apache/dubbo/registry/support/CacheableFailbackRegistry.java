@@ -199,7 +199,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         boolean encoded = true;
         // use encoded value directly to avoid URLDecoder.decode allocation.
         int paramStartIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
-        if (paramStartIdx == -1) {// if ENCODED_QUESTION_MARK does not shown, mark as not encoded.
+        if (paramStartIdx == -1) {// if ENCODED_QUESTION_MARK does not show, mark as not encoded.
             encoded = false;
         }
         String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);
