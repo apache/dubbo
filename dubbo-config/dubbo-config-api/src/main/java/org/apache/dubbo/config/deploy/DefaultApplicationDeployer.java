@@ -937,7 +937,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 try {
                     dynamicConfiguration.close();
                 } catch (Throwable ignored) {
-                    logger.warn(ignored.getMessage(), ignored);
+                    // DynamicConfiguration does not support close operation by default.
+                    if (!(ignored instanceof UnsupportedOperationException)) {
+                        logger.warn(ignored.getMessage(), ignored);
+                    }
                 }
             });
             compositeDynamicConfiguration = null;
