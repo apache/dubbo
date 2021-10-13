@@ -29,7 +29,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
-        return new ClientStreamObserver() {
+        ClientStreamObserver clientStreamObserver = new ClientStreamObserver() {
             boolean metaSent;
 
             @Override
@@ -48,6 +48,8 @@ public class ClientStream extends AbstractClientStream implements Stream {
                 transportError(throwable);
             }
         };
+        clientStreamObserver.setCancellationContext(getCancellationContext());
+        return clientStreamObserver;
     }
 
     @Override

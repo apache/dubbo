@@ -66,6 +66,7 @@ public class KeepRunningOnSpringClosedTest {
             Assertions.assertEquals(true, applicationDeployer.isStarted());
             Assertions.assertEquals(false, applicationDeployer.isStopped());
         } finally {
+            DubboBootstrap.getInstance().stop();
             SysProps.clear();
             if (providerContext != null) {
                 providerContext.close();

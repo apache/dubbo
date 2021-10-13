@@ -14,25 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+package org.apache.dubbo.rpc.protocol.tri;
 
-public class PortUnificationServerTest {
+import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.CancellationContext;
 
-    @Test
-    public void testBind() {
-        URL url = new ServiceConfigURL(CommonConstants.TRIPLE, "localhost", 8898,
-                new String[]{Constants.BIND_PORT_KEY, String.valueOf(8898)});
+public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
 
-        final PortUnificationServer server = new PortUnificationServer(url);
-        server.bind();
-        Assertions.assertTrue(server.isBound());
+    private CancellationContext cancellationContext;
+
+    public CancellationContext getCancellationContext() {
+        return cancellationContext;
+    }
+
+    public void setCancellationContext(CancellationContext cancellationContext) {
+        this.cancellationContext = cancellationContext;
+    }
+
+    public final void cancel(Throwable throwable) {
+        if (cancellationContext == null) {
+            return;
+        }
+        cancellationContext.cancel(throwable);
     }
 }

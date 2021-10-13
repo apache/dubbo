@@ -14,25 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.api;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+package org.apache.dubbo.rpc.protocol.tri;
 
-public class PortUnificationServerTest {
+/**
+ * Default compressor
+ */
+public class IdentityCompressor implements Compressor {
 
-    @Test
-    public void testBind() {
-        URL url = new ServiceConfigURL(CommonConstants.TRIPLE, "localhost", 8898,
-                new String[]{Constants.BIND_PORT_KEY, String.valueOf(8898)});
+    public static final Compressor NONE = new IdentityCompressor();
 
-        final PortUnificationServer server = new PortUnificationServer(url);
-        server.bind();
-        Assertions.assertTrue(server.isBound());
+    @Override
+    public String getMessageEncoding() {
+        return "identity";
+    }
+
+    @Override
+    public byte[] compress(byte[] payloadByteArr) {
+        return payloadByteArr;
+    }
+
+    @Override
+    public byte[] decompress(byte[] payloadByteArr) {
+        return payloadByteArr;
     }
 }

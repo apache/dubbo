@@ -36,6 +36,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Request;
 
 import java.net.InetSocketAddress;
+import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -99,12 +100,18 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     @Override
     public void close() {
+        if (!closed.compareAndSet(false, true)) {
+            return;
+        }
         doClose();
         server.close();
     }
 
     @Override
     public void close(final int timeout) {
+        if (!closed.compareAndSet(false, true)) {
+            return;
+        }
         startClose();
         if (timeout > 0) {
             final long max = (long) timeout;
@@ -143,15 +150,16 @@ public class HeaderExchangeServer implements ExchangeServer {
                     channel.send(request, getUrl().getParameter(Constants.CHANNEL_READONLYEVENT_SENT_KEY, true));
                 }
             } catch (RemotingException e) {
+                if (closed.get() && e.getCause() instanceof ClosedChannelException) {
+                    // ignore ClosedChannelException which means the connection has been closed. 
+                    continue;
+                }
                 logger.warn("send cannot write message error.", e);
             }
         }
     }
 
     private void doClose() {
-        if (!closed.compareAndSet(false, true)) {
-            return;
-        }
         cancelCloseTask();
     }
 

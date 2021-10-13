@@ -32,6 +32,10 @@ import org.apache.dubbo.remoting.Constants;
 
 import java.util.concurrent.ThreadFactory;
 
+import static org.apache.dubbo.common.constants.CommonConstants.OS_LINUX_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
+import static org.apache.dubbo.remoting.Constants.NETTY_EPOLL_ENABLE_KEY;
+
 public class NettyEventLoopFactory {
     /**
      * netty client bootstrap
@@ -56,9 +60,9 @@ public class NettyEventLoopFactory {
     }
 
     private static boolean shouldEpoll() {
-        if (Boolean.parseBoolean(System.getProperty("netty.epoll.enable", "false"))) {
-            String osName = System.getProperty("os.name");
-            return osName.toLowerCase().contains("linux") && Epoll.isAvailable();
+        if (Boolean.parseBoolean(System.getProperty(NETTY_EPOLL_ENABLE_KEY, "false"))) {
+            String osName = System.getProperty(OS_NAME_KEY);
+            return osName.toLowerCase().contains(OS_LINUX_PREFIX) && Epoll.isAvailable();
         }
 
         return false;

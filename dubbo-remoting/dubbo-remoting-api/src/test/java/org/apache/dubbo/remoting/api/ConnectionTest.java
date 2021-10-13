@@ -37,7 +37,7 @@ class ConnectionTest {
     }
 
     @Test
-    public void testRefCnt1() throws InterruptedException {
+    public void testRefCnt1() {
         Connection connection = new Connection(URL.valueOf("empty://127.0.0.1:8080?foo=bar"));
         CountDownLatch latch = new CountDownLatch(1);
         connection.retain();

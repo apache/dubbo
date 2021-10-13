@@ -53,7 +53,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelClass;
 
-public class Connection extends AbstractReferenceCounted implements ReferenceCounted {
+public class Connection extends AbstractReferenceCounted {
 
     public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
@@ -94,7 +94,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .remoteAddress(getConnectAddress())
+                .remoteAddress(remote)
                 .channel(socketChannelClass());
 
         final ConnectionHandler connectionHandler = new ConnectionHandler(this);
@@ -103,16 +103,17 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
             @Override
             protected void initChannel(SocketChannel ch) {
+                final ChannelPipeline pipeline = ch.pipeline();
                 SslContext sslContext = null;
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
-                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(url));
+                    pipeline.addLast("negotiation", new SslClientTlsHandler(url));
                 }
 
-                final ChannelPipeline p = ch.pipeline();//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+                //.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                 // TODO support IDLE
 //                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
-                p.addLast(connectionHandler);
-                protocol.configClientPipeline(url, p, sslContext);
+                pipeline.addLast(connectionHandler);
+                protocol.configClientPipeline(url, pipeline, sslContext);
                 // TODO support Socks5
             }
         });
