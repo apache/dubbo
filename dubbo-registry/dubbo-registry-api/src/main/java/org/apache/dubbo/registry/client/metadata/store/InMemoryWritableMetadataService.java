@@ -197,6 +197,15 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
         }
     }
 
+    public void addMetadataInfo(String key, MetadataInfo metadataInfo) {
+        updateLock.readLock().lock();
+        try {
+            metadataInfos.put(key, metadataInfo);
+        } finally {
+            updateLock.readLock().unlock();
+        }
+    }
+
     @Override
     public boolean unexportURL(URL url) {
         if (MetadataService.class.getName().equals(url.getServiceInterface())) {
