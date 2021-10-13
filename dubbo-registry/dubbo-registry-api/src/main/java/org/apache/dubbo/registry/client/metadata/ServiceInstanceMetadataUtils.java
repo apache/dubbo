@@ -254,7 +254,7 @@ public class ServiceInstanceMetadataUtils {
             RegistryManager registryManager = serviceInstance.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
             registryManager.getServiceDiscoveries().forEach(serviceDiscovery ->
             {
-                ServiceInstance serviceInstanceForRegistry = ((DefaultServiceInstance) serviceInstance).copyOfThis();
+                ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
                 calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstanceForRegistry);
