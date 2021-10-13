@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Constants;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
@@ -52,5 +53,10 @@ public interface Compressor {
      * @return decompressed payload byte array
      */
     byte[] decompress(byte[] payloadByteArr);
+
+
+    static Compressor getCompressor(FrameworkModel frameworkModel, String compressorStr) {
+        return frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
+    }
 
 }

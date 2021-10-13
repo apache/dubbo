@@ -228,9 +228,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
         if (null != messageEncoding) {
             String compressorStr = messageEncoding.toString();
-            if (!compressorStr.equals(DEFAULT_COMPRESSOR)) {
-                Compressor compressor = invoker.getUrl().getOrDefaultApplicationModel().
-                    getExtensionLoader(Compressor.class).getExtension(compressorStr);
+            if (!DEFAULT_COMPRESSOR.equals(compressorStr)) {
+                Compressor compressor = frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
                 if (null == compressor) {
                     TripleUtil.responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(),
                         GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)

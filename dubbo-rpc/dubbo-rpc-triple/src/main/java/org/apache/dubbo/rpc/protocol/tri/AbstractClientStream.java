@@ -63,6 +63,10 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         final CancellationContext cancellationContext = stream.getCancellationContext();
         // for client cancel,send rst frame to server
         cancellationContext.addListener(context -> {
+            if (LOGGER.isErrorEnabled()) {
+                Throwable throwable = cancellationContext.getCancellationCause();
+                LOGGER.error("Cancel by local throwable=", throwable);
+            }
             stream.asTransportObserver().onReset(Http2Error.CANCEL);
         });
         return stream;
@@ -194,24 +198,5 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         getCancellationContext().cancel(throwable);
     }
 
-    protected class ClientStreamObserver extends CancelableStreamObserver<Object> {
 
-        @Override
-        public void onNext(Object data) {
-            RpcInvocation invocation = (RpcInvocation) data;
-            final Metadata metadata = createRequestMeta(invocation);
-            getTransportSubscriber().onMetadata(metadata, false);
-            final byte[] bytes = encodeRequest(invocation);
-            getTransportSubscriber().onData(bytes, false);
-        }
-
-        @Override
-        public void onError(Throwable throwable) {
-        }
-
-        @Override
-        public void onCompleted() {
-            getTransportSubscriber().onComplete();
-        }
-    }
 }

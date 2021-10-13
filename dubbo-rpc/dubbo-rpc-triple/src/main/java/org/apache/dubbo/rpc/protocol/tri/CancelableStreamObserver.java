@@ -20,16 +20,29 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.CancellationContext;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
 
     private CancellationContext cancellationContext;
+
+    private final AtomicBoolean contextSet = new AtomicBoolean(false);
 
     public CancellationContext getCancellationContext() {
         return cancellationContext;
     }
 
+    public CancelableStreamObserver() {
+    }
+
+    public CancelableStreamObserver(CancellationContext cancellationContext) {
+        setCancellationContext(cancellationContext);
+    }
+
     public void setCancellationContext(CancellationContext cancellationContext) {
-        this.cancellationContext = cancellationContext;
+        if (contextSet.compareAndSet(false, true)) {
+            this.cancellationContext = cancellationContext;
+        }
     }
 
     public final void cancel(Throwable throwable) {

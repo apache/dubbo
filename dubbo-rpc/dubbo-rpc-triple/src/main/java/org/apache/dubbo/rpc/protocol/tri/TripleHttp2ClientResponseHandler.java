@@ -75,8 +75,8 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
         if (null != messageEncoding) {
             String compressorStr = messageEncoding.toString();
-            if (!compressorStr.equals(DEFAULT_COMPRESSOR)) {
-                Compressor compressor = clientStream.getUrl().getOrDefaultApplicationModel()
+            if (!DEFAULT_COMPRESSOR.equals(compressorStr)) {
+                Compressor compressor = clientStream.getUrl().getOrDefaultFrameworkModel()
                     .getExtensionLoader(Compressor.class).getExtension(compressorStr);
                 if (null == compressor) {
                     throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
