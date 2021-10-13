@@ -82,8 +82,10 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     @Override
     protected void doClose() throws Exception {
-        // TODO zkClient is shared in framework, should not close it here?
+        // zkClient is shared in framework, should not close it here
         // zkClient.close();
+        // See: org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter#destroy()
+        // All zk clients is created and destroyed in ZookeeperTransporter.
         zkClient = null;
     }
 

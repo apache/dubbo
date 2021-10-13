@@ -21,7 +21,6 @@ import io.netty.util.DefaultAttributeMap;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
 import org.apache.dubbo.remoting.RemotingException;
@@ -64,7 +63,6 @@ public class InvokeTelnetTest {
 
     @AfterEach
     public void after() {
-        ProtocolUtils.closeAll();
         frameworkModel.destroy();
         reset(mockChannel, mockCommandContext);
     }
