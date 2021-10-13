@@ -81,13 +81,13 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.port = other.port;
         this.enabled = other.enabled;
         this.healthy = other.healthy;
-        this.metadata = other.metadata;
         this.serviceMetadata = other.serviceMetadata;
         this.registryCluster = other.registryCluster;
-        this.extendParams = other.extendParams;
-        this.endpoints = other.endpoints;
         this.address = null;
-        this.attributes = other.attributes;
+        this.metadata = new HashMap<>(other.metadata);
+        this.attributes = new HashMap<>(other.attributes);
+        this.extendParams = other.extendParams != null ? new HashMap<>(other.extendParams) : other.extendParams;
+        this.endpoints = other.endpoints != null ? new ArrayList<>(other.endpoints) : other.endpoints;
     }
 
     public DefaultServiceInstance(String serviceName, String host, Integer port, ApplicationModel applicationModel) {
@@ -206,24 +206,6 @@ public class DefaultServiceInstance implements ServiceInstance {
         DefaultServiceInstance copyOfInstance = new DefaultServiceInstance(this);
         copyOfInstance.setPort(endpoint.getPort());
         return copyOfInstance;
-    }
-
-    public DefaultServiceInstance copyOfThis() {
-        DefaultServiceInstance copy = new DefaultServiceInstance();
-        copy.serviceName = this.serviceName;
-        copy.host = this.host;
-        copy.port = this.port;
-        copy.enabled = this.enabled;
-        copy.healthy = this.healthy;
-        copy.serviceMetadata = this.serviceMetadata;
-        copy.registryCluster = this.registryCluster;
-        copy.address = null;
-        copy.rawAddress = this.rawAddress;
-        copy.metadata = new HashMap<>(this.metadata);
-        copy.attributes = new HashMap<>(this.attributes);
-        copy.extendParams = this.extendParams != null ? new HashMap<>(this.extendParams) : this.extendParams;
-        copy.endpoints = this.endpoints != null ? new ArrayList<>(this.endpoints) : this.endpoints;
-        return copy;
     }
 
     @Override
