@@ -45,8 +45,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
-
 public class DubboBootstrapMultiInstanceTest {
 
     private static ZookeeperSingleRegistryCenter registryCenter;
@@ -67,9 +65,6 @@ public class DubboBootstrapMultiInstanceTest {
     @AfterAll
     public static void afterAll() throws Exception {
         registryCenter.shutdown();
-
-        //FIXME debug
-        //Thread.sleep(10000);
     }
 
     @BeforeEach
@@ -178,7 +173,7 @@ public class DubboBootstrapMultiInstanceTest {
     @Test
     public void testMultiModuleApplication() throws InterruptedException {
 
-        SysProps.setProperty(METADATA_PUBLISH_DELAY_KEY, "1");
+        //SysProps.setProperty(METADATA_PUBLISH_DELAY_KEY, "100");
         String version1 = "1.0";
         String version2 = "2.0";
         String version3 = "3.0";
@@ -229,7 +224,7 @@ public class DubboBootstrapMultiInstanceTest {
 
             providerBootstrap.start();
 
-            Thread.sleep(100);
+            //Thread.sleep(200);
 
             // consumer app
             consumerBootstrap = DubboBootstrap.newInstance();
@@ -449,7 +444,7 @@ public class DubboBootstrapMultiInstanceTest {
             ModuleModel defaultModule = applicationModel.getDefaultModule();
             Assertions.assertEquals(DeployState.PENDING, defaultModule.getDeployer().getState());
 
-            // 2. start application
+            // 2. start application after module1 is started
             providerBootstrap.start();
             Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
             Assertions.assertEquals(DeployState.STARTED, defaultModule.getDeployer().getState());
@@ -477,6 +472,63 @@ public class DubboBootstrapMultiInstanceTest {
             moduleModel3.getDeployer().start().get();
             Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
             Assertions.assertEquals(DeployState.STARTED, moduleModel3.getDeployer().getState());
+
+        } finally {
+            if (providerBootstrap != null) {
+                providerBootstrap.stop();
+            }
+        }
+    }
+
+
+    @Test
+    public void testBothStartByModuleAndByApplication2() throws Exception {
+        String version1 = "1.0";
+        String version2 = "2.0";
+        String version3 = "3.0";
+
+        String serviceKey1 = DemoService.class.getName() + ":" + version1;
+        String serviceKey2 = DemoService.class.getName() + ":" + version2;
+        String serviceKey3 = DemoService.class.getName() + ":" + version3;
+
+        // provider app
+        DubboBootstrap providerBootstrap = null;
+        try {
+            providerBootstrap = DubboBootstrap.newInstance();
+
+            ServiceConfig serviceConfig1 = new ServiceConfig();
+            serviceConfig1.setInterface(DemoService.class);
+            serviceConfig1.setRef(new DemoServiceImpl());
+            serviceConfig1.setVersion(version1);
+
+            //provider module 1
+            providerBootstrap
+                .application("provider-app")
+                .registry(registryConfig)
+                .protocol(new ProtocolConfig("dubbo", -1))
+                .service(builder -> builder
+                    .interfaceClass(Greeting.class)
+                    .ref(new GreetingLocal2()))
+                .newModule()
+                .service(serviceConfig1)
+                .endModule();
+
+            // 1. start module1 but no wait
+            ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
+            moduleDeployer1.start();
+            Assertions.assertEquals(DeployState.STARTING, moduleDeployer1.getState());
+
+            ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
+            ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
+            Assertions.assertEquals(DeployState.STARTING, applicationDeployer.getState());
+            ModuleModel defaultModule = applicationModel.getDefaultModule();
+            Assertions.assertEquals(DeployState.PENDING, defaultModule.getDeployer().getState());
+
+            // 2. start application after module1 is starting
+            providerBootstrap.start();
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.STARTED, moduleDeployer1.getState());
+            Assertions.assertEquals(DeployState.STARTED, defaultModule.getDeployer().getState());
 
         } finally {
             if (providerBootstrap != null) {

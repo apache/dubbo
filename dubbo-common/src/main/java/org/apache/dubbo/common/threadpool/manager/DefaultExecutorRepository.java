@@ -49,6 +49,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REFER_TH
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
@@ -128,7 +129,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         Map<Integer, ExecutorService> executors = data.computeIfAbsent(EXECUTOR_SERVICE_COMPONENT_KEY, k -> new ConcurrentHashMap<>());
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
         Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
-        ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
+        if (url.getParameter(THREAD_NAME_KEY) == null) {
+            url = url.putAttribute(THREAD_NAME_KEY, "Dubbo-protocol-"+portKey);
+        }
+        URL finalUrl = url;
+        ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(finalUrl));
         // If executor has been shut down, create a new one
         if (executor.isShutdown() || executor.isTerminated()) {
             executors.remove(portKey);

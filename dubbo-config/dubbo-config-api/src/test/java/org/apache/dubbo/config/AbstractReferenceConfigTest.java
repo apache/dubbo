@@ -52,8 +52,6 @@ public class AbstractReferenceConfigTest {
     @AfterAll
     public static void afterAll() throws Exception {
         FrameworkModel.destroyAll();
-
-        //Thread.sleep(10000);
     }
 
     @Test
