@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.remoting.exchange.support;
 
-import org.apache.dubbo.common.concurrent.CallableSafeInitializer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.resource.GlobalResourcesRepository;
+import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
@@ -54,15 +53,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
 
     private static final Map<Long, DefaultFuture> FUTURES = new ConcurrentHashMap<>();
 
-    private static CallableSafeInitializer<Timer> TIME_OUT_TIMER = new CallableSafeInitializer<>(() -> new HashedWheelTimer(
-        new NamedThreadFactory("dubbo-future-timeout", true),
-        30,
-        TimeUnit.MILLISECONDS));
-
-    static {
-        // register resources destroy listener
-        GlobalResourcesRepository.getInstance().addDisposable(()-> destroy());
-    }
+    private static GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(
+        new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS),
+        () -> destroy());
 
     // invoke id.
     private final Long id;

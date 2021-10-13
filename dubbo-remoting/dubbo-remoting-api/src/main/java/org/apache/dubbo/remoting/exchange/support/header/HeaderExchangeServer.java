@@ -18,10 +18,9 @@ package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.concurrent.CallableSafeInitializer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.resource.GlobalResourcesRepository;
+import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.utils.Assert;
@@ -60,16 +59,10 @@ public class HeaderExchangeServer implements ExchangeServer {
     private final RemotingServer server;
     private AtomicBoolean closed = new AtomicBoolean(false);
 
-    public static CallableSafeInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new CallableSafeInitializer<>(() ->
+    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(() ->
         new HashedWheelTimer(new NamedThreadFactory("dubbo-server-idleCheck", true), 1,
-            TimeUnit.SECONDS, TICKS_PER_WHEEL));
-
-    static {
-        // register resources destroy listener
-        GlobalResourcesRepository.getInstance().addDisposable(()-> {
-            IDLE_CHECK_TIMER.remove(timer -> timer.stop());
-        });
-    }
+            TimeUnit.SECONDS, TICKS_PER_WHEEL),
+        timer -> timer.stop());
 
     private Timeout closeTimer;
 

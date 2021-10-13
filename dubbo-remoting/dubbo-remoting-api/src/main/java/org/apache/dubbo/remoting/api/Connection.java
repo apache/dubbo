@@ -90,7 +90,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
     private Bootstrap create() {
         final Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP)
+        bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP.get())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
