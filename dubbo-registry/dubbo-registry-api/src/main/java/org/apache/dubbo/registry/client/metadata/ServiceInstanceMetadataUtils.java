@@ -254,6 +254,7 @@ public class ServiceInstanceMetadataUtils {
             RegistryManager registryManager = serviceInstance.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
             registryManager.getServiceDiscoveries().forEach(serviceDiscovery ->
             {
+                // copy instance for each registry to make sure instance in each registry can evolve independently
                 ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
                 calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
                 if (LOGGER.isDebugEnabled()) {
@@ -274,6 +275,8 @@ public class ServiceInstanceMetadataUtils {
                 LOGGER.warn("Refreshing of service instance started, but instance hasn't been registered yet.");
                 instance = serviceInstance;
             }
+            // copy instance again, in case the same instance accidently shared among registries
+            instance = new DefaultServiceInstance((DefaultServiceInstance) instance);
             calInstanceRevision(serviceDiscovery, instance);
             customizeInstance(instance);
             if (serviceInstance.getPort() > 0) {
