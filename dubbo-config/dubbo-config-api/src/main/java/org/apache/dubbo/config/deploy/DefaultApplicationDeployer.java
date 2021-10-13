@@ -712,7 +712,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
                 InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
-                localMetadataService.blockUntilUpdated();
+                if (!applicationModel.getDeployer().isStopping() || !applicationModel.getDeployer().isStopped()) {
+                    localMetadataService.blockUntilUpdated();
+                }
                 try {
                     ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
                 } catch (Exception e) {
@@ -866,6 +868,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onStopping() {
+        applicationModel.setStopping();
         setStopping();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is stopping.");

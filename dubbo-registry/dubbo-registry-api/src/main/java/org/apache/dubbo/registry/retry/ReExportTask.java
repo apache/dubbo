@@ -21,7 +21,7 @@ import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
 /**
- *
+ * ReExportTask
  */
 public class ReExportTask extends AbstractRetryTask {
 
