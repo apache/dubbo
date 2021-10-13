@@ -865,6 +865,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onStopping() {
+        applicationModel.setStopping();
         setStopping();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is stopping.");
