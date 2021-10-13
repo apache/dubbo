@@ -40,7 +40,7 @@
 
     <root>
         <level value="INFO"/>
-        <!--<appender-ref ref="dubbo"/>-->
+        <appender-ref ref="dubbo"/>
         <appender-ref ref="console"/>
     </root>
 </log4j:configuration>
