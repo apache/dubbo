@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizerHolder;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;

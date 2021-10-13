@@ -227,6 +227,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         setStarted();
         logger.info(getIdentifier() + " has started.");
         applicationDeployer.checkStarted();
+        // complete module start future after application state changed, fix #9012 ?
         startFuture.complete(true);
     }
 

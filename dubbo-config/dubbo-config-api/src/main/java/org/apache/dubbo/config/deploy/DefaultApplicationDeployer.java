@@ -639,8 +639,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         exportMetadataService();
         // start internal module
         ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
-        if (!internalModuleDeployer.isRunning()) {
+        if (!internalModuleDeployer.isStarted()) {
             Future future = internalModuleDeployer.start();
+            // wait for internal module start finished
             try {
                 future.get();
             } catch (Exception e) {

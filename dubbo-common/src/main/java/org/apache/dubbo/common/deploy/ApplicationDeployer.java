@@ -73,6 +73,6 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
 
     void checkStarting();
 
-    void checkStarted(CompletableFuture checkerStartFuture);
+    void checkStarted();
 
 }
