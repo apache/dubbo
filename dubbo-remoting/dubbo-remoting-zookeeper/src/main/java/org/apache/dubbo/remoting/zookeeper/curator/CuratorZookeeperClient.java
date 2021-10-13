@@ -83,6 +83,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                 throw new IllegalStateException("zookeeper not connected");
             }
         } catch (Exception e) {
+            close();
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
