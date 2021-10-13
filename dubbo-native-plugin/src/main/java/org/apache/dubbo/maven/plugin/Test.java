@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata.definition;
 
-import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
+package org.apache.dubbo.maven.plugin;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import java.util.Set;
 
-public class TypeDefinitionBuilderTest {
+/**
+ * @Author goodjava@qq.com
+ * @Date 2021/9/26 14:12
+ */
+public class Test {
 
-    @Test
-    public void testSortTypeBuilder() {
-        TypeBuilder tb = TypeDefinitionBuilder.BUILDERS.get(0);
-        Assertions.assertTrue(tb instanceof TestTypeBuilder);
-
-        tb = TypeDefinitionBuilder.BUILDERS.get(TypeDefinitionBuilder.BUILDERS.size() - 1);
-        Assertions.assertTrue(tb instanceof Test3TypeBuilder);
+    public static void main(String[] args) {
+        ClassFinder finder = new ClassFinder();
+        Set<String> set = finder.findClassSet("org.apache.dubbo", msg -> {
+        });
+        System.out.println(set.size());
     }
 }

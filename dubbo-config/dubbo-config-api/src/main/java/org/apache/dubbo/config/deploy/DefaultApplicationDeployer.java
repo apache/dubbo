@@ -759,7 +759,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = executorRepository.getSharedScheduledExecutor().scheduleAtFixedRate(() -> {
                 InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
-                localMetadataService.blockUntilUpdated();
+                if (!applicationModel.getDeployer().isStopping() || !applicationModel.getDeployer().isStopped()) {
+                    localMetadataService.blockUntilUpdated();
+                }
                 try {
                     ApplicationDeployer deployer = serviceInstance.getApplicationModel().getDeployer();
                     if (deployer != null && !(deployer.isStopping() || deployer.isStopped())) {

@@ -73,6 +73,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
@@ -82,6 +83,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_PROTOCOL_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -93,6 +95,7 @@ import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 import static org.apache.dubbo.common.constants.RegistryConstants.ALL_CATEGORIES;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
@@ -261,7 +264,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     private <T> void notifyExport(ExporterChangeableWrapper<T> exporter) {
         ScopeModel scopeModel = exporter.getRegisterUrl().getScopeModel();
         List<RegistryProtocolListener> listeners = ScopeModelUtil.getExtensionLoader(RegistryProtocolListener.class, scopeModel)
-            .getActivateExtension(exporter.getOriginInvoker().getUrl(), "registry.protocol.listener");
+            .getActivateExtension(exporter.getOriginInvoker().getUrl(), REGISTRY_PROTOCOL_LISTENER_KEY);
         if (CollectionUtils.isNotEmpty(listeners)) {
             for (RegistryProtocolListener listener : listeners) {
                 listener.onExport(this, exporter);
@@ -342,7 +345,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     private <T> void doReExport(final Invoker<T> originInvoker, ExporterChangeableWrapper<T> exporter,
                                 URL registryUrl, URL oldProviderUrl, URL newProviderUrl) {
         if (getProviderUrl(originInvoker).getParameter(REGISTER_KEY, true)) {
-            Registry registry = null;
+            Registry registry;
             try {
                 registry = getRegistry(getRegistryUrl(originInvoker));
             } catch (Exception e) {
@@ -454,7 +457,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      */
     private String getCacheKey(final Invoker<?> originInvoker) {
         URL providerUrl = getProviderUrl(originInvoker);
-        String key = providerUrl.removeParameters("dynamic", "enabled").toFullString();
+        String key = providerUrl.removeParameters(DYNAMIC_KEY, ENABLED_KEY).toFullString();
         return key;
     }
 
@@ -575,7 +578,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     protected List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
         return ScopeModelUtil.getExtensionLoader(RegistryProtocolListener.class, url.getScopeModel())
-            .getActivateExtension(url, "registry.protocol.listener");
+            .getActivateExtension(url, REGISTRY_PROTOCOL_LISTENER_KEY);
     }
 
     // available to test
@@ -633,7 +636,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     //Merge the urls of configurators
     private static URL getConfiguredInvokerUrl(List<Configurator> configurators, URL url) {
-        if (configurators != null && configurators.size() > 0) {
+        if (CollectionUtils.isNotEmpty(configurators)) {
             for (Configurator configurator : configurators) {
                 url = configurator.configure(url);
             }
@@ -683,14 +686,13 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     /**
      * Reexport: the exporter destroy problem in protocol
-     * 1.Ensure that the exporter returned by registryprotocol can be normal destroyed
+     * 1.Ensure that the exporter returned by registry protocol can be normal destroyed
      * 2.No need to re-register to the registry after notify
      * 3.The invoker passed by the export method , would better to be the invoker of exporter
      */
     private class OverrideListener implements NotifyListener {
         private final URL subscribeUrl;
         private final Invoker originInvoker;
-
 
         private List<Configurator> configurators;
 
@@ -705,11 +707,15 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
          */
         @Override
         public synchronized void notify(List<URL> urls) {
-            logger.debug("original override urls: " + urls);
+            if (logger.isDebugEnabled()) {
+                logger.debug("original override urls: " + urls);
+            }
 
             List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl.addParameter(CATEGORY_KEY,
                 CONFIGURATORS_CATEGORY));
-            logger.debug("subscribe url: " + subscribeUrl + ", override urls: " + matchedUrls);
+            if (logger.isDebugEnabled()) {
+                logger.debug("subscribe url: " + subscribeUrl + ", override urls: " + matchedUrls);
+            }
 
             // No matching results
             if (matchedUrls.isEmpty()) {
