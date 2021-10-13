@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -134,7 +135,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.metadataPublishDelayTime = ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L;
+        this.metadataPublishDelayTime = ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY);
     }
 
     @Override
@@ -286,6 +287,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
                 return metadataInfo;
             }
         }
+        if (logger.isInfoEnabled()) {
+            logger.info("metadata not found for revision: " + revision);
+        }
         return null;
     }
 
@@ -333,7 +337,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
     }
 
     public Map<String, MetadataInfo> getMetadataInfos() {
-        return metadataInfos;
+        return Collections.unmodifiableMap(metadataInfos);
     }
 
     void addMetaServiceURL(URL url) {
