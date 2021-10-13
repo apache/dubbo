@@ -123,7 +123,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
         }
     }
 
-    public abstract void onDestroy();
+    protected abstract void onDestroy();
 
     public final void addDestroyListener(ScopeModelDestroyListener listener) {
         destroyListeners.add(listener);

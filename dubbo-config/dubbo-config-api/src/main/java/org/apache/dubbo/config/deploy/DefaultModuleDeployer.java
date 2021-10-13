@@ -165,15 +165,22 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     @Override
     public void stop() throws IllegalStateException {
-        destroy();
+        moduleModel.destroy();
     }
 
     @Override
-    public synchronized void destroy() throws IllegalStateException {
+    public void preDestroy() throws IllegalStateException {
         if (isStopping() || isStopped()) {
             return;
         }
         onModuleStopping();
+    }
+
+    @Override
+    public synchronized void postDestroy() throws IllegalStateException {
+        if (isStopped()) {
+            return;
+        }
         unexportServices();
         unreferServices();
 
@@ -207,7 +214,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             }
             serviceRepository.destroy();
         }
-        moduleModel.destroy();
         onModuleStopped();
     }
 
@@ -390,10 +396,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private String getIdentifier() {
         if (identifier == null) {
-            if (moduleModel.getModelName() != null && !StringUtils.isEquals(moduleModel.getModelName(), moduleModel.getInternalName())) {
-                identifier = moduleModel.getModelName() + "[" + moduleModel.getInternalId() + "]";
-            } else {
-                identifier = "Dubbo Module" + "[" + moduleModel.getInternalId() + "]";
+            identifier = "Dubbo module[" + moduleModel.getInternalId() + "]";
+            if (moduleModel.getModelName() != null
+                && !StringUtils.isEquals(moduleModel.getModelName(), moduleModel.getInternalName())) {
+                identifier += "(" + moduleModel.getModelName() + ")";
             }
         }
         return identifier;

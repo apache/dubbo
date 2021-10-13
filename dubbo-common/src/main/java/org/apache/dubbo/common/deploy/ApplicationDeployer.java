@@ -42,9 +42,20 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
      */
     void stop() throws IllegalStateException;
 
+    /**
+     * Register application instance and start internal services
+     */
     void prepareApplicationInstance();
 
-    void destroy();
+    /**
+     * Pre-processing before destroy model
+     */
+    void preDestroy();
+
+    /**
+     * Post-processing after destroy model
+     */
+    void postDestroy();
 
     /**
      * Indicates that the Application is initialized or not.

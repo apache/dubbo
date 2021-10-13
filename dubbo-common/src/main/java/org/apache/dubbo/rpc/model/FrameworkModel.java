@@ -50,7 +50,6 @@ public class FrameworkModel extends ScopeModel {
     private FrameworkServiceRepository serviceRepository;
 
 
-
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
         initialize();
@@ -71,23 +70,34 @@ public class FrameworkModel extends ScopeModel {
     }
 
     @Override
-    public void onDestroy() {
-        //TODO destroy framework model
+    protected void onDestroy() {
+        // destroy all application model
         for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
             applicationModel.destroy();
         }
 
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Dubbo framework[" + getInternalId() + "] is destroying ...");
+        }
         synchronized (FrameworkModel.class) {
             allInstances.remove(this);
             if (defaultInstance == this) {
                 defaultInstance = null;
             }
-            if (allInstances.isEmpty()) {
-                destroyGlobalResources();
-            }
         }
 
+        // notify destroy and clean framework resources
+        // see org.apache.dubbo.config.deploy.FrameworkModelCleaner
         notifyDestroy();
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Dubbo framework[" + getInternalId() + "] is destroyed");
+        }
+
+        // if all FrameworkModels are destroyed, clean global static resources, shutdown dubbo completely
+        if (allInstances.isEmpty()) {
+            destroyGlobalResources();
+        }
     }
 
     private void destroyGlobalResources() {

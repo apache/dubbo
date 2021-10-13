@@ -33,7 +33,9 @@ public interface ModuleDeployer extends Deployer<ModuleModel> {
 
     void stop() throws IllegalStateException;
 
-    void destroy() throws IllegalStateException;
+    void preDestroy() throws IllegalStateException;
+
+    void postDestroy() throws IllegalStateException;
 
     boolean isInitialized();
 

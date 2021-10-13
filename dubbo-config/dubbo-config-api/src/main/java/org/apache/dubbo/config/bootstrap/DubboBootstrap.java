@@ -46,8 +46,6 @@ import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
 import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -153,8 +151,6 @@ public final class DubboBootstrap {
                 instance.destroy();
                 instance = null;
             }
-            AbstractMetadataReportFactory.destroy();
-            destroyAllProtocols();
             FrameworkModel.destroyAll();
         } else {
             instance = null;
@@ -236,6 +232,14 @@ public final class DubboBootstrap {
             }
         }
         return this;
+    }
+
+    /**
+     * Start dubbo application but no wait for finish.
+     * @return the future object
+     */
+    public Future asyncStart() {
+        return applicationDeployer.start();
     }
 
     /**
@@ -328,30 +332,6 @@ public final class DubboBootstrap {
 
     public ReferenceCache getCache() {
         return applicationDeployer.getReferenceCache();
-    }
-
-    /**
-     * Destroy all the protocols.
-     */
-    private static void destroyProtocols(FrameworkModel frameworkModel) {
-        //TODO destroy protocol in framework scope
-        ExtensionLoader<Protocol> loader = frameworkModel.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
-            try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
-                }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
-        }
-    }
-
-    private static void destroyAllProtocols() {
-        for (FrameworkModel frameworkModel : FrameworkModel.getAllInstances()) {
-            destroyProtocols(frameworkModel);
-        }
     }
 
     private void executeMutually(Runnable runnable) {

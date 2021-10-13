@@ -201,11 +201,20 @@ public class ApplicationModel extends ScopeModel {
     }
 
     @Override
-    public void onDestroy() {
-        // TODO destroy application resources
-        for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
-            moduleModel.destroy();
+    protected void onDestroy() {
+
+        if (deployer != null) {
+            deployer.preDestroy();
         }
+
+        // destroy application resources
+        for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
+            if (moduleModel != internalModule) {
+                moduleModel.destroy();
+            }
+        }
+        // destroy internal module later
+        internalModule.destroy();
 
         notifyDestroy();
 
@@ -219,8 +228,8 @@ public class ApplicationModel extends ScopeModel {
         }
 
         if (deployer != null) {
-            deployer.destroy();
-            deployer = null;
+            deployer.postDestroy();
+            //deployer = null;
         }
 
         if (environment != null) {
@@ -303,12 +312,16 @@ public class ApplicationModel extends ScopeModel {
             if (moduleModel == defaultModule) {
                 defaultModule = findDefaultModule();
             }
-            if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
-                this.internalModule.destroy();
-            }
-            if (this.moduleModels.isEmpty()) {
-                destroy();
-            }
+        }
+    }
+
+    void tryDestroy() {
+        if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
+            this.internalModule.destroy();
+            return;
+        }
+        if (this.moduleModels.isEmpty()) {
+            destroy();
         }
     }
 

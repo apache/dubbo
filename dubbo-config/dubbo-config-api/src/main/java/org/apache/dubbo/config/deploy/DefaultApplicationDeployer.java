@@ -49,17 +49,13 @@ import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.RegistryManager;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
@@ -576,7 +572,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // prepare application instance
         prepareApplicationInstance();
 
-        executorRepository.getSharedExecutor().submit(()-> {
+        executorRepository.getSharedExecutor().submit(() -> {
             while (true) {
                 // notify on each module started
                 synchronized (startedLock) {
@@ -764,7 +760,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
                 localMetadataService.blockUntilUpdated();
                 try {
-                    ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                    ApplicationDeployer deployer = serviceInstance.getApplicationModel().getDeployer();
+                    if (deployer != null && !(deployer.isStopping() || deployer.isStopped())) {
+                        ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                    }
                 } catch (Exception e) {
                     logger.error("Refresh instance and metadata error", e);
                 } finally {
@@ -831,21 +830,24 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void stop() {
-        destroy();
+        applicationModel.destroy();
     }
 
     @Override
-    public synchronized void destroy() {
-        // make sure destroy application model first
-        if (!applicationModel.isDestroyed()) {
-            applicationModel.destroy();
-            return;
-        }
+    public void preDestroy() {
         if (isStopping() || isStopped()) {
             return;
         }
+        onStopping();
+    }
+
+    @Override
+    public synchronized void postDestroy() {
+        // expect application model is destroyed before here
+        if (isStopped()) {
+            return;
+        }
         try {
-            onStopping();
             unRegisterShutdownHook();
             unregisterServiceInstance();
             unexportMetadataService();
@@ -858,8 +860,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             destroyRegistries();
             destroyServiceDiscoveries();
             destroyMetadataReports();
-
-            destroyFrameworkResources();
 
             destroyExecutorRepository();
             destroyDynamicConfigurations();
@@ -913,7 +913,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private DeployState checkState() {
         DeployState _state = DeployState.UNKNOWN;
-        int pending = 0, starting = 0, started = 0, stopping=0, stopped=0;
+        int pending = 0, starting = 0, started = 0, stopping = 0, stopped = 0;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             ModuleDeployer deployer = moduleModel.getDeployer();
             if (deployer.isPending()) {
@@ -923,9 +923,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             } else if (deployer.isStarted()) {
                 started++;
             } else if (deployer.isStopping()) {
-                stopping ++;
+                stopping++;
             } else if (deployer.isStopped()) {
-                stopped ++;
+                stopped++;
             }
         }
 
@@ -933,10 +933,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (pending + starting + stopping + stopped == 0) {
                 // all modules have been started
                 _state = DeployState.STARTED;
-            }else  if (pending + starting > 0) {
+            } else if (pending + starting > 0) {
                 // some module is pending and some is started
                 _state = DeployState.STARTING;
-            }else  if (stopping + stopped > 0) {
+            } else if (stopping + stopped > 0) {
                 _state = DeployState.STOPPING;
             }
         } else if (starting > 0) {
@@ -978,6 +978,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is ready.");
         }
+        // refresh metadata
+        try {
+            if (serviceInstance != null) {
+                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+            }
+        } catch (Exception e) {
+            logger.error("refresh metadata failed: " + e.getMessage(), e);
+        }
+        // complete future
         completeStartFuture(true);
         // shutdown export/refer executor after started
         executorRepository.shutdownServiceExportExecutor();
@@ -1020,37 +1029,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         RegistryManager.getInstance(applicationModel).destroyAll();
     }
 
-    /**
-     * Destroy all framework resources.
-     */
-    private void destroyFrameworkResources() {
-        FrameworkModel frameworkModel = applicationModel.getFrameworkModel();
-        if (frameworkModel.getApplicationModels().isEmpty()) {
-            // destroy protocol in framework scope
-            destroyProtocols(frameworkModel);
-
-            //TODO destroy zookeeper clients
-            ZookeeperTransporter.getExtension(frameworkModel).destroy();
-        }
-    }
-
-    /**
-     * Destroy all the protocols.
-     */
-    private void destroyProtocols(FrameworkModel frameworkModel) {
-        ExtensionLoader<Protocol> loader = frameworkModel.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
-            try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
-                }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
-        }
-    }
-
     private void destroyServiceDiscoveries() {
         RegistryManager.getInstance(applicationModel).getServiceDiscoveries().forEach(serviceDiscovery -> {
             try {
@@ -1065,8 +1043,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void destroyMetadataReports() {
-        // TODO only destroy MetadataReport of this application
-        AbstractMetadataReportFactory.destroy();
+        // only destroy MetadataReport of this application
+        List<MetadataReportFactory> metadataReportFactories = getExtensionLoader(MetadataReportFactory.class).getLoadedExtensionInstances();
+        for (MetadataReportFactory metadataReportFactory : metadataReportFactories) {
+            metadataReportFactory.destroy();
+        }
     }
 
     private void destroyDynamicConfigurations() {
@@ -1082,10 +1063,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private String getIdentifier() {
         if (identifier == null) {
-            if (applicationModel.getModelName() != null && !StringUtils.isEquals(applicationModel.getModelName(), applicationModel.getInternalName())) {
-                identifier = applicationModel.getModelName() + "[" + applicationModel.getInternalId() + "]";
-            } else {
-                identifier = "Dubbo Application" + "[" + applicationModel.getInternalId() + "]";
+            identifier = "Dubbo application[" + applicationModel.getInternalId() + "]";
+            if (applicationModel.getModelName() != null
+                && !StringUtils.isEquals(applicationModel.getModelName(), applicationModel.getInternalName())) {
+                identifier += "(" + applicationModel.getModelName() + ")";
             }
         }
         return identifier;
