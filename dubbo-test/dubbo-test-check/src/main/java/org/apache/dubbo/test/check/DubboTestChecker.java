@@ -39,16 +39,16 @@ import java.util.stream.Collectors;
  *
  * <pre>
  * Usages:
- *  mvn test -Dcheck_threads=true
- *  mvn test -Dcheck_threads=true -Dthread_dump_wait_time=5000
+ *  mvn test -DcheckThreads=true
+ *  mvn test -DcheckThreads=true -DthreadDumpWaitTime=5000
  * </pre>
  */
 public class DubboTestChecker implements TestExecutionListener {
 
-    private static final String DUBBO_TEST_CHECK_MODE = "check_mode";
-    private static final String DUBBO_TEST_CHECK_THREADS = "check_threads";
-    private static final String DUBBO_TEST_THREAD_DUMP_WAIT_TIME = "thread_dump_wait_time";
-    private static final String DUBBO_TEST_FORCE_DESTROY = "force_destroy";
+    private static final String DUBBO_TEST_CHECK_MODE = "checkMode";
+    private static final String DUBBO_TEST_CHECK_THREADS = "checkThreads";
+    private static final String DUBBO_TEST_THREAD_DUMP_WAIT_TIME = "threadDumpWaitTime";
+    private static final String DUBBO_TEST_FORCE_DESTROY = "forceDestroy";
     private static final String MODE_CLASS = "class";
     private static final String MODE_METHOD = "method";
 
@@ -87,11 +87,11 @@ public class DubboTestChecker implements TestExecutionListener {
         // log prefix
         identifier = "[" + this.getClass().getSimpleName() + "] ";
 
-        // check_mode: class/method
+        // checkMode: class/method
         checkMode = StringUtils.lowerCase(System.getProperty(DUBBO_TEST_CHECK_MODE, MODE_CLASS));
-        // check_threads: true/false
+        // checkThreads: true/false
         checkThreads = Boolean.parseBoolean(System.getProperty(DUBBO_TEST_CHECK_THREADS, "false"));
-        // thread_dump_wait_time
+        // threadDumpWaitTime
         threadDumpWaitTimeMs = Long.parseLong(System.getProperty(DUBBO_TEST_THREAD_DUMP_WAIT_TIME, "5000"));
         // force destroy dubbo
         forceDestroyDubboAfterClass = Boolean.parseBoolean(System.getProperty(DUBBO_TEST_FORCE_DESTROY, "true"));
@@ -112,7 +112,7 @@ public class DubboTestChecker implements TestExecutionListener {
                 printUnclosedThreads(threads, testClassName);
             });
         } else {
-            log("Threads checking is disabled, use -Dcheck_threads=true to check unclosed threads.");
+            log("Threads checking is disabled, use -DcheckThreads=true to check unclosed threads.");
         }
     }
 
