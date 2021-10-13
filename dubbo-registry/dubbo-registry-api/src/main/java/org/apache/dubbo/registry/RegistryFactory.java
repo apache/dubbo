@@ -27,7 +27,7 @@ import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
  *
  * @see org.apache.dubbo.registry.support.AbstractRegistryFactory
  */
-@SPI(value = "dubbo", scope = APPLICATION)
+@SPI(scope = APPLICATION)
 public interface RegistryFactory {
 
     /**
