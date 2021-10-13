@@ -24,7 +24,6 @@ import org.apache.dubbo.remoting.http.servlet.ServletManager;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
-
 import org.apache.http.HeaderElement;
 import org.apache.http.HeaderElementIterator;
 import org.apache.http.client.config.RequestConfig;
@@ -205,6 +204,9 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     @Override
     public void destroy() {
+        if (logger.isInfoEnabled()) {
+            logger.info("Destroying protocol [" + this.getClass().getSimpleName() + "] ...");
+        }
         super.destroy();
 
         if (connectionMonitor != null) {

@@ -65,7 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -844,7 +844,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      */
     private class ExporterChangeableWrapper<T> implements Exporter<T> {
 
-        private final ExecutorService executor;
+        private final ScheduledExecutorService executor;
 
         private final Invoker<T> originInvoker;
         private Exporter<T> exporter;
@@ -905,23 +905,15 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 logger.warn(t.getMessage(), t);
             }
 
-            executor.submit(() -> {
+            //TODO wait for shutdown timeout is a bit strange
+            int timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
+            executor.schedule(() -> {
                 try {
-                    int timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
-                    if (timeout > 0) {
-                        logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. " +
-                            "Usually, this is called when you use dubbo API");
-                        try {
-                            Thread.sleep(timeout);
-                        } catch (InterruptedException e) {
-                            logger.warn(e.getMessage(), e);
-                        }
-                    }
                     exporter.unexport();
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
-            });
+            }, timeout, TimeUnit.MILLISECONDS);
         }
 
         public void setSubscribeUrl(URL subscribeUrl) {

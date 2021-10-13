@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -103,6 +104,8 @@ public class DubboProtocol extends AbstractProtocol {
     private final Map<String, Object> referenceClientMap = new ConcurrentHashMap<>();
     private static final Object PENDING_OBJECT = new Object();
     private final Set<String> optimizers = new ConcurrentHashSet<>();
+
+    private AtomicBoolean destroyed = new AtomicBoolean();
 
     private ExchangeHandler requestHandler = new ExchangeHandlerAdapter() {
 
@@ -644,6 +647,12 @@ public class DubboProtocol extends AbstractProtocol {
     @Override
     @SuppressWarnings("unchecked")
     public void destroy() {
+        if (!destroyed.compareAndSet(false, true)) {
+            return;
+        }
+        if (logger.isInfoEnabled()) {
+            logger.info("Destroying protocol [" + this.getClass().getSimpleName() + "] ...");
+        }
         for (String key : new ArrayList<>(serverMap.keySet())) {
             ProtocolServer protocolServer = serverMap.remove(key);
 
