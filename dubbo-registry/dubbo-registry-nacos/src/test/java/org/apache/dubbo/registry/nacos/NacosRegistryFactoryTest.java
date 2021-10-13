@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.nacos;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -34,14 +33,12 @@ public class NacosRegistryFactoryTest {
     private NacosRegistryFactory nacosRegistryFactory;
 
     @BeforeEach
-    public void setup(){
+    public void setup() {
         nacosRegistryFactory = new NacosRegistryFactory();
-        nacosRegistryFactory.setApplicationModel(ApplicationModel.defaultModel());
     }
 
     @AfterEach
     public void teardown() {
-        ApplicationModel.defaultModel().destroy();
     }
 
     @Test

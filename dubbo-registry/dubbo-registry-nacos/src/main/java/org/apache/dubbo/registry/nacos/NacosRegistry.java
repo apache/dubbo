@@ -103,6 +103,8 @@ public class NacosRegistry extends FailbackRegistry {
 
     private static final String WILDCARD = "*";
 
+    private static final String UP = "UP";
+
     /**
      * The separator for service name
      * Change a constant to be configurable, it's designed for Windows file name that is compatible with old
@@ -133,7 +135,7 @@ public class NacosRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        return "UP".equals(namingService.getServerStatus());
+        return UP.equals(namingService.getServerStatus());
     }
 
     @Override

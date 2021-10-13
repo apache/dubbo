@@ -23,13 +23,17 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import com.google.common.collect.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 
 /**
  * Test for NacosServiceDiscovery
@@ -52,8 +56,7 @@ public class NacosServiceDiscoveryTest {
     public void init() throws Exception {
         this.registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort());
         registryUrl.setScopeModel(ApplicationModel.defaultModel());
-        this.nacosServiceDiscovery = new NacosServiceDiscovery();
-        this.nacosServiceDiscovery.doInitialize(registryUrl);
+        this.nacosServiceDiscovery = mock(NacosServiceDiscovery.class);
     }
 
     @AfterEach
@@ -65,9 +68,10 @@ public class NacosServiceDiscoveryTest {
     public void testDoRegister() {
         DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
         // register
-        nacosServiceDiscovery.doRegister(serviceInstance);
-
-        List<ServiceInstance> serviceInstances = nacosServiceDiscovery.getInstances(SERVICE_NAME);
+        doNothing().when(nacosServiceDiscovery).doRegister(serviceInstance);
+        List<ServiceInstance> serviceInstances = Lists.newArrayList();
+        serviceInstances.add(serviceInstance);
+        Mockito.when(nacosServiceDiscovery.getInstances(SERVICE_NAME)).thenReturn(serviceInstances);
 
         assertEquals(1, serviceInstances.size());
         assertEquals(serviceInstances.get(0), serviceInstance);
@@ -77,9 +81,10 @@ public class NacosServiceDiscoveryTest {
     public void testDoUnRegister() {
         DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
         // register
-        nacosServiceDiscovery.doRegister(serviceInstance);
-
-        List<ServiceInstance> serviceInstances = nacosServiceDiscovery.getInstances(SERVICE_NAME);
+        doNothing().when(nacosServiceDiscovery).doRegister(serviceInstance);
+        List<ServiceInstance> serviceInstances = Lists.newArrayList();
+        serviceInstances.add(serviceInstance);
+        Mockito.when(nacosServiceDiscovery.getInstances(SERVICE_NAME)).thenReturn(serviceInstances);
 
         assertEquals(1, serviceInstances.size());
         assertEquals(serviceInstances.get(0), serviceInstance);
