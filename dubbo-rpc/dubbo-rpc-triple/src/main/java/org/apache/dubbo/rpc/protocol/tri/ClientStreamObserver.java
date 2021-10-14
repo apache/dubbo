@@ -41,6 +41,8 @@ public interface ClientStreamObserver<T> extends StreamObserver<T> {
 
     /**
      * Sets the compression algorithm to use for the call
+     * <p>
+     * For stream set compression needs to determine whether the metadata has been sent, and carry on corresponding processing
      *
      * @param compression {@link Compressor}
      */

@@ -207,8 +207,6 @@ public abstract class AbstractStream implements Stream {
     /**
      * set compressor if required
      *
-     * Determine whether metadata has been sent for the stream
-     *
      * @param compressor {@link Compressor}
      */
     protected AbstractStream setCompressor(Compressor compressor) {
