@@ -871,7 +871,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             destroyMetadataReports();
 
             destroyExecutorRepository();
-            destroyDynamicConfigurations();
 
             onStopped();
         } catch (Throwable ex) {
@@ -1057,13 +1056,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         for (MetadataReportFactory metadataReportFactory : metadataReportFactories) {
             metadataReportFactory.destroy();
         }
-    }
-
-    private void destroyDynamicConfigurations() {
-        // TODO only destroy DynamicConfiguration of this application
-        // DynamicConfiguration may be cached somewhere, and maybe used during destroy
-        // destroy them may cause some troubles, so just clear instances cache
-        // ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
     }
 
     private ApplicationConfig getApplication() {
