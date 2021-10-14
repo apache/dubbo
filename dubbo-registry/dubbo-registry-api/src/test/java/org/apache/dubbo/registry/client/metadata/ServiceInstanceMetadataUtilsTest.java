@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -32,6 +29,10 @@ import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -202,8 +203,11 @@ public class ServiceInstanceMetadataUtilsTest {
         Assertions.assertNull(inMemoryServiceDiscovery.getLocalInstance());
 
         ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
-        Assertions.assertEquals(inMemoryServiceDiscovery.getLocalInstance(), serviceInstance);
 
+        Assertions.assertEquals(inMemoryServiceDiscovery.getLocalInstance().getServiceName(), serviceInstance.getServiceName());
+        Assertions.assertEquals(inMemoryServiceDiscovery.getLocalInstance().getHost(), serviceInstance.getHost());
+        Assertions.assertEquals(inMemoryServiceDiscovery.getLocalInstance().getPort(), serviceInstance.getPort());
+        Assertions.assertEquals(inMemoryServiceDiscovery.getLocalInstance().getApplicationModel(), serviceInstance.getApplicationModel());
     }
 
     private InMemoryServiceDiscovery prepare() throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchFieldException {
