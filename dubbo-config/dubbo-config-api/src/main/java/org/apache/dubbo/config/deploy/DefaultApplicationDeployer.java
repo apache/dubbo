@@ -760,17 +760,20 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             asyncMetadataFuture = executorRepository.getSharedScheduledExecutor().scheduleAtFixedRate(() -> {
 
                 // ignore refresh metadata on stopping
-                ApplicationDeployer deployer = applicationModel.getDeployer();
-                if (deployer != null && (deployer.isStopping() || deployer.isStopped())) {
+                if (applicationModel.isDestroyed()) {
                     return;
                 }
 
                 InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
                 localMetadataService.blockUntilUpdated();
                 try {
-                    ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                    if (!applicationModel.isDestroyed()) {
+                        ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                    }
                 } catch (Exception e) {
-                    logger.error("Refresh instance and metadata error", e);
+                    if (!applicationModel.isDestroyed()) {
+                        logger.error("Refresh instance and metadata error", e);
+                    }
                 } finally {
                     localMetadataService.releaseBlock();
                 }
