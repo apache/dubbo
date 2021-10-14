@@ -316,11 +316,8 @@ public class ApplicationModel extends ScopeModel {
     }
 
     void tryDestroy() {
-        if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
-            this.internalModule.destroy();
-            return;
-        }
-        if (this.moduleModels.isEmpty()) {
+        if (this.moduleModels.isEmpty()
+            || (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule)) {
             destroy();
         }
     }

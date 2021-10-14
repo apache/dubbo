@@ -758,15 +758,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = executorRepository.getSharedScheduledExecutor().scheduleAtFixedRate(() -> {
-                InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
-                if (!applicationModel.getDeployer().isStopping() || !applicationModel.getDeployer().isStopped()) {
-                    localMetadataService.blockUntilUpdated();
+
+                // ignore refresh metadata on stopping
+                ApplicationDeployer deployer = applicationModel.getDeployer();
+                if (deployer != null && (deployer.isStopping() || deployer.isStopped())) {
+                    return;
                 }
+
+                InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
+                localMetadataService.blockUntilUpdated();
                 try {
-                    ApplicationDeployer deployer = serviceInstance.getApplicationModel().getDeployer();
-                    if (deployer != null && !(deployer.isStopping() || deployer.isStopped())) {
-                        ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
-                    }
+                    ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
                 } catch (Exception e) {
                     logger.error("Refresh instance and metadata error", e);
                 } finally {
@@ -842,6 +844,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
         onStopping();
+
+        unRegisterShutdownHook();
+        if (asyncMetadataFuture != null) {
+            asyncMetadataFuture.cancel(true);
+        }
+        unregisterServiceInstance();
+        unexportMetadataService();
+
     }
 
     @Override
@@ -851,13 +861,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
         try {
-            unRegisterShutdownHook();
-            unregisterServiceInstance();
-            unexportMetadataService();
-            if (asyncMetadataFuture != null) {
-                asyncMetadataFuture.cancel(true);
-            }
-
             executeShutdownCallbacks();
 
             destroyRegistries();
