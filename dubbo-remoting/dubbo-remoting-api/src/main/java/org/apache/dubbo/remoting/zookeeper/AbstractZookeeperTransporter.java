@@ -99,6 +99,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             applications.remove(application);
             if (application.isEmpty()) {
                 zookeeperClient.close();
+                zookeeperApplicationMap.remove(zookeeperClient);
             }
         }
     }
