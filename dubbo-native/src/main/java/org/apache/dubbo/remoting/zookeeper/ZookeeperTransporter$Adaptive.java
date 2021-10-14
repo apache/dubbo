@@ -27,7 +27,7 @@ extension = (org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter)ExtensionL
 return extension.connect(arg0);
 }
 public void close(ZookeeperClient arg0, String arg1) {
-if (extension == null) throw new IllegalStateException("Close zookeeper client should not be called before connection created for url: (" + arg0.getUrl().toString() + ")");
+if (extension == null) throw new IllegalStateException("Zookeeper client of application: " + arg1 + " should not be closed before connection created for url: (" + arg0.getUrl().toString() + ")");
 extension.close(arg0, arg1);
 }
 }
