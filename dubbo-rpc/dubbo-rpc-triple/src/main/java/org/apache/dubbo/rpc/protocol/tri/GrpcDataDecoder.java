@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
@@ -23,6 +26,7 @@ import io.netty.handler.codec.ReplayingDecoder;
 import java.util.List;
 
 public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecodeState> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GrpcDataDecoder.class);
     private static final int RESERVED_MASK = 0xFE;
     private static final int COMPRESSED_FLAG_MASK = 1;
     private final int maxDataSize;
@@ -35,6 +39,14 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
         super(GrpcDecodeState.HEADER);
         this.maxDataSize = maxDataSize;
         this.client = client;
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        if (LOGGER.isErrorEnabled()) {
+            LOGGER.error("Grpc data read error ", cause);
+        }
+        ctx.close();
     }
 
     @Override
@@ -72,13 +84,12 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
         if (!compressedFlag) {
             return data;
         }
-        Compressor compressor = TripleUtil.getCompressor(ctx, client);
+        Compressor compressor = TripleUtil.getDeCompressor(ctx, client);
         if (null == compressor) {
             throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
                 .withDescription("gRPC message compressor not found")
                 .asException();
         }
-
         return compressor.decompress(data);
     }
 

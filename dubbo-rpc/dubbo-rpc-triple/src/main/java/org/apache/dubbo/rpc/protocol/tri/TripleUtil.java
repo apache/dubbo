@@ -113,6 +113,11 @@ public class TripleUtil {
         return stream.getCompressor();
     }
 
+    public static Compressor getDeCompressor(ChannelHandlerContext ctx, boolean client) {
+        AbstractStream stream = client ? getClientStream(ctx) : getServerStream(ctx);
+        return stream.getDeCompressor();
+    }
+
     public static int calcCompressFlag(ChannelHandlerContext ctx, boolean client) {
         AbstractStream stream = client ? getClientStream(ctx) : getServerStream(ctx);
         Compressor compressor = stream.getCompressor();

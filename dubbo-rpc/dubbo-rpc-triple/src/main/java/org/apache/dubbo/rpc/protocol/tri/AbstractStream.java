@@ -59,6 +59,7 @@ public abstract class AbstractStream implements Stream {
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
     private Compressor compressor = IdentityCompressor.NONE;
+    private Compressor deCompressor = IdentityCompressor.NONE;
 
     private final CancellationContext cancellationContext;
     private volatile boolean cancelled = false;
@@ -224,8 +225,28 @@ public abstract class AbstractStream implements Stream {
         return this;
     }
 
+
+    protected AbstractStream setDeCompressor(Compressor compressor) {
+        // If compressor is NULL, this will not be set.
+        // Consider whether to throw an exception or handle silently,
+        // But now choose silent processing, Fall back to default.
+        if (compressor != null) {
+            this.deCompressor = compressor;
+        } else {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("Compressor is Null, Fall back to default deCompression." +
+                    " MessageEncoding is " + getDeCompressor().getMessageEncoding());
+            }
+        }
+        return this;
+    }
+
     public Compressor getCompressor() {
         return this.compressor;
+    }
+
+    public Compressor getDeCompressor() {
+        return this.deCompressor;
     }
 
     public URL getUrl() {
@@ -377,7 +398,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     protected byte[] decompress(byte[] data) {
-        return this.getCompressor().decompress(data);
+        return this.getDeCompressor().decompress(data);
     }
 
     protected abstract class AbstractTransportObserver implements TransportObserver {

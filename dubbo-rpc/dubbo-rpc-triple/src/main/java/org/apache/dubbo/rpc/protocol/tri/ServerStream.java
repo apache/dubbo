@@ -41,12 +41,10 @@ public class ServerStream extends AbstractServerStream implements Stream {
 
     private class ServerStreamObserverImpl implements ServerStreamObserver<Object> {
         private boolean headersSent;
-        private Compressor compressor = IdentityCompressor.NONE;
 
         @Override
         public void onNext(Object data) {
             if (!headersSent) {
-                setCompressor(compressor);
                 getTransportSubscriber().onMetadata(createRequestMeta(), false);
                 headersSent = true;
             }
@@ -78,7 +76,8 @@ public class ServerStream extends AbstractServerStream implements Stream {
                 transportError(status);
                 return;
             }
-            this.compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
+            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
+            setCompressor(compressor);
         }
     }
 

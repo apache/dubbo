@@ -82,7 +82,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
                         .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
                         .asException();
                 } else {
-                    clientStream.setCompressor(compressor);
+                    clientStream.setDeCompressor(compressor);
                 }
             }
         }

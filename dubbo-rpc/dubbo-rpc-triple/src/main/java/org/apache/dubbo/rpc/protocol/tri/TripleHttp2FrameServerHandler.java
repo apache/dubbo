@@ -229,13 +229,13 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (null != messageEncoding) {
             String compressorStr = messageEncoding.toString();
             if (!DEFAULT_COMPRESSOR.equals(compressorStr)) {
-                Compressor compressor = frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
+                Compressor compressor = Compressor.getCompressor(frameworkModel, compressorStr);
                 if (null == compressor) {
                     TripleUtil.responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(),
                         GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
                             .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
                 } else {
-                    stream.setCompressor(compressor);
+                    stream.setDeCompressor(compressor);
                 }
             }
         }
