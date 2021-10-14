@@ -88,7 +88,12 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         synchronized (zookeeperApplicationMap) {
             Set<String> applications = zookeeperApplicationMap.get(zookeeperClient);
             if (applications == null) {
-                logger.warn("No applications associated with the zookeeper client: " + zookeeperClient.getUrl());
+                // zookeeperClient might be closed by other zookeeper registry in same application.
+                if (!zookeeperClient.isConnected()) {
+                    return;
+                }
+                logger.warn("No application: " + application +
+                        " in zookeeperApplicationMap associated with the client: " + zookeeperClient.getUrl());
                 zookeeperClient.close();
                 return;
             }
