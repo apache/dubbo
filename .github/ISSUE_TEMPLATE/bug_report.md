@@ -1,11 +1,14 @@
 ---
-name: Dubbo issue report template
-about: If you would like to report a issue to Dubbo, please use this template.
+name: Bug Report
+about: Report a bug in Dubbo
+title: ''
+labels: type/bug
+assignees: ''
 
 ---
+<!-- If you need to report a security issue please visit https://github.com/apache/dubbo/security/policy -->
 
 - [ ] I have searched the [issues](https://github.com/apache/dubbo/issues) of this repository and believe that this is not a duplicate.
-- [ ] I have checked the [FAQ](https://github.com/apache/dubbo/blob/master/FAQ.md) of this repository and believe that this is not a duplicate.
 
 ### Environment
 
@@ -21,13 +24,13 @@ about: If you would like to report a issue to Dubbo, please use this template.
 
 Pls. provide [GitHub address] to reproduce this issue.
 
-### Expected Result
+### Expected Behavior
 
-What do you expected from the above steps？
+<!-- What do you expect from the above steps？-->
 
-### Actual Result
+### Actual Behavior
 
-What actually happens?
+<!-- What actually happens? -->
 
 If there is an exception, please attach the exception trace:
 
