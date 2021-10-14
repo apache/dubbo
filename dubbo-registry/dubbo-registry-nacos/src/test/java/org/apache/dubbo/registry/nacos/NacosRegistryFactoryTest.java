@@ -18,7 +18,6 @@ package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.registry.Registry;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -39,14 +38,6 @@ public class NacosRegistryFactoryTest {
 
     @AfterEach
     public void teardown() {
-    }
-
-    @Test
-    public void testRegistryFactoryCache() {
-        URL url = URL.valueOf("dubbo://" + NetUtils.getLocalAddress().getHostAddress() + ":8080");
-        Registry registry1 = nacosRegistryFactory.getRegistry(url);
-        Registry registry2 = nacosRegistryFactory.getRegistry(url);
-        Assertions.assertEquals(registry1, registry2);
     }
 
     @Test

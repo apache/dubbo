@@ -103,8 +103,7 @@ public class NacosRegistryTest {
             // ignore
         }
 
-        NacosNamingServiceWrapper nacosNamingServiceWrapper = new
-            NacosNamingServiceWrapper(namingService);
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         Set<URL> registered;
@@ -144,8 +143,7 @@ public class NacosRegistryTest {
             // ignore
         }
 
-        NacosNamingServiceWrapper nacosNamingServiceWrapper = new
-            NacosNamingServiceWrapper(namingService);
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         nacosRegistry.register(serviceUrl);
@@ -185,16 +183,15 @@ public class NacosRegistryTest {
             // ignore
         }
 
-        NacosNamingServiceWrapper nacosNamingServiceWrapper = new
-            NacosNamingServiceWrapper(namingService);
+        NacosNamingServiceWrapper nacosNamingServiceWrapper = new NacosNamingServiceWrapper(namingService);
         nacosRegistry = new NacosRegistry(this.registryUrl, nacosNamingServiceWrapper);
 
         NotifyListener listener = mock(NotifyListener.class);
         nacosRegistry.subscribe(serviceUrl, listener);
 
         Map<URL, Set<NotifyListener>> subscribed = nacosRegistry.getSubscribed();
-        assertThat(subscribed.size(), is(1));
-        assertThat(subscribed.get(serviceUrl).size(), is(1));
+        Assertions.assertEquals(subscribed.size(), 1);
+        Assertions.assertEquals(subscribed.get(serviceUrl).size(), 1);
     }
 
     @Test
