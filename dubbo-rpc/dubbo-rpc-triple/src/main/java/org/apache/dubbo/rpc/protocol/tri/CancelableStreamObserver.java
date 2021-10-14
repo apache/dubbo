@@ -35,7 +35,7 @@ public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
         setCancellationContext(cancellationContext);
     }
 
-    public void setCancellationContext(CancellationContext cancellationContext) {
+    public final void setCancellationContext(CancellationContext cancellationContext) {
         if (contextSet.compareAndSet(false, true)) {
             this.cancellationContext = cancellationContext;
         }
