@@ -157,7 +157,7 @@ public class CuratorZookeeperClientTest {
 
     @AfterEach
     public void tearDown() throws Exception {
-        curatorClient.close();
+        curatorClient.close("");
         zkServer.stop();
     }
 

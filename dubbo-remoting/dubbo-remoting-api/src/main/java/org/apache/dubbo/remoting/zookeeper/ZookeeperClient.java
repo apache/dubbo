@@ -55,7 +55,9 @@ public interface ZookeeperClient {
 
     boolean isConnected();
 
-    void close();
+    void close(String application);
+
+    void doClose();
 
     URL getUrl();
 

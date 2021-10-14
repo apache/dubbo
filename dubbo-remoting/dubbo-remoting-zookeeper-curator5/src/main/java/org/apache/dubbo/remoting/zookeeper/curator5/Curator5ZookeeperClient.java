@@ -24,8 +24,8 @@ import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.DataListener;
 import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperClient;
-
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
@@ -52,7 +52,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
-
 public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5ZookeeperClient.NodeCacheListenerImpl, Curator5ZookeeperClient.CuratorWatcherImpl> {
 
     protected static final Logger logger = LoggerFactory.getLogger(Curator5ZookeeperClient.class);
@@ -62,8 +61,17 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
     private final CuratorFramework client;
     private static Map<String, NodeCache> nodeCacheMap = new ConcurrentHashMap<>();
 
+    public Curator5ZookeeperClient(URL url, ZookeeperTransporter zookeeperTransporter) {
+        super(url, zookeeperTransporter);
+        client = buildCuratorFramework(url);
+    }
+
     public Curator5ZookeeperClient(URL url) {
-        super(url);
+        super(url, null);
+        client = buildCuratorFramework(url);
+    }
+
+    private CuratorFramework buildCuratorFramework(URL url) {
         try {
             int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
             int sessionExpireMs = url.getParameter(ZK_SESSION_EXPIRE_KEY, DEFAULT_SESSION_TIMEOUT_MS);
@@ -76,13 +84,14 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
             if (authority != null && authority.length() > 0) {
                 builder = builder.authorization("digest", authority.getBytes());
             }
-            client = builder.build();
+            CuratorFramework client = builder.build();
             client.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(url));
             client.start();
             boolean connected = client.blockUntilConnected(timeout, TimeUnit.MILLISECONDS);
             if (!connected) {
                 throw new IllegalStateException("zookeeper not connected");
             }
+            return client;
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

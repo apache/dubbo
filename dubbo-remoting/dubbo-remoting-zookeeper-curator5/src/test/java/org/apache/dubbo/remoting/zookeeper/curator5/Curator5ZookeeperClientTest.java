@@ -188,6 +188,6 @@ public class Curator5ZookeeperClientTest {
             curatorClient.delete("/testPath");
         });
         
-        curatorClient.close();
+        curatorClient.close("");
     }
 }

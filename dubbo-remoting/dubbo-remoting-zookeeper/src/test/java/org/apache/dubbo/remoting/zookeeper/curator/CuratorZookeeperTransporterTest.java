@@ -39,15 +39,15 @@ public class CuratorZookeeperTransporterTest {
     public void setUp() throws Exception {
         zkServerPort = NetUtils.getAvailablePort();
         zkServer = new TestingServer(zkServerPort, true);
-        zookeeperClient = new CuratorZookeeperTransporter().connect(URL.valueOf("zookeeper://127.0.0.1:" +
-                zkServerPort + "/service"));
         curatorZookeeperTransporter = new CuratorZookeeperTransporter();
+        zookeeperClient = curatorZookeeperTransporter.connect(URL.valueOf("zookeeper://127.0.0.1:" +
+                zkServerPort + "/service"));
     }
 
     @Test
     public void testZookeeperClient() {
         assertThat(zookeeperClient, not(nullValue()));
-        zookeeperClient.close();
+        curatorZookeeperTransporter.close(zookeeperClient, "");
     }
 
     @AfterEach

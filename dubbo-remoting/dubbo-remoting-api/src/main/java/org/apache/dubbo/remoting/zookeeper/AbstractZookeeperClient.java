@@ -38,6 +38,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     private final URL url;
 
+    private final ZookeeperTransporter zookeeperTransporter;
+
     private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
 
     private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners =
@@ -50,13 +52,18 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     private final Set<String> persistentExistNodePath = new ConcurrentHashSet<>();
 
-    public AbstractZookeeperClient(URL url) {
+    public AbstractZookeeperClient(URL url, ZookeeperTransporter zookeeperTransporter) {
         this.url = url;
+        this.zookeeperTransporter = zookeeperTransporter;
     }
 
     @Override
     public URL getUrl() {
         return url;
+    }
+
+    protected ZookeeperTransporter getZookeeperTransporter() {
+        return zookeeperTransporter;
     }
 
     @Override
@@ -65,7 +72,6 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         persistentExistNodePath.remove(path);
         deletePath(path);
     }
-
 
     @Override
     public void create(String path, boolean ephemeral) {
@@ -152,13 +158,17 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     @Override
-    public void close() {
+    public void close(String application) {
         if (closed) {
             return;
         }
         closed = true;
         try {
-            doClose();
+            if (zookeeperTransporter == null) {
+                doClose();
+            } else {
+                zookeeperTransporter.close(this, application);
+            }
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -206,7 +216,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         return doGetConfigItem(path);
     }
 
-    protected abstract void doClose();
+    @Override
+    public abstract void doClose();
 
     protected abstract void createPersistent(String path);
 

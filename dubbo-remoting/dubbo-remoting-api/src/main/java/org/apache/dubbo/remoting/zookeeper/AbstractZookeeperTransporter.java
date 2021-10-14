@@ -25,10 +25,11 @@ import org.apache.dubbo.common.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -41,6 +42,7 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
  */
 public abstract class AbstractZookeeperTransporter implements ZookeeperTransporter {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperTransporter.class);
+    private final Map<ZookeeperClient, Set<String>> zookeeperApplicationMap = new ConcurrentHashMap<>();
     private final Map<String, ZookeeperClient> zookeeperClientMap = new ConcurrentHashMap<>();
 
     /**
@@ -55,24 +57,56 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     public ZookeeperClient connect(URL url) {
         ZookeeperClient zookeeperClient;
         // address format: {[username:password@]address}
-        List<String> addressList = getURLBackupAddressWithApplicationName(url);
+        List<String> addressList = getURLBackupAddress(url);
+        String application = url.getParameter(APPLICATION_KEY, "");
         // The field define the zookeeper server , including protocol, host, port, username, password
-        if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
+        if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList, application)) != null &&
+                zookeeperClient.isConnected()) {
             logger.info("find valid zookeeper client from the cache for address: " + url);
             return zookeeperClient;
         }
         // avoid creating too many connections， so add lock
-        synchronized (zookeeperClientMap) {
-            if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
+        synchronized (zookeeperApplicationMap) {
+            if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList, application)) != null &&
+                    zookeeperClient.isConnected()) {
                 logger.info("find valid zookeeper client from the cache for address: " + url);
                 return zookeeperClient;
             }
 
             zookeeperClient = createZookeeperClient(url);
+            Set<String> applications = new HashSet<>();
+            applications.add(application);
+            zookeeperApplicationMap.put(zookeeperClient, applications);            
             logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
             writeToClientMap(addressList, zookeeperClient);
         }
         return zookeeperClient;
+    }
+
+    /**
+     * close zookeeper connection if no application use it.
+     * 
+     * @param zookeeperClient
+     * @param application the application which is destroying. 
+     */
+    @Override
+    public void close(ZookeeperClient zookeeperClient, String application) {
+        synchronized (zookeeperApplicationMap) {
+            Set<String> applications = zookeeperApplicationMap.get(zookeeperClient);
+            if (applications == null) {
+                logger.warn("No applications associated with the zookeeper client: " + zookeeperClient.getUrl());
+                zookeeperClient.doClose();
+                return;
+            }
+
+            if (application == null) {
+                application = "";
+            }
+            applications.remove(application);
+            if (application.isEmpty()) {
+                zookeeperClient.doClose();
+            }
+        }
     }
 
     /**
@@ -91,7 +125,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @param addressList
      * @return
      */
-    public ZookeeperClient fetchAndUpdateZookeeperClientCache(List<String> addressList) {
+    public ZookeeperClient fetchAndUpdateZookeeperClientCache(List<String> addressList, String application) {
 
         ZookeeperClient zookeeperClient = null;
         for (String address : addressList) {
@@ -101,6 +135,12 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         }
         if (zookeeperClient != null && zookeeperClient.isConnected()) {
             writeToClientMap(addressList, zookeeperClient);
+            Set<String> applications = zookeeperApplicationMap.get(zookeeperClient);
+            if (applications == null) {
+                applications = new HashSet<>();
+                zookeeperApplicationMap.put(zookeeperClient, applications);
+            }
+            applications.add(application);
         }
         return zookeeperClient;
     }
@@ -111,37 +151,11 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @param url such as:zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999
      * @return such as 127.0.0.1:2181,127.0.0.1:8989,127.0.0.1:9999
      */
-    public List<String> getURLBackupAddress(URL url) {
-        return getURLBackupAddressInternal(url, false);
-    }
-
-    /**
-     * get all zookeeper urls with application name (such as :zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999)
-     *
-     * @param url such as:zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999
-     * @return such as 127.0.0.1:2181?application=provider,127.0.0.1:8989?application=consumer,127.0.0.1:9999?application=consumer
-     */
-    public List<String> getURLBackupAddressWithApplicationName(URL url) {
-        return getURLBackupAddressInternal(url, true);
-    }
-
     @SuppressWarnings("unchecked")
-    private List<String> getURLBackupAddressInternal(URL url, boolean withApplicationName) {
+    public List<String> getURLBackupAddress(URL url) {
         List<String> addressList = new ArrayList<String>();
-        String urlAddr = null;
-        List<String> backupAddrs = null;
-        if (!withApplicationName || url.getParameter(APPLICATION_KEY) == null) {
-            urlAddr = url.getAddress();
-            backupAddrs = url.getParameter(BACKUP_KEY, Collections.EMPTY_LIST);
-        } else {
-            urlAddr = url.getAddress() + "?" + APPLICATION_KEY + "=" + url.getParameter(APPLICATION_KEY);
-            backupAddrs = (List<String>) url.getParameter(BACKUP_KEY, Collections.EMPTY_LIST)
-                    .stream()
-                    .map(v -> v + "?" + APPLICATION_KEY + "=" + url.getParameter(APPLICATION_KEY))
-                    .collect(Collectors.toList());
-        }
-        addressList.add(urlAddr);
-        addressList.addAll(backupAddrs);
+        addressList.add(url.getAddress());
+        addressList.addAll(url.getParameter(BACKUP_KEY, Collections.EMPTY_LIST));
 
         String authPrefix = null;
         if (StringUtils.isNotEmpty(url.getUsername())) {

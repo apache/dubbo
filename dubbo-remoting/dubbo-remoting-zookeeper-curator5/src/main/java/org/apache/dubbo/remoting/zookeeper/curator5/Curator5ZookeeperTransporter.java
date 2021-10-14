@@ -24,7 +24,7 @@ public class Curator5ZookeeperTransporter extends AbstractZookeeperTransporter {
 
     @Override
     public ZookeeperClient createZookeeperClient(URL url) {
-        return new Curator5ZookeeperClient(url);
+        return new Curator5ZookeeperClient(url, this);
     }
 
 }

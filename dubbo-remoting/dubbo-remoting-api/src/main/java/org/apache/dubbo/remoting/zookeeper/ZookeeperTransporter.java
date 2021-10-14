@@ -32,6 +32,8 @@ public interface ZookeeperTransporter {
 
     ZookeeperClient connect(URL url);
 
+    void close(ZookeeperClient zookeeperClient, String application);
+
     static ZookeeperTransporter getExtension() {
         ExtensionLoader<ZookeeperTransporter> extensionLoader = getExtensionLoader(ZookeeperTransporter.class);
         boolean isHighVersion = isHighVersionCurator();

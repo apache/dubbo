@@ -35,6 +35,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+
 /**
  *
  */
@@ -47,6 +49,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     private CacheListener cacheListener;
     private URL url;
+    private ZookeeperTransporter zookeeperTransporter;
     private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
     private static final int DEFAULT_QUEUE = 10000;
     private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
@@ -54,6 +57,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
         this.url = url;
+        this.zookeeperTransporter = zookeeperTransporter;
         rootPath = getRootPath(url);
 
         this.cacheListener = new CacheListener(rootPath);
@@ -83,7 +87,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     @Override
     protected void doClose() throws Exception {
-        zkClient.close();
+        zookeeperTransporter.close(zkClient, url.getParameter(APPLICATION_KEY, ""));
     }
 
     @Override
