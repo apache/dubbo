@@ -38,8 +38,6 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     private final URL url;
 
-    private final ZookeeperTransporter zookeeperTransporter;
-
     private final Set<StateListener> stateListeners = new CopyOnWriteArraySet<StateListener>();
 
     private final ConcurrentMap<String, ConcurrentMap<ChildListener, TargetChildListener>> childListeners =
@@ -52,18 +50,13 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     private final Set<String> persistentExistNodePath = new ConcurrentHashSet<>();
 
-    public AbstractZookeeperClient(URL url, ZookeeperTransporter zookeeperTransporter) {
+    public AbstractZookeeperClient(URL url) {
         this.url = url;
-        this.zookeeperTransporter = zookeeperTransporter;
     }
 
     @Override
     public URL getUrl() {
         return url;
-    }
-
-    protected ZookeeperTransporter getZookeeperTransporter() {
-        return zookeeperTransporter;
     }
 
     @Override
@@ -158,17 +151,13 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     @Override
-    public void close(String application) {
+    public void close() {
         if (closed) {
             return;
         }
         closed = true;
         try {
-            if (zookeeperTransporter == null) {
-                doClose();
-            } else {
-                zookeeperTransporter.close(this, application);
-            }
+            doClose();
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
         }
@@ -216,8 +205,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         return doGetConfigItem(path);
     }
 
-    @Override
-    public abstract void doClose();
+    protected abstract void doClose();
 
     protected abstract void createPersistent(String path);
 

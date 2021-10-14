@@ -89,7 +89,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             Set<String> applications = zookeeperApplicationMap.get(zookeeperClient);
             if (applications == null) {
                 logger.warn("No applications associated with the zookeeper client: " + zookeeperClient.getUrl());
-                zookeeperClient.doClose();
+                zookeeperClient.close();
                 return;
             }
 
@@ -98,7 +98,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             }
             applications.remove(application);
             if (application.isEmpty()) {
-                zookeeperClient.doClose();
+                zookeeperClient.close();
             }
         }
     }

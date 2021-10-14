@@ -70,6 +70,8 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     private final ZookeeperClient zkClient;
 
+    private final ZookeeperTransporter zookeeperTransporter;
+
     public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
         if (url.isAnyHost()) {
@@ -80,6 +82,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
             group = PATH_SEPARATOR + group;
         }
         this.root = group;
+        this.zookeeperTransporter = zookeeperTransporter;
         zkClient = zookeeperTransporter.connect(url);
         zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {
@@ -114,7 +117,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     public void destroy() {
         super.destroy();
         try {
-            zkClient.close(getUrl().getParameter(APPLICATION_KEY, ""));
+            zookeeperTransporter.close(zkClient, getUrl().getParameter(APPLICATION_KEY, ""));
         } catch (Exception e) {
             logger.warn("Failed to close zookeeper client " + getUrl() + ", cause: " + e.getMessage(), e);
         }
