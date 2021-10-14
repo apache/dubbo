@@ -28,10 +28,6 @@ public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
 
     private final AtomicBoolean contextSet = new AtomicBoolean(false);
 
-    public CancellationContext getCancellationContext() {
-        return cancellationContext;
-    }
-
     public CancelableStreamObserver() {
     }
 
