@@ -204,18 +204,27 @@ public abstract class AbstractStream implements Stream {
         this.serviceDescriptor = serviceDescriptor;
     }
 
+    /**
+     * set compressor if required
+     *
+     * Determine whether metadata has been sent for the stream
+     *
+     * @param compressor {@link Compressor}
+     */
     protected AbstractStream setCompressor(Compressor compressor) {
+        // If compressor is NULL, this will not be set.
+        // Consider whether to throw an exception or handle silently,
+        // But now choose silent processing, Fall back to default.
         if (compressor != null) {
             this.compressor = compressor;
+        } else {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("Compressor is Null, Fall back to default compression." +
+                    " MessageEncoding is " + getCompressor().getMessageEncoding());
+            }
         }
         return this;
     }
-
-//    protected AbstractStream setCompressor(String compression) {
-//        return setCompressor(getUrl().getOrDefaultFrameworkModel()
-//            .getExtensionLoader(Compressor.class)
-//            .getExtension(compression));
-//    }
 
     public Compressor getCompressor() {
         return this.compressor;

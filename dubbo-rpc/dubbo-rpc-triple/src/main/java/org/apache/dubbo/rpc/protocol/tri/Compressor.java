@@ -36,12 +36,14 @@ public interface Compressor {
 
     /**
      * message encoding of current compressor
+     *
      * @return return message encoding
      */
     String getMessageEncoding();
 
     /**
      * compress payload
+     *
      * @param payloadByteArr payload byte array
      * @return compressed payload byte array
      */
@@ -49,6 +51,7 @@ public interface Compressor {
 
     /**
      * decompress payload
+     *
      * @param payloadByteArr payload byte array
      * @return decompressed payload byte array
      */

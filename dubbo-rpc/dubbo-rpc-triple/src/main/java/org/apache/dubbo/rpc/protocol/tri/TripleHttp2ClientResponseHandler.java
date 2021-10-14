@@ -76,8 +76,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         if (null != messageEncoding) {
             String compressorStr = messageEncoding.toString();
             if (!DEFAULT_COMPRESSOR.equals(compressorStr)) {
-                Compressor compressor = clientStream.getUrl().getOrDefaultFrameworkModel()
-                    .getExtensionLoader(Compressor.class).getExtension(compressorStr);
+                Compressor compressor = Compressor.getCompressor(clientStream.getUrl().getOrDefaultFrameworkModel(), compressorStr);
                 if (null == compressor) {
                     throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
                         .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))

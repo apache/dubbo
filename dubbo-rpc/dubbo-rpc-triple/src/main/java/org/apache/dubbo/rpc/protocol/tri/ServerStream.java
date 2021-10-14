@@ -77,7 +77,6 @@ public class ServerStream extends AbstractServerStream implements Stream {
                 return;
             }
             Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
-            // todo
             setCompressor(compressor);
         }
     }
