@@ -261,7 +261,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     public void doClose() {
-        client.close();        
+        client.close();
     }
 
     @Override
