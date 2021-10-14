@@ -713,7 +713,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     localMetadataService.blockUntilUpdated();
                 }
                 try {
-                    ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                    // when jvm exit, the refreshMetadata is not required.
+                    if (!applicationModel.isDestroyed()) {
+                        ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                    }
                 } catch (Exception e) {
                     logger.error("Refresh instance and metadata error", e);
                 } finally {
