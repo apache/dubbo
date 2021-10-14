@@ -22,6 +22,8 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import java.util.Set;
+
 import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 /**
@@ -59,7 +61,18 @@ public interface Compressor {
 
 
     static Compressor getCompressor(FrameworkModel frameworkModel, String compressorStr) {
+        if (null == compressorStr) {
+            return null;
+        }
         return frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
     }
 
+
+    static String getAcceptEncoding(FrameworkModel frameworkModel) {
+        Set<String> supportedEncodingSet = frameworkModel.getExtensionLoader(Compressor.class).getSupportedExtensions();
+        if (supportedEncodingSet.isEmpty()) {
+            return null;
+        }
+        return String.join(",", supportedEncodingSet);
+    }
 }

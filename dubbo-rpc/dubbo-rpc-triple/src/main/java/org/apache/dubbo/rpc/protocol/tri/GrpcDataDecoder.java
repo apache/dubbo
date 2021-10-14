@@ -29,10 +29,12 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
 
     private int len;
     private boolean compressedFlag;
+    private final boolean client;
 
-    public GrpcDataDecoder(int maxDataSize) {
+    public GrpcDataDecoder(int maxDataSize, boolean client) {
         super(GrpcDecodeState.HEADER);
         this.maxDataSize = maxDataSize;
+        this.client = client;
     }
 
     @Override
@@ -42,17 +44,17 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
                 int type = in.readByte();
                 if ((type & RESERVED_MASK) != 0) {
                     throw GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                            .withDescription("gRPC frame header malformed: reserved bits not zero")
-                            .asException();
+                        .withDescription("gRPC frame header malformed: reserved bits not zero")
+                        .asException();
                 }
                 compressedFlag = (type & COMPRESSED_FLAG_MASK) != 0;
 
                 len = in.readInt();
                 if (len < 0 || len > maxDataSize) {
                     throw GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
-                            .withDescription(String.format("gRPC message exceeds maximum size %d: %d",
-                                    maxDataSize, len))
-                            .asException();
+                        .withDescription(String.format("gRPC message exceeds maximum size %d: %d",
+                            maxDataSize, len))
+                        .asException();
                 }
                 checkpoint(GrpcDecodeState.PAYLOAD);
             case PAYLOAD:
@@ -70,8 +72,7 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
         if (!compressedFlag) {
             return data;
         }
-
-        Compressor compressor = TripleUtil.getCompressor(ctx);
+        Compressor compressor = TripleUtil.getCompressor(ctx, client);
         if (null == compressor) {
             throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
                 .withDescription("gRPC message compressor not found")

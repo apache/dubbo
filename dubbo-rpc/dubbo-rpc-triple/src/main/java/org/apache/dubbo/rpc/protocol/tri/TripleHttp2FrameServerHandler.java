@@ -236,7 +236,6 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
                             .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
                 } else {
                     stream.setCompressor(compressor);
-                    ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
                 }
             }
         }
@@ -245,8 +244,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (msg.isEndStream()) {
             observer.onComplete();
         }
-
-        channel.attr(TripleUtil.SERVER_STREAM_KEY).set(stream);
+        TripleUtil.setServerStream(channel, stream);
     }
 
 

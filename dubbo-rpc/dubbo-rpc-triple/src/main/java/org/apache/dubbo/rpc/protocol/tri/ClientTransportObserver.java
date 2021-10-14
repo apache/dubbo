@@ -56,9 +56,9 @@ public class ClientTransportObserver implements TransportObserver {
 
         final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
         streamChannel.pipeline().addLast(responseHandler)
-                .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
-                .addLast(new TripleClientInboundHandler());
-        streamChannel.attr(TripleUtil.CLIENT_STREAM_KEY).set(stream);
+            .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
+            .addLast(new TripleClientInboundHandler());
+        TripleUtil.setClientStream(streamChannel, stream);
     }
 
     @Override
@@ -70,18 +70,18 @@ public class ClientTransportObserver implements TransportObserver {
             return;
         }
         final Http2Headers headers = new DefaultHttp2Headers(true)
-                .path(metadata.get(TripleHeaderEnum.PATH_KEY.getHeader()))
-                .authority(metadata.get(TripleHeaderEnum.AUTHORITY_KEY.getHeader()))
-                .scheme(SCHEME)
-                .method(HttpMethod.POST.asciiName());
+            .path(metadata.get(TripleHeaderEnum.PATH_KEY.getHeader()))
+            .authority(metadata.get(TripleHeaderEnum.AUTHORITY_KEY.getHeader()))
+            .scheme(SCHEME)
+            .method(HttpMethod.POST.asciiName());
         metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
         headerSent = true;
         streamChannel.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
-                .addListener(future -> {
-                    if (!future.isSuccess()) {
-                        promise.tryFailure(future.cause());
-                    }
-                });
+            .addListener(future -> {
+                if (!future.isSuccess()) {
+                    promise.tryFailure(future.cause());
+                }
+            });
 
     }
 
@@ -89,13 +89,13 @@ public class ClientTransportObserver implements TransportObserver {
     public void onReset(Http2Error http2Error) {
         resetSent = true;
         streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
-                .addListener(future -> {
-                    if (future.isSuccess()) {
-                        promise.trySuccess();
-                    } else {
-                        promise.tryFailure(future.cause());
-                    }
-                });
+            .addListener(future -> {
+                if (future.isSuccess()) {
+                    promise.trySuccess();
+                } else {
+                    promise.tryFailure(future.cause());
+                }
+            });
     }
 
     @Override
@@ -104,17 +104,17 @@ public class ClientTransportObserver implements TransportObserver {
             return;
         }
         ByteBuf buf = ctx.alloc().buffer();
-        buf.writeByte(TripleUtil.calcCompressFlag(ctx));
+        buf.writeByte(TripleUtil.calcCompressFlag(ctx, true));
         buf.writeInt(data.length);
         buf.writeBytes(data);
         streamChannel.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
-                .addListener(future -> {
-                    if (future.isSuccess()) {
-                        promise.trySuccess();
-                    } else {
-                        promise.tryFailure(future.cause());
-                    }
-                });
+            .addListener(future -> {
+                if (future.isSuccess()) {
+                    promise.trySuccess();
+                } else {
+                    promise.tryFailure(future.cause());
+                }
+            });
     }
 
     @Override
@@ -127,12 +127,12 @@ public class ClientTransportObserver implements TransportObserver {
         }
         endStreamSent = true;
         streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true))
-                .addListener(future -> {
-                    if (future.isSuccess()) {
-                        promise.trySuccess();
-                    } else {
-                        promise.tryFailure(future.cause());
-                    }
-                });
+            .addListener(future -> {
+                if (future.isSuccess()) {
+                    promise.trySuccess();
+                } else {
+                    promise.tryFailure(future.cause());
+                }
+            });
     }
 }

@@ -83,7 +83,6 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
                         .asException();
                 } else {
                     clientStream.setCompressor(compressor);
-                    ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
                 }
             }
         }

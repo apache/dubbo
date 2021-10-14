@@ -30,6 +30,7 @@ import com.google.rpc.DebugInfo;
 import com.google.rpc.ErrorInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
@@ -60,8 +61,6 @@ public class TripleUtil {
         "tri_server_stream");
     public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
         "tri_client_stream");
-    public static final AttributeKey<Compressor> COMPRESSOR_KEY = AttributeKey.newInstance(
-        "tri_compressor");
     public static final String LANGUAGE = "java";
     // Some exceptions are not very useful and add too much noise to the log
     private static final Set<String> QUIET_EXCEPTIONS = new HashSet<>();
@@ -85,6 +84,22 @@ public class TripleUtil {
         return false;
     }
 
+    public static void setClientStream(ChannelHandlerContext ctx, AbstractClientStream stream) {
+        setClientStream(ctx.channel(), stream);
+    }
+
+    public static void setClientStream(Channel channel, AbstractClientStream stream) {
+        channel.attr(CLIENT_STREAM_KEY).set(stream);
+    }
+
+    public static void setServerStream(ChannelHandlerContext ctx, AbstractServerStream stream) {
+        setServerStream(ctx.channel(), stream);
+    }
+
+    public static void setServerStream(Channel channel, AbstractServerStream stream) {
+        channel.attr(SERVER_STREAM_KEY).set(stream);
+    }
+
     public static AbstractServerStream getServerStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).get();
     }
@@ -93,12 +108,14 @@ public class TripleUtil {
         return ctx.channel().attr(TripleUtil.CLIENT_STREAM_KEY).get();
     }
 
-    public static Compressor getCompressor(ChannelHandlerContext ctx) {
-        return ctx.channel().attr(COMPRESSOR_KEY).get();
+    public static Compressor getCompressor(ChannelHandlerContext ctx, boolean client) {
+        AbstractStream stream = client ? getClientStream(ctx) : getServerStream(ctx);
+        return stream.getCompressor();
     }
 
-    public static int calcCompressFlag(ChannelHandlerContext ctx) {
-        Compressor compressor = getCompressor(ctx);
+    public static int calcCompressFlag(ChannelHandlerContext ctx, boolean client) {
+        AbstractStream stream = client ? getClientStream(ctx) : getServerStream(ctx);
+        Compressor compressor = stream.getCompressor();
         if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
             return 0;
         }
@@ -198,44 +215,6 @@ public class TripleUtil {
             return builder.build();
         } catch (IOException e) {
             throw new RuntimeException("Failed to pack wrapper req", e);
-        }
-    }
-
-    public static TripleWrapper.TripleExceptionWrapper wrapException(URL url, Throwable throwable,
-                                                                     String serializeType,
-                                                                     MultipleSerialization serialization) {
-        try {
-            final TripleWrapper.TripleExceptionWrapper.Builder builder = TripleWrapper.TripleExceptionWrapper.newBuilder()
-                .setLanguage(LANGUAGE)
-                .setClassName(throwable.getClass().getName())
-                .setSerialization(serializeType);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            serialization.serialize(url, serializeType, builder.getClassName(), throwable, bos);
-            builder.setData(ByteString.copyFrom(bos.toByteArray()));
-            bos.close();
-            return builder.build();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to pack wrapper exception", e);
-        }
-    }
-
-    public static Throwable unWrapException(URL url, TripleWrapper.TripleExceptionWrapper wrap,
-                                            String serializeType,
-                                            MultipleSerialization serialization) {
-        if (wrap == null) {
-            return null;
-        }
-        if (!LANGUAGE.equals(wrap.getLanguage())) {
-            return null;
-        }
-        try {
-            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
-            Object obj = serialization.deserialize(url, serializeType, wrap.getClassName(), bais);
-            bais.close();
-            return (Throwable) obj;
-        } catch (Exception e) {
-            // if this null ,can get common exception
-            return null;
         }
     }
 

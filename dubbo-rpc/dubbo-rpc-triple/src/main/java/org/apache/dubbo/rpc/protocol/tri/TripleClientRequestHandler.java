@@ -80,10 +80,9 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
         String compressorStr = ConfigurationUtils
             .getCachedDynamicProperty(inv.getModuleModel(), COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
 
-        if (null != compressorStr && !compressorStr.equals(DEFAULT_COMPRESSOR)) {
-            Compressor compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
+        Compressor compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
+        if (compressor != null) {
             stream.setCompressor(compressor);
-            ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
         }
 
         stream.service(consumerModel)
@@ -115,6 +114,7 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
                 stream.asStreamObserver().onNext(inv.getArguments()[0]);
                 stream.asStreamObserver().onCompleted();
             }
+            TripleUtil.setClientStream(ctx, stream);
             response.setResult(result);
             DefaultFuture2.received(stream.getConnection(), response);
         }
