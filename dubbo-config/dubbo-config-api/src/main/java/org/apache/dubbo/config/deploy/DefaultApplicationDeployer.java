@@ -714,7 +714,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 }
                 try {
                     // when jvm exit, the refreshMetadata is not required.
-                    if (!applicationModel.isDestroyed()) {
+                    if (!applicationModel.isShutdown()) {
                         ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
                     }
                 } catch (Exception e) {

@@ -69,6 +69,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     private Map<String, Object> attributes;
     private AtomicBoolean destroyed = new AtomicBoolean(false);
+    private AtomicBoolean isShutdown = new AtomicBoolean(false);
     private volatile boolean stopping;
 
     public ScopeModel(ScopeModel parent, ExtensionScope scope) {
@@ -229,5 +230,14 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     public void setModelName(String modelName) {
         this.modelName = modelName;
+    }
+
+    public boolean isShutdown() {
+        return isShutdown.get();
+    }
+
+    public void shutdown() {
+        isShutdown.compareAndSet(false, true);
+        destroy();
     }
 }

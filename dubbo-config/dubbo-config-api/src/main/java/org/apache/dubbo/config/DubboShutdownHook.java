@@ -64,7 +64,7 @@ public class DubboShutdownHook extends Thread {
     }
 
     private void doDestroy() {
-        applicationModel.destroy();
+        applicationModel.shutdown();
     }
 
     /**
