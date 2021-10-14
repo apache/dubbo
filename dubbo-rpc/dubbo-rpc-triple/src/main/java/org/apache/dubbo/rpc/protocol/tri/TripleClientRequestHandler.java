@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -39,6 +40,9 @@ import io.netty.channel.ChannelPromise;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
+import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 public class TripleClientRequestHandler extends ChannelDuplexHandler {
 
@@ -72,13 +76,24 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
         if (StringUtils.isNotEmpty(ssl)) {
             ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(Boolean.parseBoolean(ssl));
         }
+
+        // Compressor can not be set by dynamic config
+        String compressorStr = ConfigurationUtils
+            .getCachedDynamicProperty(inv.getModuleModel(),COMPRESSOR_KEY,DEFAULT_COMPRESSOR);
+
+        if (null != compressorStr && !compressorStr.equals(DEFAULT_COMPRESSOR)) {
+            Compressor compressor = url.getOrDefaultApplicationModel().getExtensionLoader(Compressor.class).getExtension(compressorStr);
+            stream.setCompressor(compressor);
+            ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
+        }
+
         stream.service(consumerModel)
-                .connection(Connection.getConnectionFromChannel(ctx.channel()))
-                .method(methodDescriptor)
-                .methodName(methodDescriptor.getMethodName())
-                .request(req)
-                .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
-                .subscribe(new ClientTransportObserver(ctx, stream, promise));
+            .connection(Connection.getConnectionFromChannel(ctx.channel()))
+            .method(methodDescriptor)
+            .methodName(methodDescriptor.getMethodName())
+            .request(req)
+            .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
+            .subscribe(new ClientTransportObserver(ctx, stream, promise));
 
         if (methodDescriptor.isUnary()) {
             stream.asStreamObserver().onNext(inv);
@@ -88,7 +103,7 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
             AppResponse result;
             // the stream method params is fixed
             if (methodDescriptor.getRpcType() == MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM
-                    || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
+                || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
                 StreamObserver<Object> obServer = (StreamObserver<Object>) inv.getArguments()[0];
                 obServer = attachCancelContext(obServer, stream.getCancellationContext());
                 stream.subscribe(obServer);

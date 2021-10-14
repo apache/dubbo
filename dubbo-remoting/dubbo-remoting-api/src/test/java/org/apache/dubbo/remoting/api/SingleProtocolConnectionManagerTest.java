@@ -29,30 +29,36 @@ import java.util.function.Consumer;
 
 public class SingleProtocolConnectionManagerTest {
 
-    private ConnectionManager connectionManager = ExtensionLoader.getExtensionLoader(ConnectionManager.class).getExtension("single");
+    private ConnectionManager connectionManager = ExtensionLoader.getExtensionLoader(ConnectionManager.class).getExtension(SingleProtocolConnectionManager.NAME);
 
     @Test
     public void testConnect() throws Exception {
         URL url = URL.valueOf("empty://127.0.0.1:8080?foo=bar");
-        Connection connect = connectionManager.connect(url);
-        Assertions.assertNotNull(connect);
+        Connection connection = connectionManager.connect(url);
+        Assertions.assertNotNull(connection);
         Field protocolsField = connectionManager.getClass().getDeclaredField("connections");
         protocolsField.setAccessible(true);
         Map protocolMap = (Map) protocolsField.get(connectionManager);
         Assertions.assertNotNull(protocolMap.get(url.getAddress()));
-        connect.close();
+        connection.close();
+
+        // Test whether closePromise's listener removes entry
+        connection.getClosePromise().await();
+        while (protocolMap.containsKey(url.getAddress())) {
+        }
+        Assertions.assertNull(protocolMap.get(url.getAddress()));
     }
 
     @Test
     public void testForEachConnection() throws RemotingException {
         URL url = URL.valueOf("empty://127.0.0.1:8080?foo=bar");
-        Connection connect = connectionManager.connect(url);
+        Connection connection = connectionManager.connect(url);
 
         {
             Consumer<Connection> consumer1 = new Consumer<Connection>() {
                 @Override
                 public void accept(Connection connection) {
-                    Assertions.assertEquals( "empty", connection.getUrl().getProtocol());
+                    Assertions.assertEquals("empty", connection.getUrl().getProtocol());
                 }
             };
 
@@ -63,7 +69,7 @@ public class SingleProtocolConnectionManagerTest {
             Consumer<Connection> consumer2 = new Consumer<Connection>() {
                 @Override
                 public void accept(Connection connection) {
-                    Assertions.assertNotEquals( "not-empty", connection.getUrl().getProtocol());
+                    Assertions.assertNotEquals("not-empty", connection.getUrl().getProtocol());
                 }
             };
 

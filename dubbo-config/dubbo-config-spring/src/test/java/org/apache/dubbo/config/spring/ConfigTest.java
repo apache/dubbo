@@ -845,6 +845,7 @@ public class ConfigTest {
             assertEquals(1234, defaultConsumer.getTimeout());
             assertEquals(false, defaultConsumer.isCheck());
         } finally {
+            // If we don't stop here, somewhere else will throw BeanCreationException of duplication.
             DubboBootstrap.getInstance().stop();
         }
     }

@@ -1163,7 +1163,8 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> createAdaptiveExtensionClass() {
-        ClassLoader classLoader = findClassLoader();
+        // Adaptive Classes' ClassLoader should be the same with Real SPI interface classes' ClassLoader
+        ClassLoader classLoader = type.getClassLoader();
         try {
             if (NativeUtils.isNative()) {
                 return classLoader.loadClass(type.getName() + "$Adaptive");

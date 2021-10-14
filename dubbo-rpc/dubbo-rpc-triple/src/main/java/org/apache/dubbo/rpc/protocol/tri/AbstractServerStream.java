@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
@@ -55,7 +54,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     }
 
     protected AbstractServerStream(URL url, ProviderModel providerModel) {
-        this(url, lookupExecutor(url, providerModel), providerModel);
+        this(url, lookupExecutor(providerModel), providerModel);
     }
 
     protected AbstractServerStream(URL url, Executor executor, ProviderModel providerModel) {
@@ -65,20 +64,12 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         this.headerFilters = url.getOrDefaultApplicationModel().getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
     }
 
-    private static Executor lookupExecutor(URL url, ProviderModel providerModel) {
-        ExecutorService executor = null;
-        if (providerModel != null) {
-            executor = (ExecutorService) providerModel.getServiceMetadata()
-                    .getAttribute(CommonConstants.THREADPOOL_KEY);
+    private static Executor lookupExecutor(ProviderModel providerModel) {
+        if (providerModel == null) {
+            return null;
         }
-        ExecutorRepository executorRepository = url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-        if (executor == null) {
-            executor = executorRepository.getExecutor(url);
-        }
-        if (executor == null) {
-            executor = executorRepository.createExecutorIfAbsent(url);
-        }
-        return executor;
+        return (ExecutorService) providerModel.getServiceMetadata()
+                .getAttribute(CommonConstants.THREADPOOL_KEY);
     }
 
     public static UnaryServerStream unary(URL url) {
@@ -184,6 +175,16 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         }
     }
 
+    /**
+     * create basic meta data
+     */
+    protected Metadata createRequestMeta() {
+        Metadata metadata = new DefaultMetadata();
+        metadata.putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(), super.getCompressor().getMessageEncoding())
+                .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), TripleUtil.calcAcceptEncoding(invoker.getUrl()));
+        return metadata;
+    }
+
     protected byte[] encodeResponse(Object value) {
         final com.google.protobuf.Message message;
         if (getMethodDescriptor().isNeedWrap()) {
@@ -192,7 +193,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         } else {
             message = (Message) value;
         }
-        return TripleUtil.pack(message);
+        byte[] out = TripleUtil.pack(message);
+        return super.compress(out);
     }
 
     @Override

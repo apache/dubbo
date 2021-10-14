@@ -39,7 +39,7 @@ public class JavassistCompiler extends AbstractCompiler {
     private static final Pattern FIELD_PATTERN = Pattern.compile("[^\n]+=[^\n]+;");
 
     @Override
-    public Class<?> doCompile(String name, String source) throws Throwable {
+    public Class<?> doCompile(ClassLoader classLoader, String name, String source) throws Throwable {
         CtClassBuilder builder = new CtClassBuilder();
         builder.setClassName(name);
 
@@ -77,7 +77,6 @@ public class JavassistCompiler extends AbstractCompiler {
         });
 
         // compile
-        ClassLoader classLoader = org.apache.dubbo.common.utils.ClassUtils.getCallerClassLoader(getClass());
         CtClass cls = builder.build(classLoader);
         return cls.toClass(classLoader, JavassistCompiler.class.getProtectionDomain());
     }

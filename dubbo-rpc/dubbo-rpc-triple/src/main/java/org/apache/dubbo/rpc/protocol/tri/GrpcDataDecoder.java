@@ -45,14 +45,7 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
                             .withDescription("gRPC frame header malformed: reserved bits not zero")
                             .asException();
                 }
-                // compression is not supported yet
-                // TODO support it
                 compressedFlag = (type & COMPRESSED_FLAG_MASK) != 0;
-                if (compressedFlag) {
-                    throw GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                            .withDescription("Compression is not supported ")
-                            .asException();
-                }
 
                 len = in.readInt();
                 if (len < 0 || len > maxDataSize) {
@@ -65,12 +58,27 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
             case PAYLOAD:
                 byte[] dst = new byte[len];
                 in.readBytes(dst);
-                out.add(dst);
+                out.add(this.decompressData(dst, ctx));
                 checkpoint(GrpcDecodeState.HEADER);
                 break;
             default:
                 throw new RuntimeException("Should not reach here");
         }
+    }
+
+    private byte[] decompressData(byte[] data, ChannelHandlerContext ctx) {
+        if (!compressedFlag) {
+            return data;
+        }
+
+        Compressor compressor = TripleUtil.getCompressor(ctx);
+        if (null == compressor) {
+            throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                .withDescription("gRPC message compressor not found")
+                .asException();
+        }
+
+        return compressor.decompress(data);
     }
 
     enum GrpcDecodeState {
