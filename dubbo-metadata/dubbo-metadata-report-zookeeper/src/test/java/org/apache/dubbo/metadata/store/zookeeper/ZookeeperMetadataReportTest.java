@@ -29,7 +29,7 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +63,7 @@ public class ZookeeperMetadataReportTest {
         this.zkServer = new TestingServer(zkServerPort, true);
         this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
 
-        zookeeperMetadataReportFactory = new ZookeeperMetadataReportFactory(FrameworkModel.defaultModel());
+        zookeeperMetadataReportFactory = new ZookeeperMetadataReportFactory(ApplicationModel.defaultModel());
         this.zookeeperMetadataReport = (ZookeeperMetadataReport) zookeeperMetadataReportFactory.getMetadataReport(registryUrl);
     }
 

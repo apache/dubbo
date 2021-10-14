@@ -55,6 +55,7 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -869,6 +870,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             destroyRegistries();
             destroyServiceDiscoveries();
             destroyMetadataReports();
+
+            // destroy zookeeper clients
+            ZookeeperTransporter.getExtension(applicationModel).destroy();
 
             destroyExecutorRepository();
 

@@ -20,9 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface ZookeeperTransporter {
 
     String CURATOR_5 = "curator5";
@@ -33,8 +33,8 @@ public interface ZookeeperTransporter {
 
     void destroy();
 
-    static ZookeeperTransporter getExtension(FrameworkModel frameworkModel) {
-        ExtensionLoader<ZookeeperTransporter> extensionLoader = frameworkModel.getExtensionLoader(ZookeeperTransporter.class);
+    static ZookeeperTransporter getExtension(ApplicationModel applicationModel) {
+        ExtensionLoader<ZookeeperTransporter> extensionLoader = applicationModel.getExtensionLoader(ZookeeperTransporter.class);
         boolean isHighVersion = isHighVersionCurator();
         if (isHighVersion) {
             return extensionLoader.getExtension(CURATOR_5);

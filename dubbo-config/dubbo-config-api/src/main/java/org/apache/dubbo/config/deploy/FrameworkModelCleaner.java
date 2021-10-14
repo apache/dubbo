@@ -19,7 +19,6 @@ package org.apache.dubbo.config.deploy;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModelDestroyListener;
@@ -43,8 +42,9 @@ public class FrameworkModelCleaner implements ScopeModelDestroyListener<Framewor
         // destroy protocol in framework scope
         destroyProtocols(frameworkModel);
 
+        // do follow when change ZookeeperTransporter to Framework scope
         // destroy zookeeper clients
-        ZookeeperTransporter.getExtension(frameworkModel).destroy();
+        // ZookeeperTransporter.getExtension(frameworkModel).destroy();
     }
 
     /**
