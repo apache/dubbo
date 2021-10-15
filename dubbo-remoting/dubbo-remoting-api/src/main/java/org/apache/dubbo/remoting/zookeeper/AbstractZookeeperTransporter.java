@@ -102,12 +102,15 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             if (application == null) {
                 application = "";
             }
-            appSet.remove(application);
-            if (appSet.isEmpty()) {
-                if (zookeeperClient.isConnected()) {
-                    zookeeperClient.close();
+            if (appSet.remove(application)) {
+                if (appSet.isEmpty()) {
+                    if (zookeeperClient.isConnected()) {
+                        zookeeperClient.close();
+                    }
+                    zookeeperApplicationMap.remove(zookeeperClient);
+                } else {
+                    zookeeperApplicationMap.put(zookeeperClient, appSet);
                 }
-                zookeeperApplicationMap.remove(zookeeperClient);
             }
         }
     }
