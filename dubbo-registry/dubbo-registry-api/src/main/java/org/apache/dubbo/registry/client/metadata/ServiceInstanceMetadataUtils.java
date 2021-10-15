@@ -279,7 +279,7 @@ public class ServiceInstanceMetadataUtils {
             instance = new DefaultServiceInstance((DefaultServiceInstance) instance);
             calInstanceRevision(serviceDiscovery, instance);
             customizeInstance(instance);
-            if (serviceInstance.getPort() > 0) {
+            if (instance.getPort() > 0) {
                 // update service instance revision
                 serviceDiscovery.update(instance);
             }
