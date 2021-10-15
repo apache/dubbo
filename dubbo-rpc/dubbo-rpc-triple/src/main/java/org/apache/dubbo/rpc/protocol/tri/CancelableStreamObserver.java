@@ -42,9 +42,10 @@ public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
     public final void setCancellationContext(CancellationContext cancellationContext) {
         if (contextSet.compareAndSet(false, true)) {
             this.cancellationContext = cancellationContext;
-        }
-        if (LOGGER.isWarnEnabled()) {
-            LOGGER.warn("CancellationContext already set,do not repeat the set, ignore this set");
+        } else {
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("CancellationContext already set,do not repeat the set, ignore this set");
+            }
         }
     }
 
