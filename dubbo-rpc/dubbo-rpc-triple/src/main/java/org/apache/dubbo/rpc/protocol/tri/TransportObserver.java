@@ -31,4 +31,12 @@ public interface TransportObserver {
     default void onComplete() {
     }
 
+
+    static int calcCompressFlag(Compressor compressor) {
+        if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
+            return 0;
+        }
+        return 1;
+    }
+
 }

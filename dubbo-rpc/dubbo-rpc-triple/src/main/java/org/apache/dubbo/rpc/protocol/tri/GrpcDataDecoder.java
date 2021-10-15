@@ -84,7 +84,7 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
         if (!compressedFlag) {
             return data;
         }
-        Compressor compressor = TripleUtil.getDeCompressor(ctx, client);
+        Compressor compressor = getDeCompressor(ctx, client);
         if (null == compressor) {
             throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
                 .withDescription("gRPC message compressor not found")
@@ -97,4 +97,20 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
         HEADER,
         PAYLOAD
     }
+
+
+    private Compressor getDeCompressor(ChannelHandlerContext ctx, boolean client) {
+        AbstractStream stream = client ? getClientStream(ctx) : getServerStream(ctx);
+        return stream.getDeCompressor();
+    }
+
+    private AbstractClientStream getClientStream(ChannelHandlerContext ctx) {
+        return ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
+    }
+
+    private AbstractServerStream getServerStream(ChannelHandlerContext ctx) {
+        return ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+    }
+
+
 }

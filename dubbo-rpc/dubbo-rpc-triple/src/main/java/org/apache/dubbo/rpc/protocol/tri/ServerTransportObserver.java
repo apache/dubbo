@@ -82,7 +82,7 @@ public class ServerTransportObserver implements TransportObserver {
             return;
         }
         ByteBuf buf = ctx.alloc().buffer();
-        buf.writeByte(TripleUtil.calcCompressFlag(ctx, false));
+        buf.writeByte(getCompressFlag());
         buf.writeInt(data.length);
         buf.writeBytes(data);
         ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, false))
@@ -91,5 +91,11 @@ public class ServerTransportObserver implements TransportObserver {
                     LOGGER.warn("send data error endStream=" + endStream, future.cause());
                 }
             });
+    }
+
+
+    private int getCompressFlag() {
+        AbstractServerStream stream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+        return TransportObserver.calcCompressFlag(stream.getCompressor());
     }
 }

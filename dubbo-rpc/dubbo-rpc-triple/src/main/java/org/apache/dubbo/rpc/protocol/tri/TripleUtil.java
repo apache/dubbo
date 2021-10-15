@@ -30,14 +30,12 @@ import com.google.rpc.DebugInfo;
 import com.google.rpc.ErrorInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.util.AttributeKey;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,12 +54,6 @@ import java.util.Set;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
-
-    public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance(
-        "tri_server_stream");
-    public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
-        "tri_client_stream");
-    public static final String LANGUAGE = "java";
     // Some exceptions are not very useful and add too much noise to the log
     private static final Set<String> QUIET_EXCEPTIONS = new HashSet<>();
     private static final Set<Class<?>> QUIET_EXCEPTIONS_CLASS = new HashSet<>();
@@ -82,70 +74,6 @@ public class TripleUtil {
             return true;
         }
         return false;
-    }
-
-    public static void setClientStream(ChannelHandlerContext ctx, AbstractClientStream stream) {
-        setClientStream(ctx.channel(), stream);
-    }
-
-    public static void setClientStream(Channel channel, AbstractClientStream stream) {
-        channel.attr(CLIENT_STREAM_KEY).set(stream);
-    }
-
-    public static void setServerStream(ChannelHandlerContext ctx, AbstractServerStream stream) {
-        setServerStream(ctx.channel(), stream);
-    }
-
-    public static void setServerStream(Channel channel, AbstractServerStream stream) {
-        channel.attr(SERVER_STREAM_KEY).set(stream);
-    }
-
-    public static AbstractServerStream getServerStream(ChannelHandlerContext ctx) {
-        return getServerStream(ctx.channel());
-    }
-
-    public static AbstractServerStream getServerStream(Channel channel) {
-        return channel.attr(TripleUtil.SERVER_STREAM_KEY).get();
-    }
-
-    public static AbstractClientStream getClientStream(ChannelHandlerContext ctx) {
-        return getClientStream(ctx.channel());
-    }
-
-    public static AbstractClientStream getClientStream(Channel channel) {
-        return channel.attr(TripleUtil.CLIENT_STREAM_KEY).get();
-    }
-
-    public static Compressor getCompressor(ChannelHandlerContext ctx, boolean client) {
-        AbstractStream stream = client ? getClientStream(ctx) : getServerStream(ctx);
-        return stream.getCompressor();
-    }
-
-    public static Compressor getCompressor(Channel channel, boolean client) {
-        AbstractStream stream = client ? getClientStream(channel) : getServerStream(channel);
-        return stream.getCompressor();
-    }
-
-    public static Compressor getDeCompressor(ChannelHandlerContext ctx, boolean client) {
-        AbstractStream stream = client ? getClientStream(ctx) : getServerStream(ctx);
-        return stream.getDeCompressor();
-    }
-
-    public static int calcCompressFlag(ChannelHandlerContext ctx, boolean client) {
-        Compressor compressor = getCompressor(ctx, client);
-        return calcCompressFlag(compressor);
-    }
-
-    public static int calcCompressFlag(Channel channel, boolean client) {
-        Compressor compressor = getCompressor(channel, client);
-        return calcCompressFlag(compressor);
-    }
-
-    private static int calcCompressFlag(Compressor compressor) {
-        if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
-            return 0;
-        }
-        return 1;
     }
 
     /**
@@ -362,15 +290,6 @@ public class TripleUtil {
             return "hessian2";
         }
         return serializeType;
-    }
-
-    public static String calcAcceptEncoding(URL url) {
-        Set<String> supportedEncodingSet = url.getOrDefaultApplicationModel().getExtensionLoader(Compressor.class).getSupportedExtensions();
-        if (supportedEncodingSet.isEmpty()) {
-            return null;
-        }
-
-        return String.join(",", supportedEncodingSet);
     }
 
 }

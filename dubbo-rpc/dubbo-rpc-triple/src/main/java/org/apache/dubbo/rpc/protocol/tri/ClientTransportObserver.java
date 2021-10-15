@@ -58,7 +58,7 @@ public class ClientTransportObserver implements TransportObserver {
         streamChannel.pipeline().addLast(responseHandler)
             .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
             .addLast(new TripleClientInboundHandler());
-        TripleUtil.setClientStream(streamChannel, stream);
+        streamChannel.attr(TripleConstant.CLIENT_STREAM_KEY).set(stream);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class ClientTransportObserver implements TransportObserver {
             return;
         }
         ByteBuf buf = ctx.alloc().buffer();
-        buf.writeByte(TripleUtil.calcCompressFlag(streamChannel, true));
+        buf.writeByte(getCompressFlag());
         buf.writeInt(data.length);
         buf.writeBytes(data);
         streamChannel.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
@@ -135,4 +135,10 @@ public class ClientTransportObserver implements TransportObserver {
                 }
             });
     }
+
+    private int getCompressFlag() {
+        AbstractClientStream stream = streamChannel.attr(TripleConstant.CLIENT_STREAM_KEY).get();
+        return TransportObserver.calcCompressFlag(stream.getCompressor());
+    }
+
 }

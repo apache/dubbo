@@ -84,7 +84,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
         Http2Error http2Error = Http2Error.valueOf(frame.errorCode());
-        final AbstractServerStream serverStream = TripleUtil.getServerStream(ctx);
+        final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
         serverStream.cancelByRemote(http2Error);
         ctx.close();
     }
@@ -106,7 +106,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         super.channelRead(ctx, msg.content());
 
         if (msg.isEndStream()) {
-            final AbstractServerStream serverStream = TripleUtil.getServerStream(ctx);
+            final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
             if (serverStream != null) {
                 serverStream.asTransportObserver().onComplete();
             }
@@ -244,7 +244,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (msg.isEndStream()) {
             observer.onComplete();
         }
-        TripleUtil.setServerStream(channel, stream);
+        channel.attr(TripleConstant.SERVER_STREAM_KEY).set(stream);
     }
 
 
