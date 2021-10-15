@@ -125,10 +125,6 @@ public final class DubboBootstrap {
         return getInstance(frameworkModel.newApplication());
     }
 
-    public static DubboBootstrap newInstance(ApplicationModel applicationModel) {
-        return getInstance(applicationModel);
-    }
-
     /**
      * Try reset dubbo status for new instance.
      *

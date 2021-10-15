@@ -874,6 +874,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // destroy zookeeper clients
             ZookeeperTransporter.getExtension(applicationModel).destroy();
 
+            // TODO should we close unused protocol server which only used by this application?
+            // protocol server will be closed on all applications of same framework are stopped currently, but no associate to application
+            // see org.apache.dubbo.config.deploy.FrameworkModelCleaner#destroyProtocols
+            // see org.apache.dubbo.config.bootstrap.DubboBootstrapMultiInstanceTest#testMultiProviderApplicationStopOneByOne
+
+            // destroy all executor services
             destroyExecutorRepository();
 
             onStopped();

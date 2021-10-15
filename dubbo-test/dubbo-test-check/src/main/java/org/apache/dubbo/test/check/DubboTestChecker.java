@@ -29,8 +29,10 @@ import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -84,17 +86,24 @@ public class DubboTestChecker implements TestExecutionListener {
 
     @Override
     public void testPlanExecutionStarted(TestPlan testPlan) {
+        init(System.getProperties());
+    }
+
+    public void init(Properties properties) {
+        if (properties == null) {
+            properties = new Properties();
+        }
         // log prefix
         identifier = "[" + this.getClass().getSimpleName() + "] ";
 
         // checkMode: class/method
-        checkMode = StringUtils.lowerCase(System.getProperty(DUBBO_TEST_CHECK_MODE, MODE_CLASS));
+        checkMode = StringUtils.lowerCase(properties.getProperty(DUBBO_TEST_CHECK_MODE, MODE_CLASS));
         // checkThreads: true/false
-        checkThreads = Boolean.parseBoolean(System.getProperty(DUBBO_TEST_CHECK_THREADS, "false"));
+        checkThreads = Boolean.parseBoolean(properties.getProperty(DUBBO_TEST_CHECK_THREADS, "false"));
         // threadDumpWaitTime
-        threadDumpWaitTimeMs = Long.parseLong(System.getProperty(DUBBO_TEST_THREAD_DUMP_WAIT_TIME, "5000"));
+        threadDumpWaitTimeMs = Long.parseLong(properties.getProperty(DUBBO_TEST_THREAD_DUMP_WAIT_TIME, "5000"));
         // force destroy dubbo
-        forceDestroyDubboAfterClass = Boolean.parseBoolean(System.getProperty(DUBBO_TEST_FORCE_DESTROY, "true"));
+        forceDestroyDubboAfterClass = Boolean.parseBoolean(properties.getProperty(DUBBO_TEST_FORCE_DESTROY, "true"));
 
         log(String.format("Dubbo test checker configs: checkMode=%s, checkThreads=%s, threadDumpWaitTimeMs=%s, forceDestroy=%s",
             checkMode, checkThreads, threadDumpWaitTimeMs, forceDestroyDubboAfterClass));
@@ -105,15 +114,23 @@ public class DubboTestChecker implements TestExecutionListener {
 
         // print all unclosed threads
         if (checkThreads) {
-            log("");
-            log("Total found " + unclosedThreadMap.size() + " unclosed threads in " + unclosedThreadsOfTestMap.size() + " tests.");
-            log("");
-            unclosedThreadsOfTestMap.forEach((testClassName, threads) -> {
-                printUnclosedThreads(threads, testClassName);
-            });
+            printThreadCheckingReport();
         } else {
-            log("Threads checking is disabled, use -DcheckThreads=true to check unclosed threads.");
+            log("Thread checking is disabled, use -DcheckThreads=true to check unclosed threads.");
         }
+    }
+
+    private void printThreadCheckingReport() {
+        log("===== Thread Checking Report ======");
+        log("Total found " + unclosedThreadMap.size() + " unclosed threads in " + unclosedThreadsOfTestMap.size() + " tests.");
+        log("");
+        unclosedThreadsOfTestMap.forEach((testClassName, threads) -> {
+            printUnclosedThreads(threads, testClassName);
+        });
+    }
+
+    public Map<Thread, StackTraceElement[]> getUnclosedThreadMap() {
+        return unclosedThreadMap;
     }
 
     @Override
@@ -162,7 +179,7 @@ public class DubboTestChecker implements TestExecutionListener {
         }
     }
 
-    private void checkUnclosedThreads(String testClassName, long waitMs) {
+    public Map<Thread, StackTraceElement[]> checkUnclosedThreads(String testClassName, long waitMs) {
         // wait for shutdown
         log("Wait " + waitMs + "ms to check threads ...");
         try {
@@ -186,6 +203,13 @@ public class DubboTestChecker implements TestExecutionListener {
             unclosedThreadsOfTestMap.put(testClassName, unclosedThreads);
             printUnclosedThreads(unclosedThreads, testClassName);
         }
+
+        // return new unclosed thread map
+        Map<Thread, StackTraceElement[]> unclosedThreadMap = new LinkedHashMap<>();
+        for (Thread thread : unclosedThreads) {
+            unclosedThreadMap.put(thread, threadStacks.get(thread));
+        }
+        return unclosedThreadMap;
     }
 
     private void printUnclosedThreads(List<Thread> threads, String testClassName) {
