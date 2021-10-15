@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.registry.client;
 
-import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import com.alibaba.fastjson.JSON;
+
 import java.beans.Transient;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,13 +81,13 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.port = other.port;
         this.enabled = other.enabled;
         this.healthy = other.healthy;
-        this.metadata = other.metadata;
         this.serviceMetadata = other.serviceMetadata;
         this.registryCluster = other.registryCluster;
-        this.extendParams = other.extendParams;
-        this.endpoints = other.endpoints;
         this.address = null;
-        this.attributes = other.attributes;
+        this.metadata = new HashMap<>(other.metadata);
+        this.attributes = new HashMap<>(other.attributes);
+        this.extendParams = other.extendParams != null ? new HashMap<>(other.extendParams) : other.extendParams;
+        this.endpoints = other.endpoints != null ? new ArrayList<>(other.endpoints) : other.endpoints;
     }
 
     public DefaultServiceInstance(String serviceName, String host, Integer port, ApplicationModel applicationModel) {

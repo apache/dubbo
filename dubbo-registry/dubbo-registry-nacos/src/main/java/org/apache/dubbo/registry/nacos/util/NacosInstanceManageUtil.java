@@ -57,7 +57,8 @@ public class NacosInstanceManageUtil {
         }
         List<Instance> allInstances = Lists.newArrayList();
         for (String correspondingServiceName : CORRESPONDING_SERVICE_NAMES_MAP.get(serviceName)) {
-            if (SERVICE_INSTANCE_LIST_MAP.containsKey(correspondingServiceName) && CollectionUtils.isNotEmpty(SERVICE_INSTANCE_LIST_MAP.get(correspondingServiceName))) {
+            if (SERVICE_INSTANCE_LIST_MAP.containsKey(correspondingServiceName)
+                && CollectionUtils.isNotEmpty(SERVICE_INSTANCE_LIST_MAP.get(correspondingServiceName))) {
                 allInstances.addAll(SERVICE_INSTANCE_LIST_MAP.get(correspondingServiceName));
             }
         }
