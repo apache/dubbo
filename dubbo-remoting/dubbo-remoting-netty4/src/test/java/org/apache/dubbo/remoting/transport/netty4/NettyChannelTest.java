@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.transport.netty4;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +30,7 @@ import java.net.InetSocketAddress;
 
 public class NettyChannelTest {
     private Channel channel = Mockito.mock(Channel.class);
-    private URL url = URL.valueOf("test://127.0.0.1/test");
+    private URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 8080);
     private ChannelHandler channelHandler = Mockito.mock(ChannelHandler.class);
 
     @Test
