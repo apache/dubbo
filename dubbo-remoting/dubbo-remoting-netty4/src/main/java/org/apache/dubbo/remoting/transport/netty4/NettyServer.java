@@ -55,7 +55,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 /**
  * NettyServer.
  */
-public class NettyServer extends AbstractServer implements RemotingServer {
+public class NettyServer extends AbstractServer {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
     /**
