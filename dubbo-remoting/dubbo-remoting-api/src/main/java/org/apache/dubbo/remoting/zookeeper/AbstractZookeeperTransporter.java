@@ -68,9 +68,9 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             }
 
             zookeeperClient = createZookeeperClient(url);
-            Set<String> applications = new HashSet<>();
-            applications.add(application);
-            zookeeperApplicationMap.put(zookeeperClient, applications);            
+            Set<String> appSet = new HashSet<>();
+            appSet.add(application);
+            zookeeperApplicationMap.put(zookeeperClient, appSet);            
             logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
             writeToClientMap(addressList, zookeeperClient);
         }
@@ -86,24 +86,25 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     @Override
     public void close(ZookeeperClient zookeeperClient, String application) {
         synchronized (zookeeperApplicationMap) {
-            Set<String> applications = zookeeperApplicationMap.get(zookeeperClient);
-            if (applications == null) {
+            Set<String> appSet = zookeeperApplicationMap.get(zookeeperClient);
+            if (appSet == null) {
                 // zookeeperClient might be closed by other zookeeper registry in same application.
-                if (!zookeeperClient.isConnected()) {
-                    return;
+                if (zookeeperClient.isConnected()) {
+                    logger.warn("No application: " + application +
+                            " in zookeeperApplicationMap associated with the client: " + zookeeperClient.getUrl());
+                    zookeeperClient.close();
                 }
-                logger.warn("No application: " + application +
-                        " in zookeeperApplicationMap associated with the client: " + zookeeperClient.getUrl());
-                zookeeperClient.close();
                 return;
             }
 
             if (application == null) {
                 application = "";
             }
-            applications.remove(application);
-            if (application.isEmpty()) {
-                zookeeperClient.close();
+            appSet.remove(application);
+            if (appSet.isEmpty()) {
+                if (zookeeperClient.isConnected()) {
+                    zookeeperClient.close();
+                }
                 zookeeperApplicationMap.remove(zookeeperClient);
             }
         }
@@ -135,12 +136,12 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         }
         if (zookeeperClient != null && zookeeperClient.isConnected()) {
             writeToClientMap(addressList, zookeeperClient);
-            Set<String> applications = zookeeperApplicationMap.get(zookeeperClient);
-            if (applications == null) {
-                applications = new HashSet<>();
-                zookeeperApplicationMap.put(zookeeperClient, applications);
+            Set<String> appSet = zookeeperApplicationMap.get(zookeeperClient);
+            if (appSet == null) {
+                appSet = new HashSet<>();
+                zookeeperApplicationMap.put(zookeeperClient, appSet);
             }
-            applications.add(application);
+            appSet.add(application);
         }
         return zookeeperClient;
     }
