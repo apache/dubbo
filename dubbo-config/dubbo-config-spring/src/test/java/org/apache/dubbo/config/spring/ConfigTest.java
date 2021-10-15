@@ -540,6 +540,7 @@ public class ConfigTest {
 
     // DUBBO-571 methods key in provider's URLONE doesn't contain the methods from inherited super interface
     @Test
+    @Disabled("waiting-to-fix, the port is still opened after ctx.close()")
     public void test_noMethodInterface_methodsKeyHasValue() throws Exception {
         List<URL> urls = null;
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/demo-provider-no-methods-interface.xml");
