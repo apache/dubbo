@@ -47,7 +47,6 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     private CacheListener cacheListener;
     private URL url;
-    private ZookeeperTransporter zookeeperTransporter;
     private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
     private static final int DEFAULT_QUEUE = 10000;
     private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
@@ -55,7 +54,6 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
         this.url = url;
-        this.zookeeperTransporter = zookeeperTransporter;
         rootPath = getRootPath(url);
 
         this.cacheListener = new CacheListener(rootPath);

@@ -69,8 +69,6 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     private final ZookeeperClient zkClient;
 
-    private final ZookeeperTransporter zookeeperTransporter;
-
     public ZookeeperRegistry(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
         if (url.isAnyHost()) {
@@ -81,7 +79,6 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
             group = PATH_SEPARATOR + group;
         }
         this.root = group;
-        this.zookeeperTransporter = zookeeperTransporter;
         zkClient = zookeeperTransporter.connect(url);
         zkClient.addStateListener((state) -> {
             if (state == StateListener.RECONNECTED) {

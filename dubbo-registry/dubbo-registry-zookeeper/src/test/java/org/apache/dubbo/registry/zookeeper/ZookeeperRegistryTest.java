@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -114,6 +115,7 @@ public class ZookeeperRegistryTest {
         assertThat(zookeeperRegistry.isAvailable(), is(true));
 
         zookeeperRegistry.destroy();
+        ZookeeperTransporter.getExtension().close("");
         assertThat(zookeeperRegistry.isAvailable(), is(false));
     }
 
@@ -178,6 +180,7 @@ public class ZookeeperRegistryTest {
     @Test
     public void testDestroy() {
         zookeeperRegistry.destroy();
+        ZookeeperTransporter.getExtension().close("");
         assertThat(zookeeperRegistry.isAvailable(), is(false));
     }
 
