@@ -63,4 +63,37 @@ public class DefaultFilterChainBuilderTest {
         Assertions.assertTrue(((FilterChainBuilder.FilterChainNode<?, ?, ?>) invokerAfterBuild).filter instanceof LogFilter);
 
     }
+
+    @Test
+    public void testBuildInvokerChainForRemoteReference() {
+        DefaultFilterChainBuilder defaultFilterChainBuilder = new DefaultFilterChainBuilder();
+
+        // verify that no filter is built by default
+        URL urlWithoutFilter = URL.valueOf("dubbo://127.0.0.1:20880/DemoService")
+            .addParameter(INTERFACE_KEY, DemoService.class.getName());
+        AbstractInvoker<DemoService> invokerWithoutFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithoutFilter) {
+            @Override
+            protected Result doInvoke(Invocation invocation) throws Throwable {
+                return null;
+            }
+        };
+
+        Invoker<?> invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithoutFilter, REFERENCE_FILTER_KEY, CONSUMER);
+        Assertions.assertTrue(invokerAfterBuild instanceof AbstractInvoker);
+
+        // verify that if LogFilter is configured, LogFilter should exist in the filter chain
+        URL urlWithFilter = URL.valueOf("dubbo://127.0.0.1:20880/DemoService")
+            .addParameter(INTERFACE_KEY, DemoService.class.getName())
+            .addParameter(REFERENCE_FILTER_KEY, "log");
+        AbstractInvoker<DemoService> invokerWithFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithFilter) {
+            @Override
+            protected Result doInvoke(Invocation invocation) throws Throwable {
+                return null;
+            }
+        };
+        invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithFilter, REFERENCE_FILTER_KEY, CONSUMER);
+        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.FilterChainNode);
+        Assertions.assertTrue(((FilterChainBuilder.FilterChainNode<?, ?, ?>) invokerAfterBuild).filter instanceof LogFilter);
+
+    }
 }

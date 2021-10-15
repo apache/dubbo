@@ -111,10 +111,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
      * whose key is the return value of {@link URL#getServiceKey()} method and value is
      * the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
+    private ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
 
-    ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
     private ApplicationModel applicationModel;
+    private long metadataPublishDelayTime ;
 
     public InMemoryWritableMetadataService() {
         this.metadataInfos = new ConcurrentHashMap<>();
@@ -133,6 +134,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
+        this.metadataPublishDelayTime = ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L;
     }
 
     @Override
@@ -318,11 +320,13 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
 
     public void blockUntilUpdated() {
         try {
-            metadataSemaphore.tryAcquire(ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L, TimeUnit.MILLISECONDS);
+            metadataSemaphore.tryAcquire(metadataPublishDelayTime, TimeUnit.MILLISECONDS);
             metadataSemaphore.drainPermits();
             updateLock.writeLock().lock();
         } catch (InterruptedException e) {
-            logger.warn("metadata refresh thread has been interrupted unexpectedly while waiting for update.", e);
+            if (!applicationModel.isStopping()) {
+                logger.warn("metadata refresh thread has been interrupted unexpectedly while waiting for update.", e);
+            }
         }
     }
 

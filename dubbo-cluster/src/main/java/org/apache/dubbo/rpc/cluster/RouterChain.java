@@ -17,15 +17,12 @@
 package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.router.state.AddrCache;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
@@ -169,26 +166,23 @@ public class RouterChain<T> {
     public List<Invoker<T>> route(URL url, Invocation invocation) {
 
         AddrCache<T> cache = this.cache.get();
-        if (cache == null) {
-            throw new RpcException(RpcException.ROUTER_CACHE_NOT_BUILD, "Failed to invoke the method "
-                + invocation.getMethodName() + " in the service " + url.getServiceInterface()
-                + ". address cache not build "
-                + " on the consumer " + NetUtils.getLocalHost()
-                + " using the dubbo version " + Version.getVersion()
-                + ".");
-        }
-        BitList<Invoker<T>> finalBitListInvokers = new BitList<>(invokers, false);
-        for (StateRouter stateRouter : stateRouters) {
-            if (stateRouter.isEnable()) {
-                RouterCache<T> routerCache = cache.getCache().get(stateRouter.getName());
-                finalBitListInvokers = stateRouter.route(finalBitListInvokers, routerCache, url, invocation);
+        List<Invoker<T>> finalInvokers = null;
+
+        if (cache != null) {
+            BitList<Invoker<T>> finalBitListInvokers = new BitList<>(invokers, false);
+            for (StateRouter stateRouter : stateRouters) {
+                if (stateRouter.isEnable()) {
+                    RouterCache<T> routerCache = cache.getCache().get(stateRouter.getName());
+                    finalBitListInvokers = stateRouter.route(finalBitListInvokers, routerCache, url, invocation);
+                }
             }
+            finalInvokers = new ArrayList<>(finalBitListInvokers.size());
+
+            finalInvokers.addAll(finalBitListInvokers);
         }
 
-        List<Invoker<T>> finalInvokers = new ArrayList<>(finalBitListInvokers.size());
-
-        for(Invoker<T> invoker: finalBitListInvokers) {
-            finalInvokers.add(invoker);
+        if (finalInvokers == null) {
+            finalInvokers = new ArrayList<>(invokers);
         }
 
         for (Router router : routers) {

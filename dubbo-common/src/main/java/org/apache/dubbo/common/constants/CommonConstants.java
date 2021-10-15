@@ -304,6 +304,8 @@ public interface CommonConstants {
 
     String INVOKER_LISTENER_KEY = "invoker.listener";
 
+    String REGISTRY_PROTOCOL_LISTENER_KEY = "registry.protocol.listener";
+
     String DUBBO_VERSION_KEY = "dubbo";
 
     String TAG_KEY = "dubbo.tag";
@@ -475,5 +477,11 @@ public interface CommonConstants {
      * @since 2.7.6
      */
     String DUBBO_NETWORK_IGNORED_INTERFACE = "dubbo.network.interface.ignored";
+
+    String OS_NAME_KEY = "os.name";
+
+    String OS_LINUX_PREFIX = "linux";
+
+    String OS_WIN_PREFIX = "win";
 
 }

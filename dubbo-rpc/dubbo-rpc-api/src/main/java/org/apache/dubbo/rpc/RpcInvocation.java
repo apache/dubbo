@@ -86,16 +86,6 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private transient InvokeMode invokeMode;
 
-    private transient CancellationContext cancellationContext;
-
-    public CancellationContext getCancellationContext() {
-        return cancellationContext;
-    }
-
-    public void setCancellationContext(CancellationContext cancellationContext) {
-        this.cancellationContext = cancellationContext;
-    }
-
     public RpcInvocation() {
     }
 

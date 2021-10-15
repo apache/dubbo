@@ -57,7 +57,7 @@ public class ChannelBufferInputStream extends InputStream {
     }
 
     @Override
-    public void mark(int readlimit) {
+    public void mark(int readLimit) {
         buffer.markReaderIndex();
     }
 

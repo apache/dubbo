@@ -288,7 +288,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
                 Map<String, String> labels = subset.getLabels();
 
                 for (Invoker<?> invoker : invokers) {
-                    Map<String, String> parameters = invoker.getUrl().getParameters();
+                    Map<String, String> parameters = invoker.getUrl().getServiceParameters(url.getProtocolServiceKey());
                     if (containMapKeyValue(parameters, labels)) {
                         subsetInvokerList.add(invoker);
                     }

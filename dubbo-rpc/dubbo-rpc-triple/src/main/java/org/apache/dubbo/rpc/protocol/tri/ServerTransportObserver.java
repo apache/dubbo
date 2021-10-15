@@ -82,7 +82,7 @@ public class ServerTransportObserver implements TransportObserver {
             return;
         }
         ByteBuf buf = ctx.alloc().buffer();
-        buf.writeByte(0);
+        buf.writeByte(TripleUtil.calcCompressFlag(ctx));
         buf.writeInt(data.length);
         buf.writeBytes(data);
         ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, false))

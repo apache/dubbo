@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 public class SingleProtocolConnectionManager implements ConnectionManager {
+    public static final String NAME = "single";
+
     private final ConcurrentMap<String, Connection> connections = PlatformDependent.newConcurrentHashMap();
 
     @Override
