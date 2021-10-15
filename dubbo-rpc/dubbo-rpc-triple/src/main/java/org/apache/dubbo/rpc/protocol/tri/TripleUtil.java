@@ -101,15 +101,28 @@ public class TripleUtil {
     }
 
     public static AbstractServerStream getServerStream(ChannelHandlerContext ctx) {
-        return ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).get();
+        return getServerStream(ctx.channel());
+    }
+
+    public static AbstractServerStream getServerStream(Channel channel) {
+        return channel.attr(TripleUtil.SERVER_STREAM_KEY).get();
     }
 
     public static AbstractClientStream getClientStream(ChannelHandlerContext ctx) {
-        return ctx.channel().attr(TripleUtil.CLIENT_STREAM_KEY).get();
+        return getClientStream(ctx.channel());
+    }
+
+    public static AbstractClientStream getClientStream(Channel channel) {
+        return channel.attr(TripleUtil.CLIENT_STREAM_KEY).get();
     }
 
     public static Compressor getCompressor(ChannelHandlerContext ctx, boolean client) {
         AbstractStream stream = client ? getClientStream(ctx) : getServerStream(ctx);
+        return stream.getCompressor();
+    }
+
+    public static Compressor getCompressor(Channel channel, boolean client) {
+        AbstractStream stream = client ? getClientStream(channel) : getServerStream(channel);
         return stream.getCompressor();
     }
 
@@ -119,8 +132,16 @@ public class TripleUtil {
     }
 
     public static int calcCompressFlag(ChannelHandlerContext ctx, boolean client) {
-        AbstractStream stream = client ? getClientStream(ctx) : getServerStream(ctx);
-        Compressor compressor = stream.getCompressor();
+        Compressor compressor = getCompressor(ctx, client);
+        return calcCompressFlag(compressor);
+    }
+
+    public static int calcCompressFlag(Channel channel, boolean client) {
+        Compressor compressor = getCompressor(channel, client);
+        return calcCompressFlag(compressor);
+    }
+
+    private static int calcCompressFlag(Compressor compressor) {
         if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
             return 0;
         }
