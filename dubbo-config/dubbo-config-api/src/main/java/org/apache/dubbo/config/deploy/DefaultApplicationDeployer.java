@@ -120,7 +120,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
     private CompositeDynamicConfiguration compositeDynamicConfiguration;
-    private ZookeeperTransporter zookeeperTransporter;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -206,9 +205,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             startMetadataCenter();
 
             initMetadataService();
-
-            // TODO set zookeeperTransporter
-            zookeeperTransporter = ZookeeperTransporter.getExtension();
 
             initialized.set(true);
 
@@ -800,6 +796,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
         try {
+            // TODO get zookeeperTransporter before the extension loader is unloaded.
+            ZookeeperTransporter zookeeperTransporter = ZookeeperTransporter.getExtension();
+
             onStopping();
             unRegisterShutdownHook();
             unregisterServiceInstance();
@@ -810,7 +809,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             executeShutdownCallbacks();
 
-            // save application name before it's cleared at applicationModel.destroy();
+            // save application name before it's cleared at applicationModel.destroy().
             String application = applicationModel.tryGetApplicationName();
             applicationModel.destroy();
 
@@ -822,7 +821,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             destroyExecutorRepository();
             destroyDynamicConfigurations();
 
-            // TODO close zookeeper connections that are no longer used. 
+            // TODO close zookeeper connections that are no longer used.
             zookeeperTransporter.close(application);
 
             onStopped();

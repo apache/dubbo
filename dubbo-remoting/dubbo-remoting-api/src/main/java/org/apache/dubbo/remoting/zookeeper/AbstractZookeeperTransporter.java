@@ -90,11 +90,12 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         synchronized (zookeeperApplicationMap) {
             Set<String> appSet = zookeeperApplicationMap.get(zookeeperClient);
             if (appSet == null) {
-                // zookeeperClient might be closed by other zookeeper registry in the same application.
+                // zookeeperClient might be closed by other zookeeper registry of the same application.
                 if (zookeeperClient.isConnected()) {
-                    logger.warn("No application: " + application +
-                            " in zookeeperApplicationMap associated with the client: " + zookeeperClient.getUrl());
+                    logger.warn("Application: " + application + " associated with the alive client: "
+                            + zookeeperClient.getUrl() + " is not cached in zookeeperApplicationMap.");
                     zookeeperClient.close();
+                    clearZookeeperClientCache(zookeeperClient);
                 }
                 return;
             }
@@ -105,11 +106,10 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             if (appSet.remove(application)) {
                 if (appSet.isEmpty()) {
                     if (zookeeperClient.isConnected()) {
-                        zookeeperClient.close();
-                    }
+                        zookeeperClient.close();                        
+                    }                    
                     zookeeperApplicationMap.remove(zookeeperClient);
-                } else {
-                    zookeeperApplicationMap.put(zookeeperClient, appSet);
+                    clearZookeeperClientCache(zookeeperClient);
                 }
             }
         }
@@ -127,14 +127,23 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             while (iterator.hasNext()) {
                 Entry<ZookeeperClient, Set<String>> entry = iterator.next();
                 Set<String> appSet = entry.getValue();
+                if (appSet == null) {
+                    if (entry.getKey().isConnected()) {
+                        logger.warn("Applications associated with the alive client: " + entry.getKey().getUrl()
+                                + " are not cached in zookeeperApplicationMap.");
+                        entry.getKey().close();
+                        clearZookeeperClientCache(entry.getKey());
+                    }
+                    iterator.remove();
+                    continue;
+                }
                 if (appSet.remove(application)) {
                     if (appSet.isEmpty()) {
                         if (entry.getKey().isConnected()) {
                             entry.getKey().close();
+                            clearZookeeperClientCache(entry.getKey());
                         }
                         iterator.remove();
-                    } else {
-                        entry.setValue(appSet);
                     }
                 }
             }
@@ -161,20 +170,37 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
 
         ZookeeperClient zookeeperClient = null;
         for (String address : addressList) {
-            if ((zookeeperClient = zookeeperClientMap.get(address)) != null && zookeeperClient.isConnected()) {
-                break;
+            if ((zookeeperClient = zookeeperClientMap.get(address)) != null) {
+                if (zookeeperClient.isConnected()) {
+                    break;
+                } else {
+                    zookeeperClientMap.remove(address);
+                    zookeeperApplicationMap.remove(zookeeperClient);
+                }
             }
         }
         if (zookeeperClient != null && zookeeperClient.isConnected()) {
             writeToClientMap(addressList, zookeeperClient);
             Set<String> appSet = zookeeperApplicationMap.get(zookeeperClient);
             if (appSet == null) {
+                logger.warn("No application is cached in zookeeperApplicationMap for the alive client: "
+                        + zookeeperClient.getUrl());
                 appSet = new HashSet<>();
                 zookeeperApplicationMap.put(zookeeperClient, appSet);
             }
             appSet.add(application);
         }
         return zookeeperClient;
+    }
+
+    private void clearZookeeperClientCache(ZookeeperClient zookeeperClient) {
+        Iterator<Entry<String, ZookeeperClient>> iterator = zookeeperClientMap.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Entry<String, ZookeeperClient> entry = iterator.next();
+            if (entry.getValue() == zookeeperClient) {
+                iterator.remove();
+            }
+        }
     }
 
     /**
