@@ -41,7 +41,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
-        return new ClientStreamObserver();
+        return new UnaryClientStreamObserverImpl();
     }
 
     @Override
@@ -125,7 +125,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
     }
 
 
-    private class ClientStreamObserver implements StreamObserver<Object> {
+    private class UnaryClientStreamObserverImpl implements StreamObserver<Object> {
 
         @Override
         public void onNext(Object data) {

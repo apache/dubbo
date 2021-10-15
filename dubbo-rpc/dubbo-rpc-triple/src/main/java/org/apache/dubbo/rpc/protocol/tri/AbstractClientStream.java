@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
+
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
     private ConsumerModel consumerModel;
     private Connection connection;
@@ -59,9 +60,9 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         final CancellationContext cancellationContext = stream.getCancellationContext();
         // for client cancel,send rst frame to server
         cancellationContext.addListener(context -> {
-            if (LOGGER.isErrorEnabled()) {
+            if (LOGGER.isWarnEnabled()) {
                 Throwable throwable = cancellationContext.getCancellationCause();
-                LOGGER.error("Cancel by local throwable=", throwable);
+                LOGGER.warn("Cancel by local throwable is ", throwable);
             }
             stream.asTransportObserver().onReset(Http2Error.CANCEL);
         });
