@@ -118,6 +118,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private String identifier;
     private CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
+    private CompositeDynamicConfiguration compositeDynamicConfiguration;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -257,7 +258,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
 
         if (CollectionUtils.isNotEmpty(configCenters)) {
-            CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
+            compositeDynamicConfiguration = new CompositeDynamicConfiguration();
             for (ConfigCenterConfig configCenter : configCenters) {
                 // Pass config from ConfigCenterBean to environment
                 environment.updateExternalConfigMap(configCenter.getExternalConfiguration());
@@ -267,6 +268,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
+        } else {
+            compositeDynamicConfiguration = null;
         }
 
         configManager.refreshAll();
@@ -712,7 +715,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
                 InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
-                if (!applicationModel.getDeployer().isStopping() || !applicationModel.getDeployer().isStopped()) {
+                if (!applicationModel.getDeployer().isStopping() && !applicationModel.getDeployer().isStopped()) {
                     localMetadataService.blockUntilUpdated();
                 }
                 try {
@@ -920,6 +923,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // DynamicConfiguration may be cached somewhere, and maybe used during destroy
         // destroy them may cause some troubles, so just clear instances cache
         // ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
+        if (compositeDynamicConfiguration != null) {
+            compositeDynamicConfiguration.close();
+        }
     }
 
     private ApplicationConfig getApplication() {

@@ -18,6 +18,8 @@ package org.apache.dubbo.common.config.configcenter.wrapper;
 
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,6 +31,8 @@ import java.util.function.Function;
  * support multiple config center, simply iterating each concrete config center.
  */
 public class CompositeDynamicConfiguration implements DynamicConfiguration {
+
+    private static final Logger logger = LoggerFactory.getLogger(CompositeDynamicConfiguration.class);
 
     public static final String NAME = "COMPOSITE";
 
@@ -44,6 +48,17 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
         return configurations;
     }
 
+    public void close() {
+        for (DynamicConfiguration config : configurations) {
+            try {
+                config.close();
+            } catch (Throwable ignored) {
+                if (!(ignored instanceof UnsupportedOperationException)) {
+                    logger.warn(ignored.getMessage(), ignored);
+                }
+            }
+        }
+    }
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
