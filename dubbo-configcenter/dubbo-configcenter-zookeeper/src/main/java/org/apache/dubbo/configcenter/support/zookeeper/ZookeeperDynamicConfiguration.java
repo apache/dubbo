@@ -35,8 +35,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-
 /**
  *
  */
@@ -87,7 +85,6 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     @Override
     protected void doClose() throws Exception {
-        zookeeperTransporter.close(zkClient, url.getParameter(APPLICATION_KEY, ""));
     }
 
     @Override

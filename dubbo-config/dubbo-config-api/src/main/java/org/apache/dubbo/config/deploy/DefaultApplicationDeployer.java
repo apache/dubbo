@@ -55,6 +55,7 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -119,6 +120,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
     private CompositeDynamicConfiguration compositeDynamicConfiguration;
+    private ZookeeperTransporter zookeeperTransporter;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -204,6 +206,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             startMetadataCenter();
 
             initMetadataService();
+
+            // TODO set zookeeperTransporter
+            zookeeperTransporter = ZookeeperTransporter.getExtension();
 
             initialized.set(true);
 
@@ -715,7 +720,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // scheduled task for updating Metadata and ServiceInstance
             asyncMetadataFuture = executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
                 InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
-                if (!applicationModel.getDeployer().isStopping() && !applicationModel.getDeployer().isStopped()) {
+                if (applicationModel.getDeployer().isRunning()) {
                     localMetadataService.blockUntilUpdated();
                 }
                 try {
@@ -805,6 +810,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             executeShutdownCallbacks();
 
+            // save application name before it's cleared at applicationModel.destroy();
+            String application = applicationModel.tryGetApplicationName();
             applicationModel.destroy();
 
             destroyProtocols();
@@ -814,6 +821,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             destroyExecutorRepository();
             destroyDynamicConfigurations();
+
+            // TODO close zookeeper connections that are no longer used. 
+            zookeeperTransporter.close(application);
 
             onStopped();
         } catch (Throwable ex) {

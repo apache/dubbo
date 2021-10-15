@@ -26,8 +26,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -78,17 +80,17 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     }
 
     /**
-     * close zookeeper connection if no application use it.
+     * close the zookeeper client if it is no longer used by any application.
      * 
      * @param zookeeperClient
-     * @param application the application which is destroying. 
+     * @param application the application which is going to be destroyed. 
      */
     @Override
     public void close(ZookeeperClient zookeeperClient, String application) {
         synchronized (zookeeperApplicationMap) {
             Set<String> appSet = zookeeperApplicationMap.get(zookeeperClient);
             if (appSet == null) {
-                // zookeeperClient might be closed by other zookeeper registry in same application.
+                // zookeeperClient might be closed by other zookeeper registry in the same application.
                 if (zookeeperClient.isConnected()) {
                     logger.warn("No application: " + application +
                             " in zookeeperApplicationMap associated with the client: " + zookeeperClient.getUrl());
@@ -106,6 +108,32 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                     zookeeperClient.close();
                 }
                 zookeeperApplicationMap.remove(zookeeperClient);
+            }
+        }
+    }
+
+    /**
+     * close zookeeper clients that are no longer used by any application.
+     * 
+     * @param application the application which is going to be destroyed.
+     */
+    @Override
+    public void close(String application) {
+        synchronized (zookeeperApplicationMap) {
+            Iterator<Entry<ZookeeperClient, Set<String>>> iterator = zookeeperApplicationMap.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Entry<ZookeeperClient, Set<String>> entry = iterator.next();
+                Set<String> appSet = entry.getValue();
+                if (appSet.remove(application)) {
+                    if (appSet.isEmpty()) {
+                        if (entry.getKey().isConnected()) {
+                            entry.getKey().close();
+                        }
+                        iterator.remove();
+                    } else {
+                        entry.setValue(appSet);
+                    }
+                }
             }
         }
     }
