@@ -935,6 +935,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
         if (compositeDynamicConfiguration != null) {
             compositeDynamicConfiguration.close();
+            compositeDynamicConfiguration = null;
         }
     }
 
