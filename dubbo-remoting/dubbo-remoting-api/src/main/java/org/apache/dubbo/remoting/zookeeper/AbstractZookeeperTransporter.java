@@ -53,24 +53,30 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     public ZookeeperClient connect(URL url) {
         ZookeeperClient zookeeperClient;
         // address format: {[username:password@]address}
-        List<String> addressList = getURLBackupAddress(url);
+        String addressListStr = getURLBackupAddressStr(url);
         // The field define the zookeeper server , including protocol, host, port, username, password
-        if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
+        if ((zookeeperClient = getCachedConnectedClient(addressListStr)) != null) {
             logger.info("find valid zookeeper client from the cache for address: " + url);
             return zookeeperClient;
         }
         // avoid creating too many connections， so add lock
         synchronized (zookeeperClientMap) {
-            if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
+            if ((zookeeperClient = getCachedConnectedClient(addressListStr)) != null) {
                 logger.info("find valid zookeeper client from the cache for address: " + url);
                 return zookeeperClient;
             }
 
             zookeeperClient = createZookeeperClient(url);
             logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
-            writeToClientMap(addressList, zookeeperClient);
+            writeToClientMap(addressListStr, zookeeperClient);
         }
         return zookeeperClient;
+    }
+
+    public String getURLBackupAddressStr(URL url) {
+        List<String> addressList = getURLBackupAddress(url);
+        Collections.sort(addressList);
+        return StringUtils.join(addressList, ",");
     }
 
     /**
@@ -86,21 +92,16 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * <p>
      * It is not private method for unit test.
      *
-     * @param addressList
+     * @param addressListStr
      * @return
      */
-    public ZookeeperClient fetchAndUpdateZookeeperClientCache(List<String> addressList) {
+    public ZookeeperClient getCachedConnectedClient(String addressListStr) {
+        ZookeeperClient zookeeperClient = zookeeperClientMap.get(addressListStr);
 
-        ZookeeperClient zookeeperClient = null;
-        for (String address : addressList) {
-            if ((zookeeperClient = zookeeperClientMap.get(address)) != null && zookeeperClient.isConnected()) {
-                break;
-            }
-        }
         if (zookeeperClient != null && zookeeperClient.isConnected()) {
-            writeToClientMap(addressList, zookeeperClient);
+            return zookeeperClient;
         }
-        return zookeeperClient;
+        return null;
     }
 
     /**
@@ -141,13 +142,11 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     /**
      * write address-ZookeeperClient relationship to Map
      *
-     * @param addressList
+     * @param addressListStr
      * @param zookeeperClient
      */
-    void writeToClientMap(List<String> addressList, ZookeeperClient zookeeperClient) {
-        for (String address : addressList) {
-            zookeeperClientMap.put(address, zookeeperClient);
-        }
+    void writeToClientMap(String addressListStr, ZookeeperClient zookeeperClient) {
+        zookeeperClientMap.put(addressListStr, zookeeperClient);
     }
 
     /**
