@@ -35,7 +35,7 @@ public class RequestTest {
         Assertions.assertTrue(request.isEvent());
         Assertions.assertEquals(request.getVersion(), "1.0.0");
         Assertions.assertEquals(request.getData(), "data");
-        Assertions.assertEquals(request.getId(), 0);
+        Assertions.assertTrue(request.getId() >= 0);
 
         request.setHeartbeat(true);
         Assertions.assertTrue(request.isHeartbeat());
