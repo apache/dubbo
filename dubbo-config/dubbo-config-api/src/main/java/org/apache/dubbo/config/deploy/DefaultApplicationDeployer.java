@@ -522,6 +522,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * @return
      */
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public synchronized CompletableFuture start() {
         if (isStarting()) {
             return startFuture;
@@ -560,11 +561,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         prepareApplicationInstance();
 
         // notify on each module started
-        if (!futures.isEmpty()) {
-            executorRepository.getSharedExecutor().submit(()-> {
-                awaitDeployFinished(futures);
-            });
-        }
+        executorRepository.getSharedExecutor().submit(() -> {
+            awaitDeployFinished(futures);
+        });
     }
 
     @SuppressWarnings("rawtypes")
@@ -585,24 +584,37 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @SuppressWarnings("rawtypes")
     private void awaitDeployFinished(List<CompletableFuture> futures) {
-        while (true) {
+        while (isStarting()) {
+            if (futures.isEmpty()) {
+                try {
+                    Thread.sleep(DEFAULT_TIMEOUT);
+                } catch (InterruptedException e) {
+                    if (isStarting()) {
+                        logger.warn(getIdentifier() + " await deployer finished failed", e);
+                    }
+                }
+                if (isStarting()) {
+                    futures = startModuleModels();
+                }
+                continue;
+            }
             try {
                 CompletableFuture mergedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
                 mergedFuture.get(DEFAULT_TIMEOUT, TimeUnit.MICROSECONDS);
             } catch (TimeoutException e) {
-                futures = startModuleModels();
-                if (futures.isEmpty()) {
-                    break;
+                if (isStarting()) {
+                    futures = startModuleModels();
                 }
             } catch (Exception e) {
-                logger.error(getIdentifier() + " await deploy finished failed", e);
-                break;
+                if (isStarting()) {
+                    logger.warn(getIdentifier() + " await deploy finished failed", e);
+                }
             }
         }
     }
 
     @Override
-    public void prepareApplicationInstance() {
+    public synchronized void prepareApplicationInstance() {
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
@@ -623,13 +635,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         exportMetadataService();
         // start internal module
         ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
-        if (!internalModuleDeployer.isRunning()) {
-            CompletableFuture internalFuture = internalModuleDeployer.start();
+        if (internalModuleDeployer.isRunning()) {
+            return;
+        }
+        // await internal module deploy finished
+        CompletableFuture internalFuture = internalModuleDeployer.start();
+        while (isStarting() && !internalModuleDeployer.isRunning()) {
             try {
-                internalFuture.get(DEFAULT_TIMEOUT, TimeUnit.MICROSECONDS);
-            } catch (Throwable ignored) {
-                if (!(ignored instanceof TimeoutException)) {
-                    logger.warn("await internal module deploy finished failed", ignored);
+                internalFuture.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                if (isStarting() && !(e instanceof TimeoutException)) {
+                    logger.warn(getIdentifier() + " await internal module deploy finished failed", e);
                 }
             }
         }
@@ -895,7 +911,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public void checkStarted(CompletableFuture checkerStartFuture) {
+    public synchronized void checkStarted() {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             if (moduleModel.getDeployer().isPending()) {
                 setPending();
@@ -904,7 +920,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
         }
         // all modules has been started
-        onStarted(checkerStartFuture);
+        onStarted();
     }
 
     private void onStarting() {
@@ -914,16 +930,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private void onStarted(CompletableFuture checkerStartFuture) {
+    private void onStarted() {
         setStarted();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is ready.");
         }
         if (startFuture != null) {
             startFuture.complete(true);
-        }
-        if (checkerStartFuture != null) {
-            checkerStartFuture.complete(true);
         }
     }
 

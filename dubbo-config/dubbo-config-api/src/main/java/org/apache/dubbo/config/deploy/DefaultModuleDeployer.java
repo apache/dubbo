@@ -152,7 +152,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             // wait for refer finish
             waitReferFinish();
 
-            onModuleStarted(startFuture);
+            onModuleStarted();
         });
 
         return startFuture;
@@ -221,10 +221,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         applicationDeployer.checkStarting();
     }
 
-    private void onModuleStarted(CompletableFuture startFuture) {
+    private void onModuleStarted() {
         setStarted();
         logger.info(getIdentifier() + " has started.");
-        applicationDeployer.checkStarted(startFuture);
+        applicationDeployer.checkStarted();
+        // start applicationDeployer after internalModule is started.
+        startFuture.complete(true);
     }
 
     private void onModuleStopping() {
