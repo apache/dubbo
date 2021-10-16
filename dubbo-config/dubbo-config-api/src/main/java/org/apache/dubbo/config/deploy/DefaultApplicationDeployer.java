@@ -824,7 +824,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     public synchronized void preDestroy() {
         // TODO set zookeeperTransporter before the extension loader is cleared.
         if (zookeeperTransporter == null) {
-            zookeeperTransporter = ZookeeperTransporter.getExtension();
+            try {
+                zookeeperTransporter = ZookeeperTransporter.getExtension();
+            } catch (Throwable ignored) {
+                // the extension loader might not be loaded.
+                logger.warn(ignored.getMessage(), ignored);
+            }
         }
     }
 
@@ -860,7 +865,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             destroyDynamicConfigurations();
 
             // TODO close zookeeper connections that are no longer used.
-            zookeeperTransporter.close(application);
+            if (zookeeperTransporter != null) {
+                zookeeperTransporter.close(application);
+            }
 
             onStopped();
         } catch (Throwable ex) {

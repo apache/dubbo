@@ -43,6 +43,7 @@ public class ProtocolConfigTest {
     @AfterEach
     public void afterEach() {
         SysProps.clear();
+        DubboBootstrap.reset();
     }
 
     @Test
