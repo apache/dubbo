@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.RpcException;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -127,11 +128,13 @@ class ZookeeperRegistryCenter extends AbstractRegistryCenter {
                 logger.info(String.format("The zookeeper instance of %s is shutdown successfully",
                     testingServer.getConnectString()));
             } catch (IOException exception) {
-                RpcException rpcException = new RpcException(String.format("Failed to close zookeeper instance of %s",
-                    testingServer.getConnectString()),
-                    exception);
-                exceptions.add(rpcException);
-                logger.error(rpcException);
+                if (!(exception instanceof EOFException)) {
+                    RpcException rpcException = new RpcException(String.format("Failed to close zookeeper instance of %s",
+                            testingServer.getConnectString()),
+                            exception);
+                    exceptions.add(rpcException);
+                    logger.error(rpcException);
+                }
             }
         }
         this.instanceSpecs.clear();

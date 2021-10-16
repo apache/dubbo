@@ -617,6 +617,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private void prepareInternalModule() {
         // export MetadataService
         exportMetadataService();
@@ -626,8 +627,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             CompletableFuture internalFuture = internalModuleDeployer.start();
             try {
                 internalFuture.get(DEFAULT_TIMEOUT, TimeUnit.MICROSECONDS);
-            } catch (Exception e) {
-                logger.error("await internal module deploy finished failed", e);
+            } catch (Throwable ignored) {
+                if (!(ignored instanceof TimeoutException)) {
+                    logger.warn("await internal module deploy finished failed", ignored);
+                }
             }
         }
     }
@@ -826,9 +829,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (zookeeperTransporter == null) {
             try {
                 zookeeperTransporter = ZookeeperTransporter.getExtension();
-            } catch (Throwable ignored) {
-                // the extension loader might not be loaded.
-                logger.warn(ignored.getMessage(), ignored);
+            } catch (Throwable ignored) {                
+                // NPE: the extension loader might not be loaded.
+                if (!(ignored instanceof NullPointerException)) {
+                    logger.warn(ignored.getMessage(), ignored);
+                }
             }
         }
     }
