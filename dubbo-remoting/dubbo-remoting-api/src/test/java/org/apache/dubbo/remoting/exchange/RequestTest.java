@@ -45,11 +45,6 @@ public class RequestTest {
 
         Request copyWithoutData = request.copyWithoutData();
         Assertions.assertNull(copyWithoutData.getData());
-
-        String string = request.toString();
-        Assertions.assertEquals(string,"Request [id=0, version=1.0.0, twoway=true, event=true, broken=true, data=null]");
-
-
     }
 
 }
