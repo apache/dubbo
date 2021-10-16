@@ -27,8 +27,8 @@ public class PortUnificationExchangerTest {
 
     @Test
     public void test() {
-        URL url = new ServiceConfigURL(CommonConstants.TRIPLE, "localhost", 8898,
-            new String[]{Constants.BIND_PORT_KEY, String.valueOf(8898)});
+        URL url = new ServiceConfigURL(CommonConstants.TRIPLE, "localhost", 9103,
+            new String[]{Constants.BIND_PORT_KEY, String.valueOf(9103)});
         PortUnificationExchanger.bind(url);
         PortUnificationExchanger.bind(url);
         Assertions.assertEquals(PortUnificationExchanger.getServers().size(), 1);
