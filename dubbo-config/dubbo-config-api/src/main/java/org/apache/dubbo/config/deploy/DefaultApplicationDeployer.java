@@ -810,7 +810,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
         try {
-            // TODO
+            // TODO set zookeeperTransporter if not set.
             preDestroy();
 
             onStopping();
@@ -836,9 +836,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             destroyDynamicConfigurations();
 
             // TODO close zookeeper connections that are no longer used.
-            if (zookeeperTransporter != null) {
-                zookeeperTransporter.close(application);
-            }
+            zookeeperTransporter.close(application);
 
             onStopped();
         } catch (Throwable ex) {
