@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionDirector;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,6 +62,11 @@ public class AdaptiveExtensionInjector implements ExtensionInjector, Lifecycle {
             if (extension != null) {
                 return extension;
             }
+        }
+
+        ExtensionDirector parent = extensionAccessor.getExtensionDirector().getParent();
+        if (parent != null){
+            return parent.getAdaptiveExtension(ExtensionInjector.class).getInstance(type, name);
         }
         return null;
     }
