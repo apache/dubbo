@@ -134,7 +134,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.metadataPublishDelayTime = ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L;
+        this.metadataPublishDelayTime = ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY);
     }
 
     @Override
