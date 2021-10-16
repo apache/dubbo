@@ -296,6 +296,10 @@ public class ApplicationModel extends ScopeModel {
 
     public void removeModule(ModuleModel moduleModel) {
         synchronized (moduleLock) {
+            if (deployer != null) {
+                deployer.preDestroy();
+            }
+
             this.moduleModels.remove(moduleModel);
             this.pubModuleModels.remove(moduleModel);
             if (moduleModel == defaultModule) {

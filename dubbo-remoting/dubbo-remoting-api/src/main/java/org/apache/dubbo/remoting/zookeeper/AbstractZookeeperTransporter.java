@@ -60,7 +60,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         ZookeeperClient zookeeperClient;
         // address format: {[username:password@]address}
         List<String> addressList = getURLBackupAddress(url);
-        String application = url.getParameter(APPLICATION_KEY, "");
+        String application = url.getParameter(APPLICATION_KEY, StringUtils.EMPTY_STRING);
         // avoid creating too many connections， so add lock
         synchronized (zookeeperApplicationMap) {
             if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList, application)) != null &&
@@ -101,7 +101,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             }
 
             if (application == null) {
-                application = "";
+                application = StringUtils.EMPTY_STRING;
             }
             if (appSet.remove(application)) {
                 if (appSet.isEmpty()) {
@@ -123,6 +123,9 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     @Override
     public void close(String application) {
         synchronized (zookeeperApplicationMap) {
+            if (application == null) {
+                application = StringUtils.EMPTY_STRING;
+            }
             Iterator<Entry<ZookeeperClient, Set<String>>> iterator = zookeeperApplicationMap.entrySet().iterator();
             while (iterator.hasNext()) {
                 Entry<ZookeeperClient, Set<String>> entry = iterator.next();

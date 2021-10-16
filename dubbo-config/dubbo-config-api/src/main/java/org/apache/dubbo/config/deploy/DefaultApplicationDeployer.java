@@ -120,6 +120,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
     private CompositeDynamicConfiguration compositeDynamicConfiguration;
+    private ZookeeperTransporter zookeeperTransporter;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -205,6 +206,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             startMetadataCenter();
 
             initMetadataService();
+
+            zookeeperTransporter = null;
 
             initialized.set(true);
 
@@ -790,14 +793,25 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         destroy();
     }
 
+    /**
+     * it will be called by ApplicationModel removeModule().
+     */
+    @Override
+    public synchronized void preDestroy() {
+        // TODO set zookeeperTransporter before the extension loader is cleared.
+        if (zookeeperTransporter == null) {
+            zookeeperTransporter = ZookeeperTransporter.getExtension();
+        }
+    }
+
     @Override
     public synchronized void destroy() {
         if (isStopping() || isStopped()) {
             return;
         }
         try {
-            // TODO get zookeeperTransporter before the extension loader is unloaded.
-            ZookeeperTransporter zookeeperTransporter = ZookeeperTransporter.getExtension();
+            // TODO
+            preDestroy();
 
             onStopping();
             unRegisterShutdownHook();
@@ -822,7 +836,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             destroyDynamicConfigurations();
 
             // TODO close zookeeper connections that are no longer used.
-            zookeeperTransporter.close(application);
+            if (zookeeperTransporter != null) {
+                zookeeperTransporter.close(application);
+            }
 
             onStopped();
         } catch (Throwable ex) {
