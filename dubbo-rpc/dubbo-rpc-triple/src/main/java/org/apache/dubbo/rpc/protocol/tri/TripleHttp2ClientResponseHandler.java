@@ -22,10 +22,14 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
+import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.handler.codec.http2.Http2ResetFrame;
 import io.netty.handler.codec.http2.Http2StreamFrame;
+
+import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 public final class TripleHttp2ClientResponseHandler extends SimpleChannelInboundHandler<Http2StreamFrame> {
     private static final Logger logger = LoggerFactory.getLogger(TripleHttp2ClientResponseHandler.class);
@@ -41,7 +45,9 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
             Http2GoAwayFrame event = (Http2GoAwayFrame) evt;
             ctx.close();
             logger.debug(
-                    "Event triggered, event name is: " + event.name() + ", last stream id is: " + event.lastStreamId());
+                "Event triggered, event name is: " + event.name() + ", last stream id is: " + event.lastStreamId());
+        } else if (evt instanceof Http2ResetFrame) {
+            onResetRead(ctx, (Http2ResetFrame) evt);
         }
     }
 
@@ -56,13 +62,36 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         }
     }
 
+    private void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame resetFrame) {
+        AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
+        clientStream.cancelByRemote(Http2Error.valueOf(resetFrame.errorCode()));
+        ctx.close();
+    }
+
     private void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {
         Http2Headers headers = msg.headers();
         AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
+
+        CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
+        if (null != messageEncoding) {
+            String compressorStr = messageEncoding.toString();
+            if (!compressorStr.equals(DEFAULT_COMPRESSOR)) {
+                Compressor compressor = clientStream.getUrl().getOrDefaultApplicationModel()
+                    .getExtensionLoader(Compressor.class).getExtension(compressorStr);
+                if (null == compressor) {
+                    throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                        .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
+                        .asException();
+                } else {
+                    clientStream.setCompressor(compressor);
+                    ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
+                }
+            }
+        }
         final TransportObserver observer = clientStream.asTransportObserver();
-        observer.tryOnMetadata(new Http2HeaderMeta(headers), false);
+        observer.onMetadata(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {
-            observer.tryOnComplete();
+            observer.onComplete();
         }
     }
 
@@ -70,7 +99,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         final AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
         final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withCause(cause);
+            .withCause(cause);
         Metadata metadata = new DefaultMetadata();
         metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(status.code.code));
         metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
@@ -85,7 +114,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
             final AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
             // stream already closed;
             if (clientStream != null) {
-                clientStream.asTransportObserver().tryOnComplete();
+                clientStream.asTransportObserver().onComplete();
             }
         }
     }

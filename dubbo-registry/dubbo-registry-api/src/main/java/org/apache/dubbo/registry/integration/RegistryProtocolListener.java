@@ -21,11 +21,13 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
+import static org.apache.dubbo.common.extension.ExtensionScope.MODULE;
+
 /**
  * RegistryProtocol listener is introduced to provide a chance to user to customize or change export and refer behavior
  * of RegistryProtocol. For example: re-export or re-refer on the fly when certain condition meets.
  */
-@SPI
+@SPI(scope = MODULE)
 public interface RegistryProtocolListener {
     /**
      * Notify RegistryProtocol's listeners when a service is registered

@@ -128,7 +128,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.0.3-SNAPSHOT</revision>
+        <revision>3.0.4-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -150,10 +150,12 @@
         <module>dubbo-configcenter</module>
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
+        <module>dubbo-metrics</module>
         <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
         <module>dubbo-native</module>
         <module>dubbo-test</module>
+        <module>dubbo-native-plugin</module>
     </modules>
 
     <dependencyManagement>
@@ -320,6 +322,7 @@
                                         **/istio/v1/auth/IstioCertificateServiceGrpc.java,
                                         **/com/google/rpc/*,
                                         **/generated/**/*,
+                                        **/grpc/health/**/*,
                                         **/target/**/*,
                                         **/*.json
                                     </excludes>

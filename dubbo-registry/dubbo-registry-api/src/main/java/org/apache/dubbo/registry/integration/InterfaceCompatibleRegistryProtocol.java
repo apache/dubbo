@@ -60,11 +60,12 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
 
     @Override
     public <T> ClusterInvoker<T> getServiceDiscoveryInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        registry = registryFactory.getRegistry(super.getRegistryUrl(url));
+        registry = getRegistry(super.getRegistryUrl(url));
         DynamicDirectory<T> directory = new ServiceDiscoveryRegistryDirectory<>(type, url);
         return doCreateInvoker(directory, cluster, registry, type);
     }
 
+    @Override
     protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
 //        ClusterInvoker<T> invoker = getInvoker(cluster, registry, type, url);
         return new MigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);

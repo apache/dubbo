@@ -64,12 +64,12 @@ public class DubboProtocolTest {
     @AfterAll
     public static void after() {
         ProtocolUtils.closeAll();
-        ApplicationModel.getServiceRepository().unregisterService(DemoService.class);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().unregisterService(DemoService.class);
     }
 
     @BeforeAll
     public static void setup() {
-        ApplicationModel.getServiceRepository().registerService(DemoService.class);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService(DemoService.class);
     }
 
     @Test
@@ -165,7 +165,7 @@ public class DubboProtocolTest {
 
         RemoteService remote = new RemoteServiceImpl();
 
-        ApplicationModel.getServiceRepository().registerService(RemoteService.class);
+        ApplicationModel.defaultModel().getDefaultModule().getServiceRepository().registerService(RemoteService.class);
 
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(remote, RemoteService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + RemoteService.class.getName())));
@@ -191,7 +191,7 @@ public class DubboProtocolTest {
         service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
                 3000L)));
         long start = System.currentTimeMillis();
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < 100; i++)
             service.getSize(new String[]{"", "", ""});
         System.out.println("take:" + (System.currentTimeMillis() - start));
     }
@@ -243,7 +243,7 @@ public class DubboProtocolTest {
         Mockito.when(dic.getConsumerUrl()).thenReturn(url);
 
         FailfastCluster cluster = new FailfastCluster();
-        Invoker<DemoService> clusterInvoker = cluster.join(dic);
+        Invoker<DemoService> clusterInvoker = cluster.join(dic, true);
         Result result = clusterInvoker.invoke(invocation);
         Thread.sleep(10);
         assertEquals(result.getValue(), "consumer");

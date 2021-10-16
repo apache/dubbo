@@ -241,7 +241,6 @@ public class ProtocolConfig extends AbstractConfig {
 
     public final void setName(String name) {
         this.name = name;
-        //this.updateIdIfAbsent(name);
     }
 
     @Parameter(excluded = true)

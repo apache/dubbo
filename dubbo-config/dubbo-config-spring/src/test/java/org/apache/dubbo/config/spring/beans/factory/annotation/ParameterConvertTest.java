@@ -56,5 +56,10 @@ public class ParameterConvertTest {
         parametersMap.clear();
         parametersMap.put("a", "a:b");
         Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a", "a:b"}));
+
+        parametersMap.clear();
+        parametersMap.put("a", "0,100");
+        Assertions.assertEquals(parametersMap, DubboAnnotationUtils.convertParameters(new String[]{"a", "0,100"}));
+
     }
 }

@@ -36,7 +36,7 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
 
         Map<String, Integer> protocols = new HashMap<>();
         writableMetadataService.getExportedServiceURLs()

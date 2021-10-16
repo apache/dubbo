@@ -27,16 +27,19 @@ import org.apache.dubbo.rpc.cluster.Directory;
  */
 public class MockClusterWrapper implements Cluster {
 
-    private Cluster cluster;
+    private final Cluster cluster;
 
     public MockClusterWrapper(Cluster cluster) {
         this.cluster = cluster;
     }
 
     @Override
-    public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+    public <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException {
         return new MockClusterInvoker<T>(directory,
-                this.cluster.join(directory));
+                this.cluster.join(directory, buildFilterChain));
     }
 
+    public Cluster getCluster() {
+        return cluster;
+    }
 }

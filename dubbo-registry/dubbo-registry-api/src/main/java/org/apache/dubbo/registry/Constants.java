@@ -110,4 +110,29 @@ public interface Constants {
     String MIGRATION_THRESHOLD_KEY = "migration.threshold";
 
     String ENABLE_CONFIGURATION_LISTEN = "enable-configuration-listen";
+
+    /**
+     * MIGRATION_RULE_XXX from remote configuration
+     */
+    String MIGRATION_RULE_KEY = "key";
+
+    String MIGRATION_RULE_STEP_KEY ="step";
+
+    String MIGRATION_RULE_THRESHOLD_KEY = "threshold";
+
+    String MIGRATION_RULE_PROPORTION_KEY = "proportion";
+
+    String MIGRATION_RULE_DELAY_KEY = "delay";
+
+    String MIGRATION_RULE_FORCE_KEY = "force";
+
+    String MIGRATION_RULE_INTERFACES_KEY = "interfaces";
+
+    String MIGRATION_RULE_APPLICATIONS_KEY = "applications";
+
+    String USER_HOME = "user.home";
+
+    String DUBBO_REGISTRY  = "/.dubbo/dubbo-registry-";
+
+    String CACHE = ".cache";
 }

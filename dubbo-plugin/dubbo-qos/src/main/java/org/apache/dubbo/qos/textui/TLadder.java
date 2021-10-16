@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.qos.textui;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.apache.dubbo.common.utils.StringUtils.repeat;
@@ -35,7 +35,7 @@ public class TLadder implements TComponent {
     // indent length
     private static final int INDENT_STEP = 2;
 
-    private final List<String> items = new ArrayList<String>();
+    private final List<String> items = new LinkedList<String>();
 
 
     @Override

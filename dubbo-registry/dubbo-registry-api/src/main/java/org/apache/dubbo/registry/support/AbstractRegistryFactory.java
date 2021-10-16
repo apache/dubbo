@@ -20,23 +20,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
@@ -47,125 +37,72 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
  *
  * @see org.apache.dubbo.registry.RegistryFactory
  */
-public abstract class AbstractRegistryFactory implements RegistryFactory {
+public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeModelAware {
 
-    // Log output
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRegistryFactory.class);
 
-    // The lock for the acquisition process of the registry
-    protected static final ReentrantLock LOCK = new ReentrantLock();
 
-    // Registry Collection Map<RegistryAddress, Registry>
-    protected static final Map<String, Registry> REGISTRIES = new HashMap<>();
+    private RegistryManager registryManager;
 
-    private static final AtomicBoolean destroyed = new AtomicBoolean(false);
-
-    /**
-     * Get all registries
-     *
-     * @return all registries
-     */
-    public static Collection<Registry> getRegistries() {
-        return Collections.unmodifiableCollection(new LinkedList<>(REGISTRIES.values()));
-    }
-
-    public static Registry getRegistry(String key) {
-        return REGISTRIES.get(key);
-    }
-
-    public static List<ServiceDiscovery> getServiceDiscoveries() {
-        return AbstractRegistryFactory.getRegistries()
-                .stream()
-                .filter(registry -> registry instanceof ServiceDiscoveryRegistry)
-                .map(registry -> (ServiceDiscoveryRegistry) registry)
-                .map(ServiceDiscoveryRegistry::getServiceDiscovery)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Close all created registries
-     */
-    public static void destroyAll() {
-        if (!destroyed.compareAndSet(false, true)) {
-            return;
-        }
-
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Close all registries " + getRegistries());
-        }
-        // Lock up the registry shutdown process
-        LOCK.lock();
-        try {
-            for (Registry registry : getRegistries()) {
-                try {
-                    registry.destroy();
-                } catch (Throwable e) {
-                    LOGGER.warn(e.getMessage(), e);
-                }
-            }
-            REGISTRIES.clear();
-        } finally {
-            // Release the lock
-            LOCK.unlock();
-        }
-    }
-
-    /**
-     * Reset state of AbstractRegistryFactory
-     */
-    public static void reset() {
-        destroyed.set(false);
-        REGISTRIES.clear();
-    }
-
-    private Registry getDefaultNopRegistryIfDestroyed() {
-        if (destroyed.get()) {
-            LOGGER.warn("All registry instances have been destroyed, failed to fetch any instance. " +
-                    "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
-            return DEFAULT_NOP_REGISTRY;
-        }
-        return null;
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
     }
 
     @Override
     public Registry getRegistry(URL url) {
+        if (registryManager == null) {
+            throw new IllegalStateException("Unable to fetch RegistryManager from ApplicationModel BeanFactory. " +
+                "Please check if `setApplicationModel` has been override.");
+        }
 
-        Registry defaultNopRegistry = getDefaultNopRegistryIfDestroyed();
+        Registry defaultNopRegistry = registryManager.getDefaultNopRegistryIfDestroyed();
         if (null != defaultNopRegistry) {
             return defaultNopRegistry;
         }
 
         url = URLBuilder.from(url)
-                .setPath(RegistryService.class.getName())
-                .addParameter(INTERFACE_KEY, RegistryService.class.getName())
-                .removeParameters(EXPORT_KEY, REFER_KEY, TIMESTAMP_KEY)
-                .build();
+            .setPath(RegistryService.class.getName())
+            .addParameter(INTERFACE_KEY, RegistryService.class.getName())
+            .removeParameters(EXPORT_KEY, REFER_KEY, TIMESTAMP_KEY)
+            .build();
         String key = createRegistryCacheKey(url);
+        Registry registry = null;
+        boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
         // Lock the registry access process to ensure a single instance of the registry
-        LOCK.lock();
+        registryManager.getRegistryLock().lock();
         try {
             // double check
             // fix https://github.com/apache/dubbo/issues/7265.
-            defaultNopRegistry = getDefaultNopRegistryIfDestroyed();
+            defaultNopRegistry = registryManager.getDefaultNopRegistryIfDestroyed();
             if (null != defaultNopRegistry) {
                 return defaultNopRegistry;
             }
-
-            Registry registry = REGISTRIES.get(key);
+            registry = registryManager.getRegistry(key);
             if (registry != null) {
                 return registry;
             }
             //create registry by spi/ioc
             registry = createRegistry(url);
-            if (registry == null) {
-                throw new IllegalStateException("Can not create registry " + url);
+        } catch (Exception e) {
+            if (check) {
+                throw new RuntimeException("Can not create registry " + url, e);
+            } else {
+                LOGGER.warn("Failed to obtain or create registry ", e);
             }
-            REGISTRIES.put(key, registry);
-            return registry;
         } finally {
             // Release the lock
-            LOCK.unlock();
+            registryManager.getRegistryLock().unlock();
         }
+
+        if (check && registry == null) {
+            throw new IllegalStateException("Can not create registry " + url);
+        }
+
+        if (registry != null) {
+            registryManager.putRegistry(key, registry);
+        }
+        return registry;
     }
 
     /**
@@ -180,62 +117,5 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     }
 
     protected abstract Registry createRegistry(URL url);
-
-
-    private static Registry DEFAULT_NOP_REGISTRY = new Registry() {
-        @Override
-        public URL getUrl() {
-            return null;
-        }
-
-        @Override
-        public boolean isAvailable() {
-            return false;
-        }
-
-        @Override
-        public void destroy() {
-
-        }
-
-        @Override
-        public void register(URL url) {
-
-        }
-
-        @Override
-        public void unregister(URL url) {
-
-        }
-
-        @Override
-        public void subscribe(URL url, NotifyListener listener) {
-
-        }
-
-        @Override
-        public void unsubscribe(URL url, NotifyListener listener) {
-
-        }
-
-        @Override
-        public List<URL> lookup(URL url) {
-            return null;
-        }
-    };
-
-    public static void removeDestroyedRegistry(Registry toRm) {
-        LOCK.lock();
-        try {
-            REGISTRIES.entrySet().removeIf(entry -> entry.getValue().equals(toRm));
-        } finally {
-            LOCK.unlock();
-        }
-    }
-
-    // for unit test
-    public static void clearRegistryNotDestroy() {
-        REGISTRIES.clear();
-    }
 
 }

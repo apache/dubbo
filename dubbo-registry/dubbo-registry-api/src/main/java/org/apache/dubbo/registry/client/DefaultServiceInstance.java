@@ -17,9 +17,12 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSON;
 
+import java.beans.Transient;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,8 +30,9 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SCOPE_MODEL;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.ENDPOINTS;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 
 /**
  * The default implementation of {@link ServiceInstance}.
@@ -55,10 +59,18 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private transient String address;
     private transient MetadataInfo serviceMetadata;
-    // used at runtime
-    private transient String registryCluster; // extendParams can be more flexiable, but one single property uses less space
+
+    /**
+     * used at runtime
+     */
+    private transient String registryCluster;
+
+    /**
+     * extendParams can be more flexible, but one single property uses less space
+     */
     private transient Map<String, String> extendParams;
     private transient List<Endpoint> endpoints;
+    private transient Map<String, Object> attributes = new HashMap<>();
 
     public DefaultServiceInstance() {
     }
@@ -69,30 +81,34 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.port = other.port;
         this.enabled = other.enabled;
         this.healthy = other.healthy;
-        this.metadata = other.metadata;
         this.serviceMetadata = other.serviceMetadata;
         this.registryCluster = other.registryCluster;
-        this.extendParams = other.extendParams;
-        this.endpoints = other.endpoints;
         this.address = null;
+        this.metadata = new HashMap<>(other.metadata);
+        this.attributes = new HashMap<>(other.attributes);
+        this.extendParams = other.extendParams != null ? new HashMap<>(other.extendParams) : other.extendParams;
+        this.endpoints = other.endpoints != null ? new ArrayList<>(other.endpoints) : other.endpoints;
     }
 
-    public DefaultServiceInstance(String serviceName, String host, Integer port) {
+    public DefaultServiceInstance(String serviceName, String host, Integer port, ApplicationModel applicationModel) {
         if (port == null || port < 1) {
             throw new IllegalArgumentException("The port value is illegal, the value is " + port);
         }
         this.serviceName = serviceName;
         this.host = host;
         this.port = port;
+        setApplicationModel(applicationModel);
+    }
+
+    public DefaultServiceInstance(String serviceName, ApplicationModel applicationModel) {
+        this.serviceName = serviceName;
+        setApplicationModel(applicationModel);
     }
 
     public void setRawAddress(String rawAddress) {
         this.rawAddress = rawAddress;
     }
 
-    public DefaultServiceInstance(String serviceName) {
-        this.serviceName = serviceName;
-    }
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
@@ -166,6 +182,7 @@ public class DefaultServiceInstance implements ServiceInstance {
         return registryCluster;
     }
 
+    @Override
     public void setRegistryCluster(String registryCluster) {
         this.registryCluster = registryCluster;
     }
@@ -185,7 +202,7 @@ public class DefaultServiceInstance implements ServiceInstance {
         return JSON.parseArray(metadata.get(ENDPOINTS), Endpoint.class);
     }
 
-    public DefaultServiceInstance copy(Endpoint endpoint) {
+    public DefaultServiceInstance copyFrom(Endpoint endpoint) {
         DefaultServiceInstance copyOfInstance = new DefaultServiceInstance(this);
         copyOfInstance.setPort(endpoint.getPort());
         return copyOfInstance;
@@ -201,6 +218,23 @@ public class DefaultServiceInstance implements ServiceInstance {
             allParams.putAll(extendParams);
             return allParams;
         }
+    }
+
+    @Override
+    @Transient
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.attributes.put(SCOPE_MODEL, applicationModel);
+    }
+
+    @Override
+    @Transient
+    public ApplicationModel getApplicationModel() {
+        return (ApplicationModel) this.attributes.get(SCOPE_MODEL);
     }
 
     public void setMetadata(Map<String, String> metadata) {
@@ -233,7 +267,7 @@ public class DefaultServiceInstance implements ServiceInstance {
                 Objects.equals(getHost(), that.getHost()) &&
                 Objects.equals(getPort(), that.getPort());
         for (Map.Entry<String, String> entry : this.getMetadata().entrySet()) {
-            if (entry.getKey().equals(REVISION_KEY)) {
+            if (entry.getKey().equals(EXPORTED_SERVICES_REVISION_PROPERTY_NAME)) {
                 continue;
             }
             equals = equals && entry.getValue().equals(that.getMetadata().get(entry.getKey()));
@@ -246,7 +280,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     public int hashCode() {
         int result = Objects.hash(getServiceName(), getHost(), getPort());
         for (Map.Entry<String, String> entry : this.getMetadata().entrySet()) {
-            if (entry.getKey().equals(REVISION_KEY)) {
+            if (entry.getKey().equals(EXPORTED_SERVICES_REVISION_PROPERTY_NAME)) {
                 continue;
             }
             result = 31 * result + (entry.getValue() == null ? 0 : entry.getValue().hashCode());

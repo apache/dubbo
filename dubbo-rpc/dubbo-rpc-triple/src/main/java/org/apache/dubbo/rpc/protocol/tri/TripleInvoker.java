@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -64,8 +63,6 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class TripleInvoker<T> extends AbstractInvoker<T> {
 
-    private static final ConnectionManager CONNECTION_MANAGER = ExtensionLoader.getExtensionLoader(
-            ConnectionManager.class).getExtension("multiple");
     private final Connection connection;
     private final ReentrantLock destroyLock = new ReentrantLock();
 
@@ -74,13 +71,16 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     public TripleInvoker(Class<T> serviceType, URL url, Set<Invoker<?>> invokers) throws RemotingException {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
-        this.connection = CONNECTION_MANAGER.connect(url);
+        ConnectionManager connectionManager = url.getOrDefaultFrameworkModel().getExtensionLoader(ConnectionManager.class).getExtension("multiple");
+        this.connection = connectionManager.connect(url);
     }
 
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
+
         final String methodName = RpcUtils.getMethodName(invocation);
+        inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
         inv.setAttachment(PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.SERIALIZATION_KEY,
                 getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));

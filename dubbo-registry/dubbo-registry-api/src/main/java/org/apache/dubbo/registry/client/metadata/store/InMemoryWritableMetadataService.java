@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.registry.client.metadata.store;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
@@ -32,9 +34,8 @@ import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-
-import com.google.gson.Gson;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -74,9 +75,9 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  * @see WritableMetadataService
  * @since 2.7.5
  */
-public class InMemoryWritableMetadataService implements WritableMetadataService {
+public class InMemoryWritableMetadataService implements WritableMetadataService, ScopeModelAware {
 
-    final Logger logger = LoggerFactory.getLogger(getClass());
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Lock lock = new ReentrantLock();
 
@@ -86,19 +87,19 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
      * All exported {@link URL urls} {@link Map} whose key is the return value of {@link URL#getServiceKey()} method
      * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
-    URL metadataServiceURL;
-    ConcurrentMap<String, MetadataInfo> metadataInfos;
+    private ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
+    private URL metadataServiceURL;
+    private ConcurrentMap<String, MetadataInfo> metadataInfos;
 
     // used to mark whether current metadata info is being updated to registry,
     // readLock for export or unExport which are support concurrency update,
     // writeLock for ServiceInstance update which should not work during exporting services
-    final ReentrantReadWriteLock updateLock = new ReentrantReadWriteLock();
-    final Semaphore metadataSemaphore = new Semaphore(0);
-    final Map<String, Set<String>> serviceToAppsMapping = new HashMap<>();
+    private final ReentrantReadWriteLock updateLock = new ReentrantReadWriteLock();
+    private final Semaphore metadataSemaphore = new Semaphore(0);
+    private final Map<String, Set<String>> serviceToAppsMapping = new HashMap<>();
 
-    String instanceMetadata;
-    ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap = new ConcurrentHashMap<>();
+    private String instanceMetadata;
+    private ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap = new ConcurrentHashMap<>();
 
 
     // ==================================================================================== //
@@ -110,12 +111,30 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
      * whose key is the return value of {@link URL#getServiceKey()} method and value is
      * the {@link SortedSet sorted set} of the {@link URL URLs}
      */
-    ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
+    private ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
 
-    ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private ApplicationModel applicationModel;
+    private long metadataPublishDelayTime ;
 
     public InMemoryWritableMetadataService() {
         this.metadataInfos = new ConcurrentHashMap<>();
+    }
+
+    /**
+     * Gets the current Dubbo Service name
+     *
+     * @return non-null
+     */
+    @Override
+    public String serviceName() {
+        return ApplicationModel.ofNullable(applicationModel).getApplicationName();
+    }
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        this.metadataPublishDelayTime = ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L;
     }
 
     @Override
@@ -167,7 +186,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         try {
             String[] clusters = getRegistryCluster(url).split(",");
             for (String cluster : clusters) {
-                MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> new MetadataInfo(ApplicationModel.getName()));
+                MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> new MetadataInfo(applicationModel.getApplicationName()));
                 metadataInfo.addService(new ServiceInfo(url));
             }
             metadataSemaphore.release();
@@ -226,7 +245,10 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             String interfaceName = url.getServiceInterface();
             if (StringUtils.isNotEmpty(interfaceName)
                 && !ProtocolUtils.isGeneric(url.getParameter(GENERIC_KEY))) {
-                Class interfaceClass = Class.forName(interfaceName);
+                ClassLoader classLoader = url.getServiceModel() != null ?
+                    url.getServiceModel().getClassLoader() :
+                    ClassUtils.getClassLoader();
+                Class interfaceClass = Class.forName(interfaceName, false, classLoader);
                 ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
                 Gson gson = new Gson();
                 String data = gson.toJson(serviceDefinition);
@@ -298,11 +320,13 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     public void blockUntilUpdated() {
         try {
-            metadataSemaphore.tryAcquire(ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L, TimeUnit.MILLISECONDS);
+            metadataSemaphore.tryAcquire(metadataPublishDelayTime, TimeUnit.MILLISECONDS);
             metadataSemaphore.drainPermits();
             updateLock.writeLock().lock();
         } catch (InterruptedException e) {
-            logger.warn("metadata refresh thread has been interrupted unexpectedly while waiting for update.", e);
+            if (!applicationModel.isStopping()) {
+                logger.warn("metadata refresh thread has been interrupted unexpectedly while waiting for update.", e);
+            }
         }
     }
 

@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.config.ConfigKeys;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizerHolder;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -25,8 +27,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ShutdownHookTest {
 
     @Test
-    public void testDisableShutdownHook(){
-        SysProps.setProperty(ConfigKeys.DUBBO_LIFECYCLE_DISABLE_SHUTDOWN_HOOK, "true");
+    public void testDisableShutdownHook() throws InterruptedException {
+
+        // set KeepRunningOnSpringClosed flag for next spring context
+        DubboSpringInitCustomizerHolder.get().addCustomizer(context-> {
+            context.setKeepRunningOnSpringClosed(true);
+        });
 
         try {
             ClassPathXmlApplicationContext providerContext;
@@ -36,16 +42,27 @@ public class ShutdownHookTest {
                 resourcePath + "/demo-provider-properties.xml");
             providerContext.start();
 
+            DubboStateListener listener = providerContext.getBean(DubboStateListener.class);
+            for (int i = 0; i < 10; i++) {
+                if (DeployState.STARTED.equals(listener.getState())) {
+                    break;
+                }
+                Thread.sleep(100);
+            }
+
+            ModuleModel moduleModel = providerContext.getBean(ModuleModel.class);
+            Assertions.assertTrue(moduleModel.getDeployer().isStarted());
             Assertions.assertEquals(true, DubboBootstrap.getInstance().isStarted());
-            Assertions.assertEquals(false, DubboBootstrap.getInstance().isShutdown());
+            Assertions.assertEquals(false, DubboBootstrap.getInstance().isStopped());
 
             // close spring context
             providerContext.close();
 
             // expect dubbo bootstrap will not be destroyed after closing spring context
             Assertions.assertEquals(true, DubboBootstrap.getInstance().isStarted());
-            Assertions.assertEquals(false, DubboBootstrap.getInstance().isShutdown());
+            Assertions.assertEquals(false, DubboBootstrap.getInstance().isStopped());
         } finally {
+            DubboBootstrap.getInstance().stop();
             SysProps.clear();
         }
     }

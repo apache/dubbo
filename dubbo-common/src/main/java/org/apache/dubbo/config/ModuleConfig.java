@@ -18,6 +18,9 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,11 +64,60 @@ public class ModuleConfig extends AbstractConfig {
      */
     private MonitorConfig monitor;
 
+    /**
+     * Whether start module in background.
+     * If start in backgound, do not await finish on Spring ContextRefreshedEvent.
+     *
+     * @see org.apache.dubbo.config.spring.context.DubboDeployApplicationListener
+     */
+    private Boolean background;
+
+    /**
+     * Weather the reference is refer asynchronously
+     */
+    private Boolean referAsync;
+
+    /**
+     * Thread num for asynchronous refer pool size
+     */
+    private Integer referThreadNum;
+
+    /**
+     * Weather the service is export asynchronously
+     */
+    private Boolean exportAsync;
+
+    /**
+     * Thread num for asynchronous export pool size
+     */
+    private Integer exportThreadNum;
+
     public ModuleConfig() {
+        super(ApplicationModel.defaultModel().getDefaultModule());
     }
 
     public ModuleConfig(String name) {
+        this();
         setName(name);
+    }
+
+    @Override
+    protected void checkDefault() {
+        super.checkDefault();
+        // default is false
+        if (background == null) {
+            background = false;
+        }
+    }
+
+    @Override
+    protected void checkScopeModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            throw new IllegalArgumentException("scopeModel cannot be null");
+        }
+        if (!(scopeModel instanceof ModuleModel)) {
+            throw new IllegalArgumentException("Invalid scope model, expect to be a ModuleModel but got: " + scopeModel);
+        }
     }
 
     @Parameter(key = "module")
@@ -75,7 +127,6 @@ public class ModuleConfig extends AbstractConfig {
 
     public void setName(String name) {
         this.name = name;
-        //this.updateIdIfAbsent(name);
     }
 
     @Parameter(key = "module.version")
@@ -87,6 +138,7 @@ public class ModuleConfig extends AbstractConfig {
         this.version = version;
     }
 
+    @Parameter(key = "module.owner")
     public String getOwner() {
         return owner;
     }
@@ -95,6 +147,7 @@ public class ModuleConfig extends AbstractConfig {
         this.owner = owner;
     }
 
+    @Parameter(key = "module.organization")
     public String getOrganization() {
         return organization;
     }
@@ -134,4 +187,49 @@ public class ModuleConfig extends AbstractConfig {
         this.monitor = new MonitorConfig(monitor);
     }
 
+    public Boolean getBackground() {
+        return background;
+    }
+
+    /**
+     * Whether start module in background.
+     * If start in backgound, do not await finish on Spring ContextRefreshedEvent.
+     *
+     * @see org.apache.dubbo.config.spring.context.DubboDeployApplicationListener
+     */
+    public void setBackground(Boolean background) {
+        this.background = background;
+    }
+
+    public Integer getReferThreadNum() {
+        return referThreadNum;
+    }
+
+    public void setReferThreadNum(Integer referThreadNum) {
+        this.referThreadNum = referThreadNum;
+    }
+
+    public Integer getExportThreadNum() {
+        return exportThreadNum;
+    }
+
+    public void setExportThreadNum(Integer exportThreadNum) {
+        this.exportThreadNum = exportThreadNum;
+    }
+
+    public Boolean getReferAsync() {
+        return referAsync;
+    }
+
+    public void setReferAsync(Boolean referAsync) {
+        this.referAsync = referAsync;
+    }
+
+    public Boolean getExportAsync() {
+        return exportAsync;
+    }
+
+    public void setExportAsync(Boolean exportAsync) {
+        this.exportAsync = exportAsync;
+    }
 }

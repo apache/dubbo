@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.config;
 
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.util.Properties;
@@ -26,7 +27,7 @@ import java.util.Properties;
  * The smaller value, the higher priority
  * 
  */
-@SPI
+@SPI(scope = ExtensionScope.MODULE)
 public interface OrderedPropertiesProvider {
     /**
      * order

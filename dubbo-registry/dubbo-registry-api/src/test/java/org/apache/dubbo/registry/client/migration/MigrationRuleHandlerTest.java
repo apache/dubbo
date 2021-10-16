@@ -19,7 +19,9 @@ package org.apache.dubbo.registry.client.migration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -29,7 +31,8 @@ public class MigrationRuleHandlerTest {
         MigrationClusterInvoker invoker = Mockito.mock(MigrationClusterInvoker.class);
         URL url = Mockito.mock(URL.class);
         Mockito.when(url.getDisplayServiceKey()).thenReturn("test");
-        Mockito.when(url.getParameter((String) Mockito.any(), (String) Mockito.any())).thenAnswer(i->i.getArgument(1));
+        Mockito.when(url.getParameter(Mockito.any(), (String) Mockito.any())).thenAnswer(i->i.getArgument(1));
+        Mockito.when(url.getOrDefaultApplicationModel()).thenReturn(ApplicationModel.defaultModel());
         MigrationRuleHandler handler = new MigrationRuleHandler(invoker, url);
 
         Mockito.when(invoker.migrateToForceApplicationInvoker(Mockito.any())).thenReturn(true);
@@ -50,5 +53,30 @@ public class MigrationRuleHandlerTest {
         Mockito.when(rule.getStep(url)).thenReturn(MigrationStep.FORCE_INTERFACE);
         handler.doMigrate(rule);
         Mockito.verify(invoker, Mockito.times(1)).migrateToForceInterfaceInvoker(rule);
+
+        // migration failed, current rule not changed
+        testMigrationFailed(rule, url, handler, invoker);
+        // rule not changed, check migration not actually executed
+        testMigrationWithStepUnchanged(rule, url, handler, invoker);
     }
+
+    private void testMigrationFailed(MigrationRule rule, URL url, MigrationRuleHandler handler, MigrationClusterInvoker invoker) {
+        Assertions.assertEquals(MigrationStep.FORCE_INTERFACE, handler.getMigrationStep());
+
+        Mockito.when(invoker.migrateToForceApplicationInvoker(Mockito.any())).thenReturn(false);
+
+        Mockito.when(rule.getStep(url)).thenReturn(MigrationStep.FORCE_APPLICATION);
+        handler.doMigrate(rule);
+        Mockito.verify(invoker, Mockito.times(2)).migrateToForceApplicationInvoker(rule);
+        Assertions.assertEquals(MigrationStep.FORCE_INTERFACE, handler.getMigrationStep());
+    }
+
+    private void testMigrationWithStepUnchanged(MigrationRule rule, URL url, MigrationRuleHandler handler, MigrationClusterInvoker invoker) {
+        // set the same as
+        Mockito.when(rule.getStep(url)).thenReturn(handler.getMigrationStep());
+        handler.doMigrate(rule);
+        // no interaction
+        Mockito.verify(invoker, Mockito.times(1)).migrateToForceInterfaceInvoker(rule);
+    }
+
 }

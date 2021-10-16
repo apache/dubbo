@@ -28,6 +28,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -694,8 +696,8 @@ public class URLTest {
 
     @Test
     public void test_windowAbsolutePathBeginWithSlashIsValid() throws Exception {
-        final String osProperty = System.getProperties().getProperty("os.name");
-        if (!osProperty.toLowerCase().contains("windows")) return;
+        final String osProperty = System.getProperties().getProperty(OS_NAME_KEY);
+        if (!osProperty.toLowerCase().contains(OS_WIN_PREFIX)) return;
 
         System.out.println("Test Windows valid path string.");
 
@@ -1041,5 +1043,9 @@ public class URLTest {
         Assertions.assertEquals("registry", url.getParameter("protocol"));
     }
 
-
+    @Test
+    public void test_valueOfHasNameWithoutValue() throws Exception {
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&noValue");
+        Assertions.assertEquals("noValue", url.getParameter("noValue"));
+    }
 }

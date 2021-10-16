@@ -18,6 +18,8 @@ package org.apache.dubbo.common.url.component;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -210,6 +212,26 @@ public abstract class ServiceAddressURL extends URL {
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    @Override
+    public ScopeModel getScopeModel() {
+        return consumerURL.getScopeModel();
+    }
+
+    @Override
+    public ServiceModel getServiceModel() {
+        return consumerURL.getServiceModel();
+    }
+
+    @Override
+    public URL setScopeModel(ScopeModel scopeModel) {
+        throw new UnsupportedOperationException("setScopeModel is forbidden for ServiceAddressURL");
+    }
+
+    @Override
+    public URL setServiceModel(ServiceModel serviceModel) {
+        throw new UnsupportedOperationException("setServiceModel is forbidden for ServiceAddressURL");
     }
 
     /**

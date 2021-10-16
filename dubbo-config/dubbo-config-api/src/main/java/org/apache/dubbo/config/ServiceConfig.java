@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,31 +30,26 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -89,7 +85,6 @@ import static org.apache.dubbo.common.utils.NetUtils.isInvalidPort;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
-import static org.apache.dubbo.config.Constants.MULTICAST;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
@@ -104,6 +99,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 
 public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
+    private static final long serialVersionUID = 7868244018230856253L;
+
     private static final Logger logger = LoggerFactory.getLogger(ServiceConfig.class);
 
     /**
@@ -116,13 +113,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private static final ScheduledExecutorService DELAY_EXPORT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
 
-    private static final Protocol PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private Protocol protocolSPI;
 
     /**
      * A {@link ProxyFactory} implementation that will generate a exported service proxy,the JavassistProxyFactory is its
      * default implementation
      */
-    private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private ProxyFactory proxyFactory;
+
+    private ProviderModel providerModel;
 
     /**
      * Whether the provider has been exported
@@ -134,8 +133,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private transient volatile boolean unexported;
 
-    private DubboBootstrap bootstrap;
-
     private transient volatile AtomicBoolean initialized = new AtomicBoolean(false);
 
     /**
@@ -143,7 +140,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
-    private List<ServiceListener> serviceListeners = new ArrayList<>();
+    private final List<ServiceListener> serviceListeners = new ArrayList<>();
+    private WritableMetadataService localMetadataService;
 
     public ServiceConfig() {
     }
@@ -152,6 +150,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         super(service);
     }
 
+    @Override
+    protected void postProcessAfterScopeModelChanged(ScopeModel oldScopeModel, ScopeModel newScopeModel) {
+        super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
+        protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        localMetadataService = this.getScopeModel().getDefaultExtension(WritableMetadataService.class);
+    }
 
     @Override
     @Parameter(excluded = true, attribute = false)
@@ -186,23 +191,19 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
         unexported = true;
         onUnexpoted();
+        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+        repository.unregisterProvider(providerModel);
     }
 
+    /**
+     * for early init serviceMetadata
+     */
     public void init() {
         if (this.initialized.compareAndSet(false, true)) {
-            if (this.bootstrap == null) {
-                this.bootstrap = DubboBootstrap.getInstance();
-                this.bootstrap.initialize();
-            }
-            this.bootstrap.service(this);
-
             // load ServiceListeners from extension
-            ExtensionLoader<ServiceListener> extensionLoader = ExtensionLoader.getExtensionLoader(ServiceListener.class);
+            ExtensionLoader<ServiceListener> extensionLoader = this.getExtensionLoader(ServiceListener.class);
             this.serviceListeners.addAll(extensionLoader.getSupportedExtensionInstances());
-
-            this.checkAndUpdateSubConfigs();
         }
-
         initServiceMetadata(provider);
         serviceMetadata.setServiceType(getInterfaceClass());
         serviceMetadata.setTarget(getRef());
@@ -211,32 +212,60 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @Override
     public synchronized void export() {
-        if (this.shouldExport() && !this.exported) {
+        if (this.exported) {
+            return;
+        }
+        // prepare for export
+        ModuleDeployer moduleDeployer = getScopeModel().getDeployer();
+        moduleDeployer.prepare();
+
+        if (!this.isRefreshed()) {
+            this.refresh();
+        }
+        if (this.shouldExport()) {
             this.init();
 
-            // check bootstrap state
-            if (!bootstrap.isInitialized()) {
-                throw new IllegalStateException("DubboBootstrap is not initialized");
-            }
-
-            if (!this.isRefreshed()) {
-                this.refresh();
-            }
-
-            if (!shouldExport()) {
-                return;
-            }
-
             if (shouldDelay()) {
-                DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
+                doDelayExport();
             } else {
                 doExport();
             }
 
-            if (this.bootstrap.getTakeoverMode() == BootstrapTakeoverMode.AUTO) {
-                this.bootstrap.start();
+            // notify export this service
+            moduleDeployer.notifyExportService(this);
+        }
+    }
+
+    /**
+     * export service only, do not register application instance, for exporting services in batches by module
+     */
+    @Override
+    public synchronized void exportOnly() {
+        if (this.exported) {
+            return;
+        }
+        if (!this.isRefreshed()) {
+            this.refresh();
+        }
+        if (this.shouldExport()) {
+            this.init();
+
+            if (shouldDelay()) {
+                doDelayExport();
+            } else {
+                doExport();
             }
         }
+    }
+
+    protected void doDelayExport() {
+        DELAY_EXPORT_EXECUTOR.schedule(() -> {
+            try {
+                doExport();
+            } catch (Exception e) {
+                logger.error("Failed to export service config: " + interfaceName, e);
+            }
+        }, getDelay(), TimeUnit.MILLISECONDS);
     }
 
     protected void exported() {
@@ -244,8 +273,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<URL> exportedURLs = this.getExportedUrls();
         exportedURLs.forEach(url -> {
             if (url.getParameters().containsKey(SERVICE_NAME_MAPPING_KEY)) {
-                ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
-                serviceNameMapping.map(url);
+                ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(getScopeModel());
+                try {
+                    boolean succeeded = serviceNameMapping.map(url);
+                    if (succeeded) {
+                        logger.info("Successfully registered interface application mapping for service " + url.getServiceKey());
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed register interface application mapping for service " + url.getServiceKey(), e);
+                }
             }
         });
         onExported();
@@ -259,8 +295,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         checkProtocol();
 
         // init some null configuration.
-        List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
-                .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
+        List<ConfigInitializer> configInitializers = this.getExtensionLoader(ConfigInitializer.class)
+                .getActivateExtension(URL.valueOf("configInitializer://", getScopeModel()), (String[]) null);
         configInitializers.forEach(e -> e.initServiceConfig(this));
 
         // if protocol is not injvm checkRegistry
@@ -279,12 +315,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         } else {
             try {
-                interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
-                        .getContextClassLoader());
+                if (getInterfaceClassLoader() != null) {
+                    interfaceClass = Class.forName(interfaceName, true, getInterfaceClassLoader());
+                } else {
+                    interfaceClass = Class.forName(interfaceName, true, Thread.currentThread().getContextClassLoader());
+                }
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            //checkInterfaceAndMethods(interfaceClass, getMethods());
             checkRef();
             generic = Boolean.FALSE.toString();
         }
@@ -345,15 +383,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(getInterfaceClass());
-        repository.registerProvider(
-                getUniqueServiceName(),
-                ref,
-                serviceDescriptor,
-                this,
-                serviceMetadata
-        );
+        providerModel = new ProviderModel(getUniqueServiceName(),
+            ref,
+            serviceDescriptor,
+            this,
+            getScopeModel(),
+            serviceMetadata);
+
+        repository.registerProvider(providerModel);
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
@@ -366,7 +405,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
-
 
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         Map<String, String> map = buildAttributes(protocolConfig);
@@ -386,7 +424,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // append params with basic configs,
         ServiceConfig.appendRuntimeParameters(map);
-        AbstractConfig.appendParameters(map, getMetrics());
         AbstractConfig.appendParameters(map, getApplication());
         AbstractConfig.appendParameters(map, getModule());
         // remove 'default.' prefix for configs from ProviderConfig
@@ -394,6 +431,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         AbstractConfig.appendParameters(map, provider);
         AbstractConfig.appendParameters(map, protocolConfig);
         AbstractConfig.appendParameters(map, this);
+        appendMetricsCompatible(map);
+
         MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
         if (metadataReportConfig != null && metadataReportConfig.isValid()) {
             map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
@@ -520,14 +559,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         String host = findConfigedHosts(protocolConfig, registryURLs, params);
         Integer port = findConfigedPorts(protocolConfig, name, params);
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
+        url.setScopeModel(getScopeModel());
 
         // You can customize Configurator to append extra parameters
-        if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
+        if (this.getExtensionLoader(ConfiguratorFactory.class)
                 .hasExtension(url.getProtocol())) {
-            url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
+            url = this.getExtensionLoader(ConfiguratorFactory.class)
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
-
+        url = url.setScopeModel(getScopeModel());
+        url =  url.setServiceModel(providerModel);
         return url;
     }
 
@@ -589,7 +630,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         } else {
 
             if (MetadataService.class.getName().equals(url.getServiceInterface())) {
-                MetadataUtils.saveMetadataURL(url);
+                localMetadataService.setMetadataServiceURL(url);
             }
 
             if (logger.isInfoEnabled()) {
@@ -605,11 +646,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrl(URL url, boolean withMetaData) {
-        Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, url);
+        Invoker<?> invoker = proxyFactory.getInvoker(ref, (Class) interfaceClass, url);
         if (withMetaData) {
             invoker = new DelegateProviderMetaDataInvoker(invoker, this);
         }
-        Exporter<?> exporter = PROTOCOL.export(invoker);
+        Exporter<?> exporter = protocolSPI.export(invoker);
         exporters.add(exporter);
     }
 
@@ -623,6 +664,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();
+        local = local.setScopeModel(getScopeModel())
+            .setServiceModel(providerModel);
         doExportUrl(local, false);
         logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
     }
@@ -666,35 +709,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
             if (isInvalidLocalHost(hostToBind)) {
                 anyhost = true;
-                try {
-                    if (logger.isDebugEnabled()) {
-                        logger.info("No valid ip found from environment, try to find valid host from DNS.");
-                    }
-                    hostToBind = InetAddress.getLocalHost().getHostAddress();
-                } catch (UnknownHostException e) {
-                    logger.warn(e.getMessage(), e);
+                if (logger.isDebugEnabled()) {
+                    logger.info("No valid ip found from environment, try to get local host.");
                 }
-                if (isInvalidLocalHost(hostToBind)) {
-                    if (CollectionUtils.isNotEmpty(registryURLs)) {
-                        for (URL registryURL : registryURLs) {
-                            if (MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
-                                // skip multicast registry since we cannot connect to it via Socket
-                                continue;
-                            }
-                            try (Socket socket = new Socket()) {
-                                SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
-                                socket.connect(addr, 1000);
-                                hostToBind = socket.getLocalAddress().getHostAddress();
-                                break;
-                            } catch (Exception e) {
-                                logger.warn(e.getMessage(), e);
-                            }
-                        }
-                    }
-                    if (isInvalidLocalHost(hostToBind)) {
-                        hostToBind = getLocalHost();
-                    }
-                }
+                hostToBind = getLocalHost();
             }
         }
 
@@ -739,7 +757,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             if (provider != null && (portToBind == null || portToBind == 0)) {
                 portToBind = provider.getPort();
             }
-            final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
+            final int defaultPort = this.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
             if (portToBind == null || portToBind == 0) {
                 portToBind = defaultPort;
             }
@@ -752,24 +770,24 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
 
-        // save bind port, used as url's key later
-        map.put(BIND_PORT_KEY, String.valueOf(portToBind));
-
         // registry port, not used as bind port by default
         String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
         Integer portToRegistry = parsePort(portToRegistryStr);
-        if (portToRegistry == null) {
-            portToRegistry = portToBind;
+        if (portToRegistry != null) {
+            portToBind = portToRegistry;
         }
 
-        return portToRegistry;
+        // save bind port, used as url's key later
+        map.put(BIND_PORT_KEY, String.valueOf(portToBind));
+
+        return portToBind;
     }
 
     private Integer parsePort(String configPort) {
         Integer port = null;
         if (configPort != null && configPort.length() > 0) {
             try {
-                Integer intPort = Integer.parseInt(configPort);
+                int intPort = Integer.parseInt(configPort);
                 if (isInvalidPort(intPort)) {
                     throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
                 }
@@ -804,25 +822,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private void postProcessConfig() {
-        List<ConfigPostProcessor> configPostProcessors = ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
-                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
+                .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
-    }
-
-    public DubboBootstrap getBootstrap() {
-        return bootstrap;
-    }
-
-    public void setBootstrap(DubboBootstrap bootstrap) {
-        this.bootstrap = bootstrap;
     }
 
     public void addServiceListener(ServiceListener listener) {
         this.serviceListeners.add(listener);
-    }
-
-    public boolean removeServiceListener(ServiceListener listener) {
-        return this.serviceListeners.remove(listener);
     }
 
     protected void onExported() {

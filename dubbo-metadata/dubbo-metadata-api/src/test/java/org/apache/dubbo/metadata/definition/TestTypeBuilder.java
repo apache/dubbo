@@ -33,7 +33,7 @@ public class TestTypeBuilder implements TypeBuilder {
     }
 
     @Override
-    public boolean accept(Type type, Class<?> clazz) {
+    public boolean accept(Class<?> clazz) {
         return false;
     }
 

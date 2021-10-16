@@ -33,7 +33,7 @@ public class RegistryFactoryWrapperTest {
         RegistryServiceListener listener2 = Mockito.mock(RegistryServiceListener.class);
         RegistryServiceListener2.delegate = listener2;
 
-        Registry registry = registryFactory.getRegistry(URL.valueOf("simple://localhost:8080/registry-service"));
+        Registry registry = registryFactory.getRegistry(URL.valueOf("simple://localhost:8080/registry-service?registry.listeners=listener-one,listener-two"));
         URL url = URL.valueOf("dubbo://localhost:8081/simple.service");
         registry.register(url);
 

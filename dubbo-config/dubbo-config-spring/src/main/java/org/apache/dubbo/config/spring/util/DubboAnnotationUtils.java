@@ -144,7 +144,8 @@ public class DubboAnnotationUtils {
      * ["a=b"] ==>{a=b}
      * ["a:b"] ==>{a=b}
      * ["a=b","c","d"] ==>{a=b,c=d}
-     * ["a","a:b"] ==>{a=a:b}
+     * ["a","a:b"] ==>{a="a:b"}
+     * ["a","a,b"] ==>{a="a,b"}
      * </p>
      *
      * @param parameters

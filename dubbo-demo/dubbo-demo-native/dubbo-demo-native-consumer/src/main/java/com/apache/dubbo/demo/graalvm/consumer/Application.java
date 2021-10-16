@@ -21,7 +21,6 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.utils.ReferenceConfigCache;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +29,7 @@ public class Application {
 
     public static void main(String[] args) {
         System.setProperty("dubbo.application.logger", "log4j");
+        System.setProperty("native","true");
         if (isClassic(args)) {
             runWithRefer();
         } else {
@@ -59,7 +59,7 @@ public class Application {
                 .reference(reference)
                 .start();
 
-        DemoService demoService = ReferenceConfigCache.getCache().get(reference);
+        DemoService demoService = bootstrap.getCache().get(reference);
         String message = demoService.sayHello("Native");
         System.out.println(message);
     }

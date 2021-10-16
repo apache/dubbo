@@ -26,4 +26,10 @@
         <level value="WARN"/>
         <appender-ref ref="CONSOLE"/>
     </root>
+
+<!--    <logger name="org.apache.dubbo.remoting" additivity="false">-->
+<!--        <priority value ="debug"/>-->
+<!--        <appender-ref ref="CONSOLE"/>-->
+<!--    </logger>-->
+
 </log4j:configuration>

@@ -18,30 +18,48 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.qos.probe.LivenessProbe;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Cmd(name = "live", summary = "Judge if service is alive? ")
 public class Live implements BaseCommand {
+    private FrameworkModel frameworkModel;
+
+    public Live(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        URL url = URL.valueOf("application://")
-                .addParameter(CommonConstants.QOS_LIVE_PROBE_EXTENSION, ApplicationModel.getApplicationConfig().getLivenessProbe());
-        List<LivenessProbe> livenessProbes = ExtensionLoader.getExtensionLoader(LivenessProbe.class)
+        String config = frameworkModel.getApplicationModels()
+            .stream()
+            .map(applicationModel -> applicationModel.getApplicationConfigManager().getApplication())
+            .map(o -> o.orElse(null))
+            .filter(Objects::nonNull)
+            .map(ApplicationConfig::getLivenessProbe)
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(","));
+        if(StringUtils.isNotEmpty(config)) {
+            URL url = URL.valueOf("application://")
+                .addParameter(CommonConstants.QOS_LIVE_PROBE_EXTENSION, config);
+            List<LivenessProbe> livenessProbes = frameworkModel.getExtensionLoader(LivenessProbe.class)
                 .getActivateExtension(url, CommonConstants.QOS_LIVE_PROBE_EXTENSION);
-        if (!livenessProbes.isEmpty()) {
-            for (LivenessProbe livenessProbe : livenessProbes) {
-                if (!livenessProbe.check()) {
-                    // 503 Service Unavailable
-                    commandContext.setHttpCode(503);
-                    return "false";
+            if (!livenessProbes.isEmpty()) {
+                for (LivenessProbe livenessProbe : livenessProbes) {
+                    if (!livenessProbe.check()) {
+                        // 503 Service Unavailable
+                        commandContext.setHttpCode(503);
+                        return "false";
+                    }
                 }
             }
         }

@@ -29,7 +29,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
-        return new ClientStreamObserver() {
+        ClientStreamObserver clientStreamObserver = new ClientStreamObserver() {
             boolean metaSent;
 
             @Override
@@ -37,10 +37,10 @@ public class ClientStream extends AbstractClientStream implements Stream {
                 if (!metaSent) {
                     metaSent = true;
                     final Metadata metadata = createRequestMeta((RpcInvocation) getRequest().getData());
-                    getTransportSubscriber().tryOnMetadata(metadata, false);
+                    getTransportSubscriber().onMetadata(metadata, false);
                 }
                 final byte[] bytes = encodeRequest(data);
-                getTransportSubscriber().tryOnData(bytes, false);
+                getTransportSubscriber().onData(bytes, false);
             }
 
             @Override
@@ -48,6 +48,8 @@ public class ClientStream extends AbstractClientStream implements Stream {
                 transportError(throwable);
             }
         };
+        clientStreamObserver.setCancellationContext(getCancellationContext());
+        return clientStreamObserver;
     }
 
     @Override
@@ -55,7 +57,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
         return new AbstractTransportObserver() {
 
             @Override
-            public void onData(byte[] data, boolean endStream, OperationHandler handler) {
+            public void onData(byte[] data, boolean endStream) {
                 execute(() -> {
                     final Object resp = deserializeResponse(data);
                     getStreamSubscriber().onNext(resp);
@@ -63,14 +65,14 @@ public class ClientStream extends AbstractClientStream implements Stream {
             }
 
             @Override
-            public void onComplete(OperationHandler handler) {
+            public void onComplete() {
                 execute(() -> {
                     final GrpcStatus status = extractStatusFromMeta(getHeaders());
 
                     if (GrpcStatus.Code.isOk(status.code.code)) {
                         getStreamSubscriber().onCompleted();
                     } else {
-                        getStreamSubscriber().onError(status.asException(getTrailers()));
+                        getStreamSubscriber().onError(status.asException());
                     }
                 });
             }

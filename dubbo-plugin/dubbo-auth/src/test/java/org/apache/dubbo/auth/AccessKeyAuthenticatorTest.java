@@ -22,7 +22,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
-
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ class AccessKeyAuthenticatorTest {
         when(helper.getAccessKeyPair(invocation, url)).thenReturn(accessKeyPair);
 
         helper.sign(invocation, url);
-        assertEquals(String.valueOf(invocation.getAttachment(CommonConstants.CONSUMER)), url.getParameter(CommonConstants.APPLICATION_KEY));
+        assertEquals(String.valueOf(invocation.getAttachment(CommonConstants.CONSUMER)), url.getApplication());
         assertNotNull(invocation.getAttachments().get(Constants.REQUEST_SIGNATURE_KEY));
         assertEquals(invocation.getAttachments().get(Constants.REQUEST_SIGNATURE_KEY), "dubbo");
     }
@@ -93,7 +93,7 @@ class AccessKeyAuthenticatorTest {
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
                 .addParameter(Constants.SECRET_ACCESS_KEY_KEY, "sk");
         Invocation invocation = new RpcInvocation();
-        AccessKeyAuthenticator helper = new AccessKeyAuthenticator();
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(ApplicationModel.defaultModel());
         assertThrows(RpcAuthenticationException.class, () -> helper.authenticate(invocation, url));
     }
 
@@ -101,7 +101,7 @@ class AccessKeyAuthenticatorTest {
     void testGetAccessKeyPairFailed() {
         URL url = URL.valueOf("dubbo://10.10.10.10:2181")
                 .addParameter(Constants.ACCESS_KEY_ID_KEY, "ak");
-        AccessKeyAuthenticator helper = new AccessKeyAuthenticator();
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(ApplicationModel.defaultModel());
         Invocation invocation = mock(Invocation.class);
         assertThrows(RuntimeException.class, () -> helper.getAccessKeyPair(invocation, url));
     }
@@ -111,7 +111,7 @@ class AccessKeyAuthenticatorTest {
         URL url = mock(URL.class);
         Invocation invocation = mock(Invocation.class);
         String secretKey = "123456";
-        AccessKeyAuthenticator helper = new AccessKeyAuthenticator();
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(ApplicationModel.defaultModel());
         String signature = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
         assertNotNull(signature);
     }
@@ -124,7 +124,7 @@ class AccessKeyAuthenticatorTest {
         String secretKey = "123456";
         Object[] params = {"dubbo", new ArrayList()};
         when(invocation.getArguments()).thenReturn(params);
-        AccessKeyAuthenticator helper = new AccessKeyAuthenticator();
+        AccessKeyAuthenticator helper = new AccessKeyAuthenticator(ApplicationModel.defaultModel());
         String signature = helper.getSignature(url, invocation, secretKey, String.valueOf(System.currentTimeMillis()));
         assertNotNull(signature);
 

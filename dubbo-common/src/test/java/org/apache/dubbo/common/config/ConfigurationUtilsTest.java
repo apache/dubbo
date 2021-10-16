@@ -16,8 +16,13 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.Map;
 
@@ -27,18 +32,56 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KE
  *
  */
 public class ConfigurationUtilsTest {
+    @Test
+    public void testCachedProperties() {
+        FrameworkModel frameworkModel = new FrameworkModel();
+
+        ApplicationModel applicationModel = new ApplicationModel(frameworkModel);
+        Environment originApplicationEnvironment = applicationModel.getModelEnvironment();
+        Environment applicationEnvironment = Mockito.spy(originApplicationEnvironment);
+        applicationModel.setEnvironment(applicationEnvironment);
+
+        Configuration configuration = Mockito.mock(Configuration.class);
+        Mockito.when(applicationEnvironment.getDynamicGlobalConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.getString("TestKey", "")).thenReturn("a");
+
+        Assertions.assertEquals("a", ConfigurationUtils.getCachedDynamicProperty(applicationModel, "TestKey", "xxx"));
+
+        Mockito.when(configuration.getString("TestKey", "")).thenReturn("b");
+        // cached key
+        Assertions.assertEquals("a", ConfigurationUtils.getCachedDynamicProperty(applicationModel, "TestKey", "xxx"));
+
+        ModuleModel moduleModel = new ModuleModel(applicationModel);
+        ModuleEnvironment originModuleEnvironment = moduleModel.getModelEnvironment();
+        ModuleEnvironment moduleEnvironment = Mockito.spy(originModuleEnvironment);
+        moduleModel.setModuleEnvironment(moduleEnvironment);
+
+        Mockito.when(moduleEnvironment.getDynamicGlobalConfiguration()).thenReturn(configuration);
+
+        // ApplicationModel should not affect ModuleModel
+        Assertions.assertEquals("b", ConfigurationUtils.getCachedDynamicProperty(moduleModel, "TestKey", "xxx"));
+
+        Mockito.when(configuration.getString("TestKey", "")).thenReturn("c");
+        // cached key
+        Assertions.assertEquals("b", ConfigurationUtils.getCachedDynamicProperty(moduleModel, "TestKey", "xxx"));
+
+        moduleModel.setModuleEnvironment(originModuleEnvironment);
+        applicationModel.setEnvironment(originApplicationEnvironment);
+
+        frameworkModel.destroy();
+    }
 
     @Test
     public void testGetServerShutdownTimeout () {
         System.setProperty(SHUTDOWN_WAIT_KEY, " 10000");
-        Assertions.assertEquals(10000, ConfigurationUtils.getServerShutdownTimeout());
+        Assertions.assertEquals(10000, ConfigurationUtils.getServerShutdownTimeout(ApplicationModel.defaultModel()));
         System.clearProperty(SHUTDOWN_WAIT_KEY);
     }
 
     @Test
     public void testGetProperty () {
         System.setProperty(SHUTDOWN_WAIT_KEY, " 10000");
-        Assertions.assertEquals("10000", ConfigurationUtils.getProperty(SHUTDOWN_WAIT_KEY));
+        Assertions.assertEquals("10000", ConfigurationUtils.getProperty(ApplicationModel.defaultModel(), SHUTDOWN_WAIT_KEY));
         System.clearProperty(SHUTDOWN_WAIT_KEY);
     }
 

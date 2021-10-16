@@ -42,12 +42,19 @@ public class MeshRuleAddressListenerInterceptor implements AddressListener {
                 String app = url.getRemoteApplication();
                 if (StringUtils.isNotEmpty(app)) {
                     if (APP_SET.add(app)) {
-                        MeshRuleManager.subscribeAppRule(app);
+                        MeshRuleManager.subscribeAppRule(consumerUrl, app);
                     }
                 }
             }
         }
 
         return addresses;
+    }
+
+    @Override
+    public void destroy(URL consumerUrl, Directory registryDirectory) {
+        for (String app : APP_SET) {
+            MeshRuleManager.unsubscribeAppRule(consumerUrl, app);
+        }
     }
 }

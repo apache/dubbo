@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.metadata.store;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -31,6 +32,8 @@ import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,16 +47,19 @@ import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 
-public class RemoteMetadataServiceImpl {
+public class RemoteMetadataServiceImpl implements ScopeModelAware {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     private WritableMetadataService localMetadataService;
+    private MetadataReportInstance metadataReportInstance;
 
-    public RemoteMetadataServiceImpl(WritableMetadataService writableMetadataService) {
-        this.localMetadataService = writableMetadataService;
+    @Override
+    public void setScopeModel(ScopeModel scopeModel) {
+        metadataReportInstance = scopeModel.getBeanFactory().getBean(MetadataReportInstance.class);
+        localMetadataService = scopeModel.getDefaultExtension(WritableMetadataService.class);
     }
 
     public Map<String, MetadataReport> getMetadataReports() {
-        return MetadataReportInstance.getMetadataReports(false);
+        return metadataReportInstance.getMetadataReports(false);
     }
 
     public void publishMetadata(String serviceName) {
@@ -95,15 +101,15 @@ public class RemoteMetadataServiceImpl {
             metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
         }
         Map<String, String> params = new HashMap<>(instance.getExtendParams());
-        if (instance.getRegistryCluster() != null && !instance.getRegistryCluster().equalsIgnoreCase(params.get(REGISTRY_CLUSTER_KEY))) {
-            params.put(REGISTRY_CLUSTER_KEY, instance.getRegistryCluster());
+        if (registryCluster != null && !registryCluster.equalsIgnoreCase(params.get(REGISTRY_CLUSTER_KEY))) {
+            params.put(REGISTRY_CLUSTER_KEY, registryCluster);
         }
         return metadataReport.getAppMetadata(identifier, params);
     }
 
     private void checkRemoteConfigured() {
         if (getMetadataReports().size() == 0) {
-            String msg = "Remote Metadata Report Server not hasn't been configured. Unable to get Metadata from remote!";
+            String msg = "Remote Metadata Report Server not hasn't been configured or unavailable . Unable to get Metadata from remote!";
             logger.error(msg);
             throw new IllegalStateException(msg);
         }
@@ -131,7 +137,10 @@ public class RemoteMetadataServiceImpl {
         try {
             String interfaceName = providerUrl.getServiceInterface();
             if (StringUtils.isNotEmpty(interfaceName)) {
-                Class interfaceClass = Class.forName(interfaceName);
+                ClassLoader classLoader = providerUrl.getServiceModel() != null ?
+                    providerUrl.getServiceModel().getClassLoader() :
+                    ClassUtils.getClassLoader();
+                Class interfaceClass = Class.forName(interfaceName, false, classLoader);
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
                     providerUrl.getParameters());
                 for (Map.Entry<String, MetadataReport> entry : getMetadataReports().entrySet()) {

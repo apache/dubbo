@@ -23,10 +23,12 @@ import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import java.util.Map;
 
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-import static org.apache.dubbo.metadata.WritableMetadataService.getDefaultExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceParameter;
 
+/**
+ * Used to interact with non-dubbo systems, also see {@link SpringCloudMetadataServiceURLBuilder}
+ */
 public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer {
 
     @Override
@@ -47,7 +49,7 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
     }
 
     private String resolveMetadataPropertyValue(ServiceInstance serviceInstance) {
-        WritableMetadataService writableMetadataService = getDefaultExtension();
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
         return getMetadataServiceParameter(writableMetadataService.getMetadataServiceURL());
     }
 }

@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -34,12 +33,18 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.STARTUP_PROBE;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
@@ -214,10 +219,9 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setName(String name) {
         this.name = name;
-        //this.updateIdIfAbsent(name);
     }
 
-    @Parameter(key = "application.version")
+    @Parameter(key = APPLICATION_VERSION_KEY)
     public String getVersion() {
         return version;
     }
@@ -257,15 +261,15 @@ public class ApplicationConfig extends AbstractConfig {
     public void setEnvironment(String environment) {
         if (environment != null) {
             if (!(DEVELOPMENT_ENVIRONMENT.equals(environment)
-                    || TEST_ENVIRONMENT.equals(environment)
-                    || PRODUCTION_ENVIRONMENT.equals(environment))) {
+                || TEST_ENVIRONMENT.equals(environment)
+                || PRODUCTION_ENVIRONMENT.equals(environment))) {
 
                 throw new IllegalStateException(String.format("Unsupported environment: %s, only support %s/%s/%s, default is %s.",
-                        environment,
-                        DEVELOPMENT_ENVIRONMENT,
-                        TEST_ENVIRONMENT,
-                        PRODUCTION_ENVIRONMENT,
-                        PRODUCTION_ENVIRONMENT));
+                    environment,
+                    DEVELOPMENT_ENVIRONMENT,
+                    TEST_ENVIRONMENT,
+                    PRODUCTION_ENVIRONMENT,
+                    PRODUCTION_ENVIRONMENT));
             }
         }
         this.environment = environment;
@@ -326,7 +330,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setLogger(String logger) {
         this.logger = logger;
-        LoggerFactory.setLoggerAdapter(logger);
+        LoggerFactory.setLoggerAdapter(getApplicationModel().getFrameworkModel(), logger);
     }
 
     @Parameter(key = DUMP_DIRECTORY)
@@ -495,7 +499,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.publishInstance = publishInstance;
     }
 
-    @Parameter(excluded = true, key="application-protocol")
+    @Parameter(excluded = true, key = APPLICATION_PROTOCOL_KEY)
     public String getProtocol() {
         return protocol;
     }
@@ -504,7 +508,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.protocol = protocol;
     }
 
-    @Parameter(key = "metadata-service-port")
+    @Parameter(key = METADATA_SERVICE_PORT_KEY)
     public Integer getMetadataServicePort() {
         return metadataServicePort;
     }
@@ -513,7 +517,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.metadataServicePort = metadataServicePort;
     }
 
-    @Parameter(key = "liveness-probe")
+    @Parameter(key = LIVENESS_PROBE_KEY)
     public String getLivenessProbe() {
         return livenessProbe;
     }
@@ -522,7 +526,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.livenessProbe = livenessProbe;
     }
 
-    @Parameter(key = "readiness-probe")
+    @Parameter(key = READINESS_PROBE_KEY)
     public String getReadinessProbe() {
         return readinessProbe;
     }
@@ -531,7 +535,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.readinessProbe = readinessProbe;
     }
 
-    @Parameter(key = "startup-probe")
+    @Parameter(key = STARTUP_PROBE)
     public String getStartupProbe() {
         return startupProbe;
     }
@@ -551,7 +555,7 @@ public class ApplicationConfig extends AbstractConfig {
             parameters = new HashMap<>();
         }
 
-        Set<InfraAdapter> adapters = ExtensionLoader.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
+        Set<InfraAdapter> adapters = this.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(adapters)) {
             Map<String, String> inputParameters = new HashMap<>();
             inputParameters.put(APPLICATION_KEY, getName());

@@ -16,18 +16,16 @@
  */
 package org.apache.dubbo.remoting.api;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.SslConfig;
-import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 
 import javax.net.ssl.SSLException;
 import java.io.InputStream;
@@ -39,7 +37,7 @@ public class SslContexts {
     private static final Logger logger = LoggerFactory.getLogger(SslContexts.class);
 
     public static SslContext buildServerSslContext(URL url) {
-        ConfigManager globalConfigManager = ApplicationModel.getConfigManager();
+        ConfigManager globalConfigManager = url.getOrDefaultApplicationModel().getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder sslClientContextBuilder;
@@ -68,7 +66,7 @@ public class SslContexts {
     }
 
     public static SslContext buildClientSslContext(URL url) {
-        ConfigManager globalConfigManager = ApplicationModel.getConfigManager();
+        ConfigManager globalConfigManager = url.getOrDefaultApplicationModel().getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder builder = SslContextBuilder.forClient();
@@ -95,10 +93,6 @@ public class SslContexts {
         } catch (SSLException e) {
             throw new IllegalStateException("Build SslSession failed.", e);
         }
-    }
-
-    private static SslConfig getSslConfig() {
-        return ApplicationModel.getConfigManager().getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
     }
 
     /**

@@ -17,11 +17,12 @@
 package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 /**
  * Cluster. (SPI, Singleton, ThreadSafe)
@@ -44,16 +45,16 @@ public interface Cluster {
      * @throws RpcException
      */
     @Adaptive
-    <T> Invoker<T> join(Directory<T> directory) throws RpcException;
+    <T> Invoker<T> join(Directory<T> directory, boolean buildFilterChain) throws RpcException;
 
-    static Cluster getCluster(String name) {
-        return getCluster(name, true);
+    static Cluster getCluster(ScopeModel scopeModel, String name) {
+        return getCluster(scopeModel, name, true);
     }
 
-    static Cluster getCluster(String name, boolean wrap) {
+    static Cluster getCluster(ScopeModel scopeModel, String name, boolean wrap) {
         if (StringUtils.isEmpty(name)) {
             name = Cluster.DEFAULT;
         }
-        return ExtensionLoader.getExtensionLoader(Cluster.class).getExtension(name, wrap);
+        return ScopeModelUtil.getApplicationModel(scopeModel).getExtensionLoader(Cluster.class).getExtension(name, wrap);
     }
 }

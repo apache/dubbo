@@ -19,7 +19,7 @@ package org.apache.dubbo.registry.client.migration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
@@ -98,21 +98,18 @@ public class MigrationRuleHandler<T> {
     }
 
     private void report(MigrationStep step, MigrationStep originStep, String success) {
-        if (FrameworkStatusReporter.hasReporter()) {
-            FrameworkStatusReporter.reportMigrationStepStatus(
-                    FrameworkStatusReporter.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
+        FrameworkStatusReportService reportService =
+            consumerURL.getOrDefaultApplicationModel().getBeanFactory().getBean(FrameworkStatusReportService.class);
+
+        if (reportService.hasReporter()) {
+            reportService.reportMigrationStepStatus(
+                reportService.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
                             consumerURL.getGroup(), String.valueOf(originStep), String.valueOf(step), success));
         }
     }
 
     private void setMigrationRule(MigrationRule rule) {
         this.migrationInvoker.setMigrationRule(rule);
-    }
-
-    private MigrationStep getMigrationStep(MigrationRule rule, MigrationStep step) {
-        MigrationStep configuredStep = rule.getStep(consumerURL);
-        step = configuredStep == null ? step : configuredStep;
-        return step;
     }
 
     private Float getMigrationThreshold(MigrationRule rule, Float threshold) {
@@ -129,5 +126,10 @@ public class MigrationRuleHandler<T> {
             this.currentStep = currentStep;
             this.migrationInvoker.setMigrationStep(currentStep);
         }
+    }
+
+    // for test purpose
+    public MigrationStep getMigrationStep() {
+        return currentStep;
     }
 }

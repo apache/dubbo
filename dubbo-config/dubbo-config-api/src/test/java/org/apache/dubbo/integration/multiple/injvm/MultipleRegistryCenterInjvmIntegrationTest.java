@@ -17,16 +17,16 @@
 package org.apache.dubbo.integration.multiple.injvm;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
-import org.apache.dubbo.registrycenter.DefaultMultipleRegistryCenter;
-import org.apache.dubbo.registrycenter.MultipleRegistryCenter;
+import org.apache.dubbo.registrycenter.RegistryCenter;
+import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.junit.jupiter.api.AfterEach;
@@ -80,14 +80,14 @@ public class MultipleRegistryCenterInjvmIntegrationTest implements IntegrationTe
     /**
      * Default a registry center.
      */
-    private MultipleRegistryCenter registryCenter;
+    private RegistryCenter registryCenter;
 
     @BeforeEach
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
         //start all zookeeper services only once
-        registryCenter = new DefaultMultipleRegistryCenter(-1);
+        registryCenter = new ZookeeperMultipleRegistryCenter();
         registryCenter.startup();
         // initialize service config
         serviceConfig = new ServiceConfig<>();
@@ -97,8 +97,11 @@ public class MultipleRegistryCenterInjvmIntegrationTest implements IntegrationTe
         serviceConfig.setScope(SCOPE_LOCAL);
 
         // initailize bootstrap
-        for (RegistryConfig registryConfig : registryCenter.getRegistryConfigs()) {
-            DubboBootstrap.getInstance().registry(registryConfig);
+        for (RegistryCenter.Instance instance : registryCenter.getRegistryCenterInstance()) {
+            DubboBootstrap.getInstance().registry(new RegistryConfig(String.format("%s://%s:%s",
+                instance.getType(),
+                instance.getHostname(),
+                instance.getPort())));
         }
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
@@ -142,7 +145,6 @@ public class MultipleRegistryCenterInjvmIntegrationTest implements IntegrationTe
         afterExport();
         ReferenceConfig<MultipleRegistryCenterInjvmService> referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(MultipleRegistryCenterInjvmService.class);
-        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
         referenceConfig.setScope(SCOPE_LOCAL);
         referenceConfig.get().hello("Dubbo in multiple registry center");
         afterInvoke();

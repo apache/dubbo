@@ -24,6 +24,8 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
+import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
@@ -36,6 +38,7 @@ public class ClientTransportObserver implements TransportObserver {
     private final ChannelPromise promise;
     private boolean headerSent = false;
     private boolean endStreamSent = false;
+    private boolean resetSent = false;
 
 
     public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream, ChannelPromise promise) {
@@ -59,50 +62,77 @@ public class ClientTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler) {
-        if (!headerSent) {
-            final Http2Headers headers = new DefaultHttp2Headers(true)
-                    .path(metadata.get(TripleHeaderEnum.PATH_KEY.getHeader()))
-                    .authority(metadata.get(TripleHeaderEnum.AUTHORITY_KEY.getHeader()))
-                    .scheme(SCHEME)
-                    .method(HttpMethod.POST.asciiName());
-            metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
-            headerSent = true;
-            streamChannel.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
-                    .addListener(future -> {
-                        if (!future.isSuccess()) {
-                            promise.tryFailure(future.cause());
-                        }
-                    });
+    public void onMetadata(Metadata metadata, boolean endStream) {
+        if (headerSent) {
+            return;
         }
+        if (resetSent) {
+            return;
+        }
+        final Http2Headers headers = new DefaultHttp2Headers(true)
+                .path(metadata.get(TripleHeaderEnum.PATH_KEY.getHeader()))
+                .authority(metadata.get(TripleHeaderEnum.AUTHORITY_KEY.getHeader()))
+                .scheme(SCHEME)
+                .method(HttpMethod.POST.asciiName());
+        metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
+        headerSent = true;
+        streamChannel.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
+                .addListener(future -> {
+                    if (!future.isSuccess()) {
+                        promise.tryFailure(future.cause());
+                    }
+                });
+
     }
 
     @Override
-    public void onData(byte[] data, boolean endStream, Stream.OperationHandler handler) {
-        ByteBuf buf = ctx.alloc().buffer();
-        buf.writeByte(0);
-        buf.writeInt(data.length);
-        buf.writeBytes(data);
-        streamChannel.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
+    public void onReset(Http2Error http2Error) {
+        resetSent = true;
+        streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
                 .addListener(future -> {
-                    if (!future.isSuccess()) {
+                    if (future.isSuccess()) {
+                        promise.trySuccess();
+                    } else {
                         promise.tryFailure(future.cause());
                     }
                 });
     }
 
     @Override
-    public void onComplete(Stream.OperationHandler handler) {
-        if (!endStreamSent) {
-            endStreamSent = true;
-            streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true))
-                    .addListener(future -> {
-                        if (future.isSuccess()) {
-                            promise.trySuccess();
-                        } else {
-                            promise.tryFailure(future.cause());
-                        }
-                    });
+    public void onData(byte[] data, boolean endStream) {
+        if (resetSent) {
+            return;
         }
+        ByteBuf buf = ctx.alloc().buffer();
+        buf.writeByte(TripleUtil.calcCompressFlag(ctx));
+        buf.writeInt(data.length);
+        buf.writeBytes(data);
+        streamChannel.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
+                .addListener(future -> {
+                    if (future.isSuccess()) {
+                        promise.trySuccess();
+                    } else {
+                        promise.tryFailure(future.cause());
+                    }
+                });
+    }
+
+    @Override
+    public void onComplete() {
+        if (resetSent) {
+            return;
+        }
+        if (endStreamSent) {
+            return;
+        }
+        endStreamSent = true;
+        streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true))
+                .addListener(future -> {
+                    if (future.isSuccess()) {
+                        promise.trySuccess();
+                    } else {
+                        promise.tryFailure(future.cause());
+                    }
+                });
     }
 }

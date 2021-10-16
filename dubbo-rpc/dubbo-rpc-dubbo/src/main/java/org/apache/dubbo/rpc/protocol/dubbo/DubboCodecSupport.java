@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.transport.CodecSupport;
@@ -30,24 +29,24 @@ import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 public class DubboCodecSupport {
 
     public static Serialization getRequestSerialization(URL url, Invocation invocation) {
-        Object serializationType_obj = invocation.get(SERIALIZATION_ID_KEY);
-        if (serializationType_obj != null) {
-            return CodecSupport.getSerializationById((byte) serializationType_obj);
+        Object serializationTypeObj = invocation.get(SERIALIZATION_ID_KEY);
+        if (serializationTypeObj != null) {
+            return CodecSupport.getSerializationById((byte) serializationTypeObj);
         }
-        return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
                 url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }
 
     public static Serialization getResponseSerialization(URL url, AppResponse appResponse) {
-        Object invocation_obj = appResponse.getAttribute(INVOCATION_KEY);
-        if (invocation_obj != null) {
-            Invocation invocation = (Invocation) invocation_obj;
-            Object serializationType_obj = invocation.get(SERIALIZATION_ID_KEY);
-            if (serializationType_obj != null) {
-                return CodecSupport.getSerializationById((byte) serializationType_obj);
+        Object invocationObj = appResponse.getAttribute(INVOCATION_KEY);
+        if (invocationObj != null) {
+            Invocation invocation = (Invocation) invocationObj;
+            Object serializationTypeObj = invocation.get(SERIALIZATION_ID_KEY);
+            if (serializationTypeObj != null) {
+                return CodecSupport.getSerializationById((byte) serializationTypeObj);
             }
         }
-        return ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(
+        return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
                 url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }
 }

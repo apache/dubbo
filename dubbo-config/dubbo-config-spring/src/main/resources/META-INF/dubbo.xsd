@@ -36,12 +36,6 @@
                 <xsd:documentation><![CDATA[ The max active requests. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="connections" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation>
-                    <![CDATA[ The exclusive connections. default share one connection. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
         <xsd:attribute name="loadbalance" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The method load balance. ]]></xsd:documentation>
@@ -177,6 +171,12 @@
                     <xsd:annotation>
                         <xsd:documentation>
                             <![CDATA[ Defines the service tag]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="connections" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ The exclusive connections. default share one connection. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
             </xsd:extension>
@@ -429,7 +429,8 @@
         </xsd:attribute>
         <xsd:attribute name="publish-interface" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Publish interface level url to registry, default true. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Publish interface level url to registry, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="protocol" type="xsd:string">
@@ -478,6 +479,34 @@
         <xsd:attribute name="default" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="background" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Whether start module in background, if true do not await finish. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="refer-async" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Weather the reference is refer asynchronously, default false.  ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="refer-thread-num" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Thread num for asynchronous refer pool size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="export-async" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Weather the service is export asynchronously, default false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="export-thread-num" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -583,7 +612,7 @@
         </xsd:attribute>
         <xsd:attribute name="check" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Check registry status on stratup. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Check registry status on startup. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="dynamic" type="xsd:string">
@@ -647,12 +676,14 @@
         </xsd:attribute>
         <xsd:attribute name="publish-interface" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Publish interface level url to registry, default true. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Publish interface level url to registry, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="publish-instance" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Publish instance level url to registry, default true. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Publish instance level url to registry, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -735,6 +766,12 @@
         <xsd:attribute name="file" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The metadata report file store. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="check" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ The policy to apply when connecting to metadata center fails. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -881,14 +918,98 @@
     </xsd:complexType>
 
     <xsd:complexType name="metricsType">
-        <xsd:attribute name="port" type="xsd:string" use="required">
+        <xsd:all>
+            <xsd:element ref="prometheus-exporter" minOccurs="0"/>
+            <xsd:element ref="prometheus-pushgateway" minOccurs="0"/>
+            <xsd:element ref="aggregation" minOccurs="0"/>
+        </xsd:all>
+        <xsd:attribute name="protocol" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The metrics service port. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ The metrics protocol. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="protocol" type="xsd:string" use="required">
+        <xsd:attribute name="port" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The metrics service protocol. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Deprecated. No longer use. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="prometheusExporterType">
+        <xsd:attribute name="enabled" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable prometheus exporter. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="enable-http-service-discovery" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable http service discovery for prometheus. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="http-service-discovery-url" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Http service discovery url. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="metrics-port" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ When using pull method, which port to expose. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="metrics-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ When using pull mode, which path to expose metrics. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="prometheusPushgatewayType">
+        <xsd:attribute name="enabled" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable publishing via a Prometheus Pushgateway. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="base-url" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Base URL for the Pushgateway. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="username" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Login user of the Prometheus Pushgateway. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="password" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Login password of the Prometheus Pushgateway. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="push-interval" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Frequency with which to push metrics. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="job" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Job identifier for this application instance. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="aggregationType">
+        <xsd:attribute name="enabled" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Enable local aggregation or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="bucket-num" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Bucket num for time window quantile. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="time-window-seconds" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Time window seconds for time window quantile. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -1031,12 +1152,14 @@
                 </xsd:attribute>
                 <xsd:attribute name="refer-thread-num" type="xsd:integer">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Thread num for asynchronous refer pool size. ]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Thread num for asynchronous refer pool size. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="refer-background" type="xsd:boolean">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Whether refer should run in background or not, default false. ]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Whether refer should run in background or not, default false. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
@@ -1432,12 +1555,14 @@
                 </xsd:attribute>
                 <xsd:attribute name="export-thread-num" type="xsd:integer">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="export-background" type="xsd:boolean">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Whether export should run in background or not, default false. ]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Deprecated. Whether export should run in background or not, default false. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
@@ -1739,4 +1864,21 @@
         </xsd:annotation>
     </xsd:element>
 
+    <xsd:element name="prometheus-exporter" type="prometheusExporterType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The metrics prometheus exporter config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="prometheus-pushgateway" type="prometheusPushgatewayType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The metrics prometheus pushgateway config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+
+    <xsd:element name="aggregation" type="aggregationType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The metrics aggregation config. ]]></xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
 </xsd:schema>

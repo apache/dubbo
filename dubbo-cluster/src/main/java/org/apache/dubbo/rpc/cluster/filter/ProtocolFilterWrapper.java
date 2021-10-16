@@ -19,13 +19,13 @@ package org.apache.dubbo.rpc.cluster.filter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.List;
 
@@ -39,8 +39,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_K
 public class ProtocolFilterWrapper implements Protocol {
 
     private final Protocol protocol;
-    private static final FilterChainBuilder builder
-            = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class).getDefaultExtension();
 
     public ProtocolFilterWrapper(Protocol protocol) {
         if (protocol == null) {
@@ -59,7 +57,12 @@ public class ProtocolFilterWrapper implements Protocol {
         if (UrlUtils.isRegistry(invoker.getUrl())) {
             return protocol.export(invoker);
         }
+        FilterChainBuilder builder = getFilterChainBuilder(invoker.getUrl());
         return protocol.export(builder.buildInvokerChain(invoker, SERVICE_FILTER_KEY, CommonConstants.PROVIDER));
+    }
+
+    private <T> FilterChainBuilder getFilterChainBuilder(URL url) {
+        return ScopeModelUtil.getExtensionLoader(FilterChainBuilder.class, url.getScopeModel()).getDefaultExtension();
     }
 
     @Override
@@ -67,6 +70,7 @@ public class ProtocolFilterWrapper implements Protocol {
         if (UrlUtils.isRegistry(url)) {
             return protocol.refer(type, url);
         }
+        FilterChainBuilder builder = getFilterChainBuilder(url);
         return builder.buildInvokerChain(protocol.refer(type, url), REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
     }
 

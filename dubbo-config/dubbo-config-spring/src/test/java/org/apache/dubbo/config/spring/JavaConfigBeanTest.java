@@ -25,17 +25,18 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
-import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -49,11 +50,11 @@ public class JavaConfigBeanTest {
 
     private static final String MY_PROTOCOL_ID = "myProtocol";
     private static final String MY_REGISTRY_ID = "my-registry";
-    private static SingleRegistryCenter singleRegistryCenter;
+    private static RegistryCenter singleRegistryCenter;
 
     @BeforeAll
     public static void beforeAll() {
-        singleRegistryCenter = new DefaultSingleRegistryCenter();
+        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
         singleRegistryCenter.startup();
     }
 
@@ -88,7 +89,7 @@ public class JavaConfigBeanTest {
         try {
             consumerContext.start();
 
-            ConfigManager configManager = ApplicationModel.getConfigManager();
+            ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
             ApplicationConfig application = configManager.getApplication().get();
             Assertions.assertEquals(false, application.getQosEnable());
             Assertions.assertEquals("Tom", application.getOwner());
@@ -103,7 +104,9 @@ public class JavaConfigBeanTest {
             Assertions.assertEquals(2346, protocolConfig.getPort());
             Assertions.assertEquals(MY_PROTOCOL_ID, protocolConfig.getId());
 
-            ConsumerConfig consumerConfig = configManager.getDefaultConsumer().get();
+            ApplicationModel applicationModel = consumerContext.getBean(ApplicationModel.class);
+            ModuleConfigManager moduleConfigManager = applicationModel.getDefaultModule().getConfigManager();
+            ConsumerConfig consumerConfig = moduleConfigManager.getDefaultConsumer().get();
             Assertions.assertEquals(1000, consumerConfig.getTimeout());
             Assertions.assertEquals("demo", consumerConfig.getGroup());
             Assertions.assertEquals(false, consumerConfig.isCheck());

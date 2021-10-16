@@ -25,8 +25,9 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -48,11 +49,18 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @see MetadataService
  * @since 2.7.5
  */
-public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
+public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder, ScopeModelAware {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String NAME = "standard";
+
+    private ApplicationModel applicationModel;
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
 
     /**
      * Build the {@link URL urls} from {@link ServiceInstance#getMetadata() the metadata} of {@link ServiceInstance}
@@ -64,20 +72,21 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     public List<URL> build(ServiceInstance serviceInstance) {
         Map<String, String> paramsMap = getMetadataServiceURLsParams(serviceInstance);
 
-        List<URL> urls = new ArrayList<>(paramsMap.size());
-
         String serviceName = serviceInstance.getServiceName();
 
         String host = serviceInstance.getHost();
 
+        URL url;
         if (paramsMap.isEmpty()) {
             // ServiceInstance Metadata is empty. Happened when registry not support metadata write.
-            urls.add(generateUrlWithoutMetadata(serviceName, host, serviceInstance.getPort()));
+            url = generateUrlWithoutMetadata(serviceName, host, serviceInstance.getPort());
         } else {
-            urls.add(generateWithMetadata(serviceName, host, paramsMap));
+            url = generateWithMetadata(serviceName, host, paramsMap);
         }
 
-        return urls;
+        url = url.setScopeModel(serviceInstance.getApplicationModel().getInternalModule());
+
+        return Collections.singletonList(url);
     }
 
     private URL generateWithMetadata(String serviceName, String host, Map<String, String> params) {
@@ -88,7 +97,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .setPort(port)
                 .setProtocol(protocol)
                 .setPath(MetadataService.class.getName())
-                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
+                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
                 .addParameter(SIDE_KEY, CONSUMER);
 
         // add parameters
@@ -100,7 +109,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     }
 
     private URL generateUrlWithoutMetadata(String serviceName, String host, Integer instancePort) {
-        Integer port = ApplicationModel.getApplicationConfig().getMetadataServicePort();
+        Integer port = ApplicationModel.defaultModel().getCurrentConfig().getMetadataServicePort();
         if (port == null || port < 1) {
             logger.warn("Metadata Service Port is not provided, since DNS is not able to negotiate the metadata port " +
                     "between Provider and Consumer, will try to use instance port as the default metadata port.");
@@ -120,7 +129,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .setPort(port)
                 .setProtocol(DUBBO_PROTOCOL)
                 .setPath(MetadataService.class.getName())
-                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
+                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
                 .addParameter(Constants.RECONNECT_KEY, false)
                 .addParameter(SIDE_KEY, CONSUMER)
                 .addParameter(GROUP_KEY, serviceName)

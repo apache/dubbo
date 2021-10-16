@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.dns;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -30,7 +31,6 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.Constants;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -38,8 +38,7 @@ import org.apache.dubbo.registry.dns.util.DNSClientConst;
 import org.apache.dubbo.registry.dns.util.DNSResolver;
 import org.apache.dubbo.registry.dns.util.ResolveResult;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import com.alibaba.fastjson.JSONObject;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,7 +61,7 @@ public class DNSServiceDiscoveryTest {
     public void setup() {
         DubboBootstrap.reset();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
     }
 
     @AfterEach
@@ -72,19 +71,22 @@ public class DNSServiceDiscoveryTest {
 
     @Test
     public void testProvider() throws Exception {
-        ServiceDiscovery dnsServiceDiscovery = new DNSServiceDiscovery();
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        DNSServiceDiscovery dnsServiceDiscovery = new DNSServiceDiscovery();
+        dnsServiceDiscovery.setApplicationModel(applicationModel);
 
         URL registryURL = URL.valueOf("dns://");
+        registryURL.setScopeModel(ApplicationModel.defaultModel());
         dnsServiceDiscovery.initialize(registryURL);
 
         assertEquals(registryURL, dnsServiceDiscovery.getUrl());
 
-        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "localhost", 12345);
+        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "localhost", 12345, ScopeModelUtil.getApplicationModel(dnsServiceDiscovery.getUrl().getScopeModel()));
         serviceInstance.getMetadata().put("a", "b");
 
         dnsServiceDiscovery.register(serviceInstance);
 
-        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
+        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(applicationModel);
         InstanceMetadataChangedListener changeListener = Mockito.mock(InstanceMetadataChangedListener.class);
 
         String metadataString = metadataService
@@ -106,23 +108,26 @@ public class DNSServiceDiscoveryTest {
 
     @Test
     public void testConsumer() throws Exception {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
         DNSServiceDiscovery dnsServiceDiscovery = new DNSServiceDiscovery();
+        dnsServiceDiscovery.setApplicationModel(applicationModel);
 
         URL registryURL = URL.valueOf("dns://")
                 .addParameter(DNSClientConst.DNS_POLLING_CYCLE, 100)
                 .addParameter(Constants.ECHO_POLLING_CYCLE_KEY, 100);
-        ApplicationModel.getEnvironment().getAppExternalConfigMap()
+        registryURL.setScopeModel(ApplicationModel.defaultModel());
+        applicationModel.getModelEnvironment().getAppExternalConfigMap()
                 .put(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(500));
         dnsServiceDiscovery.initialize(registryURL);
 
-        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
-        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "localhost", 12345);
+        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(applicationModel);
+        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "localhost", 12345, ScopeModelUtil.getApplicationModel(dnsServiceDiscovery.getUrl().getScopeModel()));
         serviceInstance.getMetadata().put("a", "b");
 
         dnsServiceDiscovery.register(serviceInstance);
 
         int port = NetUtils.getAvailablePort();
-        ApplicationModel.getApplicationConfig().setMetadataServicePort(port);
+        applicationModel.getCurrentConfig().setMetadataServicePort(port);
 
         WritableMetadataService spiedMetadataService = Mockito.spy(metadataService);
 
@@ -148,8 +153,8 @@ public class DNSServiceDiscoveryTest {
         serviceInstances = dnsServiceDiscovery.getInstances("Test.Service.");
         assertEquals("c", serviceInstances.get(0).getMetadata("a"));
 
-        dnsServiceDiscovery.addServiceInstancesChangedListener(changedListener);
         ArgumentCaptor<ServiceInstancesChangedEvent> argument = ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
+        dnsServiceDiscovery.addServiceInstancesChangedListener(changedListener);
         Thread.sleep(1000);
         Mockito.verify(changedListener, Mockito.timeout(1000)).onEvent(argument.capture());
         assertEquals("c", argument.getValue().getServiceInstances().get(0).getMetadata("a"));
@@ -164,7 +169,7 @@ public class DNSServiceDiscoveryTest {
         serviceConfig.unexport();
 
         dnsServiceDiscovery.destroy();
-        ApplicationModel.getEnvironment().getAppExternalConfigMap()
+        applicationModel.getModelEnvironment().getAppExternalConfigMap()
                 .remove(METADATA_PROXY_TIMEOUT_KEY);
     }
 

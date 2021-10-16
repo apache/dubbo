@@ -19,19 +19,21 @@ package org.apache.dubbo.rpc;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -54,7 +56,10 @@ public class RpcInvocation implements Invocation, Serializable {
     private String targetServiceUniqueName;
     private String protocolServiceKey;
 
+    private ServiceModel serviceModel;
+
     private String methodName;
+
     private String serviceName;
 
     private transient Class<?>[] parameterTypes;
@@ -71,7 +76,7 @@ public class RpcInvocation implements Invocation, Serializable {
     /**
      * Only used on the caller side, will not appear on the wire.
      */
-    private transient Map<Object, Object> attributes = new LinkedHashMap<Object, Object>();
+    private transient Map<Object, Object> attributes = new HashMap<Object, Object>();
 
     private transient Invoker<?> invoker;
 
@@ -85,8 +90,8 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
-        this(invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
-                invocation.getParameterTypes(), invocation.getArguments(), new LinkedHashMap<>(invocation.getObjectAttachments()),
+        this(invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
+                invocation.getParameterTypes(), invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
                 invocation.getInvoker(), invocation.getAttributes());
         if (invoker != null) {
             URL url = invoker.getUrl();
@@ -115,54 +120,93 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Invocation invocation) {
-        this(invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(), invocation.getParameterTypes(),
+        this(invocation.getServiceModel(), invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(), invocation.getParameterTypes(),
                 invocation.getArguments(), invocation.getObjectAttachments(), invocation.getInvoker(), invocation.getAttributes());
         this.targetServiceUniqueName = invocation.getTargetServiceUniqueName();
     }
 
+    public RpcInvocation(ServiceModel serviceModel, Method method, String serviceName, String protocolServiceKey, Object[] arguments) {
+        this(serviceModel, method, serviceName, protocolServiceKey, arguments, null, null);
+    }
+
+    @Deprecated
     public RpcInvocation(Method method, String serviceName, String protocolServiceKey, Object[] arguments) {
-        this(method, serviceName, protocolServiceKey, arguments, null, null);
+        this(null, method, serviceName, protocolServiceKey, arguments, null, null);
     }
 
+    public RpcInvocation(ServiceModel serviceModel, Method method, String serviceName, String protocolServiceKey, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {
+        this(serviceModel, method.getName(), serviceName, protocolServiceKey, method.getParameterTypes(), arguments, attachment, null, attributes);
+    }
+
+    @Deprecated
     public RpcInvocation(Method method, String serviceName, String protocolServiceKey, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {
-        this(method.getName(), serviceName, protocolServiceKey, method.getParameterTypes(), arguments, attachment, null, attributes);
+        this(null, method.getName(), serviceName, protocolServiceKey, method.getParameterTypes(), arguments, attachment, null, attributes);
     }
 
+    public RpcInvocation(ServiceModel serviceModel, String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments) {
+        this(serviceModel, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, null, null, null);
+    }
+
+    @Deprecated
     public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments) {
-        this(methodName, serviceName, protocolServiceKey, parameterTypes, arguments, null, null, null);
+        this(null, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, null, null, null);
     }
 
+    public RpcInvocation(ServiceModel serviceModel, String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments) {
+        this(serviceModel, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, null, null);
+    }
+
+    @Deprecated
     public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments) {
-        this(methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, null, null);
+        this(null, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, null, null);
     }
 
+    @Deprecated
     public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments,
                          Map<String, Object> attachments, Invoker<?> invoker, Map<Object, Object> attributes) {
+        this(null, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, invoker, attributes);
+    }
+
+    public RpcInvocation(ServiceModel serviceModel, String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments,
+                         Map<String, Object> attachments, Invoker<?> invoker, Map<Object, Object> attributes) {
+        this.serviceModel = serviceModel;
         this.methodName = methodName;
         this.serviceName = serviceName;
         this.protocolServiceKey = protocolServiceKey;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
-        this.attachments = attachments == null ? new LinkedHashMap<>() : attachments;
-        this.attributes = attributes == null ? new LinkedHashMap<>() : attributes;
+        this.attachments = attachments == null ? new HashMap<>() : attachments;
+        this.attributes = attributes == null ? new HashMap<>() : attributes;
         this.invoker = invoker;
         initParameterDesc();
     }
 
     private void initParameterDesc() {
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
-        if (StringUtils.isNotEmpty(serviceName)) {
-            ServiceDescriptor serviceDescriptor = repository.lookupService(serviceName);
-            if (serviceDescriptor != null) {
-                MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(methodName, parameterTypes);
-                if (methodDescriptor != null) {
-                    this.parameterTypesDesc = methodDescriptor.getParamDesc();
-                    this.compatibleParamSignatures = methodDescriptor.getCompatibleParamSignatures();
-                    this.returnTypes = methodDescriptor.getReturnTypes();
-                    this.returnType = methodDescriptor.getReturnClass();
-                }
+        AtomicReference<ServiceDescriptor> serviceDescriptor = new AtomicReference<>();
+        if (serviceModel != null) {
+            serviceDescriptor.set(serviceModel.getServiceModel());
+        } else if (StringUtils.isNotEmpty(serviceName)){
+            // TODO: Multi Instance compatible mode
+            FrameworkModel.defaultModel()
+                .getServiceRepository()
+                .allProviderModels()
+                .stream()
+                .map(ProviderModel::getServiceModel)
+                .filter(s->serviceName.equals(s.getServiceName()))
+                .findFirst()
+                .ifPresent(serviceDescriptor::set);
+        }
+
+        if (serviceDescriptor.get() != null) {
+            MethodDescriptor methodDescriptor = serviceDescriptor.get().getMethod(methodName, parameterTypes);
+            if (methodDescriptor != null) {
+                this.parameterTypesDesc = methodDescriptor.getParamDesc();
+                this.compatibleParamSignatures = methodDescriptor.getCompatibleParamSignatures();
+                this.returnTypes = methodDescriptor.getReturnTypes();
+                this.returnType = methodDescriptor.getReturnClass();
             }
         }
+
 
         if (parameterTypesDesc == null) {
             this.parameterTypesDesc = ReflectUtils.getDesc(this.getParameterTypes());
@@ -271,7 +315,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public void setObjectAttachments(Map<String, Object> attachments) {
-        this.attachments = attachments == null ? new LinkedHashMap<>() : attachments;
+        this.attachments = attachments == null ? new HashMap<>() : attachments;
     }
 
     @Override
@@ -287,7 +331,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     @Deprecated
     public void setAttachments(Map<String, String> attachments) {
-        this.attachments = attachments == null ? new LinkedHashMap<>() : new LinkedHashMap<>(attachments);
+        this.attachments = attachments == null ? new HashMap<>() : new HashMap<>(attachments);
     }
 
     @Override
@@ -298,7 +342,7 @@ public class RpcInvocation implements Invocation, Serializable {
     @Override
     public void setObjectAttachment(String key, Object value) {
         if (attachments == null) {
-            attachments = new LinkedHashMap<>();
+            attachments = new HashMap<>();
         }
         attachments.put(key, value);
     }
@@ -316,7 +360,7 @@ public class RpcInvocation implements Invocation, Serializable {
     @Override
     public void setObjectAttachmentIfAbsent(String key, Object value) {
         if (attachments == null) {
-            attachments = new LinkedHashMap<>();
+            attachments = new HashMap<>();
         }
         if (!attachments.containsKey(key)) {
             attachments.put(key, value);
@@ -329,7 +373,7 @@ public class RpcInvocation implements Invocation, Serializable {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new LinkedHashMap<>();
+            this.attachments = new HashMap<>();
         }
         this.attachments.putAll(attachments);
     }
@@ -339,7 +383,7 @@ public class RpcInvocation implements Invocation, Serializable {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new LinkedHashMap<>();
+            this.attachments = new HashMap<>();
         }
         this.attachments.putAll(attachments);
     }
@@ -449,6 +493,16 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public void setInvokeMode(InvokeMode invokeMode) {
         this.invokeMode = invokeMode;
+    }
+
+    @Override
+    public void setServiceModel(ServiceModel serviceModel) {
+        this.serviceModel = serviceModel;
+    }
+
+    @Override
+    public ServiceModel getServiceModel() {
+        return serviceModel;
     }
 
     @Override

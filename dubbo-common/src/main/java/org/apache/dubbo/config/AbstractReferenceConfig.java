@@ -83,7 +83,10 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     /**
      * Weather the reference is refer asynchronously
+     * @deprecated
+     * @see ModuleConfig#referAsync
      */
+    @Deprecated
     private Boolean referAsync;
 
     @Override
@@ -238,11 +241,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.router = router;
     }
 
+    @Deprecated
     @Parameter(key = REFER_ASYNC_KEY)
     public Boolean getReferAsync() {
         return referAsync;
     }
 
+    @Deprecated
     public void setReferAsync(Boolean referAsync) {
         this.referAsync = referAsync;
     }

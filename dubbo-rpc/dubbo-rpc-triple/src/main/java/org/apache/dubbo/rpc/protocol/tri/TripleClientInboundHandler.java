@@ -27,7 +27,7 @@ public class TripleClientInboundHandler extends ChannelInboundHandlerAdapter {
         final byte[] data = (byte[]) msg;
         if (clientStream != null) {
             clientStream.asTransportObserver()
-                    .tryOnData(data, false);
+                    .onData(data, false);
         }
     }
 }

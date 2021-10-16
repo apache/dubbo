@@ -20,6 +20,8 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +33,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.EQUAL_SPLIT_PATT
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 
 @Activate
-public class EnvironmentAdapter implements InfraAdapter {
+public class EnvironmentAdapter implements InfraAdapter, ScopeModelAware {
+
+    private ApplicationModel applicationModel;
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
 
     /**
      * 1. OS Environment: DUBBO_LABELS=tag=pre;key=value
@@ -41,7 +50,7 @@ public class EnvironmentAdapter implements InfraAdapter {
     public Map<String, String> getExtraAttributes(Map<String, String> params) {
         Map<String, String> parameters = new HashMap<>();
 
-        String rawLabels = ConfigurationUtils.getProperty(DUBBO_LABELS);
+        String rawLabels = ConfigurationUtils.getProperty(applicationModel, DUBBO_LABELS);
         if (StringUtils.isNotEmpty(rawLabels)) {
             String[] labelPairs = SEMICOLON_SPLIT_PATTERN.split(rawLabels);
             for (String pair : labelPairs) {
@@ -52,11 +61,11 @@ public class EnvironmentAdapter implements InfraAdapter {
             }
         }
 
-        String rawKeys = ConfigurationUtils.getProperty(DUBBO_ENV_KEYS);
+        String rawKeys = ConfigurationUtils.getProperty(applicationModel, DUBBO_ENV_KEYS);
         if (StringUtils.isNotEmpty(rawKeys)) {
             String[] keys = COMMA_SPLIT_PATTERN.split(rawKeys);
             for (String key : keys) {
-                String value = ConfigurationUtils.getProperty(key);
+                String value = ConfigurationUtils.getProperty(applicationModel, key);
                 if (value != null) {
                     parameters.put(key, value);
                 }
@@ -67,6 +76,6 @@ public class EnvironmentAdapter implements InfraAdapter {
 
     @Override
     public String getAttribute(String key) {
-        return ConfigurationUtils.getProperty(key);
+        return ConfigurationUtils.getProperty(applicationModel, key);
     }
 }

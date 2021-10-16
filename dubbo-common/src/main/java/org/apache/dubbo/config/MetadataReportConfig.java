@@ -40,7 +40,9 @@ public class MetadataReportConfig extends AbstractConfig {
 
     private String protocol;
 
-    // metadata center address
+    /**
+     * metadata center address
+     */
     private String address;
 
     /**
@@ -48,13 +50,19 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Integer port;
 
-    // Username to login metadata center
+    /**
+     * Username to login metadata center
+     */
     private String username;
 
-    // Password to login metadata center
+    /**
+     * Password to login metadata center
+     */
     private String password;
 
-    // Request timeout in milliseconds for metadata center
+    /**
+     * Request timeout in milliseconds for metadata center
+     */
     private Integer timeout;
 
     /**
@@ -62,14 +70,16 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private String group;
 
-    // Customized parameters
+    /**
+     * Customized parameters
+     */
     private Map<String, String> parameters;
 
     private Integer retryTimes;
 
     private Integer retryPeriod;
     /**
-     * By default the metadatastore will store full metadata repeatedly every day .
+     * By default the metadata store will store full metadata repeatedly every day .
      */
     private Boolean cycleReport;
 
@@ -93,6 +103,13 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private String file;
 
+    /**
+     * Decide the behaviour when initial connection try fails,
+     * 'true' means interrupt the whole process once fail.
+     * The default value is true
+     */
+    private Boolean check;
+
 
     public MetadataReportConfig() {
     }
@@ -107,7 +124,7 @@ public class MetadataReportConfig extends AbstractConfig {
             throw new IllegalArgumentException("The address of metadata report is invalid.");
         }
         Map<String, String> map = new HashMap<String, String>();
-        URL url = URL.valueOf(address);
+        URL url = URL.valueOf(address, getScopeModel());
         // Issue : https://github.com/apache/dubbo/issues/6491
         // Append the parameters from address
         map.putAll(url.getParameters());
@@ -118,7 +135,7 @@ public class MetadataReportConfig extends AbstractConfig {
         // put the protocol of URL as the "metadata"
         map.put("metadata", url.getProtocol());
         return new ServiceConfigURL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
-                url.getPort(), url.getPath(), map);
+                url.getPort(), url.getPath(), map).setScopeModel(getScopeModel());
 
     }
 
@@ -279,5 +296,13 @@ public class MetadataReportConfig extends AbstractConfig {
         } else {
             this.parameters.putAll(parameters);
         }
+    }
+
+    public Boolean isCheck() {
+        return check;
+    }
+
+    public void setCheck(Boolean check) {
+        this.check = check;
     }
 }

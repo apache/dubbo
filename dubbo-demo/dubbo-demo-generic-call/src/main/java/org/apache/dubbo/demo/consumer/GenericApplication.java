@@ -16,54 +16,53 @@
  */
 package org.apache.dubbo.demo.consumer;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.rpc.service.GenericService;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.gson.Gson;
 
 public class GenericApplication {
+
     public static void main(String[] args) {
-        if (isClassic(args)) {
-//            runWithRefer();
-        } else {
-            runWithBootstrap();
-        }
+        runWithBootstrap(args);
     }
 
-    private static boolean isClassic(String[] args) {
-        return args.length > 0 && "classic".equalsIgnoreCase(args[0]);
-    }
 
-    private static void runWithBootstrap() {
+    private static void runWithBootstrap(String[] args) {
         ReferenceConfig<GenericService> reference = new ReferenceConfig<>();
         reference.setInterface("org.apache.dubbo.demo.DemoService");
-        reference.setGeneric("true");
+
+        String param = "dubbo generic invoke";
+
+        if (args.length > 0 && CommonConstants.GENERIC_SERIALIZATION_GSON.equals(args[0])) {
+            reference.setGeneric(CommonConstants.GENERIC_SERIALIZATION_GSON);
+            param = new Gson().toJson(param + " gson");
+        } else {
+            reference.setGeneric("true");
+        }
 
         ApplicationConfig applicationConfig = new ApplicationConfig("demo-consumer");
-        Map<String, String> parameters = new HashMap<>();
-        applicationConfig.setParameters(parameters);
 
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
         metadataReportConfig.setAddress("zookeeper://127.0.0.1:2181");
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(applicationConfig)
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .reference(reference)
-                .start();
+            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+            .reference(reference)
+            .start();
 
         // generic invoke
-        GenericService genericService = (GenericService) ReferenceConfigCache.getCache().get(reference);
+        GenericService genericService = bootstrap.getCache().get(reference);
         while (true) {
             try {
                 Object genericInvokeResult = genericService.$invoke("sayHello", new String[]{String.class.getName()},
-                        new Object[]{"dubbo generic invoke"});
+                    new Object[]{param});
                 System.out.println(genericInvokeResult);
                 Thread.sleep(1000);
             } catch (Exception e) {
@@ -72,13 +71,4 @@ public class GenericApplication {
         }
     }
 
-//    private static void runWithRefer() {
-//        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
-//        reference.setApplication(new ApplicationConfig("dubbo-demo-api-consumer"));
-//        reference.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
-//        reference.setInterface(DemoService.class);
-//        DemoService service = reference.get();
-//        String message = service.sayHello("dubbo");
-//        System.out.println(message);
-//    }
 }
