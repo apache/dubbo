@@ -82,6 +82,10 @@ public class ModuleModel extends ScopeModel {
 
     @Override
     public void onDestroy() {
+        if (deployer != null) {
+            deployer.preDestroy();
+        }
+        
         notifyDestroy();
         applicationModel.removeModule(this);
 

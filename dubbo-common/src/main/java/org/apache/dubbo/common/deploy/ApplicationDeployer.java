@@ -45,7 +45,7 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
 
     void destroy();
 
-    default void preDestroy() {}
+    void preDestroy();
 
     /**
      * Indicates that the Application is initialized or not.

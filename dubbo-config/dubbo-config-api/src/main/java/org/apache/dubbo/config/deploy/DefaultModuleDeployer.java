@@ -166,6 +166,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     public void stop() throws IllegalStateException {
         destroy();
     }
+    
+    @Override
+    public void preDestroy() throws IllegalStateException {
+        applicationDeployer.preDestroy();
+    }
 
     @Override
     public synchronized void destroy() throws IllegalStateException {

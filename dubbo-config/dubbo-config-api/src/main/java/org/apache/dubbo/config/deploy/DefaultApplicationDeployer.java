@@ -73,6 +73,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -80,6 +81,7 @@ import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
@@ -550,7 +552,23 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return startFuture;
     }
 
+    @SuppressWarnings("rawtypes")
     private void doStart() {
+        List<CompletableFuture> futures = startModuleModels();
+
+        // prepare application instance
+        prepareApplicationInstance();
+
+        // notify on each module started
+        if (!futures.isEmpty()) {
+            executorRepository.getSharedExecutor().submit(()-> {
+                awaitDeployFinished(futures);
+            });
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private List<CompletableFuture> startModuleModels() {
         // copy current modules, ignore new module during starting
         List<ModuleModel> moduleModels = new ArrayList<>(applicationModel.getModuleModels());
         List<CompletableFuture> futures = new ArrayList<>(moduleModels.size());
@@ -562,23 +580,24 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 futures.add(moduleFuture);
             }
         }
-
-        // prepare application instance
-        prepareApplicationInstance();
-
-        // notify on each module started
-//        executorRepository.getSharedExecutor().submit(()-> {
-//            awaitDeployFinished(futures);
-//            onStarted();
-//        });
+        return futures;
     }
 
+    @SuppressWarnings("rawtypes")
     private void awaitDeployFinished(List<CompletableFuture> futures) {
-        try {
-            CompletableFuture mergedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-            mergedFuture.get();
-        } catch (Exception e) {
-            logger.error(getIdentifier() + " await deploy finished failed", e);
+        while (true) {
+            try {
+                CompletableFuture mergedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
+                mergedFuture.get(DEFAULT_TIMEOUT, TimeUnit.MICROSECONDS);
+            } catch (TimeoutException e) {
+                futures = startModuleModels();
+                if (futures.isEmpty()) {
+                    break;
+                }
+            } catch (Exception e) {
+                logger.error(getIdentifier() + " await deploy finished failed", e);
+                break;
+            }
         }
     }
 
@@ -604,7 +623,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // start internal module
         ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
         if (!internalModuleDeployer.isRunning()) {
-            internalModuleDeployer.start();
+            CompletableFuture internalFuture = internalModuleDeployer.start();
+            try {
+                internalFuture.get(DEFAULT_TIMEOUT, TimeUnit.MICROSECONDS);
+            } catch (Exception e) {
+                logger.error("await internal module deploy finished failed", e);
+            }
         }
     }
 
@@ -794,7 +818,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     /**
-     * it will be called by ApplicationModel removeModule().
+     * it will be called by DefaultModuleDeployer preDestroy().
      */
     @Override
     public synchronized void preDestroy() {

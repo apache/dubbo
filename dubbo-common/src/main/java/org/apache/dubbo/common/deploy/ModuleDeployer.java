@@ -35,6 +35,8 @@ public interface ModuleDeployer extends Deployer<ModuleModel> {
 
     void destroy() throws IllegalStateException;
 
+    void preDestroy() throws IllegalStateException;
+
     boolean isInitialized();
 
     ReferenceCache getReferenceCache();
