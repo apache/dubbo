@@ -221,11 +221,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         applicationDeployer.checkStarting();
     }
 
+    @SuppressWarnings("unchecked")
     private void onModuleStarted() {
         setStarted();
         logger.info(getIdentifier() + " has started.");
         applicationDeployer.checkStarted();
-        // start applicationDeployer after internalModule is started.
+        // must set startFuture because this start() is also called by DubboDeployApplicationListener.onContextRefreshedEvent().
         startFuture.complete(true);
     }
 
