@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
@@ -26,14 +28,15 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 public class ServiceModel {
+
+    private static final Logger log = LoggerFactory.getLogger(ServiceModel.class);
+    private final ModuleModel moduleModel;
+    private final ServiceDescriptor serviceModel;
+    private final AbstractInterfaceConfig config;
     private String serviceKey;
     private Object proxyObject;
     private Callable<Void> destroyCaller;
     private ClassLoader classLoader;
-    private final ModuleModel moduleModel;
-    private final ServiceDescriptor serviceModel;
-    private final AbstractInterfaceConfig config;
-
     private ServiceMetadata serviceMetadata;
 
     public ServiceModel(Object proxyObject, String serviceKey, ServiceDescriptor serviceModel, AbstractInterfaceConfig config) {
@@ -66,24 +69,32 @@ public class ServiceModel {
         return serviceKey;
     }
 
-    public void setProxyObject(Object proxyObject) {
-        this.proxyObject = proxyObject;
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+        if (serviceMetadata != null) {
+            serviceMetadata.setServiceKey(serviceKey);
+            serviceMetadata.setGroup(BaseServiceMetadata.groupFromServiceKey(serviceKey));
+        }
     }
 
     public Object getProxyObject() {
         return proxyObject;
     }
 
+    public void setProxyObject(Object proxyObject) {
+        this.proxyObject = proxyObject;
+    }
+
     public ServiceDescriptor getServiceModel() {
         return serviceModel;
     }
 
-    public void setClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader;
-    }
-
     public ClassLoader getClassLoader() {
         return classLoader;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
     /**
@@ -121,16 +132,11 @@ public class ServiceModel {
         if (config instanceof ServiceConfigBase) {
             return (ServiceConfigBase<?>) config;
         } else {
-            throw new IllegalArgumentException("Current ServiceModel is not a ProviderModel");
+            if (log.isWarnEnabled()) {
+                log.warn("Current ServiceModel is not a ProviderModel");
+            }
         }
-    }
-
-    public void setServiceKey(String serviceKey) {
-        this.serviceKey = serviceKey;
-        if (serviceMetadata != null) {
-            serviceMetadata.setServiceKey(serviceKey);
-            serviceMetadata.setGroup(BaseServiceMetadata.groupFromServiceKey(serviceKey));
-        }
+        return null;
     }
 
     public String getServiceName() {
