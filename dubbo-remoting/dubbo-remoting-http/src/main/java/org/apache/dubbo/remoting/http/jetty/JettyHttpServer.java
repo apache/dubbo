@@ -49,10 +49,6 @@ public class JettyHttpServer extends AbstractHttpServer {
     public JettyHttpServer(URL url, final HttpHandler handler) {
         super(url, handler);
         this.url = url;
-        // TODO we should leave this setting to slf4j
-        // we must disable the debug logging for production use
-        Log.setLog(new StdErrLog());
-        Log.getLog().setDebugEnabled(false);
 
         DispatcherServlet.addHttpHandler(url.getParameter(Constants.BIND_PORT_KEY, url.getPort()), handler);
 
