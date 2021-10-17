@@ -70,11 +70,11 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             }
 
             zookeeperClient = createZookeeperClient(url);
+            logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
+            writeToClientMap(addressList, zookeeperClient);
             Set<String> appSet = new HashSet<>();
             appSet.add(application);
             zookeeperApplicationMap.put(zookeeperClient, appSet);            
-            logger.info("No valid zookeeper client found from cache, therefore create a new client for url. " + url);
-            writeToClientMap(addressList, zookeeperClient);
         }
         return zookeeperClient;
     }
@@ -95,7 +95,6 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                     logger.warn("Application: " + application + " associated with the alive client: "
                             + zookeeperClient.getUrl() + " is not cached in zookeeperApplicationMap.");
                     zookeeperClient.close();
-                    clearZookeeperClientCache(zookeeperClient);
                 }
                 return;
             }
@@ -107,9 +106,9 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                 if (appSet.isEmpty()) {
                     if (zookeeperClient.isConnected()) {
                         zookeeperClient.close();                        
-                    }                    
-                    zookeeperApplicationMap.remove(zookeeperClient);
+                    }
                     clearZookeeperClientCache(zookeeperClient);
+                    zookeeperApplicationMap.remove(zookeeperClient);
                 }
             }
         }
@@ -135,8 +134,8 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                         logger.warn("Applications associated with the alive client: " + entry.getKey().getUrl()
                                 + " are not cached in zookeeperApplicationMap.");
                         entry.getKey().close();
-                        clearZookeeperClientCache(entry.getKey());
                     }
+                    clearZookeeperClientCache(entry.getKey());
                     iterator.remove();
                     continue;
                 }
@@ -144,8 +143,8 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                     if (appSet.isEmpty()) {
                         if (entry.getKey().isConnected()) {
                             entry.getKey().close();
-                            clearZookeeperClientCache(entry.getKey());
                         }
+                        clearZookeeperClientCache(entry.getKey());
                         iterator.remove();
                     }
                 }
