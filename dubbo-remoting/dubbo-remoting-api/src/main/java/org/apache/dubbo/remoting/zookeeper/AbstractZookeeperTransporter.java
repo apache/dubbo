@@ -74,7 +74,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             writeToClientMap(addressList, zookeeperClient);
             Set<String> appSet = new HashSet<>();
             appSet.add(application);
-            zookeeperApplicationMap.put(zookeeperClient, appSet);            
+            zookeeperApplicationMap.put(zookeeperClient, appSet);
         }
         return zookeeperClient;
     }
@@ -105,7 +105,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             if (appSet.remove(application)) {
                 if (appSet.isEmpty()) {
                     if (zookeeperClient.isConnected()) {
-                        zookeeperClient.close();                        
+                        zookeeperClient.close();
                     }
                     clearZookeeperClientCache(zookeeperClient);
                     zookeeperApplicationMap.remove(zookeeperClient);
