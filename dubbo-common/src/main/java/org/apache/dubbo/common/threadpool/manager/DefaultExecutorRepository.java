@@ -87,7 +87,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     public DefaultExecutorRepository() {
         for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
-                new NamedThreadFactory("Dubbo-framework-scheduler"));
+                new NamedThreadFactory("Dubbo-framework-scheduler", true));
             scheduledExecutors.addItem(scheduler);
 
             executorServiceRing.addItem(new ThreadPoolExecutor(1, 1,
