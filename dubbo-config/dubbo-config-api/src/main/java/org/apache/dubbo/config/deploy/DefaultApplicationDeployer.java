@@ -601,14 +601,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             try {
                 CompletableFuture mergedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
                 mergedFuture.get(DEFAULT_TIMEOUT, TimeUnit.MICROSECONDS);
-            } catch (TimeoutException e) {
-                if (isStarting()) {
-                    futures = startModuleModels();
-                }
             } catch (Exception e) {
-                if (isStarting()) {
+                if (isStarting() && !(e instanceof TimeoutException)) {
                     logger.warn(getIdentifier() + " await deploy finished failed", e);
                 }
+            }
+            if (isStarting()) {
+                futures = startModuleModels();
             }
         }
     }

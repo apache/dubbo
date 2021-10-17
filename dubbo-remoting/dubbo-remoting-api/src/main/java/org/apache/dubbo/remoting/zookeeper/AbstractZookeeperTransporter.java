@@ -83,7 +83,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * close the zookeeper client if it is no longer used by any application.
      * 
      * @param zookeeperClient
-     * @param application the application which is going to be destroyed. 
+     * @param application the application which is going to be destroyed.
      */
     @Override
     public void close(ZookeeperClient zookeeperClient, String application) {
