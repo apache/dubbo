@@ -17,28 +17,35 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
+import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class ListBoolMatch {
-    private List<BoolMatch> oneof;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-    public List<BoolMatch> getOneof() {
-        return oneof;
-    }
 
-    public void setOneof(List<BoolMatch> oneof) {
-        this.oneof = oneof;
-    }
+public class ListBoolMatchTest {
 
-    public static boolean isMatch(ListBoolMatch listBoolMatch, boolean input) {
+    @Test
+    public void isMatch() {
+        ListBoolMatch listBoolMatch = new ListBoolMatch();
+        List<BoolMatch> oneof = new ArrayList<>();
 
-        for (BoolMatch boolMatch : listBoolMatch.getOneof()) {
-            if (BoolMatch.isMatch(boolMatch, input)) {
-                return true;
-            }
-        }
-        return false;
+        BoolMatch boolMatch1 = new BoolMatch();
+        boolMatch1.setExact(true);
+        oneof.add(boolMatch1);
+        listBoolMatch.setOneof(oneof);
+
+        assertTrue(ListBoolMatch.isMatch(listBoolMatch, true));
+        assertFalse(ListBoolMatch.isMatch(listBoolMatch, false));
+
+        BoolMatch boolMatch2 = new BoolMatch();
+        boolMatch2.setExact(false);
+        oneof.add(boolMatch2);
+        listBoolMatch.setOneof(oneof);
+
+        assertTrue(ListBoolMatch.isMatch(listBoolMatch, false));
     }
 }
-
