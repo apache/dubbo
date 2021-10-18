@@ -457,7 +457,11 @@ public class InstanceAddressURL extends URL {
             }
             return numbers;
         }
-        return getServiceNumbers(protocolServiceKey);
+        try {
+            return getServiceNumbers(protocolServiceKey);
+        } catch (Throwable t) {
+            throw new IllegalStateException("service key not contains, serviceKey:" + protocolServiceKey + " metadataInfo:" + metadataInfo, t);
+        }
     }
 
     @Override
