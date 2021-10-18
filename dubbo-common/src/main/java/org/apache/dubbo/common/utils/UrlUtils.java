@@ -33,9 +33,11 @@ import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -46,6 +48,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
@@ -66,12 +69,6 @@ public class UrlUtils {
      * in the url string,mark the param begin
      */
     private final static String URL_PARAM_STARTING_SYMBOL = "?";
-
-    private final static String GROUP = "group";
-
-    private final static String VERSION = "version";
-
-    private final static String CONSUMER = "consumer";
 
     public static URL parseURL(String address, Map<String, String> defaults) {
         if (StringUtils.isEmpty(address)) {
@@ -223,8 +220,8 @@ public class UrlUtils {
             String serviceQuery = entry.getValue();
             if (StringUtils.isNotContains(serviceName, ':') && StringUtils.isNotContains(serviceName, '/')) {
                 Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
-                String group = params.get("group");
-                String version = params.get("version");
+                String group = params.get(GROUP);
+                String version = params.get(VERSION);
                 //params.remove("group");
                 //params.remove("version");
                 String name = serviceName;
@@ -255,12 +252,12 @@ public class UrlUtils {
                     String name = serviceName;
                     int i = name.indexOf('/');
                     if (i >= 0) {
-                        params.put("group", name.substring(0, i));
+                        params.put(GROUP, name.substring(0, i));
                         name = name.substring(i + 1);
                     }
                     i = name.lastIndexOf(':');
                     if (i >= 0) {
-                        params.put("version", name.substring(i + 1));
+                        params.put(VERSION, name.substring(i + 1));
                         name = name.substring(0, i);
                     }
                     Map<String, String> newUrls = newRegister.computeIfAbsent(name, k -> new HashMap<String, String>());

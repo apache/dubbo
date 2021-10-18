@@ -484,4 +484,8 @@ public interface CommonConstants {
 
     String OS_WIN_PREFIX = "win";
 
+    String GROUP = "group";
+
+    String VERSION = "version";
+
 }
