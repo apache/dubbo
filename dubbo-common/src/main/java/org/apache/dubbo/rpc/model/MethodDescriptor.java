@@ -118,6 +118,10 @@ public class MethodDescriptor {
         return rpcType.equals(RpcType.SERVER_STREAM) || rpcType.equals(RpcType.BIDIRECTIONAL_STREAM) || rpcType.equals(RpcType.CLIENT_STREAM);
     }
 
+    public boolean isServerStream() {
+        return RpcType.SERVER_STREAM.equals(rpcType);
+    }
+
     public boolean isUnary() {
         return rpcType.equals(RpcType.UNARY);
     }

@@ -71,6 +71,12 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return stream;
     }
 
+    protected RpcInvocation getRpcInvocation() {
+       return  (RpcInvocation) getRequest().getData();
+    }
+
+    protected abstract void startCall();
+
     public AbstractClientStream service(ConsumerModel model) {
         this.consumerModel = model;
         return this;
@@ -202,6 +208,25 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     @Override
     protected void cancelByLocal(Throwable throwable) {
         getCancellationContext().cancel(throwable);
+    }
+
+
+    protected abstract class AbstractClientTransport extends AbstractTransportObserver {
+
+        @Override
+        public void onData(byte[] data, boolean endStream) {
+            execute(() -> {
+                final Object resp = deserializeResponse(data);
+                getStreamSubscriber().onNext(resp);
+            });
+        }
+
+//        protected abstract
+
+        @Override
+        public void onComplete() {
+            super.onComplete();
+        }
     }
 
 

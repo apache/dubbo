@@ -48,9 +48,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KE
 public abstract class AbstractServerStream extends AbstractStream implements Stream {
 
     private final ProviderModel providerModel;
+    private final List<HeaderFilter> headerFilters;
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
-    private final List<HeaderFilter> headerFilters;
 
     protected AbstractServerStream(URL url) {
         this(url, lookupProviderModel(url));

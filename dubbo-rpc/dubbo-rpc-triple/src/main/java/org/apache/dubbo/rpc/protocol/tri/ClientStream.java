@@ -19,8 +19,12 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 public class ClientStream extends AbstractClientStream implements Stream {
 
@@ -36,6 +40,39 @@ public class ClientStream extends AbstractClientStream implements Stream {
     @Override
     protected TransportObserver createTransportObserver() {
         return new ClientTransportObserverImpl();
+    }
+
+    @Override
+    protected void startCall() {
+        Response response = new Response(getRequest().getId(), getRequest().getVersion());
+        AppResponse result = getMethodDescriptor().isServerStream() ? callServerStream() : callBiStream();
+        response.setResult(result);
+        DefaultFuture2.received(getConnection(), response);
+    }
+
+    private AppResponse callServerStream() {
+        StreamObserver<Object> obServer = (StreamObserver<Object>) getRpcInvocation().getArguments()[1];
+        obServer = attachCancelContext(obServer, getCancellationContext());
+        subscribe(obServer);
+        asStreamObserver().onNext(getRpcInvocation().getArguments()[0]);
+        asStreamObserver().onCompleted();
+        return new AppResponse();
+    }
+
+    private AppResponse callBiStream() {
+        StreamObserver<Object> obServer = (StreamObserver<Object>) getRpcInvocation().getArguments()[0];
+        obServer = attachCancelContext(obServer, getCancellationContext());
+        subscribe(obServer);
+        return new AppResponse(asStreamObserver());
+    }
+
+    private <T> StreamObserver<T> attachCancelContext(StreamObserver<T> observer, CancellationContext context) {
+        if (observer instanceof CancelableStreamObserver) {
+            CancelableStreamObserver<T> streamObserver = ((CancelableStreamObserver<T>) observer);
+            streamObserver.setCancellationContext(context);
+            return streamObserver;
+        }
+        return observer;
     }
 
     private class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {

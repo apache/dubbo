@@ -40,6 +40,12 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
     }
 
     @Override
+    protected void startCall() {
+        asStreamObserver().onNext(getRpcInvocation());
+        asStreamObserver().onCompleted();
+    }
+
+    @Override
     protected StreamObserver<Object> createStreamObserver() {
         return new UnaryClientStreamObserverImpl();
     }
