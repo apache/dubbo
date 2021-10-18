@@ -47,7 +47,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     private final ProviderModel providerModel;
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
-    private List<HeaderFilter> headerFilters;
+    private final List<HeaderFilter> headerFilters;
 
     protected AbstractServerStream(URL url) {
         this(url, lookupProviderModel(url));
@@ -69,7 +69,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             return null;
         }
         return (ExecutorService) providerModel.getServiceMetadata()
-                .getAttribute(CommonConstants.THREADPOOL_KEY);
+            .getAttribute(CommonConstants.THREADPOOL_KEY);
     }
 
     public static UnaryServerStream unary(URL url) {
@@ -116,8 +116,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
     protected RpcInvocation buildInvocation(Metadata metadata) {
         RpcInvocation inv = new RpcInvocation(getUrl().getServiceModel(),
-                getMethodName(), getServiceDescriptor().getServiceName(),
-                getUrl().getProtocolServiceKey(), getMethodDescriptor().getParameterClasses(), new Object[0]);
+            getMethodName(), getServiceDescriptor().getServiceName(),
+            getUrl().getProtocolServiceKey(), getMethodDescriptor().getParameterClasses(), new Object[0]);
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
         inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
 
@@ -138,12 +138,12 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             }
             if (getMethodDescriptor() == null || getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data,
-                        TripleWrapper.TripleRequestWrapper.class);
+                    TripleWrapper.TripleRequestWrapper.class);
                 if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
                     transportError(GrpcStatus.fromCode(GrpcStatus.Code.INVALID_ARGUMENT)
-                            .withDescription("Received inconsistent serialization type from client, " +
-                                    "reject to deserialize! Expected:" + getSerializeType() +
-                                    " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType())));
+                        .withDescription("Received inconsistent serialization type from client, " +
+                            "reject to deserialize! Expected:" + getSerializeType() +
+                            " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType())));
                     return null;
                 }
                 if (getMethodDescriptor() == null) {
@@ -158,8 +158,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                     }
                     if (getMethodDescriptor() == null) {
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
-                                .withDescription("Method :" + getMethodName() + "[" + Arrays.toString(paramTypes) + "] " +
-                                        "not found of service:" + getServiceDescriptor().getServiceName()));
+                            .withDescription("Method :" + getMethodName() + "[" + Arrays.toString(paramTypes) + "] " +
+                                "not found of service:" + getServiceDescriptor().getServiceName()));
 
                         return null;
                     }
@@ -181,7 +181,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     protected Metadata createRequestMeta() {
         Metadata metadata = new DefaultMetadata();
         metadata.putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(), super.getCompressor().getMessageEncoding())
-                .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), TripleUtil.calcAcceptEncoding(invoker.getUrl()));
+            .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel()));
         return metadata;
     }
 
@@ -189,7 +189,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         final com.google.protobuf.Message message;
         if (getMethodDescriptor().isNeedWrap()) {
             message = TripleUtil.wrapResp(getUrl(), getSerializeType(), value, getMethodDescriptor(),
-                    getMultipleSerialization());
+                getMultipleSerialization());
         } else {
             message = (Message) value;
         }
@@ -206,19 +206,19 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                 } catch (Throwable t) {
                     LOGGER.error("Exception processing triple message", t);
                     transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                            .withDescription("Exception in invoker chain :" + t.getMessage())
-                            .withCause(t));
+                        .withDescription("Exception in invoker chain :" + t.getMessage())
+                        .withCause(t));
                 }
             });
         } catch (RejectedExecutionException e) {
             LOGGER.error("Provider's thread pool is full", e);
             transportError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
-                    .withDescription("Provider's thread pool is full"));
+                .withDescription("Provider's thread pool is full"));
         } catch (Throwable t) {
             LOGGER.error("Provider submit request to thread pool error ", t);
             transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(t)
-                    .withDescription("Provider's error"));
+                .withCause(t)
+                .withDescription("Provider's error"));
         }
     }
 

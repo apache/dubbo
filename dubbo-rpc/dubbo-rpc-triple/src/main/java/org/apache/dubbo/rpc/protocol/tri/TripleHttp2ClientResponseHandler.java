@@ -63,28 +63,25 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     }
 
     private void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame resetFrame) {
-        AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
+        final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
         clientStream.cancelByRemote(Http2Error.valueOf(resetFrame.errorCode()));
         ctx.close();
     }
 
     private void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {
         Http2Headers headers = msg.headers();
-        AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
-
+        final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
         CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
         if (null != messageEncoding) {
             String compressorStr = messageEncoding.toString();
-            if (!compressorStr.equals(DEFAULT_COMPRESSOR)) {
-                Compressor compressor = clientStream.getUrl().getOrDefaultApplicationModel()
-                    .getExtensionLoader(Compressor.class).getExtension(compressorStr);
+            if (!DEFAULT_COMPRESSOR.equals(compressorStr)) {
+                Compressor compressor = Compressor.getCompressor(clientStream.getUrl().getOrDefaultFrameworkModel(), compressorStr);
                 if (null == compressor) {
                     throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
                         .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
                         .asException();
                 } else {
-                    clientStream.setCompressor(compressor);
-                    ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
+                    clientStream.setDeCompressor(compressor);
                 }
             }
         }
@@ -96,8 +93,8 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        final AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
         final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withCause(cause);
         Metadata metadata = new DefaultMetadata();
@@ -111,7 +108,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
         super.channelRead(ctx, msg.content());
         if (msg.isEndStream()) {
-            final AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
+            final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
             // stream already closed;
             if (clientStream != null) {
                 clientStream.asTransportObserver().onComplete();

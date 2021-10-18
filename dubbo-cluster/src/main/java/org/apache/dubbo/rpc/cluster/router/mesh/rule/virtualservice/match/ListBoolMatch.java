@@ -18,5 +18,27 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
 
 
+import java.util.List;
+
 public class ListBoolMatch {
+    private List<BoolMatch> oneof;
+
+    public List<BoolMatch> getOneof() {
+        return oneof;
+    }
+
+    public void setOneof(List<BoolMatch> oneof) {
+        this.oneof = oneof;
+    }
+
+    public static boolean isMatch(ListBoolMatch listBoolMatch, boolean input) {
+
+        for (BoolMatch boolMatch : listBoolMatch.getOneof()) {
+            if (BoolMatch.isMatch(boolMatch, input)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
+

@@ -21,6 +21,13 @@ import io.netty.handler.codec.http2.Http2Error;
 
 public interface TransportObserver {
 
+    static int calcCompressFlag(Compressor compressor) {
+        if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
+            return 0;
+        }
+        return 1;
+    }
+
     void onMetadata(Metadata metadata, boolean endStream);
 
     void onData(byte[] data, boolean endStream);

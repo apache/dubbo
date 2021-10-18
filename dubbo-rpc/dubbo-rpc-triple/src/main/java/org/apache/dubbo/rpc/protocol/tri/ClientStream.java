@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 public class ClientStream extends AbstractClientStream implements Stream {
@@ -29,27 +30,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
-        ClientStreamObserver clientStreamObserver = new ClientStreamObserver() {
-            boolean metaSent;
-
-            @Override
-            public void onNext(Object data) {
-                if (!metaSent) {
-                    metaSent = true;
-                    final Metadata metadata = createRequestMeta((RpcInvocation) getRequest().getData());
-                    getTransportSubscriber().onMetadata(metadata, false);
-                }
-                final byte[] bytes = encodeRequest(data);
-                getTransportSubscriber().onData(bytes, false);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                transportError(throwable);
-            }
-        };
-        clientStreamObserver.setCancellationContext(getCancellationContext());
-        return clientStreamObserver;
+        return new ClientStreamObserverImpl(getCancellationContext());
     }
 
     @Override
@@ -77,5 +58,46 @@ public class ClientStream extends AbstractClientStream implements Stream {
                 });
             }
         };
+    }
+
+    private class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
+
+        private boolean metaSent;
+
+        public ClientStreamObserverImpl(CancellationContext cancellationContext) {
+            super(cancellationContext);
+            this.metaSent = false;
+        }
+
+        @Override
+        public void onNext(Object data) {
+            if (!metaSent) {
+                metaSent = true;
+                final Metadata metadata = createRequestMeta((RpcInvocation) getRequest().getData());
+                getTransportSubscriber().onMetadata(metadata, false);
+            }
+            final byte[] bytes = encodeRequest(data);
+            getTransportSubscriber().onData(bytes, false);
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            transportError(throwable);
+        }
+
+        @Override
+        public void onCompleted() {
+            getTransportSubscriber().onComplete();
+        }
+
+        @Override
+        public void setCompression(String compression) {
+            if (metaSent) {
+                cancel(new IllegalStateException("Metadata already has been sent,can not set compression"));
+                return;
+            }
+            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
+            setCompressor(compressor);
+        }
     }
 }

@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.QueryStringEncoder;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.RpcException;
+
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.QueryStringEncoder;
 
 import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.LIMIT_EXCEEDED_EXCEPTION;

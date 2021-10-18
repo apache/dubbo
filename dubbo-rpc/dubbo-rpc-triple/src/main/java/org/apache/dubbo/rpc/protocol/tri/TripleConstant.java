@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 
-import io.netty.handler.codec.http2.Http2CodecUtil;
 import io.netty.util.AsciiString;
 import io.netty.util.AttributeKey;
 
@@ -29,13 +28,17 @@ public interface TripleConstant {
 
     String SERIALIZATION_KEY = "serialization";
     String TE_KEY = "te";
-    // each header size
-    long DEFAULT_HEADER_LIST_SIZE = Http2CodecUtil.DEFAULT_HEADER_LIST_SIZE;
 
     AttributeKey<Boolean> SSL_ATTRIBUTE_KEY = AttributeKey.valueOf(CommonConstants.SSL_ENABLED_KEY);
 
 
     AsciiString HTTPS_SCHEME = AsciiString.of("https");
     AsciiString HTTP_SCHEME = AsciiString.of("http");
+
+
+    AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance(
+        "tri_server_stream");
+    AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
+        "tri_client_stream");
 
 }

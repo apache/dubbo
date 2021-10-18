@@ -23,11 +23,13 @@ public final class ChannelBuffers {
 
     public static final ChannelBuffer EMPTY_BUFFER = new HeapChannelBuffer(0);
 
+    public static final int DEFAULT_CAPACITY = 256;
+
     private ChannelBuffers() {
     }
 
     public static ChannelBuffer dynamicBuffer() {
-        return dynamicBuffer(256);
+        return dynamicBuffer(DEFAULT_CAPACITY);
     }
 
     public static ChannelBuffer dynamicBuffer(int capacity) {
@@ -85,7 +87,7 @@ public final class ChannelBuffers {
         }
 
         ChannelBuffer buffer = new ByteBufferBackedChannelBuffer(
-                ByteBuffer.allocateDirect(capacity));
+            ByteBuffer.allocateDirect(capacity));
         buffer.clear();
         return buffer;
     }
@@ -112,7 +114,7 @@ public final class ChannelBuffers {
         return true;
     }
 
-    public static int hasCode(ChannelBuffer buffer){
+    public static int hasCode(ChannelBuffer buffer) {
         final int aLen = buffer.readableBytes();
         final int byteCount = aLen & 7;
 

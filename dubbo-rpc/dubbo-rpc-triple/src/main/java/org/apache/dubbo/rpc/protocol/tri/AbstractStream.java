@@ -51,6 +51,7 @@ public abstract class AbstractStream implements Stream {
     private final StreamObserver<Object> streamObserver;
     private final TransportObserver transportObserver;
     private final Executor executor;
+    private final CancellationContext cancellationContext;
     private ServiceDescriptor serviceDescriptor;
     private MethodDescriptor methodDescriptor;
     private String methodName;
@@ -59,20 +60,11 @@ public abstract class AbstractStream implements Stream {
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
     private Compressor compressor = IdentityCompressor.NONE;
-
-    private final CancellationContext cancellationContext;
+    private Compressor deCompressor = IdentityCompressor.NONE;
     private volatile boolean cancelled = false;
-
-    public boolean isCancelled() {
-        return cancelled;
-    }
 
     protected AbstractStream(URL url) {
         this(url, null);
-    }
-
-    protected CancellationContext getCancellationContext() {
-        return cancellationContext;
     }
 
     protected AbstractStream(URL url, Executor executor) {
@@ -81,12 +73,19 @@ public abstract class AbstractStream implements Stream {
         this.executor = wrapperSerializingExecutor(sourceExecutor);
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
         this.multipleSerialization = url.getOrDefaultFrameworkModel().getExtensionLoader(MultipleSerialization.class)
-                .getExtension(value);
+            .getExtension(value);
         this.cancellationContext = new CancellationContext();
         this.transportObserver = createTransportObserver();
         this.streamObserver = createStreamObserver();
     }
 
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    protected CancellationContext getCancellationContext() {
+        return cancellationContext;
+    }
 
     private Executor lookupExecutor(URL url, Executor executor) {
         // only server maybe not null
@@ -94,8 +93,8 @@ public abstract class AbstractStream implements Stream {
             return executor;
         }
         ExecutorRepository executorRepository = url.getOrDefaultApplicationModel()
-                .getExtensionLoader(ExecutorRepository.class)
-                .getDefaultExtension();
+            .getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension();
         Executor urlExecutor = executorRepository.getExecutor(url);
         if (urlExecutor == null) {
             urlExecutor = executorRepository.createExecutorIfAbsent(url);
@@ -204,13 +203,47 @@ public abstract class AbstractStream implements Stream {
         this.serviceDescriptor = serviceDescriptor;
     }
 
+    public Compressor getCompressor() {
+        return this.compressor;
+    }
+
+    /**
+     * set compressor if required
+     *
+     * @param compressor {@link Compressor}
+     */
     protected AbstractStream setCompressor(Compressor compressor) {
-        this.compressor = compressor;
+        // If compressor is NULL, this will not be set.
+        // Consider whether to throw an exception or handle silently,
+        // But now choose silent processing, Fall back to default.
+        if (compressor != null) {
+            this.compressor = compressor;
+        } else {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("Compressor is Null, Fall back to default compression." +
+                    " MessageEncoding is " + getCompressor().getMessageEncoding());
+            }
+        }
         return this;
     }
 
-    public Compressor getCompressor() {
-        return this.compressor;
+    public Compressor getDeCompressor() {
+        return this.deCompressor;
+    }
+
+    protected AbstractStream setDeCompressor(Compressor compressor) {
+        // If compressor is NULL, this will not be set.
+        // Consider whether to throw an exception or handle silently,
+        // But now choose silent processing, Fall back to default.
+        if (compressor != null) {
+            this.deCompressor = compressor;
+        } else {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("Compressor is Null, Fall back to default deCompression." +
+                    " MessageEncoding is " + getDeCompressor().getMessageEncoding());
+            }
+        }
+        return this;
     }
 
     public URL getUrl() {
@@ -252,7 +285,7 @@ public abstract class AbstractStream implements Stream {
         getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
-                    + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
+                + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
         }
     }
 
@@ -284,24 +317,24 @@ public abstract class AbstractStream implements Stream {
         metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), getGrpcMessage(grpcStatus));
         metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
         Status.Builder builder = Status.newBuilder()
-                .setCode(grpcStatus.code.code)
-                .setMessage(getGrpcMessage(grpcStatus));
+            .setCode(grpcStatus.code.code)
+            .setMessage(getGrpcMessage(grpcStatus));
         Throwable throwable = grpcStatus.cause;
         if (throwable == null) {
             Status status = builder.build();
             metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                    TripleUtil.encodeBase64ASCII(status.toByteArray()));
+                TripleUtil.encodeBase64ASCII(status.toByteArray()));
             return metadata;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
-                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
-                // can not use now
-                // .setDetail(throwable.getMessage())
-                .build();
+            .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
+            // can not use now
+            // .setDetail(throwable.getMessage())
+            .build();
         builder.addDetails(Any.pack(debugInfo));
         Status status = builder.build();
         metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                TripleUtil.encodeBase64ASCII(status.toByteArray()));
+            TripleUtil.encodeBase64ASCII(status.toByteArray()));
         return metadata;
     }
 
@@ -362,7 +395,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     protected byte[] decompress(byte[] data) {
-        return this.getCompressor().decompress(data);
+        return this.getDeCompressor().decompress(data);
     }
 
     protected abstract class AbstractTransportObserver implements TransportObserver {
@@ -438,7 +471,7 @@ public abstract class AbstractStream implements Stream {
                 this.data = in;
             } else {
                 onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription(DUPLICATED_DATA));
+                    .withDescription(DUPLICATED_DATA));
             }
         }
     }
