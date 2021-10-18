@@ -61,7 +61,6 @@ public abstract class Proxy {
     /**
      * Get proxy.
      *
-     * @param cl  class loader.
      * @param ics interface class array.
      * @return Proxy instance.
      */
@@ -158,6 +157,7 @@ public abstract class Proxy {
         long id = PROXY_CLASS_COUNTER.getAndIncrement();
         String pkg = null;
         ClassGenerator ccp = null, ccm = null;
+        Class<?> neighbor = null;
         try {
             ccp = ClassGenerator.newInstance(cl);
 
@@ -169,6 +169,7 @@ public abstract class Proxy {
                     String npkg = ics[i].getPackage().getName();
                     if (pkg == null) {
                         pkg = npkg;
+                        neighbor = ics[i];
                     } else {
                         if (!pkg.equals(npkg)) {
                             throw new IllegalArgumentException("non-public interfaces from different packages");
@@ -204,6 +205,7 @@ public abstract class Proxy {
 
             if (pkg == null) {
                 pkg = PACKAGE_NAME;
+                neighbor = Proxy.class;
             }
 
             // create ProxyInstance class.
@@ -213,7 +215,7 @@ public abstract class Proxy {
             ccp.addField("private " + InvocationHandler.class.getName() + " handler;");
             ccp.addConstructor(Modifier.PUBLIC, new Class<?>[] {InvocationHandler.class}, new Class<?>[0], "handler=$1;");
             ccp.addDefaultConstructor();
-            Class<?> clazz = ccp.toClass(appClassLoader, domain);
+            Class<?> clazz = ccp.toClass(neighbor, appClassLoader, domain);
             clazz.getField("methods").set(null, methods.toArray(new Method[0]));
 
             // create Proxy class.
@@ -223,7 +225,7 @@ public abstract class Proxy {
             ccm.addDefaultConstructor();
             ccm.setSuperClass(Proxy.class);
             ccm.addMethod("public Object newInstance(" + InvocationHandler.class.getName() + " h){ return new " + pcn + "($1); }");
-            Class<?> pc = ccm.toClass(appClassLoader, domain);
+            Class<?> pc = ccm.toClass(Proxy.class, appClassLoader, domain);
             proxy = (Proxy) pc.newInstance();
 
             synchronized (classCache) {
