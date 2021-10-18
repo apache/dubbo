@@ -193,7 +193,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
 
         // TODO protocol
-        ResteasyWebTarget target = client.target("http://" + url.getHost() + ":" + url.getPort() + "/" + getContextPath(url));
+        ResteasyWebTarget target = client.target("https://" + url.getHost() + ":" + url.getPort() + "/" + getContextPath(url));
         return target.proxy(serviceType);
     }
 
