@@ -84,7 +84,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
         Http2Error http2Error = Http2Error.valueOf(frame.errorCode());
-        final AbstractServerStream serverStream = TripleUtil.getServerStream(ctx);
+        final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
         serverStream.cancelByRemote(http2Error);
         ctx.close();
     }
@@ -106,7 +106,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         super.channelRead(ctx, msg.content());
 
         if (msg.isEndStream()) {
-            final AbstractServerStream serverStream = TripleUtil.getServerStream(ctx);
+            final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
             if (serverStream != null) {
                 serverStream.asTransportObserver().onComplete();
             }
@@ -228,16 +228,14 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
         if (null != messageEncoding) {
             String compressorStr = messageEncoding.toString();
-            if (!compressorStr.equals(DEFAULT_COMPRESSOR)) {
-                Compressor compressor = invoker.getUrl().getOrDefaultApplicationModel().
-                    getExtensionLoader(Compressor.class).getExtension(compressorStr);
+            if (!DEFAULT_COMPRESSOR.equals(compressorStr)) {
+                Compressor compressor = Compressor.getCompressor(frameworkModel, compressorStr);
                 if (null == compressor) {
                     TripleUtil.responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(),
                         GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
                             .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
                 } else {
-                    stream.setCompressor(compressor);
-                    ctx.channel().attr(TripleUtil.COMPRESSOR_KEY).set(compressor);
+                    stream.setDeCompressor(compressor);
                 }
             }
         }
@@ -246,8 +244,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (msg.isEndStream()) {
             observer.onComplete();
         }
-
-        channel.attr(TripleUtil.SERVER_STREAM_KEY).set(stream);
+        channel.attr(TripleConstant.SERVER_STREAM_KEY).set(stream);
     }
 
 

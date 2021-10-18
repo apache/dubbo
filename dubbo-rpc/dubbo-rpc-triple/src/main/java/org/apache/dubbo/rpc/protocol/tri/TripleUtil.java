@@ -36,7 +36,6 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.util.AttributeKey;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -55,14 +54,6 @@ import java.util.Set;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
-
-    public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance(
-        "tri_server_stream");
-    public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
-        "tri_client_stream");
-    public static final AttributeKey<Compressor> COMPRESSOR_KEY = AttributeKey.newInstance(
-        "tri_compressor");
-    public static final String LANGUAGE = "java";
     // Some exceptions are not very useful and add too much noise to the log
     private static final Set<String> QUIET_EXCEPTIONS = new HashSet<>();
     private static final Set<Class<?>> QUIET_EXCEPTIONS_CLASS = new HashSet<>();
@@ -83,26 +74,6 @@ public class TripleUtil {
             return true;
         }
         return false;
-    }
-
-    public static AbstractServerStream getServerStream(ChannelHandlerContext ctx) {
-        return ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).get();
-    }
-
-    public static AbstractClientStream getClientStream(ChannelHandlerContext ctx) {
-        return ctx.channel().attr(TripleUtil.CLIENT_STREAM_KEY).get();
-    }
-
-    public static Compressor getCompressor(ChannelHandlerContext ctx) {
-        return ctx.channel().attr(COMPRESSOR_KEY).get();
-    }
-
-    public static int calcCompressFlag(ChannelHandlerContext ctx) {
-        Compressor compressor = getCompressor(ctx);
-        if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
-            return 0;
-        }
-        return 1;
     }
 
     /**
@@ -198,44 +169,6 @@ public class TripleUtil {
             return builder.build();
         } catch (IOException e) {
             throw new RuntimeException("Failed to pack wrapper req", e);
-        }
-    }
-
-    public static TripleWrapper.TripleExceptionWrapper wrapException(URL url, Throwable throwable,
-                                                                     String serializeType,
-                                                                     MultipleSerialization serialization) {
-        try {
-            final TripleWrapper.TripleExceptionWrapper.Builder builder = TripleWrapper.TripleExceptionWrapper.newBuilder()
-                .setLanguage(LANGUAGE)
-                .setClassName(throwable.getClass().getName())
-                .setSerialization(serializeType);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            serialization.serialize(url, serializeType, builder.getClassName(), throwable, bos);
-            builder.setData(ByteString.copyFrom(bos.toByteArray()));
-            bos.close();
-            return builder.build();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to pack wrapper exception", e);
-        }
-    }
-
-    public static Throwable unWrapException(URL url, TripleWrapper.TripleExceptionWrapper wrap,
-                                            String serializeType,
-                                            MultipleSerialization serialization) {
-        if (wrap == null) {
-            return null;
-        }
-        if (!LANGUAGE.equals(wrap.getLanguage())) {
-            return null;
-        }
-        try {
-            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
-            Object obj = serialization.deserialize(url, serializeType, wrap.getClassName(), bais);
-            bais.close();
-            return (Throwable) obj;
-        } catch (Exception e) {
-            // if this null ,can get common exception
-            return null;
         }
     }
 
@@ -357,15 +290,6 @@ public class TripleUtil {
             return "hessian2";
         }
         return serializeType;
-    }
-
-    public static String calcAcceptEncoding(URL url) {
-        Set<String> supportedEncodingSet = url.getOrDefaultApplicationModel().getExtensionLoader(Compressor.class).getSupportedExtensions();
-        if (supportedEncodingSet.isEmpty()) {
-            return null;
-        }
-
-        return String.join(",", supportedEncodingSet);
     }
 
 }

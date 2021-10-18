@@ -23,6 +23,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -40,7 +41,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
-        return new ClientStreamObserver();
+        return new UnaryClientStreamObserverImpl();
     }
 
     @Override
@@ -120,6 +121,28 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             } finally {
                 ClassLoadUtil.switchContextLoader(tccl);
             }
+        }
+    }
+
+
+    private class UnaryClientStreamObserverImpl implements StreamObserver<Object> {
+
+        @Override
+        public void onNext(Object data) {
+            RpcInvocation invocation = (RpcInvocation) data;
+            final Metadata metadata = createRequestMeta(invocation);
+            getTransportSubscriber().onMetadata(metadata, false);
+            final byte[] bytes = encodeRequest(invocation);
+            getTransportSubscriber().onData(bytes, false);
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+        }
+
+        @Override
+        public void onCompleted() {
+            getTransportSubscriber().onComplete();
         }
     }
 }

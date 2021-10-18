@@ -181,7 +181,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     protected Metadata createRequestMeta() {
         Metadata metadata = new DefaultMetadata();
         metadata.putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(), super.getCompressor().getMessageEncoding())
-                .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), TripleUtil.calcAcceptEncoding(invoker.getUrl()));
+                .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel()));
         return metadata;
     }
 

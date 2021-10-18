@@ -20,6 +20,9 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Constants;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import java.util.Set;
 
 import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
@@ -35,12 +38,14 @@ public interface Compressor {
 
     /**
      * message encoding of current compressor
+     *
      * @return return message encoding
      */
     String getMessageEncoding();
 
     /**
      * compress payload
+     *
      * @param payloadByteArr payload byte array
      * @return compressed payload byte array
      */
@@ -48,9 +53,26 @@ public interface Compressor {
 
     /**
      * decompress payload
+     *
      * @param payloadByteArr payload byte array
      * @return decompressed payload byte array
      */
     byte[] decompress(byte[] payloadByteArr);
 
+
+    static Compressor getCompressor(FrameworkModel frameworkModel, String compressorStr) {
+        if (null == compressorStr) {
+            return null;
+        }
+        return frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
+    }
+
+
+    static String getAcceptEncoding(FrameworkModel frameworkModel) {
+        Set<String> supportedEncodingSet = frameworkModel.getExtensionLoader(Compressor.class).getSupportedExtensions();
+        if (supportedEncodingSet.isEmpty()) {
+            return null;
+        }
+        return String.join(",", supportedEncodingSet);
+    }
 }

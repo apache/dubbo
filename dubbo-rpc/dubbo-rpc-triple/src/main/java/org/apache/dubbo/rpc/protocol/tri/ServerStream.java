@@ -31,7 +31,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
-        return new ServerStreamObserver();
+        return new ServerStreamObserverImpl();
     }
 
     @Override
@@ -39,7 +39,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         return new StreamTransportObserver();
     }
 
-    private class ServerStreamObserver implements StreamObserver<Object> {
+    private class ServerStreamObserverImpl implements ServerStreamObserver<Object> {
         private boolean headersSent;
 
         @Override
@@ -55,8 +55,8 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onError(Throwable throwable) {
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(throwable)
-                    .withDescription("Biz exception");
+                .withCause(throwable)
+                .withDescription("Biz exception");
             transportError(status);
         }
 
@@ -66,6 +66,18 @@ public class ServerStream extends AbstractServerStream implements Stream {
             metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), "OK");
             metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
             getTransportSubscriber().onMetadata(metadata, true);
+        }
+
+        @Override
+        public void setCompression(String compression) {
+            if (headersSent) {
+                final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withDescription("Metadata already has been sent,can not set compression");
+                transportError(status);
+                return;
+            }
+            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
+            setCompressor(compressor);
         }
     }
 
@@ -102,7 +114,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
                         subscribe((StreamObserver<Object>) result.getValue());
                     } catch (Throwable t) {
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                                .withDescription("Failed to create server's observer"));
+                            .withDescription("Failed to create server's observer"));
                     }
                 } finally {
                     RpcContext.removeCancellationContext();
@@ -122,8 +134,8 @@ public class ServerStream extends AbstractServerStream implements Stream {
                     biStreamOnData(in);
                 } catch (Throwable t) {
                     transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                            .withDescription("Deserialize request failed")
-                            .withCause(t));
+                        .withDescription("Deserialize request failed")
+                        .withCause(t));
                 }
             });
         }
