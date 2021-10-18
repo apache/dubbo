@@ -17,19 +17,34 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.CancellationContext;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
+    private final AtomicBoolean contextSet = new AtomicBoolean(false);
     private CancellationContext cancellationContext;
 
-    public CancellationContext getCancellationContext() {
-        return cancellationContext;
+    public CancelableStreamObserver() {
     }
 
-    public void setCancellationContext(CancellationContext cancellationContext) {
-        this.cancellationContext = cancellationContext;
+    public CancelableStreamObserver(CancellationContext cancellationContext) {
+        setCancellationContext(cancellationContext);
+    }
+
+    public final void setCancellationContext(CancellationContext cancellationContext) {
+        if (contextSet.compareAndSet(false, true)) {
+            this.cancellationContext = cancellationContext;
+        } else {
+            if (LOGGER.isWarnEnabled()) {
+                LOGGER.warn("CancellationContext already set,do not repeat the set, ignore this set");
+            }
+        }
     }
 
     public final void cancel(Throwable throwable) {

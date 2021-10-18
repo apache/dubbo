@@ -17,25 +17,18 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http2.Http2Error;
+import org.apache.dubbo.common.stream.StreamObserver;
 
-public interface TransportObserver {
+public interface ClientStreamObserver<T> extends StreamObserver<T> {
 
-    static int calcCompressFlag(Compressor compressor) {
-        if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
-            return 0;
-        }
-        return 1;
-    }
+    /**
+     * Sets the compression algorithm to use for the call
+     * <p>
+     * For stream set compression needs to determine whether the metadata has been sent, and carry on corresponding processing
+     *
+     * @param compression {@link Compressor}
+     */
+    void setCompression(String compression);
 
-    void onMetadata(Metadata metadata, boolean endStream);
-
-    void onData(byte[] data, boolean endStream);
-
-    default void onReset(Http2Error http2Error) {
-    }
-
-    default void onComplete() {
-    }
 
 }
