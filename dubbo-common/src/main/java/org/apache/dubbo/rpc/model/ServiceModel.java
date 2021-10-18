@@ -121,8 +121,8 @@ public class ServiceModel {
         if (config instanceof ReferenceConfigBase) {
             return (ReferenceConfigBase<?>) config;
         } else {
-            if (log.isWarnEnabled()) {
-                log.warn("Current ServiceModel is not a ConsumerModel");
+            if (log.isErrorEnabled()) {
+                log.error("Current ServiceModel is not a ConsumerModel");
             }
         }
         return null;
@@ -135,7 +135,9 @@ public class ServiceModel {
         if (config instanceof ServiceConfigBase) {
             return (ServiceConfigBase<?>) config;
         } else {
-
+            if (log.isErrorEnabled()) {
+                log.error("Current ServiceModel is not a ProviderModel");
+            }
         }
         return null;
     }
