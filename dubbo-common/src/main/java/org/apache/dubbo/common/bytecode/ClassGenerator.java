@@ -344,7 +344,15 @@ public final class ClassGenerator {
                 }
             }
 
-            return mPool.toClass(mCtc, neighborClass, loader, pd);
+            try {
+                return mPool.toClass(mCtc, neighborClass, loader, pd);
+            } catch (Throwable t) {
+                if (t instanceof NoSuchMethodException) {
+                    return mPool.toClass(mCtc, loader, pd);
+                } else {
+                    throw t;
+                }
+            }
         } catch (RuntimeException e) {
             throw e;
         } catch (NotFoundException | CannotCompileException e) {

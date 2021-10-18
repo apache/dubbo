@@ -18,6 +18,7 @@ package org.apache.dubbo.common.compiler.support;
 
 
 import org.apache.dubbo.common.bytecode.CustomizedLoaderClassPath;
+import org.apache.dubbo.common.bytecode.NoSuchMethodException;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -88,7 +89,15 @@ public class JavassistCompiler extends AbstractCompiler {
         }
         cp.insertClassPath(new CustomizedLoaderClassPath(classLoader));
 
-        return cp.toClass(cls, neighbor, classLoader, JavassistCompiler.class.getProtectionDomain());
+        try {
+            return cp.toClass(cls, neighbor, classLoader, JavassistCompiler.class.getProtectionDomain());
+        } catch (Throwable t) {
+            if (t instanceof NoSuchMethodException) {
+                return cp.toClass(cls, classLoader, JavassistCompiler.class.getProtectionDomain());
+            } else {
+                throw t;
+            }
+        }
     }
 
 }
