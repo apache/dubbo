@@ -52,6 +52,10 @@ public abstract class AbstractStream implements Stream {
     private final Executor executor;
     private final TransportState state = new TransportState();
     private final CancellationContext cancellationContext;
+    // AcceptEncoding does not change after the application is started,
+    // so it can be obtained when constructing the stream
+    private final String acceptEncoding;
+
     private ServiceDescriptor serviceDescriptor;
     private MethodDescriptor methodDescriptor;
     private String methodName;
@@ -61,15 +65,6 @@ public abstract class AbstractStream implements Stream {
     private Compressor compressor = IdentityCompressor.NONE;
     private Compressor deCompressor = IdentityCompressor.NONE;
     private volatile boolean cancelled = false;
-    private final String acceptEncoding;
-
-    public String getAcceptEncoding() {
-        return acceptEncoding;
-    }
-
-    public TransportState getState() {
-        return state;
-    }
 
     protected AbstractStream(URL url) {
         this(url, null);
@@ -86,14 +81,6 @@ public abstract class AbstractStream implements Stream {
         this.transportObserver = createTransportObserver();
         this.streamObserver = createStreamObserver();
         this.acceptEncoding = Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel());
-    }
-
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    protected CancellationContext getCancellationContext() {
-        return cancellationContext;
     }
 
     private Executor lookupExecutor(URL url, Executor executor) {
@@ -113,6 +100,22 @@ public abstract class AbstractStream implements Stream {
 
     private Executor wrapperSerializingExecutor(Executor executor) {
         return new SerializingExecutor(executor);
+    }
+
+    public String getAcceptEncoding() {
+        return acceptEncoding;
+    }
+
+    public TransportState getState() {
+        return state;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    protected CancellationContext getCancellationContext() {
+        return cancellationContext;
     }
 
     @Override
@@ -178,8 +181,8 @@ public abstract class AbstractStream implements Stream {
     }
 
     public AbstractStream serialize(String serializeType) {
-        if ("hessian4".equals(serializeType)) {
-            serializeType = "hessian2";
+        if (TripleConstant.HESSIAN4.equals(serializeType)) {
+            serializeType = TripleConstant.HESSIAN2;
         }
         this.serializeType = serializeType;
         return this;
@@ -355,7 +358,7 @@ public abstract class AbstractStream implements Stream {
             if (TripleHeaderEnum.containsExcludeAttachments(key)) {
                 continue;
             }
-            if (key.endsWith("-bin") && key.length() > 4) {
+            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > 4) {
                 try {
                     attachments.put(key.substring(0, key.length() - 4), TripleUtil.decodeASCIIByte(header.getValue()));
                 } catch (Exception e) {
@@ -385,6 +388,13 @@ public abstract class AbstractStream implements Stream {
         }
     }
 
+    /**
+     * Convert each user's attach value to metadata
+     *
+     * @param metadata {@link Metadata}
+     * @param key      metadata key
+     * @param v        metadata value (Metadata Only string and byte arrays are allowed)
+     */
     private void convertSingleAttachment(Metadata metadata, String key, Object v) {
         try {
             if (v instanceof String) {
@@ -392,7 +402,7 @@ public abstract class AbstractStream implements Stream {
                 metadata.put(key, str);
             } else if (v instanceof byte[]) {
                 String str = TripleUtil.encodeBase64ASCII((byte[]) v);
-                metadata.put(key + "-bin", str);
+                metadata.put(key + TripleConstant.GRPC_BIN_SUFFIX, str);
             }
         } catch (Throwable t) {
             LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v, t);

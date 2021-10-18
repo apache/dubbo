@@ -30,6 +30,13 @@ public class TripleConstant {
     public static final String SERIALIZATION_KEY = "serialization";
     public static final String TE_KEY = "te";
 
+
+    public static final String HESSIAN4 = "hessian4";
+    public static final String HESSIAN2 = "hessian2";
+
+
+    public static final String GRPC_BIN_SUFFIX="-bin";
+
     public static final AsciiString HTTPS_SCHEME = AsciiString.of("https");
     public static final AsciiString HTTP_SCHEME = AsciiString.of("http");
 

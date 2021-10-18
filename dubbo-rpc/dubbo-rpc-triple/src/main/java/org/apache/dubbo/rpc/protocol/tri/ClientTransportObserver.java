@@ -34,14 +34,8 @@ import io.netty.util.AsciiString;
 public class ClientTransportObserver implements TransportObserver {
     private final AsciiString SCHEME;
     private final ChannelHandlerContext ctx;
-    private volatile Http2StreamChannel streamChannel;
     private final ChannelPromise promise;
-//    private boolean headerSent = false;
-//    private boolean endStreamSent = false;
-//    private boolean resetSent = false;
-
-//    private volatile boolean initialized = false;
-
+    private volatile Http2StreamChannel streamChannel;
 
     public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream, ChannelPromise promise) {
         this.ctx = ctx;
@@ -72,12 +66,6 @@ public class ClientTransportObserver implements TransportObserver {
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
-//        if (headerSent) {
-//            return;
-//        }
-//        if (resetSent) {
-//            return;
-//        }
         while (streamChannel == null) {
             // wait channel initialized
         }
@@ -87,7 +75,6 @@ public class ClientTransportObserver implements TransportObserver {
             .scheme(SCHEME)
             .method(HttpMethod.POST.asciiName());
         metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
-//        headerSent = true;
         streamChannel.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {
@@ -99,7 +86,6 @@ public class ClientTransportObserver implements TransportObserver {
 
     @Override
     public void onReset(Http2Error http2Error) {
-//        resetSent = true;
         streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
             .addListener(future -> {
                 if (future.isSuccess()) {
@@ -112,9 +98,6 @@ public class ClientTransportObserver implements TransportObserver {
 
     @Override
     public void onData(byte[] data, boolean endStream) {
-//        if (resetSent) {
-//            return;
-//        }
         ByteBuf buf = ctx.alloc().buffer();
         buf.writeByte(getCompressFlag());
         buf.writeInt(data.length);
@@ -131,13 +114,6 @@ public class ClientTransportObserver implements TransportObserver {
 
     @Override
     public void onComplete() {
-//        if (resetSent) {
-//            return;
-//        }
-//        if (endStreamSent) {
-//            return;
-//        }
-//        endStreamSent = true;
         streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true))
             .addListener(future -> {
                 if (future.isSuccess()) {
