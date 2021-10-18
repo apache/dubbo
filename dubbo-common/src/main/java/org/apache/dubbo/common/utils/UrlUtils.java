@@ -37,7 +37,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -48,7 +47,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
@@ -192,8 +190,8 @@ public class UrlUtils {
                     String serviceUrl = entry2.getKey();
                     String serviceQuery = entry2.getValue();
                     Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
-                    String group = params.get(GROUP);
-                    String version = params.get(VERSION);
+                    String group = params.get(GROUP_KEY);
+                    String version = params.get(VERSION_KEY);
                     //params.remove("group");
                     //params.remove("version");
                     String name = serviceName;
@@ -220,8 +218,8 @@ public class UrlUtils {
             String serviceQuery = entry.getValue();
             if (StringUtils.isNotContains(serviceName, ':') && StringUtils.isNotContains(serviceName, '/')) {
                 Map<String, String> params = StringUtils.parseQueryString(serviceQuery);
-                String group = params.get(GROUP);
-                String version = params.get(VERSION);
+                String group = params.get(GROUP_KEY);
+                String version = params.get(VERSION_KEY);
                 //params.remove("group");
                 //params.remove("version");
                 String name = serviceName;
@@ -252,12 +250,12 @@ public class UrlUtils {
                     String name = serviceName;
                     int i = name.indexOf('/');
                     if (i >= 0) {
-                        params.put(GROUP, name.substring(0, i));
+                        params.put(GROUP_KEY, name.substring(0, i));
                         name = name.substring(i + 1);
                     }
                     i = name.lastIndexOf(':');
                     if (i >= 0) {
-                        params.put(VERSION, name.substring(i + 1));
+                        params.put(VERSION_KEY, name.substring(i + 1));
                         name = name.substring(0, i);
                     }
                     Map<String, String> newUrls = newRegister.computeIfAbsent(name, k -> new HashMap<String, String>());
@@ -280,12 +278,12 @@ public class UrlUtils {
                 String name = serviceName;
                 int i = name.indexOf('/');
                 if (i >= 0) {
-                    params.put(GROUP, name.substring(0, i));
+                    params.put(GROUP_KEY, name.substring(0, i));
                     name = name.substring(i + 1);
                 }
                 i = name.lastIndexOf(':');
                 if (i >= 0) {
-                    params.put(VERSION, name.substring(i + 1));
+                    params.put(VERSION_KEY, name.substring(i + 1));
                     name = name.substring(0, i);
                 }
                 newSubscribe.put(name, StringUtils.toQueryString(params));
@@ -308,8 +306,8 @@ public class UrlUtils {
                             String url = entry2.getKey();
                             String query = entry2.getValue();
                             Map<String, String> params = StringUtils.parseQueryString(query);
-                            String group = params.get(GROUP);
-                            String version = params.get(VERSION);
+                            String group = params.get(GROUP_KEY);
+                            String version = params.get(VERSION_KEY);
                             // params.remove("group");
                             // params.remove("version");
                             String name = serviceName;
