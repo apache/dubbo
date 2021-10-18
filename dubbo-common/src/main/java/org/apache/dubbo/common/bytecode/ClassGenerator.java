@@ -347,7 +347,7 @@ public final class ClassGenerator {
             try {
                 return mPool.toClass(mCtc, neighborClass, loader, pd);
             } catch (Throwable t) {
-                if (t instanceof NoSuchMethodException) {
+                if (!(t instanceof CannotCompileException)) {
                     return mPool.toClass(mCtc, loader, pd);
                 } else {
                     throw t;

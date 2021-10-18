@@ -18,8 +18,8 @@ package org.apache.dubbo.common.compiler.support;
 
 
 import org.apache.dubbo.common.bytecode.CustomizedLoaderClassPath;
-import org.apache.dubbo.common.bytecode.NoSuchMethodException;
 
+import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 
@@ -92,7 +92,7 @@ public class JavassistCompiler extends AbstractCompiler {
         try {
             return cp.toClass(cls, neighbor, classLoader, JavassistCompiler.class.getProtectionDomain());
         } catch (Throwable t) {
-            if (t instanceof NoSuchMethodException) {
+            if (!(t instanceof CannotCompileException)) {
                 return cp.toClass(cls, classLoader, JavassistCompiler.class.getProtectionDomain());
             } else {
                 throw t;
