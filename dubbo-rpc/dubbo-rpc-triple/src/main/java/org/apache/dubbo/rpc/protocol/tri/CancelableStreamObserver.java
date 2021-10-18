@@ -27,10 +27,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
-
-    private CancellationContext cancellationContext;
-
     private final AtomicBoolean contextSet = new AtomicBoolean(false);
+    private CancellationContext cancellationContext;
 
     public CancelableStreamObserver() {
     }

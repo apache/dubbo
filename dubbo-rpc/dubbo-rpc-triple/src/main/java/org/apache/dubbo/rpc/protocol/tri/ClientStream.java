@@ -33,6 +33,33 @@ public class ClientStream extends AbstractClientStream implements Stream {
         return new ClientStreamObserverImpl(getCancellationContext());
     }
 
+    @Override
+    protected TransportObserver createTransportObserver() {
+        return new AbstractTransportObserver() {
+
+            @Override
+            public void onData(byte[] data, boolean endStream) {
+                execute(() -> {
+                    final Object resp = deserializeResponse(data);
+                    getStreamSubscriber().onNext(resp);
+                });
+            }
+
+            @Override
+            public void onComplete() {
+                execute(() -> {
+                    final GrpcStatus status = extractStatusFromMeta(getHeaders());
+
+                    if (GrpcStatus.Code.isOk(status.code.code)) {
+                        getStreamSubscriber().onCompleted();
+                    } else {
+                        getStreamSubscriber().onError(status.asException());
+                    }
+                });
+            }
+        };
+    }
+
     private class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
 
         private boolean metaSent;
@@ -72,32 +99,5 @@ public class ClientStream extends AbstractClientStream implements Stream {
             Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
             setCompressor(compressor);
         }
-    }
-
-    @Override
-    protected TransportObserver createTransportObserver() {
-        return new AbstractTransportObserver() {
-
-            @Override
-            public void onData(byte[] data, boolean endStream) {
-                execute(() -> {
-                    final Object resp = deserializeResponse(data);
-                    getStreamSubscriber().onNext(resp);
-                });
-            }
-
-            @Override
-            public void onComplete() {
-                execute(() -> {
-                    final GrpcStatus status = extractStatusFromMeta(getHeaders());
-
-                    if (GrpcStatus.Code.isOk(status.code.code)) {
-                        getStreamSubscriber().onCompleted();
-                    } else {
-                        getStreamSubscriber().onError(status.asException());
-                    }
-                });
-            }
-        };
     }
 }

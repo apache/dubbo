@@ -45,13 +45,6 @@ public class SingleProtobufUtils {
         ExtensionRegistryLite.getEmptyRegistry();
     private static final ConcurrentMap<Class<?>, SingleMessageMarshaller<?>> marshallers = new ConcurrentHashMap<>();
 
-    static boolean isSupported(Class<?> clazz) {
-        if (clazz == null) {
-            return false;
-        }
-        return MessageLite.class.isAssignableFrom(clazz);
-    }
-
     static {
         // Built-in types need to be registered in advance
         marshaller(Empty.getDefaultInstance());
@@ -64,6 +57,13 @@ public class SingleProtobufUtils {
         marshaller(StringValue.getDefaultInstance());
         marshaller(EnumValue.getDefaultInstance());
         marshaller(ListValue.getDefaultInstance());
+    }
+
+    static boolean isSupported(Class<?> clazz) {
+        if (clazz == null) {
+            return false;
+        }
+        return MessageLite.class.isAssignableFrom(clazz);
     }
 
     public static <T extends MessageLite> void marshaller(T defaultInstance) {
