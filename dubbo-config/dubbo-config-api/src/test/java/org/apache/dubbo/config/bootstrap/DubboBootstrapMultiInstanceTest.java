@@ -44,6 +44,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +84,7 @@ public class DubboBootstrapMultiInstanceTest {
         //checkUnclosedThreads();
     }
 
-    private static Map<Thread, StackTraceElement[]> precheckUnclosedThreads() {
+    private static Map<Thread, StackTraceElement[]> precheckUnclosedThreads() throws IOException {
         // create a special DubboTestChecker
         if (testChecker == null) {
             testChecker = new DubboTestChecker();
