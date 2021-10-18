@@ -86,13 +86,15 @@ public class ModuleModel extends ScopeModel {
             deployer.preDestroy();
         }
 
-        notifyDestroy();
         applicationModel.removeModule(this);
 
         if (deployer != null) {
             deployer.postDestroy();
-            //deployer = null;
         }
+
+        // destroy other resources
+        notifyDestroy();
+
         if (serviceRepository != null) {
             serviceRepository.destroy();
             serviceRepository = null;

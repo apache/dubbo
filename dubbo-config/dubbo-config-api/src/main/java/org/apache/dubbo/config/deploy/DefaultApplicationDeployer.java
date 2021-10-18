@@ -55,7 +55,6 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.RegistryManager;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -590,8 +589,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     continue;
                 }
 
-                DeployState state = checkState();
-                if (!(state == DeployState.STARTING || state == DeployState.PENDING)) {
+                DeployState newState = checkState();
+                if (!(newState == DeployState.STARTING || newState == DeployState.PENDING)) {
                     // start finished or error
                     break;
                 }
@@ -607,15 +606,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (moduleModel.getDeployer().isPending()) {
                 moduleModel.getDeployer().start();
             }
-        }
-    }
-
-    private void awaitDeployFinished(List<CompletableFuture> futures) {
-        try {
-            CompletableFuture mergedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-            mergedFuture.get();
-        } catch (Exception e) {
-            logger.error(getIdentifier() + " await deploy finished failed", e);
         }
     }
 
@@ -871,9 +861,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             destroyServiceDiscoveries();
             destroyMetadataReports();
 
-            // destroy zookeeper clients
-            ZookeeperTransporter.getExtension(applicationModel).destroy();
-
             // TODO should we close unused protocol server which only used by this application?
             // protocol server will be closed on all applications of same framework are stopped currently, but no associate to application
             // see org.apache.dubbo.config.deploy.FrameworkModelCleaner#destroyProtocols
@@ -909,9 +896,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void checkStarted() {
-        // TODO improve state checking
-        DeployState _state = checkState();
-        switch (_state) {
+        // TODO improve newState checking
+        DeployState newState = checkState();
+        switch (newState) {
             case STARTED:
                 onStarted();
                 break;
@@ -930,7 +917,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private DeployState checkState() {
-        DeployState _state = DeployState.UNKNOWN;
+        DeployState newState = DeployState.UNKNOWN;
         int pending = 0, starting = 0, started = 0, stopping = 0, stopped = 0;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             ModuleDeployer deployer = moduleModel.getDeployer();
@@ -950,32 +937,32 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (started > 0) {
             if (pending + starting + stopping + stopped == 0) {
                 // all modules have been started
-                _state = DeployState.STARTED;
+                newState = DeployState.STARTED;
             } else if (pending + starting > 0) {
                 // some module is pending and some is started
-                _state = DeployState.STARTING;
+                newState = DeployState.STARTING;
             } else if (stopping + stopped > 0) {
-                _state = DeployState.STOPPING;
+                newState = DeployState.STOPPING;
             }
         } else if (starting > 0) {
             // any module is starting
-            _state = DeployState.STARTING;
+            newState = DeployState.STARTING;
         } else if (pending > 0) {
             if (starting + starting + stopping + stopped == 0) {
                 // all modules have not starting or started
-                _state = DeployState.PENDING;
+                newState = DeployState.PENDING;
             } else if (stopping + stopped > 0) {
                 // some is pending and some is stopping or stopped
-                _state = DeployState.STOPPING;
+                newState = DeployState.STOPPING;
             }
         } else if (stopping > 0) {
             // some is stopping and some stopped
-            _state = DeployState.STOPPING;
+            newState = DeployState.STOPPING;
         } else if (stopped > 0) {
             // all modules are stopped
-            _state = DeployState.STOPPED;
+            newState = DeployState.STOPPED;
         }
-        return _state;
+        return newState;
     }
 
     private void onStarting() {

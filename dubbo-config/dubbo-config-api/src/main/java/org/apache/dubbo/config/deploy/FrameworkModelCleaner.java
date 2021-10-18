@@ -41,10 +41,6 @@ public class FrameworkModelCleaner implements ScopeModelDestroyListener<Framewor
     private void destroyFrameworkResources(FrameworkModel frameworkModel) {
         // destroy protocol in framework scope
         destroyProtocols(frameworkModel);
-
-        // do follow when change ZookeeperTransporter to Framework scope
-        // destroy zookeeper clients
-        // ZookeeperTransporter.getExtension(frameworkModel).destroy();
     }
 
     /**

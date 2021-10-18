@@ -216,8 +216,6 @@ public class ApplicationModel extends ScopeModel {
         // destroy internal module later
         internalModule.destroy();
 
-        notifyDestroy();
-
         if (defaultInstance == this) {
             synchronized (ApplicationModel.class) {
                 frameworkModel.removeApplication(this);
@@ -229,8 +227,10 @@ public class ApplicationModel extends ScopeModel {
 
         if (deployer != null) {
             deployer.postDestroy();
-            //deployer = null;
         }
+
+        // destroy other resources (e.g. ZookeeperTransporter )
+        notifyDestroy();
 
         if (environment != null) {
             environment.destroy();
