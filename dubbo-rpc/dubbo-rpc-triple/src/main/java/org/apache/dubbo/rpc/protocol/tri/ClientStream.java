@@ -33,39 +33,49 @@ public class ClientStream extends AbstractClientStream implements Stream {
         return new ClientStreamObserverImpl(getCancellationContext());
     }
 
-    private class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
+    @Override
+    protected TransportObserver createTransportObserver() {
+        return new ClientTransportObserverImpl();
+    }
 
-        private boolean metaSent;
+    private class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
 
         public ClientStreamObserverImpl(CancellationContext cancellationContext) {
             super(cancellationContext);
-            this.metaSent = false;
         }
 
         @Override
         public void onNext(Object data) {
-            if (!metaSent) {
-                metaSent = true;
+            if (getState().allowSendMeta()) {
+                getState().setMetaSend();
                 final Metadata metadata = createRequestMeta((RpcInvocation) getRequest().getData());
                 getTransportSubscriber().onMetadata(metadata, false);
             }
-            final byte[] bytes = encodeRequest(data);
-            getTransportSubscriber().onData(bytes, false);
+            if (getState().allowSendData()) {
+                final byte[] bytes = encodeRequest(data);
+                getTransportSubscriber().onData(bytes, false);
+            }
         }
 
         @Override
         public void onError(Throwable throwable) {
-            transportError(throwable);
+            if (getState().allowSendEndStream()) {
+                getState().setEndStreamSend();
+                transportError(throwable);
+            }
         }
 
         @Override
         public void onCompleted() {
-            getTransportSubscriber().onComplete();
+            if (getState().allowSendEndStream()) {
+                getState().setEndStreamSend();
+                getTransportSubscriber().onComplete();
+            }
         }
 
         @Override
         public void setCompression(String compression) {
-            if (metaSent) {
+            if (!getState().allowSendMeta()) {
                 cancel(new IllegalStateException("Metadata already has been sent,can not set compression"));
                 return;
             }
@@ -74,30 +84,27 @@ public class ClientStream extends AbstractClientStream implements Stream {
         }
     }
 
-    @Override
-    protected TransportObserver createTransportObserver() {
-        return new AbstractTransportObserver() {
+    private class ClientTransportObserverImpl extends AbstractTransportObserver {
 
-            @Override
-            public void onData(byte[] data, boolean endStream) {
-                execute(() -> {
-                    final Object resp = deserializeResponse(data);
-                    getStreamSubscriber().onNext(resp);
-                });
-            }
+        @Override
+        public void onData(byte[] data, boolean endStream) {
+            execute(() -> {
+                final Object resp = deserializeResponse(data);
+                getStreamSubscriber().onNext(resp);
+            });
+        }
 
-            @Override
-            public void onComplete() {
-                execute(() -> {
-                    final GrpcStatus status = extractStatusFromMeta(getHeaders());
+        @Override
+        public void onComplete() {
+            execute(() -> {
+                final GrpcStatus status = extractStatusFromMeta(getHeaders());
 
-                    if (GrpcStatus.Code.isOk(status.code.code)) {
-                        getStreamSubscriber().onCompleted();
-                    } else {
-                        getStreamSubscriber().onError(status.asException());
-                    }
-                });
-            }
-        };
+                if (GrpcStatus.Code.isOk(status.code.code)) {
+                    getStreamSubscriber().onCompleted();
+                } else {
+                    getStreamSubscriber().onError(status.asException());
+                }
+            });
+        }
     }
 }

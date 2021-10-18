@@ -28,15 +28,13 @@ import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
 public class ServerTransportObserver implements TransportObserver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerTransportObserver.class);
 
     private final ChannelHandlerContext ctx;
-    private boolean headerSent = false;
-    private boolean resetSent = false;
+//    private boolean headerSent = false;
+//    private boolean resetSent = false;
 
     public ServerTransportObserver(ChannelHandlerContext ctx) {
         this.ctx = ctx;
@@ -44,18 +42,18 @@ public class ServerTransportObserver implements TransportObserver {
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
-        if (resetSent) {
-            return;
-        }
+//        if (resetSent) {
+//            return;
+//        }
         final DefaultHttp2Headers headers = new DefaultHttp2Headers(true);
         metadata.forEach(e -> {
             headers.set(e.getKey(), e.getValue());
         });
-        if (!headerSent) {
-            headerSent = true;
-            headers.status(OK.codeAsText());
-            headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO);
-        }
+//        if (!headerSent) {
+//            headerSent = true;
+//            headers.status(OK.codeAsText());
+//            headers.set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO);
+//        }
         // If endStream is true, the channel will be closed, so you cannot listen for errors and continue sending any frame
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
             .addListener(future -> {
@@ -67,7 +65,7 @@ public class ServerTransportObserver implements TransportObserver {
 
     @Override
     public void onReset(Http2Error http2Error) {
-        resetSent = true;
+//        resetSent = true;
         ctx.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
             .addListener(future -> {
                 if (!future.isSuccess()) {
@@ -78,9 +76,9 @@ public class ServerTransportObserver implements TransportObserver {
 
     @Override
     public void onData(byte[] data, boolean endStream) {
-        if (resetSent) {
-            return;
-        }
+//        if (resetSent) {
+//            return;
+//        }
         ByteBuf buf = ctx.alloc().buffer();
         buf.writeByte(getCompressFlag());
         buf.writeInt(data.length);

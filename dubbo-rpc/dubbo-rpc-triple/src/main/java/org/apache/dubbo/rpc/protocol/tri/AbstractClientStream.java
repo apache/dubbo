@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -38,6 +39,7 @@ import java.util.concurrent.RejectedExecutionException;
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
     private ConsumerModel consumerModel;
     private Connection connection;
+    private Request request;
 
     protected AbstractClientStream(URL url) {
         super(url);
@@ -71,6 +73,15 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
     public AbstractClientStream service(ConsumerModel model) {
         this.consumerModel = model;
+        return this;
+    }
+
+    public Request getRequest() {
+        return request;
+    }
+
+    public AbstractClientStream request(Request request) {
+        this.request = request;
         return this;
     }
 

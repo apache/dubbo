@@ -25,7 +25,6 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
-import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -54,18 +53,26 @@ public abstract class AbstractStream implements Stream {
     private ServiceDescriptor serviceDescriptor;
     private MethodDescriptor methodDescriptor;
     private String methodName;
-    private Request request;
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
     private Compressor compressor = IdentityCompressor.NONE;
     private Compressor deCompressor = IdentityCompressor.NONE;
-
+    private final TransportState state = new TransportState();
     private final CancellationContext cancellationContext;
     private volatile boolean cancelled = false;
+    private final String acceptEncoding;
+
+    public String getAcceptEncoding() {
+        return acceptEncoding;
+    }
 
     public boolean isCancelled() {
         return cancelled;
+    }
+
+    public TransportState getState() {
+        return state;
     }
 
     protected AbstractStream(URL url) {
@@ -86,6 +93,7 @@ public abstract class AbstractStream implements Stream {
         this.cancellationContext = new CancellationContext();
         this.transportObserver = createTransportObserver();
         this.streamObserver = createStreamObserver();
+        this.acceptEncoding = Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel());
     }
 
 
@@ -106,15 +114,6 @@ public abstract class AbstractStream implements Stream {
 
     private Executor wrapperSerializingExecutor(Executor executor) {
         return new SerializingExecutor(executor);
-    }
-
-    public Request getRequest() {
-        return request;
-    }
-
-    public AbstractStream request(Request request) {
-        this.request = request;
-        return this;
     }
 
     @Override
@@ -165,8 +164,14 @@ public abstract class AbstractStream implements Stream {
 
     protected abstract void cancelByLocal(Throwable throwable);
 
+    /**
+     * create request StreamObserver
+     */
     protected abstract StreamObserver<Object> createStreamObserver();
 
+    /**
+     * create response TransportObserver
+     */
     protected abstract TransportObserver createTransportObserver();
 
     public String getSerializeType() {
@@ -366,6 +371,9 @@ public abstract class AbstractStream implements Stream {
     }
 
     protected void convertAttachment(Metadata metadata, Map<String, Object> attachments) {
+        if (attachments == null) {
+            return;
+        }
         for (Map.Entry<String, Object> entry : attachments.entrySet()) {
             final String key = entry.getKey().toLowerCase(Locale.ROOT);
             if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
@@ -415,7 +423,10 @@ public abstract class AbstractStream implements Stream {
 
         @Override
         public void onReset(Http2Error http2Error) {
-            getTransportSubscriber().onReset(http2Error);
+            if (getState().allowSendReset()) {
+                getState().setResetSend();
+                getTransportSubscriber().onReset(http2Error);
+            }
         }
 
         @Override

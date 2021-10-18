@@ -40,20 +40,28 @@ public class ServerStream extends AbstractServerStream implements Stream {
     }
 
     private class ServerStreamObserverImpl implements ServerStreamObserver<Object> {
-        private boolean headersSent;
 
         @Override
         public void onNext(Object data) {
-            if (!headersSent) {
-                getTransportSubscriber().onMetadata(createRequestMeta(), false);
-                headersSent = true;
+            if (getState().allowSendMeta()) {
+                getState().setMetaSend();
+                getTransportSubscriber().onMetadata(createResponseMeta(), false);
             }
             final byte[] bytes = encodeResponse(data);
-            getTransportSubscriber().onData(bytes, false);
+            if (bytes == null) {
+                return;
+            }
+            if (getState().allowSendData()) {
+                getTransportSubscriber().onData(bytes, false);
+            }
         }
 
         @Override
         public void onError(Throwable throwable) {
+            if (!getState().allowSendEndStream()) {
+                return;
+            }
+            getState().setEndStreamSend();
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withCause(throwable)
                 .withDescription("Biz exception");
@@ -62,15 +70,16 @@ public class ServerStream extends AbstractServerStream implements Stream {
 
         @Override
         public void onCompleted() {
-            Metadata metadata = new DefaultMetadata();
-            metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), "OK");
-            metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
-            getTransportSubscriber().onMetadata(metadata, true);
+            if (!getState().allowSendEndStream()) {
+                return;
+            }
+            getState().setEndStreamSend();
+            getTransportSubscriber().onMetadata(TripleConstant.SUCCESS_RESPONSE_META, true);
         }
 
         @Override
         public void setCompression(String compression) {
-            if (headersSent) {
+            if (!getState().allowSendMeta()) {
                 final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription("Metadata already has been sent,can not set compression");
                 transportError(status);
@@ -110,6 +119,10 @@ public class ServerStream extends AbstractServerStream implements Stream {
                     final RpcInvocation inv = buildInvocation(metadata);
                     inv.setArguments(new Object[]{asStreamObserver()});
                     final Result result = getInvoker().invoke(inv);
+                    if (result.hasException()) {
+                        transportError(GrpcStatus.getStatus(result.getException()));
+                        return;
+                    }
                     try {
                         subscribe((StreamObserver<Object>) result.getValue());
                     } catch (Throwable t) {
@@ -168,7 +181,10 @@ public class ServerStream extends AbstractServerStream implements Stream {
                 final Object[] arguments = deserializeRequest(in);
                 if (arguments != null) {
                     inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
-                    getInvoker().invoke(inv);
+                    final Result result = getInvoker().invoke(inv);
+                    if (result.hasException()) {
+                        transportError(GrpcStatus.getStatus(result.getException()));
+                    }
                 }
             } finally {
                 RpcContext.removeCancellationContext();

@@ -85,11 +85,11 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
             stream.setCompressor(compressor);
         }
 
-        stream.service(consumerModel)
+        stream.request(req)
+            .service(consumerModel)
             .connection(Connection.getConnectionFromChannel(ctx.channel()))
             .method(methodDescriptor)
             .methodName(methodDescriptor.getMethodName())
-            .request(req)
             .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
             .subscribe(new ClientTransportObserver(ctx, stream, promise));
 

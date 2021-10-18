@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -94,12 +93,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (LOGGER.isWarnEnabled()) {
             LOGGER.warn("Exception in processing triple message", cause);
         }
-        if (cause instanceof RpcException) {
-            TripleUtil.responseErr(ctx, GrpcStatus.rpcExceptionCodeToGrpc(((RpcException) cause).getCode()));
-        } else {
-            TripleUtil.responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withDescription("Provider's error:\n" + cause.getMessage()));
-        }
+        GrpcStatus status = GrpcStatus.getStatus(cause, "Provider's error:\n" + cause.getMessage());
+        TripleUtil.responseErr(ctx, status);
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
