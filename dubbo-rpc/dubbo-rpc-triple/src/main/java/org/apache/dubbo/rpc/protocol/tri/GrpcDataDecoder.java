@@ -30,10 +30,9 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
     private static final int RESERVED_MASK = 0xFE;
     private static final int COMPRESSED_FLAG_MASK = 1;
     private final int maxDataSize;
-
+    private final boolean client;
     private int len;
     private boolean compressedFlag;
-    private final boolean client;
 
     public GrpcDataDecoder(int maxDataSize, boolean client) {
         super(GrpcDecodeState.HEADER);
@@ -93,12 +92,6 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
         return compressor.decompress(data);
     }
 
-    enum GrpcDecodeState {
-        HEADER,
-        PAYLOAD
-    }
-
-
     private Compressor getDeCompressor(ChannelHandlerContext ctx, boolean client) {
         AbstractStream stream = client ? getClientStream(ctx) : getServerStream(ctx);
         return stream.getDeCompressor();
@@ -110,6 +103,11 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
 
     private AbstractServerStream getServerStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+    }
+
+    enum GrpcDecodeState {
+        HEADER,
+        PAYLOAD
     }
 
 

@@ -51,6 +51,7 @@ public abstract class AbstractStream implements Stream {
     private final StreamObserver<Object> streamObserver;
     private final TransportObserver transportObserver;
     private final Executor executor;
+    private final CancellationContext cancellationContext;
     private ServiceDescriptor serviceDescriptor;
     private MethodDescriptor methodDescriptor;
     private String methodName;
@@ -60,20 +61,10 @@ public abstract class AbstractStream implements Stream {
     private TransportObserver transportSubscriber;
     private Compressor compressor = IdentityCompressor.NONE;
     private Compressor deCompressor = IdentityCompressor.NONE;
-
-    private final CancellationContext cancellationContext;
     private volatile boolean cancelled = false;
-
-    public boolean isCancelled() {
-        return cancelled;
-    }
 
     protected AbstractStream(URL url) {
         this(url, null);
-    }
-
-    protected CancellationContext getCancellationContext() {
-        return cancellationContext;
     }
 
     protected AbstractStream(URL url, Executor executor) {
@@ -88,6 +79,13 @@ public abstract class AbstractStream implements Stream {
         this.streamObserver = createStreamObserver();
     }
 
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    protected CancellationContext getCancellationContext() {
+        return cancellationContext;
+    }
 
     private Executor lookupExecutor(URL url, Executor executor) {
         // only server maybe not null
@@ -205,6 +203,10 @@ public abstract class AbstractStream implements Stream {
         this.serviceDescriptor = serviceDescriptor;
     }
 
+    public Compressor getCompressor() {
+        return this.compressor;
+    }
+
     /**
      * set compressor if required
      *
@@ -225,6 +227,9 @@ public abstract class AbstractStream implements Stream {
         return this;
     }
 
+    public Compressor getDeCompressor() {
+        return this.deCompressor;
+    }
 
     protected AbstractStream setDeCompressor(Compressor compressor) {
         // If compressor is NULL, this will not be set.
@@ -239,14 +244,6 @@ public abstract class AbstractStream implements Stream {
             }
         }
         return this;
-    }
-
-    public Compressor getCompressor() {
-        return this.compressor;
-    }
-
-    public Compressor getDeCompressor() {
-        return this.deCompressor;
     }
 
     public URL getUrl() {
