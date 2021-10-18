@@ -50,7 +50,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     private final ProviderModel providerModel;
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
-    private List<HeaderFilter> headerFilters;
+    private final List<HeaderFilter> headerFilters;
 
     protected AbstractServerStream(URL url) {
         this(url, lookupProviderModel(url));
@@ -143,8 +143,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                 final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data,
                     TripleWrapper.TripleRequestWrapper.class);
                 if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
-                    transportError(GrpcStatus.fromCodeWithDescription(GrpcStatus.Code.INVALID_ARGUMENT,
-                        "Received inconsistent serialization type from client, " +
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INVALID_ARGUMENT)
+                        .withDescription("Received inconsistent serialization type from client, " +
                             "reject to deserialize! Expected:" + getSerializeType() +
                             " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType())));
                     return null;

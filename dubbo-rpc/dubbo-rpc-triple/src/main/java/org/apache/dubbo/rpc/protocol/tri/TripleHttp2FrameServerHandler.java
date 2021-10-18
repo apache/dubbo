@@ -51,7 +51,7 @@ import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
     private final PathResolver PATH_RESOLVER;
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public TripleHttp2FrameServerHandler(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;

@@ -70,10 +70,7 @@ public class TripleUtil {
         if (QUIET_EXCEPTIONS_CLASS.contains(t.getClass())) {
             return true;
         }
-        if (QUIET_EXCEPTIONS.contains(t.getClass().getSimpleName())) {
-            return true;
-        }
-        return false;
+        return QUIET_EXCEPTIONS.contains(t.getClass().getSimpleName());
     }
 
     /**

@@ -36,6 +36,21 @@ public interface Compressor {
 
     String DEFAULT_COMPRESSOR = "identity";
 
+    static Compressor getCompressor(FrameworkModel frameworkModel, String compressorStr) {
+        if (null == compressorStr) {
+            return null;
+        }
+        return frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
+    }
+
+    static String getAcceptEncoding(FrameworkModel frameworkModel) {
+        Set<String> supportedEncodingSet = frameworkModel.getExtensionLoader(Compressor.class).getSupportedExtensions();
+        if (supportedEncodingSet.isEmpty()) {
+            return null;
+        }
+        return String.join(",", supportedEncodingSet);
+    }
+
     /**
      * message encoding of current compressor
      *
@@ -58,21 +73,4 @@ public interface Compressor {
      * @return decompressed payload byte array
      */
     byte[] decompress(byte[] payloadByteArr);
-
-
-    static Compressor getCompressor(FrameworkModel frameworkModel, String compressorStr) {
-        if (null == compressorStr) {
-            return null;
-        }
-        return frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
-    }
-
-
-    static String getAcceptEncoding(FrameworkModel frameworkModel) {
-        Set<String> supportedEncodingSet = frameworkModel.getExtensionLoader(Compressor.class).getSupportedExtensions();
-        if (supportedEncodingSet.isEmpty()) {
-            return null;
-        }
-        return String.join(",", supportedEncodingSet);
-    }
 }
