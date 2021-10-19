@@ -326,52 +326,89 @@ public class ConfigurationUtils {
 
     /**
      * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getSystemConfiguration(ScopeModel)}
      */
     @Deprecated
     public static Configuration getSystemConfiguration() {
         return ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getEnvConfiguration(ScopeModel)}
+     */
     @Deprecated
     public static Configuration getEnvConfiguration() {
         return ApplicationModel.defaultModel().getModelEnvironment().getEnvironmentConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getGlobalConfiguration(ScopeModel)}
+     */
     @Deprecated
     public static Configuration getGlobalConfiguration() {
         return ApplicationModel.defaultModel().getModelEnvironment().getConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getDynamicGlobalConfiguration(ScopeModel)}
+     */
     @Deprecated
     public static Configuration getDynamicGlobalConfiguration() {
         return ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().getDynamicGlobalConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getCachedDynamicProperty(ScopeModel, String, String)}
+     */
     @Deprecated
     public static String getCachedDynamicProperty(String key, String defaultValue) {
         return getCachedDynamicProperty(ApplicationModel.defaultModel(), key, defaultValue);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getDynamicProperty(ScopeModel, String)}
+     */
     @Deprecated
     public static String getDynamicProperty(String property) {
         return getDynamicProperty(ApplicationModel.defaultModel(), property);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getDynamicProperty(ScopeModel, String, String)}
+     */
     @Deprecated
     public static String getDynamicProperty(String property, String defaultValue) {
         return getDynamicProperty(ApplicationModel.defaultModel(), property, defaultValue);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getProperty(ScopeModel, String)}
+     */
     @Deprecated
     public static String getProperty(String property) {
         return getProperty(ApplicationModel.defaultModel(), property);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getProperty(ScopeModel, String, String)}
+     */
     @Deprecated
     public static String getProperty(String property, String defaultValue) {
         return getProperty(ApplicationModel.defaultModel(), property, defaultValue);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#get(ScopeModel, String, int)}
+     */
     @Deprecated
     public static int get(String property, int defaultValue) {
         return get(ApplicationModel.defaultModel(), property, defaultValue);

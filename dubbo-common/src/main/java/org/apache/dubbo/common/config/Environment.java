@@ -99,6 +99,9 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         this.localMigrationRule = ConfigUtils.loadMigrationRule(scopeModel.getClassLoaders(), path);
     }
 
+    /**
+     * @deprecated only for ut
+     */
     @Deprecated
     public void setLocalMigrationRule(String localMigrationRule) {
         this.localMigrationRule = localMigrationRule;

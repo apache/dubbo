@@ -94,56 +94,89 @@ public class ApplicationModel extends ScopeModel {
         return defaultInstance;
     }
 
+    /**
+     * @deprecated use {@link ServiceRepository#allConsumerModels()}
+     */
     @Deprecated
     public static Collection<ConsumerModel> allConsumerModels() {
         return defaultModel().getApplicationServiceRepository().allConsumerModels();
     }
 
+    /**
+     * @deprecated use {@link ServiceRepository#allProviderModels()}
+     */
     @Deprecated
     public static Collection<ProviderModel> allProviderModels() {
         return defaultModel().getApplicationServiceRepository().allProviderModels();
     }
 
+    /**
+     * @deprecated use {@link FrameworkServiceRepository#lookupExportedService(String)}
+     */
     @Deprecated
     public static ProviderModel getProviderModel(String serviceKey) {
         return defaultModel().getDefaultModule().getServiceRepository().lookupExportedService(serviceKey);
     }
 
+    /**
+     * @deprecated ConsumerModel should fetch from context
+     */
     @Deprecated
     public static ConsumerModel getConsumerModel(String serviceKey) {
         return defaultModel().getDefaultModule().getServiceRepository().lookupReferredService(serviceKey);
     }
 
+    /**
+     * @deprecated Replace to {@link ScopeModel#getModelEnvironment()}
+     */
     @Deprecated
     public static Environment getEnvironment() {
         return defaultModel().getModelEnvironment();
     }
 
+    /**
+     * @deprecated Replace to {@link ApplicationModel#getApplicationConfigManager()}
+     */
     @Deprecated
     public static ConfigManager getConfigManager() {
         return defaultModel().getApplicationConfigManager();
     }
 
+    /**
+     * @deprecated Replace to {@link ApplicationModel#getApplicationServiceRepository()}
+     */
     @Deprecated
     public static ServiceRepository getServiceRepository() {
         return defaultModel().getApplicationServiceRepository();
     }
 
+    /**
+     * @deprecated Replace to {@link ApplicationModel#getApplicationExecutorRepository()}
+     */
     @Deprecated
     public static ExecutorRepository getExecutorRepository() {
         return defaultModel().getApplicationExecutorRepository();
     }
 
+    /**
+     * @deprecated Replace to {@link ApplicationModel#getCurrentConfig()}
+     */
     @Deprecated
     public static ApplicationConfig getApplicationConfig() {
         return defaultModel().getCurrentConfig();
     }
 
+    /**
+     * @deprecated Replace to {@link ApplicationModel#getApplicationName()}
+     */
     @Deprecated
     public static String getName() {
         return defaultModel().getCurrentConfig().getName();
     }
 
+    /**
+     * @deprecated Replace to {@link ApplicationModel#getApplicationName()}
+     */
     @Deprecated
     public static String getApplication() {
         return getName();
@@ -360,16 +393,25 @@ public class ApplicationModel extends ScopeModel {
         return internalModule;
     }
 
+    /**
+     * @deprecated only for ut
+     */
     @Deprecated
     public void setEnvironment(Environment environment) {
         this.environment = environment;
     }
 
+    /**
+     * @deprecated only for ut
+     */
     @Deprecated
     public void setConfigManager(ConfigManager configManager) {
         this.configManager = configManager;
     }
 
+    /**
+     * @deprecated only for ut
+     */
     @Deprecated
     public void setServiceRepository(ServiceRepository serviceRepository) {
         this.serviceRepository = serviceRepository;
