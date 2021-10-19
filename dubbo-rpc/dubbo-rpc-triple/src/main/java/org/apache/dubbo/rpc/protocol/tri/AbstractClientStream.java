@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
@@ -76,6 +77,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     }
 
     protected abstract void startCall();
+
+    @Override
+    protected StreamObserver<Object> createStreamObserver() {
+        return new ClientStreamObserverImpl(getCancellationContext());
+    }
 
     public AbstractClientStream service(ConsumerModel model) {
         this.consumerModel = model;
@@ -208,6 +214,52 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     @Override
     protected void cancelByLocal(Throwable throwable) {
         getCancellationContext().cancel(throwable);
+    }
+
+    protected class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
+
+        public ClientStreamObserverImpl(CancellationContext cancellationContext) {
+            super(cancellationContext);
+        }
+
+        @Override
+        public void onNext(Object data) {
+            if (getState().allowSendMeta()) {
+                getState().setMetaSend();
+                final Metadata metadata = createRequestMeta(getRpcInvocation());
+                getTransportSubscriber().onMetadata(metadata, false);
+            }
+            if (getState().allowSendData()) {
+                final byte[] bytes = encodeRequest(data);
+                getTransportSubscriber().onData(bytes, false);
+            }
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            if (getState().allowSendEndStream()) {
+                getState().setEndStreamSend();
+                transportError(throwable);
+            }
+        }
+
+        @Override
+        public void onCompleted() {
+            if (getState().allowSendEndStream()) {
+                getState().setEndStreamSend();
+                getTransportSubscriber().onComplete();
+            }
+        }
+
+        @Override
+        public void setCompression(String compression) {
+            if (!getState().allowSendMeta()) {
+                cancel(new IllegalStateException("Metadata already has been sent,can not set compression"));
+                return;
+            }
+            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
+            setCompressor(compressor);
+        }
     }
 
 

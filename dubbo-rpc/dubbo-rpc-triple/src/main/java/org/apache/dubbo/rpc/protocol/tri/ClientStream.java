@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.RpcInvocation;
 
 public class ClientStream extends AbstractClientStream implements Stream {
 
@@ -31,10 +30,10 @@ public class ClientStream extends AbstractClientStream implements Stream {
         super(url);
     }
 
-    @Override
-    protected StreamObserver<Object> createStreamObserver() {
-        return new ClientStreamObserverImpl(getCancellationContext());
-    }
+//    @Override
+//    protected StreamObserver<Object> createStreamObserver() {
+//        return new ClientStreamObserverImpl(getCancellationContext());
+//    }
 
     @Override
     protected TransportObserver createTransportObserver() {
@@ -74,51 +73,51 @@ public class ClientStream extends AbstractClientStream implements Stream {
         return observer;
     }
 
-    private class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
-
-        public ClientStreamObserverImpl(CancellationContext cancellationContext) {
-            super(cancellationContext);
-        }
-
-        @Override
-        public void onNext(Object data) {
-            if (getState().allowSendMeta()) {
-                getState().setMetaSend();
-                final Metadata metadata = createRequestMeta((RpcInvocation) getRequest().getData());
-                getTransportSubscriber().onMetadata(metadata, false);
-            }
-            if (getState().allowSendData()) {
-                final byte[] bytes = encodeRequest(data);
-                getTransportSubscriber().onData(bytes, false);
-            }
-        }
-
-        @Override
-        public void onError(Throwable throwable) {
-            if (getState().allowSendEndStream()) {
-                getState().setEndStreamSend();
-                transportError(throwable);
-            }
-        }
-
-        @Override
-        public void onCompleted() {
-            if (getState().allowSendEndStream()) {
-                getState().setEndStreamSend();
-                getTransportSubscriber().onComplete();
-            }
-        }
-
-        @Override
-        public void setCompression(String compression) {
-            if (!getState().allowSendMeta()) {
-                cancel(new IllegalStateException("Metadata already has been sent,can not set compression"));
-                return;
-            }
-            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
-            setCompressor(compressor);
-        }
-    }
+//    private class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
+//
+//        public ClientStreamObserverImpl(CancellationContext cancellationContext) {
+//            super(cancellationContext);
+//        }
+//
+//        @Override
+//        public void onNext(Object data) {
+//            if (getState().allowSendMeta()) {
+//                getState().setMetaSend();
+//                final Metadata metadata = createRequestMeta(getRpcInvocation());
+//                getTransportSubscriber().onMetadata(metadata, false);
+//            }
+//            if (getState().allowSendData()) {
+//                final byte[] bytes = encodeRequest(data);
+//                getTransportSubscriber().onData(bytes, false);
+//            }
+//        }
+//
+//        @Override
+//        public void onError(Throwable throwable) {
+//            if (getState().allowSendEndStream()) {
+//                getState().setEndStreamSend();
+//                transportError(throwable);
+//            }
+//        }
+//
+//        @Override
+//        public void onCompleted() {
+//            if (getState().allowSendEndStream()) {
+//                getState().setEndStreamSend();
+//                getTransportSubscriber().onComplete();
+//            }
+//        }
+//
+//        @Override
+//        public void setCompression(String compression) {
+//            if (!getState().allowSendMeta()) {
+//                cancel(new IllegalStateException("Metadata already has been sent,can not set compression"));
+//                return;
+//            }
+//            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
+//            setCompressor(compressor);
+//        }
+//    }
 
     private class ClientTransportObserverImpl extends AbstractTransportObserver {
 
