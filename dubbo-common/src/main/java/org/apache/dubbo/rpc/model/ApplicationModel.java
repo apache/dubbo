@@ -262,7 +262,7 @@ public class ApplicationModel extends ScopeModel {
             deployer.postDestroy();
         }
 
-        // destroy other resources (e.g. ZookeeperTransporter )
+        // destroy other resources (e.g. close unused zookeeper clients )
         notifyDestroy();
 
         if (environment != null) {
