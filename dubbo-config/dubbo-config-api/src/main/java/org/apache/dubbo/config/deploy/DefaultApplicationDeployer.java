@@ -54,7 +54,6 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.support.RegistryManager;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -118,8 +117,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private String identifier;
     private volatile CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
-    private ZookeeperTransporter zookeeperTransporter;
-    String application;
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -205,8 +202,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             startMetadataCenter();
 
             initMetadataService();
-
-            zookeeperTransporter = null;
 
             initialized.set(true);
 
@@ -664,7 +659,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    
     private boolean hasExportedServices() {
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             if (CollectionUtils.isNotEmpty(moduleModel.getConfigManager().getServices())) {
@@ -830,9 +824,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         applicationModel.destroy();
     }
 
-    /**
-     * it will be called by DefaultModuleDeployer preDestroy().
-     */
     @Override
     public synchronized void preDestroy() {
         if (isStopping() || isStopped()) {
@@ -847,20 +838,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         unregisterServiceInstance();
         unexportMetadataService();
 
-        // save zookeeperTransporter before the extension loader is cleared.
-        if (zookeeperTransporter == null) {
-            try {
-                zookeeperTransporter = ZookeeperTransporter.getExtension();
-            } catch (Throwable ignored) {                
-                // NPE: the extension loader might not be loaded yet.
-                if (!(ignored instanceof NullPointerException)) {
-                    logger.warn(ignored.getMessage(), ignored);
-                }
-            }
-        }
-
-        // save application name before it's cleared.
-        application = applicationModel.tryGetApplicationName();
     }
 
     @Override
@@ -882,11 +859,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             // destroy all executor services
             destroyExecutorRepository();
-
-            // close zookeeper connections that are no longer used.
-            if (zookeeperTransporter != null) {
-                zookeeperTransporter.close(application);
-            }
 
             onStopped();
         } catch (Throwable ex) {
@@ -981,6 +953,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return newState;
     }
 
+    @SuppressWarnings("rawtypes")
     private synchronized void onStarting() {
         if (isStarting()) {
             return;

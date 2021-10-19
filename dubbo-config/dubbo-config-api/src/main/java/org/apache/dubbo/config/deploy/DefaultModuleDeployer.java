@@ -121,6 +121,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     public synchronized Future start() throws IllegalStateException {
         if (isStarting() || isStarted()) {
             return startFuture;
@@ -167,15 +168,13 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     public void stop() throws IllegalStateException {
         moduleModel.destroy();
     }
-    
+
     @Override
     public void preDestroy() throws IllegalStateException {
         if (isStopping() || isStopped()) {
             return;
         }
         onModuleStopping();
-        // it should be executed before applicationModel.removeModule() to get extension loader of zookeeper. 
-        applicationDeployer.preDestroy();
     }
 
     @Override
@@ -230,7 +229,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         setStarted();
         logger.info(getIdentifier() + " has started.");
         applicationDeployer.checkStarted();
-        // must set startFuture because this start() is also called by DubboDeployApplicationListener.onContextRefreshedEvent().
+        // must set startFuture because this start() is also called by DubboDeployApplicationListener#onContextRefreshedEvent.
         startFuture.complete(true);
     }
 
@@ -250,12 +249,14 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         moduleModel.getConfigManager().refreshAll();
     }
 
+    @SuppressWarnings({ "rawtypes" })
     private void exportServices() {
         for (ServiceConfigBase sc : configManager.getServices()) {
             exportServiceInternal(sc);
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private void exportServiceInternal(ServiceConfigBase sc) {
         ServiceConfig<?> serviceConfig = (ServiceConfig<?>) sc;
         if (!serviceConfig.isRefreshed()) {

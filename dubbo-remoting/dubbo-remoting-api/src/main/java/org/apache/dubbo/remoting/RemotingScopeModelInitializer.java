@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -37,6 +38,15 @@ public class RemotingScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
+        applicationModel.addDestroyListener(m -> {
+            try {
+                ZookeeperTransporter zkTransporter = ZookeeperTransporter.getExtension();
+                // close unused zkClients.
+                zkTransporter.close(applicationModel.tryGetApplicationName());
+            } catch (Exception e) {
+                logger.error("Error encountered while destroying ZookeeperTransporter: " + e.getMessage(), e);
+            }
+        });
     }
 
     @Override
