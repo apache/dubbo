@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
@@ -89,6 +90,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         stream.request(req)
             .service(consumerModel)
             .connection(connection)
+            .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
             .method(methodDescriptor)
             .setCompressor(compressor)
         ;
