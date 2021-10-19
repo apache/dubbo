@@ -76,7 +76,16 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return (RpcInvocation) getRequest().getData();
     }
 
-    protected abstract void startCall();
+    protected void startCall() {
+        try {
+            doOnStartCall();
+        } catch (Throwable throwable) {
+            asStreamObserver().onError(throwable);
+            DefaultFuture2.getFuture(getRequest().getId()).cancel();
+        }
+    }
+
+    protected abstract void doOnStartCall();
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
@@ -235,11 +244,21 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             }
         }
 
+        /**
+         * Handle all exceptions in the request process, other procedures directly throw
+         * <p>
+         * other procedures is {@link ClientStreamObserver#onNext(Object)} and {@link ClientStreamObserver#onCompleted()}
+         */
         @Override
         public void onError(Throwable throwable) {
             if (getState().allowSendEndStream()) {
                 getState().setEndStreamSend();
-                transportError(throwable);
+                GrpcStatus status = GrpcStatus.getStatus(throwable);
+                transportError(status, null, getState().allowSendMeta());
+            } else {
+                if (LOGGER.isErrorEnabled()) {
+                    LOGGER.error("client request error ", throwable);
+                }
             }
         }
 
@@ -261,25 +280,4 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             setCompressor(compressor);
         }
     }
-
-
-    protected abstract class AbstractClientTransport extends AbstractTransportObserver {
-
-        @Override
-        public void onData(byte[] data, boolean endStream) {
-            execute(() -> {
-                final Object resp = deserializeResponse(data);
-                getStreamSubscriber().onNext(resp);
-            });
-        }
-
-//        protected abstract
-
-        @Override
-        public void onComplete() {
-            super.onComplete();
-        }
-    }
-
-
 }

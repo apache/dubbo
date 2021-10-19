@@ -30,18 +30,13 @@ public class ClientStream extends AbstractClientStream implements Stream {
         super(url);
     }
 
-//    @Override
-//    protected StreamObserver<Object> createStreamObserver() {
-//        return new ClientStreamObserverImpl(getCancellationContext());
-//    }
-
     @Override
     protected TransportObserver createTransportObserver() {
         return new ClientTransportObserverImpl();
     }
 
     @Override
-    protected void startCall() {
+    protected void doOnStartCall() {
         Response response = new Response(getRequest().getId(), getRequest().getVersion());
         AppResponse result = getMethodDescriptor().isServerStream() ? callServerStream() : callBiStream();
         response.setResult(result);
@@ -73,73 +68,44 @@ public class ClientStream extends AbstractClientStream implements Stream {
         return observer;
     }
 
-//    private class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
-//
-//        public ClientStreamObserverImpl(CancellationContext cancellationContext) {
-//            super(cancellationContext);
-//        }
-//
-//        @Override
-//        public void onNext(Object data) {
-//            if (getState().allowSendMeta()) {
-//                getState().setMetaSend();
-//                final Metadata metadata = createRequestMeta(getRpcInvocation());
-//                getTransportSubscriber().onMetadata(metadata, false);
-//            }
-//            if (getState().allowSendData()) {
-//                final byte[] bytes = encodeRequest(data);
-//                getTransportSubscriber().onData(bytes, false);
-//            }
-//        }
-//
-//        @Override
-//        public void onError(Throwable throwable) {
-//            if (getState().allowSendEndStream()) {
-//                getState().setEndStreamSend();
-//                transportError(throwable);
-//            }
-//        }
-//
-//        @Override
-//        public void onCompleted() {
-//            if (getState().allowSendEndStream()) {
-//                getState().setEndStreamSend();
-//                getTransportSubscriber().onComplete();
-//            }
-//        }
-//
-//        @Override
-//        public void setCompression(String compression) {
-//            if (!getState().allowSendMeta()) {
-//                cancel(new IllegalStateException("Metadata already has been sent,can not set compression"));
-//                return;
-//            }
-//            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
-//            setCompressor(compressor);
-//        }
-//    }
-
     private class ClientTransportObserverImpl extends AbstractTransportObserver {
+
+        private boolean error = false;
 
         @Override
         public void onData(byte[] data, boolean endStream) {
             execute(() -> {
-                final Object resp = deserializeResponse(data);
-                getStreamSubscriber().onNext(resp);
+                try {
+                    final Object resp = deserializeResponse(data);
+                    getStreamSubscriber().onNext(resp);
+                } catch (Throwable throwable) {
+                    onError(throwable);
+                }
             });
         }
 
         @Override
         public void onComplete() {
             execute(() -> {
+                getState().setServerEndStreamReceived();
                 final GrpcStatus status = extractStatusFromMeta(getHeaders());
-
                 if (GrpcStatus.Code.isOk(status.code.code)) {
                     getStreamSubscriber().onCompleted();
                 } else {
-                    getStreamSubscriber().onError(status.asException());
+                    onError(status.cause);
                 }
             });
+        }
+
+        private void onError(Throwable throwable) {
+            if (error) {
+                return;
+            }
+            error = true;
+            if (!getState().serverSendStreamReceived()) {
+                cancel(throwable);
+            }
+            getStreamSubscriber().onError(throwable);
         }
     }
 }

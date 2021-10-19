@@ -103,4 +103,14 @@ class TransportStateTest {
         transportState.setMetaSend();
         Assertions.assertTrue(transportState.allowSendReset());
     }
+
+    @Test
+    void serverEndStream() {
+        TransportState transportState = new TransportState();
+        Assertions.assertFalse(transportState.serverSendStreamReceived());
+
+        transportState.setServerEndStreamReceived();
+        Assertions.assertTrue(transportState.serverSendStreamReceived());
+
+    }
 }

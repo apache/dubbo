@@ -54,7 +54,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         @Override
         public void doOnComplete() {
             if (getData() != null) {
-                execute(this::invoke);
+                invoke();
             } else {
                 onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription("Missing request data"));

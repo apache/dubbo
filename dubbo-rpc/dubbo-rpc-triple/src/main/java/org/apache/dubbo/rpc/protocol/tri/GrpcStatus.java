@@ -95,7 +95,9 @@ public class GrpcStatus {
         return status;
     }
 
-
+    /**
+     * todo The remaining exceptions are converted to status
+     */
     public static GrpcStatus getStatus(Throwable throwable) {
         return getStatus(throwable, null);
     }

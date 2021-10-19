@@ -38,7 +38,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
     }
 
     @Override
-    protected void startCall() {
+    protected void doOnStartCall() {
         asStreamObserver().onNext(getRpcInvocation());
         asStreamObserver().onCompleted();
     }
@@ -57,45 +57,40 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
         @Override
         public void doOnComplete() {
-            execute(() -> {
-                try {
-                    AppResponse result;
-                    if (!Void.TYPE.equals(getMethodDescriptor().getReturnClass())) {
-                        final Object resp = deserializeResponse(getData());
-                        result = new AppResponse(resp);
-                    } else {
-                        result = new AppResponse();
-                    }
-                    Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-                    result.setObjectAttachments(parseMetadataToAttachmentMap(getTrailers()));
-                    response.setResult(result);
-                    DefaultFuture2.received(getConnection(), response);
-                } catch (Exception e) {
-                    final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withCause(e)
-                        .withDescription("Failed to deserialize response");
-                    onError(status);
+            try {
+                AppResponse result;
+                if (!Void.TYPE.equals(getMethodDescriptor().getReturnClass())) {
+                    final Object resp = deserializeResponse(getData());
+                    result = new AppResponse(resp);
+                } else {
+                    result = new AppResponse();
                 }
-            });
+                Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
+                result.setObjectAttachments(parseMetadataToAttachmentMap(getTrailers()));
+                response.setResult(result);
+                DefaultFuture2.received(getConnection(), response);
+            } catch (Exception e) {
+                final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withCause(e)
+                    .withDescription("Failed to deserialize response");
+                onError(status);
+            }
         }
 
         @Override
         protected void onError(GrpcStatus status) {
-            // run in callback executor will truncate exception stack and avoid blocking netty's event loop
-            execute(() -> {
-                Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-                response.setErrorMessage(status.description);
-                final AppResponse result = new AppResponse();
-                final Metadata trailers = getTrailers() == null ? getHeaders() : getTrailers();
-                result.setException(getThrowable(trailers));
-                result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(trailers));
-                response.setResult(result);
-                if (!result.hasException()) {
-                    final byte code = GrpcStatus.toDubboStatus(status.code);
-                    response.setStatus(code);
-                }
-                DefaultFuture2.received(getConnection(), response);
-            });
+            Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
+            response.setErrorMessage(status.description);
+            final AppResponse result = new AppResponse();
+            final Metadata trailers = getTrailers() == null ? getHeaders() : getTrailers();
+            result.setException(getThrowable(trailers));
+            result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(trailers));
+            response.setResult(result);
+            if (!result.hasException()) {
+                final byte code = GrpcStatus.toDubboStatus(status.code);
+                response.setStatus(code);
+            }
+            DefaultFuture2.received(getConnection(), response);
         }
 
         private Throwable getThrowable(Metadata metadata) {
@@ -127,26 +122,4 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             }
         }
     }
-
-
-//    private class UnaryClientStreamObserverImpl implements StreamObserver<Object> {
-//
-//        @Override
-//        public void onNext(Object data) {
-//            RpcInvocation invocation = (RpcInvocation) data;
-//            final Metadata metadata = createRequestMeta(invocation);
-//            getTransportSubscriber().onMetadata(metadata, false);
-//            final byte[] bytes = encodeRequest(invocation);
-//            getTransportSubscriber().onData(bytes, false);
-//        }
-//
-//        @Override
-//        public void onError(Throwable throwable) {
-//        }
-//
-//        @Override
-//        public void onCompleted() {
-//            getTransportSubscriber().onComplete();
-//        }
-//    }
 }

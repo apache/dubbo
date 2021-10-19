@@ -283,8 +283,8 @@ public abstract class AbstractStream implements Stream {
         }
         getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
-//            LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
-//                + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
+            LOGGER.error("[Triple-Error] status=" + status.code.code
+                + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
         }
     }
 
@@ -466,14 +466,19 @@ public abstract class AbstractStream implements Stream {
 
         @Override
         public void onComplete() {
-            final GrpcStatus status = extractStatusFromMeta(getHeaders());
-            if (Code.isOk(status.code.code)) {
-                doOnComplete();
-            } else {
-                onError(status);
-            }
+            execute(() -> {
+                final GrpcStatus status = extractStatusFromMeta(getHeaders());
+                if (Code.isOk(status.code.code)) {
+                    doOnComplete();
+                } else {
+                    onError(status);
+                }
+            });
         }
 
+        /**
+         * This method exception needs to be caught by the implementation class
+         */
         protected abstract void doOnComplete();
 
 
