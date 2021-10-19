@@ -20,7 +20,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
@@ -28,40 +27,19 @@ import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
-import io.netty.util.AsciiString;
 
 public class ClientTransportObserver implements TransportObserver {
-    private final AsciiString SCHEME;
     private final ChannelHandlerContext ctx;
     private final ChannelPromise promise;
     private volatile Http2StreamChannel streamChannel;
 
-    public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream, ChannelPromise promise) {
+    public void setStreamChannel(Http2StreamChannel streamChannel) {
+        this.streamChannel = streamChannel;
+    }
+
+    public ClientTransportObserver(ChannelHandlerContext ctx, ChannelPromise promise) {
         this.ctx = ctx;
         this.promise = promise;
-        Boolean ssl = ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).get();
-        if (ssl != null && ssl) {
-            SCHEME = TripleConstant.HTTPS_SCHEME;
-        } else {
-            SCHEME = TripleConstant.HTTP_SCHEME;
-        }
-
-        final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
-        streamChannelBootstrap.open()
-            .addListener(future -> {
-                if (future.isSuccess()) {
-                    final Http2StreamChannel curChannel = (Http2StreamChannel) future.get();
-                    curChannel.pipeline()
-                        .addLast(new TripleHttp2ClientResponseHandler())
-                        .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
-                        .addLast(new TripleClientInboundHandler());
-                    curChannel.attr(TripleConstant.CLIENT_STREAM_KEY).set(stream);
-                    streamChannel = curChannel;
-                } else {
-                    promise.tryFailure(future.cause());
-                }
-            });
     }
 
     @Override
@@ -69,11 +47,7 @@ public class ClientTransportObserver implements TransportObserver {
         while (streamChannel == null) {
             // wait channel initialized
         }
-        final Http2Headers headers = new DefaultHttp2Headers(true)
-            .path(metadata.get(TripleHeaderEnum.PATH_KEY.getHeader()))
-            .authority(metadata.get(TripleHeaderEnum.AUTHORITY_KEY.getHeader()))
-            .scheme(SCHEME)
-            .method(HttpMethod.POST.asciiName());
+        final Http2Headers headers = new DefaultHttp2Headers(true);
         metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
         streamChannel.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
             .addListener(future -> {

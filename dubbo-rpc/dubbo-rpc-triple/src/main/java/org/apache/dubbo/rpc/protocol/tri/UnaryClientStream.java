@@ -32,7 +32,6 @@ import java.util.Map;
 
 public class UnaryClientStream extends AbstractClientStream implements Stream {
 
-
     protected UnaryClientStream(URL url) {
         super(url);
     }
@@ -42,11 +41,6 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
         asStreamObserver().onNext(getRpcInvocation());
         asStreamObserver().onCompleted();
     }
-
-//    @Override
-//    protected StreamObserver<Object> createStreamObserver() {
-//        return new UnaryClientStreamObserverImpl();
-//    }
 
     @Override
     protected TransportObserver createTransportObserver() {
@@ -65,7 +59,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                 } else {
                     result = new AppResponse();
                 }
-                Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
+                Response response = new Response(getRequestId(), TripleConstant.TRI_VERSION);
                 result.setObjectAttachments(parseMetadataToAttachmentMap(getTrailers()));
                 response.setResult(result);
                 DefaultFuture2.received(getConnection(), response);
@@ -79,7 +73,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
         @Override
         protected void onError(GrpcStatus status) {
-            Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
+            Response response = new Response(getRequestId(), TripleConstant.TRI_VERSION);
             response.setErrorMessage(status.description);
             final AppResponse result = new AppResponse();
             final Metadata trailers = getTrailers() == null ? getHeaders() : getTrailers();

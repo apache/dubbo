@@ -37,7 +37,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
 
     @Override
     protected void doOnStartCall() {
-        Response response = new Response(getRequest().getId(), getRequest().getVersion());
+        Response response = new Response(getRequestId(), TripleConstant.TRI_VERSION);
         AppResponse result = getMethodDescriptor().isServerStream() ? callServerStream() : callBiStream();
         response.setResult(result);
         DefaultFuture2.received(getConnection(), response);

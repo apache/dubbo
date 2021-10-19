@@ -132,6 +132,7 @@ public abstract class AbstractStream implements Stream {
 
     public AbstractStream method(MethodDescriptor md) {
         this.methodDescriptor = md;
+        this.methodName = md.getMethodName();
         return this;
     }
 

@@ -16,29 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
-import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 
 public class TripleClientRequestHandler extends ChannelDuplexHandler {
 
@@ -59,53 +46,27 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
 
     private void writeRequest(ChannelHandlerContext ctx, final Request req, final ChannelPromise promise) {
         DefaultFuture2.addTimeoutListener(req.getId(), ctx::close);
-        final RpcInvocation inv = (RpcInvocation) req.getData();
-        final URL url = inv.getInvoker().getUrl();
-        ConsumerModel consumerModel = inv.getServiceModel() != null ? (ConsumerModel) inv.getServiceModel() : (ConsumerModel) url.getServiceModel();
+        Connection connection = Connection.getConnectionFromChannel(ctx.channel());
+        final AbstractClientStream stream = AbstractClientStream.newClientStream(req, connection);
+        final ClientTransportObserver clientTransportObserver = new ClientTransportObserver(ctx, promise);
+        final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
+        streamChannelBootstrap.open()
+            .addListener(future -> {
+                if (future.isSuccess()) {
+                    final Http2StreamChannel curChannel = (Http2StreamChannel) future.get();
+                    curChannel.pipeline()
+                        .addLast(new TripleHttp2ClientResponseHandler())
+                        .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
+                        .addLast(new TripleClientInboundHandler());
+                    curChannel.attr(TripleConstant.CLIENT_STREAM_KEY).set(stream);
+                    clientTransportObserver.setStreamChannel(curChannel);
+                } else {
+                    promise.tryFailure(future.cause());
+                }
+            });
 
-        MethodDescriptor methodDescriptor = getTriMethodDescriptor(consumerModel, inv);
-
-        ClassLoadUtil.switchContextLoader(consumerModel.getClassLoader());
-        final AbstractClientStream stream = AbstractClientStream.newClientStream(url, methodDescriptor.isUnary());
-
-        String ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY);
-        if (StringUtils.isNotEmpty(ssl)) {
-            ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(Boolean.parseBoolean(ssl));
-        }
-        // Compressor can not be set by dynamic config
-        String compressorStr = ConfigurationUtils
-            .getCachedDynamicProperty(inv.getModuleModel(), COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
-
-        Compressor compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
-        if (compressor != null) {
-            stream.setCompressor(compressor);
-        }
-
-        stream.request(req)
-            .service(consumerModel)
-            .connection(Connection.getConnectionFromChannel(ctx.channel()))
-            .method(methodDescriptor)
-            .methodName(methodDescriptor.getMethodName())
-            .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
-            .subscribe(new ClientTransportObserver(ctx, stream, promise));
-
+        stream.subscribe(clientTransportObserver);
         // start call
         stream.startCall();
-    }
-
-    /**
-     * Get the tri protocol special MethodDescriptor
-     */
-    private MethodDescriptor getTriMethodDescriptor(ConsumerModel consumerModel, RpcInvocation inv) {
-        List<MethodDescriptor> methodDescriptors = consumerModel.getServiceModel().getMethods(inv.getMethodName());
-        if (CollectionUtils.isEmpty(methodDescriptors)) {
-            throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
-        }
-        for (MethodDescriptor methodDescriptor : methodDescriptors) {
-            if (Arrays.equals(inv.getParameterTypes(), methodDescriptor.getRealParameterClasses())) {
-                return methodDescriptor;
-            }
-        }
-        throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
     }
 }
