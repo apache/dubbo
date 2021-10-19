@@ -25,7 +25,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
-
 import org.apache.zookeeper.data.Stat;
 
 import java.util.Collection;
@@ -43,7 +42,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     private Executor executor;
     // The final root path would be: /configRootPath/"config"
     private String rootPath;
-    private final ZookeeperClient zkClient;
+    private ZookeeperClient zkClient;
 
     private CacheListener cacheListener;
     private URL url;
@@ -83,7 +82,11 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     @Override
     protected void doClose() throws Exception {
-        zkClient.close();
+        // zkClient is shared in framework, should not close it here
+        // zkClient.close();
+        // See: org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter#destroy()
+        // All zk clients is created and destroyed in ZookeeperTransporter.
+        zkClient = null;
     }
 
     @Override

@@ -246,7 +246,14 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         globalConfiguration = null;
         globalConfigurationMaps = null;
         defaultDynamicGlobalConfiguration = null;
-        defaultDynamicConfiguration = null;
+        if (defaultDynamicConfiguration != null) {
+            try {
+                defaultDynamicConfiguration.close();
+            } catch (Exception e) {
+                logger.warn("close dynamic configuration failed: " + e.getMessage(), e);
+            }
+            defaultDynamicConfiguration = null;
+        }
     }
 
     /**

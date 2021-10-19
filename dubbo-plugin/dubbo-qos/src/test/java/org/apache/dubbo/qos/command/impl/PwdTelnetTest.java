@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.legacy.ProtocolUtils;
-import org.apache.dubbo.remoting.RemotingException;
-
 import io.netty.channel.Channel;
 import io.netty.util.DefaultAttributeMap;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +48,7 @@ public class PwdTelnetTest {
 
     @AfterEach
     public void tearDown() {
-        ProtocolUtils.closeAll();
+        FrameworkModel.destroyAll();
         mockChannel.close();
         reset(mockChannel, mockCommandContext);
     }

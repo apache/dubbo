@@ -26,6 +26,7 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.InMemoryServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
+import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -172,17 +173,16 @@ public class ServiceInstanceMetadataUtilsTest {
 
         ServiceDiscovery serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
 
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
-        Map<String, MetadataInfo> metadataInfoMap = writableMetadataService.getMetadataInfos();
+        InMemoryWritableMetadataService writableMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
         MetadataInfo metadataInfo = new MetadataInfo("demo");
         metadataInfo.addService(new MetadataInfo.ServiceInfo(url1));
-        metadataInfoMap.put(DEFAULT_KEY, metadataInfo);
+        writableMetadataService.addMetadataInfo(DEFAULT_KEY, metadataInfo);
 
         ServiceInstanceMetadataUtils.calInstanceRevision(serviceDiscovery, serviceInstance);
         Assertions.assertEquals(metadataInfo.calAndGetRevision(), serviceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
         Assertions.assertNull(serviceInstance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
 
-        metadataInfoMap.get(DEFAULT_KEY).addService(new MetadataInfo.ServiceInfo(url2));
+        writableMetadataService.getMetadataInfos().get(DEFAULT_KEY).addService(new MetadataInfo.ServiceInfo(url2));
         ServiceInstanceMetadataUtils.calInstanceRevision(serviceDiscovery, serviceInstance);
         Assertions.assertEquals(metadataInfo.calAndGetRevision(), serviceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
         Assertions.assertEquals(serviceInstance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY), "true");

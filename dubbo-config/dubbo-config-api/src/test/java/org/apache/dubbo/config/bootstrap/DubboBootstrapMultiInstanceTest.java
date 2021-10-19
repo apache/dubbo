@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -34,6 +36,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.test.check.DubboTestChecker;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -41,9 +44,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
+import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 
 public class DubboBootstrapMultiInstanceTest {
 
@@ -51,8 +57,12 @@ public class DubboBootstrapMultiInstanceTest {
 
     private static RegistryConfig registryConfig;
 
+    private static DubboTestChecker testChecker;
+    private static String testClassName;
+
     @BeforeAll
     public static void beforeAll() {
+        FrameworkModel.destroyAll();
         registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
         registryCenter.startup();
         RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
@@ -60,11 +70,45 @@ public class DubboBootstrapMultiInstanceTest {
             instance.getType(),
             instance.getHostname(),
             instance.getPort()));
+
+        // pre-check threads
+        //precheckUnclosedThreads();
     }
 
     @AfterAll
-    public static void afterAll() {
+    public static void afterAll() throws Exception {
         registryCenter.shutdown();
+        FrameworkModel.destroyAll();
+
+        // check threads
+        //checkUnclosedThreads();
+    }
+
+    private static Map<Thread, StackTraceElement[]> precheckUnclosedThreads() throws IOException {
+        // create a special DubboTestChecker
+        if (testChecker == null) {
+            testChecker = new DubboTestChecker();
+            testChecker.init(null);
+            testClassName = DubboBootstrapMultiInstanceTest.class.getName();
+        }
+        return testChecker.checkUnclosedThreads(testClassName, 0);
+    }
+
+    private static void checkUnclosedThreads() {
+        Map<Thread, StackTraceElement[]> unclosedThreadMap = testChecker.checkUnclosedThreads(testClassName, 3000);
+        if (unclosedThreadMap.size() > 0) {
+            String str = getStackTraceString(unclosedThreadMap);
+            Assertions.fail("Found unclosed threads: " + unclosedThreadMap.size()+"\n" + str);
+        }
+    }
+
+    private static String getStackTraceString(Map<Thread, StackTraceElement[]> unclosedThreadMap) {
+        StringBuilder sb = new StringBuilder();
+        for (Thread thread : unclosedThreadMap.keySet()) {
+            sb.append(DubboTestChecker.getFullStacktrace(thread, unclosedThreadMap.get(thread)));
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 
     @BeforeEach
@@ -173,7 +217,7 @@ public class DubboBootstrapMultiInstanceTest {
     @Test
     public void testMultiModuleApplication() throws InterruptedException {
 
-        SysProps.setProperty(METADATA_PUBLISH_DELAY_KEY, "1");
+        //SysProps.setProperty(METADATA_PUBLISH_DELAY_KEY, "100");
         String version1 = "1.0";
         String version2 = "2.0";
         String version3 = "3.0";
@@ -224,7 +268,7 @@ public class DubboBootstrapMultiInstanceTest {
 
             providerBootstrap.start();
 
-            Thread.sleep(100);
+            //Thread.sleep(200);
 
             // consumer app
             consumerBootstrap = DubboBootstrap.newInstance();
@@ -257,7 +301,134 @@ public class DubboBootstrapMultiInstanceTest {
                 consumerBootstrap.destroy();
             }
         }
+    }
 
+    @Test
+    public void testMultiProviderApplicationsStopOneByOne() {
+
+        String version1 = "1.0";
+        String version2 = "2.0";
+
+        DubboBootstrap providerBootstrap1 = null;
+        DubboBootstrap providerBootstrap2 = null;
+        ZookeeperSingleRegistryCenter registryCenter2 = null;
+
+        try {
+
+            // save threads before provider app 1
+            Map<Thread, StackTraceElement[]> stackTraces0 = Thread.getAllStackTraces();
+
+            // start provider app 1
+            ServiceConfig serviceConfig1 = new ServiceConfig();
+            serviceConfig1.setInterface(DemoService.class);
+            serviceConfig1.setRef(new DemoServiceImpl());
+            serviceConfig1.setVersion(version1);
+
+            ProtocolConfig protocolConfig1 = new ProtocolConfig("dubbo", NetUtils.getAvailablePort());
+
+            providerBootstrap1 = DubboBootstrap.getInstance();
+            providerBootstrap1.application("provider1")
+                .registry(registryConfig)
+                .service(serviceConfig1)
+                .protocol(protocolConfig1)
+                .start();
+
+            // save threads of provider app 1
+            Map<Thread, StackTraceElement[]> lastAllThreadStackTraces = Thread.getAllStackTraces();
+            Map<Thread, StackTraceElement[]> stackTraces1 = findNewThreads(lastAllThreadStackTraces, stackTraces0);
+            Assertions.assertTrue(stackTraces1.size() > 0, "Get threads of provider app 1 failed");
+
+            // start zk server 2
+            registryCenter2 = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
+            registryCenter2.startup();
+            RegistryCenter.Instance instance = registryCenter2.getRegistryCenterInstance().get(0);
+            RegistryConfig registryConfig2 = new RegistryConfig(String.format("%s://%s:%s",
+                instance.getType(),
+                instance.getHostname(),
+                instance.getPort()));
+
+            // start provider app 2 use a difference zk server 2
+            ServiceConfig serviceConfig2 = new ServiceConfig();
+            serviceConfig2.setInterface(DemoService.class);
+            serviceConfig2.setRef(new DemoServiceImpl());
+            serviceConfig2.setVersion(version2);
+
+            ProtocolConfig protocolConfig2 = new ProtocolConfig("dubbo", NetUtils.getAvailablePort());
+
+            providerBootstrap2 = DubboBootstrap.newInstance();
+            providerBootstrap2.application("provider2")
+                .registry(registryConfig2)
+                .service(serviceConfig2)
+                .protocol(protocolConfig2)
+                .start();
+
+            // save threads of provider app 2
+            Map<Thread, StackTraceElement[]> stackTraces2 = findNewThreads(Thread.getAllStackTraces(), stackTraces0);
+            Assertions.assertTrue(stackTraces2.size() > 0, "Get threads of provider app 2 failed");
+
+            // stop provider app 1 and check threads
+            providerBootstrap1.stop();
+
+            // TODO Remove ignore thread prefix of NettyServerBoss if supporting close protocol server only used by one application
+            // see org.apache.dubbo.config.deploy.DefaultApplicationDeployer.postDestroy
+            // NettyServer will close when all applications are shutdown, but not close if any application of the framework is alive, just ignore it currently
+            checkUnclosedThreadsOfApp(stackTraces1, "Found unclosed threads of app 1: ", new String[]{EVENT_LOOP_BOSS_POOL_NAME, "Dubbo-global-shared-handler"});
+
+
+            // stop provider app 2 and check threads
+            providerBootstrap2.stop();
+            // shutdown register center after dubbo application to avoid unregister services blocking
+            registryCenter2.shutdown();
+            checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", null);
+
+        } finally {
+            if (providerBootstrap1 != null) {
+                providerBootstrap1.stop();
+            }
+            if (providerBootstrap2 != null) {
+                providerBootstrap2.stop();
+            }
+            if (registryCenter2 != null) {
+                registryCenter2.shutdown();
+            }
+        }
+    }
+
+    private Map<Thread, StackTraceElement[]> findNewThreads(Map<Thread, StackTraceElement[]> newAllThreadMap, Map<Thread, StackTraceElement[]> prevThreadMap) {
+        Map<Thread, StackTraceElement[]> deltaThreadMap = new HashMap<>(newAllThreadMap);
+        deltaThreadMap.keySet().removeAll(prevThreadMap.keySet());
+        // expect deltaThreadMap not contains any elements of prevThreadMap
+        Assertions.assertFalse(deltaThreadMap.keySet().stream().filter(thread -> prevThreadMap.containsKey(thread)).findAny().isPresent());
+        return deltaThreadMap;
+    }
+
+    private void checkUnclosedThreadsOfApp(Map<Thread, StackTraceElement[]> stackTraces1, String msg, String[] ignoredThreadPrefixes) {
+        int waitTimeMs = 5000;
+        System.out.println("Wait "+waitTimeMs+"ms to check threads of app ...");
+        try {
+            Thread.sleep(waitTimeMs);
+        } catch (InterruptedException e) {
+        }
+        HashMap<Thread, StackTraceElement[]> unclosedThreadMap1 = new HashMap<>(stackTraces1);
+        unclosedThreadMap1.keySet().removeIf(thread -> !thread.isAlive());
+        if (ignoredThreadPrefixes!= null && ignoredThreadPrefixes.length > 0) {
+            unclosedThreadMap1.keySet().removeIf(thread -> isIgnoredThread(thread.getName(), ignoredThreadPrefixes));
+        }
+        if (unclosedThreadMap1.size() > 0) {
+            String str = getStackTraceString(unclosedThreadMap1);
+            Assertions.fail(msg + unclosedThreadMap1.size()+"\n" + str);
+        }
+    }
+
+    private boolean isIgnoredThread(String name, String[] ignoredThreadPrefixes) {
+        if (ignoredThreadPrefixes!= null && ignoredThreadPrefixes.length > 0) {
+            for (String prefix : ignoredThreadPrefixes) {
+                if (name.startsWith(prefix)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Test
@@ -398,6 +569,142 @@ public class DubboBootstrapMultiInstanceTest {
             }
             if (consumerBootstrap != null) {
                 consumerBootstrap.destroy();
+            }
+        }
+    }
+
+    @Test
+    public void testBothStartByModuleAndByApplication() throws Exception {
+        String version1 = "1.0";
+        String version2 = "2.0";
+        String version3 = "3.0";
+
+        String serviceKey1 = DemoService.class.getName() + ":" + version1;
+        String serviceKey2 = DemoService.class.getName() + ":" + version2;
+        String serviceKey3 = DemoService.class.getName() + ":" + version3;
+
+        // provider app
+        DubboBootstrap providerBootstrap = null;
+        try {
+            providerBootstrap = DubboBootstrap.newInstance();
+
+            ServiceConfig serviceConfig1 = new ServiceConfig();
+            serviceConfig1.setInterface(DemoService.class);
+            serviceConfig1.setRef(new DemoServiceImpl());
+            serviceConfig1.setVersion(version1);
+
+            //provider module 1
+            providerBootstrap
+                .application("provider-app")
+                .registry(registryConfig)
+                .protocol(new ProtocolConfig("dubbo", -1))
+                .service(builder -> builder
+                    .interfaceClass(Greeting.class)
+                    .ref(new GreetingLocal2()))
+                .newModule()
+                .service(serviceConfig1)
+                .endModule();
+
+            // 1. start module1
+            ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
+            moduleDeployer1.start().get();
+            Assertions.assertEquals(DeployState.STARTED, moduleDeployer1.getState());
+
+            ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
+            ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
+            Assertions.assertEquals(DeployState.STARTING, applicationDeployer.getState());
+            ModuleModel defaultModule = applicationModel.getDefaultModule();
+            Assertions.assertEquals(DeployState.PENDING, defaultModule.getDeployer().getState());
+
+            // 2. start application after module1 is started
+            providerBootstrap.start();
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.STARTED, defaultModule.getDeployer().getState());
+            
+            // 3. add module2 and re-start application
+            ServiceConfig serviceConfig2 = new ServiceConfig();
+            serviceConfig2.setInterface(DemoService.class);
+            serviceConfig2.setRef(new DemoServiceImpl());
+            serviceConfig2.setVersion(version2);
+            ModuleModel moduleModel2 = providerBootstrap.newModule()
+                .service(serviceConfig2)
+                .getModuleModel();
+            providerBootstrap.start();
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.STARTED, moduleModel2.getDeployer().getState());
+            
+            // 4. add module3 and start module3
+            ServiceConfig serviceConfig3 = new ServiceConfig();
+            serviceConfig3.setInterface(DemoService.class);
+            serviceConfig3.setRef(new DemoServiceImpl());
+            serviceConfig3.setVersion(version3);
+            ModuleModel moduleModel3 = providerBootstrap.newModule()
+                .service(serviceConfig3)
+                .getModuleModel();
+            moduleModel3.getDeployer().start().get();
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.STARTED, moduleModel3.getDeployer().getState());
+
+        } finally {
+            if (providerBootstrap != null) {
+                providerBootstrap.stop();
+            }
+        }
+    }
+
+
+    @Test
+    public void testBothStartByModuleAndByApplication2() throws Exception {
+        String version1 = "1.0";
+        String version2 = "2.0";
+        String version3 = "3.0";
+
+        String serviceKey1 = DemoService.class.getName() + ":" + version1;
+        String serviceKey2 = DemoService.class.getName() + ":" + version2;
+        String serviceKey3 = DemoService.class.getName() + ":" + version3;
+
+        // provider app
+        DubboBootstrap providerBootstrap = null;
+        try {
+            providerBootstrap = DubboBootstrap.newInstance();
+
+            ServiceConfig serviceConfig1 = new ServiceConfig();
+            serviceConfig1.setInterface(DemoService.class);
+            serviceConfig1.setRef(new DemoServiceImpl());
+            serviceConfig1.setVersion(version1);
+
+            //provider module 1
+            providerBootstrap
+                .application("provider-app")
+                .registry(registryConfig)
+                .protocol(new ProtocolConfig("dubbo", -1))
+                .service(builder -> builder
+                    .interfaceClass(Greeting.class)
+                    .ref(new GreetingLocal2()))
+                .newModule()
+                .service(serviceConfig1)
+                .endModule();
+
+            // 1. start module1 but no wait
+            ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
+            moduleDeployer1.start();
+            Assertions.assertEquals(DeployState.STARTING, moduleDeployer1.getState());
+
+            ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
+            ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
+            Assertions.assertEquals(DeployState.STARTING, applicationDeployer.getState());
+            ModuleModel defaultModule = applicationModel.getDefaultModule();
+            Assertions.assertEquals(DeployState.PENDING, defaultModule.getDeployer().getState());
+
+            // 2. start application after module1 is starting
+            providerBootstrap.start();
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(DeployState.STARTED, moduleDeployer1.getState());
+            Assertions.assertEquals(DeployState.STARTED, defaultModule.getDeployer().getState());
+
+        } finally {
+            if (providerBootstrap != null) {
+                providerBootstrap.stop();
             }
         }
     }

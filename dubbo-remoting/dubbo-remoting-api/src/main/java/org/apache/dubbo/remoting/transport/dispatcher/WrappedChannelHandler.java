@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting.transport.dispatcher;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -27,6 +28,7 @@ import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.ExecutorService;
 
@@ -130,11 +132,17 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
      * @return
      */
     public ExecutorService getSharedExecutorService() {
+        ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
         ExecutorRepository executorRepository =
-                url.getOrDefaultApplicationModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+                applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         ExecutorService executor = executorRepository.getExecutor(url);
         if (executor == null) {
-            executor = executorRepository.createExecutorIfAbsent(url);
+            // if application is destroyed, use global executor service
+            if (applicationModel.isDestroyed()) {
+                executor = GlobalResourcesRepository.getGlobalExecutorService();
+            }else {
+                executor = executorRepository.createExecutorIfAbsent(url);
+            }
         }
         return executor;
     }

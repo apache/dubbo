@@ -201,13 +201,20 @@ public class ApplicationModel extends ScopeModel {
     }
 
     @Override
-    public void onDestroy() {
-        // TODO destroy application resources
-        for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
-            moduleModel.destroy();
+    protected void onDestroy() {
+
+        if (deployer != null) {
+            deployer.preDestroy();
         }
 
-        notifyDestroy();
+        // destroy application resources
+        for (ModuleModel moduleModel : new ArrayList<>(moduleModels)) {
+            if (moduleModel != internalModule) {
+                moduleModel.destroy();
+            }
+        }
+        // destroy internal module later
+        internalModule.destroy();
 
         if (defaultInstance == this) {
             synchronized (ApplicationModel.class) {
@@ -219,9 +226,11 @@ public class ApplicationModel extends ScopeModel {
         }
 
         if (deployer != null) {
-            deployer.destroy();
-            deployer = null;
+            deployer.postDestroy();
         }
+
+        // destroy other resources (e.g. ZookeeperTransporter )
+        notifyDestroy();
 
         if (environment != null) {
             environment.destroy();
@@ -235,6 +244,8 @@ public class ApplicationModel extends ScopeModel {
             serviceRepository.destroy();
             serviceRepository = null;
         }
+        // try destroy framework if no any application
+        frameworkModel.tryDestroy();
     }
 
     public FrameworkModel getFrameworkModel() {
@@ -301,12 +312,13 @@ public class ApplicationModel extends ScopeModel {
             if (moduleModel == defaultModule) {
                 defaultModule = findDefaultModule();
             }
-            if (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule) {
-                this.internalModule.destroy();
-            }
-            if (this.moduleModels.isEmpty()) {
-                destroy();
-            }
+        }
+    }
+
+    void tryDestroy() {
+        if (this.moduleModels.isEmpty()
+            || (this.moduleModels.size() == 1 && this.moduleModels.get(0) == internalModule)) {
+            destroy();
         }
     }
 

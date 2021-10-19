@@ -69,7 +69,6 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     private Map<String, Object> attributes;
     private AtomicBoolean destroyed = new AtomicBoolean(false);
-    private volatile boolean stopping;
 
     public ScopeModel(ScopeModel parent, ExtensionScope scope) {
         this.parent = parent;
@@ -92,7 +91,6 @@ public abstract class ScopeModel implements ExtensionAccessor {
         this.destroyListeners = new LinkedList<>();
         this.attributes = new ConcurrentHashMap<>();
         this.classLoaders = new ConcurrentHashSet<>();
-        this.stopping = false;
 
         // Add Framework's ClassLoader by default
         ClassLoader dubboClassLoader = ScopeModel.class.getClassLoader();
@@ -119,21 +117,13 @@ public abstract class ScopeModel implements ExtensionAccessor {
         return destroyed.get();
     }
 
-    public void setStopping() {
-        stopping = true;
-    }
-
-    public boolean isStopping() {
-        return stopping;
-    }
-
     protected void notifyDestroy() {
         for (ScopeModelDestroyListener destroyListener : destroyListeners) {
             destroyListener.onDestroy(this);
         }
     }
 
-    public abstract void onDestroy();
+    protected abstract void onDestroy();
 
     public final void addDestroyListener(ScopeModelDestroyListener listener) {
         destroyListeners.add(listener);

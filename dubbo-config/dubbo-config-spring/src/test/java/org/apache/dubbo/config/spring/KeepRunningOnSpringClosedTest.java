@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
+import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizerHolder;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -24,46 +26,52 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class ShutdownHookTest {
+public class KeepRunningOnSpringClosedTest {
 
     @Test
-    public void testDisableShutdownHook() throws InterruptedException {
+    public void test(){
 
         // set KeepRunningOnSpringClosed flag for next spring context
         DubboSpringInitCustomizerHolder.get().addCustomizer(context-> {
             context.setKeepRunningOnSpringClosed(true);
         });
 
+        ClassPathXmlApplicationContext providerContext = null;
         try {
-            ClassPathXmlApplicationContext providerContext;
             String resourcePath = "org/apache/dubbo/config/spring";
             providerContext = new ClassPathXmlApplicationContext(
                 resourcePath + "/demo-provider.xml",
                 resourcePath + "/demo-provider-properties.xml");
             providerContext.start();
 
-            DubboStateListener listener = providerContext.getBean(DubboStateListener.class);
-            for (int i = 0; i < 10; i++) {
-                if (DeployState.STARTED.equals(listener.getState())) {
-                    break;
-                }
-                Thread.sleep(100);
-            }
+            // Expect 1: dubbo application state is STARTED after spring context start finish.
+            // No need check and wait
+
+            DubboStateListener dubboStateListener = providerContext.getBean(DubboStateListener.class);
+            Assertions.assertEquals(DeployState.STARTED, dubboStateListener.getState());
 
             ModuleModel moduleModel = providerContext.getBean(ModuleModel.class);
-            Assertions.assertTrue(moduleModel.getDeployer().isStarted());
-            Assertions.assertEquals(true, DubboBootstrap.getInstance().isStarted());
-            Assertions.assertEquals(false, DubboBootstrap.getInstance().isStopped());
+            ModuleDeployer moduleDeployer = moduleModel.getDeployer();
+            Assertions.assertTrue(moduleDeployer.isStarted());
+
+            ApplicationDeployer applicationDeployer = moduleModel.getApplicationModel().getDeployer();
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(true, applicationDeployer.isStarted());
+            Assertions.assertEquals(false, applicationDeployer.isStopped());
 
             // close spring context
             providerContext.close();
 
-            // expect dubbo bootstrap will not be destroyed after closing spring context
-            Assertions.assertEquals(true, DubboBootstrap.getInstance().isStarted());
-            Assertions.assertEquals(false, DubboBootstrap.getInstance().isStopped());
+            // Expect 2: dubbo application will not be destroyed after closing spring context cause setKeepRunningOnSpringClosed(true)
+            Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
+            Assertions.assertEquals(true, applicationDeployer.isStarted());
+            Assertions.assertEquals(false, applicationDeployer.isStopped());
         } finally {
             DubboBootstrap.getInstance().stop();
             SysProps.clear();
+            if (providerContext != null) {
+                providerContext.close();
+            }
         }
     }
 }

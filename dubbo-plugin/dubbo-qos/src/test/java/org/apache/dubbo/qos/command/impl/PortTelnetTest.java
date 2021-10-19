@@ -17,11 +17,9 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -41,7 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
 public class PortTelnetTest {
-    private static final BaseCommand port = new PortTelnet(FrameworkModel.defaultModel());
+    private BaseCommand port;
 
     private Invoker<DemoService> mockInvoker;
     private CommandContext mockCommandContext;
@@ -51,17 +49,19 @@ public class PortTelnetTest {
     @SuppressWarnings("unchecked")
     @BeforeEach
     public void before() {
+        FrameworkModel frameworkModel = FrameworkModel.defaultModel();
+        port = new PortTelnet(frameworkModel);
         mockCommandContext = mock(CommandContext.class);
         mockInvoker = mock(Invoker.class);
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
         given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:" + availablePort + "/demo"));
 
-        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
+        frameworkModel.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
     }
 
     @AfterEach
-    public void after() {
-        ProtocolUtils.closeAll();
+    public void afterEach() {
+        FrameworkModel.destroyAll();
         reset(mockInvoker, mockCommandContext);
     }
 

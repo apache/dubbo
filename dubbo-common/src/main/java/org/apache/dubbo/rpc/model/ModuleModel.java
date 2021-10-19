@@ -81,14 +81,20 @@ public class ModuleModel extends ScopeModel {
     }
 
     @Override
-    public void onDestroy() {
-        notifyDestroy();
+    protected void onDestroy() {
+        if (deployer != null) {
+            deployer.preDestroy();
+        }
+
         applicationModel.removeModule(this);
 
         if (deployer != null) {
-            deployer.destroy();
-            deployer = null;
+            deployer.postDestroy();
         }
+
+        // destroy other resources
+        notifyDestroy();
+
         if (serviceRepository != null) {
             serviceRepository.destroy();
             serviceRepository = null;
@@ -98,6 +104,7 @@ public class ModuleModel extends ScopeModel {
             moduleEnvironment.destroy();
             moduleEnvironment = null;
         }
+        applicationModel.tryDestroy();
     }
 
     public ApplicationModel getApplicationModel() {
