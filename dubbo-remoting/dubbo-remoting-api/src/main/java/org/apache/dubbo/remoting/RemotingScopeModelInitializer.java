@@ -23,8 +23,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-import java.util.List;
-
 /**
  * Scope model initializer for remoting-api
  */
