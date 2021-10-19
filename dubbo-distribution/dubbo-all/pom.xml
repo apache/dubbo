@@ -398,6 +398,7 @@
                             <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
                             <artifactSet>
                                 <includes>
+                                    <include>com.alibaba:hessian-lite</include>
                                     <include>org.apache.dubbo:dubbo-auth</include>
                                     <include>org.apache.dubbo:dubbo-cluster</include>
                                     <include>org.apache.dubbo:dubbo-common</include>
