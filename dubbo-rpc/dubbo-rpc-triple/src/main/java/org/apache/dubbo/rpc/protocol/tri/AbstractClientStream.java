@@ -72,7 +72,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     }
 
     protected RpcInvocation getRpcInvocation() {
-       return  (RpcInvocation) getRequest().getData();
+        return (RpcInvocation) getRequest().getData();
     }
 
     protected abstract void startCall();
