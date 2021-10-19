@@ -49,6 +49,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
     private final ProviderModel providerModel;
     private final List<HeaderFilter> headerFilters;
+    private ServiceDescriptor serviceDescriptor;
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
 
@@ -103,6 +104,14 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     public AbstractServerStream methods(List<MethodDescriptor> methods) {
         this.methodDescriptors = methods;
         return this;
+    }
+
+    public ServiceDescriptor getServiceDescriptor() {
+        return serviceDescriptor;
+    }
+
+    public void setServiceDescriptor(ServiceDescriptor serviceDescriptor) {
+        this.serviceDescriptor = serviceDescriptor;
     }
 
     public Invoker<?> getInvoker() {

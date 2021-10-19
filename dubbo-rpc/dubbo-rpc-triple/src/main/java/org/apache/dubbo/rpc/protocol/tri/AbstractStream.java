@@ -28,7 +28,6 @@ import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import com.google.protobuf.Any;
@@ -56,7 +55,6 @@ public abstract class AbstractStream implements Stream {
     // so it can be obtained when constructing the stream
     private final String acceptEncoding;
 
-    private ServiceDescriptor serviceDescriptor;
     private MethodDescriptor methodDescriptor;
     private String methodName;
     private String serializeType;
@@ -204,14 +202,6 @@ public abstract class AbstractStream implements Stream {
         return methodDescriptor;
     }
 
-    public ServiceDescriptor getServiceDescriptor() {
-        return serviceDescriptor;
-    }
-
-    public void setServiceDescriptor(ServiceDescriptor serviceDescriptor) {
-        this.serviceDescriptor = serviceDescriptor;
-    }
-
     public Compressor getCompressor() {
         return this.compressor;
     }
@@ -293,8 +283,8 @@ public abstract class AbstractStream implements Stream {
         }
         getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
-            LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
-                + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
+//            LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
+//                + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
         }
     }
 
