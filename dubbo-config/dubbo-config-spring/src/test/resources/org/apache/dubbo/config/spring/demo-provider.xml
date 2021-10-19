@@ -37,4 +37,6 @@
     <bean id="demoService" class="org.apache.dubbo.config.spring.impl.DemoServiceImpl"/>
 
     <bean id="dubboEventListener" class="org.apache.dubbo.config.spring.DubboStateListener" />
+
+    <bean id="applicationStartup" class="org.apache.dubbo.config.spring.ApplicationStartup" />
 </beans>

@@ -16,23 +16,22 @@
  */
 package org.apache.dubbo.common.config.configcenter.file;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.TreeSet;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.apache.dubbo.common.URL.valueOf;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_GROUP;
 import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration.CONFIG_CENTER_DIR_PARAM_NAME;
@@ -60,13 +59,18 @@ public class FileSystemDynamicConfigurationTest {
     public void init() {
         File rootDirectory = new File(getClassPath(), "config-center");
         rootDirectory.mkdirs();
+        try {
+            FileUtils.cleanDirectory(rootDirectory);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         URL url = valueOf("dubbo://127.0.0.1:20880").addParameter(CONFIG_CENTER_DIR_PARAM_NAME, rootDirectory.getAbsolutePath());
         configuration = new FileSystemDynamicConfiguration(url);
     }
 
     @AfterEach
     public void destroy() throws Exception {
-        deleteQuietly(configuration.getRootDirectory());
+        FileUtils.deleteQuietly(configuration.getRootDirectory());
         configuration.close();
     }
 

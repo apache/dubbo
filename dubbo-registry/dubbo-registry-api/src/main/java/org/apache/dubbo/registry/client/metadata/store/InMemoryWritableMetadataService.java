@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -196,6 +197,15 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
         }
     }
 
+    public void addMetadataInfo(String key, MetadataInfo metadataInfo) {
+        updateLock.readLock().lock();
+        try {
+            metadataInfos.put(key, metadataInfo);
+        } finally {
+            updateLock.readLock().unlock();
+        }
+    }
+
     @Override
     public boolean unexportURL(URL url) {
         if (MetadataService.class.getName().equals(url.getServiceInterface())) {
@@ -286,6 +296,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
                 return metadataInfo;
             }
         }
+        if (logger.isInfoEnabled()) {
+            logger.info("metadata not found for revision: " + revision);
+        }
         return null;
     }
 
@@ -324,7 +337,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
             metadataSemaphore.drainPermits();
             updateLock.writeLock().lock();
         } catch (InterruptedException e) {
-            if (!applicationModel.isStopping()) {
+            if (!applicationModel.isDestroyed()) {
                 logger.warn("metadata refresh thread has been interrupted unexpectedly while waiting for update.", e);
             }
         }
@@ -335,7 +348,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
     }
 
     public Map<String, MetadataInfo> getMetadataInfos() {
-        return metadataInfos;
+        return Collections.unmodifiableMap(metadataInfos);
     }
 
     void addMetaServiceURL(URL url) {

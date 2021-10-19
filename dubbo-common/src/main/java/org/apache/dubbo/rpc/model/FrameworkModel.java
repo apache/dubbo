@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +50,6 @@ public class FrameworkModel extends ScopeModel {
     private FrameworkServiceRepository serviceRepository;
 
 
-
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
         initialize();
@@ -70,20 +70,38 @@ public class FrameworkModel extends ScopeModel {
     }
 
     @Override
-    public void onDestroy() {
-        //TODO destroy framework model
+    protected void onDestroy() {
+        // destroy all application model
         for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
             applicationModel.destroy();
         }
 
-        allInstances.remove(this);
-        if (defaultInstance == this) {
-            synchronized (FrameworkModel.class) {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Dubbo framework[" + getInternalId() + "] is destroying ...");
+        }
+        synchronized (FrameworkModel.class) {
+            allInstances.remove(this);
+            if (defaultInstance == this) {
                 defaultInstance = null;
             }
         }
 
+        // notify destroy and clean framework resources
+        // see org.apache.dubbo.config.deploy.FrameworkModelCleaner
         notifyDestroy();
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Dubbo framework[" + getInternalId() + "] is destroyed");
+        }
+
+        // if all FrameworkModels are destroyed, clean global static resources, shutdown dubbo completely
+        if (allInstances.isEmpty()) {
+            destroyGlobalResources();
+        }
+    }
+
+    private void destroyGlobalResources() {
+        GlobalResourcesRepository.getInstance().destroy();
     }
 
     public static FrameworkModel defaultModel() {
@@ -120,6 +138,9 @@ public class FrameworkModel extends ScopeModel {
 
     synchronized void removeApplication(ApplicationModel model) {
         this.applicationModels.remove(model);
+    }
+
+    synchronized void tryDestroy() {
         if (applicationModels.size() == 0) {
             destroy();
         }

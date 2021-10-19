@@ -36,7 +36,7 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * An ApplicationListener to control Dubbo application.
@@ -105,7 +105,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
         ModuleDeployer deployer = moduleModel.getDeployer();
         Assert.notNull(deployer, "Module deployer is null");
         // start module
-        CompletableFuture future = deployer.start();
+        Future future = deployer.start();
 
         // if the module does not start in background, await finish
         if (!deployer.isBackground()) {

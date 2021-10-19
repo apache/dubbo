@@ -21,8 +21,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface ZookeeperTransporter {
 
@@ -37,7 +35,7 @@ public interface ZookeeperTransporter {
     void close(String application);
 
     static ZookeeperTransporter getExtension() {
-        ExtensionLoader<ZookeeperTransporter> extensionLoader = getExtensionLoader(ZookeeperTransporter.class);
+        ExtensionLoader<ZookeeperTransporter> extensionLoader = ExtensionLoader.getExtensionLoader(ZookeeperTransporter.class);
         boolean isHighVersion = isHighVersionCurator();
         if (isHighVersion) {
             return extensionLoader.getExtension(CURATOR_5);

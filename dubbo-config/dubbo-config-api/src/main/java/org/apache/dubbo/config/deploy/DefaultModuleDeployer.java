@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * Export/refer services of module
@@ -120,7 +121,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     @Override
-    public synchronized CompletableFuture start() throws IllegalStateException {
+    public synchronized Future start() throws IllegalStateException {
         if (isStarting() || isStarted()) {
             return startFuture;
         }
@@ -164,20 +165,24 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     @Override
     public void stop() throws IllegalStateException {
-        destroy();
+        moduleModel.destroy();
     }
     
     @Override
     public void preDestroy() throws IllegalStateException {
-        applicationDeployer.preDestroy();
-    }
-
-    @Override
-    public synchronized void destroy() throws IllegalStateException {
         if (isStopping() || isStopped()) {
             return;
         }
         onModuleStopping();
+        // it should be executed before applicationModel.removeModule() to get extension loader of zookeeper. 
+        applicationDeployer.preDestroy();
+    }
+
+    @Override
+    public synchronized void postDestroy() throws IllegalStateException {
+        if (isStopped()) {
+            return;
+        }
         unexportServices();
         unreferServices();
 
@@ -211,7 +216,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             }
             serviceRepository.destroy();
         }
-        moduleModel.destroy();
         onModuleStopped();
     }
 
@@ -353,7 +357,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         } catch (Exception e) {
             logger.warn(getIdentifier() + " export services occurred an exception.");
         } finally {
-            executorRepository.shutdownServiceExportExecutor();
             logger.info(getIdentifier() + " export services finished.");
             asyncExportingFutures.clear();
         }
@@ -367,7 +370,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         } catch (Exception e) {
             logger.warn(getIdentifier() + " refer services occurred an exception.");
         } finally {
-            executorRepository.shutdownServiceReferExecutor();
             logger.info(getIdentifier() + " refer services finished.");
             asyncReferringFutures.clear();
         }
@@ -398,10 +400,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private String getIdentifier() {
         if (identifier == null) {
-            if (moduleModel.getModelName() != null && !StringUtils.isEquals(moduleModel.getModelName(), moduleModel.getInternalName())) {
-                identifier = moduleModel.getModelName() + "[" + moduleModel.getInternalId() + "]";
-            } else {
-                identifier = "Dubbo Module" + "[" + moduleModel.getInternalId() + "]";
+            identifier = "Dubbo module[" + moduleModel.getInternalId() + "]";
+            if (moduleModel.getModelName() != null
+                && !StringUtils.isEquals(moduleModel.getModelName(), moduleModel.getInternalName())) {
+                identifier += "(" + moduleModel.getModelName() + ")";
             }
         }
         return identifier;

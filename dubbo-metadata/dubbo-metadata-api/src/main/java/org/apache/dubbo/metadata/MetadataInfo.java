@@ -18,6 +18,8 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -51,6 +53,7 @@ import static org.apache.dubbo.rpc.Constants.INTERFACES;
 
 public class MetadataInfo implements Serializable {
     public static final MetadataInfo EMPTY = new MetadataInfo();
+    private static final Logger logger = LoggerFactory.getLogger(MetadataInfo.class);
 
     private String app;
     private String revision;
@@ -115,7 +118,13 @@ public class MetadataInfo implements Serializable {
             for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
                 sb.append(entry.getValue().toDescString());
             }
-            this.revision = RevisionResolver.calRevision(sb.toString());
+            String tempRevision = RevisionResolver.calRevision(sb.toString());
+            if (!StringUtils.isEquals(this.revision, tempRevision)) {
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("metadata revision changed: %s -> %s, app: %s, services: %d", this.revision, tempRevision, this.app, this.services.size()));
+                }
+                this.revision = tempRevision;
+            }
         }
         return revision;
     }

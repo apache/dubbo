@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.metadata.store.zookeeper;
 
+import com.google.gson.Gson;
+import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -27,15 +29,17 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-
-import com.google.gson.Gson;
-import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 

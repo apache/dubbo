@@ -20,9 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
-import static java.util.Collections.emptySortedSet;
-
 import java.util.SortedSet;
+
+import static java.util.Collections.emptySortedSet;
 
 /**
  * The default extension of {@link DynamicConfiguration}. If user does not specify a config center, or specifies one
@@ -70,5 +70,10 @@ public class NopDynamicConfiguration implements DynamicConfiguration {
     @Override
     public SortedSet<String> getConfigKeys(String group) {
         return emptySortedSet();
+    }
+
+    @Override
+    public void close() throws Exception {
+        // no-op
     }
 }

@@ -48,18 +48,6 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
         return configurations;
     }
 
-    public void close() {
-        for (DynamicConfiguration config : configurations) {
-            try {
-                config.close();
-            } catch (Throwable ignored) {
-                if (!(ignored instanceof UnsupportedOperationException)) {
-                    logger.warn(ignored.getMessage(), ignored);
-                }
-            }
-        }
-    }
-
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         iterateListenerOperation(configuration -> configuration.addListener(key, group, listener));
@@ -100,6 +88,20 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
     @SuppressWarnings("unchecked")
     public SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
         return (SortedSet<String>) iterateConfigOperation(configuration -> configuration.getConfigKeys(group));
+    }
+
+    @Override
+    public void close() throws Exception {
+        for (DynamicConfiguration configuration : configurations) {
+            try {
+                configuration.close();
+            } catch (Exception e) {
+                if (!(e instanceof UnsupportedOperationException)) {
+                    logger.warn("close dynamic configuration failed: " + e.getMessage(), e);
+                }
+            }
+        }
+        configurations.clear();
     }
 
     private void iterateListenerOperation(Consumer<DynamicConfiguration> consumer) {

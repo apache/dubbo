@@ -56,6 +56,9 @@ public class ModuleServiceRepository {
         return moduleModel;
     }
 
+    /**
+     * @deprecated Replaced to {@link ModuleServiceRepository#registerConsumer(ConsumerModel)}
+     */
     @Deprecated
     public void registerConsumer(String serviceKey,
                                  ServiceDescriptor serviceDescriptor,
@@ -71,6 +74,9 @@ public class ModuleServiceRepository {
         consumers.computeIfAbsent(consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>()).add(consumerModel);
     }
 
+    /**
+     * @deprecated Replaced to {@link ModuleServiceRepository#registerProvider(ProviderModel)}
+     */
     @Deprecated
     public void registerProvider(String serviceKey,
                                  Object serviceInstance,
@@ -200,7 +206,6 @@ public class ModuleServiceRepository {
         return Collections.unmodifiableList(new ArrayList<>(providers.values()));
     }
 
-    @Deprecated
     public ProviderModel lookupExportedService(String serviceKey) {
         return providers.get(serviceKey);
     }
@@ -210,6 +215,9 @@ public class ModuleServiceRepository {
         return Collections.unmodifiableList(consumerModels);
     }
 
+    /**
+     * @deprecated Replaced to {@link ModuleServiceRepository#lookupReferredServices(String)}
+     */
     @Deprecated
     public ConsumerModel lookupReferredService(String serviceKey) {
         if (consumers.containsKey(serviceKey)) {
@@ -220,7 +228,6 @@ public class ModuleServiceRepository {
         }
     }
 
-    @Deprecated
     public List<ConsumerModel> lookupReferredServices(String serviceKey) {
         return consumers.get(serviceKey);
     }

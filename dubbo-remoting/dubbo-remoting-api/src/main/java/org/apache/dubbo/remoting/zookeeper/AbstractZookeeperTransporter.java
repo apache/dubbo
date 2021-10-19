@@ -181,6 +181,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                 }
             }
         }
+        // mapping new backup address
         if (zookeeperClient != null && zookeeperClient.isConnected()) {
             writeToClientMap(addressList, zookeeperClient);
             Set<String> appSet = zookeeperApplicationMap.get(zookeeperClient);
