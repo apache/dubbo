@@ -28,6 +28,9 @@
 
     <artifactId>dubbo-demo-native-consumer</artifactId>
 
+    <properties>
+        <skip_maven_deploy>true</skip_maven_deploy>
+    </properties>
 
     <dependencies>
 
