@@ -78,6 +78,9 @@ public class OrderedPropertiesConfiguration implements Configuration{
         return (String) properties.remove(key);
     }
 
+    /**
+     * For ut only
+     */
     @Deprecated
     public void setProperties(Properties properties) {
         this.properties = properties;
