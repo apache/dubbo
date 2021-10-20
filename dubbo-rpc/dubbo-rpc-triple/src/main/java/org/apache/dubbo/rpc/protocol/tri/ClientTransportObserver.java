@@ -100,7 +100,7 @@ public class ClientTransportObserver extends AbstractChannelTransportObserver {
             .addListener(future -> {
                 if (future.isSuccess()) {
                     promise.trySuccess();
-                }else {
+                } else {
                     promise.tryFailure(future.cause());
                 }
             });
@@ -112,7 +112,7 @@ public class ClientTransportObserver extends AbstractChannelTransportObserver {
             .addListener(future -> {
                 if (future.isSuccess()) {
                     promise.trySuccess();
-                }else {
+                } else {
                     promise.tryFailure(future.cause());
                 }
             });

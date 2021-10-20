@@ -129,11 +129,6 @@ public abstract class AbstractStream implements Stream {
         return this;
     }
 
-//    public AbstractStream transportState(TransportState state) {
-//        this.state = state;
-//        return this;
-//    }
-
     public AbstractStream method(MethodDescriptor md) {
         this.methodDescriptor = md;
         this.methodName = md.getMethodName();

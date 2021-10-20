@@ -44,7 +44,6 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onNext(Object data) {
             if (getState().allowSendMeta()) {
-                getState().setMetaSend();
                 getTransportSubscriber().onMetadata(createResponseMeta(), false);
             }
             final byte[] bytes = encodeResponse(data);
@@ -61,7 +60,6 @@ public class ServerStream extends AbstractServerStream implements Stream {
             if (!getState().allowSendEndStream()) {
                 return;
             }
-            getState().setEndStreamSend();
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withCause(throwable)
                 .withDescription("Biz exception");
@@ -73,7 +71,6 @@ public class ServerStream extends AbstractServerStream implements Stream {
             if (!getState().allowSendEndStream()) {
                 return;
             }
-            getState().setEndStreamSend();
             getTransportSubscriber().onMetadata(TripleConstant.SUCCESS_RESPONSE_META, true);
         }
 
