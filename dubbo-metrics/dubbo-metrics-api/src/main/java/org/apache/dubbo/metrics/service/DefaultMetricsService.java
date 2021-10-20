@@ -71,6 +71,7 @@ public class DefaultMetricsService implements MetricsService {
     private MetricResponse sampleToResponse(MetricSample sample) {
         MetricResponse response = new MetricResponse();
 
+        response.setName(sample.getName());
         response.setTags(sample.getTags());
         switch (sample.getType()) {
             case GAUGE:

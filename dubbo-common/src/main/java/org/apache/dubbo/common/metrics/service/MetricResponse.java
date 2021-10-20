@@ -24,9 +24,17 @@ import java.util.Objects;
  * Response entity for {@link MetricsService}
  */
 public class MetricResponse {
+    private String name;
     private Map<String, String> tags;
-
     private Object value;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Map<String, String> getTags() {
         return tags;
@@ -48,12 +56,12 @@ public class MetricResponse {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MetricResponse that = (MetricResponse) o;
-        return Objects.equals(tags, that.tags) && Objects.equals(value, that.value);
+        MetricResponse response = (MetricResponse) o;
+        return Objects.equals(name, response.name) && Objects.equals(tags, response.tags) && Objects.equals(value, response.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tags, value);
+        return Objects.hash(name, tags, value);
     }
 }
