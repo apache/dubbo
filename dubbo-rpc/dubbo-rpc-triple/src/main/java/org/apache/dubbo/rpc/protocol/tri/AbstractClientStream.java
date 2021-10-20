@@ -144,7 +144,9 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                 transportError(status, null, getState().allowSendMeta());
             } else {
                 if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error("client request error ", throwable);
+                    LOGGER.error("Triple request to "
+                        + getConsumerModel().getServiceName() + "#" + getMethodName() +
+                        " was failed by exception ", throwable);
                 }
             }
         }

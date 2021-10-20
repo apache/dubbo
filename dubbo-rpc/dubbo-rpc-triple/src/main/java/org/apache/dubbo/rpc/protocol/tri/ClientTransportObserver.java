@@ -17,6 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -29,8 +32,12 @@ import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 
 public class ClientTransportObserver extends AbstractChannelTransportObserver {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientTransportObserver.class);
+
     private final ChannelPromise promise;
     private Http2StreamChannel streamChannel;
+    private Throwable initFailedCause;
 
     private volatile int initialized = DEFAULT;
 
@@ -43,7 +50,8 @@ public class ClientTransportObserver extends AbstractChannelTransportObserver {
         initialized = SUCCESS;
     }
 
-    public void initializedFailed() {
+    public void initializedFailed(Throwable throwable) {
+        initFailedCause = throwable;
         initialized = FAIL;
     }
 
@@ -59,6 +67,7 @@ public class ClientTransportObserver extends AbstractChannelTransportObserver {
         }
         //
         if (initialized == FAIL) {
+            LOGGER.error("client transport init failed, cause: ", initFailedCause);
             return;
         }
         final Http2Headers headers = new DefaultHttp2Headers(true);

@@ -53,6 +53,7 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
         streamChannelBootstrap.open()
             .addListener(future -> {
                 if (future.isSuccess()) {
+
                     final Http2StreamChannel curChannel = (Http2StreamChannel) future.get();
                     curChannel.pipeline()
                         .addLast(new TripleHttp2ClientResponseHandler())
@@ -60,8 +61,9 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
                         .addLast(new TripleClientInboundHandler());
                     curChannel.attr(TripleConstant.CLIENT_STREAM_KEY).set(stream);
                     clientTransportObserver.setStreamChannel(curChannel);
+                    promise.trySuccess();
                 } else {
-                    clientTransportObserver.initializedFailed();
+                    clientTransportObserver.initializedFailed(future.cause());
                     promise.tryFailure(future.cause());
                     DefaultFuture2.getFuture(req.getId()).cancel();
                 }
