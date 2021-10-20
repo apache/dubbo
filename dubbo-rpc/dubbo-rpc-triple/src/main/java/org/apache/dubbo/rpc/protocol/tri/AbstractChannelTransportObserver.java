@@ -70,6 +70,13 @@ public abstract class AbstractChannelTransportObserver implements TransportObser
     protected abstract void doOnComplete();
 
 
+    protected int calcCompressFlag(Compressor compressor) {
+        if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
+            return 0;
+        }
+        return 1;
+    }
+
 }
 
 

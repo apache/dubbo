@@ -122,6 +122,6 @@ public class ClientTransportObserver extends AbstractChannelTransportObserver {
 
     private int getCompressFlag() {
         AbstractClientStream stream = streamChannel.attr(TripleConstant.CLIENT_STREAM_KEY).get();
-        return TransportObserver.calcCompressFlag(stream.getCompressor());
+        return calcCompressFlag(stream.getCompressor());
     }
 }
