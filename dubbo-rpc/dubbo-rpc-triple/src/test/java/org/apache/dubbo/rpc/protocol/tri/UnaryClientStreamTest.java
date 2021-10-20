@@ -44,7 +44,7 @@ class UnaryClientStreamTest {
         // no subscriber
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
 
-        TransportObserver transportObserver = Mockito.mock(TransportObserver.class);
+        AbstractChannelTransportObserver transportObserver = Mockito.mock(AbstractChannelTransportObserver.class);
         stream.subscribe(transportObserver);
         // no method descriptor
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));

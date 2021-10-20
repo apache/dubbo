@@ -30,10 +30,6 @@ public abstract class AbstractChannelTransportObserver implements TransportObser
         this.ctx = ctx;
     }
 
-//    public final TransportState getState() {
-//        return state;
-//    }
-
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
         if (endStream) {
@@ -72,7 +68,6 @@ public abstract class AbstractChannelTransportObserver implements TransportObser
     protected abstract void doOnReset(Http2Error http2Error);
 
     protected abstract void doOnComplete();
-
 
 
 }
