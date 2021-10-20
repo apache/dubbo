@@ -253,7 +253,7 @@ public class MetricsFilterTest {
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, url);
         invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
         try {
-            Thread.sleep(5000);
+            Thread.sleep(10000);
         } catch (Exception e) {
             // ignore
         }
