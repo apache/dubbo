@@ -24,6 +24,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
+import static org.apache.dubbo.common.constants.CommonConstants.NO_SUCH_EXTENSION_PREFIX;
+
 /**
  * Scope model initializer for remoting-api
  */
@@ -43,7 +45,7 @@ public class RemotingScopeModelInitializer implements ScopeModelInitializer {
             try {
                 zkTransporter = ZookeeperTransporter.getExtension();                
             } catch (Exception e) {
-                if (e instanceof IllegalStateException && e.getMessage().startsWith("No such extension")) {
+                if (e instanceof IllegalStateException && e.getMessage().startsWith(NO_SUCH_EXTENSION_PREFIX)) {
                     return;
                 }
                 logger.warn("Error encountered while get zookeeper transporter to close unused zookeeper clients: " + e.getMessage(), e);
