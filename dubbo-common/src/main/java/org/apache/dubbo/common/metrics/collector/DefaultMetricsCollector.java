@@ -67,9 +67,9 @@ public class DefaultMetricsCollector implements MetricsCollector {
         listeners.add(listener);
     }
 
-    public void increaseTotalRequests(String interfaceName, String methodName, String group, String version) {
+    public void increaseTotalRequests(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(interfaceName, methodName, group, version);
+            MethodMetric metric = new MethodMetric(interfaceName, methodName, parameterTypesDesc, group, version);
             AtomicLong count = totalRequests.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
 
@@ -77,9 +77,9 @@ public class DefaultMetricsCollector implements MetricsCollector {
         }
     }
 
-    public void increaseSucceedRequests(String interfaceName, String methodName, String group, String version) {
+    public void increaseSucceedRequests(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(interfaceName, methodName, group, version);
+            MethodMetric metric = new MethodMetric(interfaceName, methodName, parameterTypesDesc, group, version);
             AtomicLong count = succeedRequests.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
 
@@ -87,9 +87,9 @@ public class DefaultMetricsCollector implements MetricsCollector {
         }
     }
 
-    public void increaseFailedRequests(String interfaceName, String methodName, String group, String version) {
+    public void increaseFailedRequests(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(interfaceName, methodName, group, version);
+            MethodMetric metric = new MethodMetric(interfaceName, methodName, parameterTypesDesc, group, version);
             AtomicLong count = failedRequests.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
 
@@ -97,25 +97,25 @@ public class DefaultMetricsCollector implements MetricsCollector {
         }
     }
 
-    public void increaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
+    public void increaseProcessingRequests(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(interfaceName, methodName, group, version);
+            MethodMetric metric = new MethodMetric(interfaceName, methodName, parameterTypesDesc, group, version);
             AtomicLong count = processingRequests.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
         }
     }
 
-    public void decreaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
+    public void decreaseProcessingRequests(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(interfaceName, methodName, group, version);
+            MethodMetric metric = new MethodMetric(interfaceName, methodName, parameterTypesDesc, group, version);
             AtomicLong count = processingRequests.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.decrementAndGet();
         }
     }
 
-    public void setRT(String interfaceName, String methodName, String group, String version, Long responseTime) {
+    public void setRT(String interfaceName, String methodName, String parameterTypesDesc, String group, String version, Long responseTime) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(interfaceName, methodName, group, version);
+            MethodMetric metric = new MethodMetric(interfaceName, methodName, parameterTypesDesc, group, version);
             lastRT.put(metric, responseTime);
 
             publishEvent(new RTChangedEvent(metric, responseTime));
@@ -138,13 +138,13 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request_total", "Total Requests", k.getTags(), v::get)));
-        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request_succeed", "Succeed Requests", k.getTags(), v::get)));
-        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request_failed", "Failed Requests", k.getTags(), v::get)));
-        processingRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request_processing", "Processing Requests", k.getTags(), v::get)));
+        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request.total", "Total Requests", k.getTags(), v::get)));
+        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request.succeed", "Succeed Requests", k.getTags(), v::get)));
+        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request.failed", "Failed Requests", k.getTags(), v::get)));
+        processingRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request.processing", "Processing Requests", k.getTags(), v::get)));
     }
 
     private void collectRT(List<MetricSample> list) {
-        lastRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt_last", "Last Response Time", k.getTags(), v::longValue)));
+        lastRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.last", "Last Response Time", k.getTags(), v::longValue)));
     }
 }

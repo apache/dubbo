@@ -15,12 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics;
+package org.apache.dubbo.common.metrics.service;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-import static org.apache.dubbo.common.metrics.MetricsService.DEFAULT_EXTENSION_NAME;
+import java.util.List;
+import java.util.Map;
+
+import static org.apache.dubbo.common.metrics.service.MetricsService.DEFAULT_EXTENSION_NAME;
 
 /**
  * Metrics Service.
@@ -38,4 +41,32 @@ public interface MetricsService {
      * The contract version of {@link MetricsService}, the future update must make sure compatible.
      */
     String VERSION = "1.0.0";
+
+    /**
+     * Get metrics by prefixes
+     *
+     * @param prefixes prefixes
+     * @return metrics - key=prefix value=metricResponse
+     */
+    Map<String, List<MetricResponse>> getMetricsByPrefix(List<String> prefixes);
+
+    /**
+     * Get metrics by interface and prefixes
+     *
+     * @param serviceUniqueName serviceUniqueName (eg.group/interfaceName:version)
+     * @param prefixes prefixes
+     * @return metrics - key=prefix value=metricResponse
+     */
+    Map<String, List<MetricResponse>> getMetricsByPrefix(String serviceUniqueName, List<String> prefixes);
+
+    /**
+     * Get metrics by interface、method and prefixes
+     *
+     * @param serviceUniqueName serviceUniqueName (eg.group/interfaceName:version)
+     * @param methodName methodName
+     * @param parameterTypes method parameter types
+     * @param prefixes prefixes
+     * @return metrics - key=prefix value=metricResponse
+     */
+    Map<String, List<MetricResponse>> getMetricsByPrefix(String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<String> prefixes);
 }

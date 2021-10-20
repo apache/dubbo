@@ -97,7 +97,6 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         Long responseTime = event.getRt();
         TimeWindowQuantile quantile = rt.computeIfAbsent(metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
-        System.out.println("new incoming response time: " + responseTime);
     }
 
     private void onRequestChangedEvent(RequestChangedEvent event) {
@@ -136,9 +135,9 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request_total_" + timeWindowSeconds + "s", "Total Requests In " + timeWindowSeconds + "s", k.getTags(), v::get)));
-        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request_succeed_" + timeWindowSeconds + "s", "Succeed Requests In " + timeWindowSeconds + "s", k.getTags(), v::get)));
-        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request_failed_" + timeWindowSeconds + "s", "Failed Requests In" + timeWindowSeconds + "s", k.getTags(), v::get)));
+        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request.total." + timeWindowSeconds + "s", "Total Requests In " + timeWindowSeconds + "s", k.getTags(), v::get)));
+        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request.succeed." + timeWindowSeconds + "s", "Succeed Requests In " + timeWindowSeconds + "s", k.getTags(), v::get)));
+        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request.failed." + timeWindowSeconds + "s", "Failed Requests In" + timeWindowSeconds + "s", k.getTags(), v::get)));
     }
 
     private void collectQPS(List<MetricSample> list) {
@@ -147,8 +146,8 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
 
     private void collectRT(List<MetricSample> list) {
         rt.forEach((k, v) -> {
-            list.add(new GaugeMetricSample("rt_p99", "Response Time P99", k.getTags(), () -> v.quantile(0.99)));
-            list.add(new GaugeMetricSample("rt_p95", "Response Time P95", k.getTags(), () -> v.quantile(0.95)));
+            list.add(new GaugeMetricSample("rt.p99", "Response Time P99", k.getTags(), () -> v.quantile(0.99)));
+            list.add(new GaugeMetricSample("rt.p95", "Response Time P95", k.getTags(), () -> v.quantile(0.95)));
         });
     }
 }

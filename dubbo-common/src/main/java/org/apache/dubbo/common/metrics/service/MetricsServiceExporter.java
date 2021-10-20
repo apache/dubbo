@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics;
+package org.apache.dubbo.common.metrics.service;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;

@@ -19,6 +19,7 @@ package org.apache.dubbo.metrics.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -36,6 +37,7 @@ public class RequestMetricsFilter implements Filter {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         String serviceUniqueName = invocation.getTargetServiceUniqueName();
         String methodName = invocation.getMethodName();
+        String parameterTypesDesc = ReflectUtils.getDesc(invocation.getParameterTypes());
         String group = null;
         String interfaceAndVersion;
         String[] arr = serviceUniqueName.split("/");
@@ -48,22 +50,22 @@ public class RequestMetricsFilter implements Filter {
 
         String interfaceName = interfaceAndVersion.split(":")[0];
         String version = interfaceAndVersion.split(":")[1];
-        collector.increaseTotalRequests(interfaceName, methodName, group, version);
-        collector.increaseProcessingRequests(interfaceName, methodName, group, version);
+        collector.increaseTotalRequests(interfaceName, methodName, parameterTypesDesc, group, version);
+        collector.increaseProcessingRequests(interfaceName, methodName, parameterTypesDesc, group, version);
 
         Long startTime = System.currentTimeMillis();
         try {
             Result invoke = invoker.invoke(invocation);
-            collector.increaseSucceedRequests(interfaceName, methodName, group, version);
+            collector.increaseSucceedRequests(interfaceName, methodName, parameterTypesDesc, group, version);
             return invoke;
         } catch (RpcException e) {
-            collector.increaseFailedRequests(interfaceName, methodName, group, version);
+            collector.increaseFailedRequests(interfaceName, methodName, parameterTypesDesc, group, version);
             throw e;
         } finally {
             Long endTime = System.currentTimeMillis();
             Long rt = endTime - startTime;
-            collector.setRT(interfaceName, methodName, group, version, rt);
-            collector.decreaseProcessingRequests(interfaceName, methodName, group, version);
+            collector.setRT(interfaceName, methodName, parameterTypesDesc, group, version, rt);
+            collector.decreaseProcessingRequests(interfaceName, methodName, parameterTypesDesc, group, version);
         }
     }
 }

@@ -19,7 +19,7 @@ package org.apache.dubbo.common.metrics.model;
 
 import java.util.Objects;
 
-public class InterfaceMetric extends BaseMetric {
+public class InterfaceMetric {
     private String interfaceName;
     private String group;
     private String version;
@@ -52,14 +52,13 @@ public class InterfaceMetric extends BaseMetric {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         InterfaceMetric that = (InterfaceMetric) o;
         return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), interfaceName, group, version);
+        return Objects.hash(interfaceName, group, version);
     }
 
     @Override
@@ -68,6 +67,6 @@ public class InterfaceMetric extends BaseMetric {
             "interfaceName='" + interfaceName + '\'' +
             ", group='" + group + '\'' +
             ", version='" + version + '\'' +
-            "} " + super.toString();
+            '}';
     }
 }

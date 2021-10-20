@@ -24,11 +24,13 @@ import java.util.Objects;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_PARAMETER_TYPES_DESC;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 
-public class MethodMetric extends BaseMetric {
+public class MethodMetric {
     private String interfaceName;
     private String methodName;
+    private String parameterTypesDesc;
     private String group;
     private String version;
 
@@ -36,9 +38,10 @@ public class MethodMetric extends BaseMetric {
 
     }
 
-    public MethodMetric(String interfaceName, String methodName, String group, String version) {
+    public MethodMetric(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
         this.interfaceName = interfaceName;
         this.methodName = methodName;
+        this.parameterTypesDesc = parameterTypesDesc;
         this.group = group;
         this.version = version;
     }
@@ -57,6 +60,14 @@ public class MethodMetric extends BaseMetric {
 
     public void setMethodName(String methodName) {
         this.methodName = methodName;
+    }
+
+    public String getParameterTypesDesc() {
+        return parameterTypesDesc;
+    }
+
+    public void setParameterTypesDesc(String parameterTypesDesc) {
+        this.parameterTypesDesc = parameterTypesDesc;
     }
 
     public String getGroup() {
@@ -79,6 +90,7 @@ public class MethodMetric extends BaseMetric {
         Map<String, String> tags = new HashMap<>();
         tags.put(TAG_INTERFACE_KEY, interfaceName);
         tags.put(TAG_METHOD_KEY, methodName);
+        tags.put(TAG_PARAMETER_TYPES_DESC, parameterTypesDesc);
         tags.put(TAG_GROUP_KEY, group);
         tags.put(TAG_VERSION_KEY, version);
         return tags;
@@ -88,14 +100,14 @@ public class MethodMetric extends BaseMetric {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
         MethodMetric that = (MethodMetric) o;
-        return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(methodName, that.methodName) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
+        return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(methodName, that.methodName)
+            && Objects.equals(parameterTypesDesc, that.parameterTypesDesc) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), interfaceName, methodName, group, version);
+        return Objects.hash(interfaceName, methodName, parameterTypesDesc, group, version);
     }
 
     @Override
@@ -103,8 +115,9 @@ public class MethodMetric extends BaseMetric {
         return "MethodMetric{" +
             "interfaceName='" + interfaceName + '\'' +
             ", methodName='" + methodName + '\'' +
+            ", parameterTypesDesc='" + parameterTypesDesc + '\'' +
             ", group='" + group + '\'' +
             ", version='" + version + '\'' +
-            "} " + super.toString();
+            '}';
     }
 }

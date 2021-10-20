@@ -28,6 +28,8 @@ public interface MetricsConstants {
 
     String TAG_METHOD_KEY = "method";
 
+    String TAG_PARAMETER_TYPES_DESC = "parameter.types";
+
     String TAG_GROUP_KEY = "group";
 
     String TAG_VERSION_KEY = "version";

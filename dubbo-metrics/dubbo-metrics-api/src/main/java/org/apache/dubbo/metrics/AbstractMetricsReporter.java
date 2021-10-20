@@ -18,6 +18,8 @@
 package org.apache.dubbo.metrics;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.metrics.MetricsReporter;
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.metrics.collector.MetricsCollector;
@@ -41,6 +43,8 @@ import java.util.concurrent.TimeUnit;
  * AbstractMetricsReporter.
  */
 public abstract class AbstractMetricsReporter implements MetricsReporter {
+
+    private final Logger logger = LoggerFactory.getLogger(AbstractMetricsReporter.class);
 
     protected final URL url;
     protected final List<MetricsCollector> collectors = new ArrayList<>();
@@ -74,23 +78,33 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
             collectors.forEach(collector -> {
                 List<MetricSample> samples = collector.collect();
                 for (MetricSample sample : samples) {
-                    switch (sample.getType()) {
-                        case GAUGE:
-                            GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                            List<Tag> tags = new ArrayList<>();
-                            gaugeSample.getTags().forEach((k, v) -> tags.add(Tag.of(k, v)));
+                    try {
+                        switch (sample.getType()) {
+                            case GAUGE:
+                                GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
+                                List<Tag> tags = new ArrayList<>();
+                                gaugeSample.getTags().forEach((k, v) -> {
+                                    if (v == null) {
+                                        v = "";
+                                    }
 
-                            Gauge.builder(gaugeSample.getName(), gaugeSample.getSupplier())
-                                .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
-                            break;
-                        case TIMER:
-                        case COUNTER:
-                        case LONG_TASK_TIMER:
-                        case DISTRIBUTION_SUMMARY:
-                            // TODO
-                            break;
-                        default:
-                            break;
+                                    tags.add(Tag.of(k, v));
+                                });
+
+                                Gauge.builder(gaugeSample.getName(), gaugeSample.getSupplier())
+                                    .description(gaugeSample.getDescription()).tags(tags).register(compositeRegistry);
+                                break;
+                            case COUNTER:
+                            case TIMER:
+                            case LONG_TASK_TIMER:
+                            case DISTRIBUTION_SUMMARY:
+                                // TODO
+                                break;
+                            default:
+                                break;
+                        }
+                    } catch (Exception e) {
+                        logger.error("error occurred when synchronize metrics collector.", e);
                     }
                 }
             });
