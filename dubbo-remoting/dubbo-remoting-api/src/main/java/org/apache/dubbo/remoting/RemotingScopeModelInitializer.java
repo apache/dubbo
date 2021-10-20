@@ -39,16 +39,21 @@ public class RemotingScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         applicationModel.addDestroyListener(m -> {
+            ZookeeperTransporter zkTransporter;
             try {
-                if (applicationModel.getDeployer() == null) {
-                    // zookeeper extension loader is not loaded yet.
+                zkTransporter = ZookeeperTransporter.getExtension();                
+            } catch (Exception e) {
+                if (e instanceof IllegalStateException && e.getMessage().startsWith("No such extension")) {
                     return;
                 }
-                ZookeeperTransporter zkTransporter = ZookeeperTransporter.getExtension();
+                logger.warn("Error encountered while get zookeeper transporter to close unused zookeeper clients: " + e.getMessage(), e);
+                return;
+            }
+            try {
                 // close unused zookeeper clients.
                 zkTransporter.close(applicationModel.tryGetApplicationName());
             } catch (Exception e) {
-                logger.error("Error encountered while destroying ZookeeperTransporter: " + e.getMessage(), e);
+                logger.warn("Error encountered while close unused zookeeper clients: " + e.getMessage(), e);
             }
         });
     }
