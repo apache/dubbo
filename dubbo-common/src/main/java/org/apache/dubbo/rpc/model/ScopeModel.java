@@ -68,7 +68,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
     private List<ScopeModelDestroyListener> destroyListeners;
 
     private Map<String, Object> attributes;
-    private AtomicBoolean destroyed = new AtomicBoolean(false);
+    private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public ScopeModel(ScopeModel parent, ExtensionScope scope) {
         this.parent = parent;
@@ -145,6 +145,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
         attributes.put(key, value);
     }
 
+    @Override
     public ExtensionDirector getExtensionDirector() {
         return extensionDirector;
     }

@@ -181,6 +181,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         return getDefaultConfigs(ProtocolConfig.class);
     }
 
+    @Override
     public <C extends AbstractConfig> List<C> getDefaultConfigs(Class<C> cls) {
         return getDefaultConfigs(getConfigsMap(getTagName(cls)));
     }
@@ -215,6 +216,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     }
 
 
+    @Override
     public void refreshAll() {
         // refresh all configs here,
         getApplication().ifPresent(ApplicationConfig::refresh);
@@ -237,7 +239,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // load dubbo.monitors.xxx
         loadConfigsOfTypeFromProps(MonitorConfig.class);
 
-        // load dubbo.metricses.xxx
+        // load dubbo.metrics.xxx
         loadConfigsOfTypeFromProps(MetricsConfig.class);
 
         // load multiple config types:
