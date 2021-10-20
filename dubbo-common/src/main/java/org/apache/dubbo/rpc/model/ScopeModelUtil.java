@@ -21,15 +21,15 @@ import org.apache.dubbo.common.extension.SPI;
 
 public class ScopeModelUtil {
 
-    public static ScopeModel getOrDefault(ScopeModel scopeModel, Class type) {
+    public static <T> ScopeModel getOrDefault(ScopeModel scopeModel, Class<T> type) {
         if (scopeModel != null) {
             return scopeModel;
         }
         return getDefaultScopeModel(type);
     }
 
-    private static ScopeModel getDefaultScopeModel(Class type) {
-        SPI spi = (SPI) type.getAnnotation(SPI.class);
+    private static <T>ScopeModel getDefaultScopeModel(Class<T> type) {
+        SPI spi = type.getAnnotation(SPI.class);
         if (spi == null) {
             throw new IllegalArgumentException("SPI annotation not found for class: " + type.getName());
         }
@@ -70,7 +70,7 @@ public class ScopeModelUtil {
     }
 
     public static ScopeModel getOrDefaultApplicationModel(ScopeModel scopeModel) {
-        if(scopeModel == null) {
+        if (scopeModel == null) {
             return ApplicationModel.defaultModel();
         }
         return scopeModel;
