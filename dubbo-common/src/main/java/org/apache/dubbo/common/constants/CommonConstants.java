@@ -484,5 +484,4 @@ public interface CommonConstants {
 
     String OS_WIN_PREFIX = "win";
 
-    String NO_SUCH_EXTENSION_PREFIX = "No such extension";
 }

@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelInitializer;
 
-import static org.apache.dubbo.common.constants.CommonConstants.NO_SUCH_EXTENSION_PREFIX;
+import java.util.List;
 
 /**
  * Scope model initializer for remoting-api
@@ -41,21 +41,25 @@ public class RemotingScopeModelInitializer implements ScopeModelInitializer {
     @Override
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         applicationModel.addDestroyListener(m -> {
-            ZookeeperTransporter zkTransporter;
             try {
-                zkTransporter = ZookeeperTransporter.getExtension();                
-            } catch (Exception e) {
-                if (e instanceof IllegalStateException && e.getMessage().startsWith(NO_SUCH_EXTENSION_PREFIX)) {
+                List<ZookeeperTransporter> transporters = FrameworkModel.defaultModel()
+                        .getExtensionLoader(ZookeeperTransporter.class).getLoadedExtensionInstances();
+                if (transporters.isEmpty()) {
                     return;
                 }
-                logger.warn("Error encountered while get zookeeper transporter to close unused zookeeper clients: " + e.getMessage(), e);
-                return;
-            }
-            try {
                 // close unused zookeeper clients.
-                zkTransporter.close(applicationModel.tryGetApplicationName());
+                String applicationName = applicationModel.tryGetApplicationName();
+                for (ZookeeperTransporter zkTransporter : transporters) {
+                    try {
+                        zkTransporter.close(applicationName);
+                    } catch (Exception e) {
+                        logger.warn("Error encountered at " + zkTransporter
+                                + " close unused zookeeper clients while " + applicationName + " is destroyed: "
+                                + e.getMessage(), e);
+                    }
+                }
             } catch (Exception e) {
-                logger.warn("Error encountered while close unused zookeeper clients: " + e.getMessage(), e);
+                logger.warn("Error encountered at closing unused zookeeper clients: " + e.getMessage(), e);
             }
         });
     }

@@ -73,7 +73,6 @@ import static java.util.ServiceLoader.load;
 import static java.util.stream.StreamSupport.stream;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.NO_SUCH_EXTENSION_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 
 /**
@@ -674,7 +673,7 @@ public class ExtensionLoader<T> {
     }
 
     private IllegalStateException findException(String name) {
-        StringBuilder buf = new StringBuilder(NO_SUCH_EXTENSION_PREFIX + " " + type.getName() + " by name " + name);
+        StringBuilder buf = new StringBuilder("No such extension " + type.getName() + " by name " + name);
 
         int i = 1;
         for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
