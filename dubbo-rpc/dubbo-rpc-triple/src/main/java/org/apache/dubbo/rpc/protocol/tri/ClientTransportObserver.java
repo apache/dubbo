@@ -35,6 +35,7 @@ public class ClientTransportObserver implements TransportObserver {
 
     private volatile int initialized = 0;
 
+
     private static final int SUCCESS = 1;
     private static final int FAIL = 2;
 
@@ -43,7 +44,7 @@ public class ClientTransportObserver implements TransportObserver {
         this.streamChannel = streamChannel;
     }
 
-    public void initializedFail() {
+    public void initializedFailed() {
         initialized = FAIL;
     }
 
@@ -54,7 +55,7 @@ public class ClientTransportObserver implements TransportObserver {
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
-        while (initialized != SUCCESS) {
+        while (initialized != 0) {
             // wait channel initialized
         }
         if (initialized == FAIL) {
