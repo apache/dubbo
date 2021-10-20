@@ -68,18 +68,22 @@ public class ScopeModelAwareExtensionProcessor implements ExtensionPostProcessor
         return instance;
     }
 
+    @Override
     public ScopeModel getScopeModel() {
         return scopeModel;
     }
 
+    @Override
     public FrameworkModel getFrameworkModel() {
         return frameworkModel;
     }
 
+    @Override
     public ApplicationModel getApplicationModel() {
         return applicationModel;
     }
 
+    @Override
     public ModuleModel getModuleModel() {
         return moduleModel;
     }
