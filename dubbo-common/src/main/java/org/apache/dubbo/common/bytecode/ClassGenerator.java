@@ -25,6 +25,7 @@ import javassist.CtMethod;
 import javassist.CtNewConstructor;
 import javassist.CtNewMethod;
 import javassist.NotFoundException;
+import javassist.ClassClassPath;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -292,6 +293,8 @@ public final class ClassGenerator {
         }
         long id = CLASS_NAME_COUNTER.getAndIncrement();
         try {
+            ClassClassPath classClassPath = new ClassClassPath(getClass());
+            mPool.insertClassPath(classClassPath);
             CtClass ctcs = mSuperClass == null ? null : mPool.get(mSuperClass);
             if (mClassName == null) {
                 mClassName = (mSuperClass == null || javassist.Modifier.isPublic(ctcs.getModifiers())
