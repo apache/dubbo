@@ -689,7 +689,8 @@ public class DubboBootstrapMultiInstanceTest {
             // 1. start module1 but no wait
             ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
             moduleDeployer1.start();
-            Assertions.assertEquals(DeployState.STARTING, moduleDeployer1.getState());
+            // the state of moduleDeployer1 might be STARTING or STARTED.
+            Assertions.assertTrue(moduleDeployer1.isRunning());
 
             ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
             ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
