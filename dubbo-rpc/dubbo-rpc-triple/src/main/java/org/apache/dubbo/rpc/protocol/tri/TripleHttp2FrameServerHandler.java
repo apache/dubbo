@@ -234,7 +234,6 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         stream.service(providerModel.getServiceModel())
             .invoker(invoker)
             .methodName(methodName)
-            .transportState(transportObserver.getState())
             .setDeCompressor(deCompressor)
             .subscribe(transportObserver);
         if (methodDescriptor != null) {

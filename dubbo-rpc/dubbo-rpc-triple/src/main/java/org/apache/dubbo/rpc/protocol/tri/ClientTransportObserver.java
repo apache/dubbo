@@ -28,8 +28,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 
-public class ClientTransportObserver implements TransportObserver {
-    private final ChannelHandlerContext ctx;
+public class ClientTransportObserver extends AbstractChannelTransportObserver {
     private final ChannelPromise promise;
     private Http2StreamChannel streamChannel;
 
@@ -49,12 +48,12 @@ public class ClientTransportObserver implements TransportObserver {
     }
 
     public ClientTransportObserver(ChannelHandlerContext ctx, ChannelPromise promise) {
-        this.ctx = ctx;
+        super(ctx);
         this.promise = promise;
     }
 
     @Override
-    public void onMetadata(Metadata metadata, boolean endStream) {
+    protected void doOnMetadata(Metadata metadata, boolean endStream) {
         while (initialized == DEFAULT) {
             // wait channel initialized
         }
@@ -70,23 +69,10 @@ public class ClientTransportObserver implements TransportObserver {
                     promise.tryFailure(future.cause());
                 }
             });
-
     }
 
     @Override
-    public void onReset(Http2Error http2Error) {
-        streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
-            .addListener(future -> {
-                if (future.isSuccess()) {
-                    promise.trySuccess();
-                } else {
-                    promise.tryFailure(future.cause());
-                }
-            });
-    }
-
-    @Override
-    public void onData(byte[] data, boolean endStream) {
+    protected void doOnData(byte[] data, boolean endStream) {
         ByteBuf buf = ctx.alloc().buffer();
         buf.writeByte(getCompressFlag());
         buf.writeInt(data.length);
@@ -102,7 +88,19 @@ public class ClientTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onComplete() {
+    protected void doOnReset(Http2Error http2Error) {
+        streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
+            .addListener(future -> {
+                if (future.isSuccess()) {
+                    promise.trySuccess();
+                } else {
+                    promise.tryFailure(future.cause());
+                }
+            });
+    }
+
+    @Override
+    protected void doOnComplete() {
         streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true))
             .addListener(future -> {
                 if (future.isSuccess()) {

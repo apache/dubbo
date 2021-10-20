@@ -18,10 +18,11 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http2.Http2Error;
 
 public abstract class AbstractChannelTransportObserver implements TransportObserver {
 
-    private final TransportState state = new TransportState();
+    protected final TransportState state = new TransportState();
 
     protected final ChannelHandlerContext ctx;
 
@@ -29,7 +30,52 @@ public abstract class AbstractChannelTransportObserver implements TransportObser
         this.ctx = ctx;
     }
 
-    public final TransportState getState() {
-        return state;
+//    public final TransportState getState() {
+//        return state;
+//    }
+
+    @Override
+    public void onMetadata(Metadata metadata, boolean endStream) {
+        if (endStream) {
+            state.setEndStreamSend();
+        } else {
+            state.setMetaSend();
+        }
+        doOnMetadata(metadata, endStream);
     }
+
+    @Override
+    public void onData(byte[] data, boolean endStream) {
+        if (endStream) {
+            state.setEndStreamSend();
+        }
+        doOnData(data, endStream);
+    }
+
+    @Override
+    public void onReset(Http2Error http2Error) {
+        state.setResetSend();
+        doOnReset(http2Error);
+    }
+
+    @Override
+    public void onComplete() {
+        state.setEndStreamSend();
+        doOnComplete();
+    }
+
+
+    protected abstract void doOnMetadata(Metadata metadata, boolean endStream);
+
+    protected abstract void doOnData(byte[] data, boolean endStream);
+
+    protected abstract void doOnReset(Http2Error http2Error);
+
+    protected abstract void doOnComplete();
+
+
+
 }
+
+
+

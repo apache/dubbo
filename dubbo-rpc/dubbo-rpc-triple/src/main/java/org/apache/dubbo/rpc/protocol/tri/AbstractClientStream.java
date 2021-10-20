@@ -123,7 +123,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         @Override
         public void onNext(Object data) {
             if (getState().allowSendMeta()) {
-                getState().setMetaSend();
                 final Metadata metadata = createRequestMeta(getRpcInvocation());
                 getTransportSubscriber().onMetadata(metadata, false);
             }
@@ -141,7 +140,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         @Override
         public void onError(Throwable throwable) {
             if (getState().allowSendEndStream()) {
-                getState().setEndStreamSend();
                 GrpcStatus status = GrpcStatus.getStatus(throwable);
                 transportError(status, null, getState().allowSendMeta());
             } else {
@@ -154,7 +152,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         @Override
         public void onCompleted() {
             if (getState().allowSendEndStream()) {
-                getState().setEndStreamSend();
                 getTransportSubscriber().onComplete();
             }
         }

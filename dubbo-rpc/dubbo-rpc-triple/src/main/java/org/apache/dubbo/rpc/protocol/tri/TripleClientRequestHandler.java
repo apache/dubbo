@@ -67,7 +67,7 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
                 }
             });
 
-        stream.transportState(clientTransportObserver.getState())
+        stream
             .subscribe(clientTransportObserver);
         // start call
         stream.startCall();

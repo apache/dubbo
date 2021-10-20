@@ -54,12 +54,11 @@ public abstract class AbstractStream implements Stream {
     // so it can be obtained when constructing the stream
     private final String acceptEncoding;
 
-    private TransportState state;
     private MethodDescriptor methodDescriptor;
     private String methodName;
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
-    private TransportObserver transportSubscriber;
+    private AbstractChannelTransportObserver transportSubscriber;
     private Compressor compressor = IdentityCompressor.NONE;
     private Compressor deCompressor = IdentityCompressor.NONE;
     private volatile boolean cancelled = false;
@@ -105,7 +104,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     public TransportState getState() {
-        return state;
+        return transportSubscriber.state;
     }
 
     public boolean isCancelled() {
@@ -130,10 +129,10 @@ public abstract class AbstractStream implements Stream {
         return this;
     }
 
-    public AbstractStream transportState(TransportState state) {
-        this.state = state;
-        return this;
-    }
+//    public AbstractStream transportState(TransportState state) {
+//        this.state = state;
+//        return this;
+//    }
 
     public AbstractStream method(MethodDescriptor md) {
         this.methodDescriptor = md;
@@ -261,7 +260,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     @Override
-    public void subscribe(TransportObserver observer) {
+    public void subscribe(AbstractChannelTransportObserver observer) {
         this.transportSubscriber = observer;
     }
 

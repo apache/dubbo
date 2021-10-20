@@ -38,14 +38,12 @@ public class ServerTransportObserver extends AbstractChannelTransportObserver {
         super(ctx);
     }
 
-    @Override
-    public void onMetadata(Metadata metadata, boolean endStream) {
-        final DefaultHttp2Headers headers = new DefaultHttp2Headers(true);
-        metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
-        onMetadata(headers, endStream);
-    }
-
     public void onMetadata(Http2Headers headers, boolean endStream) {
+        if (endStream) {
+            state.setEndStreamSend();
+        } else {
+            state.setMetaSend();
+        }
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {
@@ -55,7 +53,33 @@ public class ServerTransportObserver extends AbstractChannelTransportObserver {
     }
 
     @Override
-    public void onReset(Http2Error http2Error) {
+    public void onMetadata(Metadata metadata, boolean endStream) {
+        doOnMetadata(metadata, endStream);
+    }
+
+    @Override
+    public void onData(byte[] data, boolean endStream) {
+        doOnData(data,endStream);
+    }
+
+    @Override
+    protected void doOnMetadata(Metadata metadata, boolean endStream) {
+        final DefaultHttp2Headers headers = new DefaultHttp2Headers(true);
+        metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
+        onMetadata(headers, endStream);
+    }
+
+    @Override
+    protected void doOnData(byte[] data, boolean endStream) {
+        ByteBuf buf = ctx.alloc().buffer();
+        buf.writeByte(getCompressFlag());
+        buf.writeInt(data.length);
+        buf.writeBytes(data);
+        onData(buf, endStream);
+    }
+
+    @Override
+    protected void doOnReset(Http2Error http2Error) {
         ctx.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
             .addListener(future -> {
                 if (!future.isSuccess()) {
@@ -65,12 +89,8 @@ public class ServerTransportObserver extends AbstractChannelTransportObserver {
     }
 
     @Override
-    public void onData(byte[] data, boolean endStream) {
-        ByteBuf buf = ctx.alloc().buffer();
-        buf.writeByte(getCompressFlag());
-        buf.writeInt(data.length);
-        buf.writeBytes(data);
-        onData(buf, endStream);
+    protected void doOnComplete() {
+
     }
 
     public void onData(String str, boolean endStream) {
@@ -78,8 +98,10 @@ public class ServerTransportObserver extends AbstractChannelTransportObserver {
         onData(buf, endStream);
     }
 
-
     public void onData(ByteBuf buf, boolean endStream) {
+        if (endStream) {
+            state.setEndStreamSend();
+        }
         ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {
