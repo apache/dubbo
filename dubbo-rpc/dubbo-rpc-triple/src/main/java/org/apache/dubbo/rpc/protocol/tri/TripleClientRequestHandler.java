@@ -62,6 +62,7 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
                     clientTransportObserver.setStreamChannel(curChannel);
                 } else {
                     promise.tryFailure(future.cause());
+                    DefaultFuture2.getFuture(req.getId()).cancel();
                 }
             });
 

@@ -64,7 +64,9 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         this.getCancellationContext().addListener(context -> {
             Throwable throwable = this.getCancellationContext().getCancellationCause();
             if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("Cancel by local throwable is ", throwable);
+                LOGGER.warn("Triple request to "
+                    + getConsumerModel().getServiceName() + "#" + getMethodName() +
+                    " was canceled by local exception ", throwable);
             }
             this.asTransportObserver().onReset(getHttp2Error(throwable));
         });
@@ -92,8 +94,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             .connection(connection)
             .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
             .method(methodDescriptor)
-            .setCompressor(compressor)
-        ;
+            .setCompressor(compressor);
         return stream;
     }
 
