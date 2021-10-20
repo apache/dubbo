@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 package org.apache.dubbo.remoting.zookeeper;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 public class ZookeeperTransporter$Adaptive implements org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter {
 private org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter extension;
 public org.apache.dubbo.remoting.zookeeper.ZookeeperClient connect(org.apache.dubbo.common.URL arg0)  {
@@ -23,7 +23,7 @@ if (arg0 == null) throw new IllegalArgumentException("url == null");
 org.apache.dubbo.common.URL url = arg0;
 String extName = url.getParameter("client", url.getParameter("transporter", "curator"));
 if(extName == null) throw new IllegalStateException("Failed to get extension (org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter) name from url (" + url.toString() + ") use keys([client, transporter])");
-extension = (org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter)ExtensionLoader.getExtensionLoader(org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter.class).getExtension(extName);
+extension = (org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter)FrameworkModel.defaultModel().getExtensionLoader(org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter.class).getExtension(extName);
 return extension.connect(arg0);
 }
 public void close(ZookeeperClient arg0, String arg1) {
