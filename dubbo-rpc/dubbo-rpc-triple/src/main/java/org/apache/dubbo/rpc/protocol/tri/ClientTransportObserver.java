@@ -31,10 +31,20 @@ import io.netty.handler.codec.http2.Http2StreamChannel;
 public class ClientTransportObserver implements TransportObserver {
     private final ChannelHandlerContext ctx;
     private final ChannelPromise promise;
-    private volatile Http2StreamChannel streamChannel;
+    private Http2StreamChannel streamChannel;
+
+    private volatile int initialized = 0;
+
+    private static final int SUCCESS = 1;
+    private static final int FAIL = 2;
 
     public void setStreamChannel(Http2StreamChannel streamChannel) {
+        initialized = 1;
         this.streamChannel = streamChannel;
+    }
+
+    public void initializedFail() {
+        initialized = FAIL;
     }
 
     public ClientTransportObserver(ChannelHandlerContext ctx, ChannelPromise promise) {
@@ -44,8 +54,11 @@ public class ClientTransportObserver implements TransportObserver {
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
-        while (streamChannel == null) {
+        while (initialized != SUCCESS) {
             // wait channel initialized
+        }
+        if (initialized == FAIL) {
+            return;
         }
         final Http2Headers headers = new DefaultHttp2Headers(true);
         metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
