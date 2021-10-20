@@ -37,7 +37,7 @@ public class AllChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void connected(Channel channel) throws RemotingException {
-        ExecutorService executor = getExecutorService();
+        ExecutorService executor = getSharedExecutorService();
         try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CONNECTED));
         } catch (Throwable t) {
@@ -47,7 +47,7 @@ public class AllChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void disconnected(Channel channel) throws RemotingException {
-        ExecutorService executor = getExecutorService();
+        ExecutorService executor = getSharedExecutorService();
         try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.DISCONNECTED));
         } catch (Throwable t) {
@@ -71,7 +71,7 @@ public class AllChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void caught(Channel channel, Throwable exception) throws RemotingException {
-        ExecutorService executor = getExecutorService();
+        ExecutorService executor = getSharedExecutorService();
         try {
             executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.CAUGHT, exception));
         } catch (Throwable t) {
