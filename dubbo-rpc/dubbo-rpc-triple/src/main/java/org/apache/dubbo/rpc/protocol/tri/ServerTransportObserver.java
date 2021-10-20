@@ -21,27 +21,31 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Headers;
 
-public class ServerTransportObserver implements TransportObserver {
+public class ServerTransportObserver extends AbstractChannelTransportObserver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerTransportObserver.class);
 
-    private final ChannelHandlerContext ctx;
-
     public ServerTransportObserver(ChannelHandlerContext ctx) {
-        this.ctx = ctx;
+        super(ctx);
     }
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
         final DefaultHttp2Headers headers = new DefaultHttp2Headers(true);
         metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
+        onMetadata(headers, endStream);
+    }
+
+    public void onMetadata(Http2Headers headers, boolean endStream) {
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {
@@ -66,14 +70,23 @@ public class ServerTransportObserver implements TransportObserver {
         buf.writeByte(getCompressFlag());
         buf.writeInt(data.length);
         buf.writeBytes(data);
-        ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, false))
+        onData(buf, endStream);
+    }
+
+    public void onData(String str, boolean endStream) {
+        ByteBuf buf = ByteBufUtil.writeUtf8(ctx.alloc(), str);
+        onData(buf, endStream);
+    }
+
+
+    public void onData(ByteBuf buf, boolean endStream) {
+        ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {
                     LOGGER.warn("send data error endStream=" + endStream, future.cause());
                 }
             });
     }
-
 
     private int getCompressFlag() {
         AbstractServerStream stream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();

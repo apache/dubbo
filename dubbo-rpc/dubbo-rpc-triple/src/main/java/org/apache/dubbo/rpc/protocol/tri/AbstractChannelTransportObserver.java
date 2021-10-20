@@ -17,24 +17,19 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-/**
- * Default compressor
- */
-public class IdentityCompressor implements Compressor {
+import io.netty.channel.ChannelHandlerContext;
 
+public abstract class AbstractChannelTransportObserver implements TransportObserver {
 
-    @Override
-    public String getMessageEncoding() {
-        return "identity";
+    private final TransportState state = new TransportState();
+
+    protected final ChannelHandlerContext ctx;
+
+    public AbstractChannelTransportObserver(ChannelHandlerContext ctx) {
+        this.ctx = ctx;
     }
 
-    @Override
-    public byte[] compress(byte[] payloadByteArr) {
-        return payloadByteArr;
-    }
-
-    @Override
-    public byte[] decompress(byte[] payloadByteArr) {
-        return payloadByteArr;
+    public final TransportState getState() {
+        return state;
     }
 }

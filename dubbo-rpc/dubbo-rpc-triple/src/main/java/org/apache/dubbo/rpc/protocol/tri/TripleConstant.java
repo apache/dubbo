@@ -25,6 +25,7 @@ public class TripleConstant {
 
     public static final String CONTENT_PROTO = "application/grpc+proto";
     public static final String APPLICATION_GRPC = "application/grpc";
+    public static final String TEXT_PLAIN_UTF8 = "text/plain; encoding=utf-8";
     public static final String TRI_VERSION = "1.0.0";
 
     public static final String SERIALIZATION_KEY = "serialization";
@@ -35,7 +36,7 @@ public class TripleConstant {
     public static final String HESSIAN2 = "hessian2";
 
 
-    public static final String GRPC_BIN_SUFFIX="-bin";
+    public static final String GRPC_BIN_SUFFIX = "-bin";
 
     public static final AsciiString HTTPS_SCHEME = AsciiString.of("https");
     public static final AsciiString HTTP_SCHEME = AsciiString.of("http");

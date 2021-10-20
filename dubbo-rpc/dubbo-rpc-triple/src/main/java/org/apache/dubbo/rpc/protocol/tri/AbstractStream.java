@@ -49,12 +49,12 @@ public abstract class AbstractStream implements Stream {
     private final StreamObserver<Object> streamObserver;
     private final TransportObserver transportObserver;
     private final Executor executor;
-    private final TransportState state = new TransportState();
     private final CancellationContext cancellationContext;
     // AcceptEncoding does not change after the application is started,
     // so it can be obtained when constructing the stream
     private final String acceptEncoding;
 
+    private TransportState state;
     private MethodDescriptor methodDescriptor;
     private String methodName;
     private String serializeType;
@@ -127,6 +127,11 @@ public abstract class AbstractStream implements Stream {
 
     public AbstractStream methodName(String methodName) {
         this.methodName = methodName;
+        return this;
+    }
+
+    public AbstractStream transportState(TransportState state) {
+        this.state = state;
         return this;
     }
 

@@ -35,7 +35,6 @@ public class ClientTransportObserver implements TransportObserver {
 
     private volatile int initialized = DEFAULT;
 
-
     private static final int DEFAULT = 0;
     private static final int SUCCESS = 1;
     private static final int FAIL = 2;
@@ -59,7 +58,7 @@ public class ClientTransportObserver implements TransportObserver {
         while (initialized == DEFAULT) {
             // wait channel initialized
         }
-        // 
+        //
         if (initialized == FAIL) {
             return;
         }
@@ -118,5 +117,4 @@ public class ClientTransportObserver implements TransportObserver {
         AbstractClientStream stream = streamChannel.attr(TripleConstant.CLIENT_STREAM_KEY).get();
         return TransportObserver.calcCompressFlag(stream.getCompressor());
     }
-
 }
