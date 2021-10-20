@@ -51,7 +51,7 @@ public class KeepRunningOnSpringClosedTest {
                 if (applicationStartup.isStarted()) {
                     break;
                 }
-                Thread.sleep(100);
+                Thread.sleep(1000);
             }
             
             DubboStateListener dubboStateListener = providerContext.getBean(DubboStateListener.class);
