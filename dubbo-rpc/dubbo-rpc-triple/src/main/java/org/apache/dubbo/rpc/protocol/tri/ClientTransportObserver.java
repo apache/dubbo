@@ -31,18 +31,16 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class ClientTransportObserver extends AbstractChannelTransportObserver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientTransportObserver.class);
-    private static final int DEFAULT = 0;
-    private static final int SUCCESS = 1;
-    private static final int FAIL = 2;
     private final ChannelPromise promise;
+    private final CountDownLatch latch = new CountDownLatch(1);
     private Http2StreamChannel streamChannel;
-    private Throwable initFailedCause;
-    private volatile int initialized = DEFAULT;
+    private volatile Throwable initFailedCause;
 
     public ClientTransportObserver(ChannelHandlerContext ctx, ChannelPromise promise) {
         super(ctx);
@@ -51,25 +49,23 @@ public class ClientTransportObserver extends AbstractChannelTransportObserver {
 
     public void setStreamChannel(Http2StreamChannel streamChannel) {
         this.streamChannel = streamChannel;
-        initialized = SUCCESS;
+        this.latch.countDown();
     }
 
     public void initializedFailed(Throwable throwable) {
         initFailedCause = throwable;
-        initialized = FAIL;
+        this.latch.countDown();
     }
 
     @Override
     protected void doOnMetadata(Metadata metadata, boolean endStream) {
-        while (initialized == DEFAULT) {
-            // wait channel initialized
-            try {
-                TimeUnit.MILLISECONDS.sleep(5);
-            } catch (InterruptedException e) {
-                // ignored
-            }
+        // todo repleace this with async
+        try {
+            latch.await(3, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // ignored
         }
-        if (initialized == FAIL) {
+        if (initFailedCause != null) {
             LOGGER.error("client transport init failed, cause: ", initFailedCause);
             promise.tryFailure(initFailedCause);
             return;
@@ -100,12 +96,26 @@ public class ClientTransportObserver extends AbstractChannelTransportObserver {
 
     @Override
     protected void doOnReset(Http2Error http2Error) {
-        streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(http2Error), promise);
+        streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
+            .addListener(future -> {
+                if (future.isSuccess()) {
+                    promise.trySuccess();
+                }else {
+                    promise.tryFailure(future.cause());
+                }
+            });
     }
 
     @Override
     protected void doOnComplete() {
-        streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true), promise);
+        streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true))
+            .addListener(future -> {
+                if (future.isSuccess()) {
+                    promise.trySuccess();
+                }else {
+                    promise.tryFailure(future.cause());
+                }
+            });
     }
 
     private int getCompressFlag() {
