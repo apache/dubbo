@@ -90,7 +90,7 @@ public class TriBuiltinService {
             Invoker<?> invoker = proxyFactory.getInvoker(healthService, Health.class, url);
             pathResolver.add(url.getServiceKey(), invoker);
             pathResolver.add(url.getServiceInterface(), invoker);
-            providerModel.setDestroyCaller(()->{
+            providerModel.setDestroyCaller(() -> {
                 pathResolver.remove(url.getServiceKey());
                 pathResolver.remove(url.getServiceInterface());
                 return null;

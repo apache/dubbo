@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.migration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
@@ -97,12 +98,14 @@ public class MigrationRuleHandler<T> {
     }
 
     private void report(MigrationStep step, MigrationStep originStep, String success) {
-        //TODO FrameworkStatusReporter
-//        if (FrameworkStatusReporter.hasReporter()) {
-//            FrameworkStatusReporter.reportMigrationStepStatus(
-//                    FrameworkStatusReporter.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
-//                            consumerURL.getGroup(), String.valueOf(originStep), String.valueOf(step), success));
-//        }
+        FrameworkStatusReportService reportService =
+            consumerURL.getOrDefaultApplicationModel().getBeanFactory().getBean(FrameworkStatusReportService.class);
+
+        if (reportService.hasReporter()) {
+            reportService.reportMigrationStepStatus(
+                reportService.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
+                            consumerURL.getGroup(), String.valueOf(originStep), String.valueOf(step), success));
+        }
     }
 
     private void setMigrationRule(MigrationRule rule) {

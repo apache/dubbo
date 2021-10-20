@@ -119,7 +119,7 @@ public class ConfigManagerTest {
 
     // Test MonitorConfig correlative methods
     @Test
-    public void tesModuleConfig() {
+    public void testModuleConfig() {
         ModuleConfig config = new ModuleConfig();
         moduleConfigManager.setModule(config);
         assertTrue(moduleConfigManager.getModule().isPresent());

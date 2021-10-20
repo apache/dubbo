@@ -58,22 +58,22 @@ public class ServerTransportObserver implements TransportObserver {
         }
         // If endStream is true, the channel will be closed, so you cannot listen for errors and continue sending any frame
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
-                .addListener(future -> {
-                    if (!future.isSuccess()) {
-                        LOGGER.warn("send header error endStream=" + endStream, future.cause());
-                    }
-                });
+            .addListener(future -> {
+                if (!future.isSuccess()) {
+                    LOGGER.warn("send header error endStream=" + endStream, future.cause());
+                }
+            });
     }
 
     @Override
     public void onReset(Http2Error http2Error) {
         resetSent = true;
         ctx.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
-                .addListener(future -> {
-                    if (!future.isSuccess()) {
-                        LOGGER.warn("write reset error", future.cause());
-                    }
-                });
+            .addListener(future -> {
+                if (!future.isSuccess()) {
+                    LOGGER.warn("write reset error", future.cause());
+                }
+            });
     }
 
     @Override
@@ -82,14 +82,20 @@ public class ServerTransportObserver implements TransportObserver {
             return;
         }
         ByteBuf buf = ctx.alloc().buffer();
-        buf.writeByte(0);
+        buf.writeByte(getCompressFlag());
         buf.writeInt(data.length);
         buf.writeBytes(data);
         ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, false))
-                .addListener(future -> {
-                    if (!future.isSuccess()) {
-                        LOGGER.warn("send data error endStream=" + endStream, future.cause());
-                    }
-                });
+            .addListener(future -> {
+                if (!future.isSuccess()) {
+                    LOGGER.warn("send data error endStream=" + endStream, future.cause());
+                }
+            });
+    }
+
+
+    private int getCompressFlag() {
+        AbstractServerStream stream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+        return TransportObserver.calcCompressFlag(stream.getCompressor());
     }
 }

@@ -79,7 +79,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     private final Collection<Class<? extends AbstractConfig>> supportedConfigTypes;
     private final Environment environment;
     private ConfigValidator configValidator;
-    private AtomicBoolean inited = new AtomicBoolean(false);
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
     protected ConfigMode configMode = ConfigMode.STRICT;
     protected boolean ignoreDuplicatedInterface = false;
 
@@ -105,7 +105,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     @Override
     public void initialize() throws IllegalStateException {
-        if (!inited.compareAndSet(false, true)) {
+        if (!initialized.compareAndSet(false, true)) {
             return;
         }
         CompositeConfiguration configuration = scopeModel.getModelEnvironment().getConfiguration();
@@ -419,7 +419,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         // exclude isDefault() == false
     }
 
-    protected  <C extends AbstractConfig> Optional<C> checkUniqueConfig(Map<String, C> configsMap, C config) {
+    protected <C extends AbstractConfig> Optional<C> checkUniqueConfig(Map<String, C> configsMap, C config) {
         if (configsMap.size() > 0 && isUniqueConfig(config)) {
             C oldOne = configsMap.values().iterator().next();
             String configName = oldOne.getClass().getSimpleName();
@@ -648,5 +648,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         this.configsCache.clear();
         this.configIdIndexes.clear();
         this.duplicatedConfigs.clear();
+    }
+
+    public boolean isInitialized() {
+        return initialized.get();
     }
 }

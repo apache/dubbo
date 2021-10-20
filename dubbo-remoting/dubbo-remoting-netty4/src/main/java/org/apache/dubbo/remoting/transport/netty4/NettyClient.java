@@ -31,6 +31,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -45,25 +46,28 @@ import java.net.InetSocketAddress;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 import static org.apache.dubbo.remoting.Constants.DEFAULT_CONNECT_TIMEOUT;
-import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.eventLoopGroup;
-import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.socketChannelClass;
+import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.eventLoopGroup;
+import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelClass;
 
 /**
  * NettyClient.
  */
 public class NettyClient extends AbstractClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
-    /**
-     * netty client bootstrap
-     */
-    private static final EventLoopGroup EVENT_LOOP_GROUP = eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker");
-
     private static final String SOCKS_PROXY_HOST = "socksProxyHost";
 
     private static final String SOCKS_PROXY_PORT = "socksProxyPort";
 
     private static final String DEFAULT_SOCKS_PROXY_PORT = "1080";
+
+    private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
+
+    /**
+     * netty client bootstrap
+     */
+    private static final GlobalResourceInitializer<EventLoopGroup> EVENT_LOOP_GROUP = new GlobalResourceInitializer<>(() ->
+        eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
+        eventLoopGroup -> eventLoopGroup.shutdownGracefully());
 
     private Bootstrap bootstrap;
 
@@ -93,7 +97,7 @@ public class NettyClient extends AbstractClient {
     protected void doOpen() throws Throwable {
         final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
         bootstrap = new Bootstrap();
-        bootstrap.group(EVENT_LOOP_GROUP)
+        bootstrap.group(EVENT_LOOP_GROUP.get())
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)

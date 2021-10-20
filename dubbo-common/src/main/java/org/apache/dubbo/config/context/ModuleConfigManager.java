@@ -156,6 +156,7 @@ public class ModuleConfigManager extends AbstractConfigManager {
         return getConfigs(getTagName(ConsumerConfig.class));
     }
 
+    @Override
     public void refreshAll() {
         // refresh all configs here,
         getModule().ifPresent(ModuleConfig::refresh);
@@ -171,6 +172,7 @@ public class ModuleConfigManager extends AbstractConfigManager {
         }
     }
 
+    @Override
     public void clear() {
         super.clear();
         this.serviceConfigCache.clear();

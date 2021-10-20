@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.store.zookeeper;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.Logger;
@@ -34,8 +35,6 @@ import org.apache.dubbo.remoting.zookeeper.DataListener;
 import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
-
-import com.google.gson.Gson;
 import org.apache.zookeeper.data.Stat;
 
 import java.util.ArrayList;
@@ -59,7 +58,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     private final String root;
 
-    final ZookeeperClient zkClient;
+    ZookeeperClient zkClient;
 
     private Gson gson = new Gson();
 
@@ -186,6 +185,13 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
             logger.warn("zookeeper publishConfigCas failed.", e);
             return false;
         }
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        // release zk client reference, but should not close it
+        zkClient = null;
     }
 
     private String buildPathKey(String group, String serviceKey) {

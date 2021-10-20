@@ -6,7 +6,8 @@
             targetNamespace="http://code.alibabatech.com/schema/dubbo">
 
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
-    <xsd:import namespace="http://www.springframework.org/schema/beans" schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd"/>
+    <xsd:import namespace="http://www.springframework.org/schema/beans"
+                schemaLocation="http://www.springframework.org/schema/beans/spring-beans.xsd"/>
     <xsd:import namespace="http://www.springframework.org/schema/tool"/>
 
     <xsd:annotation>
@@ -33,12 +34,6 @@
         <xsd:attribute name="actives" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The max active requests. ]]></xsd:documentation>
-            </xsd:annotation>
-        </xsd:attribute>
-        <xsd:attribute name="connections" type="xsd:string">
-            <xsd:annotation>
-                <xsd:documentation>
-                    <![CDATA[ The exclusive connections. default share one connection. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="loadbalance" type="xsd:string">
@@ -176,6 +171,12 @@
                     <xsd:annotation>
                         <xsd:documentation>
                             <![CDATA[ Defines the service tag]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="connections" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ The exclusive connections. default share one connection. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
             </xsd:extension>
@@ -399,7 +400,7 @@
                 <xsd:documentation><![CDATA[ The application monitor. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="shutwait" type="xsd:string" >
+        <xsd:attribute name="shutwait" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The application shutDown-wait time. ]]></xsd:documentation>
             </xsd:annotation>
@@ -421,7 +422,8 @@
         </xsd:attribute>
         <xsd:attribute name="publish-interface" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Publish interface level url to registry, default false. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ Publish interface level url to registry, default false. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="protocol" type="xsd:string">
@@ -722,7 +724,8 @@
         </xsd:attribute>
         <xsd:attribute name="cluster" type="xsd:string" use="optional">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ The config center cluster, it's real meaning may very on different Config Center products. ]]></xsd:documentation>
+                <xsd:documentation>
+                    <![CDATA[ The config center cluster, it's real meaning may very on different Config Center products. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="namespace" type="xsd:string" use="optional">
@@ -965,7 +968,8 @@
                 </xsd:attribute>
                 <xsd:attribute name="threadpool" type="xsd:string">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Consumer threadpool: cached, fixed, limited, eager]]></xsd:documentation>
+                        <xsd:documentation>
+                            <![CDATA[ Consumer threadpool: cached, fixed, limited, eager]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="corethreads" type="xsd:string">

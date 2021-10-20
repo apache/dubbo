@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.nacos;
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.EventListener;
@@ -30,7 +32,7 @@ public class NacosNamingServiceWrapper {
 
     private static final String INNERCLASS_COMPATIBLE_SYMBOL = "___";
 
-    private NamingService namingService;
+    private final NamingService namingService;
 
     public NacosNamingServiceWrapper(NamingService namingService) {
         this.namingService = namingService;
@@ -87,7 +89,7 @@ public class NacosNamingServiceWrapper {
      * nacos service name just support `0-9a-zA-Z-._:`, grpc interface is inner interface, need compatible.
      */
     private String handleInnerSymbol(String serviceName) {
-        if (serviceName == null) {
+        if (StringUtils.isEmpty(serviceName)) {
             return null;
         }
         return serviceName.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL);

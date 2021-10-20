@@ -105,7 +105,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                             transportError(rpcExceptionCodeToGrpc(((RpcException) exception).getCode())
                                 .withCause(exception), response.getObjectAttachments());
                             final GrpcStatus status = rpcExceptionCodeToGrpc(((RpcException) exception).getCode())
-                                    .withCause(exception);
+                                .withCause(exception);
                             transportError(status, response.getObjectAttachments());
                         } else {
                             transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
@@ -113,7 +113,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                         }
                         return;
                     }
-                    Metadata metadata = new DefaultMetadata();
+                    Metadata metadata = createRequestMeta();
                     metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
                     getTransportSubscriber().onMetadata(metadata, false);
 
@@ -139,7 +139,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     LOGGER.warn("Exception processing triple message", e);
                     if (e instanceof RpcException) {
                         final GrpcStatus status = rpcExceptionCodeToGrpc(((RpcException) e).getCode())
-                                .withCause(e);
+                            .withCause(e);
                         transportError(status, response.getObjectAttachments());
                     } else {
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)

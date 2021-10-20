@@ -21,11 +21,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
@@ -36,38 +38,20 @@ import com.google.rpc.Status;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractStream implements Stream {
     protected static final String DUPLICATED_DATA = "Duplicated data";
-    private static final List<Executor> CALLBACK_EXECUTORS = new ArrayList<>(4);
-
-    static {
-        ThreadFactory tripleTF = new NamedInternalThreadFactory("tri-callback", true);
-        for (int i = 0; i < 4; i++) {
-            final ThreadPoolExecutor tp = new ThreadPoolExecutor(1, 1, 0, TimeUnit.DAYS,
-                    new LinkedBlockingQueue<>(1024),
-                    tripleTF, new ThreadPoolExecutor.AbortPolicy());
-            CALLBACK_EXECUTORS.add(tp);
-        }
-
-    }
 
     private final URL url;
     private final MultipleSerialization multipleSerialization;
     private final StreamObserver<Object> streamObserver;
     private final TransportObserver transportObserver;
     private final Executor executor;
+    private final CancellationContext cancellationContext;
     private ServiceDescriptor serviceDescriptor;
     private MethodDescriptor methodDescriptor;
     private String methodName;
@@ -75,38 +59,51 @@ public abstract class AbstractStream implements Stream {
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
+    private Compressor compressor = IdentityCompressor.NONE;
+    private Compressor deCompressor = IdentityCompressor.NONE;
+    private volatile boolean cancelled = false;
 
-    private CancellationContext cancellationContext;
-    private boolean cancelled = false;
+    protected AbstractStream(URL url) {
+        this(url, null);
+    }
+
+    protected AbstractStream(URL url, Executor executor) {
+        this.url = url;
+        final Executor sourceExecutor = lookupExecutor(url, executor);
+        this.executor = wrapperSerializingExecutor(sourceExecutor);
+        final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
+        this.multipleSerialization = url.getOrDefaultFrameworkModel().getExtensionLoader(MultipleSerialization.class)
+            .getExtension(value);
+        this.cancellationContext = new CancellationContext();
+        this.transportObserver = createTransportObserver();
+        this.streamObserver = createStreamObserver();
+    }
 
     public boolean isCancelled() {
         return cancelled;
-    }
-
-    protected AbstractStream(URL url) {
-        this(url, allocateCallbackExecutor());
     }
 
     protected CancellationContext getCancellationContext() {
         return cancellationContext;
     }
 
-    protected void setCancellationContext(CancellationContext cancellationContext) {
-        this.cancellationContext = cancellationContext;
+    private Executor lookupExecutor(URL url, Executor executor) {
+        // only server maybe not null
+        if (executor != null) {
+            return executor;
+        }
+        ExecutorRepository executorRepository = url.getOrDefaultApplicationModel()
+            .getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension();
+        Executor urlExecutor = executorRepository.getExecutor(url);
+        if (urlExecutor == null) {
+            urlExecutor = executorRepository.createExecutorIfAbsent(url);
+        }
+        return urlExecutor;
     }
 
-    protected AbstractStream(URL url, Executor executor) {
-        this.url = url;
-        this.executor = executor;
-        final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
-        this.multipleSerialization = url.getOrDefaultFrameworkModel().getExtensionLoader(MultipleSerialization.class)
-                .getExtension(value);
-        this.streamObserver = createStreamObserver();
-        this.transportObserver = createTransportObserver();
-    }
-
-    private static Executor allocateCallbackExecutor() {
-        return CALLBACK_EXECUTORS.get(ThreadLocalRandom.current().nextInt(4));
+    private Executor wrapperSerializingExecutor(Executor executor) {
+        return new SerializingExecutor(executor);
     }
 
     public Request getRequest() {
@@ -142,8 +139,14 @@ public abstract class AbstractStream implements Stream {
      *
      * @param cause cancel case
      */
-    protected void cancel(Throwable cause) {
-        getCancellationContext().cancel(cause);
+    protected final void cancel(Throwable cause) {
+        cancel();
+        cancelByLocal(cause);
+    }
+
+    private void cancel() {
+        cancelled = true;
+        execute(RpcContext::removeCancellationContext);
     }
 
     /**
@@ -152,11 +155,13 @@ public abstract class AbstractStream implements Stream {
      * @param http2Error {@link Http2Error}
      */
     protected final void cancelByRemote(Http2Error http2Error) {
-        cancelled = true;
+        cancel();
         cancelByRemoteReset(http2Error);
     }
 
     protected abstract void cancelByRemoteReset(Http2Error http2Error);
+
+    protected abstract void cancelByLocal(Throwable throwable);
 
     protected abstract StreamObserver<Object> createStreamObserver();
 
@@ -198,6 +203,49 @@ public abstract class AbstractStream implements Stream {
         this.serviceDescriptor = serviceDescriptor;
     }
 
+    public Compressor getCompressor() {
+        return this.compressor;
+    }
+
+    /**
+     * set compressor if required
+     *
+     * @param compressor {@link Compressor}
+     */
+    protected AbstractStream setCompressor(Compressor compressor) {
+        // If compressor is NULL, this will not be set.
+        // Consider whether to throw an exception or handle silently,
+        // But now choose silent processing, Fall back to default.
+        if (compressor != null) {
+            this.compressor = compressor;
+        } else {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("Compressor is Null, Fall back to default compression." +
+                    " MessageEncoding is " + getCompressor().getMessageEncoding());
+            }
+        }
+        return this;
+    }
+
+    public Compressor getDeCompressor() {
+        return this.deCompressor;
+    }
+
+    protected AbstractStream setDeCompressor(Compressor compressor) {
+        // If compressor is NULL, this will not be set.
+        // Consider whether to throw an exception or handle silently,
+        // But now choose silent processing, Fall back to default.
+        if (compressor != null) {
+            this.deCompressor = compressor;
+        } else {
+            if (LOGGER.isErrorEnabled()) {
+                LOGGER.error("Compressor is Null, Fall back to default deCompression." +
+                    " MessageEncoding is " + getDeCompressor().getMessageEncoding());
+            }
+        }
+        return this;
+    }
+
     public URL getUrl() {
         return url;
     }
@@ -237,7 +285,7 @@ public abstract class AbstractStream implements Stream {
         getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
-                    + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
+                + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
         }
     }
 
@@ -269,24 +317,24 @@ public abstract class AbstractStream implements Stream {
         metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), getGrpcMessage(grpcStatus));
         metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
         Status.Builder builder = Status.newBuilder()
-                .setCode(grpcStatus.code.code)
-                .setMessage(getGrpcMessage(grpcStatus));
+            .setCode(grpcStatus.code.code)
+            .setMessage(getGrpcMessage(grpcStatus));
         Throwable throwable = grpcStatus.cause;
         if (throwable == null) {
             Status status = builder.build();
             metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                    TripleUtil.encodeBase64ASCII(status.toByteArray()));
+                TripleUtil.encodeBase64ASCII(status.toByteArray()));
             return metadata;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
-                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
-                // can not use now
-                // .setDetail(throwable.getMessage())
-                .build();
+            .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
+            // can not use now
+            // .setDetail(throwable.getMessage())
+            .build();
         builder.addDetails(Any.pack(debugInfo));
         Status status = builder.build();
         metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                TripleUtil.encodeBase64ASCII(status.toByteArray()));
+            TripleUtil.encodeBase64ASCII(status.toByteArray()));
         return metadata;
     }
 
@@ -340,6 +388,14 @@ public abstract class AbstractStream implements Stream {
         } catch (Throwable t) {
             LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v, t);
         }
+    }
+
+    protected byte[] compress(byte[] data) {
+        return this.getCompressor().compress(data);
+    }
+
+    protected byte[] decompress(byte[] data) {
+        return this.getDeCompressor().decompress(data);
     }
 
     protected abstract class AbstractTransportObserver implements TransportObserver {
@@ -415,7 +471,7 @@ public abstract class AbstractStream implements Stream {
                 this.data = in;
             } else {
                 onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription(DUPLICATED_DATA));
+                    .withDescription(DUPLICATED_DATA));
             }
         }
     }

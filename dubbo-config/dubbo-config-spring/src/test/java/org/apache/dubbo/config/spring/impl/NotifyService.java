@@ -18,12 +18,15 @@ package org.apache.dubbo.config.spring.impl;
 
 public class NotifyService {
 
-    public void onInvoke(String name, int id) {
+    public void onInvoke(Object[] params) {
+        System.out.println("invoke param-0: " + params[0]);
     }
 
-    public void onReturn(String name, int id) {
+    public void onReturn(Object result, Object[] params) {
+        System.out.println("invoke param-0: " + params[0] + ", return: " + result);
     }
 
-    public void onThrow(Throwable ex, int id) {
+    public void onThrow(Throwable t, Object[] params) {
+        System.out.println("invoke param-0: " + params[0] + ", throw: " + t.getMessage());
     }
 }

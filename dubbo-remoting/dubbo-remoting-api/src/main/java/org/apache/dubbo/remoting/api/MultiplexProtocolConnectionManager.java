@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 public class MultiplexProtocolConnectionManager implements ConnectionManager {
+    public static final String NAME = "multiple";
+
     private final ConcurrentMap<String, ConnectionManager> protocols = new ConcurrentHashMap<>();
 
     private FrameworkModel frameworkModel;
@@ -45,6 +47,6 @@ public class MultiplexProtocolConnectionManager implements ConnectionManager {
     }
 
     private ConnectionManager createSingleProtocolConnectionManager(String protocol) {
-        return frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension("single");
+        return frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension(SingleProtocolConnectionManager.NAME);
     }
 }

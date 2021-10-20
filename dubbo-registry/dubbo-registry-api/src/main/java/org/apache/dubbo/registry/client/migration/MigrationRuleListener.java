@@ -34,10 +34,12 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -108,7 +110,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
         String localRawRule = moduleModel.getModelEnvironment().getLocalMigrationRule();
         if (!StringUtils.isEmpty(localRawRule)) {
-            localRuleMigrationFuture = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMigrationRuleDelayWorker", true))
+            localRuleMigrationFuture = moduleModel.getApplicationModel().getApplicationExecutorRepository().getSharedScheduledExecutor()
                 .schedule(() -> {
                     if (this.rawRule.equals(INIT)) {
                         this.process(new ConfigChangedEvent(null, null, localRawRule));
@@ -173,21 +175,26 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
                         if (CollectionUtils.isNotEmptyMap(handlers)) {
                             ExecutorService executorService = Executors.newFixedThreadPool(100, new NamedThreadFactory("Dubbo-Invoker-Migrate"));
-                            CountDownLatch countDownLatch = new CountDownLatch(handlers.size());
+                            List<Future<?>> migrationFutures = new ArrayList<>(handlers.size());
+                            handlers.forEach((_key, handler) -> {
+                               Future<?> future = executorService.submit(() -> {
+                                    handler.doMigrate(this.rule);
+                                });
+                               migrationFutures.add(future);
+                            });
 
-                            handlers.forEach((_key, handler) ->
-                                executorService.submit(() -> {
-                                    try {
-                                        handler.doMigrate(this.rule);
-                                    }finally {
-                                        countDownLatch.countDown();
-                                    }
-                                }));
-
-                            try {
-                                countDownLatch.await(1, TimeUnit.HOURS);
-                            } catch (InterruptedException e) {
-                                logger.error("Wait Invoker Migrate interrupted!", e);
+                            Throwable migrationException = null;
+                            for (Future<?> future : migrationFutures) {
+                                try {
+                                    future.get();
+                                } catch (InterruptedException ie) {
+                                    logger.warn("Interrupted while waiting for migration async task to finish.");
+                                } catch (ExecutionException ee) {
+                                    migrationException = ee.getCause();
+                                }
+                            }
+                            if (migrationException != null) {
+                                logger.error("Migration async task failed.", migrationException);
                             }
                             executorService.shutdown();
                         }

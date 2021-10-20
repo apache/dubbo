@@ -29,7 +29,6 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
-import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -80,15 +79,11 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         RpcInvocation inv = (RpcInvocation) invocation;
 
-        // set cancel context to RpcInvocation to transport to stream
-        final CancellationContext cancellationContext = RpcContext.getCancellationContext();
-        inv.setCancellationContext(cancellationContext);
-
         final String methodName = RpcUtils.getMethodName(invocation);
         inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
         inv.setAttachment(PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.SERIALIZATION_KEY,
-                getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+            getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
         try {
             int timeout = calculateTimeout(invocation, methodName);
             invocation.put(TIMEOUT_KEY, timeout);
@@ -131,12 +126,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             return result;
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION,
-                    "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                            + ", cause: " + e.getMessage(), e);
+                "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
+                    + ", cause: " + e.getMessage(), e);
         } catch (RemotingException e) {
             throw new RpcException(RpcException.NETWORK_EXCEPTION,
-                    "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                            + ", cause: " + e.getMessage(), e);
+                "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
+                    + ", cause: " + e.getMessage(), e);
         }
     }
 

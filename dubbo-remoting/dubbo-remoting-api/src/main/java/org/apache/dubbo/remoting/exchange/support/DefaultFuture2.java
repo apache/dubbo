@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.exchange.support;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.timer.Timeout;
@@ -46,12 +47,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class DefaultFuture2 extends CompletableFuture<Object> {
 
-    public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
-            new NamedThreadFactory("dubbo-future-timeout", true),
-            30,
-            TimeUnit.MILLISECONDS);
+    private static GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
+        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true),
+            30, TimeUnit.MILLISECONDS),
+        () -> destroy());
+
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
     private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
+
     // invoke id.
     private final Request request;
     private final Connection connection;
@@ -90,7 +93,12 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
      */
     private static void timeoutCheck(DefaultFuture2 future) {
         TimeoutCheckTask task = new TimeoutCheckTask(future.getId());
-        future.timeoutCheckTask = TIME_OUT_TIMER.newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+        future.timeoutCheckTask = TIME_OUT_TIMER.get().newTimeout(task, future.getTimeout(), TimeUnit.MILLISECONDS);
+    }
+
+    public static void destroy() {
+        TIME_OUT_TIMER.remove(timer-> timer.stop());
+        FUTURES.clear();
     }
 
     /**

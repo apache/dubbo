@@ -19,9 +19,9 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.triple.TripleWrapper;
@@ -33,6 +33,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
+
 
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
     private ConsumerModel consumerModel;
@@ -50,8 +51,22 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return new UnaryClientStream(url);
     }
 
-    public static AbstractClientStream stream(URL url) {
+    public static ClientStream stream(URL url) {
         return new ClientStream(url);
+    }
+
+    public static AbstractClientStream newClientStream(URL url, boolean unary) {
+        AbstractClientStream stream = unary ? unary(url) : stream(url);
+        final CancellationContext cancellationContext = stream.getCancellationContext();
+        // for client cancel,send rst frame to server
+        cancellationContext.addListener(context -> {
+            if (LOGGER.isWarnEnabled()) {
+                Throwable throwable = cancellationContext.getCancellationCause();
+                LOGGER.warn("Cancel by local throwable is ", throwable);
+            }
+            stream.asTransportObserver().onReset(Http2Error.CANCEL);
+        });
+        return stream;
     }
 
     public AbstractClientStream service(ConsumerModel model) {
@@ -79,13 +94,13 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         } catch (RejectedExecutionException e) {
             LOGGER.error("Consumer's thread pool is full", e);
             getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
-                    .withDescription("Consumer's thread pool is full").asException());
+                .withDescription("Consumer's thread pool is full").asException());
         } catch (Throwable t) {
             LOGGER.error("Consumer submit request to thread pool error ", t);
             getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(t)
-                    .withDescription("Consumer's error")
-                    .asException());
+                .withCause(t)
+                .withDescription("Consumer's error")
+                .asException());
         }
     }
 
@@ -100,7 +115,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         }
         out = TripleUtil.pack(obj);
 
-        return out;
+        return super.compress(out);
     }
 
     private TripleWrapper.TripleRequestWrapper getRequestWrapper(Object value) {
@@ -130,11 +145,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             }
             if (getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleResponseWrapper wrapper = TripleUtil.unpack(data,
-                        TripleWrapper.TripleResponseWrapper.class);
+                    TripleWrapper.TripleResponseWrapper.class);
                 if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
                     throw new UnsupportedOperationException("Received inconsistent serialization type from server, " +
-                            "reject to deserialize! Expected:" + getSerializeType() +
-                            " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()));
+                        "reject to deserialize! Expected:" + getSerializeType() +
+                        " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()));
                 }
                 return TripleUtil.unwrapResp(getUrl(), wrapper, getMultipleSerialization());
             } else {
@@ -148,17 +163,19 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     protected Metadata createRequestMeta(RpcInvocation inv) {
         Metadata metadata = new DefaultMetadata();
         metadata.put(TripleHeaderEnum.PATH_KEY.getHeader(), "/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName())
-                .put(TripleHeaderEnum.AUTHORITY_KEY.getHeader(), getUrl().getAddress())
-                .put(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
-                .put(TripleHeaderEnum.TIMEOUT.getHeader(), inv.get(CommonConstants.TIMEOUT_KEY) + "m")
-                .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+            .put(TripleHeaderEnum.AUTHORITY_KEY.getHeader(), getUrl().getAddress())
+            .put(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+            .put(TripleHeaderEnum.TIMEOUT.getHeader(), inv.get(CommonConstants.TIMEOUT_KEY) + "m")
+            .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
-        metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), inv.getInvoker().getUrl().getVersion())
-                .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
-                        (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
-                .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
-                        (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
-                .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), inv.getInvoker().getUrl().getGroup());
+        metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), getUrl().getVersion())
+            .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
+                (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
+            .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
+                (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
+            .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), getUrl().getGroup())
+            .putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(), getCompressor().getMessageEncoding())
+            .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel()));
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {
             convertAttachment(metadata, attachments);
@@ -166,30 +183,15 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return metadata;
     }
 
-    protected class ClientStreamObserver implements StreamObserver<Object> {
-
-        @Override
-        public void onNext(Object data) {
-            RpcInvocation invocation = (RpcInvocation) data;
-            final Metadata metadata = createRequestMeta(invocation);
-            getTransportSubscriber().onMetadata(metadata, false);
-            final byte[] bytes = encodeRequest(invocation);
-            getTransportSubscriber().onData(bytes, false);
-        }
-
-        @Override
-        public void onError(Throwable throwable) {
-
-        }
-
-        @Override
-        public void onCompleted() {
-            getTransportSubscriber().onComplete();
-        }
-    }
-
     @Override
     protected void cancelByRemoteReset(Http2Error http2Error) {
         DefaultFuture2.getFuture(getRequest().getId()).cancel();
     }
+
+    @Override
+    protected void cancelByLocal(Throwable throwable) {
+        getCancellationContext().cancel(throwable);
+    }
+
+
 }

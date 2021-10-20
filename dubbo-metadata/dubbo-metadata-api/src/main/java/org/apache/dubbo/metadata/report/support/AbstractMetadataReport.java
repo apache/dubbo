@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.metadata.report.support;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,9 +31,6 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -101,6 +100,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     File file;
     private AtomicBoolean initialized = new AtomicBoolean(false);
     public MetadataReportRetry metadataReportRetry;
+    private ScheduledExecutorService reportTimerScheduler;
 
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
@@ -129,8 +129,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             reportServerURL.getParameter(RETRY_PERIOD_KEY, DEFAULT_METADATA_REPORT_RETRY_PERIOD));
         // cycle report the data switch
         if (reportServerURL.getParameter(CYCLE_REPORT_KEY, DEFAULT_METADATA_REPORT_CYCLE_REPORT)) {
-            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
-            scheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
+            reportTimerScheduler = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMetadataReportTimer", true));
+            reportTimerScheduler.scheduleAtFixedRate(this::publishAll, calculateStartTime(), ONE_DAY_IN_MILLISECONDS, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -159,7 +159,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 lockfile.createNewFile();
             }
             try (RandomAccessFile raf = new RandomAccessFile(lockfile, "rw");
-                 FileChannel channel = raf.getChannel()) {
+                FileChannel channel = raf.getChannel()) {
                 FileLock lock = channel.tryLock();
                 if (lock == null) {
                     throw new IOException("Can not lock the metadataReport cache file " + file.getAbsolutePath() + ", ignore and retry later, maybe multi java process use the file, please config: dubbo.metadata.file=xxx.properties");
@@ -302,8 +302,12 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         if (reportCacheExecutor != null) {
             reportCacheExecutor.shutdown();
         }
+        if (reportTimerScheduler != null) {
+            reportTimerScheduler.shutdown();
+        }
         if (metadataReportRetry != null) {
             metadataReportRetry.destroy();
+            metadataReportRetry = null;
         }
     }
 
