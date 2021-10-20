@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Model of a service module
