@@ -33,15 +33,16 @@ public class ClientTransportObserver implements TransportObserver {
     private final ChannelPromise promise;
     private Http2StreamChannel streamChannel;
 
-    private volatile int initialized = 0;
+    private volatile int initialized = DEFAULT;
 
 
+    private static final int DEFAULT = 0;
     private static final int SUCCESS = 1;
     private static final int FAIL = 2;
 
     public void setStreamChannel(Http2StreamChannel streamChannel) {
-        initialized = 1;
         this.streamChannel = streamChannel;
+        initialized = SUCCESS;
     }
 
     public void initializedFailed() {
@@ -55,9 +56,10 @@ public class ClientTransportObserver implements TransportObserver {
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
-        while (initialized != 0) {
+        while (initialized == DEFAULT) {
             // wait channel initialized
         }
+        // 
         if (initialized == FAIL) {
             return;
         }
