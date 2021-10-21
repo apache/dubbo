@@ -98,6 +98,6 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
         final TripleClientHandler connectionHandler = new TripleClientHandler(frameworkModel, keepAliveManager);
 
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(connectionHandler);
-        pipeline.addLast(codec, handler, new HealthCheckHandler(url), new TripleClientRequestHandler(frameworkModel));
+        pipeline.addLast(codec, handler, connectionHandler);
     }
 }
