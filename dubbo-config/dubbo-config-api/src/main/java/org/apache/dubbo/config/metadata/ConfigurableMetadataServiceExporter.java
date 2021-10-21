@@ -139,6 +139,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         if (isExported()) {
             serviceConfig.unexport();
         }
+        exported.set(false);
         return this;
     }
 
