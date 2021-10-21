@@ -21,7 +21,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
@@ -31,45 +30,19 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 public class ClientTransportObserver extends AbstractChannelTransportObserver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientTransportObserver.class);
     private final ChannelPromise promise;
-    private final CountDownLatch latch = new CountDownLatch(1);
-    private Http2StreamChannel streamChannel;
-    private volatile Throwable initFailedCause;
+    private final Http2StreamChannel streamChannel;
 
-    public ClientTransportObserver(ChannelHandlerContext ctx, ChannelPromise promise) {
-        super(ctx);
+    public ClientTransportObserver(Http2StreamChannel channel, ChannelPromise promise) {
+        this.streamChannel = channel;
         this.promise = promise;
-    }
-
-    public void setStreamChannel(Http2StreamChannel streamChannel) {
-        this.streamChannel = streamChannel;
-        this.latch.countDown();
-    }
-
-    public void initializedFailed(Throwable throwable) {
-        initFailedCause = throwable;
-        this.latch.countDown();
     }
 
     @Override
     protected void doOnMetadata(Metadata metadata, boolean endStream) {
-        // todo repleace this with async
-        try {
-            latch.await(3, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            // ignored
-        }
-        if (initFailedCause != null) {
-            LOGGER.error("client transport init failed, cause: ", initFailedCause);
-            promise.tryFailure(initFailedCause);
-            return;
-        }
         final Http2Headers headers = new DefaultHttp2Headers(true);
         metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
         streamChannel.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
@@ -82,7 +55,7 @@ public class ClientTransportObserver extends AbstractChannelTransportObserver {
 
     @Override
     protected void doOnData(byte[] data, boolean endStream) {
-        ByteBuf buf = ctx.alloc().buffer();
+        ByteBuf buf = streamChannel.alloc().buffer();
         buf.writeByte(getCompressFlag());
         buf.writeInt(data.length);
         buf.writeBytes(data);

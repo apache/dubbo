@@ -48,7 +48,6 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
         DefaultFuture2.addTimeoutListener(req.getId(), ctx::close);
         Connection connection = Connection.getConnectionFromChannel(ctx.channel());
         final AbstractClientStream stream = AbstractClientStream.newClientStream(req, connection);
-        final ClientTransportObserver clientTransportObserver = new ClientTransportObserver(ctx, promise);
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
         streamChannelBootstrap.open()
             .addListener(future -> {
@@ -59,16 +58,15 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
                         .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
                         .addLast(new TripleClientInboundHandler());
                     curChannel.attr(TripleConstant.CLIENT_STREAM_KEY).set(stream);
-                    clientTransportObserver.setStreamChannel(curChannel);
+
+                    final ClientTransportObserver clientTransportObserver = new ClientTransportObserver(curChannel, promise);
+                    stream.subscribe(clientTransportObserver);
+                    // Start call only when the channel creation is successful
+                    stream.startCall();
                 } else {
                     promise.tryFailure(future.cause());
-                    clientTransportObserver.initializedFailed(future.cause());
                     DefaultFuture2.getFuture(req.getId()).cancel();
                 }
             });
-
-        stream.subscribe(clientTransportObserver);
-        // start call
-        stream.startCall();
     }
 }

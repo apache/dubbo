@@ -34,8 +34,10 @@ public class ServerTransportObserver extends AbstractChannelTransportObserver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerTransportObserver.class);
 
+    private final ChannelHandlerContext ctx;
+
     public ServerTransportObserver(ChannelHandlerContext ctx) {
-        super(ctx);
+        this.ctx = ctx;
     }
 
     public void onMetadata(Http2Headers headers, boolean endStream) {
@@ -59,7 +61,7 @@ public class ServerTransportObserver extends AbstractChannelTransportObserver {
 
     @Override
     public void onData(byte[] data, boolean endStream) {
-        doOnData(data,endStream);
+        doOnData(data, endStream);
     }
 
     @Override

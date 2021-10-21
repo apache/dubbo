@@ -17,18 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2Error;
 
 public abstract class AbstractChannelTransportObserver implements TransportObserver {
 
     protected final TransportState state = new TransportState();
-
-    protected final ChannelHandlerContext ctx;
-
-    public AbstractChannelTransportObserver(ChannelHandlerContext ctx) {
-        this.ctx = ctx;
-    }
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
