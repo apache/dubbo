@@ -31,8 +31,8 @@ public class ClientStream extends AbstractClientStream implements Stream {
     }
 
     @Override
-    protected TransportObserver createTransportObserver() {
-        return new ClientTransportObserverImpl();
+    protected InboundTransportObserver createInboundTransportObserver() {
+        return new ClientStreamInboundTransportObserverImpl();
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
         return observer;
     }
 
-    private class ClientTransportObserverImpl extends AbstractTransportObserver {
+    private class ClientStreamInboundTransportObserverImpl extends InboundTransportObserver {
 
         private boolean error = false;
 
@@ -82,6 +82,11 @@ public class ClientStream extends AbstractClientStream implements Stream {
                     onError(throwable);
                 }
             });
+        }
+
+        @Override
+        public void onCancel(GrpcStatus status) {
+            onError(status.asException());
         }
 
         @Override

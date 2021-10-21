@@ -42,12 +42,11 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 public abstract class AbstractStream implements Stream {
-    protected static final String DUPLICATED_DATA = "Duplicated data";
 
     private final URL url;
     private final MultipleSerialization multipleSerialization;
     private final StreamObserver<Object> streamObserver;
-    private final TransportObserver transportObserver;
+    private final InboundTransportObserver inboundTransportObserver;
     private final Executor executor;
     private final CancellationContext cancellationContext;
     // AcceptEncoding does not change after the application is started,
@@ -58,7 +57,7 @@ public abstract class AbstractStream implements Stream {
     private String methodName;
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
-    private AbstractChannelTransportObserver transportSubscriber;
+    private OutboundTransportObserver transportSubscriber;
     private Compressor compressor = IdentityCompressor.NONE;
     private Compressor deCompressor = IdentityCompressor.NONE;
     private volatile boolean cancelled = false;
@@ -75,7 +74,7 @@ public abstract class AbstractStream implements Stream {
         this.multipleSerialization = url.getOrDefaultFrameworkModel().getExtensionLoader(MultipleSerialization.class)
             .getExtension(value);
         this.cancellationContext = new CancellationContext();
-        this.transportObserver = createTransportObserver();
+        this.inboundTransportObserver = createInboundTransportObserver();
         this.streamObserver = createStreamObserver();
         this.acceptEncoding = Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel());
     }
@@ -172,7 +171,7 @@ public abstract class AbstractStream implements Stream {
     /**
      * create response TransportObserver
      */
-    protected abstract TransportObserver createTransportObserver();
+    protected abstract InboundTransportObserver createInboundTransportObserver();
 
     public String getSerializeType() {
         return serializeType;
@@ -255,7 +254,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     @Override
-    public void subscribe(AbstractChannelTransportObserver observer) {
+    public void subscribe(OutboundTransportObserver observer) {
         this.transportSubscriber = observer;
     }
 
@@ -266,7 +265,7 @@ public abstract class AbstractStream implements Stream {
 
     @Override
     public TransportObserver asTransportObserver() {
-        return transportObserver;
+        return inboundTransportObserver;
     }
 
     // https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#responses
@@ -407,90 +406,5 @@ public abstract class AbstractStream implements Stream {
         return this.getDeCompressor().decompress(data);
     }
 
-    protected abstract class AbstractTransportObserver implements TransportObserver {
-        private Metadata headers;
-        private Metadata trailers;
 
-        public Metadata getHeaders() {
-            return headers;
-        }
-
-        public Metadata getTrailers() {
-            return trailers;
-        }
-
-        @Override
-        public void onCancel(GrpcStatus status) {
-            if (getState().allowSendReset()) {
-                getState().setResetSend();
-                getTransportSubscriber().onCancel(status);
-            }
-        }
-
-        @Override
-        public void onMetadata(Metadata metadata, boolean endStream) {
-            if (headers == null) {
-                headers = metadata;
-            } else {
-                trailers = metadata;
-            }
-        }
-
-        protected GrpcStatus extractStatusFromMeta(Metadata metadata) {
-            if (!metadata.contains(TripleHeaderEnum.STATUS_KEY.getHeader())) {
-                return GrpcStatus.fromCode(Code.OK);
-            }
-            final int code = Integer.parseInt(metadata.get(TripleHeaderEnum.STATUS_KEY.getHeader()).toString());
-
-            if (Code.isOk(code)) {
-                return GrpcStatus.fromCode(Code.OK);
-            }
-            GrpcStatus status = GrpcStatus.fromCode(code);
-            if (!metadata.contains(TripleHeaderEnum.MESSAGE_KEY.getHeader())) {
-                return status;
-            }
-            final String raw = metadata.get(TripleHeaderEnum.MESSAGE_KEY.getHeader()).toString();
-            status = status.withDescription(GrpcStatus.fromMessage(raw));
-            return status;
-        }
-
-    }
-
-    protected abstract class UnaryTransportObserver extends AbstractTransportObserver implements TransportObserver {
-        private byte[] data;
-
-        public byte[] getData() {
-            return data;
-        }
-
-        protected abstract void onError(GrpcStatus status);
-
-        @Override
-        public void onComplete() {
-            execute(() -> {
-                final GrpcStatus status = extractStatusFromMeta(getHeaders());
-                if (Code.isOk(status.code.code)) {
-                    doOnComplete();
-                } else {
-                    onError(status);
-                }
-            });
-        }
-
-        /**
-         * This method exception needs to be caught by the implementation class
-         */
-        protected abstract void doOnComplete();
-
-
-        @Override
-        public void onData(byte[] in, boolean endStream) {
-            if (data == null) {
-                this.data = in;
-            } else {
-                onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription(DUPLICATED_DATA));
-            }
-        }
-    }
 }

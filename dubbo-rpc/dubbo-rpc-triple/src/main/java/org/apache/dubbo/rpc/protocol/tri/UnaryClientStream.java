@@ -43,32 +43,39 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
     }
 
     @Override
-    protected TransportObserver createTransportObserver() {
-        return new UnaryClientTransportObserver();
+    protected InboundTransportObserver createInboundTransportObserver() {
+        return new ClientUnaryInboundTransportObserver();
     }
 
-    private class UnaryClientTransportObserver extends UnaryTransportObserver implements TransportObserver {
+    private class ClientUnaryInboundTransportObserver extends UnaryInboundTransportObserver implements TransportObserver {
 
         @Override
-        public void doOnComplete() {
-            try {
-                AppResponse result;
-                if (!Void.TYPE.equals(getMethodDescriptor().getReturnClass())) {
-                    final Object resp = deserializeResponse(getData());
-                    result = new AppResponse(resp);
+        public void onComplete() {
+            execute(() -> {
+                final GrpcStatus status = extractStatusFromMeta(getHeaders());
+                if (GrpcStatus.Code.isOk(status.code.code)) {
+                    try {
+                        AppResponse result;
+                        if (!Void.TYPE.equals(getMethodDescriptor().getReturnClass())) {
+                            final Object resp = deserializeResponse(getData());
+                            result = new AppResponse(resp);
+                        } else {
+                            result = new AppResponse();
+                        }
+                        Response response = new Response(getRequestId(), TripleConstant.TRI_VERSION);
+                        result.setObjectAttachments(parseMetadataToAttachmentMap(getTrailers()));
+                        response.setResult(result);
+                        DefaultFuture2.received(getConnection(), response);
+                    } catch (Exception e) {
+                        final GrpcStatus clientStatus = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withCause(e)
+                            .withDescription("Failed to deserialize response");
+                        onError(clientStatus);
+                    }
                 } else {
-                    result = new AppResponse();
+                    onError(status);
                 }
-                Response response = new Response(getRequestId(), TripleConstant.TRI_VERSION);
-                result.setObjectAttachments(parseMetadataToAttachmentMap(getTrailers()));
-                response.setResult(result);
-                DefaultFuture2.received(getConnection(), response);
-            } catch (Exception e) {
-                final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(e)
-                    .withDescription("Failed to deserialize response");
-                onError(status);
-            }
+            });
         }
 
         @Override

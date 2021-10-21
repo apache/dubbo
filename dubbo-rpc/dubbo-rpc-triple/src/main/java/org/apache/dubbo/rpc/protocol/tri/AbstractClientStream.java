@@ -107,7 +107,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                 .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
                 .addLast(new TripleClientInboundHandler());
             channel.attr(TripleConstant.CLIENT_STREAM_KEY).set(this);
-            final ClientTransportObserver clientTransportObserver = new ClientTransportObserver(channel, promise);
+            final ClientOutboundTransportObserver clientTransportObserver = new ClientOutboundTransportObserver(channel, promise);
             subscribe(clientTransportObserver);
             try {
                 doOnStartCall();

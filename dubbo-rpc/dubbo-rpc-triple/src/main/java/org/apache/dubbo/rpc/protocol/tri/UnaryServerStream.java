@@ -41,18 +41,18 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
     }
 
     @Override
-    protected TransportObserver createTransportObserver() {
+    protected InboundTransportObserver createInboundTransportObserver() {
         return new UnaryServerTransportObserver();
     }
 
-    private class UnaryServerTransportObserver extends UnaryTransportObserver implements TransportObserver {
+    private class UnaryServerTransportObserver extends UnaryInboundTransportObserver implements TransportObserver {
         @Override
         protected void onError(GrpcStatus status) {
             transportError(status);
         }
 
         @Override
-        public void doOnComplete() {
+        public void onComplete() {
             if (getData() != null) {
                 invoke();
             } else {

@@ -126,7 +126,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
         final Http2Headers headers = msg.headers();
-        ServerTransportObserver transportObserver = new ServerTransportObserver(ctx);
+        ServerOutboundTransportObserver transportObserver = new ServerOutboundTransportObserver(ctx);
 
         if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
             responsePlainTextError(transportObserver, HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
@@ -261,7 +261,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         return contentType.startsWith(TripleConstant.APPLICATION_GRPC);
     }
 
-    private void responsePlainTextError(ServerTransportObserver observer, int code, GrpcStatus status) {
+    private void responsePlainTextError(ServerOutboundTransportObserver observer, int code, GrpcStatus status) {
         Http2Headers headers = new DefaultHttp2Headers(true)
             .status(String.valueOf(code))
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
@@ -271,7 +271,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         observer.onData(status.description, true);
     }
 
-    private void responseErr(ServerTransportObserver observer, GrpcStatus status) {
+    private void responseErr(ServerOutboundTransportObserver observer, GrpcStatus status) {
         Http2Headers trailers = new DefaultHttp2Headers()
             .status(OK.codeAsText())
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)

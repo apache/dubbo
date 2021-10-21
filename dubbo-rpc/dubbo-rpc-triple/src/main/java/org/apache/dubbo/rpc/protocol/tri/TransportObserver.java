@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 /**
  * An observer used for transport messaging which provides full streaming support.
  * A TransportObserver receives raw data or control messages from local/remote.
+ * Implementations should prefer to extend {@link OutboundTransportObserver} instead of this interface.
  */
 public interface TransportObserver {
 

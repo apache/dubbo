@@ -17,12 +17,18 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-public abstract class AbstractChannelTransportObserver implements TransportObserver {
+/**
+ * Provides loosely state management for write message to outbound.
+ */
+public abstract class OutboundTransportObserver implements TransportObserver {
 
     protected final TransportState state = new TransportState();
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
+        if (!state.allowSendMeta()) {
+            throw new IllegalStateException("Metadata already sent to peer, send " + metadata + " failed!");
+        }
         if (endStream) {
             state.setEndStreamSend();
         } else {
@@ -33,6 +39,9 @@ public abstract class AbstractChannelTransportObserver implements TransportObser
 
     @Override
     public void onData(byte[] data, boolean endStream) {
+        if (!state.allowSendData()) {
+            throw new IllegalStateException("Metadata has not sent to peer!");
+        }
         if (endStream) {
             state.setEndStreamSend();
         }
@@ -41,12 +50,18 @@ public abstract class AbstractChannelTransportObserver implements TransportObser
 
     @Override
     public void onCancel(GrpcStatus status) {
+        if (!state.allowSendReset()) {
+            throw new IllegalStateException("Duplicated rst!");
+        }
         state.setResetSend();
         doOnCancel(status);
     }
 
     @Override
     public void onComplete() {
+        if (!state.allowSendEndStream()) {
+            throw new IllegalStateException("Stream already closed!");
+        }
         state.setEndStreamSend();
         doOnComplete();
     }

@@ -30,13 +30,13 @@ import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 
-public class ServerTransportObserver extends AbstractChannelTransportObserver {
+public class ServerOutboundTransportObserver extends OutboundTransportObserver {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServerTransportObserver.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerOutboundTransportObserver.class);
 
     private final ChannelHandlerContext ctx;
 
-    public ServerTransportObserver(ChannelHandlerContext ctx) {
+    public ServerOutboundTransportObserver(ChannelHandlerContext ctx) {
         this.ctx = ctx;
     }
 

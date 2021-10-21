@@ -24,6 +24,8 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 
+import io.netty.handler.codec.http2.Http2Error;
+
 public class ServerStream extends AbstractServerStream implements Stream {
     protected ServerStream(URL url) {
         super(url);
@@ -35,8 +37,8 @@ public class ServerStream extends AbstractServerStream implements Stream {
     }
 
     @Override
-    protected TransportObserver createTransportObserver() {
-        return new StreamTransportObserver();
+    protected InboundTransportObserver createInboundTransportObserver() {
+        return new ServerStreamInboundTransportObserver();
     }
 
     private class ServerStreamObserverImpl implements ServerStreamObserver<Object> {
@@ -87,7 +89,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         }
     }
 
-    private class StreamTransportObserver extends AbstractTransportObserver implements TransportObserver {
+    private class ServerStreamInboundTransportObserver extends InboundTransportObserver implements TransportObserver {
 
         /**
          * for server stream the method only save header
@@ -150,6 +152,11 @@ public class ServerStream extends AbstractServerStream implements Stream {
             });
         }
 
+        @Override
+        public void onCancel(GrpcStatus status) {
+            cancelByRemote(Http2Error.CANCEL);
+        }
+
         /**
          * call observer onNext
          */
@@ -198,9 +205,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
             if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                 return;
             }
-            execute(() -> {
-                getStreamSubscriber().onCompleted();
-            });
+            execute(() -> getStreamSubscriber().onCompleted());
         }
     }
 }
