@@ -31,7 +31,10 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.Message;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.Http2Error;
+import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,9 +48,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KE
 public abstract class AbstractServerStream extends AbstractStream implements Stream {
 
     private final ProviderModel providerModel;
+    private final List<HeaderFilter> headerFilters;
+    private ServiceDescriptor serviceDescriptor;
     private List<MethodDescriptor> methodDescriptors;
     private Invoker<?> invoker;
-    private final List<HeaderFilter> headerFilters;
 
     protected AbstractServerStream(URL url) {
         this(url, lookupProviderModel(url));
@@ -102,6 +106,14 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return this;
     }
 
+    public ServiceDescriptor getServiceDescriptor() {
+        return serviceDescriptor;
+    }
+
+    public void setServiceDescriptor(ServiceDescriptor serviceDescriptor) {
+        this.serviceDescriptor = serviceDescriptor;
+    }
+
     public Invoker<?> getInvoker() {
         return invoker;
     }
@@ -134,7 +146,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             if (getProviderModel() != null) {
-                ClassLoadUtil.switchContextLoader(getProviderModel().getClassLoader());
+                ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
             }
             if (getMethodDescriptor() == null || getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data,
@@ -160,16 +172,18 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
                             .withDescription("Method :" + getMethodName() + "[" + Arrays.toString(paramTypes) + "] " +
                                 "not found of service:" + getServiceDescriptor().getServiceName()));
-
                         return null;
                     }
                 }
-
                 return TripleUtil.unwrapReq(getUrl(), wrapper, getMultipleSerialization());
             } else {
                 return new Object[]{TripleUtil.unpack(data, getMethodDescriptor().getParameterClasses()[0])};
             }
-
+        } catch (Throwable throwable) {
+            LOGGER.warn("Decode request failed:", throwable);
+            transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription("Decode request failed:" + throwable.getMessage()));
+            return null;
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
         }
@@ -178,23 +192,39 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     /**
      * create basic meta data
      */
-    protected Metadata createRequestMeta() {
+    protected Metadata createResponseMeta() {
         Metadata metadata = new DefaultMetadata();
+        metadata.put(Http2Headers.PseudoHeaderName.STATUS.value(), HttpResponseStatus.OK.codeAsText());
+        metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
         metadata.putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(), super.getCompressor().getMessageEncoding())
-            .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel()));
+            .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), getAcceptEncoding());
         return metadata;
     }
 
     protected byte[] encodeResponse(Object value) {
-        final com.google.protobuf.Message message;
-        if (getMethodDescriptor().isNeedWrap()) {
-            message = TripleUtil.wrapResp(getUrl(), getSerializeType(), value, getMethodDescriptor(),
-                getMultipleSerialization());
-        } else {
-            message = (Message) value;
+        final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        try {
+            if (getProviderModel() != null) {
+                ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
+            }
+            final Message message;
+            if (getMethodDescriptor().isNeedWrap()) {
+                message = TripleUtil.wrapResp(getUrl(), getSerializeType(), value, getMethodDescriptor(),
+                    getMultipleSerialization());
+            } else {
+                message = (Message) value;
+            }
+            byte[] out = TripleUtil.pack(message);
+            return super.compress(out);
+        } catch (Throwable throwable) {
+            LOGGER.error("Encode Response data error ", throwable);
+            transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
+                .withCause(throwable)
+                .withDescription("Encode Response data error"));
+            return null;
+        } finally {
+            ClassLoadUtil.switchContextLoader(tccl);
         }
-        byte[] out = TripleUtil.pack(message);
-        return super.compress(out);
     }
 
     @Override
