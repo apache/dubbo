@@ -28,8 +28,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
 class UnaryClientStreamTest {
@@ -46,11 +44,10 @@ class UnaryClientStreamTest {
         // no subscriber
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
 
-        TransportObserver transportObserver = Mockito.mock(TransportObserver.class);
+        AbstractChannelTransportObserver transportObserver = Mockito.mock(AbstractChannelTransportObserver.class);
         stream.subscribe(transportObserver);
         // no method descriptor
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
-        Mockito.verify(transportObserver).onMetadata(any(), anyBoolean());
 
         MethodDescriptor md = Mockito.mock(MethodDescriptor.class);
         when(md.isNeedWrap()).thenReturn(true);

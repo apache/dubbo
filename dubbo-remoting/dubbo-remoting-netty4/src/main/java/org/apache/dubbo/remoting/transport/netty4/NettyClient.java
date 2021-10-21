@@ -206,7 +206,7 @@ public class NettyClient extends AbstractClient {
 
     @Override
     protected void doClose() throws Throwable {
-        // can't shutdown nioEventLoopGroup because the method will be invoked when closing one channel but not a client,
+        // can't shut down nioEventLoopGroup because the method will be invoked when closing one channel but not a client,
         // but when and how to close the nioEventLoopGroup ?
         // nioEventLoopGroup.shutdownGracefully();
     }
