@@ -27,13 +27,17 @@ import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
 import org.apache.dubbo.config.spring.impl.NotifyService;
 import org.apache.dubbo.config.spring.reference.ReferenceCreator;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -112,6 +116,12 @@ public class ReferenceCreatorTest {
     @Test
     public void testBuild() throws Exception {
 
+        ModuleModel moduleModel = ApplicationModel.defaultModel().newModule();
+
+        ConfigurableListableBeanFactory beanFactory = (ConfigurableListableBeanFactory) context.getAutowireCapableBeanFactory();
+        beanFactory.registerSingleton(DubboSpringInitializer.MODULE_MODEL_BEAN_NAME, moduleModel);
+        beanFactory.registerSingleton(DubboSpringInitializer.APPLICATION_MODEL_BEAN_NAME, moduleModel.getApplicationModel());
+
         Field helloServiceField = findField(getClass(), "helloService");
         DubboReference reference = findAnnotation(helloServiceField, DubboReference.class);
         // filter default value
@@ -157,6 +167,7 @@ public class ReferenceCreatorTest {
         Assertions.assertEquals(ofSet("service1", "service2", "service3"), referenceBean.getSubscribedServices());
         Assertions.assertEquals("service1,service2,service3", referenceBean.getProvidedBy());
         Assertions.assertEquals("myregistry", referenceBean.getRegistryIds());
+        Assertions.assertEquals(moduleModel, referenceBean.getScopeModel());
 
         // parameters
         Map<String, String> parameters = new HashMap<String, String>();

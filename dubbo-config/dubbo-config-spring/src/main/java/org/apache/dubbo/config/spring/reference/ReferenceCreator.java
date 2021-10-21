@@ -33,6 +33,7 @@ import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationPropertyValuesAdapter;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
@@ -83,7 +84,12 @@ public class ReferenceCreator {
         this.applicationContext = applicationContext;
         this.classLoader = applicationContext.getClassLoader() != null ?
                 applicationContext.getClassLoader() : Thread.currentThread().getContextClassLoader();
-        moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
+        // get module from spring context
+        ModuleModel moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
+        if (moduleModel == null) {
+            moduleModel = ApplicationModel.defaultModel().getDefaultModule();
+        }
+        this.moduleModel = moduleModel;
     }
 
     public final ReferenceConfig build() throws Exception {
