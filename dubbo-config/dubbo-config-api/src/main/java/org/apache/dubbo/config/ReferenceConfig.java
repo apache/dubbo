@@ -199,7 +199,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         if (ref == null) {
-            init();
+            // ensure start module, compatible with old api usage
+            getScopeModel().getDeployer().start();
+
+            synchronized (this) {
+                if (ref == null) {
+                    init();
+                }
+            }
         }
 
         return ref;
@@ -228,52 +235,43 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         getScopeModel().getConfigManager().removeConfig(this);
     }
 
-    protected void init() {
+    protected synchronized void init() {
         if (initialized) {
             return;
         }
+        initialized = true;
 
-        // ensure start module, compatible with old api usage
-        getScopeModel().getDeployer().start();
-
-        synchronized (this) {
-            if (initialized) {
-                return;
-            }
-            initialized = true;
-
-            if (!this.isRefreshed()) {
-                this.refresh();
-            }
-
-            //init serviceMetadata
-            initServiceMetadata(consumer);
-            serviceMetadata.setServiceType(getServiceInterfaceClass());
-            // TODO, uncomment this line once service key is unified
-            serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
-
-            Map<String, String> referenceParameters = appendConfig();
-
-
-            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-            ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-            consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
-                getScopeModel(), serviceMetadata, createAsyncMethodInfo());
-
-            repository.registerConsumer(consumerModel);
-
-            serviceMetadata.getAttachments().putAll(referenceParameters);
-
-            ref = createProxy(referenceParameters);
-
-            serviceMetadata.setTarget(ref);
-            serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
-
-            consumerModel.setProxyObject(ref);
-            consumerModel.initMethodModels();
-
-            checkInvokerAvailable();
+        if (!this.isRefreshed()) {
+            this.refresh();
         }
+
+        //init serviceMetadata
+        initServiceMetadata(consumer);
+        serviceMetadata.setServiceType(getServiceInterfaceClass());
+        // TODO, uncomment this line once service key is unified
+        serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
+
+        Map<String, String> referenceParameters = appendConfig();
+
+
+        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+        consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
+            getScopeModel(), serviceMetadata, createAsyncMethodInfo());
+
+        repository.registerConsumer(consumerModel);
+
+        serviceMetadata.getAttachments().putAll(referenceParameters);
+
+        ref = createProxy(referenceParameters);
+
+        serviceMetadata.setTarget(ref);
+        serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
+
+        consumerModel.setProxyObject(ref);
+        consumerModel.initMethodModels();
+
+        checkInvokerAvailable();
     }
 
     /**
