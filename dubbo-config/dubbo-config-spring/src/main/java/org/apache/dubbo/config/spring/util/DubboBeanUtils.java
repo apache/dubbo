@@ -18,10 +18,9 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServicePackagesHolder;
-import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
@@ -45,6 +44,9 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.config.spring.context.DubboSpringInitializer.APPLICATION_MODEL_BEAN_NAME;
+import static org.apache.dubbo.config.spring.context.DubboSpringInitializer.MODULE_MODEL_BEAN_NAME;
+
 /**
  * Dubbo Bean utilities class
  *
@@ -59,8 +61,7 @@ public interface DubboBeanUtils {
      *
      * @param registry {@link BeanDefinitionRegistry}
      * @see ReferenceAnnotationBeanPostProcessor
-     * @see DubboConfigDefaultPropertyValueBeanPostProcessor
-     * @see DubboConfigAliasPostProcessor
+     * @see DubboConfigBeanPostProcessor
      * @see DubboBootstrapApplicationListener
      */
     static void registerCommonBeans(BeanDefinitionRegistry registry) {
@@ -75,8 +76,8 @@ public interface DubboBeanUtils {
 
         // TODO Whether DubboConfigAliasPostProcessor can be removed ?
         // Since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
-        registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME,
-            DubboConfigAliasPostProcessor.class);
+        // registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME,
+        //    DubboConfigAliasPostProcessor.class);
 
         // Since 2.7.4 Register DubboBootstrapApplicationListener as an infrastructure Bean
 //        registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME,
@@ -86,9 +87,9 @@ public interface DubboBeanUtils {
         registerInfrastructureBean(registry, DubboDeployApplicationListener.class.getName(), DubboDeployApplicationListener.class);
         registerInfrastructureBean(registry, DubboConfigApplicationListener.class.getName(), DubboConfigApplicationListener.class);
 
-        // Since 2.7.6 Register DubboConfigDefaultPropertyValueBeanPostProcessor as an infrastructure Bean
-        registerInfrastructureBean(registry, DubboConfigDefaultPropertyValueBeanPostProcessor.BEAN_NAME,
-            DubboConfigDefaultPropertyValueBeanPostProcessor.class);
+        // Since 2.7.6 Register DubboConfigBeanPostProcessor as an infrastructure Bean
+        registerInfrastructureBean(registry, DubboConfigBeanPostProcessor.BEAN_NAME,
+            DubboConfigBeanPostProcessor.class);
 
         // Dubbo config initializer
         registerInfrastructureBean(registry, DubboConfigBeanInitializer.BEAN_NAME, DubboConfigBeanInitializer.class);
@@ -193,17 +194,15 @@ public interface DubboBeanUtils {
     }
 
     static ApplicationModel getApplicationModel(BeanFactory beanFactory) {
-        String beanName = ApplicationModel.class.getName();
-        if (beanFactory.containsBean(beanName)) {
-            return beanFactory.getBean(beanName, ApplicationModel.class);
+        if (beanFactory.containsBean(APPLICATION_MODEL_BEAN_NAME)) {
+            return beanFactory.getBean(APPLICATION_MODEL_BEAN_NAME, ApplicationModel.class);
         }
         return null;
     }
 
     static ModuleModel getModuleModel(BeanFactory beanFactory) {
-        String beanName = ModuleModel.class.getName();
-        if (beanFactory.containsBean(beanName)) {
-            return beanFactory.getBean(beanName, ModuleModel.class);
+        if (beanFactory.containsBean(MODULE_MODEL_BEAN_NAME)) {
+            return beanFactory.getBean(MODULE_MODEL_BEAN_NAME, ModuleModel.class);
         }
         return null;
     }

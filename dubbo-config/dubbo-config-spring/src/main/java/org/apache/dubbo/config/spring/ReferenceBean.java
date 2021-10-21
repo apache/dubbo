@@ -25,7 +25,9 @@ import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.schema.DubboBeanDefinitionParser;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.AbstractLazyCreationTargetSource;
@@ -133,6 +135,7 @@ public class ReferenceBean<T> implements FactoryBean<T>,
 
     // Registration sources of this reference, may be xml file or annotation location
     private List<Map<String,Object>> sources = new ArrayList<>();
+    private ModuleModel moduleModel;
 
     public ReferenceBean() {
         super();
@@ -145,6 +148,7 @@ public class ReferenceBean<T> implements FactoryBean<T>,
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
     }
 
     @Override
@@ -311,6 +315,10 @@ public class ReferenceBean<T> implements FactoryBean<T>,
     public void setKeyAndReferenceConfig(String key, ReferenceConfig referenceConfig) {
         this.key = key;
         this.referenceConfig = referenceConfig;
+    }
+
+    public ModuleModel getModuleModel() {
+        return moduleModel;
     }
 
     /**

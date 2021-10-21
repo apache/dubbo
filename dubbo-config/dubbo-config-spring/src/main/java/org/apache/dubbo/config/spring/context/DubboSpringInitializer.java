@@ -33,6 +33,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DubboSpringInitializer {
 
+    public static final String APPLICATION_MODEL_BEAN_NAME = "dubboApplicationModel";
+
+    public static final String MODULE_MODEL_BEAN_NAME = "dubboModuleModel";
+
     private static Map<BeanDefinitionRegistry, DubboSpringInitContext> contextMap = new ConcurrentHashMap<>();
 
     private DubboSpringInitializer() {
@@ -109,13 +113,13 @@ public class DubboSpringInitializer {
 
     private static void registerContextBeans(ConfigurableListableBeanFactory beanFactory, DubboSpringInitContext context) {
         // register singleton
-        registerSingleton(beanFactory, context);
-        registerSingleton(beanFactory, context.getApplicationModel());
-        registerSingleton(beanFactory, context.getModuleModel());
+        registerSingleton(beanFactory, context, DubboSpringInitContext.class.getName());
+        registerSingleton(beanFactory, context.getApplicationModel(), APPLICATION_MODEL_BEAN_NAME);
+        registerSingleton(beanFactory, context.getModuleModel(), MODULE_MODEL_BEAN_NAME);
     }
 
-    private static void registerSingleton(ConfigurableListableBeanFactory beanFactory, Object bean) {
-        beanFactory.registerSingleton(bean.getClass().getName(), bean);
+    private static void registerSingleton(ConfigurableListableBeanFactory beanFactory, Object bean, String beanName) {
+        beanFactory.registerSingleton(beanName, bean);
     }
 
     private static DubboSpringInitContext findContextForApplication(ApplicationModel applicationModel) {

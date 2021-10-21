@@ -240,8 +240,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // check Config Center
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         if (CollectionUtils.isEmpty(configCenters)) {
-            ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
-            configCenterConfig.setScopeModel(applicationModel);
+            ConfigCenterConfig configCenterConfig = new ConfigCenterConfig(applicationModel);
             configCenterConfig.refresh();
             ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
             if (configCenterConfig.isValid()) {
@@ -343,9 +342,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         Integer port = registryConfig.getPort();
         URL url = URL.valueOf(registryConfig.getAddress(), registryConfig.getScopeModel());
         String id = "config-center-" + protocol + "-" + url.getHost() + "-" + port;
-        ConfigCenterConfig cc = new ConfigCenterConfig();
+        ConfigCenterConfig cc = new ConfigCenterConfig(applicationModel);
         cc.setId(id);
-        cc.setScopeModel(applicationModel);
         if (cc.getParameters() == null) {
             cc.setParameters(new HashMap<>());
         }
@@ -453,9 +451,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         String protocol = registryConfig.getProtocol();
         URL url = URL.valueOf(registryConfig.getAddress(), registryConfig.getScopeModel());
         String id = "metadata-center-" + protocol + "-" + url.getHost() + "-" + url.getPort();
-        MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
+        MetadataReportConfig metadataReportConfig = new MetadataReportConfig(applicationModel);
         metadataReportConfig.setId(id);
-        metadataReportConfig.setScopeModel(applicationModel);
         if (metadataReportConfig.getParameters() == null) {
             metadataReportConfig.setParameters(new HashMap<>());
         }

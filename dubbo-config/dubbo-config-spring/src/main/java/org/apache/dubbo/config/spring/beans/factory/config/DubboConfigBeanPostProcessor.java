@@ -16,15 +16,25 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.config;
 
-import org.apache.dubbo.config.AbstractConfig;
-
 import com.alibaba.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.AbstractMethodConfig;
 import org.apache.dubbo.config.Constants;
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
-import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.config.ConstructorArgumentValues;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
@@ -44,13 +54,50 @@ import static org.springframework.util.ReflectionUtils.invokeMethod;
  *
  * @since 2.7.6
  */
-public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBeanPostProcessorAdapter<AbstractConfig>
-        implements MergedBeanDefinitionPostProcessor, PriorityOrdered {
+public class DubboConfigBeanPostProcessor extends GenericBeanPostProcessorAdapter<AbstractConfig>
+    implements BeanDefinitionRegistryPostProcessor, PriorityOrdered, ApplicationContextAware {
 
     /**
-     * The bean name of {@link DubboConfigDefaultPropertyValueBeanPostProcessor}
+     * The bean name of {@link DubboConfigBeanPostProcessor}
      */
-    public static final String BEAN_NAME = "dubboConfigDefaultPropertyValueBeanPostProcessor";
+    public static final String BEAN_NAME = "dubboConfigBeanPostProcessor";
+
+    private ModuleModel moduleModel;
+    private ApplicationModel applicationModel;
+
+    @Override
+    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+        //DO NOTHING
+    }
+
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        String[] beanNames = beanFactory.getBeanDefinitionNames();
+        for (String beanName : beanNames) {
+            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+            String beanClassName = beanDefinition.getBeanClassName();
+            if (beanClassName.startsWith("org.apache.dubbo.config.")) {
+                try {
+                    Class<?> beanClass = ClassUtils.forName(beanClassName);
+                    if (AbstractConfig.class.isAssignableFrom(beanClass)) {
+                        // add scopeModule constructor args to config bean
+                        ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues();
+                        constructorArgumentValues.addGenericArgumentValue(isModuleConfig(beanClass) ? moduleModel : applicationModel);
+                        beanDefinition.getConstructorArgumentValues().addArgumentValues(constructorArgumentValues);
+                    }
+                } catch (ClassNotFoundException e) {
+                    // ignore class not found
+                }
+            }
+        }
+    }
+
+    private boolean isModuleConfig(Class<?> beanClass) {
+        if (AbstractMethodConfig.class.isAssignableFrom(beanClass) || ModuleConfig.class.isAssignableFrom(beanClass)) {
+            return true;
+        }
+        return false;
+    }
 
     protected void processBeforeInitialization(AbstractConfig dubboConfigBean, String beanName) throws BeansException {
         // ignore auto generate bean name
@@ -61,11 +108,6 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
             // beanName should not be used as config name, fix https://github.com/apache/dubbo/pull/7624
             //setPropertyIfAbsent(dubboConfigBean, "name", beanName);
         }
-    }
-
-    @Override
-    public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-        // DO NOTHING
     }
 
     protected void setPropertyIfAbsent(Object bean, String propertyName, String beanName) {
@@ -108,5 +150,11 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
     @Override
     public int getOrder() {
         return Ordered.LOWEST_PRECEDENCE + 1;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
+        applicationModel = DubboBeanUtils.getApplicationModel(applicationContext);
     }
 }

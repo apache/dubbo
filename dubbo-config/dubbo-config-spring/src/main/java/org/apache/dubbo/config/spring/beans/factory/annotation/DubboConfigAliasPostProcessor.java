@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.spring.context.annotation.DubboConfigConfigurationRegistrar;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -33,6 +32,7 @@ import static org.springframework.util.StringUtils.hasText;
  * A Post-Processor class to set the alias of Dubbo Config bean using its {@link AbstractConfig#getId()}
  *
  * @since 2.7.5
+ * @deprecated
  */
 public class DubboConfigAliasPostProcessor implements BeanDefinitionRegistryPostProcessor, BeanPostProcessor {
 

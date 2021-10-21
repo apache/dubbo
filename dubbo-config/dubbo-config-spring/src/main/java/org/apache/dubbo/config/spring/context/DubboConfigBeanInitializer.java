@@ -45,6 +45,8 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.config.spring.context.DubboSpringInitializer.MODULE_MODEL_BEAN_NAME;
+
 
 /**
  *
@@ -67,7 +69,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
     private ConfigManager configManager;
 
     @Autowired
-    @Qualifier("org.apache.dubbo.rpc.model.ModuleModel")
+    @Qualifier(MODULE_MODEL_BEAN_NAME)
     private ModuleModel moduleModel;
 
     @Override

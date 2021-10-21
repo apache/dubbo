@@ -32,6 +32,8 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationPropertyValuesAdapter;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -72,6 +74,7 @@ public class ReferenceCreator {
     protected final ClassLoader classLoader;
 
     protected Class<?> defaultInterfaceClass;
+    private final ModuleModel moduleModel;
 
     private ReferenceCreator(Map<String, Object> attributes, ApplicationContext applicationContext) {
         Assert.notNull(attributes, "The Annotation attributes must not be null!");
@@ -80,11 +83,12 @@ public class ReferenceCreator {
         this.applicationContext = applicationContext;
         this.classLoader = applicationContext.getClassLoader() != null ?
                 applicationContext.getClassLoader() : Thread.currentThread().getContextClassLoader();
+        moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
     }
 
     public final ReferenceConfig build() throws Exception {
 
-        ReferenceConfig configBean = new ReferenceConfig();
+        ReferenceConfig configBean = new ReferenceConfig(moduleModel);
 
         configureBean(configBean);
 
