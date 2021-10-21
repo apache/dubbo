@@ -25,6 +25,7 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -76,13 +77,14 @@ public class DubboConfigBeanPostProcessor extends GenericBeanPostProcessorAdapte
         for (String beanName : beanNames) {
             BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
             String beanClassName = beanDefinition.getBeanClassName();
-            if (beanClassName.startsWith("org.apache.dubbo.config.")) {
+            if (beanClassName != null && beanClassName.startsWith("org.apache.dubbo.config.")) {
                 try {
                     Class<?> beanClass = ClassUtils.forName(beanClassName);
                     if (AbstractConfig.class.isAssignableFrom(beanClass)) {
-                        // add scopeModule constructor args to config bean
+                        // add scopeModule constructor args to config bean, the config bean must have a constructor with scope model arg
                         ConstructorArgumentValues constructorArgumentValues = new ConstructorArgumentValues();
-                        constructorArgumentValues.addGenericArgumentValue(isModuleConfig(beanClass) ? moduleModel : applicationModel);
+                        ScopeModel scopeModel = isModuleConfig(beanClass) ? moduleModel : applicationModel;
+                        constructorArgumentValues.addGenericArgumentValue(scopeModel, scopeModel.getClass().getName());
                         beanDefinition.getConstructorArgumentValues().addArgumentValues(constructorArgumentValues);
                     }
                 } catch (ClassNotFoundException e) {

@@ -17,6 +17,8 @@
 
 package com.alibaba.dubbo.config;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 @Deprecated
 public class ApplicationConfig extends org.apache.dubbo.config.ApplicationConfig {
 
@@ -26,5 +28,13 @@ public class ApplicationConfig extends org.apache.dubbo.config.ApplicationConfig
 
     public ApplicationConfig(String name) {
         super(name);
+    }
+
+    public ApplicationConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
+    public ApplicationConfig(ApplicationModel applicationModel, String name) {
+        super(applicationModel, name);
     }
 }

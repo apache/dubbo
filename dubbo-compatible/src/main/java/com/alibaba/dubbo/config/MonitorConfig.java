@@ -17,6 +17,8 @@
 
 package com.alibaba.dubbo.config;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 @Deprecated
 public class MonitorConfig extends org.apache.dubbo.config.MonitorConfig {
     public MonitorConfig() {
@@ -24,5 +26,13 @@ public class MonitorConfig extends org.apache.dubbo.config.MonitorConfig {
 
     public MonitorConfig(String address) {
         super(address);
+    }
+
+    public MonitorConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
+    public MonitorConfig(ApplicationModel applicationModel, String address) {
+        super(applicationModel, address);
     }
 }

@@ -17,7 +17,19 @@
 
 package com.alibaba.dubbo.config;
 
+import org.apache.dubbo.config.annotation.Method;
+import org.apache.dubbo.rpc.model.ModuleModel;
+
 @Deprecated
 public class MethodConfig extends org.apache.dubbo.config.MethodConfig {
+    public MethodConfig() {
+    }
 
+    public MethodConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
+    public MethodConfig(Method method) {
+        super(method);
+    }
 }

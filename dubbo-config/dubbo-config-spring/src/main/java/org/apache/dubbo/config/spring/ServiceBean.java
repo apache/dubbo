@@ -69,8 +69,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        ModuleModel moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
-        this.setScopeModel(moduleModel);
     }
 
     @Override

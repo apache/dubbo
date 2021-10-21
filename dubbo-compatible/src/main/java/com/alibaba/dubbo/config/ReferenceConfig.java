@@ -18,6 +18,7 @@
 package com.alibaba.dubbo.config;
 
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 @Deprecated
 public class ReferenceConfig<T> extends org.apache.dubbo.config.ReferenceConfig<T> {
@@ -25,9 +26,12 @@ public class ReferenceConfig<T> extends org.apache.dubbo.config.ReferenceConfig<
     public ReferenceConfig() {
     }
 
+    public ReferenceConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
     public ReferenceConfig(Reference reference) {
         super(reference);
     }
-
 
 }

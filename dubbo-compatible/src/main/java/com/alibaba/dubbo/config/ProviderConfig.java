@@ -17,6 +17,15 @@
 
 package com.alibaba.dubbo.config;
 
+import org.apache.dubbo.rpc.model.ModuleModel;
+
 @Deprecated
 public class ProviderConfig extends org.apache.dubbo.config.ProviderConfig {
+
+    public ProviderConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
+    public ProviderConfig() {
+    }
 }

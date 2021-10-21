@@ -17,6 +17,8 @@
 
 package com.alibaba.dubbo.config;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 @Deprecated
 public class ProtocolConfig extends org.apache.dubbo.config.ProtocolConfig {
 
@@ -29,5 +31,17 @@ public class ProtocolConfig extends org.apache.dubbo.config.ProtocolConfig {
 
     public ProtocolConfig(String name, int port) {
         super(name, port);
+    }
+
+    public ProtocolConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
+    public ProtocolConfig(ApplicationModel applicationModel, String name) {
+        super(applicationModel, name);
+    }
+
+    public ProtocolConfig(ApplicationModel applicationModel, String name, int port) {
+        super(applicationModel, name, port);
     }
 }

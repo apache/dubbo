@@ -18,6 +18,7 @@
 package com.alibaba.dubbo.config;
 
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 @Deprecated
 public class ServiceConfig<T> extends org.apache.dubbo.config.ServiceConfig<T> {
@@ -25,7 +26,12 @@ public class ServiceConfig<T> extends org.apache.dubbo.config.ServiceConfig<T> {
     public ServiceConfig() {
     }
 
+    public ServiceConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
     public ServiceConfig(Service service) {
         super(service);
     }
+
 }

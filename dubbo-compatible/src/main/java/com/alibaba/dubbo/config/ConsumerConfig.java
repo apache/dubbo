@@ -17,6 +17,15 @@
 
 package com.alibaba.dubbo.config;
 
+import org.apache.dubbo.rpc.model.ModuleModel;
+
 @Deprecated
 public class ConsumerConfig extends org.apache.dubbo.config.ConsumerConfig {
+
+    public ConsumerConfig() {
+    }
+
+    public ConsumerConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
 }

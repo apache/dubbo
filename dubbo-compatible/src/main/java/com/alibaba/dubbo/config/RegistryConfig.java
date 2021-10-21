@@ -17,6 +17,8 @@
 
 package com.alibaba.dubbo.config;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 @Deprecated
 public class RegistryConfig extends org.apache.dubbo.config.RegistryConfig {
 
@@ -29,5 +31,17 @@ public class RegistryConfig extends org.apache.dubbo.config.RegistryConfig {
 
     public RegistryConfig(String address, String protocol) {
         super(address, protocol);
+    }
+
+    public RegistryConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
+    public RegistryConfig(ApplicationModel applicationModel, String address) {
+        super(applicationModel, address);
+    }
+
+    public RegistryConfig(ApplicationModel applicationModel, String address, String protocol) {
+        super(applicationModel, address, protocol);
     }
 }
