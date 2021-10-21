@@ -179,7 +179,9 @@ public class DubboTestChecker implements TestExecutionListener {
 
     private void flushReportFile() {
         try {
-            reportWriter.flush();
+            if (reportWriter != null) {
+                reportWriter.flush();
+            }
             if (reportFileOut != null) {
                 reportFileOut.getFD().sync();
             }
