@@ -383,6 +383,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         Map<String, String> map = buildAttributes(protocolConfig);
 
+        // remove null key and null value
+        map.keySet().removeIf(key -> key == null || map.get(key) == null);
         //init serviceMetadata attachments
         serviceMetadata.getAttachments().putAll(map);
 
