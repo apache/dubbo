@@ -33,11 +33,13 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.triple.TripleWrapper;
 
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.AsciiString;
 
 import java.util.Arrays;
@@ -98,13 +100,22 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return stream;
     }
 
-    protected void startCall() {
-        try {
-            doOnStartCall();
-        } catch (Throwable throwable) {
-            cancel(throwable);
-            DefaultFuture2.getFuture(getRequestId()).cancel();
-        }
+    protected void startCall(Http2StreamChannel channel, ChannelPromise promise) {
+        execute(() -> {
+            channel.pipeline()
+                .addLast(new TripleHttp2ClientResponseHandler())
+                .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
+                .addLast(new TripleClientInboundHandler());
+            channel.attr(TripleConstant.CLIENT_STREAM_KEY).set(this);
+            final ClientTransportObserver clientTransportObserver = new ClientTransportObserver(channel, promise);
+            subscribe(clientTransportObserver);
+            try {
+                doOnStartCall();
+            } catch (Throwable throwable) {
+                cancel(throwable);
+                DefaultFuture2.getFuture(getRequestId()).cancel();
+            }
+        });
     }
 
     protected abstract void doOnStartCall();
