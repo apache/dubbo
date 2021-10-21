@@ -21,6 +21,7 @@ import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -115,6 +116,15 @@ public class MetadataReportConfig extends AbstractConfig {
     }
 
     public MetadataReportConfig(String address) {
+        setAddress(address);
+    }
+
+    public MetadataReportConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
+    public MetadataReportConfig(ApplicationModel applicationModel, String address) {
+        super(applicationModel);
         setAddress(address);
     }
 

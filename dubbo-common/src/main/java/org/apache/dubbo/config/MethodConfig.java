@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,6 +136,10 @@ public class MethodConfig extends AbstractMethodConfig {
 
 
     public MethodConfig() {
+    }
+
+    public MethodConfig(ModuleModel moduleModel) {
+        super(moduleModel);
     }
 
     /**

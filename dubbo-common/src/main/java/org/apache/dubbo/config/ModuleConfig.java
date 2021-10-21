@@ -101,6 +101,15 @@ public class ModuleConfig extends AbstractConfig {
         setName(name);
     }
 
+    public ModuleConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
+    public ModuleConfig(ModuleModel moduleModel, String name) {
+        super(moduleModel);
+        setName(name);
+    }
+
     @Override
     protected void checkDefault() {
         super.checkDefault();

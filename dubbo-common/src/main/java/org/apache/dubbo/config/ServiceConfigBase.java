@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -82,6 +83,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
 
     public ServiceConfigBase() {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+    }
+
+    public ServiceConfigBase(ModuleModel moduleModel) {
+        super(moduleModel);
         serviceMetadata = new ServiceMetadata();
         serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
     }
@@ -453,14 +460,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     /**
-     * export service and auto start application instance
+     * Export service to registry.
+     * For old api usage scenario, auto start module.
      */
     public abstract void export();
-
-    /**
-     * export service only, do not register application instance, for exporting services in batches by module
-     */
-    public abstract void exportOnly();
 
     public abstract void unexport();
 

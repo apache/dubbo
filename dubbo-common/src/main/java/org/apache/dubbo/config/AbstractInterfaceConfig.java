@@ -30,6 +30,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
@@ -193,6 +194,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * The url of the reference service
      */
     protected final List<URL> urls = new ArrayList<URL>();
+
+    public AbstractInterfaceConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
+    public AbstractInterfaceConfig() {
+    }
 
     public List<URL> getExportedUrls() {
         return urls;

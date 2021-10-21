@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -112,6 +113,10 @@ public class ConfigCenterConfig extends AbstractConfig {
     private Map<String, String> appExternalConfiguration;
 
     public ConfigCenterConfig() {
+    }
+
+    public ConfigCenterConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
     }
 
     @Override

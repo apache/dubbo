@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 
@@ -191,6 +192,21 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     public RegistryConfig(String address, String protocol) {
+        setAddress(address);
+        setProtocol(protocol);
+    }
+
+    public RegistryConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
+    public RegistryConfig(ApplicationModel applicationModel, String address) {
+        super(applicationModel);
+        setAddress(address);
+    }
+
+    public RegistryConfig(ApplicationModel applicationModel, String address, String protocol) {
+        super(applicationModel);
         setAddress(address);
         setProtocol(protocol);
     }
