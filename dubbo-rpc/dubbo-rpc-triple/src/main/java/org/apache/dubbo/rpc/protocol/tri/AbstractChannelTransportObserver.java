@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http2.Http2Error;
-
 public abstract class AbstractChannelTransportObserver implements TransportObserver {
 
     protected final TransportState state = new TransportState();
@@ -42,9 +40,9 @@ public abstract class AbstractChannelTransportObserver implements TransportObser
     }
 
     @Override
-    public void onReset(Http2Error http2Error) {
+    public void onCancel(GrpcStatus status) {
         state.setResetSend();
-        doOnReset(http2Error);
+        doOnCancel(status);
     }
 
     @Override
@@ -58,7 +56,7 @@ public abstract class AbstractChannelTransportObserver implements TransportObser
 
     protected abstract void doOnData(byte[] data, boolean endStream);
 
-    protected abstract void doOnReset(Http2Error http2Error);
+    protected abstract void doOnCancel(GrpcStatus status);
 
     protected abstract void doOnComplete();
 

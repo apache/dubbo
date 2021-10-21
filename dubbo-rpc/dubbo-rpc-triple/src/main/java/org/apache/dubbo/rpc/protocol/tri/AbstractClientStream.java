@@ -70,7 +70,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                     + getConsumerModel().getServiceName() + "#" + getMethodName() +
                     " was canceled by local exception ", throwable);
             }
-            this.asTransportObserver().onReset(getHttp2Error(throwable));
+            this.asTransportObserver().onCancel(getHttp2Error(throwable));
         });
     }
 
@@ -243,9 +243,8 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         }
     }
 
-    private Http2Error getHttp2Error(Throwable throwable) {
-        // todo Convert the exception to http2Error
-        return Http2Error.CANCEL;
+    private GrpcStatus getHttp2Error(Throwable throwable) {
+        return GrpcStatus.getStatus(throwable);
     }
 
     public ConsumerModel getConsumerModel() {

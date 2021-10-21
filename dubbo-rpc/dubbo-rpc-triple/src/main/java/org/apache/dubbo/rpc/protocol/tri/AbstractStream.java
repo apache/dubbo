@@ -420,10 +420,10 @@ public abstract class AbstractStream implements Stream {
         }
 
         @Override
-        public void onReset(Http2Error http2Error) {
+        public void onCancel(GrpcStatus status) {
             if (getState().allowSendReset()) {
                 getState().setResetSend();
-                getTransportSubscriber().onReset(http2Error);
+                getTransportSubscriber().onCancel(status);
             }
         }
 
@@ -437,20 +437,21 @@ public abstract class AbstractStream implements Stream {
         }
 
         protected GrpcStatus extractStatusFromMeta(Metadata metadata) {
-            if (metadata.contains(TripleHeaderEnum.STATUS_KEY.getHeader())) {
-                final int code = Integer.parseInt(metadata.get(TripleHeaderEnum.STATUS_KEY.getHeader()).toString());
-
-                if (!GrpcStatus.Code.isOk(code)) {
-                    GrpcStatus status = GrpcStatus.fromCode(code);
-                    if (metadata.contains(TripleHeaderEnum.MESSAGE_KEY.getHeader())) {
-                        final String raw = metadata.get(TripleHeaderEnum.MESSAGE_KEY.getHeader()).toString();
-                        status = status.withDescription(GrpcStatus.fromMessage(raw));
-                    }
-                    return status;
-                }
+            if (!metadata.contains(TripleHeaderEnum.STATUS_KEY.getHeader())) {
                 return GrpcStatus.fromCode(Code.OK);
             }
-            return GrpcStatus.fromCode(Code.OK);
+            final int code = Integer.parseInt(metadata.get(TripleHeaderEnum.STATUS_KEY.getHeader()).toString());
+
+            if (Code.isOk(code)) {
+                return GrpcStatus.fromCode(Code.OK);
+            }
+            GrpcStatus status = GrpcStatus.fromCode(code);
+            if (!metadata.contains(TripleHeaderEnum.MESSAGE_KEY.getHeader())) {
+                return status;
+            }
+            final String raw = metadata.get(TripleHeaderEnum.MESSAGE_KEY.getHeader()).toString();
+            status = status.withDescription(GrpcStatus.fromMessage(raw));
+            return status;
         }
 
     }

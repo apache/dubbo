@@ -17,16 +17,38 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http2.Http2Error;
-
+/**
+ * An observer used for transport messaging which provides full streaming support.
+ * A TransportObserver receives raw data or control messages from local/remote.
+ */
 public interface TransportObserver {
 
+    /**
+     * Transport metadata
+     *
+     * @param metadata  metadata KV paris
+     * @param endStream whether this data should terminate the stream
+     */
     void onMetadata(Metadata metadata, boolean endStream);
 
+    /**
+     * Transport data
+     *
+     * @param data      raw byte array
+     * @param endStream whether this data should terminate the stream
+     */
     void onData(byte[] data, boolean endStream);
 
-    void onReset(Http2Error http2Error);
+    /**
+     * Reset virtual connection/stream
+     *
+     * @param status cancel status
+     */
+    void onCancel(GrpcStatus status);
 
+    /**
+     * Set stream completed
+     */
     void onComplete();
 
 }

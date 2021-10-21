@@ -68,8 +68,8 @@ public class ClientTransportObserver extends AbstractChannelTransportObserver {
     }
 
     @Override
-    protected void doOnReset(Http2Error http2Error) {
-        streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
+    protected void doOnCancel(GrpcStatus status) {
+        streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.CANCEL))
             .addListener(future -> {
                 if (future.isSuccess()) {
                     promise.trySuccess();

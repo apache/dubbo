@@ -81,8 +81,8 @@ public class ServerTransportObserver extends AbstractChannelTransportObserver {
     }
 
     @Override
-    protected void doOnReset(Http2Error http2Error) {
-        ctx.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
+    protected void doOnCancel(GrpcStatus status) {
+        ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.CANCEL))
             .addListener(future -> {
                 if (!future.isSuccess()) {
                     LOGGER.warn("write reset error", future.cause());
