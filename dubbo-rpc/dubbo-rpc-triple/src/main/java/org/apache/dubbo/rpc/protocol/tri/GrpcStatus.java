@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.RpcException;
 
@@ -38,8 +39,8 @@ import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code.UNAVAILABLE;
 
 public class GrpcStatus {
     public final Code code;
-    public final Throwable cause;
-    public final String description;
+    public Throwable cause;
+    public String description;
 
     public GrpcStatus(Code code, Throwable cause, String description) {
         this.code = code;
@@ -53,6 +54,10 @@ public class GrpcStatus {
 
     public static GrpcStatus fromCode(Code code) {
         return new GrpcStatus(code, null, null);
+    }
+
+    public static GrpcStatus fromCodeWithDescription(Code code, String description) {
+        return new GrpcStatus(code, null, description);
     }
 
     public static byte toDubboStatus(Code code) {
@@ -90,7 +95,26 @@ public class GrpcStatus {
         return status;
     }
 
-    public static GrpcStatus rpcExceptionCodeToGrpc(int rpcExceptionCode) {
+    /**
+     * todo The remaining exceptions are converted to status
+     */
+    public static GrpcStatus getStatus(Throwable throwable) {
+        return getStatus(throwable, null);
+    }
+
+    public static GrpcStatus getStatus(Throwable throwable, String description) {
+        if (throwable instanceof RpcException) {
+            RpcException rpcException = (RpcException) throwable;
+            Code code = rpcExceptionCodeToGrpcCode(rpcException.getCode());
+            return new GrpcStatus(code, throwable, description);
+        }
+        if (throwable instanceof TimeoutException) {
+            return new GrpcStatus(GrpcStatus.Code.DEADLINE_EXCEEDED, throwable, description);
+        }
+        return new GrpcStatus(Code.UNKNOWN, throwable, description);
+    }
+
+    public static Code rpcExceptionCodeToGrpcCode(int rpcExceptionCode) {
         Code code;
         switch (rpcExceptionCode) {
             case TIMEOUT_EXCEPTION:
@@ -114,7 +138,7 @@ public class GrpcStatus {
                 code = Code.UNKNOWN;
                 break;
         }
-        return fromCode(code);
+        return code;
     }
 
     public static String limitSizeTo4KB(String desc) {
@@ -133,11 +157,13 @@ public class GrpcStatus {
     }
 
     public GrpcStatus withCause(Throwable cause) {
-        return new GrpcStatus(this.code, cause, this.description);
+        this.cause = cause;
+        return this;
     }
 
     public GrpcStatus withDescription(String description) {
-        return new GrpcStatus(this.code, this.cause, description);
+        this.description = description;
+        return this;
     }
 
     public RpcException asException() {

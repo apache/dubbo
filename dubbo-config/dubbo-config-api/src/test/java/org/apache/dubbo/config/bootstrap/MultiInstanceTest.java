@@ -608,7 +608,7 @@ public class MultiInstanceTest {
                 .service(serviceConfig1)
                 .endModule();
 
-            // 1. start module1
+            // 1. start module1 and wait
             ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
             moduleDeployer1.start().get();
             Assertions.assertEquals(DeployState.STARTED, moduleDeployer1.getState());
@@ -657,7 +657,7 @@ public class MultiInstanceTest {
 
 
     @Test
-    public void testBothStartByModuleAndByApplication2() throws Exception {
+    public void testBothStartModuleAndApplicationNoWait() throws Exception {
         String version1 = "1.0";
         String version2 = "2.0";
         String version3 = "3.0";
@@ -688,12 +688,13 @@ public class MultiInstanceTest {
                 .service(serviceConfig1)
                 .endModule();
 
+            ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
+
             // 1. start module1 but no wait
             ModuleDeployer moduleDeployer1 = serviceConfig1.getScopeModel().getDeployer();
             moduleDeployer1.start();
-            Assertions.assertEquals(DeployState.STARTING, moduleDeployer1.getState());
+            Assertions.assertTrue(moduleDeployer1.isRunning());
 
-            ApplicationModel applicationModel = providerBootstrap.getApplicationModel();
             ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
             Assertions.assertEquals(DeployState.STARTING, applicationDeployer.getState());
             ModuleModel defaultModule = applicationModel.getDefaultModule();
