@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Model of a service module
@@ -35,7 +34,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ModuleModel extends ScopeModel {
     private static final Logger logger = LoggerFactory.getLogger(ModuleModel.class);
 
-    private static final AtomicLong index = new AtomicLong(0);
     public static final String NAME = "ModuleModel";
 
     private final ApplicationModel applicationModel;
@@ -54,7 +52,9 @@ public class ModuleModel extends ScopeModel {
         this.applicationModel = applicationModel;
         applicationModel.addModule(this, isInternal);
         initialize();
-        Assert.notNull(applicationModel, "ApplicationModel can not be null");
+        Assert.notNull(serviceRepository, "ModuleServiceRepository can not be null");
+        Assert.notNull(moduleConfigManager, "ModuleConfigManager can not be null");
+        Assert.assertTrue(moduleConfigManager.isInitialized(), "ModuleConfigManager can not be initialized");
     }
 
     @Override
@@ -150,21 +150,5 @@ public class ModuleModel extends ScopeModel {
     @Deprecated
     public void setModuleEnvironment(ModuleEnvironment moduleEnvironment) {
         this.moduleEnvironment = moduleEnvironment;
-    }
-
-    /**
-     * for ut only
-     */
-    @Deprecated
-    public void setServiceRepository(ModuleServiceRepository serviceRepository) {
-        this.serviceRepository = serviceRepository;
-    }
-
-    /**
-     * for ut only
-     */
-    @Deprecated
-    public void setModuleConfigManager(ModuleConfigManager moduleConfigManager) {
-        this.moduleConfigManager = moduleConfigManager;
     }
 }

@@ -25,7 +25,9 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -48,10 +50,10 @@ public class MethodDescriptor {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodDescriptor.class);
     private final Method method;
-    //    private final boolean isCallBack;
-    //    private final boolean isFuture;
     private final String paramDesc;
-    // duplicate filed as paramDesc, but with different format.
+    /**
+     * duplicate filed as paramDesc, but with different format.
+     */
     private final String[] compatibleParamSignatures;
     private final Class<?>[] parameterClasses;
     private final Class<?> returnClass;
@@ -62,8 +64,10 @@ public class MethodDescriptor {
     private final RpcType rpcType;
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
-    // only for tri protocol
-    // support StreamObserver ...
+    /**
+     * only for tri protocol
+     * support StreamObserver
+     */
     private final Class<?>[] realParameterClasses;
     private final Class<?> realReturnClass;
 
@@ -116,6 +120,10 @@ public class MethodDescriptor {
 
     public boolean isStream() {
         return rpcType.equals(RpcType.SERVER_STREAM) || rpcType.equals(RpcType.BIDIRECTIONAL_STREAM) || rpcType.equals(RpcType.CLIENT_STREAM);
+    }
+
+    public boolean isServerStream() {
+        return RpcType.SERVER_STREAM.equals(rpcType);
     }
 
     public boolean isUnary() {
@@ -339,4 +347,37 @@ public class MethodDescriptor {
         UNARY, SERVER_STREAM, CLIENT_STREAM, BIDIRECTIONAL_STREAM
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        MethodDescriptor that = (MethodDescriptor) o;
+        return generic == that.generic
+            && wrap == that.wrap
+            && rpcType == that.rpcType
+            && Objects.equals(method, that.method)
+            && Objects.equals(paramDesc, that.paramDesc)
+            && Arrays.equals(compatibleParamSignatures, that.compatibleParamSignatures)
+            && Arrays.equals(parameterClasses, that.parameterClasses)
+            && Objects.equals(returnClass, that.returnClass)
+            && Arrays.equals(returnTypes, that.returnTypes)
+            && Objects.equals(methodName, that.methodName)
+            && Objects.equals(attributeMap, that.attributeMap)
+            && Arrays.equals(realParameterClasses, that.realParameterClasses)
+            && Objects.equals(realReturnClass, that.realReturnClass);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(method, paramDesc, returnClass, methodName, generic, wrap, rpcType, attributeMap, realReturnClass);
+        result = 31 * result + Arrays.hashCode(compatibleParamSignatures);
+        result = 31 * result + Arrays.hashCode(parameterClasses);
+        result = 31 * result + Arrays.hashCode(returnTypes);
+        result = 31 * result + Arrays.hashCode(realParameterClasses);
+        return result;
+    }
 }

@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.exchange.support.header.HeaderExchangeHandler;
 
 import org.junit.jupiter.api.Assertions;
@@ -32,51 +33,52 @@ import org.junit.jupiter.api.Test;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
 
 //TODO response test
 public class HeaderExchangeHandlerTest {
 
     @Test
-    public void test_received_request_oneway() throws RemotingException {
-        final Channel mchannel = new MockedChannel();
+    public void testReceivedRequestOneway() throws RemotingException {
+        final Channel mockChannel = new MockedChannel();
 
-        final Person requestdata = new Person("charles");
+        final Person requestData = new Person("charles");
         Request request = new Request();
         request.setTwoWay(false);
-        request.setData(requestdata);
+        request.setData(requestData);
 
-        ExchangeHandler exhandler = new MockedExchangeHandler() {
+        ExchangeHandler exHandler = new MockedExchangeHandler() {
             @Override
             public void received(Channel channel, Object message) throws RemotingException {
-                Assertions.assertEquals(requestdata, message);
+                Assertions.assertEquals(requestData, message);
             }
         };
-        HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(exhandler);
-        hexhandler.received(mchannel, request);
+        HeaderExchangeHandler headExHandler = new HeaderExchangeHandler(exHandler);
+        headExHandler.received(mockChannel, request);
     }
 
     @Test
-    public void test_received_request_twoway() throws RemotingException {
-        final Person requestdata = new Person("charles");
+    public void testReceivedRequestTwoway() throws RemotingException {
+        final Person requestData = new Person("charles");
         final Request request = new Request();
         request.setTwoWay(true);
-        request.setData(requestdata);
+        request.setData(requestData);
 
         final AtomicInteger count = new AtomicInteger(0);
-        final Channel mchannel = new MockedChannel() {
+        final Channel mockChannel = new MockedChannel() {
             @Override
             public void send(Object message) throws RemotingException {
                 Response res = (Response) message;
                 Assertions.assertEquals(request.getId(), res.getId());
                 Assertions.assertEquals(request.getVersion(), res.getVersion());
                 Assertions.assertEquals(Response.OK, res.getStatus());
-                Assertions.assertEquals(requestdata, res.getResult());
+                Assertions.assertEquals(requestData, res.getResult());
                 Assertions.assertNull(res.getErrorMessage());
                 count.incrementAndGet();
             }
         };
-        ExchangeHandler exhandler = new MockedExchangeHandler() {
+        ExchangeHandler exHandler = new MockedExchangeHandler() {
             @Override
             public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
                 return CompletableFuture.completedFuture(request);
@@ -87,25 +89,25 @@ public class HeaderExchangeHandlerTest {
                 Assertions.fail();
             }
         };
-        HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(exhandler);
-        hexhandler.received(mchannel, request);
+        HeaderExchangeHandler headerExchangeHandler = new HeaderExchangeHandler(exHandler);
+        headerExchangeHandler.received(mockChannel, request);
         Assertions.assertEquals(1, count.get());
     }
 
     @Test
-    public void test_received_request_twoway_error_nullhandler() throws RemotingException {
+    public void testReceivedRequestTwowayErrorWithNullHandler() throws RemotingException {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new HeaderExchangeHandler(null));
     }
 
     @Test
-    public void test_received_request_twoway_error_reply() throws RemotingException {
-        final Person requestdata = new Person("charles");
+    public void testReceivedRequestTwowayErrorReply() throws RemotingException {
+        final Person requestData = new Person("charles");
         final Request request = new Request();
         request.setTwoWay(true);
-        request.setData(requestdata);
+        request.setData(requestData);
 
         final AtomicInteger count = new AtomicInteger(0);
-        final Channel mchannel = new MockedChannel() {
+        final Channel mockChannel = new MockedChannel() {
             @Override
             public void send(Object message) throws RemotingException {
                 Response res = (Response) message;
@@ -117,26 +119,26 @@ public class HeaderExchangeHandlerTest {
                 count.incrementAndGet();
             }
         };
-        ExchangeHandler exhandler = new MockedExchangeHandler() {
+        ExchangeHandler exHandler = new MockedExchangeHandler() {
             @Override
             public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
                 throw new BizException();
             }
         };
-        HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(exhandler);
-        hexhandler.received(mchannel, request);
+        HeaderExchangeHandler headerExchangeHandler = new HeaderExchangeHandler(exHandler);
+        headerExchangeHandler.received(mockChannel, request);
         Assertions.assertEquals(1, count.get());
     }
 
     @Test
-    public void test_received_request_twoway_error_reqeustBroken() throws RemotingException {
+    public void testReceivedRequestTwowayErrorRequestBroken() throws RemotingException {
         final Request request = new Request();
         request.setTwoWay(true);
         request.setData(new BizException());
         request.setBroken(true);
 
         final AtomicInteger count = new AtomicInteger(0);
-        final Channel mchannel = new MockedChannel() {
+        final Channel mockChannel = new MockedChannel() {
             @Override
             public void send(Object message) throws RemotingException {
                 Response res = (Response) message;
@@ -148,36 +150,36 @@ public class HeaderExchangeHandlerTest {
                 count.incrementAndGet();
             }
         };
-        HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler());
-        hexhandler.received(mchannel, request);
+        HeaderExchangeHandler headerExchangeHandler = new HeaderExchangeHandler(new MockedExchangeHandler());
+        headerExchangeHandler.received(mockChannel, request);
         Assertions.assertEquals(1, count.get());
     }
 
     @Test
-    public void test_received_request_event_readonly() throws RemotingException {
+    public void testReceivedRequestEventReadonly() throws RemotingException {
         final Request request = new Request();
         request.setTwoWay(true);
         request.setEvent(READONLY_EVENT);
 
-        final Channel mchannel = new MockedChannel();
-        HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler());
-        hexhandler.received(mchannel, request);
-        Assertions.assertTrue(mchannel.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY));
+        final Channel mockChannel = new MockedChannel();
+        HeaderExchangeHandler headerExchangeHandler = new HeaderExchangeHandler(new MockedExchangeHandler());
+        headerExchangeHandler.received(mockChannel, request);
+        Assertions.assertTrue(mockChannel.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY));
     }
 
     @Test
-    public void test_received_request_event_other_discard() throws RemotingException {
+    public void testReceivedRequestEventOtherDiscard() throws RemotingException {
         final Request request = new Request();
         request.setTwoWay(true);
         request.setEvent("my event");
 
-        final Channel mchannel = new MockedChannel() {
+        final Channel mockChannel = new MockedChannel() {
             @Override
             public void send(Object message) throws RemotingException {
                 Assertions.fail();
             }
         };
-        HeaderExchangeHandler hexhandler = new HeaderExchangeHandler(new MockedExchangeHandler() {
+        HeaderExchangeHandler headerExchangeHandler = new HeaderExchangeHandler(new MockedExchangeHandler() {
 
             @Override
             public CompletableFuture<Object> reply(ExchangeChannel channel, Object request) throws RemotingException {
@@ -191,7 +193,35 @@ public class HeaderExchangeHandlerTest {
                 throw new RemotingException(channel, "");
             }
         });
-        hexhandler.received(mchannel, request);
+        headerExchangeHandler.received(mockChannel, request);
+    }
+
+    @Test
+    public void testReceivedResponseHeartbeatEvent() throws Exception {
+        Channel mockChannel = new MockedChannel();
+        HeaderExchangeHandler headerExchangeHandler = new HeaderExchangeHandler(new MockedExchangeHandler());
+        Response response = new Response(1);
+        response.setStatus(Response.OK);
+        response.setEvent(true);
+        response.setResult(HEARTBEAT_EVENT);
+        headerExchangeHandler.received(mockChannel, response);
+    }
+
+    @Test
+    public void testReceivedResponse() throws Exception {
+        Request request = new Request(1);
+        request.setTwoWay(true);
+        Channel mockChannel = new MockedChannel();
+        DefaultFuture future = DefaultFuture.newFuture(mockChannel, request, 5000, null);
+
+        HeaderExchangeHandler headerExchangeHandler = new HeaderExchangeHandler(new MockedExchangeHandler());
+        Response response = new Response(1);
+        response.setStatus(Response.OK);
+        response.setResult("MOCK_DATA");
+        headerExchangeHandler.received(mockChannel, response);
+
+        Object result = future.get();
+        Assertions.assertEquals(result.toString(),"MOCK_DATA");
     }
 
     private class BizException extends RuntimeException {
