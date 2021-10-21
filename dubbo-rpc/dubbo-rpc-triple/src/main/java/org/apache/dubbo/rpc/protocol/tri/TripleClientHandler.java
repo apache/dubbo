@@ -27,9 +27,15 @@ import io.netty.util.ReferenceCountUtil;
 public class TripleClientHandler extends ChannelDuplexHandler {
 
     private final FrameworkModel frameworkModel;
+    private KeepAliveManager keepAliveManager;
 
     public TripleClientHandler(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
+    }
+
+    public TripleClientHandler(FrameworkModel frameworkModel, KeepAliveManager keepAliveManager) {
+        this.frameworkModel = frameworkModel;
+        this.keepAliveManager = keepAliveManager;
     }
 
     @Override

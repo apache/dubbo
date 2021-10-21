@@ -73,7 +73,10 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
                 .frameLogger(SERVER_LOGGER)
                 .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleServerInitializer(frameworkModel));
-        pipeline.addLast(codec, new TripleServerConnectionHandler(), new HealthCheckHandler(url), handler);
+
+        final KeepAliveManager keepAliveManager = new KeepAliveManager(pipeline.channel().eventLoop().next(), url, pipeline.firstContext());
+        final TripleServerConnectionHandler connectionHandler = new TripleServerConnectionHandler(keepAliveManager);
+        pipeline.addLast(codec, connectionHandler, handler);
     }
 
     @Override
@@ -90,7 +93,11 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
                         .maxHeaderListSize(config.getInt(H2_SETTINGS_MAX_HEADER_LIST_SIZE_KEY, 8192)))
                 .frameLogger(CLIENT_LOGGER)
                 .build();
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleClientHandler(frameworkModel));
+
+        final KeepAliveManager keepAliveManager = new KeepAliveManager(pipeline.channel().eventLoop().next(), url, pipeline.firstContext());
+        final TripleClientHandler connectionHandler = new TripleClientHandler(frameworkModel, keepAliveManager);
+
+        final Http2MultiplexHandler handler = new Http2MultiplexHandler(connectionHandler);
         pipeline.addLast(codec, handler, new HealthCheckHandler(url), new TripleClientRequestHandler(frameworkModel));
     }
 }

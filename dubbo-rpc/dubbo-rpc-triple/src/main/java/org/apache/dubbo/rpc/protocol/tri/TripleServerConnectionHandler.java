@@ -31,6 +31,14 @@ import static org.apache.dubbo.rpc.protocol.tri.GracefulShutdown.GRACEFUL_SHUTDO
 public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(TripleServerConnectionHandler.class);
     private GracefulShutdown gracefulShutdown;
+    private KeepAliveManager keepAliveManager;
+
+    public TripleServerConnectionHandler() {
+    }
+
+    public TripleServerConnectionHandler(KeepAliveManager keepAliveManager) {
+        this.keepAliveManager = keepAliveManager;
+    }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
