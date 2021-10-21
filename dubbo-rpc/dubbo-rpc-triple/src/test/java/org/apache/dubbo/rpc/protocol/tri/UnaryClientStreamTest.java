@@ -36,7 +36,7 @@ class UnaryClientStreamTest {
     public void testInit() {
         URL url = new ServiceConfigURL("test", "1.2.3.4", 8080);
         final UnaryClientStream stream = UnaryClientStream.unary(url);
-        final StreamObserver<Object> observer = stream.asStreamObserver();
+        final StreamObserver<Object> observer = stream.inboundMessageObserver();
         RpcInvocation inv = Mockito.mock(RpcInvocation.class);
         when(inv.getModuleModel()).thenReturn(ApplicationModel.defaultModel().getDefaultModule());
         // no invoker

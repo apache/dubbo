@@ -45,7 +45,7 @@ public abstract class AbstractStream implements Stream {
 
     private final URL url;
     private final MultipleSerialization multipleSerialization;
-    private final StreamObserver<Object> streamObserver;
+    private final StreamObserver<Object> inboundMessageObserver;
     private final InboundTransportObserver inboundTransportObserver;
     private final Executor executor;
     private final CancellationContext cancellationContext;
@@ -56,8 +56,8 @@ public abstract class AbstractStream implements Stream {
     private MethodDescriptor methodDescriptor;
     private String methodName;
     private String serializeType;
-    private StreamObserver<Object> streamSubscriber;
-    private OutboundTransportObserver transportSubscriber;
+    private StreamObserver<Object> outboundMessageSubscriber;
+    private OutboundTransportObserver outboundTransportObserver;
     private Compressor compressor = IdentityCompressor.NONE;
     private Compressor deCompressor = IdentityCompressor.NONE;
     private volatile boolean cancelled = false;
@@ -75,7 +75,7 @@ public abstract class AbstractStream implements Stream {
             .getExtension(value);
         this.cancellationContext = new CancellationContext();
         this.inboundTransportObserver = createInboundTransportObserver();
-        this.streamObserver = createStreamObserver();
+        this.inboundMessageObserver = createStreamObserver();
         this.acceptEncoding = Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel());
     }
 
@@ -103,7 +103,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     public TransportState getState() {
-        return transportSubscriber.state;
+        return outboundTransportObserver.state;
     }
 
     public boolean isCancelled() {
@@ -189,12 +189,12 @@ public abstract class AbstractStream implements Stream {
         return multipleSerialization;
     }
 
-    public StreamObserver<Object> getStreamSubscriber() {
-        return streamSubscriber;
+    public StreamObserver<Object> getOutboundMessageSubscriber() {
+        return outboundMessageSubscriber;
     }
 
-    public TransportObserver getTransportSubscriber() {
-        return transportSubscriber;
+    public TransportObserver getOutboundTransportObserver() {
+        return outboundTransportObserver;
     }
 
     public MethodDescriptor getMethodDescriptor() {
@@ -249,22 +249,21 @@ public abstract class AbstractStream implements Stream {
     }
 
     @Override
-    public void subscribe(StreamObserver<Object> observer) {
-        this.streamSubscriber = observer;
+    public void subscribe(StreamObserver<Object> outboundMessageObserver) {
+        this.outboundMessageSubscriber = outboundMessageObserver;
     }
 
     @Override
     public void subscribe(OutboundTransportObserver observer) {
-        this.transportSubscriber = observer;
+        this.outboundTransportObserver = observer;
+    }
+
+    public StreamObserver<Object> inboundMessageObserver() {
+        return inboundMessageObserver;
     }
 
     @Override
-    public StreamObserver<Object> asStreamObserver() {
-        return streamObserver;
-    }
-
-    @Override
-    public TransportObserver asTransportObserver() {
+    public TransportObserver inboundTransportObserver() {
         return inboundTransportObserver;
     }
 
@@ -273,14 +272,14 @@ public abstract class AbstractStream implements Stream {
         if (!onlyTrailers) {
             // set metadata
             Metadata metadata = new DefaultMetadata();
-            getTransportSubscriber().onMetadata(metadata, false);
+            getOutboundTransportObserver().onMetadata(metadata, false);
         }
         // set trailers
         Metadata trailers = getTrailers(status);
         if (attachments != null) {
             convertAttachment(trailers, attachments);
         }
-        getTransportSubscriber().onMetadata(trailers, true);
+        getOutboundTransportObserver().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Error] status=" + status.code.code
                 + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);

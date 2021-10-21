@@ -38,8 +38,8 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
     @Override
     protected void doOnStartCall() {
-        asStreamObserver().onNext(getRpcInvocation());
-        asStreamObserver().onCompleted();
+        inboundMessageObserver().onNext(getRpcInvocation());
+        inboundMessageObserver().onCompleted();
     }
 
     @Override

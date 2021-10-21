@@ -22,9 +22,9 @@ import org.apache.dubbo.common.stream.StreamObserver;
 
 /**
  * Stream acts as a bi-directional intermediate layer for streaming data processing. It serializes object instance to
- * byte[] then send to remote, and deserializes byte[] to object instance from remote. {@link #asTransportObserver()}
+ * byte[] then send to remote, and deserializes byte[] to object instance from remote. {@link #inboundTransportObserver()}
  * and {@link #subscribe(OutboundTransportObserver)} provide {@link TransportObserver} to send or receive remote data.
- * {@link #asStreamObserver()} and {@link #subscribe(StreamObserver)} provide {@link StreamObserver}
+ * {@link #inboundMessageObserver()} and {@link #subscribe(StreamObserver)} provide {@link StreamObserver}
  * as API for users fetching/emitting objects from/to remote peer.
  */
 public interface Stream {
@@ -43,21 +43,21 @@ public interface Stream {
      *
      * @return an observer for writing byte[] to remote peer
      */
-    TransportObserver asTransportObserver();
+    TransportObserver inboundTransportObserver();
 
     /**
      * Register an upstream data observer to receive byte[] sent by this stream
      *
-     * @param observer receives remote byte[] data
+     * @param outboundMessageObserver receives remote byte[] data
      */
-    void subscribe(StreamObserver<Object> observer);
+    void subscribe(StreamObserver<Object> outboundMessageObserver);
 
     /**
      * Get a downstream data observer for transmitting instances to application code
      *
      * @return an observer for writing byte[] to remote peer
      */
-    StreamObserver<Object> asStreamObserver();
+    StreamObserver<Object> inboundMessageObserver();
 
     /**
      * Execute a task in stream's executor

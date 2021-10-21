@@ -70,7 +70,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                     + getConsumerModel().getServiceName() + "#" + getMethodName() +
                     " was canceled by local exception ", throwable);
             }
-            this.asTransportObserver().onCancel(getHttp2Error(throwable));
+            this.inboundTransportObserver().onCancel(getHttp2Error(throwable));
         });
     }
 
@@ -135,11 +135,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         public void onNext(Object data) {
             if (getState().allowSendMeta()) {
                 final Metadata metadata = createRequestMeta(getRpcInvocation());
-                getTransportSubscriber().onMetadata(metadata, false);
+                getOutboundTransportObserver().onMetadata(metadata, false);
             }
             if (getState().allowSendData()) {
                 final byte[] bytes = encodeRequest(data);
-                getTransportSubscriber().onData(bytes, false);
+                getOutboundTransportObserver().onData(bytes, false);
             }
         }
 
@@ -165,7 +165,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         @Override
         public void onCompleted() {
             if (getState().allowSendEndStream()) {
-                getTransportSubscriber().onComplete();
+                getOutboundTransportObserver().onComplete();
             }
         }
 
@@ -197,11 +197,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             super.execute(runnable);
         } catch (RejectedExecutionException e) {
             LOGGER.error("Consumer's thread pool is full", e);
-            getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
+            getOutboundMessageSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
                 .withDescription("Consumer's thread pool is full").asException());
         } catch (Throwable t) {
             LOGGER.error("Consumer submit request to thread pool error ", t);
-            getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+            getOutboundMessageSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withCause(t)
                 .withDescription("Consumer's error")
                 .asException());

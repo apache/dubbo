@@ -85,7 +85,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
                 }
             }
         }
-        final TransportObserver observer = clientStream.asTransportObserver();
+        final TransportObserver observer = clientStream.inboundTransportObserver();
         observer.onMetadata(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {
             observer.onComplete();
@@ -101,7 +101,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(status.code.code));
         metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
         logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code, cause);
-        clientStream.asStreamObserver().onError(status.asException());
+        clientStream.inboundMessageObserver().onError(status.asException());
         ctx.close();
     }
 
@@ -111,7 +111,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
             final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
             // stream already closed;
             if (clientStream != null) {
-                clientStream.asTransportObserver().onComplete();
+                clientStream.inboundTransportObserver().onComplete();
             }
         }
     }

@@ -106,7 +106,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (msg.isEndStream()) {
             final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
             if (serverStream != null) {
-                serverStream.asTransportObserver().onComplete();
+                serverStream.inboundTransportObserver().onComplete();
             }
         }
     }
@@ -243,7 +243,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             stream.methods(methodDescriptors);
         }
 
-        final TransportObserver observer = stream.asTransportObserver();
+        final TransportObserver observer = stream.inboundTransportObserver();
         observer.onMetadata(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {
             observer.onComplete();

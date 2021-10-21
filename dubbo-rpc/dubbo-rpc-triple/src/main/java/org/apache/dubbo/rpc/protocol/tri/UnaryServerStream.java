@@ -82,15 +82,15 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     return;
                 }
                 Metadata metadata = createResponseMeta();
-                getTransportSubscriber().onMetadata(metadata, false);
+                getOutboundTransportObserver().onMetadata(metadata, false);
                 final byte[] data = encodeResponse(response.getValue());
                 if (data == null) {
                     return;
                 }
-                getTransportSubscriber().onData(data, false);
+                getOutboundTransportObserver().onData(data, false);
                 Metadata trailers = TripleConstant.SUCCESS_RESPONSE_META;
                 convertAttachment(trailers, response.getObjectAttachments());
-                getTransportSubscriber().onMetadata(trailers, true);
+                getOutboundTransportObserver().onMetadata(trailers, true);
             });
             RpcContext.removeContext();
         }
