@@ -94,9 +94,8 @@ public class JavassistCompiler extends AbstractCompiler {
         } catch (Throwable t) {
             if (!(t instanceof CannotCompileException)) {
                 return cp.toClass(cls, classLoader, JavassistCompiler.class.getProtectionDomain());
-            } else {
-                throw t;
             }
+            throw t;
         }
     }
 

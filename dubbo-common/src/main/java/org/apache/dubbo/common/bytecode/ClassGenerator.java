@@ -349,9 +349,8 @@ public final class ClassGenerator {
             } catch (Throwable t) {
                 if (!(t instanceof CannotCompileException)) {
                     return mPool.toClass(mCtc, loader, pd);
-                } else {
-                    throw t;
                 }
+                throw t;
             }
         } catch (RuntimeException e) {
             throw e;
