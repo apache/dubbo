@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
@@ -194,7 +193,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @Override
-    public synchronized T get() {
+    public T get() {
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
         }
@@ -229,51 +228,52 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         getScopeModel().getConfigManager().removeConfig(this);
     }
 
-    protected synchronized void init() {
+    protected void init() {
         if (initialized) {
             return;
         }
 
-        if (getScopeModel() == null) {
-            setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
+        // ensure start module, compatible with old api usage
+        getScopeModel().getDeployer().start();
+
+        synchronized (this) {
+            if (initialized) {
+                return;
+            }
+            initialized = true;
+
+            if (!this.isRefreshed()) {
+                this.refresh();
+            }
+
+            //init serviceMetadata
+            initServiceMetadata(consumer);
+            serviceMetadata.setServiceType(getServiceInterfaceClass());
+            // TODO, uncomment this line once service key is unified
+            serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
+
+            Map<String, String> referenceParameters = appendConfig();
+
+
+            ModuleServiceRepository repository = getScopeModel().getServiceRepository();
+            ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+            consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
+                getScopeModel(), serviceMetadata, createAsyncMethodInfo());
+
+            repository.registerConsumer(consumerModel);
+
+            serviceMetadata.getAttachments().putAll(referenceParameters);
+
+            ref = createProxy(referenceParameters);
+
+            serviceMetadata.setTarget(ref);
+            serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
+
+            consumerModel.setProxyObject(ref);
+            consumerModel.initMethodModels();
+
+            checkInvokerAvailable();
         }
-
-        // prepare application for reference
-        getScopeModel().getDeployer().prepare();
-
-        if (!this.isRefreshed()) {
-            this.refresh();
-        }
-
-        //init serviceMetadata
-        initServiceMetadata(consumer);
-        serviceMetadata.setServiceType(getServiceInterfaceClass());
-        // TODO, uncomment this line once service key is unified
-        serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
-
-        Map<String, String> referenceParameters = appendConfig();
-
-
-        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
-        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, this,
-            getScopeModel(), serviceMetadata, createAsyncMethodInfo());
-
-        repository.registerConsumer(consumerModel);
-
-        serviceMetadata.getAttachments().putAll(referenceParameters);
-
-        ref = createProxy(referenceParameters);
-
-        serviceMetadata.setTarget(ref);
-        serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
-
-        consumerModel.setProxyObject(ref);
-        consumerModel.initMethodModels();
-
-        initialized = true;
-
-        checkInvokerAvailable();
     }
 
     /**

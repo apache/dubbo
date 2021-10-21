@@ -17,10 +17,12 @@
 package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -46,12 +48,13 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 
-public class DubboBootstrapMultiInstanceTest {
+public class MultiInstanceTest {
 
     private static ZookeeperSingleRegistryCenter registryCenter;
 
@@ -89,7 +92,7 @@ public class DubboBootstrapMultiInstanceTest {
         if (testChecker == null) {
             testChecker = new DubboTestChecker();
             testChecker.init(null);
-            testClassName = DubboBootstrapMultiInstanceTest.class.getName();
+            testClassName = MultiInstanceTest.class.getName();
         }
         return testChecker.checkUnclosedThreads(testClassName, 0);
     }
@@ -709,6 +712,81 @@ public class DubboBootstrapMultiInstanceTest {
         }
     }
 
+    @Test
+    public void testOldApiDeploy() throws Exception {
+
+        try {
+            // provider app
+            ApplicationModel providerApplicationModel = ApplicationModel.defaultModel();
+            ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+            serviceConfig.setScopeModel(providerApplicationModel.getDefaultModule());
+            serviceConfig.setRef(new DemoServiceImpl());
+            serviceConfig.setInterface(DemoService.class);
+            serviceConfig.setApplication(new ApplicationConfig("provider-app"));
+            serviceConfig.setRegistry(new RegistryConfig(registryConfig.getAddress()));
+            // add service
+            //serviceConfig.getScopeModel().getConfigManager().addService(serviceConfig);
+
+            // detect deploy events
+            DeployEventHandler serviceDeployEventHandler = new DeployEventHandler(serviceConfig.getScopeModel());
+            serviceConfig.getScopeModel().getDeployer().addDeployListener(serviceDeployEventHandler);
+            // before starting
+            Map<DeployState, Long> serviceDeployEventMap = serviceDeployEventHandler.deployEventMap;
+            Assertions.assertFalse(serviceDeployEventMap.containsKey(DeployState.STARTING));
+            Assertions.assertFalse(serviceDeployEventMap.containsKey(DeployState.STARTED));
+
+            // export service and start module
+            serviceConfig.export();
+            // expect internal module is started
+            Assertions.assertTrue(providerApplicationModel.getInternalModule().getDeployer().isStarted());
+            // expect service module is starting
+            Assertions.assertTrue(serviceDeployEventMap.containsKey(DeployState.STARTING));
+            // wait for service module started
+            serviceConfig.getScopeModel().getDeployer().getStartFuture().get();
+            Assertions.assertTrue(serviceDeployEventMap.containsKey(DeployState.STARTED));
+
+
+            // consumer app
+            ApplicationModel consumerApplicationModel = new ApplicationModel(FrameworkModel.defaultModel());
+            ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+            referenceConfig.setScopeModel(consumerApplicationModel.getDefaultModule());
+            referenceConfig.setApplication(new ApplicationConfig("consumer-app"));
+            referenceConfig.setInterface(DemoService.class);
+            referenceConfig.setRegistry(new RegistryConfig(registryConfig.getAddress()));
+            referenceConfig.setScope("remote");
+
+            // detect deploy events
+            DeployEventHandler referDeployEventHandler = new DeployEventHandler(referenceConfig.getScopeModel());
+            referenceConfig.getScopeModel().getDeployer().addDeployListener(referDeployEventHandler);
+
+            // before starting
+            Map<DeployState, Long> deployEventMap = referDeployEventHandler.deployEventMap;
+            Assertions.assertFalse(deployEventMap.containsKey(DeployState.STARTING));
+            Assertions.assertFalse(deployEventMap.containsKey(DeployState.STARTED));
+
+            // get ref proxy and start module
+            DemoService demoService = referenceConfig.get();
+            // expect internal module is started
+            Assertions.assertTrue(consumerApplicationModel.getInternalModule().getDeployer().isStarted());
+            Assertions.assertTrue(deployEventMap.containsKey(DeployState.STARTING));
+            // wait for reference module started
+            referenceConfig.getScopeModel().getDeployer().getStartFuture().get();
+            Assertions.assertTrue(deployEventMap.containsKey(DeployState.STARTED));
+
+            // stop consumer app
+            consumerApplicationModel.destroy();
+            Assertions.assertTrue(deployEventMap.containsKey(DeployState.STOPPING));
+            Assertions.assertTrue(deployEventMap.containsKey(DeployState.STOPPED));
+
+            // stop provider app
+            providerApplicationModel.destroy();
+            Assertions.assertTrue(serviceDeployEventMap.containsKey(DeployState.STOPPING));
+            Assertions.assertTrue(serviceDeployEventMap.containsKey(DeployState.STOPPED));
+
+        } finally {
+            FrameworkModel.destroyAll();
+        }
+    }
 
     private DubboBootstrap configConsumerApp(DubboBootstrap dubboBootstrap) {
         ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
@@ -748,4 +826,44 @@ public class DubboBootstrapMultiInstanceTest {
         return dubboBootstrap;
     }
 
+    private static class DeployEventHandler implements DeployListener<ModuleModel> {
+
+        Map<DeployState, Long> deployEventMap = new LinkedHashMap<>();
+
+        ModuleModel moduleModel;
+
+        public DeployEventHandler(ModuleModel moduleModel) {
+            this.moduleModel = moduleModel;
+        }
+
+        @Override
+        public void onStarting(ModuleModel scopeModel) {
+            Assertions.assertEquals(moduleModel, scopeModel);
+            deployEventMap.put(DeployState.STARTING, System.currentTimeMillis());
+        }
+
+        @Override
+        public void onStarted(ModuleModel scopeModel) {
+            Assertions.assertEquals(moduleModel, scopeModel);
+            deployEventMap.put(DeployState.STARTED, System.currentTimeMillis());
+        }
+
+        @Override
+        public void onStopping(ModuleModel scopeModel) {
+            Assertions.assertEquals(moduleModel, scopeModel);
+            deployEventMap.put(DeployState.STOPPING, System.currentTimeMillis());
+        }
+
+        @Override
+        public void onStopped(ModuleModel scopeModel) {
+            Assertions.assertEquals(moduleModel, scopeModel);
+            deployEventMap.put(DeployState.STOPPED, System.currentTimeMillis());
+        }
+
+        @Override
+        public void onFailure(ModuleModel scopeModel, Throwable cause) {
+            Assertions.assertEquals(moduleModel, scopeModel);
+            deployEventMap.put(DeployState.FAILED, System.currentTimeMillis());
+        }
+    }
 }

@@ -19,7 +19,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -204,49 +203,30 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     @Override
-    public synchronized void export() {
+    public void export() {
         if (this.exported) {
             return;
         }
-        // prepare for export
-        ModuleDeployer moduleDeployer = getScopeModel().getDeployer();
-        moduleDeployer.prepare();
 
-        if (!this.isRefreshed()) {
-            this.refresh();
-        }
-        if (this.shouldExport()) {
-            this.init();
+        // ensure start module, compatible with old api usage
+        getScopeModel().getDeployer().start();
 
-            if (shouldDelay()) {
-                doDelayExport();
-            } else {
-                doExport();
+        synchronized (this) {
+            if (this.exported) {
+                return;
             }
 
-            // notify export this service
-            moduleDeployer.notifyExportService(this);
-        }
-    }
+            if (!this.isRefreshed()) {
+                this.refresh();
+            }
+            if (this.shouldExport()) {
+                this.init();
 
-    /**
-     * export service only, do not register application instance, for exporting services in batches by module
-     */
-    @Override
-    public synchronized void exportOnly() {
-        if (this.exported) {
-            return;
-        }
-        if (!this.isRefreshed()) {
-            this.refresh();
-        }
-        if (this.shouldExport()) {
-            this.init();
-
-            if (shouldDelay()) {
-                doDelayExport();
-            } else {
-                doExport();
+                if (shouldDelay()) {
+                    doDelayExport();
+                } else {
+                    doExport();
+                }
             }
         }
     }

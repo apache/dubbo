@@ -122,6 +122,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     @Override
     public synchronized Future start() throws IllegalStateException {
+        if (isStopping() || isStopped() || isFailed()) {
+            throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
+        }
+
         if (isStarting() || isStarted()) {
             return startFuture;
         }
@@ -138,9 +142,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         exportServices();
 
         // prepare application instance
-        if (hasExportedServices()) {
-            applicationDeployer.prepareApplicationInstance();
-        }
+        applicationDeployer.prepareApplicationInstance();
 
         // refer services
         referServices();
@@ -156,6 +158,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             onModuleStarted(startFuture);
         });
 
+        return startFuture;
+    }
+
+    @Override
+    public Future getStartFuture() {
         return startFuture;
     }
 
@@ -266,7 +273,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
                     if (!sc.isExported()) {
-                        sc.exportOnly();
+                        sc.export();
                         exportedServices.add(sc);
                     }
                 } catch (Throwable t) {
@@ -277,7 +284,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             asyncExportingFutures.add(future);
         } else {
             if (!sc.isExported()) {
-                sc.exportOnly();
+                sc.export();
                 exportedServices.add(sc);
             }
         }
@@ -418,14 +425,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     public void prepare() {
         applicationDeployer.initialize();
         this.initialize();
-    }
-
-    /**
-     * After export one service, trigger starting application
-     */
-    @Override
-    public void notifyExportService(ServiceConfigBase<?> sc) {
-        applicationDeployer.prepareApplicationInstance();
     }
 
 }

@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
@@ -61,6 +62,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
     private volatile ServiceConfig<MetadataService> serviceConfig;
     private ApplicationModel applicationModel;
+    private AtomicBoolean exported = new AtomicBoolean(false);
 
     public ConfigurableMetadataServiceExporter() {
     }
@@ -77,7 +79,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     @Override
     public ConfigurableMetadataServiceExporter export() {
 
-        if (!isExported()) {
+        if (exported.compareAndSet(false, true)) {
 
             ApplicationConfig applicationConfig = getApplicationConfig();
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
@@ -92,8 +94,8 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             serviceConfig.setVersion(metadataService.version());
             serviceConfig.setMethods(generateMethodConfig());
 
-            // export
-            serviceConfig.exportOnly();
+            // add to internal module, do export later
+            applicationModel.getInternalModule().getConfigManager().addService(serviceConfig);
 
             if (logger.isInfoEnabled()) {
                 logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
@@ -146,7 +148,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     }
 
     public boolean isExported() {
-        return serviceConfig != null && serviceConfig.isExported() && !serviceConfig.isUnexported();
+        return exported.get();
     }
 
     private ApplicationConfig getApplicationConfig() {

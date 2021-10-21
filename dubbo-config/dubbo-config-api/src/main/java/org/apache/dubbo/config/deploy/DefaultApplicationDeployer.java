@@ -107,6 +107,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private volatile ServiceInstance serviceInstance;
 
     private AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
+    private AtomicBoolean hasPreparedInternalModule = new AtomicBoolean(false);
 
     private volatile MetadataService metadataService;
 
@@ -513,6 +514,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      */
     @Override
     public synchronized Future start() {
+        if (isStopping() || isStopped() || isFailed()) {
+            throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
+        }
+
         CompletableFuture startFuture = getStartFuture();
 
         // maybe call start again after add new module, check if any new module
@@ -599,6 +604,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void startModules() {
+        // ensure init and start internal module first
+        prepareInternalModule();
+
         // copy current modules, ignore new module during starting
         List<ModuleModel> moduleModels = new ArrayList<>(applicationModel.getModuleModels());
         for (ModuleModel moduleModel : moduleModels) {
@@ -611,21 +619,25 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void prepareApplicationInstance() {
+        // ensure init and start internal module first
+        prepareInternalModule();
+
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
         // if register consumer instance or has exported services
         if (isRegisterConsumerInstance() || hasExportedServices()) {
-            if (!hasPreparedApplicationInstance.compareAndSet(false, true)) {
-                return;
+            if (hasPreparedApplicationInstance.compareAndSet(false, true)) {
+                // register the local ServiceInstance if required
+                registerServiceInstance();
             }
-            prepareInternalModule();
-            // register the local ServiceInstance if required
-            registerServiceInstance();
         }
     }
 
     private void prepareInternalModule() {
+        if (!hasPreparedInternalModule.compareAndSet(false, true)) {
+            return;
+        }
         // export MetadataService
         exportMetadataService();
         // start internal module
