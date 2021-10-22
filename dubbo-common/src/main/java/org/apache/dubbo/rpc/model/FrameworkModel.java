@@ -73,7 +73,7 @@ public class FrameworkModel extends ScopeModel {
             initializer.initializeFrameworkModel(this);
         }
 
-        internalApplicationModel = new ApplicationModel(this);
+        internalApplicationModel = new ApplicationModel(this, true);
         internalApplicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(CommonConstants.DUBBO_INTERNAL_APPLICATION));
         internalApplicationModel.setModelName(CommonConstants.DUBBO_INTERNAL_APPLICATION);
     }
