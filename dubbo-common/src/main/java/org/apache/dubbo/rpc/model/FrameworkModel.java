@@ -93,6 +93,9 @@ public class FrameworkModel extends ScopeModel {
             allInstances.remove(this);
             if (defaultInstance == this) {
                 defaultInstance = null;
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Reset default Dubbo framework[" + getInternalId() + "] to null ...");
+                }
             }
         }
 

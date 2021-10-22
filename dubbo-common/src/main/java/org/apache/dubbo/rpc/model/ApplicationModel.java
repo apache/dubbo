@@ -259,6 +259,9 @@ public class ApplicationModel extends ScopeModel {
             synchronized (ApplicationModel.class) {
                 frameworkModel.removeApplication(this);
                 defaultInstance = null;
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Reset default Dubbo application[" + getInternalId() + "] to null ...");
+                }
             }
         } else {
             frameworkModel.removeApplication(this);
