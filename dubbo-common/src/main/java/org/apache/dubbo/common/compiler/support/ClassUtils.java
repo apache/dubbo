@@ -344,9 +344,9 @@ public class ClassUtils {
     }
 
     public static String getMethodName(Method method, Class<?>[] parameterClasses, String rightCode) {
+        StringBuilder buf = new StringBuilder(rightCode);
         if (method.getParameterTypes().length > parameterClasses.length) {
             Class<?>[] types = method.getParameterTypes();
-            StringBuilder buf = new StringBuilder(rightCode);
             for (int i = parameterClasses.length; i < types.length; i++) {
                 if (buf.length() > 0) {
                     buf.append(',');
@@ -370,7 +370,7 @@ public class ClassUtils {
                 buf.append(def);
             }
         }
-        return method.getName() + "(" + rightCode + ")";
+        return method.getName() + "(" + buf + ")";
     }
 
     public static Method searchMethod(Class<?> currentClass, String name, Class<?>[] parameterTypes) throws NoSuchMethodException {
