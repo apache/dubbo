@@ -270,6 +270,8 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
     @Override
     protected void cancelByLocal(Throwable throwable) {
-        inboundTransportObserver().onCancel(GrpcStatus.getStatus(throwable));
+        inboundTransportObserver()
+            .onError(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED)
+                .withCause(throwable));
     }
 }

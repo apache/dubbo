@@ -189,11 +189,11 @@ public abstract class AbstractStream implements Stream {
         return multipleSerialization;
     }
 
-    public StreamObserver<Object> getOutboundMessageSubscriber() {
+    public StreamObserver<Object> outboundMessageSubscriber() {
         return outboundMessageSubscriber;
     }
 
-    public TransportObserver getOutboundTransportObserver() {
+    public TransportObserver outboundTransportObserver() {
         return outboundTransportObserver;
     }
 
@@ -272,14 +272,14 @@ public abstract class AbstractStream implements Stream {
         if (!onlyTrailers) {
             // set metadata
             Metadata metadata = new DefaultMetadata();
-            getOutboundTransportObserver().onMetadata(metadata, false);
+            outboundTransportObserver().onMetadata(metadata, false);
         }
         // set trailers
         Metadata trailers = getTrailers(status);
         if (attachments != null) {
             convertAttachment(trailers, attachments);
         }
-        getOutboundTransportObserver().onMetadata(trailers, true);
+        outboundTransportObserver().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Error] status=" + status.code.code
                 + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);

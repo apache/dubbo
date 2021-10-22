@@ -47,7 +47,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
 
     private class UnaryServerTransportObserver extends UnaryInboundTransportObserver implements TransportObserver {
         @Override
-        protected void onError(GrpcStatus status) {
+        public void onError(GrpcStatus status) {
             transportError(status);
         }
 
@@ -82,15 +82,15 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     return;
                 }
                 Metadata metadata = createResponseMeta();
-                getOutboundTransportObserver().onMetadata(metadata, false);
+                outboundTransportObserver().onMetadata(metadata, false);
                 final byte[] data = encodeResponse(response.getValue());
                 if (data == null) {
                     return;
                 }
-                getOutboundTransportObserver().onData(data, false);
+                outboundTransportObserver().onData(data, false);
                 Metadata trailers = TripleConstant.SUCCESS_RESPONSE_META;
                 convertAttachment(trailers, response.getObjectAttachments());
-                getOutboundTransportObserver().onMetadata(trailers, true);
+                outboundTransportObserver().onMetadata(trailers, true);
             });
             RpcContext.removeContext();
         }

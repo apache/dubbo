@@ -26,12 +26,6 @@ abstract class UnaryInboundTransportObserver extends InboundTransportObserver im
         return data;
     }
 
-    protected abstract void onError(GrpcStatus status);
-
-    public void onCancel(GrpcStatus status) {
-        onError(status);
-    }
-
     @Override
     public void onData(byte[] in, boolean endStream) {
         if (data == null) {

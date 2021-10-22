@@ -46,14 +46,14 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onNext(Object data) {
             if (getState().allowSendMeta()) {
-                getOutboundTransportObserver().onMetadata(createResponseMeta(), false);
+                outboundTransportObserver().onMetadata(createResponseMeta(), false);
             }
             final byte[] bytes = encodeResponse(data);
             if (bytes == null) {
                 return;
             }
             if (getState().allowSendData()) {
-                getOutboundTransportObserver().onData(bytes, false);
+                outboundTransportObserver().onData(bytes, false);
             }
         }
 
@@ -73,7 +73,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
             if (!getState().allowSendEndStream()) {
                 return;
             }
-            getOutboundTransportObserver().onMetadata(TripleConstant.SUCCESS_RESPONSE_META, true);
+            outboundTransportObserver().onMetadata(TripleConstant.SUCCESS_RESPONSE_META, true);
         }
 
         @Override
@@ -153,7 +153,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         }
 
         @Override
-        public void onCancel(GrpcStatus status) {
+        public void onError(GrpcStatus status) {
             cancelByRemote(Http2Error.CANCEL);
         }
 
@@ -163,7 +163,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         private void biStreamOnData(byte[] in) {
             final Object[] arguments = deserializeRequest(in);
             if (arguments != null) {
-                getOutboundMessageSubscriber().onNext(arguments[0]);
+                outboundMessageSubscriber().onNext(arguments[0]);
             }
         }
 
@@ -205,7 +205,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
             if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                 return;
             }
-            execute(() -> getOutboundMessageSubscriber().onCompleted());
+            execute(() -> outboundMessageSubscriber().onCompleted());
         }
     }
 }

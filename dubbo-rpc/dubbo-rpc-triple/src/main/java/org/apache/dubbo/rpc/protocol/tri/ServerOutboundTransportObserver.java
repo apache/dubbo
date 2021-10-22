@@ -41,11 +41,6 @@ public class ServerOutboundTransportObserver extends OutboundTransportObserver {
     }
 
     public void onMetadata(Http2Headers headers, boolean endStream) {
-        if (endStream) {
-            state.setEndStreamSend();
-        } else {
-            state.setMetaSend();
-        }
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {
@@ -101,9 +96,6 @@ public class ServerOutboundTransportObserver extends OutboundTransportObserver {
     }
 
     public void onData(ByteBuf buf, boolean endStream) {
-        if (endStream) {
-            state.setEndStreamSend();
-        }
         ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {

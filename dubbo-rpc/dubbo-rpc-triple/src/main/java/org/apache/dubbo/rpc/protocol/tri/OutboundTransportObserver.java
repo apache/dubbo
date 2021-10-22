@@ -49,7 +49,7 @@ public abstract class OutboundTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onCancel(GrpcStatus status) {
+    public void onError(GrpcStatus status) {
         if (!state.allowSendReset()) {
             throw new IllegalStateException("Duplicated rst!");
         }

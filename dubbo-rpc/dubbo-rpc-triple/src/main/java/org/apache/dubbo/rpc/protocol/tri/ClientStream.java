@@ -77,7 +77,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
             execute(() -> {
                 try {
                     final Object resp = deserializeResponse(data);
-                    getOutboundMessageSubscriber().onNext(resp);
+                    outboundMessageSubscriber().onNext(resp);
                 } catch (Throwable throwable) {
                     onError(throwable);
                 }
@@ -85,7 +85,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
         }
 
         @Override
-        public void onCancel(GrpcStatus status) {
+        public void onError(GrpcStatus status) {
             onError(status.asException());
         }
 
@@ -95,7 +95,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
                 getState().setServerEndStreamReceived();
                 final GrpcStatus status = extractStatusFromMeta(getHeaders());
                 if (GrpcStatus.Code.isOk(status.code.code)) {
-                    getOutboundMessageSubscriber().onCompleted();
+                    outboundMessageSubscriber().onCompleted();
                 } else {
                     onError(status.cause);
                 }
@@ -110,7 +110,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
             if (!getState().serverSendStreamReceived()) {
                 cancel(throwable);
             }
-            getOutboundMessageSubscriber().onError(throwable);
+            outboundMessageSubscriber().onError(throwable);
         }
     }
 }

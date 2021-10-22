@@ -62,7 +62,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     protected AbstractClientStream(URL url) {
         super(url);
         this.scheme = getSchemeFromUrl(url);
-        // for client cancel,send rst frame to server
         this.getCancellationContext().addListener(context -> {
             Throwable throwable = this.getCancellationContext().getCancellationCause();
             if (LOGGER.isWarnEnabled()) {
@@ -70,7 +69,9 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                     + getConsumerModel().getServiceName() + "#" + getMethodName() +
                     " was canceled by local exception ", throwable);
             }
-            this.inboundTransportObserver().onCancel(getHttp2Error(throwable));
+            // for client cancel,send rst frame to server
+            this.outboundTransportObserver()
+                .onError(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED).withCause(throwable));
         });
     }
 
@@ -100,6 +101,32 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return stream;
     }
 
+    private static Compressor getCompressor(URL url, ServiceModel model) {
+        String compressorStr = url.getParameter(COMPRESSOR_KEY);
+        if (compressorStr == null) {
+            // Compressor can not be set by dynamic config
+            compressorStr = ConfigurationUtils
+                .getCachedDynamicProperty(model.getModuleModel(), COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
+        }
+        return Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
+    }
+
+    /**
+     * Get the tri protocol special MethodDescriptor
+     */
+    private static MethodDescriptor getTriMethodDescriptor(ConsumerModel consumerModel, RpcInvocation inv) {
+        List<MethodDescriptor> methodDescriptors = consumerModel.getServiceModel().getMethods(inv.getMethodName());
+        if (CollectionUtils.isEmpty(methodDescriptors)) {
+            throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+        }
+        for (MethodDescriptor methodDescriptor : methodDescriptors) {
+            if (Arrays.equals(inv.getParameterTypes(), methodDescriptor.getRealParameterClasses())) {
+                return methodDescriptor;
+            }
+        }
+        throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+    }
+
     protected void startCall(Http2StreamChannel channel, ChannelPromise promise) {
         execute(() -> {
             channel.pipeline()
@@ -125,61 +152,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return new ClientStreamObserverImpl(getCancellationContext());
     }
 
-    protected class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
-
-        public ClientStreamObserverImpl(CancellationContext cancellationContext) {
-            super(cancellationContext);
-        }
-
-        @Override
-        public void onNext(Object data) {
-            if (getState().allowSendMeta()) {
-                final Metadata metadata = createRequestMeta(getRpcInvocation());
-                getOutboundTransportObserver().onMetadata(metadata, false);
-            }
-            if (getState().allowSendData()) {
-                final byte[] bytes = encodeRequest(data);
-                getOutboundTransportObserver().onData(bytes, false);
-            }
-        }
-
-        /**
-         * Handle all exceptions in the request process, other procedures directly throw
-         * <p>
-         * other procedures is {@link ClientStreamObserver#onNext(Object)} and {@link ClientStreamObserver#onCompleted()}
-         */
-        @Override
-        public void onError(Throwable throwable) {
-            if (getState().allowSendEndStream()) {
-                GrpcStatus status = GrpcStatus.getStatus(throwable);
-                transportError(status, null, getState().allowSendMeta());
-            } else {
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error("Triple request to "
-                        + getConsumerModel().getServiceName() + "#" + getMethodName() +
-                        " was failed by exception ", throwable);
-                }
-            }
-        }
-
-        @Override
-        public void onCompleted() {
-            if (getState().allowSendEndStream()) {
-                getOutboundTransportObserver().onComplete();
-            }
-        }
-
-        @Override
-        public void setCompression(String compression) {
-            if (!getState().allowSendMeta()) {
-                cancel(new IllegalStateException("Metadata already has been sent,can not set compression"));
-                return;
-            }
-            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
-            setCompressor(compressor);
-        }
-    }
-
     @Override
     protected void cancelByRemoteReset(Http2Error http2Error) {
         DefaultFuture2.getFuture(getRequestId()).cancel();
@@ -190,18 +162,17 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         getCancellationContext().cancel(throwable);
     }
 
-
     @Override
     public void execute(Runnable runnable) {
         try {
             super.execute(runnable);
         } catch (RejectedExecutionException e) {
             LOGGER.error("Consumer's thread pool is full", e);
-            getOutboundMessageSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
+            outboundMessageSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
                 .withDescription("Consumer's thread pool is full").asException());
         } catch (Throwable t) {
             LOGGER.error("Consumer submit request to thread pool error ", t);
-            getOutboundMessageSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+            outboundMessageSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withCause(t)
                 .withDescription("Consumer's error")
                 .asException());
@@ -346,29 +317,58 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return "/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName();
     }
 
-    private static Compressor getCompressor(URL url, ServiceModel model) {
-        String compressorStr = url.getParameter(COMPRESSOR_KEY);
-        if (compressorStr == null) {
-            // Compressor can not be set by dynamic config
-            compressorStr = ConfigurationUtils
-                .getCachedDynamicProperty(model.getModuleModel(), COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
-        }
-        return Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
-    }
+    protected class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
 
-    /**
-     * Get the tri protocol special MethodDescriptor
-     */
-    private static MethodDescriptor getTriMethodDescriptor(ConsumerModel consumerModel, RpcInvocation inv) {
-        List<MethodDescriptor> methodDescriptors = consumerModel.getServiceModel().getMethods(inv.getMethodName());
-        if (CollectionUtils.isEmpty(methodDescriptors)) {
-            throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+        public ClientStreamObserverImpl(CancellationContext cancellationContext) {
+            super(cancellationContext);
         }
-        for (MethodDescriptor methodDescriptor : methodDescriptors) {
-            if (Arrays.equals(inv.getParameterTypes(), methodDescriptor.getRealParameterClasses())) {
-                return methodDescriptor;
+
+        @Override
+        public void onNext(Object data) {
+            if (getState().allowSendMeta()) {
+                final Metadata metadata = createRequestMeta(getRpcInvocation());
+                outboundTransportObserver().onMetadata(metadata, false);
+            }
+            if (getState().allowSendData()) {
+                final byte[] bytes = encodeRequest(data);
+                outboundTransportObserver().onData(bytes, false);
             }
         }
-        throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+
+        /**
+         * Handle all exceptions in the request process, other procedures directly throw
+         * <p>
+         * other procedures is {@link ClientStreamObserver#onNext(Object)} and {@link ClientStreamObserver#onCompleted()}
+         */
+        @Override
+        public void onError(Throwable throwable) {
+            if (getState().allowSendEndStream()) {
+                GrpcStatus status = GrpcStatus.getStatus(throwable);
+                transportError(status, null, getState().allowSendMeta());
+            } else {
+                if (LOGGER.isErrorEnabled()) {
+                    LOGGER.error("Triple request to "
+                        + getConsumerModel().getServiceName() + "#" + getMethodName() +
+                        " was failed by exception ", throwable);
+                }
+            }
+        }
+
+        @Override
+        public void onCompleted() {
+            if (getState().allowSendEndStream()) {
+                outboundTransportObserver().onComplete();
+            }
+        }
+
+        @Override
+        public void setCompression(String compression) {
+            if (!getState().allowSendMeta()) {
+                cancel(new IllegalStateException("Metadata already has been sent,can not set compression"));
+                return;
+            }
+            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
+            setCompressor(compressor);
+        }
     }
 }
