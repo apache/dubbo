@@ -33,7 +33,6 @@ import org.apache.dubbo.triple.TripleWrapper;
 import com.google.protobuf.Message;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.Arrays;
@@ -263,7 +262,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     }
 
     @Override
-    protected void cancelByRemoteReset(Http2Error http2Error) {
+    protected void cancelByRemoteReset() {
         getCancellationContext().cancel(null);
     }
 

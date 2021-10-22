@@ -26,14 +26,12 @@ import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
-import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.HashMap;
@@ -146,20 +144,17 @@ public abstract class AbstractStream implements Stream {
 
     private void cancel() {
         cancelled = true;
-        execute(RpcContext::removeCancellationContext);
     }
 
     /**
      * remote cancel
-     *
-     * @param http2Error {@link Http2Error}
      */
-    protected final void cancelByRemote(Http2Error http2Error) {
+    protected final void cancelByRemote() {
         cancel();
-        cancelByRemoteReset(http2Error);
+        cancelByRemoteReset();
     }
 
-    protected abstract void cancelByRemoteReset(Http2Error http2Error);
+    protected abstract void cancelByRemoteReset();
 
     protected abstract void cancelByLocal(Throwable throwable);
 
@@ -193,7 +188,7 @@ public abstract class AbstractStream implements Stream {
         return outboundMessageSubscriber;
     }
 
-    public TransportObserver outboundTransportObserver() {
+    public OutboundTransportObserver outboundTransportObserver() {
         return outboundTransportObserver;
     }
 

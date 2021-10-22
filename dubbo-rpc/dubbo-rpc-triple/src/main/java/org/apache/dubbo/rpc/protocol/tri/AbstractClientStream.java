@@ -37,7 +37,6 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.AsciiString;
@@ -153,7 +152,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     }
 
     @Override
-    protected void cancelByRemoteReset(Http2Error http2Error) {
+    protected void cancelByRemoteReset() {
         DefaultFuture2.getFuture(getRequestId()).cancel();
     }
 
