@@ -41,6 +41,7 @@ public class ServerOutboundTransportObserver extends OutboundTransportObserver {
     }
 
     public void onMetadata(Http2Headers headers, boolean endStream) {
+        checkSendMeta(headers, endStream);
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {
@@ -76,7 +77,7 @@ public class ServerOutboundTransportObserver extends OutboundTransportObserver {
     }
 
     @Override
-    protected void doOnCancel(GrpcStatus status) {
+    protected void doOnError(GrpcStatus status) {
         ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.CANCEL))
             .addListener(future -> {
                 if (!future.isSuccess()) {
@@ -96,6 +97,7 @@ public class ServerOutboundTransportObserver extends OutboundTransportObserver {
     }
 
     public void onData(ByteBuf buf, boolean endStream) {
+        checkSendData(endStream);
         ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {

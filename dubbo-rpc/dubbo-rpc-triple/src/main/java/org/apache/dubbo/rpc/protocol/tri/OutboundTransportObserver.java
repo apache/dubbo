@@ -26,26 +26,38 @@ public abstract class OutboundTransportObserver implements TransportObserver {
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
-        if (!state.allowSendMeta()) {
-            throw new IllegalStateException("Metadata already sent to peer, send " + metadata + " failed!");
-        }
+        checkSendMeta(metadata, endStream);
+        doOnMetadata(metadata, endStream);
+    }
+
+    protected void checkSendMeta(Object metadata, boolean endStream) {
         if (endStream) {
+            if (!state.allowSendEndStream()) {
+                throw new IllegalStateException("Metadata endStream already sent to peer, send " + metadata + " failed!");
+            }
             state.setEndStreamSend();
         } else {
+            if (!state.allowSendMeta()) {
+                throw new IllegalStateException("Metadata already sent to peer, send " + metadata + " failed!");
+            }
             state.setMetaSend();
         }
-        doOnMetadata(metadata, endStream);
     }
 
     @Override
     public void onData(byte[] data, boolean endStream) {
+        checkSendData(endStream);
+        doOnData(data, endStream);
+    }
+
+
+    protected void checkSendData(boolean endStream) {
         if (!state.allowSendData()) {
-            throw new IllegalStateException("Metadata has not sent to peer!");
+            throw new IllegalStateException("data has not sent to peer!");
         }
         if (endStream) {
             state.setEndStreamSend();
         }
-        doOnData(data, endStream);
     }
 
     @Override
@@ -54,7 +66,7 @@ public abstract class OutboundTransportObserver implements TransportObserver {
             throw new IllegalStateException("Duplicated rst!");
         }
         state.setResetSend();
-        doOnCancel(status);
+        doOnError(status);
     }
 
     @Override
@@ -71,7 +83,7 @@ public abstract class OutboundTransportObserver implements TransportObserver {
 
     protected abstract void doOnData(byte[] data, boolean endStream);
 
-    protected abstract void doOnCancel(GrpcStatus status);
+    protected abstract void doOnError(GrpcStatus status);
 
     protected abstract void doOnComplete();
 

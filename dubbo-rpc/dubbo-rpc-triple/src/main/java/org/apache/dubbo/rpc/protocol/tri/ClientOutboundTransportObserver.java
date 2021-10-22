@@ -68,7 +68,7 @@ public class ClientOutboundTransportObserver extends OutboundTransportObserver {
     }
 
     @Override
-    protected void doOnCancel(GrpcStatus status) {
+    protected void doOnError(GrpcStatus status) {
         streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.CANCEL))
             .addListener(future -> {
                 if (future.isSuccess()) {
