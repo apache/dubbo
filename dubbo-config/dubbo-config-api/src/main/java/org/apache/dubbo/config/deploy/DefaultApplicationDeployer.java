@@ -643,12 +643,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         exportMetadataService();
         // start internal module
         ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
-        if (internalModuleDeployer.isRunning()) {
+        if (internalModuleDeployer.isStarted() || internalModuleDeployer.isFailed()
+                || internalModuleDeployer.isStopping() || internalModuleDeployer.isStopped()) {
             return;
         }
-        // await internal module deploy finished
+        // await internal module deploy started or failed or stoppinng or stopped
         Future internalFuture = internalModuleDeployer.start();
-        while (isStarting() && !internalModuleDeployer.isRunning()) {
+        while (isStarting() && !internalModuleDeployer.isStarted() && !internalModuleDeployer.isFailed()
+                && !internalModuleDeployer.isStopping() && !internalModuleDeployer.isStopped()) {
             try {
                 internalFuture.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
