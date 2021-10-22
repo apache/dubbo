@@ -38,11 +38,11 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2DataFrame;
-import io.netty.handler.codec.http2.Http2Frame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2ResetFrame;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.ReferenceCounted;
 
 import java.util.List;
 
@@ -65,11 +65,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             onHeadersRead(ctx, (Http2HeadersFrame) msg);
         } else if (msg instanceof Http2DataFrame) {
             onDataRead(ctx, (Http2DataFrame) msg);
-        } else if (msg instanceof Http2Frame) {
+        } else if (msg instanceof ReferenceCounted) {
             // ignored
             ReferenceCountUtil.release(msg);
-        } else {
-            super.channelRead(ctx, msg);
         }
     }
 

@@ -202,18 +202,6 @@ public class TripleUtil {
         return baos.toByteArray();
     }
 
-    public static String encodeWrapper(URL url, Object obj, String serializeType, MultipleSerialization serialization)
-        throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        serialization.serialize(url, serializeType, obj.getClass().getName(), obj, bos);
-        final TripleWrapper.TripleRequestWrapper wrap = TripleWrapper.TripleRequestWrapper.newBuilder()
-            .setSerializeType(convertHessianToWrapper(serializeType))
-            .addArgTypes(obj.getClass().getName())
-            .addArgs(ByteString.copyFrom(bos.toByteArray()))
-            .build();
-        return encodeBase64ASCII(wrap.toByteArray());
-    }
-
     public static String encodeBase64ASCII(byte[] in) {
         byte[] bytes = encodeBase64(in);
         return new String(bytes, StandardCharsets.US_ASCII);
@@ -221,14 +209,6 @@ public class TripleUtil {
 
     public static byte[] encodeBase64(byte[] in) {
         return BASE64_ENCODER.encode(in);
-    }
-
-    public static Object decodeObjFromHeader(URL url, CharSequence value, MultipleSerialization serialization)
-        throws InvalidProtocolBufferException {
-        final byte[] decode = decodeASCIIByte(value);
-        final TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(decode);
-        final Object[] objects = TripleUtil.unwrapReq(url, wrapper, serialization);
-        return objects[0];
     }
 
     public static byte[] decodeASCIIByte(CharSequence value) {
