@@ -17,11 +17,13 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
+import org.apache.dubbo.config.ApplicationConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,8 +40,8 @@ public class FrameworkModel extends ScopeModel {
 
     public static final String NAME = "FrameworkModel";
     private static final AtomicLong index = new AtomicLong(1);
-    // app index starts from 1 in each FrameworkModel
-    private final AtomicLong appIndex = new AtomicLong(1);
+    // internal app index is 0, default app index is 1
+    private final AtomicLong appIndex = new AtomicLong(0);
 
     private volatile static FrameworkModel defaultInstance;
 
@@ -47,8 +49,11 @@ public class FrameworkModel extends ScopeModel {
 
     private List<ApplicationModel> applicationModels = Collections.synchronizedList(new ArrayList<>());
 
+    private List<ApplicationModel> pubApplicationModels = Collections.synchronizedList(new ArrayList<>());
+
     private FrameworkServiceRepository serviceRepository;
 
+    private ApplicationModel internalApplicationModel;
 
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
@@ -67,6 +72,11 @@ public class FrameworkModel extends ScopeModel {
         for (ScopeModelInitializer initializer : initializers) {
             initializer.initializeFrameworkModel(this);
         }
+
+        internalApplicationModel = new ApplicationModel(this);
+        internalApplicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(CommonConstants.DUBBO_INTERNAL_APPLICATION));
+        internalApplicationModel.setModelName(CommonConstants.DUBBO_INTERNAL_APPLICATION);
+        internalApplicationModel.getDeployer().start();
     }
 
     @Override
@@ -132,12 +142,18 @@ public class FrameworkModel extends ScopeModel {
     synchronized void addApplication(ApplicationModel applicationModel) {
         if (!this.applicationModels.contains(applicationModel)) {
             this.applicationModels.add(applicationModel);
+            if (!applicationModel.isInternal()) {
+                this.pubApplicationModels.add(applicationModel);
+            }
             applicationModel.setInternalName(buildInternalName(ApplicationModel.NAME, getInternalId(), appIndex.getAndIncrement()));
         }
     }
 
     synchronized void removeApplication(ApplicationModel model) {
         this.applicationModels.remove(model);
+        if (!model.isInternal()) {
+            this.pubApplicationModels.remove(model);
+        }
     }
 
     synchronized void tryDestroy() {
@@ -147,7 +163,15 @@ public class FrameworkModel extends ScopeModel {
     }
 
     public List<ApplicationModel> getApplicationModels() {
+        return Collections.unmodifiableList(pubApplicationModels);
+    }
+
+    public List<ApplicationModel> getAllApplicationModels() {
         return Collections.unmodifiableList(applicationModels);
+    }
+
+    public ApplicationModel getInternalApplicationModel() {
+        return internalApplicationModel;
     }
 
     public FrameworkServiceRepository getServiceRepository() {

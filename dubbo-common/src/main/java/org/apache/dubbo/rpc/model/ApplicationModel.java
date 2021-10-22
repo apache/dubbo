@@ -72,6 +72,7 @@ public class ApplicationModel extends ScopeModel {
     private AtomicInteger moduleIndex = new AtomicInteger(0);
     private Object moduleLock = new Object();
 
+    private final boolean isInternal;
 
     // --------- static methods ----------//
 
@@ -194,15 +195,20 @@ public class ApplicationModel extends ScopeModel {
     // ------------- instance methods ---------------//
 
     public ApplicationModel(FrameworkModel frameworkModel) {
+        this(frameworkModel, false);
+    }
+
+    public ApplicationModel(FrameworkModel frameworkModel, boolean isInternal) {
         super(frameworkModel, ExtensionScope.APPLICATION);
         Assert.notNull(frameworkModel, "FrameworkModel can not be null");
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
         initialize();
         // bind to default instance if absent
-        if (defaultInstance == null) {
+        if (!isInternal && defaultInstance == null) {
             defaultInstance = this;
         }
+        this.isInternal = isInternal;
     }
 
     @Override
@@ -448,5 +454,9 @@ public class ApplicationModel extends ScopeModel {
 
     public void setDeployer(ApplicationDeployer deployer) {
         this.deployer = deployer;
+    }
+
+    public boolean isInternal() {
+        return isInternal;
     }
 }
