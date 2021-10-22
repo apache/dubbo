@@ -24,8 +24,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 
-import io.netty.handler.codec.http2.Http2Error;
-
 public class ServerStream extends AbstractServerStream implements Stream {
     protected ServerStream(URL url) {
         super(url);
@@ -152,9 +150,11 @@ public class ServerStream extends AbstractServerStream implements Stream {
             });
         }
 
+        /**
+         * This method should not be called for a while
+         */
         @Override
         public void onError(GrpcStatus status) {
-            cancelByRemote(Http2Error.CANCEL);
         }
 
         /**
