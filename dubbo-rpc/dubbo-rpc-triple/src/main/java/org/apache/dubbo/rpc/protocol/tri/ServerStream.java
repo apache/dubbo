@@ -137,7 +137,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         public void onData(byte[] in, boolean endStream) {
             execute(() -> {
                 try {
-                    if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                    if (getMethodDescriptor().isServerStream()) {
                         serverStreamOnData(in);
                         return;
                     }
@@ -202,7 +202,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
          */
         @Override
         public void onComplete() {
-            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+            if (getMethodDescriptor().isServerStream()) {
                 return;
             }
             execute(() -> outboundMessageSubscriber().onCompleted());
