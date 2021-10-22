@@ -1235,9 +1235,7 @@ public class DubboBootstrap {
 
     private void unregisterServiceInstance() {
         if (serviceInstance != null) {
-            getServiceDiscoveries().forEach(serviceDiscovery -> {
-                serviceDiscovery.unregister(serviceInstance);
-            });
+            getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.unregister(serviceInstance));
         }
     }
 
@@ -1266,18 +1264,15 @@ public class DubboBootstrap {
                         unexportServices();
                         unreferServices();
                     }
-
-                    destroyRegistries();
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
-                    clear();
-                    shutdown();
+                    DubboShutdownHook.destroyAll();
+                    clearConfigManager();
+                    shutdownExecutor();
                     release();
                     ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
                     exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
                 }
-
-                DubboShutdownHook.destroyAll();
             } finally {
                 initialized.set(false);
                 destroyLock.unlock();
@@ -1294,21 +1289,14 @@ public class DubboBootstrap {
     }
 
     private void destroyServiceDiscoveries() {
-        getServiceDiscoveries().forEach(serviceDiscovery -> {
-            execute(serviceDiscovery::destroy);
-        });
+        getServiceDiscoveries().forEach(serviceDiscovery -> execute(serviceDiscovery::destroy));
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ServiceDiscoveries have been destroyed.");
         }
     }
 
-    private void clear() {
+    private void clearConfigManager() {
         clearConfigs();
-        clearApplicationModel();
-    }
-
-    private void clearApplicationModel() {
-
     }
 
     private void clearConfigs() {
@@ -1329,7 +1317,7 @@ public class DubboBootstrap {
         });
     }
 
-    private void shutdown() {
+    private void shutdownExecutor() {
         if (!executorService.isShutdown()) {
             // Shutdown executorService
             executorService.shutdown();
