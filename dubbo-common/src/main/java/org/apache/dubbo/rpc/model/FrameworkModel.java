@@ -157,7 +157,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     synchronized void tryDestroy() {
-        if (applicationModels.size() == 0) {
+        if (pubApplicationModels.size() == 0) {
             destroy();
         }
     }
