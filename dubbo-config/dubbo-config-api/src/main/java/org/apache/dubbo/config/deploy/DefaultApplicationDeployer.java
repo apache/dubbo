@@ -117,7 +117,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private String identifier;
     private volatile CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
-    private Object startedLock = new Object();
+    private Object stateLock = new Object();
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -580,9 +580,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         executorRepository.getSharedExecutor().submit(() -> {
             while (true) {
                 // notify on each module started
-                synchronized (startedLock) {
+                synchronized (stateLock) {
                     try {
-                        startedLock.wait(500);
+                        stateLock.wait(500);
                     } catch (InterruptedException e) {
                         // ignore
                     }
@@ -594,7 +594,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     continue;
                 }
 
-                DeployState newState = checkState();
+                DeployState newState = calculateState();
                 if (!(newState == DeployState.STARTING || newState == DeployState.PENDING)) {
                     // start finished or error
                     break;
@@ -894,22 +894,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public void checkStarting() {
-        if (isStarting()) {
-            return;
-        }
-        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            if (moduleModel.getDeployer().isStarting()) {
-                onStarting();
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void checkStarted() {
+    public void checkState() {
         // TODO improve newState checking
-        DeployState newState = checkState();
+        DeployState newState = calculateState();
         switch (newState) {
             case STARTED:
                 onStarted();
@@ -917,18 +904,24 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             case STARTING:
                 onStarting();
                 break;
+            case STOPPING:
+                onStopping();
+                break;
+            case STOPPED:
+                onStopped();
+                break;
             case PENDING:
                 setPending();
                 break;
         }
 
         // notify started
-        synchronized (startedLock) {
-            startedLock.notifyAll();
+        synchronized (stateLock) {
+            stateLock.notifyAll();
         }
     }
 
-    private DeployState checkState() {
+    private DeployState calculateState() {
         DeployState newState = DeployState.UNKNOWN;
         int pending = 0, starting = 0, started = 0, stopping = 0, stopped = 0;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {

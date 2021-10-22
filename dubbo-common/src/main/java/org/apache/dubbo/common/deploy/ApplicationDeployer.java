@@ -71,8 +71,9 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
      */
     boolean isBackground();
 
-    void checkStarting();
-
-    void checkStarted();
+    /**
+     * check all module state and update application state
+     */
+    void checkState();
 
 }

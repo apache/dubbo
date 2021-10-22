@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.ModuleEnvironment;
 import org.apache.dubbo.common.context.ModuleExt;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
@@ -55,6 +56,12 @@ public class ModuleModel extends ScopeModel {
         Assert.notNull(serviceRepository, "ModuleServiceRepository can not be null");
         Assert.notNull(moduleConfigManager, "ModuleConfigManager can not be null");
         Assert.assertTrue(moduleConfigManager.isInitialized(), "ModuleConfigManager can not be initialized");
+
+        // notify application check state
+        ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
+        if (applicationDeployer != null) {
+            applicationDeployer.checkState();
+        }
     }
 
     @Override

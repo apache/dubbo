@@ -227,13 +227,13 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void onModuleStarting() {
         setStarting();
         logger.info(getIdentifier() + " is starting.");
-        applicationDeployer.checkStarting();
+        applicationDeployer.checkState();
     }
 
     private void onModuleStarted(CompletableFuture startFuture) {
         setStarted();
         logger.info(getIdentifier() + " has started.");
-        applicationDeployer.checkStarted();
+        applicationDeployer.checkState();
         // complete module start future after application state changed, fix #9012 ?
         startFuture.complete(true);
     }
@@ -241,11 +241,13 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void onModuleStopping() {
         setStopping();
         logger.info(getIdentifier() + " is stopping.");
+        applicationDeployer.checkState();
     }
 
     private void onModuleStopped() {
         setStopped();
         logger.info(getIdentifier() + " has stopped.");
+        applicationDeployer.checkState();
     }
 
     private void loadConfigs() {
