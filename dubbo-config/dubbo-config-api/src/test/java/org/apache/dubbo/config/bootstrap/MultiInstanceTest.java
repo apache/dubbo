@@ -514,7 +514,8 @@ public class MultiInstanceTest {
                 .service(serviceConfig2)
                 .endModule();
 
-            serviceConfig2.getScopeModel().getDeployer().start();
+            // start provider module 2 and wait
+            serviceConfig2.getScopeModel().getDeployer().start().get();
             Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey1));
             Assertions.assertNotNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey2));
             Assertions.assertNull(frameworkServiceRepository.lookupExportedServiceWithoutGroup(serviceKey3));
