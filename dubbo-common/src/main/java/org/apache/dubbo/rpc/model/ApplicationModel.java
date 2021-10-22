@@ -201,6 +201,7 @@ public class ApplicationModel extends ScopeModel {
     public ApplicationModel(FrameworkModel frameworkModel, boolean isInternal) {
         super(frameworkModel, ExtensionScope.APPLICATION);
         Assert.notNull(frameworkModel, "FrameworkModel can not be null");
+        this.isInternal = isInternal;
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
         initialize();
@@ -208,7 +209,6 @@ public class ApplicationModel extends ScopeModel {
         if (!isInternal && defaultInstance == null) {
             defaultInstance = this;
         }
-        this.isInternal = isInternal;
     }
 
     @Override
