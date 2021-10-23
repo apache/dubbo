@@ -53,7 +53,7 @@ public class RouterChain<T> {
     /**
      * full list of addresses from registry, classified by method name.
      */
-    private volatile List<Invoker<T>> invokers = Collections.emptyList();
+    private volatile BitList<Invoker<T>> invokers = new BitList<>(Collections.emptyList());
 
     /**
      * containing all routers, reconstruct every time 'route://' urls change.
@@ -163,30 +163,26 @@ public class RouterChain<T> {
      * @param invocation
      * @return
      */
-    public List<Invoker<T>> route(URL url, Invocation invocation) {
+    public BitList<Invoker<T>> route(URL url, Invocation invocation) {
 
         AddrCache<T> cache = this.cache.get();
-        List<Invoker<T>> finalInvokers = null;
+        BitList<Invoker<T>> finalInvokers = invokers.clone();
 
         if (cache != null) {
-            BitList<Invoker<T>> finalBitListInvokers = new BitList<>(invokers, false);
+            BitList<Invoker<T>> finalBitListInvokers = invokers.clone();
             for (StateRouter stateRouter : stateRouters) {
                 if (stateRouter.isEnable()) {
                     RouterCache<T> routerCache = cache.getCache().get(stateRouter.getName());
                     finalBitListInvokers = stateRouter.route(finalBitListInvokers, routerCache, url, invocation);
                 }
             }
-            finalInvokers = new ArrayList<>(finalBitListInvokers.size());
-
-            finalInvokers.addAll(finalBitListInvokers);
-        }
-
-        if (finalInvokers == null) {
-            finalInvokers = new ArrayList<>(invokers);
+            finalInvokers = finalInvokers.and(finalBitListInvokers);
         }
 
         for (Router router : routers) {
-            finalInvokers = router.route(finalInvokers, url, invocation);
+            List<Invoker<T>> copiedInvokers = new ArrayList<>(finalInvokers);
+            copiedInvokers = router.route(copiedInvokers, url, invocation);
+            finalInvokers.retainAll(copiedInvokers);
         }
         return finalInvokers;
     }
@@ -195,8 +191,8 @@ public class RouterChain<T> {
      * Notify router chain of the initial addresses from registry at the first time.
      * Notify whenever addresses in registry change.
      */
-    public void setInvokers(List<Invoker<T>> invokers) {
-        this.invokers = (invokers == null ? Collections.emptyList() : invokers);
+    public void setInvokers(BitList<Invoker<T>> invokers) {
+        this.invokers = (invokers == null ? new BitList<>(Collections.emptyList()) : invokers);
         stateRouters.forEach(router -> router.notify(this.invokers));
         routers.forEach(router -> router.notify(this.invokers));
         loop(true);
@@ -304,7 +300,7 @@ public class RouterChain<T> {
     }
 
     public void destroy() {
-        invokers = Collections.emptyList();
+        invokers = new BitList<>(Collections.emptyList());
         for (Router router : routers) {
             try {
                 router.stop();

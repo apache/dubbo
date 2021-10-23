@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -358,8 +359,8 @@ public class FailoverClusterInvokerTest {
         }
 
         @Override
-        protected List<Invoker<T>> doList(Invocation invocation) throws RpcException {
-            return new ArrayList<>(super.doList(invocation));
+        protected BitList<Invoker<T>> doList(Invocation invocation) throws RpcException {
+            return new BitList<>(super.doList(invocation));
         }
     }
 }

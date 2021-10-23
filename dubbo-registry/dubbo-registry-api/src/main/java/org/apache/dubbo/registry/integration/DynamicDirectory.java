@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
 import java.util.Collections;
 import java.util.List;
@@ -105,8 +106,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     protected volatile List<Configurator> configurators;
 
-    protected volatile List<Invoker<T>> invokers;
-
     protected ServiceInstancesChangedListener serviceListener;
 
     public DynamicDirectory(Class<T> serviceType, URL url) {
@@ -166,7 +165,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     @Override
-    public List<Invoker<T>> doList(Invocation invocation) {
+    public BitList<Invoker<T>> doList(Invocation invocation) {
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
@@ -176,10 +175,10 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         }
 
         if (multiGroup) {
-            return this.invokers == null ? Collections.emptyList() : this.invokers;
+            return this.invokers == null ? new BitList<>(Collections.emptyList()) : this.invokers;
         }
 
-        List<Invoker<T>> invokers = null;
+        BitList<Invoker<T>> invokers = null;
         try {
             // Get invokers from cache, only runtime routers will be executed.
             invokers = routerChain.route(getConsumerUrl(), invocation);
@@ -187,7 +186,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
         }
 
-        return invokers == null ? Collections.emptyList() : invokers;
+        return invokers == null ? new BitList<>(Collections.emptyList()) : invokers;
     }
 
     @Override
@@ -324,6 +323,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     protected synchronized void invokersChanged() {
+        refreshValidInvoker();
         invokersChanged = true;
         if (invokersChangedListener != null) {
             invokersChangedListener.onChange();

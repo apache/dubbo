@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.cluster.directory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -26,12 +28,24 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -43,7 +57,6 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * Abstract implementation of Directory: Invoker list returned from this Directory's list method have been filtered by Routers
- *
  */
 public abstract class AbstractDirectory<T> implements Directory<T> {
 
@@ -59,6 +72,20 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     protected RouterChain<T> routerChain;
 
     protected final Map<String, String> queryMap;
+
+    protected final ReadWriteLock invokerLock = new ReentrantReadWriteLock();
+
+    protected volatile BitList<Invoker<T>> invokers;
+
+    protected volatile BitList<Invoker<T>> validInvokers;
+
+    protected volatile List<Invoker<T>> invokersToReconnect = new CopyOnWriteArrayList<>();
+
+    protected final Set<Invoker<T>> disabledInvokers = new ConcurrentHashSet<>();
+
+    private Semaphore checkConnectivityPermit = new Semaphore(1);
+
+    private ScheduledExecutorService connectivityExecutor;
 
     public AbstractDirectory(URL url) {
         this(url, null, false);
@@ -76,7 +103,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.url = url.removeAttribute(REFER_KEY).removeAttribute(MONITOR_KEY);
 
         Map<String, String> queryMap;
-        Object referParams =  url.getAttribute(REFER_KEY);
+        Object referParams = url.getAttribute(REFER_KEY);
         if (referParams instanceof Map) {
             queryMap = (Map<String, String>) referParams;
             this.consumerUrl = (URL) url.getAttribute(CONSUMER_URL_KEY);
@@ -94,16 +121,18 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             String consumedProtocol = queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY);
 
             URL consumerUrlFrom = this.url
-                    .setHost(host)
-                    .setPort(0)
-                    .setProtocol(consumedProtocol)
-                    .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
+                .setHost(host)
+                .setPort(0)
+                .setProtocol(consumedProtocol)
+                .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
             if (isUrlFromRegistry) {
                 // reserve parameters if url is already a consumer url
                 consumerUrlFrom = consumerUrlFrom.clearParameters().setServiceModel(url.getServiceModel()).setScopeModel(url.getScopeModel());
             }
             this.consumerUrl = consumerUrlFrom.addParameters(queryMap).removeAttribute(MONITOR_KEY);
         }
+
+        this.connectivityExecutor = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getConnectivityScheduledExecutor();
 
         setRouterChain(routerChain);
     }
@@ -114,7 +143,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new RpcException("Directory already destroyed .url: " + getUrl());
         }
 
-        return doList(invocation);
+        BitList<Invoker<T>> validResult = doList(invocation).and(validInvokers);
+        if (validResult.isEmpty()) {
+            logger.warn("");
+        }
+        return validResult;
     }
 
     @Override
@@ -158,6 +191,118 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         // do nothing by default
     }
 
-    protected abstract List<Invoker<T>> doList(Invocation invocation) throws RpcException;
+    @Override
+    public void addInvalidateInvoker(Invoker<T> invoker) {
+        invokerLock.writeLock().lock();
+        try {
+            validInvokers.remove(invoker);
+            checkConnectivity();
+        } finally {
+            invokerLock.writeLock().unlock();
+        }
+    }
+
+    private void checkConnectivity() {
+        if (checkConnectivityPermit.tryAcquire()) {
+            connectivityExecutor.schedule(() -> {
+                List<Invoker<T>> needDeleteList = new ArrayList<>();
+                List<Invoker<T>> invokersToTry = new ArrayList<>();
+                // TODO
+                if (invokersToReconnect.size() < 10) {
+                    invokersToTry.addAll(invokersToReconnect);
+                } else {
+                    for (int i = 0; i < 10; i++) {
+                        Invoker<T> tInvoker = invokersToReconnect.get(ThreadLocalRandom.current().nextInt(invokersToReconnect.size()));
+                        if (!invokersToReconnect.contains(tInvoker)) {
+                            invokersToReconnect.add(tInvoker);
+                        }
+                    }
+                }
+                for (Invoker<T> invoker : invokersToTry) {
+                    if (invokers.contains(invoker)) {
+                        if (invoker.isAvailable()) {
+                            needDeleteList.add(invoker);
+                        }
+                    } else {
+                        needDeleteList.add(invoker);
+                    }
+                }
+
+                invokerLock.writeLock().lock();
+                try {
+                    for (Invoker<T> tInvoker : needDeleteList) {
+                        try {
+                            validInvokers.add(tInvoker);
+                            logger.info("Recover service address: " + tInvoker.getUrl() + "  from invalid list.");
+                        } catch (Throwable ignore) {
+
+                        }
+                        invokersToReconnect.remove(tInvoker);
+                    }
+                } finally {
+                    invokerLock.writeLock().unlock();
+                }
+
+                checkConnectivityPermit.release();
+                //have more to recover
+                if (!invokersToReconnect.isEmpty()) {
+                    checkConnectivity();
+                }
+            }, 1, TimeUnit.SECONDS);
+        }
+    }
+
+    public synchronized void refreshValidInvoker() {
+        invokerLock.writeLock().lock();
+        try {
+            BitList<Invoker<T>> copiedInvokers = invokers.clone();
+            refreshInvokers(copiedInvokers, invokersToReconnect);
+            refreshInvokers(copiedInvokers, disabledInvokers);
+            validInvokers = copiedInvokers;
+        } finally {
+            invokerLock.writeLock().unlock();
+        }
+    }
+
+    private void refreshInvokers(BitList<Invoker<T>> copiedInvokers, Collection<Invoker<T>> invokersToRemove) {
+        for (Iterator<Invoker<T>> iterator = invokersToRemove.iterator(); iterator.hasNext(); ) {
+            Invoker<T> tInvoker = iterator.next();
+            if (copiedInvokers.contains(tInvoker)) {
+                copiedInvokers.remove(tInvoker);
+            } else {
+                iterator.remove();
+            }
+        }
+    }
+
+    @Override
+    public void addDisabledInvoker(Invoker<T> invoker) {
+        invokerLock.writeLock().lock();
+        try {
+            disabledInvokers.add(invoker);
+            validInvokers.remove(invoker);
+            logger.info("Disable service address: " + invoker.getUrl() + ".");
+        } finally {
+            invokerLock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public void recoverDisabledInvoker(Invoker<T> invoker) {
+        invokerLock.writeLock().lock();
+        try {
+            disabledInvokers.remove(invoker);
+            try {
+                validInvokers.add(invoker);
+                logger.info("Recover service address: " + invoker.getUrl() + "  from disabled list.");
+            } catch (Throwable ignore) {
+
+            }
+        } finally {
+            invokerLock.writeLock().unlock();
+        }
+    }
+
+    protected abstract BitList<Invoker<T>> doList(Invocation invocation) throws RpcException;
 
 }

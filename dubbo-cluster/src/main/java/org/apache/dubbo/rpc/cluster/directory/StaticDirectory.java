@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,8 +34,6 @@ import java.util.List;
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(StaticDirectory.class);
-
-    private final List<Invoker<T>> invokers;
 
     public StaticDirectory(List<Invoker<T>> invokers) {
         this(null, invokers, null);
@@ -53,7 +52,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new IllegalArgumentException("invokers == null");
         }
-        this.invokers = invokers;
+        this.invokers = new BitList<>(invokers);
     }
 
     @Override
@@ -99,8 +98,8 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     @Override
-    protected List<Invoker<T>> doList(Invocation invocation) throws RpcException {
-        List<Invoker<T>> finalInvokers = invokers;
+    protected BitList<Invoker<T>> doList(Invocation invocation) throws RpcException {
+        BitList<Invoker<T>> finalInvokers = invokers;
         if (routerChain != null) {
             try {
                 finalInvokers = routerChain.route(getConsumerUrl(), invocation);
@@ -108,7 +107,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
                 logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
             }
         }
-        return finalInvokers == null ? Collections.emptyList() : finalInvokers;
+        return finalInvokers == null ? new BitList<>(Collections.emptyList()) : finalInvokers;
     }
 
 }

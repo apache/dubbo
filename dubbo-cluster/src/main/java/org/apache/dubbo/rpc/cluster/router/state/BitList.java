@@ -65,6 +65,12 @@ public class BitList<E> extends AbstractList<E> {
         return new BitList<>(totalList, resultSet);
     }
 
+    public BitList<E> and(BitList<E> b) {
+        BitSet resultSet = (BitSet) rootSet.clone();
+        resultSet.and(b.rootSet);
+        return new BitList<>(unmodifiableList, resultSet);
+    }
+
     // Provided by JDK List interface
     @Override
     public int size() {
@@ -246,7 +252,7 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     @Override
-    protected BitList<E> clone() {
+    public BitList<E> clone() {
         return new BitList<>(unmodifiableList, (BitSet) rootSet.clone());
     }
 }

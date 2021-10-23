@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -54,7 +56,7 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
         int originalHashCode = lb.getCorrespondingHashCode(invokers);
 
         for (int i = 0; i < 100; i++) {
-            routerChain.setInvokers(invokers);
+            routerChain.setInvokers(new BitList<>(invokers));
             List<Invoker<LoadBalanceBaseTest>> routeInvokers = routerChain.route(url, invocation);
 
             Assertions.assertEquals(originalHashCode, lb.getCorrespondingHashCode(routeInvokers));
