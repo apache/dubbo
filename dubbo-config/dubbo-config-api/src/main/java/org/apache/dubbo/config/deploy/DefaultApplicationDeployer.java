@@ -117,7 +117,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private String identifier;
     private volatile CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
-    private Object stateLock = new Object();
+    private Object moduleStateLock = new Object();
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -219,7 +219,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void initModuleDeployers() {
         // make sure created default module
         applicationModel.getDefaultModule();
-        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+        // copy modules and initialize avoid ConcurrentModificationException if add new module
+        List<ModuleModel> moduleModels = new ArrayList<>(applicationModel.getModuleModels());
+        for (ModuleModel moduleModel : moduleModels) {
             moduleModel.getDeployer().initialize();
         }
     }
@@ -518,8 +520,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
         }
 
-        CompletableFuture startFuture = getStartFuture();
-
         // maybe call start again after add new module, check if any new module
         boolean hasPendingModule = hasPendingModule();
 
@@ -535,10 +535,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         // if is started and no new module, just return
         if (isStarted() && !hasPendingModule) {
-            completeStartFuture(false);
-            return startFuture;
+            return CompletableFuture.completedFuture(false);
         }
 
+        // pending -> starting : first start app
+        // started -> starting : re-start app
+        startFuture = new CompletableFuture();
         onStarting();
 
         initialize();
@@ -559,14 +561,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return found;
     }
 
-    private CompletableFuture getStartFuture() {
-        if (startFuture == null) {
-            synchronized (this) {
-                if (startFuture == null) {
-                    startFuture = new CompletableFuture();
-                }
-            }
-        }
+    @Override
+    public Future getStartFuture() {
         return startFuture;
     }
 
@@ -578,11 +574,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         prepareApplicationInstance();
 
         executorRepository.getSharedExecutor().submit(() -> {
-            while (true) {
-                // notify on each module started
-                synchronized (stateLock) {
+            while (isStarting()) {
+                // notify when any module state changed
+                synchronized (moduleStateLock) {
                     try {
-                        stateLock.wait(500);
+                        moduleStateLock.wait(500);
                     } catch (InterruptedException e) {
                         // ignore
                     }
@@ -591,13 +587,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 // if has new module, do start again
                 if (hasPendingModule()) {
                     startModules();
-                    continue;
-                }
-
-                DeployState newState = calculateState();
-                if (!(newState == DeployState.STARTING || newState == DeployState.PENDING)) {
-                    // start finished or error
-                    break;
                 }
             }
         });
@@ -607,14 +596,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // ensure init and start internal module first
         prepareInternalModule();
 
-        // copy current modules, ignore new module during starting
-        List<ModuleModel> moduleModels = new ArrayList<>(applicationModel.getModuleModels());
-        for (ModuleModel moduleModel : moduleModels) {
-            // export services in module
-            if (moduleModel.getDeployer().isPending()) {
-                moduleModel.getDeployer().start();
-            }
-        }
+        // filter and start pending modules, ignore new module during starting
+        applicationModel.getModuleModels().stream()
+            .filter(moduleModel -> moduleModel.getDeployer().isPending())
+            .forEach(moduleModel -> moduleModel.getDeployer().start());
     }
 
     @Override
@@ -894,8 +879,17 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public void checkState() {
-        // TODO improve newState checking
+    public void notifyModuleChanged(ModuleModel moduleModel, DeployState state) {
+        checkState();
+
+        // notify module state changed or module changed
+        synchronized (moduleStateLock) {
+            moduleStateLock.notifyAll();
+        }
+    }
+
+    @Override
+    public synchronized void checkState() {
         DeployState newState = calculateState();
         switch (newState) {
             case STARTED:
@@ -911,13 +905,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 onStopped();
                 break;
             case PENDING:
-                setPending();
+                // cannot change to pending from other state
+                // setPending();
                 break;
-        }
-
-        // notify started
-        synchronized (stateLock) {
-            stateLock.notifyAll();
         }
     }
 
@@ -971,7 +961,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onStarting() {
-        if (isStarting()) {
+        // pending -> starting
+        // started -> starting
+        if (!(isPending() || isStarted())) {
             return;
         }
         setStarting();
@@ -981,7 +973,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onStarted() {
-        if (isStarted()) {
+        // starting -> started
+        if (!isStarting()) {
             return;
         }
         setStarted();
@@ -1006,18 +999,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private void completeStartFuture(boolean success) {
         if (startFuture != null) {
             startFuture.complete(success);
-            startFuture = null;
         }
     }
 
     private void onStopping() {
-        if (isStopping()) {
+        if (isStopping() || isStopped()) {
             return;
         }
         setStopping();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is stopping.");
         }
+        completeStartFuture(false);
     }
 
     private void onStopped() {
@@ -1028,7 +1021,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " has stopped.");
         }
-
+        completeStartFuture(false);
     }
 
     private void destroyExecutorRepository() {

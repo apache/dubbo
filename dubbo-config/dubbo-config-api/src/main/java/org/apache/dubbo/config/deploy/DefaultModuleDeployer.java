@@ -19,6 +19,7 @@ package org.apache.dubbo.config.deploy;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployListener;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.logger.Logger;
@@ -72,6 +73,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private Boolean background;
     private Boolean exportAsync;
     private Boolean referAsync;
+    private CompletableFuture<?> exportFuture;
+    private CompletableFuture<?> referFuture;
 
 
     public DefaultModuleDeployer(ModuleModel moduleModel) {
@@ -155,7 +158,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             // wait for refer finish
             waitReferFinish();
 
-            onModuleStarted(startFuture);
+            onModuleStarted();
         });
 
         return startFuture;
@@ -227,27 +230,43 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void onModuleStarting() {
         setStarting();
         logger.info(getIdentifier() + " is starting.");
-        applicationDeployer.checkState();
+        applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTING);
     }
 
-    private void onModuleStarted(CompletableFuture startFuture) {
-        setStarted();
-        logger.info(getIdentifier() + " has started.");
-        applicationDeployer.checkState();
-        // complete module start future after application state changed, fix #9012 ?
-        startFuture.complete(true);
+    private void onModuleStarted() {
+        if (isStarting()) {
+            setStarted();
+            logger.info(getIdentifier() + " has started.");
+            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
+            // complete module start future after application state changed
+            completeStartFuture(true);
+        }
+    }
+
+    private void completeStartFuture(boolean value) {
+        if (startFuture != null && !startFuture.isDone()) {
+            startFuture.complete(value);
+        }
+        if (exportFuture != null && !exportFuture.isDone()) {
+            exportFuture.cancel(true);
+        }
+        if (referFuture != null && !referFuture.isDone()) {
+            referFuture.cancel(true);
+        }
     }
 
     private void onModuleStopping() {
         setStopping();
         logger.info(getIdentifier() + " is stopping.");
-        applicationDeployer.checkState();
+        applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STOPPING);
+        completeStartFuture(false);
     }
 
     private void onModuleStopped() {
         setStopped();
         logger.info(getIdentifier() + " has stopped.");
-        applicationDeployer.checkState();
+        applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STOPPED);
+        completeStartFuture(false);
     }
 
     private void loadConfigs() {
@@ -358,10 +377,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void waitExportFinish() {
         try {
             logger.info(getIdentifier() + " waiting services exporting ...");
-            CompletableFuture<?> future = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
-            future.get();
+            exportFuture = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
+            exportFuture.get();
         } catch (Exception e) {
-            logger.warn(getIdentifier() + " export services occurred an exception.");
+            logger.warn(getIdentifier() + " export services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " export services finished.");
             asyncExportingFutures.clear();
@@ -371,10 +390,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void waitReferFinish() {
         try {
             logger.info(getIdentifier() + " waiting services referring ...");
-            CompletableFuture<?> future = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
-            future.get();
+            referFuture = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
+            referFuture.get();
         } catch (Exception e) {
-            logger.warn(getIdentifier() + " refer services occurred an exception.");
+            logger.warn(getIdentifier() + " refer services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " refer services finished.");
             asyncReferringFutures.clear();
