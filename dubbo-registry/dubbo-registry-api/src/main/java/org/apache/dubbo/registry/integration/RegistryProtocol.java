@@ -645,7 +645,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     public static class InvokerDelegate<T> extends InvokerWrapper<T> {
-        private final Invoker<T> invoker;
 
         /**
          * @param invoker
@@ -653,7 +652,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
          */
         public InvokerDelegate(Invoker<T> invoker, URL url) {
             super(invoker, url);
-            this.invoker = invoker;
         }
 
         public Invoker<T> getInvoker() {
