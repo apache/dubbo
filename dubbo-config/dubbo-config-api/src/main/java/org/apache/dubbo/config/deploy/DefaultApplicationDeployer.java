@@ -540,7 +540,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
         // pending -> starting : first start app
         // started -> starting : re-start app
-        startFuture = new CompletableFuture();
         onStarting();
 
         initialize();
@@ -969,6 +968,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
         setStarting();
+        startFuture = new CompletableFuture();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is starting.");
         }

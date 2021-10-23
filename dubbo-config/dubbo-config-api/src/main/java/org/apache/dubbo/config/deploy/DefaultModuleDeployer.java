@@ -134,11 +134,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         }
 
         onModuleStarting();
-        startFuture = new CompletableFuture();
-
-        applicationDeployer.initialize();
 
         // initialize
+        applicationDeployer.initialize();
         initialize();
 
         // export services
@@ -229,6 +227,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private void onModuleStarting() {
         setStarting();
+        startFuture = new CompletableFuture();
         logger.info(getIdentifier() + " is starting.");
         applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTING);
     }
