@@ -127,11 +127,13 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             return startFuture;
         }
 
+        boolean isApplicationDeployerStartingBeforeThisCalling = applicationDeployer.isStarting();
+
         onModuleStarting();
         startFuture = new CompletableFuture();
 
-        // check applicationDeployer state to avoid recursive calling.
-        if (!applicationDeployer.isRunning()) {
+        // check applicationDeployer original state to avoid re-initializing.
+        if (!isApplicationDeployerStartingBeforeThisCalling) {
             applicationDeployer.initialize();
         }
 
@@ -141,8 +143,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         // export services
         exportServices();
 
-        // check applicationDeployer state to avoid recursive calling.
-        if (!applicationDeployer.isRunning()) {
+        // check applicationDeployer original state to avoid re-preparation.
+        if (!isApplicationDeployerStartingBeforeThisCalling) {
             // prepare application instance
             applicationDeployer.prepareApplicationInstance();
         }
