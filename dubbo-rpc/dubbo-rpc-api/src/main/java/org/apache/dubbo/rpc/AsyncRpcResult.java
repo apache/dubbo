@@ -80,7 +80,7 @@ public class AsyncRpcResult implements Result {
 
     /**
      * CompletableFuture can only be completed once, so try to update the result of one completed CompletableFuture will
-     * has no effect. To avoid this problem, we check the complete status of this future before update it's value.
+     * have no effect. To avoid this problem, we check the complete status of this future before update its value.
      *
      * But notice that trying to give an uncompleted CompletableFuture a new specified value may face a race condition,
      * because the background thread watching the real result will also change the status of this CompletableFuture.
