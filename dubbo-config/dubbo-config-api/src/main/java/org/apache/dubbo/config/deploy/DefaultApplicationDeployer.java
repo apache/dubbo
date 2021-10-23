@@ -117,7 +117,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private String identifier;
     private volatile CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
-    private Object moduleStateLock = new Object();
+    private Object stateLock = new Object();
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -576,9 +576,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         executorRepository.getSharedExecutor().submit(() -> {
             while (isStarting()) {
                 // notify when any module state changed
-                synchronized (moduleStateLock) {
+                synchronized (stateLock) {
                     try {
-                        moduleStateLock.wait(500);
+                        stateLock.wait(500);
                     } catch (InterruptedException e) {
                         // ignore
                     }
@@ -883,31 +883,33 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         checkState();
 
         // notify module state changed or module changed
-        synchronized (moduleStateLock) {
-            moduleStateLock.notifyAll();
+        synchronized (stateLock) {
+            stateLock.notifyAll();
         }
     }
 
     @Override
-    public synchronized void checkState() {
-        DeployState newState = calculateState();
-        switch (newState) {
-            case STARTED:
-                onStarted();
-                break;
-            case STARTING:
-                onStarting();
-                break;
-            case STOPPING:
-                onStopping();
-                break;
-            case STOPPED:
-                onStopped();
-                break;
-            case PENDING:
-                // cannot change to pending from other state
-                // setPending();
-                break;
+    public void checkState() {
+        synchronized (stateLock) {
+            DeployState newState = calculateState();
+            switch (newState) {
+                case STARTED:
+                    onStarted();
+                    break;
+                case STARTING:
+                    onStarting();
+                    break;
+                case STOPPING:
+                    onStopping();
+                    break;
+                case STOPPED:
+                    onStopped();
+                    break;
+                case PENDING:
+                    // cannot change to pending from other state
+                    // setPending();
+                    break;
+            }
         }
     }
 
