@@ -18,6 +18,7 @@ package org.apache.dubbo.common.timer;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 
@@ -99,8 +100,7 @@ public class HashedWheelTimer implements Timer {
             AtomicIntegerFieldUpdater.newUpdater(HashedWheelTimer.class, "workerState");
 
     private static final ExecutorService DEFAULT_TIMER_TASK_EXECUTOR =
-            Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
-            new NamedThreadFactory("HashedWheelTimerTask", true));
+            GlobalResourcesRepository.getGlobalExecutorService();
 
     private final Worker worker = new Worker();
     private final Thread workerThread;
