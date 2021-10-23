@@ -130,7 +130,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         onModuleStarting();
         startFuture = new CompletableFuture();
 
-        applicationDeployer.initialize();
+        // check applicationDeployer state to avoid recursive calling.
+        if (!applicationDeployer.isRunning()) {
+            applicationDeployer.initialize();
+        }
 
         // initialize
         initialize();
@@ -138,8 +141,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         // export services
         exportServices();
 
-        // prepare application instance
-        applicationDeployer.prepareApplicationInstance();
+        // check applicationDeployer state to avoid recursive calling.
+        if (!applicationDeployer.isRunning()) {
+            // prepare application instance
+            applicationDeployer.prepareApplicationInstance();
+        }
 
         // refer services
         referServices();
