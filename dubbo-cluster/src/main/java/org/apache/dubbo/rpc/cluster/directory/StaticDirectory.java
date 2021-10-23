@@ -89,6 +89,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
             invoker.destroy();
         }
         invokers.clear();
+        validInvokers.clear();
     }
 
     public void buildRouterChain() {
@@ -96,6 +97,14 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         routerChain.setInvokers(invokers);
         routerChain.loop(true);
         this.setRouterChain(routerChain);
+    }
+
+    public void notify(List<Invoker<T>> invokers) {
+        this.invokers = new BitList<>(invokers);
+        refreshValidInvoker();
+        if (routerChain != null) {
+            routerChain.setInvokers(this.invokers);
+        }
     }
 
     @Override

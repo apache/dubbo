@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -487,6 +488,7 @@ public class AbstractClusterInvokerTest {
     }
 
     private void initDic() {
+        dic.notify(invokers);
         dic.buildRouterChain();
     }
 
