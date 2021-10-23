@@ -336,11 +336,6 @@
                 <version>${protobuf-java_version}</version>
             </dependency>
             <dependency>
-                <groupId>org.roaringbitmap</groupId>
-                <artifactId>RoaringBitmap</artifactId>
-                <version>${roaringbitmap_version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.bouncycastle</groupId>
                 <artifactId>bcprov-jdk15on</artifactId>
                 <version>${bouncycastle-bcprov_version}</version>

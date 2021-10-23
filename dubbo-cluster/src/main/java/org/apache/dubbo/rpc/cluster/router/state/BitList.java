@@ -16,217 +16,234 @@
  */
 package org.apache.dubbo.rpc.cluster.router.state;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.roaringbitmap.IntIterator;
-import org.roaringbitmap.RoaringBitmap;
-
 /**
  * BitList based on BitMap implementation.
+ *
  * @param <E>
  * @since 3.0
  */
-public class BitList<E> implements List<E> {
-    private final RoaringBitmap rootMap;
+public class BitList<E> extends AbstractList<E> {
+    private final BitSet rootSet;
     private final List<E> unmodifiableList;
-
-    public BitList(List<E> unmodifiableList, boolean empty) {
-        this.unmodifiableList = unmodifiableList;
-        this.rootMap = new RoaringBitmap();
-        if (!empty) {
-            this.rootMap.add(0L, unmodifiableList.size());
-        }
-    }
-
-    public BitList(List<E> unmodifiableList, RoaringBitmap rootMap) {
-        this.unmodifiableList = unmodifiableList;
-        this.rootMap = rootMap;
-    }
 
     public BitList(List<E> unmodifiableList) {
         this(unmodifiableList, false);
     }
 
+    public BitList(List<E> unmodifiableList, boolean empty) {
+        this.unmodifiableList = new ArrayList<>(unmodifiableList);
+        this.rootSet = new BitSet();
+        if (!empty) {
+            this.rootSet.set(0, unmodifiableList.size());
+        }
+    }
+
+    public BitList(List<E> unmodifiableList, BitSet rootSet) {
+        this.unmodifiableList = new ArrayList<>(unmodifiableList);
+        this.rootSet = rootSet;
+    }
+
+    // Provided by BitList only
     public List<E> getUnmodifiableList() {
         return unmodifiableList;
     }
 
     public void addIndex(int index) {
-        this.rootMap.add(index);
+        this.rootSet.set(index);
     }
 
     public BitList<E> intersect(List<E> b, List<E> totalList) {
-        RoaringBitmap resultMap = rootMap.clone();
-        resultMap.and(((BitList)b).rootMap);
-        return new BitList<>(totalList, resultMap);
+        BitSet resultSet = (BitSet) rootSet.clone();
+        resultSet.and(((BitList) b).rootSet);
+        return new BitList<>(totalList, resultSet);
     }
 
+    // Provided by JDK List interface
     @Override
     public int size() {
-        return rootMap.getCardinality();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return rootMap.isEmpty();
+        return rootSet.cardinality();
     }
 
     @Override
     public boolean contains(Object o) {
         int idx = unmodifiableList.indexOf(o);
-        return idx >= 0 && rootMap.contains(idx);
+        return idx >= 0 && rootSet.get(idx);
     }
 
     @Override
     public Iterator<E> iterator() {
-        return new Iterator<E>() {
-            private int prev = -1;
-
-            @Override
-            public boolean hasNext() {
-                return -1 != rootMap.nextValue(prev + 1);
-            }
-
-            @Override
-            public E next() {
-                prev = (int)rootMap.nextValue(prev + 1);
-                return unmodifiableList.get(prev);
-            }
-
-            @Override
-            public void remove() {
-                rootMap.remove(prev);
-            }
-        };
-    }
-
-    @Override
-    public Object[] toArray() {
-        int size = size();
-        Object[] obj = new Object[size];
-        for (int i = 0; i < size; i++) {
-            obj[i] = unmodifiableList.get(rootMap.select(i));
-        }
-        return obj;
-    }
-
-    @Override
-    public <T> T[] toArray(T[] a) {
-        int size = size();
-        Object[] arr = toArray();
-        if (a.length < size)
-        // Make a new array of a's runtime type, but my contents:
-        { return (T[])Arrays.copyOf(arr, size, a.getClass()); }
-        System.arraycopy(arr, 0, a, 0, size);
-        if (a.length > size) { a[size] = null; }
-        return null;
+        return new BitListIterator<>(this, 0);
     }
 
     @Override
     public boolean add(E e) {
-        throw new UnsupportedOperationException();
+        int index = unmodifiableList.indexOf(e);
+        if (index > -1) {
+            rootSet.set(index);
+            return true;
+        } else {
+            throw new UnsupportedOperationException("BitList only support adding element which is the element of origin list.");
+        }
     }
 
     @Override
     public boolean remove(Object o) {
         int idx = unmodifiableList.indexOf(o);
-        if (idx > -1) {
-            rootMap.remove(idx);
+        if (idx > -1 && rootSet.get(idx)) {
+            rootSet.set(idx, false);
+            return true;
         }
-        return true;
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends E> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean addAll(int index, Collection<? extends E> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> c) {
-        for (Object o : c) {
-            remove(o);
-        }
-        return true;
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> c) {
         return false;
     }
 
     @Override
     public void clear() {
-        rootMap.clear();
+        rootSet.clear();
+        // to remove references
+        unmodifiableList.clear();
     }
 
     @Override
     public E get(int index) {
-        int real = rootMap.select(index);
-        return unmodifiableList.get(real);
-    }
-
-    @Override
-    public E set(int index, E element) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void add(int index, E element) {
-        throw new UnsupportedOperationException();
+        int bitIndex = -1;
+        for (int i = 0; i <= index; i++) {
+            bitIndex = rootSet.nextSetBit(bitIndex + 1);
+        }
+        return unmodifiableList.get(bitIndex);
     }
 
     @Override
     public E remove(int index) {
-        rootMap.remove(index);
-        return null;
+        int bitIndex = -1;
+        for (int i = 0; i <= index; i++) {
+            bitIndex = rootSet.nextSetBit(bitIndex + 1);
+            if (bitIndex == -1) {
+                return null;
+            }
+        }
+        rootSet.set(index, false);
+        return unmodifiableList.get(bitIndex);
     }
 
     @Override
     public int indexOf(Object o) {
-        IntIterator intIterator = rootMap.getIntIterator();
-        int st = 0;
-        while (intIterator.hasNext()) {
-            int idxInMap = intIterator.next();
-            if (unmodifiableList.get(idxInMap).equals(o)) {
-                return st;
+        int bitIndex = -1;
+        for (int i = 0; i < size(); i++) {
+            bitIndex = rootSet.nextSetBit(bitIndex + 1);
+            if (unmodifiableList.get(bitIndex).equals(o)) {
+                return i;
             }
-            st++;
         }
         return -1;
     }
 
     @Override
     public int lastIndexOf(Object o) {
-        throw new UnsupportedOperationException();
+        int bitIndex = -1;
+        int index = -1;
+        for (int i = 0; i < size(); i++) {
+            bitIndex = rootSet.nextSetBit(bitIndex + 1);
+            if (unmodifiableList.get(bitIndex).equals(o)) {
+                index = i;
+            }
+        }
+        return index;
     }
 
     @Override
     public ListIterator<E> listIterator() {
-        throw new UnsupportedOperationException();
+        return new BitListIterator<>(this, 0);
     }
 
     @Override
     public ListIterator<E> listIterator(int index) {
-        throw new UnsupportedOperationException();
+        return new BitListIterator<>(this, index);
     }
 
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
-        throw new UnsupportedOperationException();
+        BitSet resultSet = (BitSet) rootSet.clone();
+        if (fromIndex > 0) {
+            resultSet.set(0, fromIndex, false);
+        }
+        if (toIndex < resultSet.length()) {
+            resultSet.set(toIndex, resultSet.length(), false);
+        }
+        return new BitList<>(unmodifiableList, resultSet);
     }
 
+    public static class BitListIterator<E> implements ListIterator<E> {
+        private BitList<E> bitList;
+        private int index;
+        private int curBitIndex = -1;
+
+        public BitListIterator(BitList<E> bitList, int index) {
+            this.bitList = bitList;
+            this.index = index - 1;
+            for (int i = 0; i < index; i++) {
+                curBitIndex = bitList.rootSet.nextSetBit(curBitIndex + 1);
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return -1 != bitList.rootSet.nextSetBit(curBitIndex + 1);
+        }
+
+        @Override
+        public E next() {
+            curBitIndex = bitList.rootSet.nextSetBit(curBitIndex + 1);
+            index += 1;
+            return bitList.unmodifiableList.get(curBitIndex);
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return curBitIndex != -1 && bitList.rootSet.previousSetBit(curBitIndex - 1) > -1;
+        }
+
+        @Override
+        public E previous() {
+            curBitIndex = bitList.rootSet.previousSetBit(curBitIndex - 1);
+            index -= 1;
+            return bitList.unmodifiableList.get(curBitIndex);
+        }
+
+        @Override
+        public int nextIndex() {
+            return hasNext() ? index + 1 : index;
+        }
+
+        @Override
+        public int previousIndex() {
+            return hasPrevious() ? index - 1: index;
+        }
+
+        @Override
+        public void remove() {
+            bitList.rootSet.set(curBitIndex, false);
+        }
+
+        @Override
+        public void set(E e) {
+            throw new UnsupportedOperationException("Set method is not supported in BitListIterator!");
+        }
+
+        @Override
+        public void add(E e) {
+            throw new UnsupportedOperationException("Add method is not supported in BitListIterator!");
+        }
+    }
+
+    @Override
+    protected BitList<E> clone() {
+        return new BitList<>(unmodifiableList, (BitSet) rootSet.clone());
+    }
 }
