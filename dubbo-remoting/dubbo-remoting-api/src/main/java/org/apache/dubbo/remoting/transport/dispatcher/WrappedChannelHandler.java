@@ -111,7 +111,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         if (msg instanceof Response) {
             Response response = (Response) msg;
             DefaultFuture responseFuture = DefaultFuture.getFuture(response.getId());
-            // a typical scenario is the response returned after timeout, the timeout response may has completed the future
+            // a typical scenario is the response returned after timeout, the timeout response may have completed the future
             if (responseFuture == null) {
                 return getSharedExecutorService();
             } else {

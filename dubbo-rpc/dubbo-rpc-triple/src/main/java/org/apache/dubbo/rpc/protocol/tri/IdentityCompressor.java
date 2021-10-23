@@ -22,7 +22,6 @@ package org.apache.dubbo.rpc.protocol.tri;
  */
 public class IdentityCompressor implements Compressor {
 
-    public static final Compressor NONE = new IdentityCompressor();
 
     @Override
     public String getMessageEncoding() {

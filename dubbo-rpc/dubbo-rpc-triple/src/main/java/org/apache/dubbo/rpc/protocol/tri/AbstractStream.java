@@ -25,11 +25,9 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
-import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import com.google.protobuf.Any;
@@ -52,13 +50,15 @@ public abstract class AbstractStream implements Stream {
     private final TransportObserver transportObserver;
     private final Executor executor;
     private final CancellationContext cancellationContext;
-    private ServiceDescriptor serviceDescriptor;
+    // AcceptEncoding does not change after the application is started,
+    // so it can be obtained when constructing the stream
+    private final String acceptEncoding;
+
     private MethodDescriptor methodDescriptor;
     private String methodName;
-    private Request request;
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
-    private TransportObserver transportSubscriber;
+    private AbstractChannelTransportObserver transportSubscriber;
     private Compressor compressor = IdentityCompressor.NONE;
     private Compressor deCompressor = IdentityCompressor.NONE;
     private volatile boolean cancelled = false;
@@ -77,14 +77,7 @@ public abstract class AbstractStream implements Stream {
         this.cancellationContext = new CancellationContext();
         this.transportObserver = createTransportObserver();
         this.streamObserver = createStreamObserver();
-    }
-
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    protected CancellationContext getCancellationContext() {
-        return cancellationContext;
+        this.acceptEncoding = Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel());
     }
 
     private Executor lookupExecutor(URL url, Executor executor) {
@@ -106,13 +99,20 @@ public abstract class AbstractStream implements Stream {
         return new SerializingExecutor(executor);
     }
 
-    public Request getRequest() {
-        return request;
+    public String getAcceptEncoding() {
+        return acceptEncoding;
     }
 
-    public AbstractStream request(Request request) {
-        this.request = request;
-        return this;
+    public TransportState getState() {
+        return transportSubscriber.state;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    protected CancellationContext getCancellationContext() {
+        return cancellationContext;
     }
 
     @Override
@@ -131,6 +131,7 @@ public abstract class AbstractStream implements Stream {
 
     public AbstractStream method(MethodDescriptor md) {
         this.methodDescriptor = md;
+        this.methodName = md.getMethodName();
         return this;
     }
 
@@ -163,8 +164,14 @@ public abstract class AbstractStream implements Stream {
 
     protected abstract void cancelByLocal(Throwable throwable);
 
+    /**
+     * create request StreamObserver
+     */
     protected abstract StreamObserver<Object> createStreamObserver();
 
+    /**
+     * create response TransportObserver
+     */
     protected abstract TransportObserver createTransportObserver();
 
     public String getSerializeType() {
@@ -172,8 +179,8 @@ public abstract class AbstractStream implements Stream {
     }
 
     public AbstractStream serialize(String serializeType) {
-        if ("hessian4".equals(serializeType)) {
-            serializeType = "hessian2";
+        if (TripleConstant.HESSIAN4.equals(serializeType)) {
+            serializeType = TripleConstant.HESSIAN2;
         }
         this.serializeType = serializeType;
         return this;
@@ -193,14 +200,6 @@ public abstract class AbstractStream implements Stream {
 
     public MethodDescriptor getMethodDescriptor() {
         return methodDescriptor;
-    }
-
-    public ServiceDescriptor getServiceDescriptor() {
-        return serviceDescriptor;
-    }
-
-    public void setServiceDescriptor(ServiceDescriptor serviceDescriptor) {
-        this.serviceDescriptor = serviceDescriptor;
     }
 
     public Compressor getCompressor() {
@@ -256,7 +255,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     @Override
-    public void subscribe(TransportObserver observer) {
+    public void subscribe(AbstractChannelTransportObserver observer) {
         this.transportSubscriber = observer;
     }
 
@@ -284,7 +283,7 @@ public abstract class AbstractStream implements Stream {
         }
         getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
-            LOGGER.error("[Triple-Server-Error] status=" + status.code.code + " service=" + getServiceDescriptor().getServiceName()
+            LOGGER.error("[Triple-Error] status=" + status.code.code
                 + " method=" + getMethodName() + " onlyTrailers=" + onlyTrailers, status.cause);
         }
     }
@@ -349,7 +348,7 @@ public abstract class AbstractStream implements Stream {
             if (TripleHeaderEnum.containsExcludeAttachments(key)) {
                 continue;
             }
-            if (key.endsWith("-bin") && key.length() > 4) {
+            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > 4) {
                 try {
                     attachments.put(key.substring(0, key.length() - 4), TripleUtil.decodeASCIIByte(header.getValue()));
                 } catch (Exception e) {
@@ -363,6 +362,9 @@ public abstract class AbstractStream implements Stream {
     }
 
     protected void convertAttachment(Metadata metadata, Map<String, Object> attachments) {
+        if (attachments == null) {
+            return;
+        }
         for (Map.Entry<String, Object> entry : attachments.entrySet()) {
             final String key = entry.getKey().toLowerCase(Locale.ROOT);
             if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
@@ -376,6 +378,13 @@ public abstract class AbstractStream implements Stream {
         }
     }
 
+    /**
+     * Convert each user's attach value to metadata
+     *
+     * @param metadata {@link Metadata}
+     * @param key      metadata key
+     * @param v        metadata value (Metadata Only string and byte arrays are allowed)
+     */
     private void convertSingleAttachment(Metadata metadata, String key, Object v) {
         try {
             if (v instanceof String) {
@@ -383,7 +392,7 @@ public abstract class AbstractStream implements Stream {
                 metadata.put(key, str);
             } else if (v instanceof byte[]) {
                 String str = TripleUtil.encodeBase64ASCII((byte[]) v);
-                metadata.put(key + "-bin", str);
+                metadata.put(key + TripleConstant.GRPC_BIN_SUFFIX, str);
             }
         } catch (Throwable t) {
             LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v, t);
@@ -412,7 +421,10 @@ public abstract class AbstractStream implements Stream {
 
         @Override
         public void onReset(Http2Error http2Error) {
-            getTransportSubscriber().onReset(http2Error);
+            if (getState().allowSendReset()) {
+                getState().setResetSend();
+                getTransportSubscriber().onReset(http2Error);
+            }
         }
 
         @Override
@@ -454,14 +466,19 @@ public abstract class AbstractStream implements Stream {
 
         @Override
         public void onComplete() {
-            final GrpcStatus status = extractStatusFromMeta(getHeaders());
-            if (Code.isOk(status.code.code)) {
-                doOnComplete();
-            } else {
-                onError(status);
-            }
+            execute(() -> {
+                final GrpcStatus status = extractStatusFromMeta(getHeaders());
+                if (Code.isOk(status.code.code)) {
+                    doOnComplete();
+                } else {
+                    onError(status);
+                }
+            });
         }
 
+        /**
+         * This method exception needs to be caught by the implementation class
+         */
         protected abstract void doOnComplete();
 
 

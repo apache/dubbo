@@ -50,4 +50,9 @@ public class PortUnificationExchanger {
             }
         }
     }
+
+    // for test
+    public static ConcurrentMap<String, PortUnificationServer> getServers() {
+        return servers;
+    }
 }

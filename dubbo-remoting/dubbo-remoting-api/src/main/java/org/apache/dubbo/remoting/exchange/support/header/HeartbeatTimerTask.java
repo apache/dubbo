@@ -44,8 +44,9 @@ public class HeartbeatTimerTask extends AbstractTimerTask {
         try {
             Long lastRead = lastRead(channel);
             Long lastWrite = lastWrite(channel);
-            if ((lastRead != null && now() - lastRead > heartbeat)
-                    || (lastWrite != null && now() - lastWrite > heartbeat)) {
+            Long now = now();
+            if ((lastRead != null && now - lastRead > heartbeat)
+                    || (lastWrite != null && now - lastWrite > heartbeat)) {
                 Request req = new Request();
                 req.setVersion(Version.getProtocolVersion());
                 req.setTwoWay(true);
