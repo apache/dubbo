@@ -128,6 +128,18 @@ public class BitListTest {
     }
 
     @Test
+    public void testGet() {
+        List<String> list = Arrays.asList("A", "B", "C");
+        BitList<String> bitList = new BitList<>(list);
+
+        Assertions.assertEquals("A", bitList.get(0));
+        Assertions.assertEquals("B", bitList.get(1));
+        Assertions.assertEquals("C", bitList.get(2));
+        Assertions.assertNull(bitList.get(3));
+
+    }
+
+    @Test
     public void testRemove() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList = new BitList<>(list);

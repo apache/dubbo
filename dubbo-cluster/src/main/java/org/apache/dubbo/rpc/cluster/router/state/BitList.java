@@ -115,6 +115,9 @@ public class BitList<E> extends AbstractList<E> {
         int bitIndex = -1;
         for (int i = 0; i <= index; i++) {
             bitIndex = rootSet.nextSetBit(bitIndex + 1);
+            if (bitIndex == -1) {
+                return null;
+            }
         }
         return unmodifiableList.get(bitIndex);
     }
