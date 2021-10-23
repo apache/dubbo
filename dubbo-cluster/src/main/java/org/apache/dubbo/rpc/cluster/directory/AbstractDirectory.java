@@ -258,10 +258,12 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public synchronized void refreshValidInvoker() {
         invokerLock.writeLock().lock();
         try {
-            BitList<Invoker<T>> copiedInvokers = invokers.clone();
-            refreshInvokers(copiedInvokers, invokersToReconnect);
-            refreshInvokers(copiedInvokers, disabledInvokers);
-            validInvokers = copiedInvokers;
+            if (invokers != null) {
+                BitList<Invoker<T>> copiedInvokers = invokers.clone();
+                refreshInvokers(copiedInvokers, invokersToReconnect);
+                refreshInvokers(copiedInvokers, disabledInvokers);
+                validInvokers = copiedInvokers;
+            }
         } finally {
             invokerLock.writeLock().unlock();
         }
