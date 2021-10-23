@@ -29,7 +29,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class KeepRunningOnSpringClosedTest {
 
     @Test
-    public void test() throws InterruptedException{
+    public void test() throws InterruptedException {
 
         // set KeepRunningOnSpringClosed flag for next spring context
         DubboSpringInitCustomizerHolder.get().addCustomizer(context-> {

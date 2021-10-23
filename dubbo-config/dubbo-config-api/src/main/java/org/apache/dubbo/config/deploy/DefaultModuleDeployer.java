@@ -121,21 +121,15 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
     public synchronized Future start() throws IllegalStateException {
         if (isStarting() || isStarted()) {
             return startFuture;
         }
 
-        boolean isApplicationDeployerStartingBeforeThisCalling = applicationDeployer.isStarting();
-
         onModuleStarting();
         startFuture = new CompletableFuture();
 
-        // check applicationDeployer original state to avoid re-initializing.
-        if (!isApplicationDeployerStartingBeforeThisCalling) {
-            applicationDeployer.initialize();
-        }
+        applicationDeployer.initialize();
 
         // initialize
         initialize();
@@ -143,9 +137,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         // export services
         exportServices();
 
-        // check applicationDeployer original state to avoid re-preparation.
-        if (!isApplicationDeployerStartingBeforeThisCalling) {
-            // prepare application instance
+        // prepare application instance
+        if (hasExportedServices()) {
             applicationDeployer.prepareApplicationInstance();
         }
 
@@ -164,6 +157,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         });
 
         return startFuture;
+    }
+
+    private boolean hasExportedServices() {
+        return configManager.getServices().size() > 0;
     }
 
     @Override
@@ -226,7 +223,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         applicationDeployer.checkStarting();
     }
 
-    @SuppressWarnings("unchecked")
     private void onModuleStarted() {
         setStarted();
         logger.info(getIdentifier() + " has started.");
@@ -251,14 +247,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         moduleModel.getConfigManager().refreshAll();
     }
 
-    @SuppressWarnings({ "rawtypes" })
     private void exportServices() {
         for (ServiceConfigBase sc : configManager.getServices()) {
             exportServiceInternal(sc);
         }
     }
 
-    @SuppressWarnings("rawtypes")
     private void exportServiceInternal(ServiceConfigBase sc) {
         ServiceConfig<?> serviceConfig = (ServiceConfig<?>) sc;
         if (!serviceConfig.isRefreshed()) {

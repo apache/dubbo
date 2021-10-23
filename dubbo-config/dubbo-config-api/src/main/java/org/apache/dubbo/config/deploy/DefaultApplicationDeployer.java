@@ -70,7 +70,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
@@ -78,7 +77,6 @@ import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
@@ -117,6 +115,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private String identifier;
     private volatile CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
+    private Object startedLock = new Object();
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -441,7 +440,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * @return if supports, return <code>true</code>, or <code>false</code>
      * @since 2.7.8
      */
-    @SuppressWarnings("rawtypes")
     private boolean supportsExtension(Class<?> extensionClass, String name) {
         if (isNotEmpty(name)) {
             ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
@@ -513,8 +511,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * @return
      */
     @Override
-    @SuppressWarnings("rawtypes")
     public synchronized Future start() {
+        CompletableFuture startFuture = getStartFuture();
+
         // maybe call start again after add new module, check if any new module
         boolean hasPendingModule = hasPendingModule();
 
@@ -554,70 +553,63 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return found;
     }
 
-    @SuppressWarnings("rawtypes")
+    private CompletableFuture getStartFuture() {
+        if (startFuture == null) {
+            synchronized (this) {
+                if (startFuture == null) {
+                    startFuture = new CompletableFuture();
+                }
+            }
+        }
+        return startFuture;
+    }
+
+
     private void doStart() {
-        List<Future> futures = startModules();
+        startModules();
 
         // prepare application instance
         prepareApplicationInstance();
 
-        // keep starting modules while state is starting
         executorRepository.getSharedExecutor().submit(() -> {
-            awaitDeployFinished(futures);
+            while (true) {
+                // notify on each module started
+                synchronized (startedLock) {
+                    try {
+                        startedLock.wait(500);
+                    } catch (InterruptedException e) {
+                        // ignore
+                    }
+                }
+
+                // if has new module, do start again
+                if (hasPendingModule()) {
+                    startModules();
+                    continue;
+                }
+
+                DeployState newState = checkState();
+                if (!(newState == DeployState.STARTING || newState == DeployState.PENDING)) {
+                    // start finished or error
+                    break;
+                }
+            }
         });
     }
 
-    @SuppressWarnings("rawtypes")
-    private synchronized List<Future> startModules() {
+    private void startModules() {
         // copy current modules, ignore new module during starting
         List<ModuleModel> moduleModels = new ArrayList<>(applicationModel.getModuleModels());
-        List<Future> futures = new ArrayList<>(moduleModels.size());
         for (ModuleModel moduleModel : moduleModels) {
             // export services in module
             if (moduleModel.getDeployer().isPending()) {
-                futures.add(moduleModel.getDeployer().start());
-            }
-        }
-        return futures;
-    }
-
-    /**
-     * keep starting modules while state is starting. 
-     * 
-     * @param futures
-     */
-    @SuppressWarnings("rawtypes")
-    private void awaitDeployFinished(List<Future> futures) {
-        while (isStarting()) {
-            if (futures.isEmpty()) {
-                try {
-                    Thread.sleep(DEFAULT_TIMEOUT);
-                } catch (InterruptedException e) {
-                    if (isStarting()) {
-                        logger.warn(getIdentifier() + " await deployer finished failed", e);
-                    }
-                }
-                if (isStarting()) {
-                    futures = startModules();
-                }
-                continue;
-            }
-            try {
-                CompletableFuture mergedFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
-                mergedFuture.get(DEFAULT_TIMEOUT, TimeUnit.MICROSECONDS);
-            } catch (Exception e) {
-                if (isStarting() && !(e instanceof TimeoutException)) {
-                    logger.warn(getIdentifier() + " await deploy finished failed", e);
-                }
-            }
-            if (isStarting()) {
-                futures = startModules();
+                moduleModel.getDeployer().start();
             }
         }
     }
 
     @Override
-    public synchronized void prepareApplicationInstance() {
+    public void prepareApplicationInstance() {
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
@@ -632,31 +624,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    /**
-     * start and await internal module deploy finished if internal module deployer is not running.
-     */
-    @SuppressWarnings("rawtypes")
     private void prepareInternalModule() {
         // export MetadataService
         exportMetadataService();
         // start internal module
         ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
-        // if do not check isStarting, recursive calling will be occurred, see MetadataServiceExporterTest#test
-        if (internalModuleDeployer.isStarting() || internalModuleDeployer.isStarted() || internalModuleDeployer.isFailed()
-                || internalModuleDeployer.isStopping() || internalModuleDeployer.isStopped()) {
-            return;
-        }
-        // await internal module deploy started or failed or stoppinng or stopped
-        Future internalFuture = internalModuleDeployer.start();
-        while (isStarting() && !internalModuleDeployer.isStarting() && !internalModuleDeployer.isStarted()
-                && !internalModuleDeployer.isFailed()
-                && !internalModuleDeployer.isStopping() && !internalModuleDeployer.isStopped()) {
+        if (!internalModuleDeployer.isStarted()) {
+            Future future = internalModuleDeployer.start();
+            // wait for internal module start finished
             try {
-                internalFuture.get(DEFAULT_TIMEOUT, TimeUnit.MILLISECONDS);
+                future.get();
             } catch (Exception e) {
-                if (isStarting() && !(e instanceof TimeoutException)) {
-                    logger.warn(getIdentifier() + " await internal module deploy finished failed", e);
-                }
+                logger.warn("wait for internal module started failed: " + e.getMessage(), e);
             }
         }
     }
@@ -827,7 +806,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public synchronized void preDestroy() {
+    public void preDestroy() {
         if (isStopping() || isStopped()) {
             return;
         }
@@ -875,7 +854,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public synchronized void checkStarting() {
+    public void checkStarting() {
         if (isStarting()) {
             return;
         }
@@ -888,7 +867,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public synchronized void checkStarted() {
+    public void checkStarted() {
         // TODO improve newState checking
         DeployState newState = checkState();
         switch (newState) {
@@ -901,8 +880,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             case PENDING:
                 setPending();
                 break;
-            default:
-                break;
+        }
+
+        // notify started
+        synchronized (startedLock) {
+            startedLock.notifyAll();
         }
     }
 
@@ -955,12 +937,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return newState;
     }
 
-    @SuppressWarnings("rawtypes")
-    private synchronized void onStarting() {
+    private void onStarting() {
         if (isStarting()) {
             return;
         }
-        startFuture = new CompletableFuture();
         setStarting();
         if (logger.isInfoEnabled()) {
             logger.info(getIdentifier() + " is starting.");
@@ -990,7 +970,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         executorRepository.shutdownServiceReferExecutor();
     }
 
-    @SuppressWarnings("unchecked")
     private void completeStartFuture(boolean success) {
         if (startFuture != null) {
             startFuture.complete(success);

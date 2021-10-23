@@ -32,9 +32,9 @@ import java.util.function.Function;
  */
 public class CompositeDynamicConfiguration implements DynamicConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(CompositeDynamicConfiguration.class);
-
     public static final String NAME = "COMPOSITE";
+
+    private static final Logger logger = LoggerFactory.getLogger(CompositeDynamicConfiguration.class);
 
     private Set<DynamicConfiguration> configurations = new HashSet<>();
 
