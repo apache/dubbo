@@ -515,20 +515,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     @Override
     @SuppressWarnings("rawtypes")
     public synchronized Future start() {
+        // maybe call start again after add new module, check if any new module
+        boolean hasPendingModule = hasPendingModule();
+
         if (isStarting()) {
-            // currently is starting.
-            // maybe first start ModuleDeployer then start DubboBootstrap,
-            // so initialize() and doStart() should support idempotent calling 
-            // because we don't know whether they have been called or not.
-            // see DubboBootstrapMultiInstanceTest#testBothStartByModuleAndByApplication
-            initialize();
-            doStart();
+            // currently is starting, maybe both start by module and application
+            // if has new modules, start them
+            if (hasPendingModule) {
+                startModules();
+            }
             // if is starting, reuse previous startFuture
             return startFuture;
         }
-
-        // maybe call start again after add new module, check if any new module
-        boolean hasPendingModule = hasPendingModule();
 
         // if is started and no new module, just return
         if (isStarted() && !hasPendingModule) {
@@ -570,7 +568,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @SuppressWarnings("rawtypes")
-    private List<Future> startModules() {
+    private synchronized List<Future> startModules() {
         // copy current modules, ignore new module during starting
         List<ModuleModel> moduleModels = new ArrayList<>(applicationModel.getModuleModels());
         List<Future> futures = new ArrayList<>(moduleModels.size());

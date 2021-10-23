@@ -139,9 +139,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         exportServices();
 
         // prepare application instance
-        if (hasExportedServices()) {
-            applicationDeployer.prepareApplicationInstance();
-        }
+        applicationDeployer.prepareApplicationInstance();
 
         // refer services
         referServices();
@@ -158,10 +156,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         });
 
         return startFuture;
-    }
-
-    private boolean hasExportedServices() {
-        return configManager.getServices().size() > 0;
     }
 
     @Override
