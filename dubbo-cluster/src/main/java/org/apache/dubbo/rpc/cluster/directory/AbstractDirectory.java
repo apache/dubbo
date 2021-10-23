@@ -143,7 +143,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new RpcException("Directory already destroyed .url: " + getUrl());
         }
 
-        BitList<Invoker<T>> validResult = doList(invocation).and(validInvokers);
+        BitList<Invoker<T>> validResult = doList(invocation);
+        if (validInvokers != null) {
+            validResult = validResult.and(validInvokers);
+        }
         if (validResult.isEmpty()) {
             logger.warn("");
         }
