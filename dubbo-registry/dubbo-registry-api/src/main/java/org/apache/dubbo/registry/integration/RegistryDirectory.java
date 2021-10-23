@@ -208,6 +208,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
             this.invokers = new BitList<>(Collections.emptyList());
+            this.validInvokers = new BitList<>(Collections.emptyList());
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
@@ -490,6 +491,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             localUrlInvokerMap.clear();
         }
         invokers = null;
+        validInvokers = null;
         cachedInvokerUrls = null;
     }
 

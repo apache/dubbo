@@ -182,7 +182,12 @@ public class RouterChain<T> {
         for (Router router : routers) {
             List<Invoker<T>> copiedInvokers = new ArrayList<>(finalInvokers);
             copiedInvokers = router.route(copiedInvokers, url, invocation);
-            finalInvokers.retainAll(copiedInvokers);
+            if (CollectionUtils.isEmpty(copiedInvokers)) {
+                // TODO
+                finalInvokers = new BitList<>(finalInvokers.getUnmodifiableList(), true);
+            } else {
+                finalInvokers.retainAll(copiedInvokers);
+            }
         }
         return finalInvokers;
     }

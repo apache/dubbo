@@ -53,6 +53,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
             throw new IllegalArgumentException("invokers == null");
         }
         this.invokers = new BitList<>(invokers);
+        this.validInvokers = this.invokers.clone();
     }
 
     @Override

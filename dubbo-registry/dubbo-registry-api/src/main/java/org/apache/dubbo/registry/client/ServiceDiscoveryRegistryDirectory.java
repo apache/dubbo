@@ -247,6 +247,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             logger.info("Received empty url list...");
             this.forbidden = true; // Forbid to access
             this.invokers = new BitList<>(Collections.emptyList());
+            this.validInvokers = new BitList<>(Collections.emptyList());
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
@@ -392,6 +393,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         this.urlInvokerMap = null;
         this.invokers = null;
+        this.validInvokers = null;
     }
 
     /**
