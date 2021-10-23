@@ -152,14 +152,16 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         referServices();
 
         executorRepository.getSharedExecutor().submit(() -> {
-
-            // wait for export finish
-            waitExportFinish();
-
-            // wait for refer finish
-            waitReferFinish();
-
-            onModuleStarted();
+            try {
+                // wait for export finish
+                waitExportFinish();
+                // wait for refer finish
+                waitReferFinish();
+            } catch (Throwable e) {
+                logger.warn("wait for export/refer services occurred an exception", e);
+            } finally {
+                onModuleStarted();
+            }
         });
 
         return startFuture;
@@ -242,6 +244,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
             // complete module start future after application state changed
             completeStartFuture(true);
+        } else {
+            completeStartFuture(false);
         }
     }
 
@@ -381,7 +385,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             logger.info(getIdentifier() + " waiting services exporting ...");
             exportFuture = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
             exportFuture.get();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.warn(getIdentifier() + " export services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " export services finished.");
@@ -394,7 +398,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             logger.info(getIdentifier() + " waiting services referring ...");
             referFuture = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
             referFuture.get();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.warn(getIdentifier() + " refer services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " refer services finished.");
