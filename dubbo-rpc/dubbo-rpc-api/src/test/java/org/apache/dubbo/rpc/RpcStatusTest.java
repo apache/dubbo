@@ -32,11 +32,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * {@link RpcStatus}
  */
 public class RpcStatusTest {
-    private URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 8888, DemoService.class.getName());
-    private String methodName = "echo";
 
     @Test
     public void testBeginCountEndCount() {
+        URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 91031, DemoService.class.getName());
+        String methodName = "testBeginCountEndCount";
         int max = 2;
         boolean flag = RpcStatus.beginCount(url, methodName, max);
         RpcStatus urlRpcStatus = RpcStatus.getStatus(url);
@@ -55,12 +55,16 @@ public class RpcStatusTest {
         flag = RpcStatus.beginCount(url, methodName, max);
         Assertions.assertTrue(flag);
         flag = RpcStatus.beginCount(url, methodName, max);
+        Assertions.assertTrue(flag);
+        flag = RpcStatus.beginCount(url, methodName, max);
         Assertions.assertFalse(flag);
 
     }
 
     @Test
     public void testBeginCountEndCountInMultiThread() throws Exception {
+        URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 91032, DemoService.class.getName());
+        String methodName = "testBeginCountEndCountInMultiThread";
         int max = 50;
         int threadNum = 10;
         AtomicInteger successCount = new AtomicInteger();
@@ -93,6 +97,8 @@ public class RpcStatusTest {
 
     @Test
     public void testStatistics() {
+        URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 91033, DemoService.class.getName());
+        String methodName = "testStatistics";
         int max = 0;
         RpcStatus.beginCount(url, methodName, max);
         RpcStatus.beginCount(url, methodName, max);
