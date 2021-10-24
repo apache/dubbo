@@ -224,8 +224,12 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     @Override
     public void destroy() {
         destroyed = true;
-        invokers.clear();
-        validInvokers.clear();
+        if (invokers != null) {
+            invokers.clear();
+        }
+        if (validInvokers != null) {
+            validInvokers.clear();
+        }
         invokersToReconnect.clear();
         disabledInvokers.clear();
     }
