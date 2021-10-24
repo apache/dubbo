@@ -495,4 +495,6 @@ public interface CommonConstants {
     String RESELECT_COUNT = "dubbo.reselect.count";
 
     int DEFAULT_RESELECT_COUNT = 10;
+
+    String ENABLE_CONNECTIVITY_VALIDATION = "dubbo.connectivity.validation";
 }

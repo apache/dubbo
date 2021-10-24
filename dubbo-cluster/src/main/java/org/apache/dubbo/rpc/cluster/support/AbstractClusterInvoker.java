@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -43,6 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RESELECT_COUNT;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RESELECT_COUNT;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
@@ -61,7 +63,9 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     protected boolean availableCheck;
 
-    private int reselectCount = DEFAULT_RESELECT_COUNT;
+    private volatile int reselectCount = DEFAULT_RESELECT_COUNT;
+
+    private volatile boolean enableConnectivityValidation = true;
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
@@ -82,7 +86,9 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         this.directory = directory;
         //sticky: invoker.isAvailable() should always be checked before using when availablecheck is true.
         this.availableCheck = url.getParameter(CLUSTER_AVAILABLE_CHECK_KEY, DEFAULT_CLUSTER_AVAILABLE_CHECK);
-        this.reselectCount = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultModuleModel()).getInt(RESELECT_COUNT, DEFAULT_RESELECT_COUNT);
+        Configuration configuration = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultModuleModel());
+        this.reselectCount = configuration.getInt(RESELECT_COUNT, DEFAULT_RESELECT_COUNT);
+        this.enableConnectivityValidation = configuration.getBoolean(ENABLE_CONNECTIVITY_VALIDATION, true);
     }
 
     @Override
@@ -235,14 +241,26 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         List<Invoker<T>> reselectInvokers = new ArrayList<>(Math.min(invokers.size(), reselectCount));
 
         // First, try picking a invoker not in `selected`.
-        for (int i = 0; i < reselectCount; i++) {
-            Invoker<T> tInvoker = invokers.get(ThreadLocalRandom.current().nextInt(invokers.size()));
-            if (availableCheck && !tInvoker.isAvailable()) {
-                invalidateInvoker(tInvoker);
-                continue;
+        if (reselectCount >= invokers.size()) {
+            for (Invoker<T> invoker : invokers) {
+                if (availableCheck && !invoker.isAvailable()) {
+                    continue;
+                }
+
+                if (selected == null || !selected.contains(invoker)) {
+                    reselectInvokers.add(invoker);
+                }
             }
-            if (selected == null || !selected.contains(tInvoker) || !reselectInvokers.contains(tInvoker)) {
-                reselectInvokers.add(tInvoker);
+        } else {
+            for (int i = 0; i < reselectCount; i++) {
+                Invoker<T> tInvoker = invokers.get(ThreadLocalRandom.current().nextInt(invokers.size()));
+                if (availableCheck && !tInvoker.isAvailable()) {
+                    invalidateInvoker(tInvoker);
+                    continue;
+                }
+                if (selected == null || !selected.contains(tInvoker) || !reselectInvokers.contains(tInvoker)) {
+                    reselectInvokers.add(tInvoker);
+                }
             }
         }
 
@@ -273,7 +291,9 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     }
 
     private void invalidateInvoker(Invoker<T> invoker) {
-        getDirectory().addInvalidateInvoker(invoker);
+        if (enableConnectivityValidation) {
+            getDirectory().addInvalidateInvoker(invoker);
+        }
     }
 
     @Override

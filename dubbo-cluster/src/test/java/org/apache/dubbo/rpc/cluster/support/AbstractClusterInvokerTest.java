@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import org.apache.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -84,14 +86,19 @@ public class AbstractClusterInvokerTest {
     Invoker<IHelloService> invoker5;
     Invoker<IHelloService> mockedInvoker1;
 
-
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
+        System.setProperty(ENABLE_CONNECTIVITY_VALIDATION, "false");
     }
 
     @AfterEach
     public void teardown() throws Exception {
         RpcContext.removeContext();
+    }
+
+    @AfterAll
+    public static void afterClass() {
+        System.clearProperty(ENABLE_CONNECTIVITY_VALIDATION);
     }
 
     @SuppressWarnings({"unchecked"})
