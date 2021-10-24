@@ -28,15 +28,16 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class RpcStatusTest {
+/**
+ * {@link RpcStatus}
+ */
+public class RpcStatusTest {
     private URL url = new ServiceConfigURL("dubbo", "127.0.0.1", 8888, DemoService.class.getName());
     private String methodName = "echo";
-    private int max = 0;
-
 
     @Test
     public void testBeginCountEndCount() {
-        max = 2;
+        int max = 2;
         boolean flag = RpcStatus.beginCount(url, methodName, max);
         RpcStatus urlRpcStatus = RpcStatus.getStatus(url);
         RpcStatus methodRpcStatus = RpcStatus.getStatus(url, methodName);
@@ -60,7 +61,7 @@ class RpcStatusTest {
 
     @Test
     public void testBeginCountEndCountInMultiThread() throws Exception {
-        max = 50;
+        int max = 50;
         int threadNum = 10;
         AtomicInteger successCount = new AtomicInteger();
         CountDownLatch startLatch = new CountDownLatch(1);
@@ -92,7 +93,7 @@ class RpcStatusTest {
 
     @Test
     public void testStatistics() {
-
+        int max = 0;
         RpcStatus.beginCount(url, methodName, max);
         RpcStatus.beginCount(url, methodName, max);
         RpcStatus.beginCount(url, methodName, max);
