@@ -323,7 +323,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     protected synchronized void invokersChanged() {
-        refreshValidInvoker();
+        refreshInvoker();
         invokersChanged = true;
         if (invokersChangedListener != null) {
             invokersChangedListener.onChange();

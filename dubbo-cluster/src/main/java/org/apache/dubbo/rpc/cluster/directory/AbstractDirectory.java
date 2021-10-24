@@ -17,6 +17,9 @@
 package org.apache.dubbo.rpc.cluster.directory;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -87,6 +90,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private ScheduledExecutorService connectivityExecutor;
 
+    private final int reconnectTaskTryCount;
+
+    private final int reconnectTaskPeriod;
+
     public AbstractDirectory(URL url) {
         this(url, null, false);
     }
@@ -133,7 +140,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         this.connectivityExecutor = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getConnectivityScheduledExecutor();
-
+        Configuration configuration = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultModuleModel());
+        this.reconnectTaskTryCount = configuration.getInt(CommonConstants.RECONNECT_TASK_TRY_COUNT, CommonConstants.DEFAULT_RECONNECT_TASK_TRY_COUNT);
+        this.reconnectTaskPeriod = configuration.getInt(CommonConstants.RECONNECT_TASK_PERIOD, CommonConstants.DEFAULT_RECONNECT_TASK_PERIOD);
         setRouterChain(routerChain);
     }
 
@@ -198,8 +207,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public void addInvalidateInvoker(Invoker<T> invoker) {
         invokerLock.writeLock().lock();
         try {
+            // 1. remove this invoker from validInvokers list, this invoker will not be listed in the next time
             if (validInvokers.remove(invoker)) {
+                // 2. add this invoker to reconnect list
                 invokersToReconnect.add(invoker);
+                // 3. try start check connectivity task
                 checkConnectivity();
             }
         } finally {
@@ -208,21 +220,27 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private void checkConnectivity() {
+        // try to submit task, to ensure there is only one task at most for each directory
         if (checkConnectivityPermit.tryAcquire()) {
             connectivityExecutor.schedule(() -> {
                 List<Invoker<T>> needDeleteList = new ArrayList<>();
                 List<Invoker<T>> invokersToTry = new ArrayList<>();
-                // TODO
-                if (invokersToReconnect.size() < 10) {
+
+                // 1. pick invokers from invokersToReconnect
+                // limit max reconnectTaskTryCount, prevent this task hang up all the connectivityExecutor for long time
+                if (invokersToReconnect.size() < reconnectTaskTryCount) {
                     invokersToTry.addAll(invokersToReconnect);
                 } else {
-                    for (int i = 0; i < 10; i++) {
+                    for (int i = 0; i < reconnectTaskTryCount; i++) {
                         Invoker<T> tInvoker = invokersToReconnect.get(ThreadLocalRandom.current().nextInt(invokersToReconnect.size()));
-                        if (!invokersToReconnect.contains(tInvoker)) {
-                            invokersToReconnect.add(tInvoker);
+                        if (!invokersToTry.contains(tInvoker)) {
+                            // ignore if is selected, invokersToTry's size is always smaller than reconnectTaskTryCount + 1
+                            invokersToTry.add(tInvoker);
                         }
                     }
                 }
+
+                // 2. try to check the invoker's status
                 for (Invoker<T> invoker : invokersToTry) {
                     if (invokers.contains(invoker)) {
                         if (invoker.isAvailable()) {
@@ -233,10 +251,12 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                     }
                 }
 
+                // 3. recover valid invoker
                 invokerLock.writeLock().lock();
                 try {
                     for (Invoker<T> tInvoker : needDeleteList) {
                         try {
+                            // validInvokers.add may throw exception if addresses is notified to change moments before
                             validInvokers.add(tInvoker);
                             logger.info("Recover service address: " + tInvoker.getUrl() + "  from invalid list.");
                         } catch (Throwable ignore) {
@@ -249,15 +269,23 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 }
 
                 checkConnectivityPermit.release();
-                //have more to recover
+
+                // 4. submit new task if it has more to recover
                 if (!invokersToReconnect.isEmpty()) {
                     checkConnectivity();
                 }
-            }, 1, TimeUnit.SECONDS);
+            }, reconnectTaskPeriod, TimeUnit.MILLISECONDS);
         }
     }
 
-    public synchronized void refreshValidInvoker() {
+    /**
+     * Refresh invokers from total invokers
+     * 1. all the invokers in need to reconnect list should be removed in the valid invokers list
+     * 2. all the invokers in disabled invokers list should be removed in the valid invokers list
+     * 3. all the invokers disappeared from total invokers should be removed in the need to reconnect list
+     * 4. all the invokers disappeared from total invokers should be removed in the disabled invokers list
+     */
+    public synchronized void refreshInvoker() {
         invokerLock.writeLock().lock();
         try {
             if (invokers != null) {
@@ -271,11 +299,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
     }
 
-    private void refreshInvokers(BitList<Invoker<T>> copiedInvokers, Collection<Invoker<T>> invokersToRemove) {
+    private void refreshInvokers(BitList<Invoker<T>> targetInvokers, Collection<Invoker<T>> invokersToRemove) {
         for (Iterator<Invoker<T>> iterator = invokersToRemove.iterator(); iterator.hasNext(); ) {
             Invoker<T> tInvoker = iterator.next();
-            if (copiedInvokers.contains(tInvoker)) {
-                copiedInvokers.remove(tInvoker);
+            if (targetInvokers.contains(tInvoker)) {
+                targetInvokers.remove(tInvoker);
             } else {
                 iterator.remove();
             }
@@ -286,9 +314,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public void addDisabledInvoker(Invoker<T> invoker) {
         invokerLock.writeLock().lock();
         try {
-            disabledInvokers.add(invoker);
-            validInvokers.remove(invoker);
-            logger.info("Disable service address: " + invoker.getUrl() + ".");
+            if (invokers.contains(invoker)) {
+                disabledInvokers.add(invoker);
+                validInvokers.remove(invoker);
+                logger.info("Disable service address: " + invoker.getUrl() + ".");
+            }
         } finally {
             invokerLock.writeLock().unlock();
         }
@@ -298,12 +328,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public void recoverDisabledInvoker(Invoker<T> invoker) {
         invokerLock.writeLock().lock();
         try {
-            disabledInvokers.remove(invoker);
-            try {
-                validInvokers.add(invoker);
-                logger.info("Recover service address: " + invoker.getUrl() + "  from disabled list.");
-            } catch (Throwable ignore) {
+            if (disabledInvokers.remove(invoker)) {
+                try {
+                    validInvokers.add(invoker);
+                    logger.info("Recover service address: " + invoker.getUrl() + "  from disabled list.");
+                } catch (Throwable ignore) {
 
+                }
             }
         } finally {
             invokerLock.writeLock().unlock();
