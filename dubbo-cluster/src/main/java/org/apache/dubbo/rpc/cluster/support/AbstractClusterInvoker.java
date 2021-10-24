@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
@@ -173,13 +174,20 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             return null;
         }
         if (invokers.size() == 1) {
-            return invokers.get(0);
+            Invoker<T> tInvoker = invokers.get(0);
+            checkShouldInvalidateInvoker(tInvoker);
+            return tInvoker;
         }
         Invoker<T> invoker = loadbalance.select(invokers, getUrl(), invocation);
 
         //If the `invoker` is in the  `selected` or invoker is unavailable && availablecheck is true, reselect.
-        if ((selected != null && selected.contains(invoker))
-                || (!invoker.isAvailable() && getUrl() != null && availablecheck)) {
+        boolean isSelected = selected != null && selected.contains(invoker);
+        boolean isUnavailable = availablecheck && !invoker.isAvailable() && getUrl() != null;
+
+        if (isUnavailable) {
+            invalidateInvoker(invoker);
+        }
+        if (isSelected || isUnavailable) {
             try {
                 Invoker<T> rInvoker = reselect(loadbalance, invocation, invokers, selected, availablecheck);
                 if (rInvoker != null) {
@@ -210,25 +218,27 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
      * @param invocation     invocation
      * @param invokers       invoker candidates
      * @param selected       exclude selected invokers or not
-     * @param availablecheck check invoker available if true
+     * @param availableCheck check invoker available if true
      * @return the reselect result to do invoke
      * @throws RpcException exception
      */
     private Invoker<T> reselect(LoadBalance loadbalance, Invocation invocation,
-                                List<Invoker<T>> invokers, List<Invoker<T>> selected, boolean availablecheck) throws RpcException {
+                                List<Invoker<T>> invokers, List<Invoker<T>> selected, boolean availableCheck) throws RpcException {
 
         //Allocating one in advance, this list is certain to be used.
         List<Invoker<T>> reselectInvokers = new ArrayList<>(
-                invokers.size() > 1 ? (invokers.size() - 1) : invokers.size());
+            Math.min(invokers.size(), 10));
 
         // First, try picking a invoker not in `selected`.
-        for (Invoker<T> invoker : invokers) {
-            if (availablecheck && !invoker.isAvailable()) {
+        // TODO
+        for (int i = 0; i < 10; i++) {
+            Invoker<T> tInvoker = invokers.get(ThreadLocalRandom.current().nextInt(invokers.size()));
+            if (availableCheck && !tInvoker.isAvailable()) {
+                invalidateInvoker(tInvoker);
                 continue;
             }
-
-            if (selected == null || !selected.contains(invoker)) {
-                reselectInvokers.add(invoker);
+            if (selected == null || !selected.contains(tInvoker) || !reselectInvokers.contains(tInvoker)) {
+                reselectInvokers.add(tInvoker);
             }
         }
 
@@ -250,6 +260,16 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         }
 
         return null;
+    }
+
+    private void checkShouldInvalidateInvoker(Invoker<T> invoker) {
+        if (availablecheck && !invoker.isAvailable()) {
+            invalidateInvoker(invoker);
+        }
+    }
+
+    private void invalidateInvoker(Invoker<T> invoker) {
+        getDirectory().addInvalidateInvoker(invoker);
     }
 
     @Override

@@ -198,8 +198,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public void addInvalidateInvoker(Invoker<T> invoker) {
         invokerLock.writeLock().lock();
         try {
-            validInvokers.remove(invoker);
-            checkConnectivity();
+            if (validInvokers.remove(invoker)) {
+                invokersToReconnect.add(invoker);
+                checkConnectivity();
+            }
         } finally {
             invokerLock.writeLock().unlock();
         }
