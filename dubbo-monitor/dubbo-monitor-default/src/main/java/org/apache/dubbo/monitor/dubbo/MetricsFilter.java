@@ -177,24 +177,28 @@ public class MetricsFilter implements Filter {
     }
 
     private List<MetricObject> getThreadPoolMessage() {
+        /**
+         * DefaultExecutorRepository will store executorService into data store when executorService is created.
+         * @see org.apache.dubbo.common.threadpool.manager.DefaultExecutorRepository
+         */
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
 
-        List<MetricObject> threadPoolMtricList = new ArrayList<>();
+        List<MetricObject> threadPoolMetricList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : executors.entrySet()) {
             String port = entry.getKey();
             ExecutorService executor = (ExecutorService) entry.getValue();
             if (executor instanceof ThreadPoolExecutor) {
                 ThreadPoolExecutor tp = (ThreadPoolExecutor) executor;
 
-                threadPoolMtricList.add(value2MetricObject("threadPool.active", tp.getActiveCount(), MetricLevel.MAJOR));
-                threadPoolMtricList.add(value2MetricObject("threadPool.core", tp.getCorePoolSize(), MetricLevel.MAJOR));
-                threadPoolMtricList.add(value2MetricObject("threadPool.max", tp.getMaximumPoolSize(), MetricLevel.MAJOR));
-                threadPoolMtricList.add(value2MetricObject("threadPool.current", tp.getPoolSize(), MetricLevel.MAJOR));
+                threadPoolMetricList.add(value2MetricObject("threadPool.active", tp.getActiveCount(), MetricLevel.MAJOR));
+                threadPoolMetricList.add(value2MetricObject("threadPool.core", tp.getCorePoolSize(), MetricLevel.MAJOR));
+                threadPoolMetricList.add(value2MetricObject("threadPool.max", tp.getMaximumPoolSize(), MetricLevel.MAJOR));
+                threadPoolMetricList.add(value2MetricObject("threadPool.current", tp.getPoolSize(), MetricLevel.MAJOR));
             }
         }
 
-        return threadPoolMtricList;
+        return threadPoolMetricList;
     }
 
     private MetricObject value2MetricObject(String metric, Integer value, MetricLevel level) {
