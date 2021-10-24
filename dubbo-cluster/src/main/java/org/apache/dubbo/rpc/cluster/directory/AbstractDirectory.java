@@ -49,8 +49,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -78,22 +78,40 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected final Map<String, String> queryMap;
 
-    protected final ReadWriteLock invokerLock = new ReentrantReadWriteLock();
+    protected final Lock invokerLock = new ReentrantLock();
 
+    /**
+     * All invokers from registry
+     */
     protected volatile BitList<Invoker<T>> invokers;
 
+    /**
+     * Valid Invoker. All invokers from registry exclude unavailable and disabled invokers.
+     */
     protected volatile BitList<Invoker<T>> validInvokers;
 
+    /**
+     * Waiting to reconnect invokers.
+     */
     protected volatile List<Invoker<T>> invokersToReconnect = new CopyOnWriteArrayList<>();
 
+    /**
+     * Disabled Invokers. Will not be recovered in reconnect task, but be recovered if registry remove it.
+     */
     protected final Set<Invoker<T>> disabledInvokers = new ConcurrentHashSet<>();
 
-    private Semaphore checkConnectivityPermit = new Semaphore(1);
+    private final Semaphore checkConnectivityPermit = new Semaphore(1);
 
-    private ScheduledExecutorService connectivityExecutor;
+    private final ScheduledExecutorService connectivityExecutor;
 
+    /**
+     * The max count of invokers for each reconnect task select to try to reconnect.
+     */
     private final int reconnectTaskTryCount;
 
+    /**
+     * The period of reconnect task if needed. (in ms)
+     */
     private final int reconnectTaskPeriod;
 
     public AbstractDirectory(URL url) {
@@ -215,7 +233,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addInvalidateInvoker(Invoker<T> invoker) {
-        invokerLock.writeLock().lock();
+        invokerLock.lock();
         try {
             // 1. remove this invoker from validInvokers list, this invoker will not be listed in the next time
             if (validInvokers.remove(invoker)) {
@@ -225,7 +243,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 checkConnectivity();
             }
         } finally {
-            invokerLock.writeLock().unlock();
+            invokerLock.unlock();
         }
     }
 
@@ -262,7 +280,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 }
 
                 // 3. recover valid invoker
-                invokerLock.writeLock().lock();
+                invokerLock.lock();
                 try {
                     for (Invoker<T> tInvoker : needDeleteList) {
                         try {
@@ -275,7 +293,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                         invokersToReconnect.remove(tInvoker);
                     }
                 } finally {
-                    invokerLock.writeLock().unlock();
+                    invokerLock.unlock();
                 }
 
                 checkConnectivityPermit.release();
@@ -296,7 +314,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
      * 4. all the invokers disappeared from total invokers should be removed in the disabled invokers list
      */
     public synchronized void refreshInvoker() {
-        invokerLock.writeLock().lock();
+        invokerLock.lock();
         try {
             if (invokers != null) {
                 BitList<Invoker<T>> copiedInvokers = invokers.clone();
@@ -305,7 +323,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 validInvokers = copiedInvokers;
             }
         } finally {
-            invokerLock.writeLock().unlock();
+            invokerLock.unlock();
         }
     }
 
@@ -322,7 +340,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     @Override
     public void addDisabledInvoker(Invoker<T> invoker) {
-        invokerLock.writeLock().lock();
+        invokerLock.lock();
         try {
             if (invokers.contains(invoker)) {
                 disabledInvokers.add(invoker);
@@ -330,13 +348,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 logger.info("Disable service address: " + invoker.getUrl() + ".");
             }
         } finally {
-            invokerLock.writeLock().unlock();
+            invokerLock.unlock();
         }
     }
 
     @Override
     public void recoverDisabledInvoker(Invoker<T> invoker) {
-        invokerLock.writeLock().lock();
+        invokerLock.lock();
         try {
             if (disabledInvokers.remove(invoker)) {
                 try {
@@ -347,7 +365,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 }
             }
         } finally {
-            invokerLock.writeLock().unlock();
+            invokerLock.unlock();
         }
     }
 
