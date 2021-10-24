@@ -53,6 +53,16 @@ public interface Router extends Comparable<Router> {
      */
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
 
+    /**
+     * To print router state. Such as `use router branch a`.
+     * @param invokers   invoker list
+     * @param url        refer url
+     * @param invocation invocation
+     * @return router message to print in RouterSnapshot
+     */
+    default <T> String routerMessage(List<Invoker<T>> invokers, URL url, Invocation invocation) {
+        return null;
+    }
 
     /**
      * Notify the router the invoker list. Invoker list may change from time to time. This method gives the router a

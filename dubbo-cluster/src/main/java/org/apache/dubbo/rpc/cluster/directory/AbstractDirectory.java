@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.directory;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -24,6 +25,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -152,12 +154,20 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new RpcException("Directory already destroyed .url: " + getUrl());
         }
 
-        BitList<Invoker<T>> validResult = doList(invocation);
+        BitList<Invoker<T>> validResult, routedResult = doList(invocation);
         if (validInvokers != null) {
-            validResult = validResult.and(validInvokers);
+            validResult = routedResult.and(validInvokers);
+        } else {
+            validResult = routedResult;
         }
         if (validResult.isEmpty()) {
-            logger.warn("");
+            logger.warn("No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
+                + " all validInvokers' size: " + validInvokers.size()
+                + " all routed invokers' size: " + routedResult.size()
+                + " all invokers' size: " + validInvokers.size()
+                + " from registry " + getUrl().getAddress()
+                + " on the consumer " + NetUtils.getLocalHost()
+                + " using the dubbo version " + Version.getVersion() + ".");
         }
         return validResult;
     }

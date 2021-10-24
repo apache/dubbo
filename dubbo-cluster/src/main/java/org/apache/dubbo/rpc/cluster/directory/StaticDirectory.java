@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -117,7 +116,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
                 logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
             }
         }
-        return finalInvokers == null ? new BitList<>(Collections.emptyList()) : finalInvokers;
+        return finalInvokers == null ? BitList.emptyList() : finalInvokers;
     }
 
 }

@@ -237,13 +237,21 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     private Invoker<T> reselect(LoadBalance loadbalance, Invocation invocation,
                                 List<Invoker<T>> invokers, List<Invoker<T>> selected, boolean availableCheck) throws RpcException {
 
-        //Allocating one in advance, this list is certain to be used.
+        // Allocating one in advance, this list is certain to be used.
         List<Invoker<T>> reselectInvokers = new ArrayList<>(Math.min(invokers.size(), reselectCount));
 
-        // First, try picking a invoker not in `selected`.
+        // 1. Try picking some invokers not in `selected`.
+        //    1.1. If all selectable invokers' size is smaller than reselectCount, just add all
+        //    1.2. If all selectable invokers' size is greater than reselectCount, randomly select reselectCount.
+        //            The result size of invokers might smaller than reselectCount due to disAvailable or de-duplication (might be zero).
+        //            This means there is probable that reselectInvokers is empty however all invoker list may contain available invokers.
+        //            Use reselectCount can reduce retry times if invokers' size is huge, which may lead to long time hang up.
         if (reselectCount >= invokers.size()) {
             for (Invoker<T> invoker : invokers) {
+                // check if available
                 if (availableCheck && !invoker.isAvailable()) {
+                    // add to invalidate invoker
+                    invalidateInvoker(invoker);
                     continue;
                 }
 
@@ -253,22 +261,28 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             }
         } else {
             for (int i = 0; i < reselectCount; i++) {
-                Invoker<T> tInvoker = invokers.get(ThreadLocalRandom.current().nextInt(invokers.size()));
-                if (availableCheck && !tInvoker.isAvailable()) {
-                    invalidateInvoker(tInvoker);
+                // select one randomly
+                Invoker<T> invoker = invokers.get(ThreadLocalRandom.current().nextInt(invokers.size()));
+                // check if available
+                if (availableCheck && !invoker.isAvailable()) {
+                    // add to invalidate invoker
+                    invalidateInvoker(invoker);
                     continue;
                 }
-                if (selected == null || !selected.contains(tInvoker) || !reselectInvokers.contains(tInvoker)) {
-                    reselectInvokers.add(tInvoker);
+                // de-duplication
+                if (selected == null || !selected.contains(invoker) || !reselectInvokers.contains(invoker)) {
+                    reselectInvokers.add(invoker);
                 }
             }
         }
 
+        // 2. Use loadBalance to select one (all the reselectInvokers are available)
         if (!reselectInvokers.isEmpty()) {
             return loadbalance.select(reselectInvokers, getUrl(), invocation);
         }
 
-        // Just pick an available invoker using loadbalance policy
+        // 3. reselectInvokers is empty. Unable to find at least one available invoker.
+        //    Re-check all the selected invokers. If some in the selected list are available, add to reselectInvokers.
         if (selected != null) {
             for (Invoker<T> invoker : selected) {
                 if ((invoker.isAvailable()) // available first
@@ -277,10 +291,14 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
                 }
             }
         }
+
+        // 4. If reselectInvokers is not empty after re-check.
+        //    Pick an available invoker using loadBalance policy
         if (!reselectInvokers.isEmpty()) {
             return loadbalance.select(reselectInvokers, getUrl(), invocation);
         }
 
+        // 5. No invoker match, return null.
         return null;
     }
 

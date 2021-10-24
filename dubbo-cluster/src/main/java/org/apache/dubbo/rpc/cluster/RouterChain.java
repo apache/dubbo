@@ -17,12 +17,15 @@
 package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AddrCache;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
@@ -53,7 +56,7 @@ public class RouterChain<T> {
     /**
      * full list of addresses from registry, classified by method name.
      */
-    private volatile BitList<Invoker<T>> invokers = new BitList<>(Collections.emptyList());
+    private volatile BitList<Invoker<T>> invokers = BitList.emptyList();
 
     /**
      * containing all routers, reconstruct every time 'route://' urls change.
@@ -166,30 +169,104 @@ public class RouterChain<T> {
     public BitList<Invoker<T>> route(URL url, Invocation invocation) {
 
         AddrCache<T> cache = this.cache.get();
-        BitList<Invoker<T>> finalInvokers = invokers.clone();
+        BitList<Invoker<T>> resultInvokers = invokers.clone();
 
+        // 1. route state router
         if (cache != null) {
-            BitList<Invoker<T>> finalBitListInvokers = invokers.clone();
+            BitList<Invoker<T>> invokersToRoute = invokers.clone();
             for (StateRouter stateRouter : stateRouters) {
                 if (stateRouter.isEnable()) {
                     RouterCache<T> routerCache = cache.getCache().get(stateRouter.getName());
-                    finalBitListInvokers = stateRouter.route(finalBitListInvokers, routerCache, url, invocation);
+                    invokersToRoute = stateRouter.route(invokersToRoute, routerCache, url, invocation);
+                    if (invokersToRoute.isEmpty()) {
+                        printRouterSnapshot(url, invocation);
+                        return BitList.emptyList();
+                    }
                 }
             }
-            finalInvokers = finalInvokers.and(finalBitListInvokers);
+            resultInvokers = resultInvokers.and(invokersToRoute);
         }
 
+        // 2. route common router
         for (Router router : routers) {
-            List<Invoker<T>> copiedInvokers = new ArrayList<>(finalInvokers);
-            copiedInvokers = router.route(copiedInvokers, url, invocation);
-            if (CollectionUtils.isEmpty(copiedInvokers)) {
-                // TODO
-                finalInvokers = new BitList<>(finalInvokers.getUnmodifiableList(), true);
+            // Copy resultInvokers to a arrayList. BitList not support
+            List<Invoker<T>> arrayInvokers = new ArrayList<>(resultInvokers);
+            arrayInvokers = router.route(arrayInvokers, url, invocation);
+            if (CollectionUtils.isEmpty(arrayInvokers)) {
+                printRouterSnapshot(url, invocation);
+                return BitList.emptyList();
             } else {
-                finalInvokers.retainAll(copiedInvokers);
+                resultInvokers.retainAll(arrayInvokers);
             }
         }
-        return finalInvokers;
+        return resultInvokers;
+    }
+
+    /**
+     * store each router's input and output, log out if empty
+     */
+    private void printRouterSnapshot(URL url, Invocation invocation) {
+        AddrCache<T> cache = this.cache.get();
+        BitList<Invoker<T>> resultInvokers = invokers.clone();
+        RouterSnapshotNode<T> snapshotNode = new RouterSnapshotNode<T>("Parent", resultInvokers.size());
+        snapshotNode.setOutputInvokers(resultInvokers.clone());
+
+        // 1. route state router
+        if (cache != null) {
+            BitList<Invoker<T>> invokersToRoute = invokers.clone();
+            for (StateRouter stateRouter : stateRouters) {
+                if (stateRouter.isEnable()) {
+                    BitList<Invoker<T>> inputInvokers = invokersToRoute.clone();
+
+                    RouterSnapshotNode<T> currentNode = new RouterSnapshotNode<T>(stateRouter.getName(), inputInvokers.size());
+                    snapshotNode.appendNode(currentNode);
+
+                    RouterCache<T> routerCache = cache.getCache().get(stateRouter.getName());
+                    invokersToRoute = stateRouter.route(inputInvokers, routerCache, url, invocation);
+                    String routerMessage = stateRouter.routerMessage(inputInvokers, routerCache, url, invocation);
+
+                    currentNode.setOutputInvokers(invokersToRoute);
+                    currentNode.setRouterMessage(routerMessage);
+
+                    // result is empty, log out
+                    if (invokersToRoute.isEmpty()) {
+                        logRouterSnapshot(url, invocation, snapshotNode);
+                        return;
+                    }
+                }
+            }
+            resultInvokers = resultInvokers.and(invokersToRoute);
+        }
+
+        // 2. route common router
+        for (Router router : routers) {
+            // Copy resultInvokers to a arrayList. BitList not support
+            List<Invoker<T>> inputInvokers = new ArrayList<>(resultInvokers);
+
+            RouterSnapshotNode<T> currentNode = new RouterSnapshotNode<T>(router.getClass().getSimpleName(), inputInvokers.size());
+            snapshotNode.appendNode(currentNode);
+
+            List<Invoker<T>> routeResult = router.route(inputInvokers, url, invocation);
+            String routerMessage = router.routerMessage(inputInvokers, url, invocation);
+
+            currentNode.setOutputInvokers(routeResult);
+            currentNode.setRouterMessage(routerMessage);
+
+            // result is empty, log out
+            if (CollectionUtils.isEmpty(routeResult)) {
+                logRouterSnapshot(url, invocation, snapshotNode);
+                return;
+            } else {
+                resultInvokers.retainAll(routeResult);
+            }
+        }
+    }
+
+    private void logRouterSnapshot(URL url, Invocation invocation, RouterSnapshotNode<T> snapshotNode) {
+        logger.warn("No provider available after route for the service " + url.getServiceKey()
+            + " from registry " + url.getAddress()
+            + " on the consumer " + NetUtils.getLocalHost()
+            + " using the dubbo version " + Version.getVersion() + ". Router snapshot is below: \n" + snapshotNode.toString());
     }
 
     /**
@@ -197,7 +274,7 @@ public class RouterChain<T> {
      * Notify whenever addresses in registry change.
      */
     public void setInvokers(BitList<Invoker<T>> invokers) {
-        this.invokers = (invokers == null ? new BitList<>(Collections.emptyList()) : invokers);
+        this.invokers = (invokers == null ? BitList.emptyList() : invokers);
         stateRouters.forEach(router -> router.notify(this.invokers));
         routers.forEach(router -> router.notify(this.invokers));
         loop(true);
@@ -305,7 +382,7 @@ public class RouterChain<T> {
     }
 
     public void destroy() {
-        invokers = new BitList<>(Collections.emptyList());
+        invokers = BitList.emptyList();
         for (Router router : routers) {
             try {
                 router.stop();

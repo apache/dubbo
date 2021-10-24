@@ -207,8 +207,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 && invokerUrls.get(0) != null
                 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
-            this.invokers = new BitList<>(Collections.emptyList());
-            this.validInvokers = new BitList<>(Collections.emptyList());
+            this.invokers = BitList.emptyList();
+            this.validInvokers = BitList.emptyList();
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
@@ -533,7 +533,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         if (multiGroup) {
-            return this.invokers == null ? new BitList<>(Collections.emptyList()) : this.invokers;
+            return this.invokers == null ? BitList.emptyList() : this.invokers;
         }
 
         BitList<Invoker<T>> invokers = null;
@@ -544,7 +544,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
         }
 
-        return invokers == null ? new BitList<>(Collections.emptyList()) : invokers;
+        return invokers == null ? BitList.emptyList() : invokers;
     }
 
     @Override

@@ -175,7 +175,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         }
 
         if (multiGroup) {
-            return this.invokers == null ? new BitList<>(Collections.emptyList()) : this.invokers;
+            return this.invokers == null ? BitList.emptyList() : this.invokers;
         }
 
         BitList<Invoker<T>> invokers = null;
@@ -186,7 +186,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
         }
 
-        return invokers == null ? new BitList<>(Collections.emptyList()) : invokers;
+        return invokers == null ? BitList.emptyList() : invokers;
     }
 
     @Override

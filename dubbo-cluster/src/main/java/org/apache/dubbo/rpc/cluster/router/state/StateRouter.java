@@ -60,6 +60,18 @@ public interface StateRouter extends Comparable<StateRouter> {
         throws
         RpcException;
 
+    /**
+     * To print router state. Such as `use router branch a`.
+     * @param invokers  invoker bit list
+     * @param cache      router address cache
+     * @param url        refer url
+     * @param invocation invocation
+     * @return router message to print in RouterSnapshot
+     */
+    default <T> String routerMessage(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation) {
+        return null;
+    }
+
     default <T> void notify(List<Invoker<T>> invokers) {
 
     }
