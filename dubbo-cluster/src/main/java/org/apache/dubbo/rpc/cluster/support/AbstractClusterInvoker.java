@@ -61,7 +61,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     protected boolean availableCheck;
 
-    private final int reselectCount;
+    private int reselectCount = DEFAULT_RESELECT_COUNT;
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
