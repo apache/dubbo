@@ -40,7 +40,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -224,6 +224,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     @Override
     public void destroy() {
         destroyed = true;
+        invokers.clear();
+        validInvokers.clear();
+        invokersToReconnect.clear();
+        disabledInvokers.clear();
     }
 
     @Override
@@ -251,6 +255,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         // try to submit task, to ensure there is only one task at most for each directory
         if (checkConnectivityPermit.tryAcquire()) {
             connectivityExecutor.schedule(() -> {
+                if (isDestroyed()) {
+                    return;
+                }
                 List<Invoker<T>> needDeleteList = new ArrayList<>();
                 List<Invoker<T>> invokersToTry = new ArrayList<>();
 
@@ -328,14 +335,15 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private void refreshInvokers(BitList<Invoker<T>> targetInvokers, Collection<Invoker<T>> invokersToRemove) {
-        for (Iterator<Invoker<T>> iterator = invokersToRemove.iterator(); iterator.hasNext(); ) {
-            Invoker<T> tInvoker = iterator.next();
+        List<Invoker<T>> needToRemove = new LinkedList<>();
+        for (Invoker<T> tInvoker : invokersToRemove) {
             if (targetInvokers.contains(tInvoker)) {
                 targetInvokers.remove(tInvoker);
             } else {
-                iterator.remove();
+                needToRemove.add(tInvoker);
             }
         }
+        invokersToRemove.removeAll(needToRemove);
     }
 
     @Override

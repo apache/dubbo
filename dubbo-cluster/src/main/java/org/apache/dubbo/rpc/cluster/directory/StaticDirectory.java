@@ -83,12 +83,10 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         if (isDestroyed()) {
             return;
         }
-        super.destroy();
         for (Invoker<T> invoker : invokers) {
             invoker.destroy();
         }
-        invokers.clear();
-        validInvokers.clear();
+        super.destroy();
     }
 
     public void buildRouterChain() {

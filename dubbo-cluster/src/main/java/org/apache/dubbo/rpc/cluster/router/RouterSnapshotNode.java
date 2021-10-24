@@ -61,7 +61,7 @@ public class RouterSnapshotNode<T> {
 
     public void setOutputInvokers(List<Invoker<T>> outputInvokers) {
         this.outputInvokers = outputInvokers;
-        this.afterSize = outputInvokers.size();
+        this.afterSize = outputInvokers == null ? 0 : outputInvokers.size();
     }
 
     public RouterSnapshotNode<T> getNextNode() {
@@ -90,6 +90,7 @@ public class RouterSnapshotNode<T> {
         stringBuilder.append("[")
             .append(name)
             .append(" ")
+            .append("invokers: ")
             .append(beforeSize).append("->").append(afterSize)
             .append(" ")
             .append(routerMessage == null ? "" : routerMessage)

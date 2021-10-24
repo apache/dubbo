@@ -157,7 +157,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         String methodName = invocation == null ? StringUtils.EMPTY_STRING : invocation.getMethodName();
 
         boolean sticky = invokers.get(0).getUrl()
-                .getMethodParameter(methodName, CLUSTER_STICKY_KEY, DEFAULT_CLUSTER_STICKY);
+            .getMethodParameter(methodName, CLUSTER_STICKY_KEY, DEFAULT_CLUSTER_STICKY);
 
         //ignore overloaded method
         if (stickyInvoker != null && !invokers.contains(stickyInvoker)) {
@@ -286,7 +286,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (selected != null) {
             for (Invoker<T> invoker : selected) {
                 if ((invoker.isAvailable()) // available first
-                        && !reselectInvokers.contains(invoker)) {
+                    && !reselectInvokers.contains(invoker)) {
                     reselectInvokers.add(invoker);
                 }
             }
@@ -310,7 +310,9 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     private void invalidateInvoker(Invoker<T> invoker) {
         if (enableConnectivityValidation) {
-            getDirectory().addInvalidateInvoker(invoker);
+            if (getDirectory() != null) {
+                getDirectory().addInvalidateInvoker(invoker);
+            }
         }
     }
 
@@ -333,8 +335,8 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     protected void checkWhetherDestroyed() {
         if (destroyed.get()) {
             throw new RpcException("Rpc cluster invoker for " + getInterface() + " on consumer " + NetUtils.getLocalHost()
-                    + " use dubbo version " + Version.getVersion()
-                    + " is now destroyed! Can not invoke any more.");
+                + " use dubbo version " + Version.getVersion()
+                + " is now destroyed! Can not invoke any more.");
         }
     }
 
@@ -346,12 +348,12 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     protected void checkInvokers(List<Invoker<T>> invokers, Invocation invocation) {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
-                    + invocation.getMethodName() + " in the service " + getInterface().getName()
-                    + ". No provider available for the service " + getDirectory().getConsumerUrl().getServiceKey()
-                    + " from registry " + getDirectory().getUrl().getAddress()
-                    + " on the consumer " + NetUtils.getLocalHost()
-                    + " using the dubbo version " + Version.getVersion()
-                    + ". Please check if the providers have been started and registered.");
+                + invocation.getMethodName() + " in the service " + getInterface().getName()
+                + ". No provider available for the service " + getDirectory().getConsumerUrl().getServiceKey()
+                + " from registry " + getDirectory().getUrl().getAddress()
+                + " on the consumer " + NetUtils.getLocalHost()
+                + " using the dubbo version " + Version.getVersion()
+                + ". Please check if the providers have been started and registered.");
         }
     }
 
@@ -369,17 +371,18 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     /**
      * When using a thread pool to fork a child thread, ThreadLocal cannot be passed.
      * In this scenario, please use the invokeWithContextAsync method.
+     *
      * @return
      */
     protected Result invokeWithContextAsync(Invoker<T> invoker, Invocation invocation, URL consumerUrl) {
-       setContext(invoker, consumerUrl);
+        setContext(invoker, consumerUrl);
         Result result;
         try {
             result = invoker.invoke(invocation);
         } finally {
             clearContext(invoker);
         }
-       return result;
+        return result;
     }
 
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
@@ -404,9 +407,9 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         ApplicationModel applicationModel = ScopeModelUtil.getApplicationModel(invocation.getModuleModel());
         if (CollectionUtils.isNotEmpty(invokers)) {
             return applicationModel.getExtensionLoader(LoadBalance.class).getExtension(
-                    invokers.get(0).getUrl().getMethodParameter(
-                            RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE
-                    )
+                invokers.get(0).getUrl().getMethodParameter(
+                    RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE
+                )
             );
         } else {
             return applicationModel.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
