@@ -68,7 +68,7 @@ public class CompatibleFilterFilterTest {
     }
 
     @Test
-    public void testResulthasException() {
+    public void testResultHasException() {
         invocation = mock(Invocation.class);
         given(invocation.getMethodName()).willReturn("enumlength");
         given(invocation.getParameterTypes()).willReturn(new Class<?>[]{Enum.class});
