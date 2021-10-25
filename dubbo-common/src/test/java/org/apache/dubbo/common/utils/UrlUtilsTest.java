@@ -43,7 +43,7 @@ public class UrlUtilsTest {
 
     @Test
     public void testAddressNull() {
-        String exceptionMessage = "Address is not allowed to be empty, please re-enter.";
+        String exceptionMessage = "Address is not allowed to be empty.";
         try {
             UrlUtils.parseURL(null, null);
         } catch (IllegalArgumentException illegalArgumentException) {
@@ -138,7 +138,7 @@ public class UrlUtilsTest {
 
     @Test
     public void testParseUrlsAddressNull() {
-        String exceptionMessage = "Address is not allowed to be empty, please re-enter.";
+        String exceptionMessage = "Address is not allowed to be empty.";
         try {
             UrlUtils.parseURLs(null, null);
         } catch (IllegalArgumentException illegalArgumentException) {
