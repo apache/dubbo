@@ -55,6 +55,9 @@ import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 
+/**
+ * Abstracting common actions for client streaming.
+ */
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
 
     private final AsciiString scheme;
@@ -88,6 +91,13 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return new ClientStream(url);
     }
 
+    /**
+     * TODO move this method to somewhere else
+     *
+     * @param req        the request
+     * @param connection connection
+     * @return a client stream
+     */
     public static AbstractClientStream newClientStream(Request req, Connection connection) {
         final RpcInvocation inv = (RpcInvocation) req.getData();
         final URL url = inv.getInvoker().getUrl();
@@ -141,6 +151,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             final ClientOutboundTransportObserver clientTransportObserver = new ClientOutboundTransportObserver(channel, promise);
             subscribe(clientTransportObserver);
             try {
+                DefaultFuture2.addTimeoutListener(getRequestId(), channel::close);
                 doOnStartCall();
             } catch (Throwable throwable) {
                 cancel(throwable);
@@ -216,10 +227,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         } catch (Exception e) {
             return TripleConstant.HTTP_SCHEME;
         }
-    }
-
-    private GrpcStatus getHttp2Error(Throwable throwable) {
-        return GrpcStatus.getStatus(throwable);
     }
 
     public ConsumerModel getConsumerModel() {

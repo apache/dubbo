@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -46,6 +45,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+/**
+ * AbstractStream provides more detailed actions for streaming process.
+ */
 public abstract class AbstractStream implements Stream {
 
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
@@ -77,17 +79,44 @@ public abstract class AbstractStream implements Stream {
     protected AbstractStream(URL url, Executor executor) {
         this.url = url;
         final Executor sourceExecutor = lookupExecutor(url, executor);
+        // wrap executor to ensure linear stream message processing
         this.executor = wrapperSerializingExecutor(sourceExecutor);
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
-        this.multipleSerialization = url.getOrDefaultFrameworkModel().getExtensionLoader(MultipleSerialization.class)
+        this.multipleSerialization = url.getOrDefaultFrameworkModel()
+            .getExtensionLoader(MultipleSerialization.class)
             .getExtension(value);
         this.cancellationContext = new CancellationContext();
+        // A stream implementation must know how to process inbound transport message
         this.inboundTransportObserver = createInboundTransportObserver();
+        // A stream implementation must know how to process inbound App level message
         this.inboundMessageObserver = createStreamObserver();
         this.acceptEncoding = Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel());
     }
 
-    private static void closeQuietly(Closeable c) {
+
+    /**
+     * Cancel by remote by receiving reset frame
+     */
+    protected abstract void cancelByRemoteReset();
+
+    /**
+     * Cancel by local by some error
+     *
+     * @param throwable the cancel cause
+     */
+    protected abstract void cancelByLocal(Throwable throwable);
+
+    /**
+     * create request StreamObserver
+     */
+    protected abstract StreamObserver<Object> createStreamObserver();
+
+    /**
+     * create response TransportObserver
+     */
+    protected abstract InboundTransportObserver createInboundTransportObserver();
+
+    private void closeQuietly(Closeable c) {
         if (c != null) {
             try {
                 c.close();
@@ -174,19 +203,6 @@ public abstract class AbstractStream implements Stream {
         cancelByRemoteReset();
     }
 
-    protected abstract void cancelByRemoteReset();
-
-    protected abstract void cancelByLocal(Throwable throwable);
-
-    /**
-     * create request StreamObserver
-     */
-    protected abstract StreamObserver<Object> createStreamObserver();
-
-    /**
-     * create response TransportObserver
-     */
-    protected abstract InboundTransportObserver createInboundTransportObserver();
 
     public String getSerializeType() {
         return serializeType;
@@ -301,17 +317,8 @@ public abstract class AbstractStream implements Stream {
         }
     }
 
-    protected void transportError(GrpcStatus status, Map<String, Object> attachments) {
-        transportError(status, attachments, false);
-    }
-
     protected void transportError(GrpcStatus status) {
-        transportError(status, null);
-    }
-
-    protected void transportError(Throwable throwable) {
-        GrpcStatus status = new GrpcStatus(Code.UNKNOWN, throwable, throwable.getMessage());
-        transportError(status, null);
+        transportError(status, null, false);
     }
 
     private String getGrpcMessage(GrpcStatus status) {
@@ -350,6 +357,12 @@ public abstract class AbstractStream implements Stream {
         return metadata;
     }
 
+    /**
+     * Parse metadata to a KV pairs map.
+     *
+     * @param metadata the metadata from remote
+     * @return KV pairs map
+     */
     protected Map<String, Object> parseMetadataToAttachmentMap(Metadata metadata) {
         Map<String, Object> attachments = new HashMap<>();
         for (Map.Entry<CharSequence, CharSequence> header : metadata) {
@@ -374,6 +387,13 @@ public abstract class AbstractStream implements Stream {
         return attachments;
     }
 
+    /**
+     * Parse and put the KV pairs into metadata. Ignore Http2 PseudoHeaderName and internal name.
+     * Only raw byte array or string value will be put.
+     *
+     * @param metadata    the metadata holder
+     * @param attachments KV pairs
+     */
     protected void convertAttachment(Metadata metadata, Map<String, Object> attachments) {
         if (attachments == null) {
             return;
@@ -459,6 +479,12 @@ public abstract class AbstractStream implements Stream {
         return BASE64_DECODER.decode(value.toString().getBytes(StandardCharsets.US_ASCII));
     }
 
+    /**
+     * Convert hessian version from Dubbo's SPI version(hessian2) to wrapper API version (hessian4)
+     *
+     * @param serializeType literal type
+     * @return hessian4 if the param is hessian2, otherwise return the param
+     */
     protected String convertHessianToWrapper(String serializeType) {
         if (TripleConstant.HESSIAN2.equals(serializeType)) {
             return TripleConstant.HESSIAN4;

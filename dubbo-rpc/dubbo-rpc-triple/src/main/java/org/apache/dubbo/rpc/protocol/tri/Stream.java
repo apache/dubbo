@@ -21,9 +21,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 
 /**
- * Stream acts as a bi-directional intermediate layer for streaming data processing. It serializes object instance to
+ * Stream acts as a bi-directional intermediate layer for processing streaming data . It serializes object instance to
  * byte[] then send to remote, and deserializes byte[] to object instance from remote. {@link #inboundTransportObserver()}
- * and {@link #subscribe(OutboundTransportObserver)} provide {@link TransportObserver} to send or receive remote data.
+ * and {@link #subscribe(OutboundTransportObserver)} provide {@link TransportObserver} to receive or send remote data.
  * {@link #inboundMessageObserver()} and {@link #subscribe(StreamObserver)} provide {@link StreamObserver}
  * as API for users fetching/emitting objects from/to remote peer.
  */
@@ -46,7 +46,7 @@ public interface Stream {
     TransportObserver inboundTransportObserver();
 
     /**
-     * Register an upstream data observer to receive byte[] sent by this stream
+     * Register an upstream data observer to receive instance sent by this stream
      *
      * @param outboundMessageObserver receives remote byte[] data
      */

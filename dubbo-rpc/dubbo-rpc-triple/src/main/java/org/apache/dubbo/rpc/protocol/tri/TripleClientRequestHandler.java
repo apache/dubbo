@@ -45,7 +45,6 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
     }
 
     private void writeRequest(ChannelHandlerContext ctx, final Request req, final ChannelPromise promise) {
-        DefaultFuture2.addTimeoutListener(req.getId(), ctx::close);
         Connection connection = Connection.getConnectionFromChannel(ctx.channel());
         final AbstractClientStream stream = AbstractClientStream.newClientStream(req, connection);
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
