@@ -133,8 +133,11 @@ public class FrameworkModel extends ScopeModel {
     synchronized void addApplication(ApplicationModel applicationModel) {        
         if (!this.applicationModels.contains(applicationModel)) {
             synchronized (destroyingLock) {
-                this.applicationModels.add(applicationModel);
-                applicationModel.setInternalName(buildInternalName(ApplicationModel.NAME, getInternalId(), appIndex.getAndIncrement()));
+                if (!this.applicationModels.contains(applicationModel)) {
+                    this.applicationModels.add(applicationModel);
+                    applicationModel.setInternalName(buildInternalName(ApplicationModel.NAME,
+                            getInternalId(), appIndex.getAndIncrement()));
+                }
             }
         }
     }
@@ -144,9 +147,11 @@ public class FrameworkModel extends ScopeModel {
     }
 
     synchronized void tryDestroy() {
-        synchronized (destroyingLock) {
-            if (applicationModels.size() == 0) {
-                destroy();
+        if (applicationModels.size() == 0) {
+            synchronized (destroyingLock) {
+                if (applicationModels.size() == 0) {
+                    destroy();
+                }
             }
         }
     }
