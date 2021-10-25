@@ -1266,13 +1266,13 @@ public class DubboBootstrap {
                     }
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
-                    clear();
-                    shutdown();
+                    DubboShutdownHook.destroyAll();
+                    clearConfigManager();
+                    shutdownExecutor();
                     release();
                     ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
                     exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
                 }
-                DubboShutdownHook.destroyAll();
             } finally {
                 initialized.set(false);
                 destroyLock.unlock();
@@ -1295,13 +1295,8 @@ public class DubboBootstrap {
         }
     }
 
-    private void clear() {
+    private void clearConfigManager() {
         clearConfigs();
-        clearApplicationModel();
-    }
-
-    private void clearApplicationModel() {
-
     }
 
     private void clearConfigs() {
@@ -1322,7 +1317,7 @@ public class DubboBootstrap {
         });
     }
 
-    private void shutdown() {
+    private void shutdownExecutor() {
         if (!executorService.isShutdown()) {
             // Shutdown executorService
             executorService.shutdown();
