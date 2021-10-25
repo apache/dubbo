@@ -49,7 +49,6 @@ public class FrameworkModel extends ScopeModel {
 
     private FrameworkServiceRepository serviceRepository;
 
-    private Object destroyingLock = new Object();
 
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
@@ -130,15 +129,10 @@ public class FrameworkModel extends ScopeModel {
         return new ApplicationModel(this);
     }
 
-    synchronized void addApplication(ApplicationModel applicationModel) {        
+    synchronized void addApplication(ApplicationModel applicationModel) {
         if (!this.applicationModels.contains(applicationModel)) {
-            synchronized (destroyingLock) {
-                if (!this.applicationModels.contains(applicationModel)) {
-                    this.applicationModels.add(applicationModel);
-                    applicationModel.setInternalName(buildInternalName(ApplicationModel.NAME,
-                            getInternalId(), appIndex.getAndIncrement()));
-                }
-            }
+            this.applicationModels.add(applicationModel);
+            applicationModel.setInternalName(buildInternalName(ApplicationModel.NAME, getInternalId(), appIndex.getAndIncrement()));
         }
     }
 
@@ -148,11 +142,7 @@ public class FrameworkModel extends ScopeModel {
 
     synchronized void tryDestroy() {
         if (applicationModels.size() == 0) {
-            synchronized (destroyingLock) {
-                if (applicationModels.size() == 0) {
-                    destroy();
-                }
-            }
+            destroy();
         }
     }
 
