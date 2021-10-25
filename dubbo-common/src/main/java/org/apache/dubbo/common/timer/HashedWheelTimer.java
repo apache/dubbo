@@ -693,6 +693,8 @@ public class HashedWheelTimer implements Timer {
                     logger.warn("An exception was thrown while submit " + TimerTask.class.getSimpleName()
                             + " for execution.", t);
                 }
+                // reset state to try again.
+                compareAndSetState(ST_EXPIRED, ST_INIT);
             }
         }
 
