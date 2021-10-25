@@ -21,7 +21,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -39,9 +38,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
@@ -74,18 +72,17 @@ public class AccessLogFilter implements Filter {
     private static final String FILE_DATE_FORMAT = "yyyyMMdd";
 
     // It's safe to declare it as singleton since it runs on single thread only
-    private static final DateFormat FILE_NAME_FORMATTER = new SimpleDateFormat(FILE_DATE_FORMAT);
+    private final DateFormat fileNameFormatter = new SimpleDateFormat(FILE_DATE_FORMAT);
 
-    private static final Map<String, Set<AccessLogData>> LOG_ENTRIES = new ConcurrentHashMap<>();
+    private final Map<String, Set<AccessLogData>> logEntries = new ConcurrentHashMap<>();
 
-    private static final ScheduledExecutorService LOG_SCHEDULED = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Access-Log", true));
+    private AtomicBoolean scheduled = new AtomicBoolean();
 
     /**
      * Default constructor initialize demon thread for writing into access log file with names with access log key
      * defined in url <b>accesslog</b>
      */
     public AccessLogFilter() {
-        LOG_SCHEDULED.scheduleWithFixedDelay(this::writeLogToFile, LOG_OUTPUT_INTERVAL, LOG_OUTPUT_INTERVAL, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -98,6 +95,10 @@ public class AccessLogFilter implements Filter {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
+        if (scheduled.compareAndSet(false, true)) {
+            inv.getModuleModel().getApplicationModel().getApplicationExecutorRepository().getSharedScheduledExecutor()
+                .scheduleWithFixedDelay(this::writeLogToFile, LOG_OUTPUT_INTERVAL, LOG_OUTPUT_INTERVAL, TimeUnit.MILLISECONDS);
+        }
         try {
             String accessLogKey = invoker.getUrl().getParameter(ACCESS_LOG_KEY);
             if (ConfigUtils.isNotEmpty(accessLogKey)) {
@@ -112,7 +113,7 @@ public class AccessLogFilter implements Filter {
     }
 
     private void log(String accessLog, AccessLogData accessLogData) {
-        Set<AccessLogData> logSet = LOG_ENTRIES.computeIfAbsent(accessLog, k -> new ConcurrentHashSet<>());
+        Set<AccessLogData> logSet = logEntries.computeIfAbsent(accessLog, k -> new ConcurrentHashSet<>());
 
         if (logSet.size() < LOG_MAX_BUFFER) {
             logSet.add(accessLogData);
@@ -144,8 +145,8 @@ public class AccessLogFilter implements Filter {
     }
 
     private void writeLogToFile() {
-        if (!LOG_ENTRIES.isEmpty()) {
-            for (Map.Entry<String, Set<AccessLogData>> entry : LOG_ENTRIES.entrySet()) {
+        if (!logEntries.isEmpty()) {
+            for (Map.Entry<String, Set<AccessLogData>> entry : logEntries.entrySet()) {
                 String accessLog = entry.getKey();
                 Set<AccessLogData> logSet = entry.getValue();
                 writeLogSetToFile(accessLog, logSet);
@@ -195,8 +196,8 @@ public class AccessLogFilter implements Filter {
 
     private void renameFile(File file) {
         if (file.exists()) {
-            String now = FILE_NAME_FORMATTER.format(new Date());
-            String last = FILE_NAME_FORMATTER.format(new Date(file.lastModified()));
+            String now = fileNameFormatter.format(new Date());
+            String last = fileNameFormatter.format(new Date(file.lastModified()));
             if (!now.equals(last)) {
                 File archive = new File(file.getAbsolutePath() + "." + last);
                 file.renameTo(archive);

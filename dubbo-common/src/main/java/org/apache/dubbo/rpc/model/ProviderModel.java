@@ -33,7 +33,7 @@ import java.util.Objects;
  */
 public class ProviderModel extends ServiceModel {
     private final List<RegisterStatedURL> urls;
-    private final Map<String, List<ProviderMethodModel>> methods = new HashMap<String, List<ProviderMethodModel>>();
+    private final Map<String, List<ProviderMethodModel>> methods = new HashMap<>();
 
     public ProviderModel(String serviceKey,
                          Object serviceInstance,
@@ -158,11 +158,7 @@ public class ProviderModel extends ServiceModel {
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
-            List<ProviderMethodModel> methodModels = methods.get(method.getName());
-            if (methodModels == null) {
-                methodModels = new ArrayList<ProviderMethodModel>();
-                methods.put(method.getName(), methodModels);
-            }
+            List<ProviderMethodModel> methodModels = methods.computeIfAbsent(method.getName(), k -> new ArrayList<>());
             methodModels.add(new ProviderMethodModel(method));
         }
     }

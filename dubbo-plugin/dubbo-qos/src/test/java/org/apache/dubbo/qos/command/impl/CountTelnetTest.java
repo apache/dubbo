@@ -21,7 +21,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.impl.channel.MockNettyChannel;
-import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
 import org.apache.dubbo.rpc.Invoker;
@@ -44,7 +43,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
 public class CountTelnetTest {
-    private static final BaseCommand count = new CountTelnet(FrameworkModel.defaultModel());
+    private BaseCommand count;
 
     private MockNettyChannel mockChannel;
     private Invoker<DemoService> mockInvoker;
@@ -56,6 +55,7 @@ public class CountTelnetTest {
 
     @BeforeEach
     public void setUp() {
+        count = new CountTelnet(FrameworkModel.defaultModel());
         latch = new CountDownLatch(2);
         mockInvoker = mock(Invoker.class);
         mockCommandContext = mock(CommandContext.class);
@@ -68,7 +68,7 @@ public class CountTelnetTest {
 
     @AfterEach
     public void tearDown() {
-        ProtocolUtils.closeAll();
+        FrameworkModel.destroyAll();
         mockChannel.close();
         reset(mockInvoker, mockCommandContext);
     }

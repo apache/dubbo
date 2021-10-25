@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -52,7 +53,7 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         LinkedHashSet<Class<?>> interfaces = new LinkedHashSet<>();
 
         String config = invoker.getUrl().getParameter(INTERFACES);
-        if (config != null && config.length() > 0) {
+        if (StringUtils.isNotEmpty(config)) {
             String[] types = COMMA_SPLIT_PATTERN.split(config);
             for (String type : types) {
                 try {

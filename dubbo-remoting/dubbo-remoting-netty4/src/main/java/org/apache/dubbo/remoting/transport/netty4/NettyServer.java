@@ -29,13 +29,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.api.NettyEventLoopFactory;
 import org.apache.dubbo.remoting.api.SslServerTlsHandler;
 import org.apache.dubbo.remoting.transport.AbstractServer;
@@ -58,7 +58,7 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_WORKER_POOL_NAME;
 /**
  * NettyServer.
  */
-public class NettyServer extends AbstractServer implements RemotingServer {
+public class NettyServer extends AbstractServer {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
     /**
@@ -147,9 +147,9 @@ public class NettyServer extends AbstractServer implements RemotingServer {
             logger.warn(e.getMessage(), e);
         }
         try {
-            Collection<org.apache.dubbo.remoting.Channel> channels = getChannels();
-            if (channels != null && channels.size() > 0) {
-                for (org.apache.dubbo.remoting.Channel channel : channels) {
+            Collection<Channel> channels = getChannels();
+            if (CollectionUtils.isNotEmpty(channels)) {
+                for (Channel channel : channels) {
                     try {
                         channel.close();
                     } catch (Throwable e) {

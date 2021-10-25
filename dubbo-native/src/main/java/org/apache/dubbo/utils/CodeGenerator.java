@@ -17,7 +17,6 @@
 package org.apache.dubbo.utils;
 
 import org.apache.commons.io.FileUtils;
-
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.AdaptiveClassCodeGenerator;
 import org.apache.dubbo.common.extension.SPI;
@@ -69,7 +68,7 @@ public class CodeGenerator {
                 value = "adaptive";
             }
             AdaptiveClassCodeGenerator codeGenerator = new AdaptiveClassCodeGenerator(it, value);
-            String code = codeGenerator.generate();
+            String code = codeGenerator.generate(true);
             System.out.println(code);
             System.out.println("-----:" + it.getPackage());
             try {

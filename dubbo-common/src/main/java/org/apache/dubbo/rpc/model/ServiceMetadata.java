@@ -35,10 +35,14 @@ public class ServiceMetadata extends BaseServiceMetadata {
 
     private Object target;
 
-    /* will be transferred to remote side */
-    private final Map<String, Object> attachments = new ConcurrentHashMap<String, Object>();
-    /* used locally*/
-    private final Map<String, Object> attributeMap = new ConcurrentHashMap<String, Object>();
+    /**
+     * will be transferred to remote side
+     */
+    private final Map<String, Object> attachments = new ConcurrentHashMap<>();
+    /**
+     * used locally
+     */
+    private final Map<String, Object> attributeMap = new ConcurrentHashMap<>();
 
     public ServiceMetadata(String serviceInterfaceName, String group, String version, Class<?> serviceType) {
         this.serviceInterfaceName = serviceInterfaceName;
@@ -52,6 +56,7 @@ public class ServiceMetadata extends BaseServiceMetadata {
     public ServiceMetadata() {
     }
 
+    @Override
     public String getServiceKey() {
         return serviceKey;
     }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
+import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -24,8 +25,6 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,7 +61,7 @@ public class ZookeeperRegistryTest {
         this.zkServer.start();
 
         this.registryUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
-        zookeeperRegistryFactory = new ZookeeperRegistryFactory();
+        zookeeperRegistryFactory = new ZookeeperRegistryFactory(ApplicationModel.defaultModel());
         this.zookeeperRegistry = (ZookeeperRegistry) zookeeperRegistryFactory.createRegistry(registryUrl);
     }
 
@@ -75,7 +74,7 @@ public class ZookeeperRegistryTest {
     public void testAnyHost() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
-            new ZookeeperRegistryFactory().createRegistry(errorUrl);
+            new ZookeeperRegistryFactory(ApplicationModel.defaultModel()).createRegistry(errorUrl);
         });
     }
 
