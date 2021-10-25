@@ -39,7 +39,7 @@ public class ClassLoaderResourceLoader {
 
     static {
         // register resources destroy listener
-        GlobalResourcesRepository.getInstance().registerDisposable(()-> destroy(), true);
+        GlobalResourcesRepository.registerGlobalDisposable(()-> destroy());
     }
 
     public static Map<ClassLoader, Set<java.net.URL>> loadResources(String fileName, List<ClassLoader> classLoaders) {
@@ -62,7 +62,7 @@ public class ClassLoaderResourceLoader {
     public static Set<java.net.URL> loadResources(String fileName, ClassLoader currentClassLoader) {
         Map<ClassLoader, Map<String, Set<java.net.URL>>> classLoaderCache;
         if (classLoaderResourcesCache == null || (classLoaderCache = classLoaderResourcesCache.get()) == null) {
-            synchronized (ConfigUtils.class) {
+            synchronized (ClassLoaderResourceLoader.class) {
                 if (classLoaderResourcesCache == null || (classLoaderCache = classLoaderResourcesCache.get()) == null) {
                     classLoaderCache = new ConcurrentHashMap<>();
                     classLoaderResourcesCache = new SoftReference<>(classLoaderCache);
@@ -98,8 +98,8 @@ public class ClassLoaderResourceLoader {
     }
 
     public static void destroy() {
-        if (classLoaderResourcesCache != null) {
-            classLoaderResourcesCache.clear();
+        synchronized (ClassLoaderResourceLoader.class) {
+            classLoaderResourcesCache = null;
         }
     }
 
