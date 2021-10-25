@@ -149,7 +149,7 @@ public class RpcUtils {
             }
             Class<?>[] parameterTypes = new Class<?>[types.length];
             for (int i = 0; i < types.length; i++) {
-                parameterTypes[i] = ReflectUtils.forName(types[0]);
+                parameterTypes[i] = ReflectUtils.forName(types[i]);
             }
             return parameterTypes;
         }
