@@ -17,9 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
@@ -30,13 +27,16 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 
-public class ClientTransportObserver extends AbstractChannelTransportObserver {
+/**
+ * Send stream data to remote
+ * {@link ClientOutboundTransportObserver#promise} will be set success after rst or complete sent,
+ */
+public class ClientOutboundTransportObserver extends OutboundTransportObserver {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientTransportObserver.class);
     private final ChannelPromise promise;
     private final Http2StreamChannel streamChannel;
 
-    public ClientTransportObserver(Http2StreamChannel channel, ChannelPromise promise) {
+    public ClientOutboundTransportObserver(Http2StreamChannel channel, ChannelPromise promise) {
         this.streamChannel = channel;
         this.promise = promise;
     }
@@ -68,8 +68,8 @@ public class ClientTransportObserver extends AbstractChannelTransportObserver {
     }
 
     @Override
-    protected void doOnReset(Http2Error http2Error) {
-        streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
+    protected void doOnError(GrpcStatus status) {
+        streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.CANCEL))
             .addListener(future -> {
                 if (future.isSuccess()) {
                     promise.trySuccess();

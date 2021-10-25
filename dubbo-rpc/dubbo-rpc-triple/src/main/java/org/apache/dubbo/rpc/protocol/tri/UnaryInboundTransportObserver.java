@@ -14,20 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+abstract class UnaryInboundTransportObserver extends InboundTransportObserver implements TransportObserver {
+    protected static final String DUPLICATED_DATA = "Duplicated data";
 
-public class TripleClientInboundHandler extends ChannelInboundHandlerAdapter {
+    private byte[] data;
+
+    public byte[] getData() {
+        return data;
+    }
+
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
-
-        final byte[] data = (byte[]) msg;
-        if (clientStream != null) {
-            clientStream.inboundTransportObserver()
-                .onData(data, false);
+    public void onData(byte[] in, boolean endStream) {
+        if (data == null) {
+            this.data = in;
+        } else {
+            onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription(DUPLICATED_DATA));
         }
     }
 }

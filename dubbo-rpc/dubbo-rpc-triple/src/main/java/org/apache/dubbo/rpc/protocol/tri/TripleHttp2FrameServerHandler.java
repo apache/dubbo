@@ -38,12 +38,11 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2DataFrame;
-import io.netty.handler.codec.http2.Http2Error;
-import io.netty.handler.codec.http2.Http2Frame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2ResetFrame;
 import io.netty.util.ReferenceCountUtil;
+import io.netty.util.ReferenceCounted;
 
 import java.util.List;
 
@@ -66,11 +65,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             onHeadersRead(ctx, (Http2HeadersFrame) msg);
         } else if (msg instanceof Http2DataFrame) {
             onDataRead(ctx, (Http2DataFrame) msg);
-        } else if (msg instanceof Http2Frame) {
+        } else if (msg instanceof ReferenceCounted) {
             // ignored
             ReferenceCountUtil.release(msg);
-        } else {
-            super.channelRead(ctx, msg);
         }
     }
 
@@ -84,9 +81,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
-        Http2Error http2Error = Http2Error.valueOf(frame.errorCode());
         final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
-        serverStream.cancelByRemote(http2Error);
+        LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
+        serverStream.cancelByRemote();
         ctx.close();
     }
 
@@ -106,7 +103,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (msg.isEndStream()) {
             final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
             if (serverStream != null) {
-                serverStream.asTransportObserver().onComplete();
+                serverStream.inboundTransportObserver().onComplete();
             }
         }
     }
@@ -126,7 +123,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
         final Http2Headers headers = msg.headers();
-        ServerTransportObserver transportObserver = new ServerTransportObserver(ctx);
+        ServerOutboundTransportObserver transportObserver = new ServerOutboundTransportObserver(ctx);
 
         if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
             responsePlainTextError(transportObserver, HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
@@ -243,7 +240,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             stream.methods(methodDescriptors);
         }
 
-        final TransportObserver observer = stream.asTransportObserver();
+        final TransportObserver observer = stream.inboundTransportObserver();
         observer.onMetadata(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {
             observer.onComplete();
@@ -261,7 +258,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         return contentType.startsWith(TripleConstant.APPLICATION_GRPC);
     }
 
-    private void responsePlainTextError(ServerTransportObserver observer, int code, GrpcStatus status) {
+    private void responsePlainTextError(ServerOutboundTransportObserver observer, int code, GrpcStatus status) {
         Http2Headers headers = new DefaultHttp2Headers(true)
             .status(String.valueOf(code))
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
@@ -271,7 +268,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         observer.onData(status.description, true);
     }
 
-    private void responseErr(ServerTransportObserver observer, GrpcStatus status) {
+    private void responseErr(ServerOutboundTransportObserver observer, GrpcStatus status) {
         Http2Headers trailers = new DefaultHttp2Headers()
             .status(OK.codeAsText())
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
