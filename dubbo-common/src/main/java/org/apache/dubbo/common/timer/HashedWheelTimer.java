@@ -19,6 +19,7 @@ package org.apache.dubbo.common.timer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,6 +27,8 @@ import java.util.Locale;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -92,7 +95,10 @@ public class HashedWheelTimer implements Timer {
     private static final AtomicIntegerFieldUpdater<HashedWheelTimer> WORKER_STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(HashedWheelTimer.class, "workerState");
 
-    private final ThreadFactory threadFactory;
+    private static final ExecutorService DEFAULT_TIMER_TASK_EXECUTOR =
+            Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+            new NamedThreadFactory("HashedWheelTimerTask", true));
+
     private final Worker worker = new Worker();
     private final Thread workerThread;
 
@@ -114,6 +120,7 @@ public class HashedWheelTimer implements Timer {
     private final Queue<HashedWheelTimeout> cancelledTimeouts = new LinkedBlockingQueue<>();
     private final AtomicLong pendingTimeouts = new AtomicLong(0);
     private final long maxPendingTimeouts;
+    private final Executor taskExecutor;
 
     private volatile long startTime;
 
@@ -222,12 +229,36 @@ public class HashedWheelTimer implements Timer {
             ThreadFactory threadFactory,
             long tickDuration, TimeUnit unit, int ticksPerWheel,
             long maxPendingTimeouts) {
+        this(threadFactory, tickDuration, unit, ticksPerWheel, maxPendingTimeouts, DEFAULT_TIMER_TASK_EXECUTOR);
+    }
 
+    /**
+     * Creates a new timer.
+     *
+     * @param threadFactory        a {@link ThreadFactory} that creates a
+     *                             background {@link Thread} which is dedicated to
+     *                             {@link TimerTask} execution.
+     * @param tickDuration         the duration between tick
+     * @param unit                 the time unit of the {@code tickDuration}
+     * @param ticksPerWheel        the size of the wheel
+     * @param maxPendingTimeouts   The maximum number of pending timeouts after which call to
+     *                             {@code newTimeout} will result in
+     *                             {@link java.util.concurrent.RejectedExecutionException}
+     *                             being thrown. No maximum pending timeouts limit is assumed if
+     *                             this value is 0 or negative.
+     * @param taskExecutor         The {@link Executor} that is used to execute the submitted {@link TimerTask}s.
+     *                             The caller is responsible to shutdown the {@link Executor} once it is not needed
+     *                             anymore.
+     * @throws NullPointerException     if either of {@code threadFactory} and {@code unit} is {@code null}
+     * @throws IllegalArgumentException if either of {@code tickDuration} and {@code ticksPerWheel} is &lt;= 0
+     */
+    public HashedWheelTimer(
+            ThreadFactory threadFactory,
+            long tickDuration, TimeUnit unit, int ticksPerWheel,
+            long maxPendingTimeouts, Executor taskExecutor) {
         if (threadFactory == null) {
             throw new NullPointerException("threadFactory");
         }
-        this.threadFactory = threadFactory;
-
         if (unit == null) {
             throw new NullPointerException("unit");
         }
@@ -237,6 +268,10 @@ public class HashedWheelTimer implements Timer {
         if (ticksPerWheel <= 0) {
             throw new IllegalArgumentException("ticksPerWheel must be greater than 0: " + ticksPerWheel);
         }
+        if (taskExecutor == null) {
+            throw new NullPointerException("taskExecutor");
+        }
+        this.taskExecutor = taskExecutor;
 
         // Normalize ticksPerWheel to power of two and initialize the wheel.
         wheel = createWheel(ticksPerWheel);
@@ -532,7 +567,10 @@ public class HashedWheelTimer implements Timer {
                     return currentTime;
                 }
                 if (isWindows()) {
-                    sleepTimeMs = (sleepTimeMs + 9) / 10 * 10;
+                    sleepTimeMs = sleepTimeMs / 10 * 10;
+                    if (sleepTimeMs == 0) {
+                        sleepTimeMs = 1;
+                    }
                 }
 
                 try {
@@ -550,11 +588,7 @@ public class HashedWheelTimer implements Timer {
         }
     }
 
-    public ThreadFactory threadFactory() {
-        return threadFactory;
-    }
-
-    private static final class HashedWheelTimeout implements Timeout {
+    private static final class HashedWheelTimeout implements Timeout, Runnable {
 
         private static final int ST_INIT = 0;
         private static final int ST_CANCELLED = 1;
@@ -648,16 +682,28 @@ public class HashedWheelTimer implements Timer {
                 return;
             }
 
-            // run timeout task at new thread to avoid the worker thread blocking
-            timer.threadFactory().newThread( () -> {
-                try {
-                    task.run(this);
-                } catch (Throwable t) {
-                    if (logger.isWarnEnabled()) {
-                        logger.warn("An exception was thrown by " + TimerTask.class.getSimpleName() + '.', t);
-                    }
+            // run timeout task at separate thread to avoid the worker thread blocking
+            try {
+                timer.taskExecutor.execute(this);
+            } catch (Throwable t) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("An exception was thrown while submit " + TimerTask.class.getSimpleName()
+                            + " for execution.", t);
                 }
-            }).start();
+                // reset state to try again.
+                compareAndSetState(ST_EXPIRED, ST_INIT);
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                task.run(this);
+            } catch (Throwable t) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("An exception was thrown by " + TimerTask.class.getSimpleName() + '.', t);
+                }
+            }
         }
 
         @Override
