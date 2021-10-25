@@ -53,8 +53,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ApplicationModel extends ScopeModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
     public static final String NAME = "ApplicationModel";
-    private static volatile ApplicationModel defaultInstance;
-
     private final List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
     private final List<ModuleModel> pubModuleModels = Collections.synchronizedList(new ArrayList<>());
     private Environment environment;
@@ -84,14 +82,8 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public static ApplicationModel defaultModel() {
-        if (defaultInstance == null) {
-            synchronized (ApplicationModel.class) {
-                if (defaultInstance == null) {
-                    defaultInstance = new ApplicationModel(FrameworkModel.defaultModel());
-                }
-            }
-        }
-        return defaultInstance;
+        // should get from default FrameworkModel, avoid out of sync
+        return FrameworkModel.defaultModel().defaultApplication();
     }
 
     /**
@@ -185,9 +177,8 @@ public class ApplicationModel extends ScopeModel {
     // only for unit test
     @Deprecated
     public static void reset() {
-        if (defaultInstance != null) {
-            defaultInstance.destroy();
-            defaultInstance = null;
+        if (FrameworkModel.defaultModel().getDefaultAppModel() != null) {
+            FrameworkModel.defaultModel().getDefaultAppModel().destroy();
         }
     }
 
@@ -199,12 +190,6 @@ public class ApplicationModel extends ScopeModel {
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
         initialize();
-        // bind to default instance if absent
-        synchronized (ApplicationModel.class) {
-            if (defaultInstance == null) {
-                defaultInstance = this;
-            }
-        }
     }
 
     @Override
@@ -251,11 +236,6 @@ public class ApplicationModel extends ScopeModel {
         // destroy internal module later
         internalModule.destroy();
 
-        if (defaultInstance == this) {
-            synchronized (ApplicationModel.class) {
-                defaultInstance = null;
-            }
-        }
         frameworkModel.removeApplication(this);
 
         if (deployer != null) {
