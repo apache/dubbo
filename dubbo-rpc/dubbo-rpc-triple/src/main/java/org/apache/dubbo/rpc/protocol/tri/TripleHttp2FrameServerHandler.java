@@ -85,8 +85,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
         Http2Error http2Error = Http2Error.valueOf(frame.errorCode());
         final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
-        serverStream.cancelByRemote(http2Error);
-        ctx.close();
+        if (serverStream != null) {
+            serverStream.cancelByRemote(http2Error);
+            ctx.close();
+        }
     }
 
     @Override
