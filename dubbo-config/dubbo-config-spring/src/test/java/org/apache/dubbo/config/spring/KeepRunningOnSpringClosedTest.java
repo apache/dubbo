@@ -29,7 +29,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class KeepRunningOnSpringClosedTest {
 
     @Test
-    public void test() throws InterruptedException {
+    public void test(){
 
         // set KeepRunningOnSpringClosed flag for next spring context
         DubboSpringInitCustomizerHolder.get().addCustomizer(context-> {
@@ -45,15 +45,8 @@ public class KeepRunningOnSpringClosedTest {
             providerContext.start();
 
             // Expect 1: dubbo application state is STARTED after spring context start finish.
-            // wait ContextStartedEvent as spring context start on async mode.
-            ApplicationStartup applicationStartup = providerContext.getBean(ApplicationStartup.class);
-            for (int i = 0; i < 10; i++) {
-                if (applicationStartup.isStarted()) {
-                    break;
-                }
-                Thread.sleep(1000);
-            }
-            
+            // No need check and wait
+
             DubboStateListener dubboStateListener = providerContext.getBean(DubboStateListener.class);
             Assertions.assertEquals(DeployState.STARTED, dubboStateListener.getState());
 

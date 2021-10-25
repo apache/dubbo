@@ -379,8 +379,7 @@ public class DubboBootstrapMultiInstanceTest {
             providerBootstrap2.stop();
             // shutdown register center after dubbo application to avoid unregister services blocking
             registryCenter2.shutdown();
-            // NettyServer is not closed as DubboTestChecker is still running.
-            checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", new String[]{EVENT_LOOP_BOSS_POOL_NAME, "Dubbo-global-shared-handler"});
+            checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", null);
 
         } finally {
             if (providerBootstrap1 != null) {
