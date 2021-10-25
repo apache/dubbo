@@ -38,6 +38,7 @@ import org.mockito.Mockito;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.mockito.Mockito.when;
@@ -115,26 +116,26 @@ public class ConnectivityValidationTest {
         Assertions.assertEquals(0, directory.list(invocation).size());
 
         when(invoker1.isAvailable()).thenReturn(true);
-        Thread.sleep(10);
+        waitRefresh();
         Assertions.assertEquals(1, directory.list(invocation).size());
         Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, invokerList, Collections.emptyList()));
 
         when(invoker2.isAvailable()).thenReturn(true);
-        Thread.sleep(10);
+        waitRefresh();
         Assertions.assertEquals(2, directory.list(invocation).size());
         Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, invokerList, Collections.emptyList()));
 
         invokerList.remove(invoker5);
         directory.notify(invokerList);
         when(invoker2.isAvailable()).thenReturn(true);
-        Thread.sleep(10);
+        waitRefresh();
         Assertions.assertEquals(2, directory.list(invocation).size());
         Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, invokerList, Collections.emptyList()));
 
         when(invoker3.isAvailable()).thenReturn(true);
         when(invoker4.isAvailable()).thenReturn(true);
 
-        Thread.sleep(10);
+        waitRefresh();
         Assertions.assertEquals(4, directory.list(invocation).size());
         Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, invokerList, Collections.emptyList()));
     }
@@ -152,6 +153,18 @@ public class ConnectivityValidationTest {
         @Override
         protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
             return null;
+        }
+    }
+
+    private void waitRefresh() throws InterruptedException {
+        ScheduledFuture future = directory.getConnectivityCheckFuture();
+        while (!future.isDone()) {
+            Thread.sleep(10);
+        }
+        directory.checkConnectivity();
+        future = directory.getConnectivityCheckFuture();
+        while (!future.isDone()) {
+            Thread.sleep(10);
         }
     }
 

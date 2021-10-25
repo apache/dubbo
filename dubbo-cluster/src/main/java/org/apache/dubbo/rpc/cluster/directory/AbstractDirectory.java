@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -103,6 +104,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     private final Semaphore checkConnectivityPermit = new Semaphore(1);
 
     private final ScheduledExecutorService connectivityExecutor;
+
+    private volatile ScheduledFuture<?> connectivityCheckFuture;
 
     /**
      * The max count of invokers for each reconnect task select to try to reconnect.
@@ -255,10 +258,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
     }
 
-    private void checkConnectivity() {
+    public void checkConnectivity() {
         // try to submit task, to ensure there is only one task at most for each directory
         if (checkConnectivityPermit.tryAcquire()) {
-            connectivityExecutor.schedule(() -> {
+            this.connectivityCheckFuture = connectivityExecutor.schedule(() -> {
                 if (isDestroyed()) {
                     return;
                 }
@@ -379,6 +382,22 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         } finally {
             invokerLock.unlock();
         }
+    }
+
+    /**
+     * for ut only
+     */
+    @Deprecated
+    public Semaphore getCheckConnectivityPermit() {
+        return checkConnectivityPermit;
+    }
+
+    /**
+     * for ut only
+     */
+    @Deprecated
+    public ScheduledFuture<?> getConnectivityCheckFuture() {
+        return connectivityCheckFuture;
     }
 
     protected abstract BitList<Invoker<T>> doList(Invocation invocation) throws RpcException;
