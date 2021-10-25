@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.Router;
@@ -265,6 +266,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 if (isDestroyed()) {
                     return;
                 }
+                RpcContext.getServiceContext().setConsumerUrl(getConsumerUrl());
                 List<Invoker<T>> needDeleteList = new ArrayList<>();
                 List<Invoker<T>> invokersToTry = new ArrayList<>();
 
