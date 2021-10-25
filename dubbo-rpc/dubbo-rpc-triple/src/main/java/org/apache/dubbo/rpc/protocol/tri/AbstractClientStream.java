@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Constants;
@@ -33,6 +34,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.triple.TripleWrapper;
 
+import com.google.protobuf.ByteString;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -41,6 +43,9 @@ import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.AsciiString;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -239,17 +244,53 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         } else {
             obj = getRequestValue(value);
         }
-        out = TripleUtil.pack(obj);
+        out = pack(obj);
         return super.compress(out);
     }
 
     private TripleWrapper.TripleRequestWrapper getRequestWrapper(Object value) {
         if (getMethodDescriptor().isStream()) {
             String type = getMethodDescriptor().getParameterClasses()[0].getName();
-            return TripleUtil.wrapReq(getUrl(), getSerializeType(), value, type, getMultipleSerialization());
+            return wrapReq(getUrl(), getSerializeType(), value, type, getMultipleSerialization());
         } else {
             RpcInvocation invocation = (RpcInvocation) value;
-            return TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
+            return wrapReq(getUrl(), invocation, getMultipleSerialization());
+        }
+    }
+
+    private TripleWrapper.TripleRequestWrapper wrapReq(URL url, RpcInvocation invocation,
+                                                       MultipleSerialization serialization) {
+        try {
+            String serializationName = (String) invocation.getObjectAttachment(Constants.SERIALIZATION_KEY);
+            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+                .setSerializeType(convertHessianToWrapper(serializationName));
+            for (int i = 0; i < invocation.getArguments().length; i++) {
+                final String clz = invocation.getParameterTypes()[i].getName();
+                builder.addArgTypes(clz);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                serialization.serialize(url, serializationName, clz, invocation.getArguments()[i], bos);
+                builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
+            }
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
+        }
+    }
+
+    public TripleWrapper.TripleRequestWrapper wrapReq(URL url, String serializeType, Object req,
+                                                      String type,
+                                                      MultipleSerialization multipleSerialization) {
+        try {
+            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+                .addArgTypes(type)
+                .setSerializeType(convertHessianToWrapper(serializeType));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            multipleSerialization.serialize(url, serializeType, type, req, bos);
+            builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
+            bos.close();
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
         }
     }
 
@@ -268,21 +309,35 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                 ClassLoadUtil.switchContextLoader(getConsumerModel().getClassLoader());
             }
             if (getMethodDescriptor().isNeedWrap()) {
-                final TripleWrapper.TripleResponseWrapper wrapper = TripleUtil.unpack(data,
+                final TripleWrapper.TripleResponseWrapper wrapper = unpack(data,
                     TripleWrapper.TripleResponseWrapper.class);
-                if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
+                if (!getSerializeType().equals(convertHessianFromWrapper(wrapper.getSerializeType()))) {
                     throw new UnsupportedOperationException("Received inconsistent serialization type from server, " +
                         "reject to deserialize! Expected:" + getSerializeType() +
-                        " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()));
+                        " Actual:" + convertHessianFromWrapper(wrapper.getSerializeType()));
                 }
-                return TripleUtil.unwrapResp(getUrl(), wrapper, getMultipleSerialization());
+                return unwrapResp(getUrl(), wrapper, getMultipleSerialization());
             } else {
-                return TripleUtil.unpack(data, getMethodDescriptor().getReturnClass());
+                return unpack(data, getMethodDescriptor().getReturnClass());
             }
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
         }
     }
+
+    public Object unwrapResp(URL url, TripleWrapper.TripleResponseWrapper wrap,
+                             MultipleSerialization serialization) {
+        String serializeType = convertHessianFromWrapper(wrap.getSerializeType());
+        try {
+            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
+            final Object ret = serialization.deserialize(url, serializeType, wrap.getType(), bais);
+            bais.close();
+            return ret;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to unwrap resp", e);
+        }
+    }
+
 
     protected Metadata createRequestMeta(RpcInvocation inv) {
         Metadata metadata = new DefaultMetadata();

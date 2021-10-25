@@ -24,9 +24,12 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.DebugInfo;
+import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +48,25 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
     @Override
     protected InboundTransportObserver createInboundTransportObserver() {
         return new ClientUnaryInboundTransportObserver();
+    }
+
+    private Map<Class<?>, Object> tranFromStatusDetails(List<Any> detailList) {
+        Map<Class<?>, Object> map = new HashMap<>();
+        try {
+            for (Any any : detailList) {
+                if (any.is(ErrorInfo.class)) {
+                    ErrorInfo errorInfo = any.unpack(ErrorInfo.class);
+                    map.putIfAbsent(ErrorInfo.class, errorInfo);
+                } else if (any.is(DebugInfo.class)) {
+                    DebugInfo debugInfo = any.unpack(DebugInfo.class);
+                    map.putIfAbsent(DebugInfo.class, debugInfo);
+                }
+                // support others type but now only support this
+            }
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+        }
+        return map;
     }
 
     private class ClientUnaryInboundTransportObserver extends UnaryInboundTransportObserver implements TransportObserver {
@@ -103,12 +125,12 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                 return null;
             }
             final CharSequence raw = metadata.get(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader());
-            byte[] statusDetailBin = TripleUtil.decodeASCIIByte(raw);
+            byte[] statusDetailBin = decodeASCIIByte(raw);
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {
-                final Status statusDetail = TripleUtil.unpack(statusDetailBin, Status.class);
+                final Status statusDetail = unpack(statusDetailBin, Status.class);
                 List<Any> detailList = statusDetail.getDetailsList();
-                Map<Class<?>, Object> classObjectMap = TripleUtil.tranFromStatusDetails(detailList);
+                Map<Class<?>, Object> classObjectMap = tranFromStatusDetails(detailList);
 
                 // get common exception from DebugInfo
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);

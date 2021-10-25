@@ -34,12 +34,22 @@ import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
 import io.netty.handler.codec.http2.Http2Headers;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
 public abstract class AbstractStream implements Stream {
+
+    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
+    private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 
     private final URL url;
     private final MultipleSerialization multipleSerialization;
@@ -75,6 +85,16 @@ public abstract class AbstractStream implements Stream {
         this.inboundTransportObserver = createInboundTransportObserver();
         this.inboundMessageObserver = createStreamObserver();
         this.acceptEncoding = Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel());
+    }
+
+    private static void closeQuietly(Closeable c) {
+        if (c != null) {
+            try {
+                c.close();
+            } catch (IOException ignore) {
+                // ignored
+            }
+        }
     }
 
     private Executor lookupExecutor(URL url, Executor executor) {
@@ -315,7 +335,7 @@ public abstract class AbstractStream implements Stream {
         if (throwable == null) {
             Status status = builder.build();
             metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                TripleUtil.encodeBase64ASCII(status.toByteArray()));
+                encodeBase64ASCII(status.toByteArray()));
             return metadata;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
@@ -326,7 +346,7 @@ public abstract class AbstractStream implements Stream {
         builder.addDetails(Any.pack(debugInfo));
         Status status = builder.build();
         metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-            TripleUtil.encodeBase64ASCII(status.toByteArray()));
+            encodeBase64ASCII(status.toByteArray()));
         return metadata;
     }
 
@@ -343,7 +363,7 @@ public abstract class AbstractStream implements Stream {
             }
             if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > 4) {
                 try {
-                    attachments.put(key.substring(0, key.length() - 4), TripleUtil.decodeASCIIByte(header.getValue()));
+                    attachments.put(key.substring(0, key.length() - 4), decodeASCIIByte(header.getValue()));
                 } catch (Exception e) {
                     LOGGER.error("Failed to parse response attachment key=" + key, e);
                 }
@@ -384,12 +404,66 @@ public abstract class AbstractStream implements Stream {
                 String str = (String) v;
                 metadata.put(key, str);
             } else if (v instanceof byte[]) {
-                String str = TripleUtil.encodeBase64ASCII((byte[]) v);
+                String str = encodeBase64ASCII((byte[]) v);
                 metadata.put(key + TripleConstant.GRPC_BIN_SUFFIX, str);
             }
         } catch (Throwable t) {
             LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v, t);
         }
+    }
+
+    protected String convertHessianFromWrapper(String serializeType) {
+        if (TripleConstant.HESSIAN4.equals(serializeType)) {
+            return TripleConstant.HESSIAN2;
+        }
+        return serializeType;
+    }
+
+    protected <T> T unpack(byte[] data, Class<T> clz) {
+        return unpack(new ByteArrayInputStream(data), clz);
+    }
+
+    protected <T> T unpack(InputStream is, Class<T> clz) {
+        try {
+            final T req = SingleProtobufUtils.deserialize(is, clz);
+            is.close();
+            return req;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to unpack req", e);
+        } finally {
+            closeQuietly(is);
+        }
+    }
+
+    protected byte[] pack(Object obj) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            SingleProtobufUtils.serialize(obj, baos);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack protobuf object", e);
+        }
+        return baos.toByteArray();
+    }
+
+
+    protected String encodeBase64ASCII(byte[] in) {
+        byte[] bytes = encodeBase64(in);
+        return new String(bytes, StandardCharsets.US_ASCII);
+    }
+
+    protected byte[] encodeBase64(byte[] in) {
+        return BASE64_ENCODER.encode(in);
+    }
+
+    protected byte[] decodeASCIIByte(CharSequence value) {
+        return BASE64_DECODER.decode(value.toString().getBytes(StandardCharsets.US_ASCII));
+    }
+
+    protected String convertHessianToWrapper(String serializeType) {
+        if (TripleConstant.HESSIAN2.equals(serializeType)) {
+            return TripleConstant.HESSIAN4;
+        }
+        return serializeType;
     }
 
     protected byte[] compress(byte[] data) {
