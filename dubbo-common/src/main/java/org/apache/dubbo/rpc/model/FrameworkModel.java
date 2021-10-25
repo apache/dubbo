@@ -60,7 +60,12 @@ public class FrameworkModel extends ScopeModel {
     protected void initialize() {
         super.initialize();
         serviceRepository = new FrameworkServiceRepository(this);
-        allInstances.add(this);
+        synchronized (FrameworkModel.class) {
+            allInstances.add(this);
+            if (defaultInstance == null) {
+                defaultInstance = this;
+            }
+        }
 
         ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);
         Set<ScopeModelInitializer> initializers = initializerExtensionLoader.getSupportedExtensionInstances();
@@ -70,7 +75,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     @Override
-    protected void onDestroy() {
+    synchronized protected void onDestroy() {
         // destroy all application model
         for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
             applicationModel.destroy();
@@ -78,12 +83,6 @@ public class FrameworkModel extends ScopeModel {
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Dubbo framework[" + getInternalId() + "] is destroying ...");
-        }
-        synchronized (FrameworkModel.class) {
-            allInstances.remove(this);
-            if (defaultInstance == this) {
-                defaultInstance = null;
-            }
         }
 
         // notify destroy and clean framework resources
@@ -94,14 +93,23 @@ public class FrameworkModel extends ScopeModel {
             LOGGER.info("Dubbo framework[" + getInternalId() + "] is destroyed");
         }
 
-        // if all FrameworkModels are destroyed, clean global static resources, shutdown dubbo completely
-        if (allInstances.isEmpty()) {
-            destroyGlobalResources();
+        synchronized (FrameworkModel.class) {
+            allInstances.remove(this);
+            if (defaultInstance == this) {
+                defaultInstance = null;
+            }
         }
+
+        // if all FrameworkModels are destroyed, clean global static resources, shutdown dubbo completely
+        destroyGlobalResources();
     }
 
     private void destroyGlobalResources() {
-        GlobalResourcesRepository.getInstance().destroy();
+        synchronized (FrameworkModel.class) {
+            if (allInstances.isEmpty()) {
+                GlobalResourcesRepository.getInstance().destroy();
+            }
+        }
     }
 
     public static FrameworkModel defaultModel() {
@@ -116,7 +124,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     public static List<FrameworkModel> getAllInstances() {
-        return Collections.unmodifiableList(allInstances);
+        return Collections.unmodifiableList(new ArrayList<>(allInstances));
     }
 
     public static void destroyAll() {
@@ -130,9 +138,16 @@ public class FrameworkModel extends ScopeModel {
     }
 
     synchronized void addApplication(ApplicationModel applicationModel) {
+        checkDestroyed();
         if (!this.applicationModels.contains(applicationModel)) {
             this.applicationModels.add(applicationModel);
             applicationModel.setInternalName(buildInternalName(ApplicationModel.NAME, getInternalId(), appIndex.getAndIncrement()));
+        }
+    }
+
+    private void checkDestroyed() {
+        if (isDestroyed()) {
+            throw new IllegalStateException("FrameworkModel is destroyed");
         }
     }
 

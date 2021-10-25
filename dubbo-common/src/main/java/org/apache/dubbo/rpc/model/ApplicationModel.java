@@ -200,8 +200,10 @@ public class ApplicationModel extends ScopeModel {
         frameworkModel.addApplication(this);
         initialize();
         // bind to default instance if absent
-        if (defaultInstance == null) {
-            defaultInstance = this;
+        synchronized (ApplicationModel.class) {
+            if (defaultInstance == null) {
+                defaultInstance = this;
+            }
         }
     }
 
@@ -251,12 +253,10 @@ public class ApplicationModel extends ScopeModel {
 
         if (defaultInstance == this) {
             synchronized (ApplicationModel.class) {
-                frameworkModel.removeApplication(this);
                 defaultInstance = null;
             }
-        } else {
-            frameworkModel.removeApplication(this);
         }
+        frameworkModel.removeApplication(this);
 
         if (deployer != null) {
             deployer.postDestroy();
