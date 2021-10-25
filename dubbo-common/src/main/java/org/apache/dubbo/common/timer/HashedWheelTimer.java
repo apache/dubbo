@@ -99,9 +99,6 @@ public class HashedWheelTimer implements Timer {
     private static final AtomicIntegerFieldUpdater<HashedWheelTimer> WORKER_STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(HashedWheelTimer.class, "workerState");
 
-    private static final ExecutorService DEFAULT_TIMER_TASK_EXECUTOR =
-            GlobalResourcesRepository.getGlobalExecutorService();
-
     private final Worker worker = new Worker();
     private final Thread workerThread;
 
@@ -232,7 +229,7 @@ public class HashedWheelTimer implements Timer {
             ThreadFactory threadFactory,
             long tickDuration, TimeUnit unit, int ticksPerWheel,
             long maxPendingTimeouts) {
-        this(threadFactory, tickDuration, unit, ticksPerWheel, maxPendingTimeouts, DEFAULT_TIMER_TASK_EXECUTOR);
+        this(threadFactory, tickDuration, unit, ticksPerWheel, maxPendingTimeouts, null);
     }
 
     /**
@@ -270,9 +267,6 @@ public class HashedWheelTimer implements Timer {
         }
         if (ticksPerWheel <= 0) {
             throw new IllegalArgumentException("ticksPerWheel must be greater than 0: " + ticksPerWheel);
-        }
-        if (taskExecutor == null) {
-            throw new NullPointerException("taskExecutor");
         }
         this.taskExecutor = taskExecutor;
 
@@ -687,7 +681,12 @@ public class HashedWheelTimer implements Timer {
 
             // run timeout task at separate thread to avoid the worker thread blocking
             try {
-                timer.taskExecutor.execute(this);
+                if (timer.taskExecutor == null) {
+                    // the global executor service should be gotten at each calling to avoid using invalid executor.
+                    GlobalResourcesRepository.getGlobalExecutorService().execute(this);
+                } else {
+                    timer.taskExecutor.execute(this);
+                }
             } catch (Throwable t) {
                 if (logger.isWarnEnabled()) {
                     logger.warn("An exception was thrown while submit " + TimerTask.class.getSimpleName()
