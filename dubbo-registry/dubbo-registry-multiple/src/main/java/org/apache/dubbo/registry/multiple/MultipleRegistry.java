@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
 /**
@@ -95,7 +96,8 @@ public class MultipleRegistry extends AbstractRegistry {
                 serviceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
                 continue;
             }
-            Registry registry = getRegistry(URL.valueOf(tmpUrl));
+            final URL registryUrl = URL.valueOf(tmpUrl).addParameterIfAbsent(CHECK_KEY, url.getParameter(CHECK_KEY, "true"));
+            Registry registry = registryFactory.getRegistry(registryUrl);
             registryMap.put(tmpUrl, registry);
             serviceRegistries.put(tmpUrl, registry);
         }
@@ -109,7 +111,8 @@ public class MultipleRegistry extends AbstractRegistry {
                 referenceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
                 continue;
             }
-            Registry registry = getRegistry(URL.valueOf(tmpUrl));
+            final URL registryUrl = URL.valueOf(tmpUrl).addParameterIfAbsent(CHECK_KEY, url.getParameter(CHECK_KEY, "true"));
+            Registry registry = registryFactory.getRegistry(registryUrl);
             registryMap.put(tmpUrl, registry);
             referenceRegistries.put(tmpUrl, registry);
         }

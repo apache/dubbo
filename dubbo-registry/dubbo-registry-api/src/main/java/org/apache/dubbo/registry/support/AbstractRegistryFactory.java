@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
@@ -136,6 +137,8 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
                 .removeParameters(EXPORT_KEY, REFER_KEY)
                 .build();
         String key = createRegistryCacheKey(url);
+        Registry registry = null;
+        boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
         try {
@@ -146,21 +149,30 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
                 return defaultNopRegistry;
             }
 
-            Registry registry = REGISTRIES.get(key);
+            registry = REGISTRIES.get(key);
             if (registry != null) {
                 return registry;
             }
             //create registry by spi/ioc
             registry = createRegistry(url);
-            if (registry == null) {
-                throw new IllegalStateException("Can not create registry " + url);
+        } catch (Exception e) {
+            if (check) {
+                throw new RuntimeException("Can not create registry " + url, e);
+            } else {
+                LOGGER.warn("Failed to obtain or create registry ", e);
             }
-            REGISTRIES.put(key, registry);
-            return registry;
         } finally {
             // Release the lock
             LOCK.unlock();
         }
+        if (check && registry == null) {
+            throw new IllegalStateException("Can not create registry " + url);
+        }
+
+        if (registry != null) {
+            REGISTRIES.put(key, registry);
+        }
+        return registry;
     }
 
     /**
