@@ -29,8 +29,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,22 +67,19 @@ public class DubboSpringInitializer {
     }
 
     public static boolean remove(ApplicationContext springContext) {
-        List<BeanDefinitionRegistry> removingKeys = new ArrayList<>();
         for (Map.Entry<BeanDefinitionRegistry, DubboSpringInitContext> entry : contextMap.entrySet()) {
             DubboSpringInitContext initContext = entry.getValue();
             if (initContext.getApplicationContext() == springContext ||
                 initContext.getBeanFactory() == springContext.getAutowireCapableBeanFactory() ||
                 initContext.getRegistry() == springContext.getAutowireCapableBeanFactory()
             ) {
-                removingKeys.add(entry.getKey());
+                DubboSpringInitContext context = contextMap.remove(entry.getKey());
+                logger.info("Unbind dubbo module " + getModelName(context.getModuleModel()) + " from spring container: " +
+                    ObjectUtils.identityToString(entry.getKey()));
+                return true;
             }
         }
-        for (BeanDefinitionRegistry key : removingKeys) {
-            DubboSpringInitContext context = contextMap.remove(key);
-            logger.info("Unbind dubbo module " + getModelName(context.getModuleModel()) + " from spring container: " +
-                ObjectUtils.identityToString(key));
-        }
-        return contextMap.keySet().removeAll(removingKeys);
+        return false;
     }
 
     static Map<BeanDefinitionRegistry, DubboSpringInitContext> getContextMap() {
