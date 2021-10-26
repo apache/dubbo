@@ -70,8 +70,6 @@ public class RpcServiceContext extends RpcContext {
     private Object response;
     private AsyncContext asyncContext;
 
-    private boolean remove = true;
-
     /**
      * Get the request object of the underlying RPC protocol, e.g. HttpServletRequest
      *
@@ -180,7 +178,7 @@ public class RpcServiceContext extends RpcContext {
 
     @Override
     public List<URL> getUrls() {
-        return urls == null && url != null ? (List<URL>) Arrays.asList(url) : urls;
+        return urls == null && url != null ? Arrays.asList(url) : urls;
     }
 
     @Override

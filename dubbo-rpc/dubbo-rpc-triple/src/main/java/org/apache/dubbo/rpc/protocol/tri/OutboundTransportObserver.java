@@ -17,38 +17,63 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http2.Http2Error;
-
-public abstract class AbstractChannelTransportObserver implements TransportObserver {
+/**
+ * Provides loosely state management for write message to outbound.
+ */
+public abstract class OutboundTransportObserver implements TransportObserver {
 
     protected final TransportState state = new TransportState();
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
+        checkSendMeta(metadata, endStream);
+        doOnMetadata(metadata, endStream);
+    }
+
+    protected void checkSendMeta(Object metadata, boolean endStream) {
         if (endStream) {
+            if (!state.allowSendEndStream()) {
+                throw new IllegalStateException("Metadata endStream already sent to peer, send " + metadata + " failed!");
+            }
             state.setEndStreamSend();
         } else {
+            if (!state.allowSendMeta()) {
+                throw new IllegalStateException("Metadata already sent to peer, send " + metadata + " failed!");
+            }
             state.setMetaSend();
         }
-        doOnMetadata(metadata, endStream);
     }
 
     @Override
     public void onData(byte[] data, boolean endStream) {
-        if (endStream) {
-            state.setEndStreamSend();
-        }
+        checkSendData(endStream);
         doOnData(data, endStream);
     }
 
+
+    protected void checkSendData(boolean endStream) {
+        if (!state.allowSendData()) {
+            throw new IllegalStateException("data has not sent to peer!");
+        }
+        if (endStream) {
+            state.setEndStreamSend();
+        }
+    }
+
     @Override
-    public void onReset(Http2Error http2Error) {
+    public void onError(GrpcStatus status) {
+        if (!state.allowSendReset()) {
+            throw new IllegalStateException("Duplicated rst!");
+        }
         state.setResetSend();
-        doOnReset(http2Error);
+        doOnError(status);
     }
 
     @Override
     public void onComplete() {
+        if (!state.allowSendEndStream()) {
+            throw new IllegalStateException("Stream already closed!");
+        }
         state.setEndStreamSend();
         doOnComplete();
     }
@@ -58,7 +83,7 @@ public abstract class AbstractChannelTransportObserver implements TransportObser
 
     protected abstract void doOnData(byte[] data, boolean endStream);
 
-    protected abstract void doOnReset(Http2Error http2Error);
+    protected abstract void doOnError(GrpcStatus status);
 
     protected abstract void doOnComplete();
 

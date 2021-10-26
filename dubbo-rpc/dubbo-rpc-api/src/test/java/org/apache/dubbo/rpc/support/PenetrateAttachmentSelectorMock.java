@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.support;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.apache.dubbo.rpc.PenetrateAttachmentSelector;
+import org.apache.dubbo.rpc.RpcContext;
 
-public class TripleClientInboundHandler extends ChannelInboundHandlerAdapter {
+import java.util.Map;
+
+public class PenetrateAttachmentSelectorMock implements PenetrateAttachmentSelector {
+
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
-
-        final byte[] data = (byte[]) msg;
-        if (clientStream != null) {
-            clientStream.inboundTransportObserver()
-                .onData(data, false);
-        }
+    public Map<String, Object> select() {
+        Map<String, Object> objectAttachments = RpcContext.getServerAttachment().getObjectAttachments();
+        objectAttachments.put("testKey", "testVal");
+        return objectAttachments;
     }
 }

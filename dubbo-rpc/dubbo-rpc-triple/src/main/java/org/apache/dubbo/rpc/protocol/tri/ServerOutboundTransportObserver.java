@@ -30,22 +30,18 @@ import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 
-public class ServerTransportObserver extends AbstractChannelTransportObserver {
+public class ServerOutboundTransportObserver extends OutboundTransportObserver {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServerTransportObserver.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerOutboundTransportObserver.class);
 
     private final ChannelHandlerContext ctx;
 
-    public ServerTransportObserver(ChannelHandlerContext ctx) {
+    public ServerOutboundTransportObserver(ChannelHandlerContext ctx) {
         this.ctx = ctx;
     }
 
     public void onMetadata(Http2Headers headers, boolean endStream) {
-        if (endStream) {
-            state.setEndStreamSend();
-        } else {
-            state.setMetaSend();
-        }
+        checkSendMeta(headers, endStream);
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {
@@ -81,8 +77,8 @@ public class ServerTransportObserver extends AbstractChannelTransportObserver {
     }
 
     @Override
-    protected void doOnReset(Http2Error http2Error) {
-        ctx.writeAndFlush(new DefaultHttp2ResetFrame(http2Error))
+    protected void doOnError(GrpcStatus status) {
+        ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.CANCEL))
             .addListener(future -> {
                 if (!future.isSuccess()) {
                     LOGGER.warn("write reset error", future.cause());
@@ -101,9 +97,7 @@ public class ServerTransportObserver extends AbstractChannelTransportObserver {
     }
 
     public void onData(ByteBuf buf, boolean endStream) {
-        if (endStream) {
-            state.setEndStreamSend();
-        }
+        checkSendData(endStream);
         ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
             .addListener(future -> {
                 if (!future.isSuccess()) {

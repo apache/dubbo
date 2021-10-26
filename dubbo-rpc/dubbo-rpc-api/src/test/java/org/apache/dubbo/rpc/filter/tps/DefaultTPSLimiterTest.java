@@ -23,6 +23,10 @@ import org.apache.dubbo.rpc.support.MockInvocation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_INTERVAL_KEY;
 import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
@@ -76,7 +80,64 @@ public class DefaultTPSLimiterTest {
         for (int i = 1; i <= tenTimesLimitRate; i++) {
             Assertions.assertTrue(defaultTPSLimiter.isAllowable(url, invocation));
         }
-        
+
         Assertions.assertFalse(defaultTPSLimiter.isAllowable(url, invocation));
+    }
+
+    @Test
+    public void testMultiThread() throws InterruptedException {
+        Invocation invocation = new MockInvocation();
+        URL url = URL.valueOf("test://test");
+        url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
+        url = url.addParameter(TPS_LIMIT_RATE_KEY, 100);
+        url = url.addParameter(TPS_LIMIT_INTERVAL_KEY, 100000);
+
+        List<Task> taskList = new ArrayList<>();
+        int threadNum = 50;
+        CountDownLatch stopLatch = new CountDownLatch(threadNum);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        for (int i = 0; i < threadNum; i++) {
+            taskList.add(new Task(defaultTPSLimiter, url, invocation, startLatch, stopLatch));
+
+        }
+        startLatch.countDown();
+        stopLatch.await();
+
+        Assertions.assertEquals(taskList.stream().map(task -> task.getCount()).reduce((a, b) -> a + b).get(), 100);
+    }
+
+    class Task implements Runnable {
+        private DefaultTPSLimiter defaultTPSLimiter;
+        private URL url;
+        private Invocation invocation;
+        private CountDownLatch startLatch;
+        private CountDownLatch stopLatch;
+        private int count;
+
+        public Task(DefaultTPSLimiter defaultTPSLimiter, URL url, Invocation invocation, CountDownLatch startLatch, CountDownLatch stopLatch) {
+            this.defaultTPSLimiter = defaultTPSLimiter;
+            this.url = url;
+            this.invocation = invocation;
+            this.startLatch = startLatch;
+            this.stopLatch = stopLatch;
+            new Thread(this).start();
+        }
+
+        @Override
+        public void run() {
+            try {
+                startLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            for (int j = 0; j < 10000; j++) {
+                count = defaultTPSLimiter.isAllowable(url, invocation) ? count + 1 : count;
+            }
+            stopLatch.countDown();
+        }
+
+        public int getCount() {
+            return count;
+        }
     }
 }

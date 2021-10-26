@@ -64,7 +64,7 @@ public class MonitorFilterTest {
         public URL getUrl() {
             return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" +
                     APPLICATION_KEY + "=abc&" + SIDE_KEY + "=" + CONSUMER_SIDE)
-                    .putAttribute(MONITOR_KEY, URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":7070"));
+                .putAttribute(MONITOR_KEY, URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":7070"));
         }
 
         @Override
@@ -83,31 +83,26 @@ public class MonitorFilterTest {
         }
     };
 
-    private MonitorFactory monitorFactory = new MonitorFactory() {
+    private MonitorFactory monitorFactory = url -> new Monitor() {
+        public URL getUrl() {
+            return url;
+        }
+
         @Override
-        public Monitor getMonitor(final URL url) {
-            return new Monitor() {
-                public URL getUrl() {
-                    return url;
-                }
+        public boolean isAvailable() {
+            return true;
+        }
 
-                @Override
-                public boolean isAvailable() {
-                    return true;
-                }
+        @Override
+        public void destroy() {
+        }
 
-                @Override
-                public void destroy() {
-                }
+        public void collect(URL statistics) {
+            MonitorFilterTest.this.lastStatistics = statistics;
+        }
 
-                public void collect(URL statistics) {
-                    MonitorFilterTest.this.lastStatistics = statistics;
-                }
-
-                public List<URL> lookup(URL query) {
-                    return Arrays.asList(MonitorFilterTest.this.lastStatistics);
-                }
-            };
+        public List<URL> lookup(URL query) {
+            return Arrays.asList(MonitorFilterTest.this.lastStatistics);
         }
     };
 
@@ -195,5 +190,33 @@ public class MonitorFilterTest {
         Invocation invocation = new RpcInvocation("aaa", MonitorService.class.getName(), "", new Class<?>[0], new Object[0]);
 
         monitorFilter.invoke(serviceInvoker, invocation);
+    }
+
+    @Test
+    public void testOnResponseWithoutStartTime() {
+        MonitorFilter monitorFilter = new MonitorFilter();
+        MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
+        Monitor mockMonitor = mock(Monitor.class);
+        monitorFilter.setMonitorFactory(mockMonitorFactory);
+        given(mockMonitorFactory.getMonitor(any(URL.class))).willReturn(mockMonitor);
+        Invocation invocation = new RpcInvocation("aaa", MonitorService.class.getName(), "", new Class<?>[0], new Object[0]);
+
+        Result result = monitorFilter.invoke(serviceInvoker, invocation);
+        invocation.getAttributes().remove("monitor_filter_start_time");
+
+        monitorFilter.onResponse(result, serviceInvoker, invocation);
+    }
+
+    @Test
+    public void testOnErrorWithoutStartTime() {
+        MonitorFilter monitorFilter = new MonitorFilter();
+        MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
+        Monitor mockMonitor = mock(Monitor.class);
+        monitorFilter.setMonitorFactory(mockMonitorFactory);
+        given(mockMonitorFactory.getMonitor(any(URL.class))).willReturn(mockMonitor);
+        Invocation invocation = new RpcInvocation("aaa", MonitorService.class.getName(), "", new Class<?>[0], new Object[0]);
+
+        Throwable rpcException = new RpcException();
+        monitorFilter.onError(rpcException, serviceInvoker, invocation);
     }
 }
