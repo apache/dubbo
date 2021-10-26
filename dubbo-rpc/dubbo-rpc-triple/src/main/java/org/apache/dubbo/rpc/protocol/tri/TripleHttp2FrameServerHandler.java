@@ -85,8 +85,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
         if (serverStream != null) {
             serverStream.cancelByRemote();
-            ctx.close();
         }
+        ctx.close();
     }
 
     @Override
