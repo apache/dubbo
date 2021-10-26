@@ -31,7 +31,7 @@ import java.util.Map;
 public class ServiceCheckUtils {
 
     public static boolean isRegistered(ProviderModel providerModel) {
-        // check the status of all registries and protocols now.
+        // check all registries status
         for (ProviderModel.RegisterStatedURL registerStatedURL : providerModel.getStatedUrl()) {
             if (registerStatedURL.isRegistered()) {
                 return true;
