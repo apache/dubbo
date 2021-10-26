@@ -30,8 +30,6 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.junit.jupiter.api.AfterAll;
@@ -81,19 +79,14 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
 @EnableDubbo
 public class SpringBootMultipleConfigPropsTest {
 
-    private static RegistryCenter multipleRegistryCenter;
-
     @BeforeAll
     public static void beforeAll() {
-        multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
-        multipleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
-        multipleRegistryCenter.shutdown();
     }
 
     @Autowired

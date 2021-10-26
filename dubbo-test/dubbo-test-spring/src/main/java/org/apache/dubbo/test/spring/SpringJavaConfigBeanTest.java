@@ -33,8 +33,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.test.common.SysProps;
 import org.apache.dubbo.test.common.api.DemoService;
 import org.apache.dubbo.test.common.impl.DemoServiceImpl;
-import org.apache.dubbo.test.common.registrycenter.RegistryCenter;
-import org.apache.dubbo.test.common.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.test.spring.context.MockSpringInitCustomizer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -54,19 +52,14 @@ public class SpringJavaConfigBeanTest {
     private static final String MY_PROTOCOL_ID = "myProtocol";
     private static final String MY_REGISTRY_ID = "my-registry";
 
-    private static RegistryCenter registryCenter;
-
     @BeforeAll
     public static void beforeAll() {
-        registryCenter = new ZookeeperSingleRegistryCenter();
-        registryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll(){
         DubboBootstrap.reset();
-        registryCenter.shutdown();
     }
 
     @BeforeEach

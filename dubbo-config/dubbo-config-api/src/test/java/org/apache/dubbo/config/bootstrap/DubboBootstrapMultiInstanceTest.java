@@ -30,8 +30,6 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
-import org.apache.dubbo.registrycenter.RegistryCenter;
-import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
@@ -53,8 +51,6 @@ import static org.apache.dubbo.remoting.Constants.EVENT_LOOP_BOSS_POOL_NAME;
 
 public class DubboBootstrapMultiInstanceTest {
 
-    private static ZookeeperSingleRegistryCenter registryCenter;
-
     private static RegistryConfig registryConfig;
 
     private static DubboTestChecker testChecker;
@@ -63,13 +59,7 @@ public class DubboBootstrapMultiInstanceTest {
     @BeforeAll
     public static void beforeAll() {
         FrameworkModel.destroyAll();
-        registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
-        registryCenter.startup();
-        RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
-        registryConfig = new RegistryConfig(String.format("%s://%s:%s",
-            instance.getType(),
-            instance.getHostname(),
-            instance.getPort()));
+        registryConfig = new RegistryConfig("zookeeper://127.0.0.1:2181");
 
         // pre-check threads
         //precheckUnclosedThreads();
@@ -77,7 +67,6 @@ public class DubboBootstrapMultiInstanceTest {
 
     @AfterAll
     public static void afterAll() throws Exception {
-        registryCenter.shutdown();
         FrameworkModel.destroyAll();
 
         // check threads
@@ -311,7 +300,6 @@ public class DubboBootstrapMultiInstanceTest {
 
         DubboBootstrap providerBootstrap1 = null;
         DubboBootstrap providerBootstrap2 = null;
-        ZookeeperSingleRegistryCenter registryCenter2 = null;
 
         try {
 
@@ -339,13 +327,7 @@ public class DubboBootstrapMultiInstanceTest {
             Assertions.assertTrue(stackTraces1.size() > 0, "Get threads of provider app 1 failed");
 
             // start zk server 2
-            registryCenter2 = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
-            registryCenter2.startup();
-            RegistryCenter.Instance instance = registryCenter2.getRegistryCenterInstance().get(0);
-            RegistryConfig registryConfig2 = new RegistryConfig(String.format("%s://%s:%s",
-                instance.getType(),
-                instance.getHostname(),
-                instance.getPort()));
+            RegistryConfig registryConfig2 = new RegistryConfig("zookeeper://127.0.0.1:2182");
 
             // start provider app 2 use a difference zk server 2
             ServiceConfig serviceConfig2 = new ServiceConfig();
@@ -378,7 +360,6 @@ public class DubboBootstrapMultiInstanceTest {
             // stop provider app 2 and check threads
             providerBootstrap2.stop();
             // shutdown register center after dubbo application to avoid unregister services blocking
-            registryCenter2.shutdown();
             checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", null);
 
         } finally {
@@ -387,9 +368,6 @@ public class DubboBootstrapMultiInstanceTest {
             }
             if (providerBootstrap2 != null) {
                 providerBootstrap2.stop();
-            }
-            if (registryCenter2 != null) {
-                registryCenter2.shutdown();
             }
         }
     }
