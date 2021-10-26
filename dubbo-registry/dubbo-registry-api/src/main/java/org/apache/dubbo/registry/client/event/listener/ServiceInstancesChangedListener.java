@@ -34,7 +34,9 @@ import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
@@ -79,8 +81,10 @@ public class ServiceInstancesChangedListener {
 
     protected Map<String, List<ServiceInstance>> allInstances;
     protected Map<String, Object> serviceUrls;
-    protected Map<String, MetadataInfo> revisionToMetadata;
+    protected MetaCacheManager metaCacheManager;
+    Map<String, MetadataInfo> revisionToMetadata;// not necessary
 
+    private volatile boolean hasEmptyMetadata = false;
     private volatile long lastRefreshTime;
     private Semaphore retryPermission;
     private volatile ScheduledFuture<?> retryFuture;
@@ -93,10 +97,11 @@ public class ServiceInstancesChangedListener {
         this.listenerQueue = new ConcurrentLinkedQueue<>();
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
-        this.revisionToMetadata = new HashMap<>();
         retryPermission = new Semaphore(1);
-        this.scheduler = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel())
-            .getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
+        ApplicationModel applicationModel =  ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
+        this.scheduler = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
+        this.revisionToMetadata = new HashMap<>();
+        this.metaCacheManager = applicationModel.getBeanFactory().getBean(MetaCacheManager.class);
     }
 
     /**
@@ -135,7 +140,7 @@ public class ServiceInstancesChangedListener {
             }
         }
 
-        // get MetadataInfo with revision
+        // get MetadataInfo for every unique revision
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
             String revision = entry.getKey();
             List<ServiceInstance> subInstances = entry.getValue();
@@ -154,6 +159,7 @@ public class ServiceInstancesChangedListener {
         }
 
         if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
+            hasEmptyMetadata = true;
             if (retryPermission.tryAcquire()) {
                 retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted.");
@@ -162,8 +168,16 @@ public class ServiceInstancesChangedListener {
             return;
         }
 
+        hasEmptyMetadata = false;
         this.revisionToMetadata = newRevisionToMetadata;
 
+        /*
+        * Calculate serviceUrls, that is, the exact urls that each service should get notified.
+        *
+        * Since most services from the same provider application may likely be mapping to the same revision or revisions,
+        * we keep a revisions - urls mapping to reduce calculation times.
+        * In this way, as long as the first service  -> revisions -> urls is determined, the urls of the following services can be returned directly.
+        * */
         Map<String, Map<Set<String>, Object>> protocolRevisionsToUrls = new HashMap<>();
         Map<String, Object> newServiceUrls = new HashMap<>();
         for (Map.Entry<String, Map<String, Set<String>>> entry : localServiceToRevisions.entrySet()) {
@@ -279,7 +293,7 @@ public class ServiceInstancesChangedListener {
         if (event instanceof RetryServiceInstancesChangedEvent) {
             RetryServiceInstancesChangedEvent retryEvent = (RetryServiceInstancesChangedEvent) event;
             logger.warn("Received address refresh retry event, " + retryEvent.getFailureRecordTime());
-            if (retryEvent.getFailureRecordTime() < lastRefreshTime && !hasEmptyMetadata(revisionToMetadata)) {
+            if (retryEvent.getFailureRecordTime() < lastRefreshTime && !hasEmptyMetadata) {
                 logger.warn("Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
                 return true;
             }
@@ -312,7 +326,7 @@ public class ServiceInstancesChangedListener {
     }
 
     protected MetadataInfo getRemoteMetadata(String revision, Map<String, Map<String, Set<String>>> localServiceToRevisions, ServiceInstance instance) {
-        MetadataInfo metadata = revisionToMetadata.get(revision);
+        MetadataInfo metadata = metaCacheManager.get(revision);
 
         if (metadata != null && metadata != MetadataInfo.EMPTY) {
             // metadata loaded from cache
@@ -342,7 +356,8 @@ public class ServiceInstancesChangedListener {
             }
         }
 
-        revisionToMetadata.putIfAbsent(revision, metadata);
+        metaCacheManager.put(revision, metadata);
+        revisionToMetadata.put(revision, metadata);
         return metadata;
     }
 
@@ -526,5 +541,10 @@ public class ServiceInstancesChangedListener {
         public int hashCode() {
             return Objects.hash(serviceKey, notifyListener);
         }
+    }
+
+    // for test only
+    protected void setMetaCacheManager(MetaCacheManager cacheManager) {
+        this.metaCacheManager = cacheManager;
     }
 }

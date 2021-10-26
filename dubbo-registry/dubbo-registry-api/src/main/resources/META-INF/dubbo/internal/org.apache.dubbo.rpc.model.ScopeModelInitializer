@@ -1,1 +1,2 @@
 dubbo-registry-api=org.apache.dubbo.registry.RegistryScopeModelInitializer
+metadata=org.apache.dubbo.registry.client.metadata.store.MetadataScopeModelInitializer

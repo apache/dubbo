@@ -27,6 +27,7 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
+import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 
 import com.google.gson.Gson;
 import org.hamcrest.Matchers;
@@ -162,8 +163,9 @@ public class ServiceInstancesChangedListenerTest {
         serviceNames.add("app1");
         ServiceDiscovery serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
         ServiceInstancesChangedListener spyListener = Mockito.spy(new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
-        Mockito.doReturn(metadataInfo_111).when(spyListener).getRemoteMetadata(eq("111"), Mockito.anyMap(), Mockito.any());
+        Mockito.doReturn(metadataInfo_111).when(spyListener).doGetMetadataInfo(Mockito.any());
         ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1Instances);
+        spyListener.setMetaCacheManager(new MetaCacheManager());
         spyListener.onEvent(event);
 
         Map<String, List<ServiceInstance>> allInstances = spyListener.getAllInstances();
@@ -378,6 +380,7 @@ public class ServiceInstancesChangedListenerTest {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
         ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        listener.setMetaCacheManager(new MetaCacheManager());
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
             mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
             // notify app1 instance change
@@ -404,6 +407,7 @@ public class ServiceInstancesChangedListenerTest {
         serviceNames.add("app1");
         serviceNames.add("app2");
         ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        listener.setMetaCacheManager(new MetaCacheManager());
 
         ConcurrentMap tmpProxyMap = MetadataUtils.metadataServiceProxies;
 

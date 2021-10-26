@@ -176,8 +176,9 @@ public abstract class AbstractRegistry implements Registry {
             return;
         }
         // Save
+        File lockfile = null;
         try {
-            File lockfile = new File(file.getAbsolutePath() + ".lock");
+            lockfile = new File(file.getAbsolutePath() + ".lock");
             if (!lockfile.exists()) {
                 lockfile.createNewFile();
             }
@@ -213,6 +214,10 @@ public abstract class AbstractRegistry implements Registry {
                 registryCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
             }
             logger.warn("Failed to save registry cache file, will retry, cause: " + e.getMessage(), e);
+        } finally {
+            if (lockfile != null) {
+                lockfile.delete();
+            }
         }
     }
 
