@@ -18,27 +18,28 @@
 package org.apache.dubbo.common.metrics.event;
 
 /**
- * BaseMetricsEvent.
+ * RequestChangedEvent.
  */
-public class BaseMetricsEvent {
+public class NewRequestEvent extends BaseMetricsEvent {
+    private Type type;
 
-    /**
-     * Metric object. (eg. {@link org.apache.dubbo.common.metrics.model.MethodMetric})
-     */
-    protected transient Object source;
-
-    public BaseMetricsEvent(Object source) {
-        if (source == null)
-            throw new IllegalArgumentException("null source");
-
-        this.source = source;
+    public NewRequestEvent(Object source, Type type) {
+        super(source);
+        this.type = type;
     }
 
-    public Object getSource() {
-        return source;
+    public Type getType() {
+        return type;
     }
 
-    public String toString() {
-        return getClass().getName() + "[source=" + source + "]";
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public enum Type {
+        TOTAL,
+        SUCCEED,
+        FAILED,
+        PROCESSING
     }
 }

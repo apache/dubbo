@@ -24,6 +24,10 @@ public interface MetricsConstants {
 
     String PROTOCOL_PROMETHEUS = "prometheus";
 
+    String TAG_HOST = "host";
+
+    String TAG_APPLICATION_NAME = "application.name";
+
     String TAG_INTERFACE_KEY = "interface";
 
     String TAG_METHOD_KEY = "method";
@@ -33,6 +37,8 @@ public interface MetricsConstants {
     String TAG_GROUP_KEY = "group";
 
     String TAG_VERSION_KEY = "version";
+
+    String ENABLE_JVM_METRICS_KEY = "enable.jvm.metrics";
 
     String AGGREGATION_COLLECTOR_KEY = "aggregation";
 

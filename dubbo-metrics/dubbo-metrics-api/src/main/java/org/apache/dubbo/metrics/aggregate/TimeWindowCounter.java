@@ -26,14 +26,17 @@ import java.util.concurrent.TimeUnit;
  */
 public class TimeWindowCounter {
     private final Long[] ringBuffer;
+    private final Long[] bucketStartTimeMillis;
     private int currentBucket;
     private long lastRotateTimestampMillis;
     private final long durationBetweenRotatesMillis;
 
     public TimeWindowCounter(int bucketNum, int timeWindowSeconds) {
         this.ringBuffer = new Long[bucketNum];
+        this.bucketStartTimeMillis = new Long[bucketNum];
         for (int i = 0; i < bucketNum; i++) {
             this.ringBuffer[i] = 0L;
+            this.bucketStartTimeMillis[i] = System.currentTimeMillis();
         }
 
         this.currentBucket = 0;
@@ -43,6 +46,10 @@ public class TimeWindowCounter {
 
     public synchronized double get() {
         return rotate();
+    }
+
+    public long bucketLivedSeconds() {
+        return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - bucketStartTimeMillis[currentBucket]);
     }
 
     public synchronized void increment() {
@@ -71,6 +78,7 @@ public class TimeWindowCounter {
         long timeSinceLastRotateMillis = System.currentTimeMillis() - lastRotateTimestampMillis;
         while (timeSinceLastRotateMillis > durationBetweenRotatesMillis) {
             ringBuffer[currentBucket] = 0L;
+            bucketStartTimeMillis[currentBucket] = lastRotateTimestampMillis + durationBetweenRotatesMillis;
             if (++currentBucket >= ringBuffer.length) {
                 currentBucket = 0;
             }

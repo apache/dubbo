@@ -47,6 +47,9 @@ public class TimeWindowQuantile {
 
     public synchronized double quantile(double q) {
         TDigest currentBucket = rotate();
+
+        // This may return Double.NaN, and it's correct behavior.
+        // see: https://github.com/prometheus/client_golang/issues/85
         return currentBucket.quantile(q);
     }
 

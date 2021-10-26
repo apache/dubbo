@@ -55,6 +55,7 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         "dubbo.registries.my-registry.address = zookeeper://192.168.99.100:32770",
         "dubbo.protocols.dubbo.port=20880",
         "dubbo.metricses.my-metrics.protocol=prometheus",
+        "dubbo.metricses.my-metrics.enable-jvm-metrics=true",
         "dubbo.metricses.my-metrics.prometheus.pushgateway.enabled=true",
         "dubbo.metricses.my-metrics.prometheus.pushgateway.base-url=localhost:9091",
         "dubbo.metricses.my-metrics.prometheus.pushgateway.username=username",
@@ -113,6 +114,7 @@ public class SpringBootMultipleConfigPropsTest {
 
         MetricsConfig metricsConfig = configManager.getMetrics().get();
         Assertions.assertEquals(PROTOCOL_PROMETHEUS, metricsConfig.getProtocol());
+        Assertions.assertTrue(metricsConfig.getEnableJvmMetrics());
         Assertions.assertTrue(metricsConfig.getPrometheus().getPushgateway().getEnabled());
         Assertions.assertEquals("localhost:9091", metricsConfig.getPrometheus().getPushgateway().getBaseUrl());
         Assertions.assertEquals("username", metricsConfig.getPrometheus().getPushgateway().getUsername());

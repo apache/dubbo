@@ -20,8 +20,8 @@ package org.apache.dubbo.metrics.collector;
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.metrics.collector.MetricsCollector;
 import org.apache.dubbo.common.metrics.event.BaseMetricsEvent;
-import org.apache.dubbo.common.metrics.event.RTChangedEvent;
-import org.apache.dubbo.common.metrics.event.RequestChangedEvent;
+import org.apache.dubbo.common.metrics.event.NewRTEvent;
+import org.apache.dubbo.common.metrics.event.NewRequestEvent;
 import org.apache.dubbo.common.metrics.listener.MetricsListener;
 import org.apache.dubbo.common.metrics.model.MethodMetric;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
@@ -43,7 +43,6 @@ import java.util.Map;
  * This collector only enabled when metrics aggregation config is enabled.
  */
 public class AggregateMetricsCollector implements MetricsCollector, MetricsListener {
-
     private int bucketNum;
     private int timeWindowSeconds;
 
@@ -53,17 +52,15 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     private final Map<MethodMetric, TimeWindowCounter> qps = new HashMap<>();
     private final Map<MethodMetric, TimeWindowQuantile> rt = new HashMap<>();
 
+    private final ApplicationModel applicationModel;
+
     private static final Integer DEFAULT_COMPRESSION = 100;
     private static final Integer DEFAULT_BUCKET_NUM = 10;
     private static final Integer DEFAULT_TIME_WINDOW_SECONDS = 120;
 
-    private static final Integer QPS_BUCKET_NUM = 10;
-    private static final Integer QPS_TIME_WINDOW_SECONDS = 1;
-
-    private static final AggregateMetricsCollector INSTANCE = new AggregateMetricsCollector();
-
-    private AggregateMetricsCollector() {
-        ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+    public AggregateMetricsCollector(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        ConfigManager configManager = applicationModel.getApplicationConfigManager();
         MetricsConfig config = configManager.getMetrics().orElse(null);
         if (config != null && config.getAggregation() != null && Boolean.TRUE.equals(config.getAggregation().getEnabled())) {
             // only registered when aggregation is enabled.
@@ -75,38 +72,34 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
         }
     }
 
-    public static AggregateMetricsCollector getInstance() {
-        return INSTANCE;
-    }
-
     private void registerListener() {
-        DefaultMetricsCollector.getInstance().addListener(this);
+        applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class).addListener(this);
     }
 
     @Override
     public void onEvent(BaseMetricsEvent event) {
-        if (event instanceof RTChangedEvent) {
-            onRTChangedEvent((RTChangedEvent) event);
-        } else if (event instanceof RequestChangedEvent) {
-            onRequestChangedEvent((RequestChangedEvent) event);
+        if (event instanceof NewRTEvent) {
+            onNewRTEvent((NewRTEvent) event);
+        } else if (event instanceof NewRequestEvent) {
+            onNewRequestEvent((NewRequestEvent) event);
         }
     }
 
-    private void onRTChangedEvent(RTChangedEvent event) {
+    private void onNewRTEvent(NewRTEvent event) {
         MethodMetric metric = (MethodMetric) event.getSource();
         Long responseTime = event.getRt();
         TimeWindowQuantile quantile = rt.computeIfAbsent(metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
     }
 
-    private void onRequestChangedEvent(RequestChangedEvent event) {
+    private void onNewRequestEvent(NewRequestEvent event) {
         MethodMetric metric = (MethodMetric) event.getSource();
-        RequestChangedEvent.Type type = event.getType();
+        NewRequestEvent.Type type = event.getType();
         TimeWindowCounter counter = null;
         switch (type) {
             case TOTAL:
                 counter = totalRequests.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
-                TimeWindowCounter qpsCounter = qps.computeIfAbsent(metric, k -> new TimeWindowCounter(QPS_BUCKET_NUM, QPS_TIME_WINDOW_SECONDS));
+                TimeWindowCounter qpsCounter = qps.computeIfAbsent(metric, k -> new TimeWindowCounter(bucketNum, timeWindowSeconds));
                 qpsCounter.increment();
                 break;
             case SUCCEED:
@@ -135,13 +128,16 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request.total." + timeWindowSeconds + "s", "Total Requests In " + timeWindowSeconds + "s", k.getTags(), v::get)));
-        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request.succeed." + timeWindowSeconds + "s", "Succeed Requests In " + timeWindowSeconds + "s", k.getTags(), v::get)));
-        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("request.failed." + timeWindowSeconds + "s", "Failed Requests In" + timeWindowSeconds + "s", k.getTags(), v::get)));
+        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.total.aggregate", "Aggregated Total Requests", k.getTags(), v::get)));
+        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.succeed.aggregate", "Aggregated Succeed Requests", k.getTags(), v::get)));
+        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.failed.aggregate", "Aggregated Failed Requests", k.getTags(), v::get)));
     }
 
     private void collectQPS(List<MetricSample> list) {
-        qps.forEach((k, v) -> list.add(new GaugeMetricSample("qps", "Query Per Seconds", k.getTags(), v::get)));
+        qps.forEach((k, v) -> list.add(new GaugeMetricSample("qps", "Query Per Seconds", k.getTags(), () -> {
+            System.out.println(k.getInterfaceName() + "." + k.getMethodName() + " request count: " + v.get() + ", in time: " + v.bucketLivedSeconds());
+            return v.get() / v.bucketLivedSeconds();
+        })));
     }
 
     private void collectRT(List<MetricSample> list) {

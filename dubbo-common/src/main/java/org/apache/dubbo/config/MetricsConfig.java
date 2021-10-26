@@ -35,6 +35,11 @@ public class MetricsConfig extends AbstractConfig {
     private String protocol;
 
     /**
+     * Enable jvm metrics when collecting.
+     */
+    private Boolean enableJvmMetrics;
+
+    /**
      * @deprecated After metrics config is refactored.
      * This parameter should no longer use and will be deleted in the future.
      */
@@ -74,6 +79,14 @@ public class MetricsConfig extends AbstractConfig {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    public Boolean getEnableJvmMetrics() {
+        return enableJvmMetrics;
+    }
+
+    public void setEnableJvmMetrics(Boolean enableJvmMetrics) {
+        this.enableJvmMetrics = enableJvmMetrics;
     }
 
     public String getPort() {

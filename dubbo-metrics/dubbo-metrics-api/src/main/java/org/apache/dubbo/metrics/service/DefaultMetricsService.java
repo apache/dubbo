@@ -17,13 +17,14 @@
 
 package org.apache.dubbo.metrics.service;
 
-import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
-import org.apache.dubbo.common.metrics.service.MetricResponse;
-import org.apache.dubbo.common.metrics.service.MetricsService;
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.metrics.collector.MetricsCollector;
+import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
+import org.apache.dubbo.common.metrics.service.MetricResponse;
+import org.apache.dubbo.common.metrics.service.MetricsService;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,9 +38,12 @@ public class DefaultMetricsService implements MetricsService {
 
     protected final List<MetricsCollector> collectors = new ArrayList<>();
 
-    public DefaultMetricsService() {
-        collectors.add(DefaultMetricsCollector.getInstance());
-        collectors.add(AggregateMetricsCollector.getInstance());
+    private final ApplicationModel applicationModel;
+
+    public DefaultMetricsService(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        collectors.add(applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class));
+        collectors.add(applicationModel.getBeanFactory().getBean(AggregateMetricsCollector.class));
     }
 
     @Override

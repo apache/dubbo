@@ -19,15 +19,20 @@ package org.apache.dubbo.metrics.prometheus;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.metrics.MetricsReporter;
-import org.apache.dubbo.common.metrics.MetricsReporterFactory;
+import org.apache.dubbo.metrics.AbstractMetricsReporterFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
  * MetricsReporterFactory to create PrometheusMetricsReporter.
  */
-public class PrometheusMetricsReporterFactory implements MetricsReporterFactory {
+public class PrometheusMetricsReporterFactory extends AbstractMetricsReporterFactory {
+
+    public PrometheusMetricsReporterFactory(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     @Override
     public MetricsReporter createMetricsReporter(URL url) {
-        return new PrometheusMetricsReporter(url);
+        return new PrometheusMetricsReporter(url, getApplicationModel());
     }
 }

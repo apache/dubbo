@@ -21,13 +21,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOST;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_PARAMETER_TYPES_DESC;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
+import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 
 public class MethodMetric {
+    private String applicationName;
     private String interfaceName;
     private String methodName;
     private String parameterTypesDesc;
@@ -38,7 +42,8 @@ public class MethodMetric {
 
     }
 
-    public MethodMetric(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
+    public MethodMetric(String applicationName, String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
+        this.applicationName = applicationName;
         this.interfaceName = interfaceName;
         this.methodName = methodName;
         this.parameterTypesDesc = parameterTypesDesc;
@@ -88,6 +93,9 @@ public class MethodMetric {
 
     public Map<String, String> getTags() {
         Map<String, String> tags = new HashMap<>();
+        tags.put(TAG_HOST, getLocalHost());
+        tags.put(TAG_APPLICATION_NAME, applicationName);
+
         tags.put(TAG_INTERFACE_KEY, interfaceName);
         tags.put(TAG_METHOD_KEY, methodName);
         tags.put(TAG_PARAMETER_TYPES_DESC, parameterTypesDesc);

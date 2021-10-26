@@ -18,28 +18,21 @@
 package org.apache.dubbo.common.metrics.event;
 
 /**
- * RequestChangedEvent.
+ * NewRtEvent.
  */
-public class RequestChangedEvent extends BaseMetricsEvent {
-    private Type type;
+public class NewRTEvent extends BaseMetricsEvent {
+    private Long rt;
 
-    public RequestChangedEvent(Object source, Type type) {
+    public NewRTEvent(Object source, Long rt) {
         super(source);
-        this.type = type;
+        this.rt = rt;
     }
 
-    public Type getType() {
-        return type;
+    public Long getRt() {
+        return rt;
     }
 
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public enum Type {
-        TOTAL,
-        SUCCEED,
-        FAILED,
-        PROCESSING
+    public void setRt(Long rt) {
+        this.rt = rt;
     }
 }

@@ -25,16 +25,29 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
+
+import java.util.Random;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 
 @Activate(group = PROVIDER, order = -1)
-public class RequestMetricsFilter implements Filter {
+public class MetricsFilter implements Filter, ScopeModelAware {
 
-    private final DefaultMetricsCollector collector = DefaultMetricsCollector.getInstance();
+    private DefaultMetricsCollector collector = null;
+
+    private ApplicationModel applicationModel;
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        initCollector();
+
         String serviceUniqueName = invocation.getTargetServiceUniqueName();
         String methodName = invocation.getMethodName();
         String parameterTypesDesc = ReflectUtils.getDesc(invocation.getParameterTypes());
@@ -63,9 +76,17 @@ public class RequestMetricsFilter implements Filter {
             throw e;
         } finally {
             Long endTime = System.currentTimeMillis();
-            Long rt = endTime - startTime;
+//            Long rt = endTime - startTime;
+            Long rt = (long) new Random().nextInt(1000);
+//            System.out.println("incoming rt: " + rt);
             collector.setRT(interfaceName, methodName, parameterTypesDesc, group, version, rt);
             collector.decreaseProcessingRequests(interfaceName, methodName, parameterTypesDesc, group, version);
+        }
+    }
+
+    private void initCollector() {
+        if (collector == null) {
+            collector = applicationModel.getBeanFactory().getBean(DefaultMetricsCollector.class);
         }
     }
 }

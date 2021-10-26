@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metrics.AbstractMetricsReporter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.sun.net.httpserver.HttpServer;
 import io.micrometer.prometheus.PrometheusConfig;
@@ -59,9 +60,11 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
     private final Logger logger = LoggerFactory.getLogger(PrometheusMetricsReporter.class);
 
     private final PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
+    private ScheduledExecutorService pushJobExecutor = null;
+    private HttpServer prometheusExporterHttpServer = null;
 
-    public PrometheusMetricsReporter(URL url) {
-        super(url);
+    public PrometheusMetricsReporter(URL url, ApplicationModel applicationModel) {
+        super(url, applicationModel);
     }
 
     @Override
@@ -81,8 +84,8 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
             }
 
             try {
-                HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
-                server.createContext(path, httpExchange -> {
+                prometheusExporterHttpServer = HttpServer.create(new InetSocketAddress(port), 0);
+                prometheusExporterHttpServer.createContext(path, httpExchange -> {
                     String response = prometheusRegistry.scrape();
                     httpExchange.sendResponseHeaders(200, response.getBytes().length);
                     try (OutputStream os = httpExchange.getResponseBody()) {
@@ -90,7 +93,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
                     }
                 });
 
-                new Thread(server::start).start();
+                new Thread(prometheusExporterHttpServer::start).start();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -107,13 +110,13 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
             String password = url.getParameter(PROMETHEUS_PUSHGATEWAY_PASSWORD_KEY);
 
             NamedThreadFactory threadFactory = new NamedThreadFactory("prometheus-push-job", true);
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, threadFactory);
+            pushJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
             PushGateway pushGateway = new PushGateway(baseUrl);
             if (!StringUtils.isBlank(username)) {
                 pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(username, password));
             }
 
-            executor.scheduleAtFixedRate(() -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
+            pushJobExecutor.scheduleAtFixedRate(() -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
         }
     }
 
@@ -122,6 +125,17 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
             pushGateway.pushAdd(prometheusRegistry.getPrometheusRegistry(), job);
         } catch (IOException e) {
             logger.error("Error occurred when pushing metrics to prometheus: ", e);
+        }
+    }
+
+    @Override
+    public void doDestroy() {
+        if (prometheusExporterHttpServer != null) {
+            prometheusExporterHttpServer.stop(1);
+        }
+
+        if (pushJobExecutor != null) {
+            pushJobExecutor.shutdownNow();
         }
     }
 }

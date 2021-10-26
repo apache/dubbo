@@ -15,24 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.event;
+package org.apache.dubbo.metrics;
+
+import org.apache.dubbo.common.metrics.MetricsReporterFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 /**
- * RTChangedEvent.
+ * AbstractMetricsReporterFactory.
  */
-public class RTChangedEvent extends BaseMetricsEvent {
-    private Long rt;
+public abstract class AbstractMetricsReporterFactory implements MetricsReporterFactory {
 
-    public RTChangedEvent(Object source, Long rt) {
-        super(source);
-        this.rt = rt;
+    private final ApplicationModel applicationModel;
+
+    public AbstractMetricsReporterFactory(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
     }
 
-    public Long getRt() {
-        return rt;
-    }
-
-    public void setRt(Long rt) {
-        this.rt = rt;
+    protected ApplicationModel getApplicationModel() {
+        return applicationModel;
     }
 }
