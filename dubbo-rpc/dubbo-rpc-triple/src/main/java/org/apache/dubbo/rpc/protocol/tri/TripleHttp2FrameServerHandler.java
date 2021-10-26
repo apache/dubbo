@@ -83,7 +83,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
         final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
-        serverStream.cancelByRemote();
+        if (serverStream != null) {
+            serverStream.cancelByRemote();
+        }
         ctx.close();
     }
 
