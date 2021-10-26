@@ -42,7 +42,7 @@ public class MetaCacheManager implements ScopeModelAware {
     private static final String DEFAULT_FILE_NAME = ".metadata";
     private static final String SUFFIX = ".dubbo.cache";
 
-    private static final long delay = 1L;
+    private static final long INTERVAL = 60L;
     private ScheduledExecutorService executorService;
 
     protected FileCacheStore cacheStore;
@@ -68,7 +68,7 @@ public class MetaCacheManager implements ScopeModelAware {
             }
 
             executorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-cache-refresh", true));
-            executorService.scheduleWithFixedDelay(new CacheRefreshTask(cacheStore, cache), delay, delay, TimeUnit.HOURS);
+            executorService.scheduleWithFixedDelay(new CacheRefreshTask(cacheStore, cache), 10, INTERVAL, TimeUnit.MINUTES);
         } catch (Exception e) {
             logger.error("Load metadata from local cache file error ", e);
         }
