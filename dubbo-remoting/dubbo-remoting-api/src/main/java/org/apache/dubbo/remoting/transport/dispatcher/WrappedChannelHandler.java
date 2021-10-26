@@ -134,7 +134,7 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     public ExecutorService getSharedExecutorService() {
         // Application may be destroyed before channel disconnected, avoid create new application model
         // see https://github.com/apache/dubbo/issues/9127
-        if (url.getScopeModel() == null || url.getScopeModel().isDestroyed()) {
+        if (url.getApplicationModel() == null || url.getApplicationModel().isDestroyed()) {
             return GlobalResourcesRepository.getGlobalExecutorService();
         }
 
