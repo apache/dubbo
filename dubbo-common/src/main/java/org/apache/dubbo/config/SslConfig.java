@@ -18,11 +18,12 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.IOUtils;
 import org.apache.dubbo.config.support.Parameter;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SslConfig extends AbstractConfig {
@@ -39,6 +40,16 @@ public class SslConfig extends AbstractConfig {
     private String clientPrivateKeyPath;
     private String clientKeyPassword;
     private String clientTrustCertCollectionPath;
+
+    /**
+     * set support cipher
+     */
+    private List<String> ciphers;
+
+    /**
+     * set support protocols
+     */
+    private List<String> protocols;
 
     private InputStream serverKeyCertChainPathStream;
     private InputStream serverPrivateKeyPathStream;
@@ -120,9 +131,27 @@ public class SslConfig extends AbstractConfig {
         this.clientTrustCertCollectionPath = clientTrustCertCollectionPath;
     }
 
-    public InputStream getServerKeyCertChainPathStream() throws FileNotFoundException {
+    @Parameter(key = "ciphers")
+    public List<String> getCiphers() {
+        return ciphers;
+    }
+
+    public void setCiphers(List<String> ciphers) {
+        this.ciphers = ciphers;
+    }
+
+    @Parameter(key = "protocols")
+    public List<String> getProtocols() {
+        return protocols;
+    }
+
+    public void setProtocols(List<String> protocols) {
+        this.protocols = protocols;
+    }
+
+    public InputStream getServerKeyCertChainPathStream() throws IOException {
         if (serverKeyCertChainPath != null) {
-            serverKeyCertChainPathStream = new FileInputStream(serverKeyCertChainPath);
+            serverKeyCertChainPathStream = IOUtils.getURL(serverKeyCertChainPath).openStream();
         }
         return serverKeyCertChainPathStream;
     }
@@ -131,9 +160,9 @@ public class SslConfig extends AbstractConfig {
         this.serverKeyCertChainPathStream = serverKeyCertChainPathStream;
     }
 
-    public InputStream getServerPrivateKeyPathStream() throws FileNotFoundException {
+    public InputStream getServerPrivateKeyPathStream() throws IOException {
         if (serverPrivateKeyPath != null) {
-            serverPrivateKeyPathStream = new FileInputStream(serverPrivateKeyPath);
+            serverPrivateKeyPathStream = IOUtils.getURL(serverPrivateKeyPath).openStream();
         }
         return serverPrivateKeyPathStream;
     }
@@ -142,9 +171,9 @@ public class SslConfig extends AbstractConfig {
         this.serverPrivateKeyPathStream = serverPrivateKeyPathStream;
     }
 
-    public InputStream getServerTrustCertCollectionPathStream() throws FileNotFoundException {
+    public InputStream getServerTrustCertCollectionPathStream() throws IOException {
         if (serverTrustCertCollectionPath != null) {
-            serverTrustCertCollectionPathStream = new FileInputStream(serverTrustCertCollectionPath);
+            serverTrustCertCollectionPathStream = IOUtils.getURL(serverTrustCertCollectionPath).openStream();
         }
         return serverTrustCertCollectionPathStream;
     }
@@ -153,9 +182,9 @@ public class SslConfig extends AbstractConfig {
         this.serverTrustCertCollectionPathStream = serverTrustCertCollectionPathStream;
     }
 
-    public InputStream getClientKeyCertChainPathStream() throws FileNotFoundException {
+    public InputStream getClientKeyCertChainPathStream() throws IOException {
         if (clientKeyCertChainPath != null) {
-            clientKeyCertChainPathStream = new FileInputStream(clientKeyCertChainPath);
+            clientKeyCertChainPathStream = IOUtils.getURL(clientKeyCertChainPath).openStream();
         }
         return clientKeyCertChainPathStream;
     }
@@ -164,9 +193,9 @@ public class SslConfig extends AbstractConfig {
         this.clientKeyCertChainPathStream = clientKeyCertChainPathStream;
     }
 
-    public InputStream getClientPrivateKeyPathStream() throws FileNotFoundException {
+    public InputStream getClientPrivateKeyPathStream() throws IOException {
         if (clientPrivateKeyPath != null) {
-            clientPrivateKeyPathStream = new FileInputStream(clientPrivateKeyPath);
+            clientPrivateKeyPathStream = IOUtils.getURL(clientPrivateKeyPath).openStream();
         }
         return clientPrivateKeyPathStream;
     }
@@ -175,9 +204,9 @@ public class SslConfig extends AbstractConfig {
         this.clientPrivateKeyPathStream = clientPrivateKeyPathStream;
     }
 
-    public InputStream getClientTrustCertCollectionPathStream() throws FileNotFoundException {
+    public InputStream getClientTrustCertCollectionPathStream() throws IOException {
         if (clientTrustCertCollectionPath != null) {
-            clientTrustCertCollectionPathStream = new FileInputStream(clientTrustCertCollectionPath);
+            clientTrustCertCollectionPathStream = IOUtils.getURL(clientTrustCertCollectionPath).openStream();
         }
         return clientTrustCertCollectionPathStream;
     }

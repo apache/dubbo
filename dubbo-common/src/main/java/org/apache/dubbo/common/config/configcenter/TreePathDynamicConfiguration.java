@@ -26,7 +26,7 @@ import java.util.TreeSet;
 
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.PathUtils.buildPath;

@@ -62,7 +62,7 @@ public class GroupServiceKeyCache {
         }
 
         buf.append(serviceName);
-        if (StringUtils.isNotEmpty(serviceVersion) && !"0.0.0".equals(serviceVersion)) {
+        if (StringUtils.isNotEmpty(serviceVersion) && !"0.0.0".equals(serviceVersion) && !"*".equals(serviceVersion)) {
             buf.append(':').append(serviceVersion);
         }
         buf.append(':').append(port);

@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
@@ -44,7 +43,6 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
         writableMetadataService.getExportedURLs()
                 .stream()
                 .map(URL::valueOf)
-                .filter(url -> !MetadataService.class.getName().equals(url.getServiceInterface()))
                 .forEach(url -> {
                     // TODO, same protocol listen on different ports will override with each other.
                     protocols.put(url.getProtocol(), url.getPort());

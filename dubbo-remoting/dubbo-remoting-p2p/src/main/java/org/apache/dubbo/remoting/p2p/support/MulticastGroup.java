@@ -37,9 +37,9 @@ public class MulticastGroup extends AbstractGroup {
 
     private static final String LEAVE = "leave";
 
-    private InetAddress mutilcastAddress;
+    private InetAddress multicastAddress;
 
-    private MulticastSocket mutilcastSocket;
+    private MulticastSocket multicastSocket;
 
     public MulticastGroup(URL url) {
         super(url);
@@ -47,10 +47,10 @@ public class MulticastGroup extends AbstractGroup {
             throw new IllegalArgumentException("Invalid multicast address " + url.getHost() + ", scope: 224.0.0.0 - 239.255.255.255");
         }
         try {
-            mutilcastAddress = InetAddress.getByName(url.getHost());
-            mutilcastSocket = new MulticastSocket(url.getPort());
-            mutilcastSocket.setLoopbackMode(false);
-            mutilcastSocket.joinGroup(mutilcastAddress);
+            multicastAddress = InetAddress.getByName(url.getHost());
+            multicastSocket = new MulticastSocket(url.getPort());
+            multicastSocket.setLoopbackMode(false);
+            multicastSocket.joinGroup(multicastAddress);
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -58,7 +58,7 @@ public class MulticastGroup extends AbstractGroup {
                     DatagramPacket recv = new DatagramPacket(buf, buf.length);
                     while (true) {
                         try {
-                            mutilcastSocket.receive(recv);
+                            multicastSocket.receive(recv);
                             MulticastGroup.this.receive(new String(recv.getData()).trim(), (InetSocketAddress) recv.getSocketAddress());
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e);
@@ -74,9 +74,9 @@ public class MulticastGroup extends AbstractGroup {
     }
 
     private void send(String msg) throws RemotingException {
-        DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), mutilcastAddress, mutilcastSocket.getLocalPort());
+        DatagramPacket hi = new DatagramPacket(msg.getBytes(), msg.length(), multicastAddress, multicastSocket.getLocalPort());
         try {
-            mutilcastSocket.send(hi);
+            multicastSocket.send(hi);
         } catch (IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

@@ -45,16 +45,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.TOKEN;
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_WATCH_TIMEOUT;
+import static org.apache.dubbo.common.constants.ConsulConstants.WATCH_TIMEOUT;
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_PORT;
+import static org.apache.dubbo.common.constants.ConsulConstants.INVALID_PORT;
 
 /**
  * config center implementation for consul
  */
 public class ConsulDynamicConfiguration extends TreePathDynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ConsulDynamicConfiguration.class);
-
-    private static final int DEFAULT_PORT = 8500;
-    private static final int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
-    private static final String WATCH_TIMEOUT = "consul-watch-timeout";
 
     private final Consul client;
 
@@ -68,10 +69,10 @@ public class ConsulDynamicConfiguration extends TreePathDynamicConfiguration {
         super(url);
         watchTimeout = url.getParameter(WATCH_TIMEOUT, DEFAULT_WATCH_TIMEOUT);
         String host = url.getHost();
-        int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
+        int port = INVALID_PORT != url.getPort() ? url.getPort() : DEFAULT_PORT;
         Consul.Builder builder = Consul.builder()
                 .withHostAndPort(HostAndPort.fromParts(host, port));
-        String token = url.getParameter("token", (String) null);
+        String token = url.getParameter(TOKEN, (String) null);
         if (StringUtils.isNotEmpty(token)) {
             builder.withAclToken(token);
         }

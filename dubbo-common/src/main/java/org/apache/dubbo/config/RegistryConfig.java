@@ -25,9 +25,11 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
-import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
+import static org.apache.dubbo.config.Constants.REGISTRIES_PREFIX;
 
 /**
  * RegistryConfig
@@ -37,6 +39,7 @@ import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 public class RegistryConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
+    public static final String PREFER_REGISTRY_KEY = REGISTRY_KEY + "." + PREFERRED_KEY;
     private static final long serialVersionUID = 5508512956753757169L;
 
     /**
@@ -137,11 +140,6 @@ public class RegistryConfig extends AbstractConfig {
     private Map<String, String> parameters;
 
     /**
-     * Whether it's default
-     */
-    private Boolean isDefault;
-
-    /**
      * Simple the registry. both useful for provider and consumer
      *
      * @since 2.7.0
@@ -225,11 +223,6 @@ public class RegistryConfig extends AbstractConfig {
                 updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
                 updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
 
-//                setUsername(url.getUsername());
-//                setPassword(url.getPassword());
-//                updateIdIfAbsent(url.getProtocol());
-//                updateProtocolIfAbsent(url.getProtocol());
-//                updatePortIfAbsent(url.getPort());
                 Map<String, String> params = url.getParameters();
                 if (CollectionUtils.isNotEmptyMap(params)) {
                     params.remove(BACKUP_KEY);
@@ -448,14 +441,6 @@ public class RegistryConfig extends AbstractConfig {
         }
     }
 
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
-    }
-
     public Boolean getSimplified() {
         return simplified;
     }
@@ -499,6 +484,7 @@ public class RegistryConfig extends AbstractConfig {
         this.accepts = accepts;
     }
 
+    @Parameter(key = PREFER_REGISTRY_KEY)
     public Boolean getPreferred() {
         return preferred;
     }
@@ -519,7 +505,7 @@ public class RegistryConfig extends AbstractConfig {
     public void refresh() {
         super.refresh();
         if (StringUtils.isNotEmpty(this.getId())) {
-            this.setPrefix(REGISTRIES_SUFFIX);
+            this.setPrefix(REGISTRIES_PREFIX);
             super.refresh();
         }
     }

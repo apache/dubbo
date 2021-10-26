@@ -56,6 +56,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitorFilter.class);
     private static final String MONITOR_FILTER_START_TIME = "monitor_filter_start_time";
+    private static final String MONITOR_REMOTE_HOST_STORE = "monitor_remote_host_store";
 
     /**
      * The Concurrent counter
@@ -84,6 +85,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
             invocation.put(MONITOR_FILTER_START_TIME, System.currentTimeMillis());
+            invocation.put(MONITOR_REMOTE_HOST_STORE, RpcContext.getContext().getRemoteHost());
             getConcurrent(invoker, invocation).incrementAndGet(); // count up
         }
         return invoker.invoke(invocation); // proceed invocation chain
@@ -98,7 +100,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
-            collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), (long) invocation.get(MONITOR_FILTER_START_TIME), false);
+            collect(invoker, invocation, result, (String) invocation.get(MONITOR_REMOTE_HOST_STORE), (long) invocation.get(MONITOR_FILTER_START_TIME), false);
             getConcurrent(invoker, invocation).decrementAndGet(); // count down
         }
     }
@@ -106,7 +108,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
         if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
-            collect(invoker, invocation, null, RpcContext.getContext().getRemoteHost(), (long) invocation.get(MONITOR_FILTER_START_TIME), true);
+            collect(invoker, invocation, null, (String) invocation.get(MONITOR_REMOTE_HOST_STORE), (long) invocation.get(MONITOR_FILTER_START_TIME), true);
             getConcurrent(invoker, invocation).decrementAndGet(); // count down
         }
     }

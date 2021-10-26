@@ -52,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements EventListener<ServiceInstancesChangedEvent> {
 
-    private final static Logger logger = LoggerFactory.getLogger(EtcdServiceDiscovery.class);
+    private static final Logger logger = LoggerFactory.getLogger(EtcdServiceDiscovery.class);
 
     private final String root = "/services";
 
@@ -61,7 +61,8 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
 
     EtcdClient etcdClient;
     EventDispatcher dispatcher;
-    ServiceInstance serviceInstance;
+
+    private URL registryURL;
 
     @Override
     public void onEvent(ServiceInstancesChangedEvent event) {
@@ -91,6 +92,7 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
 
         this.dispatcher = EventDispatcher.getDefaultExtension();
         this.dispatcher.addEventListener(this);
+        this.registryURL = registryURL;
     }
 
     @Override
@@ -101,10 +103,8 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        super.register(serviceInstance);
+    public void doRegister(ServiceInstance serviceInstance) {
         try {
-            this.serviceInstance = serviceInstance;
             String path = toPath(serviceInstance);
 //            etcdClient.createEphemeral(path);
             etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));
@@ -127,8 +127,7 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        super.register(serviceInstance);
+    public void doUpdate(ServiceInstance serviceInstance) {
         try {
             String path = toPath(serviceInstance);
             etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));
@@ -206,5 +205,10 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
             }
             register(serviceInstance);
         }
+    }
+
+    @Override
+    public URL getUrl() {
+        return registryURL;
     }
 }

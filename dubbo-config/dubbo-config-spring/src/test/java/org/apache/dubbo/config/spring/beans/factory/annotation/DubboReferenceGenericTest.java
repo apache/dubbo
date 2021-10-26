@@ -19,16 +19,17 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.api.HelloService;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor.BEAN_NAME;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link DubboReference @DubboReference} of Generic injection test
@@ -36,7 +37,7 @@ import static org.junit.Assert.assertEquals;
  * @see DubboReference
  * @since 2.7.9
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(
         classes = {
                 ServiceAnnotationTestConfiguration.class,
@@ -47,6 +48,7 @@ import static org.junit.Assert.assertEquals;
         "consumer.version = ${demo.service.version}",
         "consumer.url = dubbo://127.0.0.1:12345?version=2.5.7",
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class DubboReferenceGenericTest {
 
     @Bean

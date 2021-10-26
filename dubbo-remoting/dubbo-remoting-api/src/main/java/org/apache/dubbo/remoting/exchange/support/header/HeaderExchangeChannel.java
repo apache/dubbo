@@ -90,7 +90,8 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The channel " + this + " is closed!");
+            throw new RemotingException(this.getLocalAddress(), null,
+                    "Failed to send message " + message + ", cause: The channel " + this + " is closed!");
         }
         if (message instanceof Request
                 || message instanceof Response
@@ -123,7 +124,8 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     @Override
     public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
         if (closed) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
+            throw new RemotingException(this.getLocalAddress(), null,
+                    "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
         // create request.
         Request req = new Request();
@@ -147,6 +149,11 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     @Override
     public void close() {
+        // If the channel has been closed, return directly.
+        if (closed) {
+            return;
+        }
+        closed = true;
         try {
             // graceful close
             DefaultFuture.closeChannel(channel);
@@ -162,7 +169,6 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         if (closed) {
             return;
         }
-        closed = true;
         if (timeout > 0) {
             long start = System.currentTimeMillis();
             while (DefaultFuture.hasFuture(channel)

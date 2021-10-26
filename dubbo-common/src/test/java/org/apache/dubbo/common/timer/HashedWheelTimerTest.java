@@ -18,55 +18,180 @@
 package org.apache.dubbo.common.timer;
 
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.lang.ref.WeakReference;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class HashedWheelTimerTest {
+    private CountDownLatch tryStopTaskCountDownLatch = new CountDownLatch(1);
+    private CountDownLatch errorTaskCountDownLatch = new CountDownLatch(1);
 
-    private class PrintTask implements TimerTask {
+    private static class EmptyTask implements TimerTask {
+        @Override
+        public void run(Timeout timeout) {
+        }
+    }
+
+    private static class BlockTask implements TimerTask {
+        @Override
+        public void run(Timeout timeout) throws InterruptedException {
+            this.wait();
+        }
+    }
+
+    private class ErrorTask implements TimerTask {
+        @Override
+        public void run(Timeout timeout) {
+            errorTaskCountDownLatch.countDown();
+            throw new RuntimeException("Test");
+        }
+    }
+
+    private class TryStopTask implements TimerTask {
+        private Timer timer;
+
+        public TryStopTask(Timer timer) {
+            this.timer = timer;
+        }
 
         @Override
         public void run(Timeout timeout) {
-            final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            System.out.println("task :" + LocalDateTime.now().format(formatter));
+            Assertions.assertThrows(RuntimeException.class, () -> timer.stop());
+            tryStopTaskCountDownLatch.countDown();
         }
     }
 
     @Test
-    public void newTimeout() throws InterruptedException {
-        final Timer timer = newTimer();
-        for (int i = 0; i < 10; i++) {
-            timer.newTimeout(new PrintTask(), 1, TimeUnit.SECONDS);
-            Thread.sleep(1000);
+    public void constructorTest() {
+        // use weak reference to let gc work every time
+        // which can check finalize method and reduce memory usage in time
+        WeakReference<Timer> timer = new WeakReference<>(new HashedWheelTimer());
+        timer = new WeakReference<>(new HashedWheelTimer(100, TimeUnit.MILLISECONDS));
+        timer = new WeakReference<>(new HashedWheelTimer(100, TimeUnit.MILLISECONDS, 8));
+
+        // to cover arg check branches
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            new HashedWheelTimer(
+                    null,
+                    100,
+                    TimeUnit.MILLISECONDS,
+                    8, -1);
+        });
+
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            new HashedWheelTimer(
+                    new NamedThreadFactory("dubbo-future-timeout", true),
+                    0,
+                    TimeUnit.MILLISECONDS,
+                    8, -1);
+        });
+
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            new HashedWheelTimer(
+                    new NamedThreadFactory("dubbo-future-timeout", true),
+                    100,
+                    null,
+                    8, -1);
+        });
+
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            new HashedWheelTimer(
+                    new NamedThreadFactory("dubbo-future-timeout", true),
+                    100,
+                    TimeUnit.MILLISECONDS,
+                    0, -1);
+        });
+
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            new HashedWheelTimer(
+                    new NamedThreadFactory("dubbo-future-timeout", true),
+                    Long.MAX_VALUE,
+                    TimeUnit.MILLISECONDS,
+                    8, -1);
+        });
+
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            new HashedWheelTimer(
+                    new NamedThreadFactory("dubbo-future-timeout", true),
+                    100,
+                    TimeUnit.MILLISECONDS,
+                    Integer.MAX_VALUE, -1);
+        });
+
+        for (int i = 0; i < 128; i++) {
+            // to trigger INSTANCE_COUNT_LIMIT
+            timer = new WeakReference<>(new HashedWheelTimer());
         }
-        Thread.sleep(5000);
+
+        System.gc();
     }
 
     @Test
-    public void stop() throws InterruptedException {
-        final Timer timer = newTimer();
-        for (int i = 0; i < 10; i++) {
-            timer.newTimeout(new PrintTask(), 5, TimeUnit.SECONDS);
-            Thread.sleep(100);
-        }
-        //stop timer
-        timer.stop();
-
-        try {
-            //this will throw a exception
-            timer.newTimeout(new PrintTask(), 5, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Timer newTimer() {
-        return new HashedWheelTimer(
+    public void createTaskTest() throws InterruptedException {
+        HashedWheelTimer timer = new HashedWheelTimer(
                 new NamedThreadFactory("dubbo-future-timeout", true),
-                100,
-                TimeUnit.MILLISECONDS);
+                10,
+                TimeUnit.MILLISECONDS,
+                8, 8);
+
+        Assertions.assertThrows(RuntimeException.class,
+                () -> timer.newTimeout(null, 5, TimeUnit.SECONDS));
+        Assertions.assertThrows(RuntimeException.class,
+                () -> timer.newTimeout(new EmptyTask(), 5, null));
+
+        Timeout timeout = timer.newTimeout(new ErrorTask(), 10, TimeUnit.MILLISECONDS);
+        errorTaskCountDownLatch.await();
+        Assertions.assertFalse(timeout.cancel());
+        Assertions.assertFalse(timeout.isCancelled());
+        Assertions.assertNotNull(timeout.toString());
+        Assertions.assertEquals(timeout.timer(), timer);
+
+        timeout = timer.newTimeout(new EmptyTask(), 1000, TimeUnit.SECONDS);
+        timeout.cancel();
+        Assertions.assertTrue(timeout.isCancelled());
+
+        List<Timeout> timeouts = new LinkedList<>();
+        for (; timer.pendingTimeouts() < 8; ) {
+            // to trigger maxPendingTimeouts
+            timeout = timer.newTimeout(new BlockTask(), -1, TimeUnit.MILLISECONDS);
+            timeouts.add(timeout);
+            Assertions.assertNotNull(timeout.toString());
+        }
+        Assertions.assertEquals(timer.pendingTimeouts(), 8);
+
+        // this will throw an exception because of maxPendingTimeouts
+        Assertions.assertThrows(RuntimeException.class,
+                () -> timer.newTimeout(new BlockTask(), 1, TimeUnit.MILLISECONDS));
+
+        timeout = timeouts.get(2);
+        // wait until the task expired
+        Thread.sleep(100);
+        Assertions.assertTrue(timeout.isExpired());
+
+        timer.stop();
+    }
+
+    @Test
+    public void stopTaskTest() throws InterruptedException {
+        Timer timer = new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true));
+        timer.newTimeout(new TryStopTask(timer), 10, TimeUnit.MILLISECONDS);
+        tryStopTaskCountDownLatch.await();
+
+        for (int i = 0; i < 8; i++) {
+            timer.newTimeout(new EmptyTask(), 0, TimeUnit.SECONDS);
+        }
+        // stop timer
+        timer.stop();
+        Assertions.assertTrue(timer.isStop());
+
+        // this will throw an exception
+        Assertions.assertThrows(RuntimeException.class,
+                () -> timer.newTimeout(new EmptyTask(), 5, TimeUnit.SECONDS));
+
     }
 }

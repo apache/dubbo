@@ -41,6 +41,7 @@ public class MetadataServiceExporterTest {
 
     @BeforeAll
     public static void init() {
+        ApplicationModel.reset();
         ApplicationModel.getConfigManager().setApplication(new ApplicationConfig("Test"));
         ApplicationModel.getConfigManager().addRegistry(new RegistryConfig("test://1.2.3.4"));
         ApplicationModel.getConfigManager().addProtocol(new ProtocolConfig("injvm"));

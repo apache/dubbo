@@ -17,8 +17,6 @@
 package org.apache.dubbo.rpc.protocol.grpc;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
@@ -46,9 +44,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class GrpcProtocol extends AbstractProxyProtocol {
 
-    private static final Logger logger = LoggerFactory.getLogger(GrpcProtocol.class);
-
-    public final static int DEFAULT_PORT = 50051;
+    public static final int DEFAULT_PORT = 50051;
 
     /* <address, gRPC channels> */
     private final ConcurrentMap<String, ReferenceCountManagedChannel> channelMap = new ConcurrentHashMap<>();

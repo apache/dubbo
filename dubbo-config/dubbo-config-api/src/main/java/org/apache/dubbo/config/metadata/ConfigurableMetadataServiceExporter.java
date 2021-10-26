@@ -20,8 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ArgumentConfig;
-import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -31,11 +29,10 @@ import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
 /**
  * {@link MetadataServiceExporter} implementation based on {@link ConfigManager Dubbo configurations}, the clients
@@ -77,7 +74,6 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             serviceConfig.setRef(metadataService);
             serviceConfig.setGroup(getApplicationConfig().getName());
             serviceConfig.setVersion(metadataService.version());
-            serviceConfig.setMethods(generateMethodConfig());
 
             // export
             serviceConfig.export();
@@ -95,28 +91,6 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         }
 
         return this;
-    }
-
-    /**
-     * Generate Method Config for Service Discovery Metadata <p/>
-     * <p>
-     * Make {@link MetadataService} support argument callback,
-     * used to notify {@link org.apache.dubbo.registry.client.ServiceInstance}'s
-     * metadata change event
-     *
-     * @since 3.0
-     */
-    private List<MethodConfig> generateMethodConfig() {
-        MethodConfig methodConfig = new MethodConfig();
-        methodConfig.setName("getAndListenServiceDiscoveryMetadata");
-
-        ArgumentConfig argumentConfig = new ArgumentConfig();
-        argumentConfig.setIndex(1);
-        argumentConfig.setCallback(true);
-
-        methodConfig.setArguments(Collections.singletonList(argumentConfig));
-
-        return Collections.singletonList(methodConfig);
     }
 
     @Override
@@ -146,27 +120,10 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
     private ProtocolConfig generateMetadataProtocol() {
         ProtocolConfig defaultProtocol = new ProtocolConfig();
-        Integer port = getApplicationConfig().getMetadataServicePort();
-
-        if (port == null || port < -1) {
-            if (logger.isInfoEnabled()) {
-                logger.info("Metadata Service Port hasn't been set. " +
-                        "Use default protocol defined in protocols.");
-            }
-            List<ProtocolConfig> defaultProtocols = ApplicationModel.getConfigManager().getDefaultProtocols();
-
-            if (defaultProtocols.isEmpty()) {
-                defaultProtocol.setName(DUBBO_PROTOCOL);
-                defaultProtocol.setPort(-1);
-            } else {
-                return defaultProtocols.get(0);
-            }
-
-        } else {
-            defaultProtocol.setName(DUBBO_PROTOCOL);
-            defaultProtocol.setPort(port);
-        }
-
+        defaultProtocol.setName(DUBBO);
+        // defaultProtocol.setHost() ?
+        // auto-increment port
+        defaultProtocol.setPort(-1);
         return defaultProtocol;
     }
 }

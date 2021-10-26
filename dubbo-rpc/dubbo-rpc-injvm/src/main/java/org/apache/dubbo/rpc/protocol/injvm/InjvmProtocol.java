@@ -18,17 +18,17 @@ package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
+import org.apache.dubbo.rpc.protocol.DelegateExporterMap;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import java.util.Map;
-
+import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
@@ -38,7 +38,7 @@ import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 /**
  * InjvmProtocol
  */
-public class InjvmProtocol extends AbstractProtocol implements Protocol {
+public class InjvmProtocol extends AbstractProtocol implements Protocol{
 
     public static final String NAME = LOCAL_PROTOCOL;
 
@@ -56,14 +56,14 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         return INSTANCE;
     }
 
-    static Exporter<?> getExporter(Map<String, Exporter<?>> map, URL key) {
+    static Exporter<?> getExporter(DelegateExporterMap delegateExporterMap, URL key) {
         Exporter<?> result = null;
 
         if (!key.getServiceKey().contains("*")) {
-            result = map.get(key.getServiceKey());
+            result = delegateExporterMap.getExport(key.getServiceKey());
         } else {
-            if (CollectionUtils.isNotEmptyMap(map)) {
-                for (Exporter<?> exporter : map.values()) {
+            if (!delegateExporterMap.isEmpty()) {
+                for (Exporter<?> exporter : delegateExporterMap.getExporters()) {
                     if (UrlUtils.isServiceKeyMatch(key, exporter.getInvoker().getUrl())) {
                         result = exporter;
                         break;
@@ -89,7 +89,10 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        return new InjvmExporter<T>(invoker, invoker.getUrl().getServiceKey(), exporterMap);
+        String serviceKey = invoker.getUrl().getServiceKey();
+        InjvmExporter<T> tInjvmExporter = new InjvmExporter<>(invoker, serviceKey, exporterMap);
+        exporterMap.addExportMap(serviceKey, tInjvmExporter);
+        return tInjvmExporter;
     }
 
     @Override
@@ -111,6 +114,11 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
             // generic invocation is not local reference
             return false;
         } else if (getExporter(exporterMap, url) != null) {
+            // Broadcast cluster means that multiple machines will be called,
+            // which is not converted to injvm protocol at this time.
+            if (BROADCAST_CLUSTER.equalsIgnoreCase(url.getParameter(CLUSTER_KEY))) {
+                return false;
+            }
             // by default, go through local reference if there's the service exposed locally
             return true;
         } else {
