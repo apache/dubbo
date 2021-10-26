@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.protocol.dubbo.status;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
+import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
@@ -31,11 +33,12 @@ import java.util.concurrent.ThreadPoolExecutor;
  * ThreadPoolStatusChecker
  */
 @Activate
-public class ThreadPoolStatusChecker implements StatusChecker {
+public class ThreadPoolStatusChecker implements StatusChecker, ExtensionAccessorAware {
+    private ExtensionAccessor extensionAccessor;
 
     @Override
     public Status check() {
-        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        DataStore dataStore = extensionAccessor.getExtensionLoader(DataStore.class).getDefaultExtension();
         Map<String, Object> executors = dataStore.get(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY);
 
         StringBuilder msg = new StringBuilder();
@@ -57,11 +60,15 @@ public class ThreadPoolStatusChecker implements StatusChecker {
                     msg.append(';');
                 }
                 msg.append("Pool status:").append(lvl).append(", max:").append(tp.getMaximumPoolSize()).append(", core:")
-                        .append(tp.getCorePoolSize()).append(", largest:").append(tp.getLargestPoolSize()).append(", active:")
-                        .append(tp.getActiveCount()).append(", task:").append(tp.getTaskCount()).append(", service port: ").append(port);
+                    .append(tp.getCorePoolSize()).append(", largest:").append(tp.getLargestPoolSize()).append(", active:")
+                    .append(tp.getActiveCount()).append(", task:").append(tp.getTaskCount()).append(", service port: ").append(port);
             }
         }
         return msg.length() == 0 ? new Status(Status.Level.UNKNOWN) : new Status(level, msg.toString());
     }
 
+    @Override
+    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
+        this.extensionAccessor = extensionAccessor;
+    }
 }
