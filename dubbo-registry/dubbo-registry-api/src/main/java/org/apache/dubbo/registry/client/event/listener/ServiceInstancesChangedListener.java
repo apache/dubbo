@@ -172,11 +172,11 @@ public class ServiceInstancesChangedListener {
         this.revisionToMetadata = newRevisionToMetadata;
 
         /*
-        * Calculate serviceUrls, that is, the exact urls that each service should get notified.
+        * Calculate serviceUrls, that is, determine the exact urls that each service should get notified.
         *
         * Since most services from the same provider application may likely be mapping to the same revision or revisions,
-        * we keep a revisions - urls mapping to reduce calculation times.
-        * In this way, as long as the first service  -> revisions -> urls is determined, the urls of the following services can be returned directly.
+        * we keep a 'revisions - urls' mapping to reduce calculation cost.
+        * In this way, as long as the first 'service  -> revisions -> urls' is determined, the urls of the following services can be returned directly.
         * */
         Map<String, Map<Set<String>, Object>> protocolRevisionsToUrls = new HashMap<>();
         Map<String, Object> newServiceUrls = new HashMap<>();
