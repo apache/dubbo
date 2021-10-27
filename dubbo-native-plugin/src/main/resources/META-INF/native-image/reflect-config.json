@@ -1373,7 +1373,9 @@
     "methods": [
       {
         "name": "<init>",
-        "parameterTypes": []
+        "parameterTypes": [
+          "org.apache.dubbo.rpc.model.ApplicationModel"
+        ]
       }
     ]
   },
