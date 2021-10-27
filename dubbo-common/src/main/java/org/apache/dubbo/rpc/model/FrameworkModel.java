@@ -61,13 +61,13 @@ public class FrameworkModel extends ScopeModel {
 
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
+        this.setInternalId(index.getAndIncrement()+"");
         // register FrameworkModel instance early
         synchronized (FrameworkModel.class) {
             allInstances.add(this);
             resetDefaultFrameworkModel();
         }
         initialize();
-        this.setInternalId(index.getAndIncrement()+"");
     }
 
     @Override
