@@ -239,24 +239,23 @@ public class RouterChain<T> {
 
         // 1. route state router
         if (cache != null) {
-            BitList<Invoker<T>> invokersToRoute = invokers.clone();
             for (StateRouter stateRouter : stateRouters) {
                 if (stateRouter.isEnable()) {
-                    BitList<Invoker<T>> inputInvokers = invokersToRoute.clone();
+                    BitList<Invoker<T>> inputInvokers = resultInvokers.clone();
 
                     RouterSnapshotNode<T> currentNode = new RouterSnapshotNode<T>(stateRouter.getName(), inputInvokers.size());
                     snapshotNode.appendNode(currentNode);
 
                     RouterCache<T> routerCache = cache.getCache().get(stateRouter.getName());
                     StateRouterResult<Invoker<T>> routeResult = stateRouter.route(inputInvokers, routerCache, url, invocation, true);
-                    invokersToRoute = routeResult.getResult();
+                    resultInvokers = routeResult.getResult();
                     String routerMessage = routeResult.getMessage();
 
-                    currentNode.setOutputInvokers(invokersToRoute);
+                    currentNode.setOutputInvokers(resultInvokers);
                     currentNode.setRouterMessage(routerMessage);
 
                     // result is empty, log out
-                    if (invokersToRoute.isEmpty()) {
+                    if (resultInvokers.isEmpty()) {
                         return snapshotNode;
                     }
 
@@ -265,7 +264,6 @@ public class RouterChain<T> {
                     }
                 }
             }
-            resultInvokers = resultInvokers.and(invokersToRoute);
         }
 
         // 2. route common router
