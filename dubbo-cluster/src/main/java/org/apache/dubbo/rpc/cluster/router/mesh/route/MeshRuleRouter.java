@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.router.RouterResult;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRuleSpec;
@@ -75,12 +76,13 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
     }
 
     @Override
-    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+    public <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url,
+                                              Invocation invocation, boolean needToPrintMessage) throws RpcException {
 
         List<DubboRouteDestination> routeDestination = getDubboRouteDestination(invocation);
 
         if (routeDestination == null) {
-            return invokers;
+            return new RouterResult<>(invokers);
         } else {
             DubboRouteDestination dubboRouteDestination = routeDestination.get(ThreadLocalRandom.current().nextInt(routeDestination.size()));
 
@@ -99,7 +101,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
                     result = subsetMapCopy.get(subset);
 
                     if (CollectionUtils.isNotEmpty(result)) {
-                        return (List) result;
+                        return new RouterResult<>((List) result);
                     }
 
                     dubboRouteDestination = dubboDestination.getFallback();
@@ -115,7 +117,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
             }
         }
 
-        return invokers;
+        return new RouterResult<>(invokers);
     }
 
     @Override

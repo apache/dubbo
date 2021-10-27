@@ -52,7 +52,10 @@ public interface Router extends Comparable<Router> {
      * @return routed invokers
      * @throws RpcException
      */
-    <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
+    @Deprecated
+    default <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+        return null;
+    }
 
     /**
      * ** This method can return the state of whether routerChain needed to continue route. **

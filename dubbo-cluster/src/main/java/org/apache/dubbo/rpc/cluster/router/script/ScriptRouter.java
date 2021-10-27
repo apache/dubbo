@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
+import org.apache.dubbo.rpc.cluster.router.RouterResult;
 
 import javax.script.Bindings;
 import javax.script.Compilable;
@@ -121,21 +122,23 @@ public class ScriptRouter extends AbstractRouter {
         });
     }
 
+
     @Override
-    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+    public <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url,
+                                              Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (engine == null || function == null) {
-            return invokers;
+            return new RouterResult<>(invokers);
         }
         Bindings bindings = createBindings(invokers, invocation);
-        return getRoutedInvokers(AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+        return new RouterResult<>(getRoutedInvokers(AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
                 return function.eval(bindings);
             } catch (ScriptException e) {
                 logger.error("route error, rule has been ignored. rule: " + rule + ", method:" +
-                        invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
+                    invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
                 return invokers;
             }
-        }, accessControlContext));
+        }, accessControlContext)));
     }
 
     /**

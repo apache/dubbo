@@ -29,6 +29,12 @@ public class RouterResult<T> {
         this.message = null;
     }
 
+    public RouterResult(List<T> result, String message) {
+        this.needContinueRoute = true;
+        this.result = result;
+        this.message = message;
+    }
+
     public RouterResult(boolean needContinueRoute, List<T> result, String message) {
         this.needContinueRoute = needContinueRoute;
         this.result = result;

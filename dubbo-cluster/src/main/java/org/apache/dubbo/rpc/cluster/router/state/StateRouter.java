@@ -56,9 +56,11 @@ public interface StateRouter extends Comparable<StateRouter> {
      * @throws RpcException
      * @Since 3.0
      */
-    <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation)
-        throws
-        RpcException;
+    @Deprecated
+    default <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation)
+        throws RpcException {
+        return null;
+    }
 
     /***
      * ** This method can return the state of whether routerChain needed to continue route. **

@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
+import org.apache.dubbo.rpc.cluster.router.RouterResult;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRouterRule;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRuleParser;
@@ -79,9 +80,10 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
     }
 
     @Override
-    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
+    public <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url,
+                                              Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (CollectionUtils.isEmpty(invokers) || conditionRouters.size() == 0) {
-            return invokers;
+            return new RouterResult<>(invokers);
         }
 
         // We will check enabled status inside each router.
@@ -89,7 +91,7 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
             invokers = router.route(invokers, url, invocation);
         }
 
-        return invokers;
+        return new RouterResult<>(invokers);
     }
 
     @Override

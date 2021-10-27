@@ -27,6 +27,12 @@ public class StateRouterResult<T> {
         this.message = null;
     }
 
+    public StateRouterResult(BitList<T> result, String message) {
+        this.needContinueRoute = true;
+        this.result = result;
+        this.message = message;
+    }
+
     public StateRouterResult(boolean needContinueRoute, BitList<T> result, String message) {
         this.needContinueRoute = needContinueRoute;
         this.result = result;
