@@ -87,11 +87,11 @@ public class RouterSnapshotNode<T> {
 
     public String toString(int level) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("[")
+        stringBuilder.append("[ ")
             .append(name)
             .append(" ")
             .append("invokers: ")
-            .append(beforeSize).append("->").append(afterSize)
+            .append(beforeSize).append(" -> ").append(afterSize)
             .append(" ")
             .append(routerMessage == null ? "" : routerMessage)
             .append("] ")
