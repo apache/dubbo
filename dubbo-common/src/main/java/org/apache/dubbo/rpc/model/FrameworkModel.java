@@ -242,7 +242,7 @@ public class FrameworkModel extends ScopeModel {
             }
             if (defaultInstance == this && oldDefaultAppModel != this.defaultAppModel) {
                 if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("Reset global default application from " + getModelDesc(oldDefaultAppModel) + " to " + getModelDesc(this.defaultAppModel));
+                    LOGGER.info("Reset global default application from " + safeGetModelDesc(oldDefaultAppModel) + " to " + safeGetModelDesc(this.defaultAppModel));
                 }
             }
         }
@@ -261,14 +261,14 @@ public class FrameworkModel extends ScopeModel {
             }
             if (oldDefaultFrameworkModel != defaultInstance) {
                 if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("Reset global default framework from " + getModelDesc(oldDefaultFrameworkModel) + " to " + getModelDesc(defaultInstance));
+                    LOGGER.info("Reset global default framework from " + safeGetModelDesc(oldDefaultFrameworkModel) + " to " + safeGetModelDesc(defaultInstance));
                 }
             }
         }
     }
 
-    private String getModelDesc(ScopeModel scopeModel) {
-        return scopeModel != null ? "[" + scopeModel.getInternalId() + "]" : null;
+    private String safeGetModelDesc(ScopeModel scopeModel) {
+        return scopeModel != null ? scopeModel.getDesc() : null;
     }
 
     public List<ApplicationModel> getApplicationModels() {
