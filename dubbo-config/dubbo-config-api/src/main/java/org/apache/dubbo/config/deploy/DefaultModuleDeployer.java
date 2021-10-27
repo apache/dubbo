@@ -238,14 +238,15 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private void onModuleStarted() {
-        if (isStarting()) {
-            setStarted();
-            logger.info(getIdentifier() + " has started.");
-            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
+        try {
+            if (isStarting()) {
+                setStarted();
+                logger.info(getIdentifier() + " has started.");
+                applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
+            }
+        } finally {
             // complete module start future after application state changed
             completeStartFuture(true);
-        } else {
-            completeStartFuture(false);
         }
     }
 
@@ -262,17 +263,23 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     }
 
     private void onModuleStopping() {
-        setStopping();
-        logger.info(getIdentifier() + " is stopping.");
-        applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STOPPING);
-        completeStartFuture(false);
+        try {
+            setStopping();
+            logger.info(getIdentifier() + " is stopping.");
+            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STOPPING);
+        } finally {
+            completeStartFuture(false);
+        }
     }
 
     private void onModuleStopped() {
-        setStopped();
-        logger.info(getIdentifier() + " has stopped.");
-        applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STOPPED);
-        completeStartFuture(false);
+        try {
+            setStopped();
+            logger.info(getIdentifier() + " has stopped.");
+            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STOPPED);
+        } finally {
+            completeStartFuture(false);
+        }
     }
 
     private void loadConfigs() {
@@ -429,7 +436,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             .isPresent();
     }
 
-    private String getIdentifier() {
+    public String getIdentifier() {
         if (identifier == null) {
             identifier = "Dubbo module[" + moduleModel.getInternalId() + "]";
             if (moduleModel.getModelName() != null

@@ -988,27 +988,30 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onStarted() {
-        // starting -> started
-        if (!isStarting()) {
-            return;
-        }
-        setStarted();
-        if (logger.isInfoEnabled()) {
-            logger.info(getIdentifier() + " is ready.");
-        }
-        // refresh metadata
         try {
-            if (serviceInstance != null) {
-                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+            // starting -> started
+            if (!isStarting()) {
+                return;
             }
-        } catch (Exception e) {
-            logger.error("refresh metadata failed: " + e.getMessage(), e);
+            setStarted();
+            if (logger.isInfoEnabled()) {
+                logger.info(getIdentifier() + " is ready.");
+            }
+            // refresh metadata
+            try {
+                if (serviceInstance != null) {
+                    ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                }
+            } catch (Exception e) {
+                logger.error("refresh metadata failed: " + e.getMessage(), e);
+            }
+            // shutdown export/refer executor after started
+            executorRepository.shutdownServiceExportExecutor();
+            executorRepository.shutdownServiceReferExecutor();
+        } finally {
+            // complete future
+            completeStartFuture(true);
         }
-        // complete future
-        completeStartFuture(true);
-        // shutdown export/refer executor after started
-        executorRepository.shutdownServiceExportExecutor();
-        executorRepository.shutdownServiceReferExecutor();
     }
 
     private void completeStartFuture(boolean success) {
@@ -1018,25 +1021,31 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void onStopping() {
-        if (isStopping() || isStopped()) {
-            return;
+        try {
+            if (isStopping() || isStopped()) {
+                return;
+            }
+            setStopping();
+            if (logger.isInfoEnabled()) {
+                logger.info(getIdentifier() + " is stopping.");
+            }
+        } finally {
+            completeStartFuture(false);
         }
-        setStopping();
-        if (logger.isInfoEnabled()) {
-            logger.info(getIdentifier() + " is stopping.");
-        }
-        completeStartFuture(false);
     }
 
     private void onStopped() {
-        if (isStopped()) {
-            return;
+        try {
+            if (isStopped()) {
+                return;
+            }
+            setStopped();
+            if (logger.isInfoEnabled()) {
+                logger.info(getIdentifier() + " has stopped.");
+            }
+        } finally {
+            completeStartFuture(false);
         }
-        setStopped();
-        if (logger.isInfoEnabled()) {
-            logger.info(getIdentifier() + " has stopped.");
-        }
-        completeStartFuture(false);
     }
 
     private void destroyExecutorRepository() {
@@ -1072,7 +1081,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return configManager.getApplicationOrElseThrow();
     }
 
-    private String getIdentifier() {
+    @Override
+    public String getIdentifier() {
         if (identifier == null) {
             identifier = "Dubbo application[" + applicationModel.getInternalId() + "]";
             if (applicationModel.getModelName() != null
