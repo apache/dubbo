@@ -86,6 +86,8 @@ public class MetaCacheManagerTest {
         MetadataInfo metadataInfo = newCacheManager.get("3");
         assertNotNull(metadataInfo);
         assertEquals("demo3", metadataInfo.getApp());
+
+
     }
 
 

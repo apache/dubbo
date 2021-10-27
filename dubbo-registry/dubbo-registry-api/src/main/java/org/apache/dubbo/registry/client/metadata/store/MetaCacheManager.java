@@ -29,7 +29,6 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -41,12 +40,13 @@ public class MetaCacheManager implements ScopeModelAware {
     private static final Logger logger = LoggerFactory.getLogger(MetaCacheManager.class);
     private static final String DEFAULT_FILE_NAME = ".metadata";
     private static final String SUFFIX = ".dubbo.cache";
+    private static final int DEFAULT_ENTRY_SIZE = 1000;
 
     private static final long INTERVAL = 60L;
     private ScheduledExecutorService executorService;
 
     protected FileCacheStore cacheStore;
-    protected LRUCache<String, MetadataInfo> cache = new LRUCache<>(10000);
+    protected LRUCache<String, MetadataInfo> cache;
 
     public MetaCacheManager() {
         String filePath = System.getProperty("dubbo.meta.cache.filePath");
@@ -54,12 +54,18 @@ public class MetaCacheManager implements ScopeModelAware {
         if (StringUtils.isEmpty(fileName)) {
             fileName = DEFAULT_FILE_NAME;
         }
-        fileName += SUFFIX;
+
+        String rawEntrySize = System.getProperty("dubbo.meta.cache.entrySize");
+        int entrySize = StringUtils.parseInteger(rawEntrySize);
+        entrySize = (entrySize == 0 ? DEFAULT_ENTRY_SIZE : entrySize);
+
+        cache = new LRUCache<>(entrySize);
+
         try {
             cacheStore = new FileCacheStore(filePath, fileName);
-            Properties properties = cacheStore.loadCache();
+            Map<String, String> properties = cacheStore.loadCache(entrySize);
             logger.info("Successfully loaded meta cache from file " + fileName + ", entries " + properties.size());
-            for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
                 String key = (String) entry.getKey();
                 String value = (String) entry.getValue();
 
@@ -120,7 +126,7 @@ public class MetaCacheManager implements ScopeModelAware {
 
         @Override
         public void run() {
-            Properties properties = new Properties();
+            Map<String, String> properties = new HashMap<>();
 
             cache.lock();
             try {
@@ -132,7 +138,7 @@ public class MetaCacheManager implements ScopeModelAware {
             }
 
             logger.info("Dumping meta caches, latest entries " + properties.size());
-            cacheStore.refreshCache(properties);
+            cacheStore.refreshCache(properties, "Metadata cache");
         }
     }
 }

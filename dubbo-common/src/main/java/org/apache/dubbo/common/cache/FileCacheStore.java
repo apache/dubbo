@@ -20,16 +20,22 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -51,22 +57,37 @@ public class FileCacheStore {
     private FileLock directoryLock;
     private File lockFile;
 
-    public FileCacheStore(String basePath, String fileName) {
+    public FileCacheStore(String basePath, String fileName) throws IOException {
         if (basePath == null) {
             basePath = System.getProperty("user.home") + "/.dubbo/";
         }
         this.basePath = new File(basePath);
         this.fileName = fileName;
-    }
 
-    public Properties loadCache() throws IOException {
         this.cacheFile = getFile(fileName, SUFFIX);
-        Properties properties = new Properties();
         if (!cacheFile.exists()) {
             cacheFile.createNewFile();
         }
-        try (FileInputStream is = new FileInputStream(cacheFile)) {
-            properties.load(is);
+    }
+
+    public Map<String, String> loadCache(int entrySize) throws IOException {
+        Map<String, String> properties = new HashMap<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(cacheFile))) {
+            int count = 1;
+            String line = reader.readLine();
+            while (line != null && count <= entrySize) {
+                // content has '=' need to be encoded before write
+                if (!line.equals("") && !line.startsWith("#") && line.contains("=")) {
+                    String[] pairs = line.split("=");
+                    properties.put(pairs[0], pairs[1]);
+                    count++;
+                }
+                line = reader.readLine();
+            }
+
+            if (count > entrySize) {
+                logger.warn("Cache file was truncated for exceeding the maximum entry size " + entrySize);
+            }
         } catch (IOException e) {
             logger.warn("Load cache failed ", e);
             throw e;
@@ -173,13 +194,22 @@ public class FileCacheStore {
         }
     }
 
-    public void refreshCache(Properties properties) {
+    public void refreshCache(Map<String, String> properties, String comment) {
         if (CollectionUtils.isEmptyMap(properties)) {
             return;
         }
 
-        try (FileOutputStream os = new FileOutputStream(cacheFile, false)) {
-            properties.store(os, "");
+        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheFile, false), StandardCharsets.UTF_8))) {
+            bw.write("#" + comment);
+            bw.write("#" + new Date().toString());
+            bw.newLine();
+            for (Map.Entry<String, String> e : properties.entrySet()) {
+                String key = e.getKey();
+                String val = e.getValue();
+                bw.write(key + "=" + val);
+                bw.newLine();
+            }
+            bw.flush();
         } catch (IOException e) {
             logger.warn("Update cache error.");
         }

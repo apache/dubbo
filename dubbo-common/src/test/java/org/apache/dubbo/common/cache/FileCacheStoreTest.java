@@ -21,7 +21,8 @@ import org.junit.jupiter.api.Test;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -33,14 +34,21 @@ public class FileCacheStoreTest {
         String directoryPath = getDirectoryOfClassPath();
         String filePath = "test-cache.dubbo.cache";
         cacheStore = new FileCacheStore(directoryPath, filePath);
-        Properties properties = cacheStore.loadCache();
+        Map<String, String> properties = cacheStore.loadCache(10);
         assertEquals(2, properties.size());
 
-        Properties newProperties = new Properties();
-        newProperties.put("newKey", "newValue");
-        cacheStore.refreshCache(newProperties);
-        properties = cacheStore.loadCache();
-        assertEquals(1, properties.size());
+        Map<String, String> newProperties = new HashMap<>();
+        newProperties.put("newKey1", "newValue1");
+        newProperties.put("newKey2", "newValue2");
+        newProperties.put("newKey3", "newValue3");
+        newProperties.put("newKey4", "newValue4");
+        cacheStore = new FileCacheStore(directoryPath, "non-exit.dubbo.cache");
+        cacheStore.refreshCache(newProperties, "test refresh cache");
+        Map<String, String> propertiesLimitTo2 = cacheStore.loadCache(2);
+        assertEquals(2, propertiesLimitTo2.size());
+
+        Map<String, String> propertiesLimitTo10 = cacheStore.loadCache(10);
+        assertEquals(4, propertiesLimitTo10.size());
     }
 
     private String getDirectoryOfClassPath() throws URISyntaxException {
