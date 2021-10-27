@@ -74,7 +74,7 @@ public class DubboSpringInitializer {
                 initContext.getRegistry() == springContext.getAutowireCapableBeanFactory()
             ) {
                 DubboSpringInitContext context = contextMap.remove(entry.getKey());
-                logger.info("Unbind module " + safeGetModelDesc(context.getModuleModel()) + " from spring container: " +
+                logger.info("Unbind " + safeGetModelDesc(context.getModuleModel()) + " from spring container: " +
                     ObjectUtils.identityToString(entry.getKey()));
                 return true;
             }
@@ -125,7 +125,7 @@ public class DubboSpringInitializer {
         } else {
             logger.info("Use module model from customizer: " + safeGetModelDesc(moduleModel));
         }
-        logger.info("Bind module " + safeGetModelDesc(moduleModel) + " to spring container: " + ObjectUtils.identityToString(registry));
+        logger.info("Bind " + safeGetModelDesc(moduleModel) + " to spring container: " + ObjectUtils.identityToString(registry));
 
         // set module attributes
         if (context.getModuleAttributes().size() > 0) {
