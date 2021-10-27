@@ -62,8 +62,9 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         }
 
         public void invoke() {
-            RpcInvocation invocation = buildInvocation(getHeaders());
+            // For wrapper overload methods, the methodDescriptor needs to get from data, so parse the request first
             final Object[] arguments = deserializeRequest(getData());
+            RpcInvocation invocation = buildInvocation(getHeaders());
             if (arguments == null) {
                 return;
             }
