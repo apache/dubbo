@@ -95,13 +95,13 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
         ConcurrentMap<String, BitList<Invoker<T>>> addrPool = cache.getAddrPool();
 
         if (StringUtils.isEmpty(tag)) {
-            return invokers.intersect(addrPool.get(NO_TAG), invokers.getUnmodifiableList());
+            return invokers.and(addrPool.get(NO_TAG));
         } else {
             BitList<Invoker<T>> result = addrPool.get(tag);
 
             if (CollectionUtils.isNotEmpty(result) || (tagRouterRuleCopy != null && tagRouterRuleCopy.isForce())
                 || isForceUseTag(invocation)) {
-                return invokers.intersect(result, invokers.getUnmodifiableList());
+                return invokers.and(result);
             } else {
                 invocation.setAttachment(TAG_KEY, NO_TAG);
                 return invokers;

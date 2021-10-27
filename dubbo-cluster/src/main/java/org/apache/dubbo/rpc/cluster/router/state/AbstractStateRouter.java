@@ -97,7 +97,7 @@ public abstract class AbstractStateRouter implements StateRouter {
             if (tagMatchFail(tagInvokers)) {
                 continue;
             }
-            return tagInvokers.intersect(invokers, invokers.getUnmodifiableList());
+            return invokers.and(tagInvokers);
         }
 
         return invokers;

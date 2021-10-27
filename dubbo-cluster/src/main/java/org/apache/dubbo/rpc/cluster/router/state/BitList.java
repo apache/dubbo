@@ -16,13 +16,17 @@
  */
 package org.apache.dubbo.rpc.cluster.router.state;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
+
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 /**
  * BitList based on BitMap implementation.
@@ -32,45 +36,56 @@ import java.util.ListIterator;
  */
 public class BitList<E> extends AbstractList<E> {
     private final BitSet rootSet;
-    private final List<E> unmodifiableList;
+    private final List<E> originList;
     private final static BitList emptyList = new BitList(Collections.emptyList());
+    private volatile List<E> tailList = null;
 
-    public BitList(List<E> unmodifiableList) {
-        this(unmodifiableList, false);
+    public BitList(List<E> originList) {
+        this(originList, false);
     }
 
-    public BitList(List<E> unmodifiableList, boolean empty) {
-        this.unmodifiableList = new ArrayList<>(unmodifiableList);
+    public BitList(List<E> originList, boolean empty) {
+        this.originList = new ArrayList<>(originList);
         this.rootSet = new BitSet();
         if (!empty) {
-            this.rootSet.set(0, unmodifiableList.size());
+            this.rootSet.set(0, originList.size());
         }
     }
 
-    public BitList(List<E> unmodifiableList, BitSet rootSet) {
-        this.unmodifiableList = new ArrayList<>(unmodifiableList);
+    public BitList(List<E> originList, BitSet rootSet, List<E> tailList) {
+        this.originList = new ArrayList<>(originList);
         this.rootSet = rootSet;
+        this.tailList = tailList;
     }
 
     // Provided by BitList only
-    public List<E> getUnmodifiableList() {
-        return unmodifiableList;
+    public List<E> getOriginList() {
+        return originList;
     }
 
     public void addIndex(int index) {
         this.rootSet.set(index);
     }
 
-    public BitList<E> intersect(List<E> b, List<E> totalList) {
+    /**
+     * And operation between two bitList. Return a new cloned list.
+     * TailList in source bitList will be totally saved even if it is not appeared in the target bitList.
+     *
+     * @param target target bitList
+     * @return a new bitList only contains those elements contain in both two list and source bitList's tailList
+     */
+    public BitList<E> and(BitList<E> target) {
         BitSet resultSet = (BitSet) rootSet.clone();
-        resultSet.and(((BitList) b).rootSet);
-        return new BitList<>(totalList, resultSet);
+        resultSet.and(target.rootSet);
+        return new BitList<>(originList, resultSet, tailList);
     }
 
-    public BitList<E> and(BitList<E> b) {
-        BitSet resultSet = (BitSet) rootSet.clone();
-        resultSet.and(b.rootSet);
-        return new BitList<>(unmodifiableList, resultSet);
+    public boolean hasMoreElementInTailList() {
+        return CollectionUtils.isNotEmpty(tailList) && tailList.size() > 0;
+    }
+
+    public List<E> getTailList() {
+        return tailList;
     }
 
     @SuppressWarnings("unchecked")
@@ -81,13 +96,13 @@ public class BitList<E> extends AbstractList<E> {
     // Provided by JDK List interface
     @Override
     public int size() {
-        return rootSet.cardinality();
+        return rootSet.cardinality() + (CollectionUtils.isNotEmpty(tailList) ? tailList.size() : 0);
     }
 
     @Override
     public boolean contains(Object o) {
-        int idx = unmodifiableList.indexOf(o);
-        return idx >= 0 && rootSet.get(idx);
+        int idx = originList.indexOf(o);
+        return (idx >= 0 && rootSet.get(idx)) || (CollectionUtils.isNotEmpty(tailList) && tailList.contains(o));
     }
 
     @Override
@@ -95,66 +110,112 @@ public class BitList<E> extends AbstractList<E> {
         return new BitListIterator<>(this, 0);
     }
 
+    /**
+     * If the element to added is appeared in originList even if it is not in rootSet,
+     * directly set its index in rootSet to true. (This may change the order of elements.)
+     * 
+     * If the element is not contained in originList, allocate tailList and add to tailList.
+     */
     @Override
     public boolean add(E e) {
-        int index = unmodifiableList.indexOf(e);
+        int index = originList.indexOf(e);
         if (index > -1) {
             rootSet.set(index);
             return true;
         } else {
-            throw new UnsupportedOperationException("BitList only support adding element which is the element of origin list.");
+            if (tailList == null) {
+                tailList = new LinkedList<>();
+            }
+            return tailList.add(e);
         }
     }
 
+    /**
+     * If the element to added is appeared in originList,
+     * directly set its index in rootSet to false. (This may change the order of elements.)
+     * 
+     * If the element is not contained in originList, try to remove from tailList.
+     */
     @Override
     public boolean remove(Object o) {
-        int idx = unmodifiableList.indexOf(o);
+        int idx = originList.indexOf(o);
         if (idx > -1 && rootSet.get(idx)) {
             rootSet.set(idx, false);
             return true;
         }
+        if (CollectionUtils.isNotEmpty(tailList)) {
+            return tailList.remove(o);
+        }
         return false;
     }
 
+    /**
+     * Caution: This operation will clear originList for removing references purpose. 
+     * This may change the default behaviour when adding new element later.
+     */
     @Override
     public void clear() {
         rootSet.clear();
         // to remove references
-        unmodifiableList.clear();
+        originList.clear();
+        if (CollectionUtils.isNotEmpty(tailList)) {
+            tailList.clear();
+        }
     }
 
     @Override
     public E get(int index) {
         int bitIndex = -1;
-        for (int i = 0; i <= index; i++) {
-            bitIndex = rootSet.nextSetBit(bitIndex + 1);
-            if (bitIndex == -1) {
-                return null;
-            }
+        if (index < 0) {
+            throw new IndexOutOfBoundsException();
         }
-        return unmodifiableList.get(bitIndex);
+        if (index >= rootSet.cardinality()) {
+            if (CollectionUtils.isNotEmpty(tailList)) {
+                return tailList.get(index - rootSet.cardinality());
+            } else {
+                throw new IndexOutOfBoundsException();
+            }
+        } else {
+            for (int i = 0; i <= index; i++) {
+                bitIndex = rootSet.nextSetBit(bitIndex + 1);
+            }
+            return originList.get(bitIndex);
+        }
     }
 
     @Override
     public E remove(int index) {
         int bitIndex = -1;
-        for (int i = 0; i <= index; i++) {
-            bitIndex = rootSet.nextSetBit(bitIndex + 1);
-            if (bitIndex == -1) {
-                return null;
+        if (index >= rootSet.cardinality()) {
+            if (CollectionUtils.isNotEmpty(tailList)) {
+                return tailList.remove(index - rootSet.cardinality());
+            } else {
+                throw new IndexOutOfBoundsException();
             }
+        } else {
+            for (int i = 0; i <= index; i++) {
+                bitIndex = rootSet.nextSetBit(bitIndex + 1);
+            }
+            rootSet.set(bitIndex, false);
+            return originList.get(bitIndex);
         }
-        rootSet.set(index, false);
-        return unmodifiableList.get(bitIndex);
     }
 
     @Override
     public int indexOf(Object o) {
         int bitIndex = -1;
-        for (int i = 0; i < size(); i++) {
+        for (int i = 0; i < rootSet.cardinality(); i++) {
             bitIndex = rootSet.nextSetBit(bitIndex + 1);
-            if (unmodifiableList.get(bitIndex).equals(o)) {
+            if (originList.get(bitIndex).equals(o)) {
                 return i;
+            }
+        }
+        if (CollectionUtils.isNotEmpty(tailList)) {
+            int indexInTailList = tailList.indexOf(o);
+            if (indexInTailList != -1) {
+                return indexInTailList + rootSet.cardinality();
+            } else {
+                return -1;
             }
         }
         return -1;
@@ -164,9 +225,15 @@ public class BitList<E> extends AbstractList<E> {
     public int lastIndexOf(Object o) {
         int bitIndex = -1;
         int index = -1;
-        for (int i = 0; i < size(); i++) {
+        if (CollectionUtils.isNotEmpty(tailList)) {
+            int indexInTailList = tailList.lastIndexOf(o);
+            if (indexInTailList > -1) {
+                return indexInTailList + rootSet.cardinality();
+            }
+        }
+        for (int i = 0; i < rootSet.cardinality(); i++) {
             bitIndex = rootSet.nextSetBit(bitIndex + 1);
-            if (unmodifiableList.get(bitIndex).equals(o)) {
+            if (originList.get(bitIndex).equals(o)) {
                 index = i;
             }
         }
@@ -184,52 +251,144 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     @Override
-    public List<E> subList(int fromIndex, int toIndex) {
+    public BitList<E> subList(int fromIndex, int toIndex) {
         BitSet resultSet = (BitSet) rootSet.clone();
+        List<E> copiedTailList = tailList == null ? null : new LinkedList<>(tailList);
+        if (toIndex < size()) {
+            if (toIndex < rootSet.cardinality()) {
+                copiedTailList = null;
+                resultSet.set(toIndex, resultSet.length(), false);
+            } else {
+                copiedTailList = copiedTailList == null ? null : copiedTailList.subList(0, toIndex - rootSet.cardinality());
+            }
+        }
         if (fromIndex > 0) {
-            resultSet.set(0, fromIndex, false);
+            if (fromIndex < rootSet.cardinality()) {
+                resultSet.set(0, fromIndex, false);
+            } else {
+                resultSet.clear();
+                copiedTailList = copiedTailList == null ? null : copiedTailList.subList(fromIndex - rootSet.cardinality(), copiedTailList.size());
+            }
         }
-        if (toIndex < resultSet.length()) {
-            resultSet.set(toIndex, resultSet.length(), false);
-        }
-        return new BitList<>(unmodifiableList, resultSet);
+        return new BitList<>(originList, resultSet, copiedTailList);
     }
 
     public static class BitListIterator<E> implements ListIterator<E> {
         private BitList<E> bitList;
         private int index;
+        private ListIterator<E> tailListIterator;
         private int curBitIndex = -1;
+        private boolean isInTailList = false;
+        private int lastReturnedIndex = -1;
 
         public BitListIterator(BitList<E> bitList, int index) {
             this.bitList = bitList;
             this.index = index - 1;
             for (int i = 0; i < index; i++) {
-                curBitIndex = bitList.rootSet.nextSetBit(curBitIndex + 1);
+                if (!isInTailList) {
+                    curBitIndex = bitList.rootSet.nextSetBit(curBitIndex + 1);
+                    if (curBitIndex == -1) {
+                        if (CollectionUtils.isNotEmpty(bitList.tailList)) {
+                            isInTailList = true;
+                            tailListIterator = bitList.tailList.listIterator();
+                            tailListIterator.next();
+                        } else {
+                            break;
+                        }
+                    }
+                } else {
+                    tailListIterator.next();
+                }
             }
         }
 
         @Override
         public boolean hasNext() {
-            return -1 != bitList.rootSet.nextSetBit(curBitIndex + 1);
+            if (isInTailList) {
+                return tailListIterator.hasNext();
+            } else {
+                int nextBit = bitList.rootSet.nextSetBit(curBitIndex + 1);
+                if (nextBit == -1) {
+                    return bitList.hasMoreElementInTailList();
+                } else {
+                    return true;
+                }
+            }
         }
 
         @Override
         public E next() {
-            curBitIndex = bitList.rootSet.nextSetBit(curBitIndex + 1);
-            index += 1;
-            return bitList.unmodifiableList.get(curBitIndex);
+            if (isInTailList) {
+                if (tailListIterator.hasNext()) {
+                    index += 1;
+                    lastReturnedIndex = index;
+                }
+                return tailListIterator.next();
+            } else {
+                int nextBitIndex = bitList.rootSet.nextSetBit(curBitIndex + 1);
+                if (nextBitIndex == -1) {
+                    if (bitList.hasMoreElementInTailList()) {
+                        tailListIterator = bitList.tailList.listIterator();
+                        isInTailList = true;
+                        index += 1;
+                        lastReturnedIndex = index;
+                        return tailListIterator.next();
+                    } else {
+                        throw new NoSuchElementException();
+                    }
+                } else {
+                    index += 1;
+                    lastReturnedIndex = index;
+                    curBitIndex = nextBitIndex;
+                    return bitList.originList.get(nextBitIndex);
+                }
+            }
         }
 
         @Override
         public boolean hasPrevious() {
-            return curBitIndex != -1 && bitList.rootSet.previousSetBit(curBitIndex - 1) > -1;
+            if (isInTailList) {
+                boolean hasPreviousInTailList = tailListIterator.hasPrevious();
+                if (hasPreviousInTailList) {
+                    return true;
+                } else {
+                    return bitList.rootSet.previousSetBit(bitList.rootSet.size()) != -1;
+                }
+            } else {
+                return curBitIndex != -1;
+            }
         }
 
         @Override
         public E previous() {
-            curBitIndex = bitList.rootSet.previousSetBit(curBitIndex - 1);
-            index -= 1;
-            return bitList.unmodifiableList.get(curBitIndex);
+            if (isInTailList) {
+                boolean hasPreviousInTailList = tailListIterator.hasPrevious();
+                if (hasPreviousInTailList) {
+                    lastReturnedIndex = index;
+                    index -= 1;
+                    return tailListIterator.previous();
+                } else {
+                    int lastIndexInBit = bitList.rootSet.previousSetBit(bitList.rootSet.size());
+                    if (lastIndexInBit == -1) {
+                        throw new NoSuchElementException();
+                    } else {
+                        isInTailList = false;
+                        curBitIndex = bitList.rootSet.previousSetBit(lastIndexInBit - 1);
+                        lastReturnedIndex = index;
+                        index -= 1;
+                        return bitList.originList.get(lastIndexInBit);
+                    }
+                }
+            } else {
+                if (curBitIndex == -1) {
+                    throw new NoSuchElementException();
+                }
+                int nextBitIndex = curBitIndex;
+                curBitIndex = bitList.rootSet.previousSetBit(curBitIndex - 1);
+                lastReturnedIndex = index;
+                index -= 1;
+                return bitList.originList.get(nextBitIndex);
+            }
         }
 
         @Override
@@ -239,12 +398,27 @@ public class BitList<E> extends AbstractList<E> {
 
         @Override
         public int previousIndex() {
-            return hasPrevious() ? index - 1: index;
+            return index;
         }
 
         @Override
         public void remove() {
-            bitList.rootSet.set(curBitIndex, false);
+            if (lastReturnedIndex == -1) {
+                throw new IllegalStateException();
+            } else {
+                if (lastReturnedIndex >= bitList.rootSet.cardinality()) {
+                    tailListIterator.remove();
+                } else {
+                    int bitIndex = -1;
+                    for (int i = 0; i <= lastReturnedIndex; i++) {
+                        bitIndex = bitList.rootSet.nextSetBit(bitIndex + 1);
+                    }
+                    bitList.rootSet.set(bitIndex, false);
+                }
+            }
+            if (lastReturnedIndex <= index) {
+                index -= 1;
+            }
         }
 
         @Override
@@ -260,6 +434,6 @@ public class BitList<E> extends AbstractList<E> {
 
     @Override
     public BitList<E> clone() {
-        return new BitList<>(unmodifiableList, (BitSet) rootSet.clone());
+        return new BitList<>(originList, (BitSet) rootSet.clone(), tailList == null ? null : new LinkedList<>(tailList));
     }
 }

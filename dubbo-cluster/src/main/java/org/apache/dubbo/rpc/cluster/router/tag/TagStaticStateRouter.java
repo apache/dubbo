@@ -67,7 +67,7 @@ public class TagStaticStateRouter extends AbstractStateRouter {
         if (res == null) {
             return invokers;
         }
-        return invokers.intersect(res, invokers.getUnmodifiableList());
+        return invokers.and(res);
     }
 
     private boolean isNoTag(String tag) {
