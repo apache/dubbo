@@ -41,18 +41,18 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
     }
 
     @Override
-    protected TransportObserver createTransportObserver() {
+    protected InboundTransportObserver createInboundTransportObserver() {
         return new UnaryServerTransportObserver();
     }
 
-    private class UnaryServerTransportObserver extends UnaryTransportObserver implements TransportObserver {
+    private class UnaryServerTransportObserver extends ServerUnaryInboundTransportObserver implements TransportObserver {
         @Override
-        protected void onError(GrpcStatus status) {
+        public void onError(GrpcStatus status) {
             transportError(status);
         }
 
         @Override
-        public void doOnComplete() {
+        public void onComplete() {
             if (getData() != null) {
                 invoke();
             } else {
@@ -82,15 +82,16 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     return;
                 }
                 Metadata metadata = createResponseMeta();
-                getTransportSubscriber().onMetadata(metadata, false);
+                outboundTransportObserver().onMetadata(metadata, false);
                 final byte[] data = encodeResponse(response.getValue());
                 if (data == null) {
+                    // already handled in encodeResponse()
                     return;
                 }
-                getTransportSubscriber().onData(data, false);
-                Metadata trailers = TripleConstant.SUCCESS_RESPONSE_META;
+                outboundTransportObserver().onData(data, false);
+                Metadata trailers = TripleConstant.getSuccessResponseMeta();
                 convertAttachment(trailers, response.getObjectAttachments());
-                getTransportSubscriber().onMetadata(trailers, true);
+                outboundTransportObserver().onMetadata(trailers, true);
             });
             RpcContext.removeContext();
         }

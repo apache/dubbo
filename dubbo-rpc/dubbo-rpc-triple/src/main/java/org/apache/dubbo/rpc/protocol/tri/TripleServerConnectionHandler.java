@@ -26,10 +26,25 @@ import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2PingFrame;
 import io.netty.util.ReferenceCountUtil;
 
+import java.io.IOException;
+import java.net.SocketException;
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.apache.dubbo.rpc.protocol.tri.GracefulShutdown.GRACEFUL_SHUTDOWN_PING;
 
 public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(TripleServerConnectionHandler.class);
+    // Some exceptions are not very useful and add too much noise to the log
+    private static final Set<String> QUIET_EXCEPTIONS = new HashSet<>();
+    private static final Set<Class<?>> QUIET_EXCEPTIONS_CLASS = new HashSet<>();
+
+    static {
+        QUIET_EXCEPTIONS.add("NativeIoException");
+        QUIET_EXCEPTIONS_CLASS.add(IOException.class);
+        QUIET_EXCEPTIONS_CLASS.add(SocketException.class);
+    }
+
     private GracefulShutdown gracefulShutdown;
 
     @Override
@@ -50,6 +65,13 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
         }
     }
 
+    private boolean isQuiteException(Throwable t) {
+        if (QUIET_EXCEPTIONS_CLASS.contains(t.getClass())) {
+            return true;
+        }
+        return QUIET_EXCEPTIONS.contains(t.getClass().getSimpleName());
+    }
+
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         super.userEventTriggered(ctx, evt);
@@ -58,7 +80,7 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         // this may be change in future follow https://github.com/apache/dubbo/pull/8644
-        if (TripleUtil.isQuiteException(cause)) {
+        if (isQuiteException(cause)) {
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("Channel:%s Error", ctx.channel()), cause);
             }

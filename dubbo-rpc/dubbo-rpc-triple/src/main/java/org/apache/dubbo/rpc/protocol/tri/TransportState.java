@@ -17,25 +17,21 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+/**
+ * A state for recording stream
+ * A normal state transition :
+ * Meta -> (EndStream) -> Data -> (EndStream) -> (Rst)
+ */
 public class TransportState {
 
-    private volatile int state = 0;
     private static final int META_SEND = 0b00000000000000000000000000000001;
     private static final int RESET_SEND = 0b00000000000000000000000000000010;
     private static final int END_STREAM_SEND = 0b00000000000000000000000000000100;
     private static final int SERVER_SEND_STREAM_RECEIVED = 0b00000000000000000000000000001000;
-
     private static final int ALLOW_META_SEND = 0b00000000000000000000000000000000;
     private static final int ALLOW_DATA_SEND = META_SEND;
     private static final int ALLOW_END_STREAM_SEND = META_SEND;
-    private static final int ALLOW_RESET_SEND = 0b00000000000000000000000000000001;
-
-    public TransportState() {
-    }
-
-    public void setState(int state) {
-        this.state = state;
-    }
+    private volatile int state = 0;
 
     public void setMetaSend() {
         this.state = this.state | META_SEND;

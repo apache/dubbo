@@ -203,7 +203,7 @@ public class MetadataInfo implements Serializable {
         if (serviceInfo == null) {
             return null;
         }
-        return serviceInfo.toString();
+        return serviceInfo.toFullString();
     }
 
     @Override
@@ -233,8 +233,25 @@ public class MetadataInfo implements Serializable {
         return "metadata{" +
             "app='" + app + "'," +
             "revision='" + revision + "'," +
+            "size=" + (services == null ? 0 : services.size()) + "," +
+            "services=" + getSimplifiedServices(services) +
+            "}";
+    }
+
+    public String toFullString() {
+        return "metadata{" +
+            "app='" + app + "'," +
+            "revision='" + revision + "'," +
             "services=" + services +
             "}";
+    }
+
+    private String getSimplifiedServices(Map<String, ServiceInfo> services) {
+        if (services == null) {
+            return "[]";
+        }
+
+        return services.keySet().toString();
     }
 
     public static class ServiceInfo implements Serializable {
@@ -518,13 +535,16 @@ public class MetadataInfo implements Serializable {
 
         @Override
         public String toString() {
+            return getMatchKey();
+        }
+
+        public String toFullString() {
             return "service{" +
                 "name='" + name + "'," +
                 "group='" + group + "'," +
                 "version='" + version + "'," +
                 "protocol='" + protocol + "'," +
                 "params=" + params + "," +
-                "consumerParams=" + consumerParams +
                 "}";
         }
     }

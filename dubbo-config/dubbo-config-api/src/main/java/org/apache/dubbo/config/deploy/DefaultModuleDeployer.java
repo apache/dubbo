@@ -19,6 +19,7 @@ package org.apache.dubbo.config.deploy;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployListener;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.logger.Logger;
@@ -72,6 +73,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private Boolean background;
     private Boolean exportAsync;
     private Boolean referAsync;
+    private CompletableFuture<?> exportFuture;
+    private CompletableFuture<?> referFuture;
 
 
     public DefaultModuleDeployer(ModuleModel moduleModel) {
@@ -122,23 +125,26 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     @Override
     public synchronized Future start() throws IllegalStateException {
+        if (isStopping() || isStopped() || isFailed()) {
+            throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
+        }
+
         if (isStarting() || isStarted()) {
             return startFuture;
         }
 
         onModuleStarting();
-        startFuture = new CompletableFuture();
-
-        applicationDeployer.initialize();
 
         // initialize
+        applicationDeployer.initialize();
         initialize();
 
         // export services
         exportServices();
 
         // prepare application instance
-        if (hasExportedServices()) {
+        // exclude internal module to avoid wait itself
+        if (moduleModel != moduleModel.getApplicationModel().getInternalModule()) {
             applicationDeployer.prepareApplicationInstance();
         }
 
@@ -146,16 +152,23 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
         referServices();
 
         executorRepository.getSharedExecutor().submit(() -> {
-
-            // wait for export finish
-            waitExportFinish();
-
-            // wait for refer finish
-            waitReferFinish();
-
-            onModuleStarted(startFuture);
+            try {
+                // wait for export finish
+                waitExportFinish();
+                // wait for refer finish
+                waitReferFinish();
+            } catch (Throwable e) {
+                logger.warn("wait for export/refer services occurred an exception", e);
+            } finally {
+                onModuleStarted();
+            }
         });
 
+        return startFuture;
+    }
+
+    @Override
+    public Future getStartFuture() {
         return startFuture;
     }
 
@@ -219,26 +232,54 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     private void onModuleStarting() {
         setStarting();
+        startFuture = new CompletableFuture();
         logger.info(getIdentifier() + " is starting.");
-        applicationDeployer.checkStarting();
+        applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTING);
     }
 
-    private void onModuleStarted(CompletableFuture startFuture) {
-        setStarted();
-        logger.info(getIdentifier() + " has started.");
-        applicationDeployer.checkStarted();
-        // complete module start future after application state changed, fix #9012 ?
-        startFuture.complete(true);
+    private void onModuleStarted() {
+        try {
+            if (isStarting()) {
+                setStarted();
+                logger.info(getIdentifier() + " has started.");
+                applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STARTED);
+            }
+        } finally {
+            // complete module start future after application state changed
+            completeStartFuture(true);
+        }
+    }
+
+    private void completeStartFuture(boolean value) {
+        if (startFuture != null && !startFuture.isDone()) {
+            startFuture.complete(value);
+        }
+        if (exportFuture != null && !exportFuture.isDone()) {
+            exportFuture.cancel(true);
+        }
+        if (referFuture != null && !referFuture.isDone()) {
+            referFuture.cancel(true);
+        }
     }
 
     private void onModuleStopping() {
-        setStopping();
-        logger.info(getIdentifier() + " is stopping.");
+        try {
+            setStopping();
+            logger.info(getIdentifier() + " is stopping.");
+            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STOPPING);
+        } finally {
+            completeStartFuture(false);
+        }
     }
 
     private void onModuleStopped() {
-        setStopped();
-        logger.info(getIdentifier() + " has stopped.");
+        try {
+            setStopped();
+            logger.info(getIdentifier() + " has stopped.");
+            applicationDeployer.notifyModuleChanged(moduleModel, DeployState.STOPPED);
+        } finally {
+            completeStartFuture(false);
+        }
     }
 
     private void loadConfigs() {
@@ -266,7 +307,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
                     if (!sc.isExported()) {
-                        sc.exportOnly();
+                        sc.export();
                         exportedServices.add(sc);
                     }
                 } catch (Throwable t) {
@@ -277,7 +318,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             asyncExportingFutures.add(future);
         } else {
             if (!sc.isExported()) {
-                sc.exportOnly();
+                sc.export();
                 exportedServices.add(sc);
             }
         }
@@ -349,10 +390,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void waitExportFinish() {
         try {
             logger.info(getIdentifier() + " waiting services exporting ...");
-            CompletableFuture<?> future = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
-            future.get();
-        } catch (Exception e) {
-            logger.warn(getIdentifier() + " export services occurred an exception.");
+            exportFuture = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
+            exportFuture.get();
+        } catch (Throwable e) {
+            logger.warn(getIdentifier() + " export services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " export services finished.");
             asyncExportingFutures.clear();
@@ -362,10 +403,10 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private void waitReferFinish() {
         try {
             logger.info(getIdentifier() + " waiting services referring ...");
-            CompletableFuture<?> future = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
-            future.get();
-        } catch (Exception e) {
-            logger.warn(getIdentifier() + " refer services occurred an exception.");
+            referFuture = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
+            referFuture.get();
+        } catch (Throwable e) {
+            logger.warn(getIdentifier() + " refer services occurred an exception: " + e.toString());
         } finally {
             logger.info(getIdentifier() + " refer services finished.");
             asyncReferringFutures.clear();
@@ -395,7 +436,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             .isPresent();
     }
 
-    private String getIdentifier() {
+    public String getIdentifier() {
         if (identifier == null) {
             identifier = "Dubbo module[" + moduleModel.getInternalId() + "]";
             if (moduleModel.getModelName() != null
@@ -418,14 +459,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     public void prepare() {
         applicationDeployer.initialize();
         this.initialize();
-    }
-
-    /**
-     * After export one service, trigger starting application
-     */
-    @Override
-    public void notifyExportService(ServiceConfigBase<?> sc) {
-        applicationDeployer.prepareApplicationInstance();
     }
 
 }

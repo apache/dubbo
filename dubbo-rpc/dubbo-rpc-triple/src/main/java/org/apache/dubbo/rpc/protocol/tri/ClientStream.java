@@ -31,8 +31,8 @@ public class ClientStream extends AbstractClientStream implements Stream {
     }
 
     @Override
-    protected TransportObserver createTransportObserver() {
-        return new ClientTransportObserverImpl();
+    protected InboundTransportObserver createInboundTransportObserver() {
+        return new ClientStreamInboundTransportObserverImpl();
     }
 
     @Override
@@ -47,8 +47,8 @@ public class ClientStream extends AbstractClientStream implements Stream {
         StreamObserver<Object> obServer = (StreamObserver<Object>) getRpcInvocation().getArguments()[1];
         obServer = attachCancelContext(obServer, getCancellationContext());
         subscribe(obServer);
-        asStreamObserver().onNext(getRpcInvocation().getArguments()[0]);
-        asStreamObserver().onCompleted();
+        inboundMessageObserver().onNext(getRpcInvocation().getArguments()[0]);
+        inboundMessageObserver().onCompleted();
         return new AppResponse();
     }
 
@@ -56,7 +56,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
         StreamObserver<Object> obServer = (StreamObserver<Object>) getRpcInvocation().getArguments()[0];
         obServer = attachCancelContext(obServer, getCancellationContext());
         subscribe(obServer);
-        return new AppResponse(asStreamObserver());
+        return new AppResponse(inboundMessageObserver());
     }
 
     private <T> StreamObserver<T> attachCancelContext(StreamObserver<T> observer, CancellationContext context) {
@@ -68,7 +68,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
         return observer;
     }
 
-    private class ClientTransportObserverImpl extends AbstractTransportObserver {
+    private class ClientStreamInboundTransportObserverImpl extends InboundTransportObserver {
 
         private boolean error = false;
 
@@ -77,11 +77,16 @@ public class ClientStream extends AbstractClientStream implements Stream {
             execute(() -> {
                 try {
                     final Object resp = deserializeResponse(data);
-                    getStreamSubscriber().onNext(resp);
+                    outboundMessageSubscriber().onNext(resp);
                 } catch (Throwable throwable) {
                     onError(throwable);
                 }
             });
+        }
+
+        @Override
+        public void onError(GrpcStatus status) {
+            onError(status.asException());
         }
 
         @Override
@@ -90,7 +95,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
                 getState().setServerEndStreamReceived();
                 final GrpcStatus status = extractStatusFromMeta(getHeaders());
                 if (GrpcStatus.Code.isOk(status.code.code)) {
-                    getStreamSubscriber().onCompleted();
+                    outboundMessageSubscriber().onCompleted();
                 } else {
                     onError(status.cause);
                 }
@@ -105,7 +110,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
             if (!getState().serverSendStreamReceived()) {
                 cancel(throwable);
             }
-            getStreamSubscriber().onError(throwable);
+            outboundMessageSubscriber().onError(throwable);
         }
     }
 }

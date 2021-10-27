@@ -206,8 +206,10 @@ public class ApplicationModel extends ScopeModel {
         frameworkModel.addApplication(this);
         initialize();
         // bind to default instance if absent
-        if (!isInternal && defaultInstance == null) {
-            defaultInstance = this;
+        synchronized (ApplicationModel.class) {
+            if (!isInternal && defaultInstance == null) {
+                defaultInstance = this;
+            }
         }
     }
 
@@ -241,7 +243,20 @@ public class ApplicationModel extends ScopeModel {
 
     @Override
     protected void onDestroy() {
+        // 1. remove from frameworkModel
+        if (defaultInstance == this) {
+            synchronized (ApplicationModel.class) {
+                frameworkModel.removeApplication(this);
+                defaultInstance = null;
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Reset default Dubbo application[" + getInternalId() + "] to null ...");
+                }
+            }
+        } else {
+            frameworkModel.removeApplication(this);
+        }
 
+        // 2. pre-destroy, set stopping
         if (deployer != null) {
             deployer.preDestroy();
         }
@@ -255,18 +270,7 @@ public class ApplicationModel extends ScopeModel {
         // destroy internal module later
         internalModule.destroy();
 
-        if (defaultInstance == this) {
-            synchronized (ApplicationModel.class) {
-                frameworkModel.removeApplication(this);
-                defaultInstance = null;
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("Reset default Dubbo application[" + getInternalId() + "] to null ...");
-                }
-            }
-        } else {
-            frameworkModel.removeApplication(this);
-        }
-
+        // post-destroy, release registry resources
         if (deployer != null) {
             deployer.postDestroy();
         }
@@ -286,7 +290,8 @@ public class ApplicationModel extends ScopeModel {
             serviceRepository.destroy();
             serviceRepository = null;
         }
-        // try destroy framework if no any application
+
+        // destroy framework if none application
         frameworkModel.tryDestroy();
     }
 

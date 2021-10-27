@@ -550,7 +550,7 @@ public class RpcContext {
      * @return context
      */
     public RpcContext setAttachment(String key, String value) {
-        return setObjectAttachment(key, (Object) value);
+        return setObjectAttachment(key, value);
     }
 
     public RpcContext setAttachment(String key, Object value) {

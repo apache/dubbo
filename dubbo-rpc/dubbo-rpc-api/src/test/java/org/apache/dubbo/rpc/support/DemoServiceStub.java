@@ -14,20 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.support;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+public class DemoServiceStub extends DemoServiceImpl{
+    private DemoService demoService;
 
-public class TripleClientInboundHandler extends ChannelInboundHandlerAdapter {
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
+    public DemoServiceStub(DemoService demoService) {
+        this.demoService = demoService;
+    }
 
-        final byte[] data = (byte[]) msg;
-        if (clientStream != null) {
-            clientStream.inboundTransportObserver()
-                .onData(data, false);
-        }
+    public DemoService getDemoService() {
+        return demoService;
     }
 }
