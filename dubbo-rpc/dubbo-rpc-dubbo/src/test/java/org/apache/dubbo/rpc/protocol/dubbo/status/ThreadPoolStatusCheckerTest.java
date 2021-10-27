@@ -47,6 +47,8 @@ public class ThreadPoolStatusCheckerTest {
                 + "Pool status:OK, max:10, core:10, largest:0, active:0, task:0, service port: 8889");
 
         // reset
+        executorService1.shutdown();
+        executorService2.shutdown();
         dataStore.remove(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8888");
         dataStore.remove(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, "8889");
     }
