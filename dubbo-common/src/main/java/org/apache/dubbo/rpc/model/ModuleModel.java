@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.ModuleEnvironment;
 import org.apache.dubbo.common.context.ModuleExt;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
@@ -55,6 +57,12 @@ public class ModuleModel extends ScopeModel {
         Assert.notNull(serviceRepository, "ModuleServiceRepository can not be null");
         Assert.notNull(moduleConfigManager, "ModuleConfigManager can not be null");
         Assert.assertTrue(moduleConfigManager.isInitialized(), "ModuleConfigManager can not be initialized");
+
+        // notify application check state
+        ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
+        if (applicationDeployer != null) {
+            applicationDeployer.notifyModuleChanged(this, DeployState.PENDING);
+        }
     }
 
     @Override
@@ -82,12 +90,15 @@ public class ModuleModel extends ScopeModel {
 
     @Override
     protected void onDestroy() {
+        // 1. remove from applicationModel
+        applicationModel.removeModule(this);
+
+        // 2. set stopping
         if (deployer != null) {
             deployer.preDestroy();
         }
 
-        applicationModel.removeModule(this);
-
+        // 3. release services
         if (deployer != null) {
             deployer.postDestroy();
         }
@@ -104,6 +115,8 @@ public class ModuleModel extends ScopeModel {
             moduleEnvironment.destroy();
             moduleEnvironment = null;
         }
+
+        // destroy application if none pub module
         applicationModel.tryDestroy();
     }
 

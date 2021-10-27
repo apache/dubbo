@@ -17,13 +17,13 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.Experimental;
+import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class RpcContextAttachment extends RpcContext{
     protected final Map<String, Object> attachments = new HashMap<>();
-    private final Map<String, Object> values = new HashMap<String, Object>();
 
     protected RpcContextAttachment() {
     }
@@ -142,7 +142,7 @@ public class RpcContextAttachment extends RpcContext{
     @Experimental("Experiment api for supporting Object transmission")
     public RpcContextAttachment setObjectAttachments(Map<String, Object> attachment) {
         this.attachments.clear();
-        if (attachment != null && attachment.size() > 0) {
+        if (CollectionUtils.isNotEmptyMap(attachment)) {
             this.attachments.putAll(attachment);
         }
         return this;

@@ -35,8 +35,8 @@ public class ServerStream extends AbstractServerStream implements Stream {
     }
 
     @Override
-    protected TransportObserver createTransportObserver() {
-        return new StreamTransportObserver();
+    protected InboundTransportObserver createInboundTransportObserver() {
+        return new ServerStreamInboundTransportObserver();
     }
 
     private class ServerStreamObserverImpl implements ServerStreamObserver<Object> {
@@ -44,14 +44,14 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onNext(Object data) {
             if (getState().allowSendMeta()) {
-                getTransportSubscriber().onMetadata(createResponseMeta(), false);
+                outboundTransportObserver().onMetadata(createResponseMeta(), false);
             }
             final byte[] bytes = encodeResponse(data);
             if (bytes == null) {
                 return;
             }
             if (getState().allowSendData()) {
-                getTransportSubscriber().onData(bytes, false);
+                outboundTransportObserver().onData(bytes, false);
             }
         }
 
@@ -71,7 +71,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
             if (!getState().allowSendEndStream()) {
                 return;
             }
-            getTransportSubscriber().onMetadata(TripleConstant.SUCCESS_RESPONSE_META, true);
+            outboundTransportObserver().onMetadata(TripleConstant.SUCCESS_RESPONSE_META, true);
         }
 
         @Override
@@ -87,7 +87,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         }
     }
 
-    private class StreamTransportObserver extends AbstractTransportObserver implements TransportObserver {
+    private class ServerStreamInboundTransportObserver extends InboundTransportObserver implements TransportObserver {
 
         /**
          * for server stream the method only save header
@@ -114,7 +114,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
                 try {
                     RpcContext.restoreCancellationContext(getCancellationContext());
                     final RpcInvocation inv = buildInvocation(metadata);
-                    inv.setArguments(new Object[]{asStreamObserver()});
+                    inv.setArguments(new Object[]{inboundMessageObserver()});
                     final Result result = getInvoker().invoke(inv);
                     if (result.hasException()) {
                         transportError(GrpcStatus.getStatus(result.getException()));
@@ -137,7 +137,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         public void onData(byte[] in, boolean endStream) {
             execute(() -> {
                 try {
-                    if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                    if (getMethodDescriptor().isServerStream()) {
                         serverStreamOnData(in);
                         return;
                     }
@@ -151,12 +151,19 @@ public class ServerStream extends AbstractServerStream implements Stream {
         }
 
         /**
+         * This method should not be called for a while
+         */
+        @Override
+        public void onError(GrpcStatus status) {
+        }
+
+        /**
          * call observer onNext
          */
         private void biStreamOnData(byte[] in) {
             final Object[] arguments = deserializeRequest(in);
             if (arguments != null) {
-                getStreamSubscriber().onNext(arguments[0]);
+                outboundMessageSubscriber().onNext(arguments[0]);
             }
         }
 
@@ -177,7 +184,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
                 RpcInvocation inv = buildInvocation(getHeaders());
                 final Object[] arguments = deserializeRequest(in);
                 if (arguments != null) {
-                    inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
+                    inv.setArguments(new Object[]{arguments[0], inboundMessageObserver()});
                     final Result result = getInvoker().invoke(inv);
                     if (result.hasException()) {
                         transportError(GrpcStatus.getStatus(result.getException()));
@@ -195,12 +202,10 @@ public class ServerStream extends AbstractServerStream implements Stream {
          */
         @Override
         public void onComplete() {
-            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+            if (getMethodDescriptor().isServerStream()) {
                 return;
             }
-            execute(() -> {
-                getStreamSubscriber().onCompleted();
-            });
+            execute(() -> outboundMessageSubscriber().onCompleted());
         }
     }
 }

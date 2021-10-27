@@ -497,4 +497,6 @@ public interface CommonConstants {
     int DEFAULT_RESELECT_COUNT = 10;
 
     String ENABLE_CONNECTIVITY_VALIDATION = "dubbo.connectivity.validation";
+
+    String DUBBO_INTERNAL_APPLICATION = "DUBBO_INTERNAL_APPLICATION";
 }
