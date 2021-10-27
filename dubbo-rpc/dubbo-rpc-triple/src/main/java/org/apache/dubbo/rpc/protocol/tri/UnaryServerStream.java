@@ -62,13 +62,23 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         }
 
         public void invoke() {
-            // For wrapper overload methods, the methodDescriptor needs to get from data, so parse the request first
-            final Object[] arguments = deserializeRequest(getData());
-            RpcInvocation invocation = buildInvocation(getHeaders());
-            if (arguments == null) {
-                return;
+            RpcInvocation invocation;
+            if (getMethodDescriptor().isNeedWrap()) {
+                // For wrapper overload methods, the methodDescriptor needs to get from data, so parse the request first
+                final Object[] arguments = deserializeRequest(getData());
+                invocation = buildInvocation(getHeaders());
+                if (arguments == null) {
+                    return;
+                }
+                invocation.setArguments(arguments);
+            } else {
+                invocation = buildInvocation(getHeaders());
+                final Object[] arguments = deserializeRequest(getData());
+                if (arguments == null) {
+                    return;
+                }
+                invocation.setArguments(arguments);
             }
-            invocation.setArguments(arguments);
             final Result result = getInvoker().invoke(invocation);
             CompletionStage<Object> future = result.thenApply(Function.identity());
             future.whenComplete((o, throwable) -> {
