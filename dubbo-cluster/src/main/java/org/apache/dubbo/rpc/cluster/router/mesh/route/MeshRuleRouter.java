@@ -113,7 +113,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
                     subset = dubboDestination.getSubset();
                 } while (true);
 
-                return null;
+                return new RouterResult<>(null);
             }
         }
 

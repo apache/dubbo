@@ -88,7 +88,7 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
 
         // We will check enabled status inside each router.
         for (Router router : conditionRouters) {
-            invokers = router.route(invokers, url, invocation);
+            invokers = router.route(invokers, url, invocation, needToPrintMessage).getResult();
         }
 
         return new RouterResult<>(invokers);
