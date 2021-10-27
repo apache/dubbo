@@ -53,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CommandHelperTest {
     private CommandHelper commandHelper = new CommandHelper(FrameworkModel.defaultModel());
+
     @Test
     public void testHasCommand() throws Exception {
         assertTrue(commandHelper.hasCommand("greeting"));

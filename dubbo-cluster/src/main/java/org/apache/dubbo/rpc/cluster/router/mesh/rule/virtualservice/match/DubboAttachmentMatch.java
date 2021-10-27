@@ -41,27 +41,22 @@ public class DubboAttachmentMatch {
     }
 
     public static boolean isMatch(DubboAttachmentMatch dubboAttachmentMatch, Map<String, String> eagleeyeContext, Map<String, String> dubboContext) {
-        if (dubboAttachmentMatch.getDubbocontext() != null) {
-            for (Map.Entry<String, StringMatch> stringStringMatchEntry : dubboAttachmentMatch.getDubbocontext().entrySet()) {
-                String key = stringStringMatchEntry.getKey();
-                StringMatch stringMatch = stringStringMatchEntry.getValue();
+        boolean result = isMatch(dubboAttachmentMatch.getDubbocontext(), dubboContext);
 
-                String dubboContextValue = dubboContext.get(key);
-                if (dubboContextValue == null) {
-                    return false;
-                }
-                if (!StringMatch.isMatch(stringMatch, dubboContextValue)) {
-                    return false;
-                }
-            }
+        if (result) {
+            result = isMatch(dubboAttachmentMatch.getEagleeyecontext(), eagleeyeContext);
         }
 
-        if (dubboAttachmentMatch.getEagleeyecontext() != null) {
-            for (Map.Entry<String, StringMatch> stringStringMatchEntry : dubboAttachmentMatch.getEagleeyecontext().entrySet()) {
+        return result;
+    }
+
+    private static boolean isMatch(Map<String, StringMatch> map, Map<String, String> input) {
+        if (map != null) {
+            for (Map.Entry<String, StringMatch> stringStringMatchEntry : map.entrySet()) {
                 String key = stringStringMatchEntry.getKey();
                 StringMatch stringMatch = stringStringMatchEntry.getValue();
 
-                String eagleeyeContextValue = eagleeyeContext.get(key);
+                String eagleeyeContextValue = input.get(key);
                 if (eagleeyeContextValue == null) {
                     return false;
                 }
@@ -70,7 +65,6 @@ public class DubboAttachmentMatch {
                 }
             }
         }
-
         return true;
     }
 }

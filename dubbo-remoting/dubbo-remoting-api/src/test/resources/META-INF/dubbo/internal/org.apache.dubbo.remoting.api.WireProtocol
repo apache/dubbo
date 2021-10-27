@@ -1,1 +1,2 @@
 empty=org.apache.dubbo.remoting.api.EmptyProtocol
+tri=org.apache.dubbo.remoting.api.EmptyProtocol

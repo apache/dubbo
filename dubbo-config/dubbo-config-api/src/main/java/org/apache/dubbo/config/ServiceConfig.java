@@ -23,11 +23,11 @@ import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
@@ -57,8 +57,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -107,11 +105,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * A random port cache, the different protocols who has no port specified have different random port
      */
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
-
-    /**
-     * A delayed exposure service timer
-     */
-    private static final ScheduledExecutorService DELAY_EXPORT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
 
     private Protocol protocolSPI;
 
@@ -259,13 +252,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     protected void doDelayExport() {
-        DELAY_EXPORT_EXECUTOR.schedule(() -> {
-            try {
-                doExport();
-            } catch (Exception e) {
-                logger.error("Failed to export service config: " + interfaceName, e);
-            }
-        }, getDelay(), TimeUnit.MILLISECONDS);
+        getScopeModel().getDefaultExtension(ExecutorRepository.class).getServiceExportExecutor()
+            .schedule(() -> {
+                try {
+                    doExport();
+                } catch (Exception e) {
+                    logger.error("Failed to export service config: " + interfaceName, e);
+                }
+            }, getDelay(), TimeUnit.MILLISECONDS);
     }
 
     protected void exported() {
@@ -323,7 +317,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            //checkInterfaceAndMethods(interfaceClass, getMethods());
             checkRef();
             generic = Boolean.FALSE.toString();
         }

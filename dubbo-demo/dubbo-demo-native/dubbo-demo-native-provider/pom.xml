@@ -28,6 +28,9 @@
 
     <artifactId>dubbo-demo-native-provider</artifactId>
 
+    <properties>
+        <skip_maven_deploy>true</skip_maven_deploy>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -59,11 +62,17 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-hessian2</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-native</artifactId>
-            <version>${project.version}</version>
+            <artifactId>dubbo-filter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-registry-xds</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-filter-validation</artifactId>
         </dependency>
 
     </dependencies>
@@ -89,7 +98,19 @@
 
             <build>
                 <plugins>
-
+                    <plugin>
+                        <groupId>org.apache.dubbo</groupId>
+                        <artifactId>dubbo-native-plugin</artifactId>
+                        <version>${revision}</version>
+                        <executions>
+                            <execution>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
@@ -128,6 +149,7 @@
                                 --no-fallback
 
                                 --initialize-at-build-time=org.slf4j.MDC
+                                --initialize-at-build-time=org.apache.log4j.MDC
                                 --initialize-at-build-time=org.slf4j.LoggerFactory
                                 --initialize-at-build-time=org.slf4j.impl.StaticLoggerBinder
                                 --initialize-at-build-time=org.apache.log4j.helpers.Loader
@@ -138,7 +160,7 @@
                                 --initialize-at-build-time=org.slf4j.impl.Log4jLoggerFactory
                                 --initialize-at-build-time=org.slf4j.impl.Log4jLoggerAdapter
                                 --initialize-at-build-time=org.eclipse.collections.api.factory.Sets
-
+                                --initialize-at-build-time=io.netty.util.internal.logging.Log4JLogger
 
 
                                 --initialize-at-run-time=io.netty.channel.epoll.Epoll
@@ -152,7 +174,6 @@
                                 --initialize-at-run-time=io.netty.channel.unix.Errors
                                 --initialize-at-run-time=io.netty.channel.unix.IovArray
                                 --initialize-at-run-time=io.netty.channel.unix.Limits
-                                --initialize-at-run-time=io.netty.util.internal.logging.Log4JLogger
                                 --initialize-at-run-time=io.netty.channel.unix.Socket
                                 --initialize-at-run-time=io.netty.channel.ChannelHandlerMask
 

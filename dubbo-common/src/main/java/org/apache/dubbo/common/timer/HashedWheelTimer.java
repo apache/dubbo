@@ -36,6 +36,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.common.constants.CommonConstants.OS_NAME_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.OS_WIN_PREFIX;
+
 /**
  * A {@link Timer} optimized for approximated I/O timeout scheduling.
  *
@@ -806,7 +809,7 @@ public class HashedWheelTimer implements Timer {
         }
     }
     
-    private static final boolean IS_OS_WINDOWS = System.getProperty("os.name", "").toLowerCase(Locale.US).contains("win");
+    private static final boolean IS_OS_WINDOWS = System.getProperty(OS_NAME_KEY, "").toLowerCase(Locale.US).contains(OS_WIN_PREFIX);
     
     private boolean isWindows() {
         return IS_OS_WINDOWS;

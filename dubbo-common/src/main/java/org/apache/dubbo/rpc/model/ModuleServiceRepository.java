@@ -35,16 +35,22 @@ import java.util.stream.Collectors;
  */
 public class ModuleServiceRepository {
 
-    private ModuleModel moduleModel;
+    private final ModuleModel moduleModel;
 
-    // services
+    /**
+     * services
+     */
     private ConcurrentMap<String, List<ServiceDescriptor>> services = new ConcurrentHashMap<>();
 
-    // consumers ( key - group/interface:version value - consumerModel list)
+    /**
+     * consumers ( key - group/interface:version value - consumerModel list)
+     */
     private ConcurrentMap<String, List<ConsumerModel>> consumers = new ConcurrentHashMap<>();
 
-    // providers
-    private ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
+    /**
+     * providers
+     */
+    private final ConcurrentMap<String, ProviderModel> providers = new ConcurrentHashMap<>();
     private final FrameworkServiceRepository frameworkServiceRepository;
 
     public ModuleServiceRepository(ModuleModel moduleModel) {
@@ -56,6 +62,9 @@ public class ModuleServiceRepository {
         return moduleModel;
     }
 
+    /**
+     * @deprecated Replaced to {@link ModuleServiceRepository#registerConsumer(ConsumerModel)}
+     */
     @Deprecated
     public void registerConsumer(String serviceKey,
                                  ServiceDescriptor serviceDescriptor,
@@ -71,6 +80,9 @@ public class ModuleServiceRepository {
         consumers.computeIfAbsent(consumerModel.getServiceKey(), (serviceKey) -> new CopyOnWriteArrayList<>()).add(consumerModel);
     }
 
+    /**
+     * @deprecated Replaced to {@link ModuleServiceRepository#registerProvider(ProviderModel)}
+     */
     @Deprecated
     public void registerProvider(String serviceKey,
                                  Object serviceInstance,
@@ -90,7 +102,7 @@ public class ModuleServiceRepository {
     public ServiceDescriptor registerService(Class<?> interfaceClazz) {
         ServiceDescriptor serviceDescriptor = new ServiceDescriptor(interfaceClazz);
         List<ServiceDescriptor> serviceDescriptors = services.computeIfAbsent(interfaceClazz.getName(),
-            _k -> new CopyOnWriteArrayList<>());
+            k -> new CopyOnWriteArrayList<>());
         synchronized (serviceDescriptors) {
             Optional<ServiceDescriptor> previous = serviceDescriptors.stream()
                 .filter(s -> s.getServiceInterfaceClass().equals(interfaceClazz)).findFirst();
@@ -200,7 +212,6 @@ public class ModuleServiceRepository {
         return Collections.unmodifiableList(new ArrayList<>(providers.values()));
     }
 
-    @Deprecated
     public ProviderModel lookupExportedService(String serviceKey) {
         return providers.get(serviceKey);
     }
@@ -210,6 +221,9 @@ public class ModuleServiceRepository {
         return Collections.unmodifiableList(consumerModels);
     }
 
+    /**
+     * @deprecated Replaced to {@link ModuleServiceRepository#lookupReferredServices(String)}
+     */
     @Deprecated
     public ConsumerModel lookupReferredService(String serviceKey) {
         if (consumers.containsKey(serviceKey)) {
@@ -220,7 +234,6 @@ public class ModuleServiceRepository {
         }
     }
 
-    @Deprecated
     public List<ConsumerModel> lookupReferredServices(String serviceKey) {
         return consumers.get(serviceKey);
     }

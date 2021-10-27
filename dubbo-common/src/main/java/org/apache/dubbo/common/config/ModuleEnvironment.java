@@ -119,6 +119,7 @@ public class ModuleEnvironment extends Environment implements ModuleExt {
 
     @Override
     public void destroy() throws IllegalStateException {
+        super.destroy();
         this.orderedPropertiesConfiguration = null;
         this.globalConfiguration = null;
         this.dynamicGlobalConfiguration = null;

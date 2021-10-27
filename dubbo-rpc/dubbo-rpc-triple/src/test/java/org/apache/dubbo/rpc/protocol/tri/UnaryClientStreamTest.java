@@ -20,18 +20,14 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class UnaryClientStreamTest {
@@ -40,22 +36,18 @@ class UnaryClientStreamTest {
     public void testInit() {
         URL url = new ServiceConfigURL("test", "1.2.3.4", 8080);
         final UnaryClientStream stream = UnaryClientStream.unary(url);
-        final StreamObserver<Object> observer = stream.asStreamObserver();
+        final StreamObserver<Object> observer = stream.inboundMessageObserver();
         RpcInvocation inv = Mockito.mock(RpcInvocation.class);
+        when(inv.getModuleModel()).thenReturn(ApplicationModel.defaultModel().getDefaultModule());
         // no invoker
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
-        final Invoker mockInvoker = Mockito.mock(Invoker.class);
-        when(mockInvoker.getUrl()).thenReturn(url);
-        when(inv.getInvoker()).thenReturn(mockInvoker);
         // no subscriber
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
-        verify(mockInvoker, times(2)).getUrl();
 
-        TransportObserver transportObserver = Mockito.mock(TransportObserver.class);
+        OutboundTransportObserver transportObserver = Mockito.mock(OutboundTransportObserver.class);
         stream.subscribe(transportObserver);
         // no method descriptor
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
-        Mockito.verify(transportObserver).onMetadata(any(), anyBoolean());
 
         MethodDescriptor md = Mockito.mock(MethodDescriptor.class);
         when(md.isNeedWrap()).thenReturn(true);

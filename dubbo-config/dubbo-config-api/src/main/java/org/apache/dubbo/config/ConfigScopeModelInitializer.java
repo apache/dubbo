@@ -21,6 +21,7 @@ import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.deploy.DefaultModuleDeployer;
+import org.apache.dubbo.config.deploy.FrameworkModelCleaner;
 import org.apache.dubbo.config.utils.DefaultConfigValidator;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -31,7 +32,7 @@ public class ConfigScopeModelInitializer implements ScopeModelInitializer {
 
     @Override
     public void initializeFrameworkModel(FrameworkModel frameworkModel) {
-
+        frameworkModel.addDestroyListener(new FrameworkModelCleaner());
     }
 
     @Override

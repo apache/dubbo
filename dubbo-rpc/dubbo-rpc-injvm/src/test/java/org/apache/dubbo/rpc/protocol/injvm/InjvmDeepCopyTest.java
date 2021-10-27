@@ -79,6 +79,12 @@ public class InjvmDeepCopyTest {
         Assertions.assertNotEquals(requestReference.get(), request);
         Assertions.assertNotEquals(responseReference.get(), response);
 
+        Data response1 = stub.call(null);
+
+        Assertions.assertNull(requestReference.get());
+        Assertions.assertNull(responseReference.get());
+        Assertions.assertNull(response1);
+
         exporter.unexport();
         applicationModel.destroy();
     }
@@ -99,7 +105,10 @@ public class InjvmDeepCopyTest {
         @Override
         public Data call(Data obj) {
             requestReference.set(obj);
-            Data result = new Data();
+            Data result = null;
+            if (obj != null) {
+                result = new Data();
+            }
             responseReference.set(result);
             return result;
         }

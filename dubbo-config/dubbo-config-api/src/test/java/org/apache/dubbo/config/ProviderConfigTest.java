@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 public class ProviderConfigTest {
+
     @Test
     public void testProtocol() throws Exception {
         ProviderConfig provider = new ProviderConfig();

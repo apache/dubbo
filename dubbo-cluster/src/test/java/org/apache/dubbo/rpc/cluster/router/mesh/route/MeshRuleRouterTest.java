@@ -95,7 +95,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test1");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -107,7 +107,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test2");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -120,7 +120,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test3");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -241,7 +241,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test1");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -253,7 +253,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test2");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -266,7 +266,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test3");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -786,7 +786,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test1");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -798,7 +798,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test2");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -811,7 +811,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test3");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -929,7 +929,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test1");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -941,7 +941,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test2");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -954,7 +954,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test3");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -1134,7 +1134,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invokerParameterMap = new HashMap<>();
             invokerParameterMap.put("env", "test1");
 
-            assertEquals(invokerParameterMap, ((Invoker) meshRuleRouter.route((List) inputInvokers, inputURL, invocation).get(0)).getUrl().getParameters());
+            assertEquals(invokerParameterMap, ((Invoker) meshRuleRouter.route((List) inputInvokers, inputURL, invocation).get(0)).getUrl().getServiceParameters(url.getProtocolServiceKey()));
         }
     }
 
@@ -1165,7 +1165,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test1");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -1177,7 +1177,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test2");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -1190,7 +1190,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invoker1Map = new HashMap<>();
             invoker1Map.put("env", "test3");
 
-            when(invoker1URL.getParameters()).thenReturn(invoker1Map);
+            when(invoker1URL.getServiceParameters(url.getProtocolServiceKey())).thenReturn(invoker1Map);
             when(invoker1.getUrl()).thenReturn(invoker1URL);
 
             invokers.add(invoker1);
@@ -1328,7 +1328,7 @@ public class MeshRuleRouterTest {
             Map<String, String> invokerParameterMap = new HashMap<>();
             invokerParameterMap.put("env", "test1");
 
-            assertEquals(invokerParameterMap, ((Invoker) meshRuleRouter.route((List) inputInvokers, inputURL, invocation).get(0)).getUrl().getParameters());
+            assertEquals(invokerParameterMap, ((Invoker) meshRuleRouter.route((List) inputInvokers, inputURL, invocation).get(0)).getUrl().getServiceParameters(url.getProtocolServiceKey()));
         }
 
         {

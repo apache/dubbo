@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -32,6 +31,8 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.RegistryManager;
+
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -74,7 +75,7 @@ public class ServiceInstanceMetadataUtils {
     /**
      * The property name of metadata JSON of {@link MetadataService}'s {@link URL}
      */
-    public static String METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME = METADATA_SERVICE_PREFIX + "url-params";
+    public static final String METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME = METADATA_SERVICE_PREFIX + "url-params";
 
     /**
      * The {@link URL URLs} property name of {@link MetadataService} :
@@ -86,16 +87,18 @@ public class ServiceInstanceMetadataUtils {
     /**
      * The property name of The revision for all exported Dubbo services.
      */
-    public static String EXPORTED_SERVICES_REVISION_PROPERTY_NAME = "dubbo.metadata.revision";
+    public static final String EXPORTED_SERVICES_REVISION_PROPERTY_NAME = "dubbo.metadata.revision";
 
     /**
      * The property name of metadata storage type.
      */
-    public static String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
+    public static final String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
 
-    public static String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
+    public static final String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
 
-    public static String INSTANCE_REVISION_UPDATED_KEY = "dubbo.instance.revision.updated";
+    public static final String INSTANCE_REVISION_UPDATED_KEY = "dubbo.instance.revision.updated";
+
+    private static final Gson gson = new Gson();
 
     /**
      * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
@@ -106,7 +109,7 @@ public class ServiceInstanceMetadataUtils {
     public static Map<String, String> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
-        return isBlank(param) ? emptyMap() : (Map) new Gson().fromJson(param,Map.class);
+        return isBlank(param) ? emptyMap() : (Map) gson.fromJson(param,Map.class);
     }
 
     public static String getMetadataServiceParameter(URL url) {
@@ -120,7 +123,7 @@ public class ServiceInstanceMetadataUtils {
             return null;
         }
 
-        return new Gson().toJson(params);
+        return gson.toJson(params);
     }
 
     private static Map<String, String> getParams(URL providerURL) {
@@ -191,7 +194,7 @@ public class ServiceInstanceMetadataUtils {
             endpoints.add(endpoint);
         });
 
-        metadata.put(ENDPOINTS, new Gson().toJson(endpoints));
+        metadata.put(ENDPOINTS, gson.toJson(endpoints));
     }
 
     /**
@@ -251,6 +254,7 @@ public class ServiceInstanceMetadataUtils {
             RegistryManager registryManager = serviceInstance.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
             registryManager.getServiceDiscoveries().forEach(serviceDiscovery ->
             {
+                // copy instance for each registry to make sure instance in each registry can evolve independently
                 ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
                 calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
                 if (LOGGER.isDebugEnabled()) {
@@ -271,9 +275,11 @@ public class ServiceInstanceMetadataUtils {
                 LOGGER.warn("Refreshing of service instance started, but instance hasn't been registered yet.");
                 instance = serviceInstance;
             }
+            // copy instance again, in case the same instance accidently shared among registries
+            instance = new DefaultServiceInstance((DefaultServiceInstance) instance);
             calInstanceRevision(serviceDiscovery, instance);
             customizeInstance(instance);
-            if (serviceInstance.getPort() > 0) {
+            if (instance.getPort() > 0) {
                 // update service instance revision
                 serviceDiscovery.update(instance);
             }

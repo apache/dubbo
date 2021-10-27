@@ -29,6 +29,7 @@ public class Application {
 
     public static void main(String[] args) {
         System.setProperty("dubbo.application.logger", "log4j");
+        System.setProperty("native","true");
         if (isClassic(args)) {
             runWithRefer();
         } else {
