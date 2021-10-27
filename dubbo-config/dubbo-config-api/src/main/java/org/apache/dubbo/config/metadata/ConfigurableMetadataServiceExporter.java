@@ -100,7 +100,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             serviceConfig.setMethods(generateMethodConfig());
 
             // export
-            serviceConfig.exportOnly();
+            serviceConfig.export();
 
             if (logger.isInfoEnabled()) {
                 logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
