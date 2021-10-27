@@ -178,6 +178,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
         BitList<Invoker<T>> validResult, routedResult = doList(invocation);
         if (validInvokers != null) {
+            // routedResult may contains tailList, use routedResult as source List to and
             validResult = routedResult.and(validInvokers);
         } else {
             validResult = routedResult;

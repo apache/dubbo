@@ -25,12 +25,14 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.router.RouterResult;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AddrCache;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -173,30 +175,47 @@ public class RouterChain<T> {
 
         // 1. route state router
         if (cache != null) {
-            BitList<Invoker<T>> invokersToRoute = invokers.clone();
             for (StateRouter stateRouter : stateRouters) {
                 if (stateRouter.isEnable()) {
                     RouterCache<T> routerCache = cache.getCache().get(stateRouter.getName());
-                    invokersToRoute = stateRouter.route(invokersToRoute, routerCache, url, invocation);
-                    if (invokersToRoute.isEmpty()) {
+                    StateRouterResult<Invoker<T>> routeResult = stateRouter.route(resultInvokers, routerCache, url, invocation, false);
+                    resultInvokers = routeResult.getResult();
+                    if (resultInvokers.isEmpty()) {
                         printRouterSnapshot(url, invocation);
                         return BitList.emptyList();
                     }
+
+                    // stop continue routing
+                    if (!routeResult.isNeedContinueRoute()) {
+                        return routeResult.getResult();
+                    }
                 }
             }
-            resultInvokers = resultInvokers.and(invokersToRoute);
         }
 
         // 2. route common router
         for (Router router : routers) {
             // Copy resultInvokers to a arrayList. BitList not support
             List<Invoker<T>> arrayInvokers = new ArrayList<>(resultInvokers);
-            arrayInvokers = router.route(arrayInvokers, url, invocation);
+            RouterResult<Invoker<T>> routeResult = router.route(arrayInvokers, url, invocation, false);
+            arrayInvokers = routeResult.getResult();
             if (CollectionUtils.isEmpty(arrayInvokers)) {
                 printRouterSnapshot(url, invocation);
                 return BitList.emptyList();
             } else {
                 resultInvokers.retainAll(arrayInvokers);
+                if (arrayInvokers.size() > resultInvokers.size()) {
+                    // arrayInvokers list contains elements not contain in resultInvokers, put them into tailList
+                    arrayInvokers.removeAll(resultInvokers);
+                    if (arrayInvokers.size() > 0) {
+                        resultInvokers.addAll(arrayInvokers);
+                    }
+                }
+            }
+
+            // stop continue routing
+            if (!routeResult.isNeedContinueRoute()) {
+                return resultInvokers;
             }
         }
         return resultInvokers;
@@ -206,6 +225,13 @@ public class RouterChain<T> {
      * store each router's input and output, log out if empty
      */
     private void printRouterSnapshot(URL url, Invocation invocation) {
+        logRouterSnapshot(url, invocation, buildRouterSnapshot(url, invocation));
+    }
+
+    /**
+     * Build each router's result
+     */
+    private RouterSnapshotNode<T> buildRouterSnapshot(URL url, Invocation invocation) {
         AddrCache<T> cache = this.cache.get();
         BitList<Invoker<T>> resultInvokers = invokers.clone();
         RouterSnapshotNode<T> snapshotNode = new RouterSnapshotNode<T>("Parent", resultInvokers.size());
@@ -222,16 +248,20 @@ public class RouterChain<T> {
                     snapshotNode.appendNode(currentNode);
 
                     RouterCache<T> routerCache = cache.getCache().get(stateRouter.getName());
-                    invokersToRoute = stateRouter.route(inputInvokers, routerCache, url, invocation);
-                    String routerMessage = stateRouter.routerMessage(inputInvokers, routerCache, url, invocation);
+                    StateRouterResult<Invoker<T>> routeResult = stateRouter.route(inputInvokers, routerCache, url, invocation, true);
+                    invokersToRoute = routeResult.getResult();
+                    String routerMessage = routeResult.getMessage();
 
                     currentNode.setOutputInvokers(invokersToRoute);
                     currentNode.setRouterMessage(routerMessage);
 
                     // result is empty, log out
                     if (invokersToRoute.isEmpty()) {
-                        logRouterSnapshot(url, invocation, snapshotNode);
-                        return;
+                        return snapshotNode;
+                    }
+
+                    if (!routeResult.isNeedContinueRoute()) {
+                        return snapshotNode;
                     }
                 }
             }
@@ -246,20 +276,25 @@ public class RouterChain<T> {
             RouterSnapshotNode<T> currentNode = new RouterSnapshotNode<T>(router.getClass().getSimpleName(), inputInvokers.size());
             snapshotNode.appendNode(currentNode);
 
-            List<Invoker<T>> routeResult = router.route(inputInvokers, url, invocation);
-            String routerMessage = router.routerMessage(inputInvokers, url, invocation);
+            RouterResult<Invoker<T>> routeStateResult = router.route(inputInvokers, url, invocation, true);
+            List<Invoker<T>> routeResult = routeStateResult.getResult();
+            String routerMessage = routeStateResult.getMessage();
 
             currentNode.setOutputInvokers(routeResult);
             currentNode.setRouterMessage(routerMessage);
 
             // result is empty, log out
             if (CollectionUtils.isEmpty(routeResult)) {
-                logRouterSnapshot(url, invocation, snapshotNode);
-                return;
+                return snapshotNode;
             } else {
                 resultInvokers.retainAll(routeResult);
             }
+
+            if (!routeStateResult.isNeedContinueRoute()) {
+                return snapshotNode;
+            }
         }
+        return snapshotNode;
     }
 
     private void logRouterSnapshot(URL url, Invocation invocation, RouterSnapshotNode<T> snapshotNode) {
@@ -282,6 +317,7 @@ public class RouterChain<T> {
 
     /**
      * Build the asynchronous address cache for stateRouter.
+     *
      * @param notify Whether the addresses in registry have changed.
      */
     private void buildCache(boolean notify) {
@@ -310,10 +346,11 @@ public class RouterChain<T> {
 
     /**
      * Cache the address list for each StateRouter.
-     * @param router router
-     * @param origin The original address cache
+     *
+     * @param router   router
+     * @param origin   The original address cache
      * @param invokers The full address list
-     * @param notify Whether the addresses in registry has changed.
+     * @param notify   Whether the addresses in registry has changed.
      * @return
      */
     private RouterCache poolRouter(StateRouter router, AddrCache<T> origin, List<Invoker<T>> invokers, boolean notify) {
@@ -341,7 +378,7 @@ public class RouterChain<T> {
      * @param notify Whether the addresses in registry has changed.
      */
     public void loop(boolean notify) {
-        if (firstBuildCache.compareAndSet(true,false)) {
+        if (firstBuildCache.compareAndSet(true, false)) {
             buildCache(notify);
         }
 
@@ -356,7 +393,7 @@ public class RouterChain<T> {
                 }
             }
         } catch (RejectedExecutionException e) {
-            if (loopPool.isShutdown()){
+            if (loopPool.isShutdown()) {
                 logger.warn("loopPool executor service is shutdown, ignoring notify loop");
                 return;
             }

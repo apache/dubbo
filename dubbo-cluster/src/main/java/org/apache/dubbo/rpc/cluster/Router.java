@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.router.RouterResult;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ import java.util.List;
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
  *
- * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
+ * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory, boolean)
  * @see org.apache.dubbo.rpc.cluster.Directory#list(Invocation)
  */
 public interface Router extends Comparable<Router> {
@@ -54,14 +55,19 @@ public interface Router extends Comparable<Router> {
     <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException;
 
     /**
-     * To print router state. Such as `use router branch a`.
+     * ** This method can return the state of whether routerChain needed to continue route. **
+     * Filter invokers with current routing rule and only return the invokers that comply with the rule.
+     *
      * @param invokers   invoker list
      * @param url        refer url
      * @param invocation invocation
-     * @return router message to print in RouterSnapshot
+     * @param needToPrintMessage whether to print router state. Such as `use router branch a`.
+     * @return state with route result
+     * @throws RpcException
      */
-    default <T> String routerMessage(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        return null;
+    default <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation,
+                                                     boolean needToPrintMessage) throws RpcException {
+        return new RouterResult<>(route(invokers, url, invocation));
     }
 
     /**
