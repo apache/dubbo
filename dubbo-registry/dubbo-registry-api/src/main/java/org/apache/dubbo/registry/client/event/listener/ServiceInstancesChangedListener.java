@@ -317,7 +317,8 @@ public class ServiceInstancesChangedListener {
         if (metadata != null && metadata != MetadataInfo.EMPTY) {
             // metadata loaded from cache
             if (logger.isDebugEnabled()) {
-                logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
+                logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
+                    + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
             }
             parseMetadata(revision, metadata, localServiceToRevisions);
             return metadata;

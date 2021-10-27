@@ -484,4 +484,6 @@ public interface CommonConstants {
 
     String OS_WIN_PREFIX = "win";
 
+    String DUBBO_INTERNAL_APPLICATION = "DUBBO_INTERNAL_APPLICATION";
+
 }
