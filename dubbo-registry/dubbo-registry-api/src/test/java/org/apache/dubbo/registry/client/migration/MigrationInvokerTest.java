@@ -20,12 +20,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
+import org.apache.dubbo.registry.integration.DemoService;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +40,7 @@ import java.util.List;
 public class MigrationInvokerTest {
     @BeforeEach
     public void before() {
-        ApplicationModel.reset();
+        FrameworkModel.destroyAll();
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("Test");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
@@ -47,7 +48,7 @@ public class MigrationInvokerTest {
 
     @AfterEach
     public void after() {
-        ApplicationModel.reset();
+        FrameworkModel.destroyAll();
     }
 
     @Test
@@ -88,7 +89,7 @@ public class MigrationInvokerTest {
         Mockito.when(invoker.getUrl()).thenReturn(consumerURL);
         Mockito.when(serviceDiscoveryInvoker.getUrl()).thenReturn(consumerURL);
 
-        MigrationInvoker migrationInvoker = new MigrationInvoker(registryProtocol, null, null, null, null, consumerURL);
+        MigrationInvoker migrationInvoker = new MigrationInvoker(registryProtocol, null, null, DemoService.class, null, consumerURL);
 
         MigrationRule migrationRule = Mockito.mock(MigrationRule.class);
         Mockito.when(migrationRule.getForce(Mockito.any())).thenReturn(true);

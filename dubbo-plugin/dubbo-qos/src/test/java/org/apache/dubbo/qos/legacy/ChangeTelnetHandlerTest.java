@@ -24,8 +24,8 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +74,7 @@ public class ChangeTelnetHandlerTest {
 
     @AfterEach
     public void after() {
-        ProtocolUtils.closeAll();
+        FrameworkModel.destroyAll();
         reset(mockChannel, mockInvoker);
     }
 

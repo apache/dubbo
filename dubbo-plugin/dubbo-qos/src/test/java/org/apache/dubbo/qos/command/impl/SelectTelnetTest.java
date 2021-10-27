@@ -21,7 +21,6 @@ import io.netty.util.DefaultAttributeMap;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
 import org.apache.dubbo.remoting.RemotingException;
@@ -44,17 +43,19 @@ import static org.mockito.Mockito.reset;
 
 public class SelectTelnetTest {
 
-    private static BaseCommand select = new SelectTelnet(FrameworkModel.defaultModel());
+    private BaseCommand select;
 
     private Channel mockChannel;
     private CommandContext mockCommandContext;
 
-    private final ModuleServiceRepository repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+    private ModuleServiceRepository repository;
     private final DefaultAttributeMap defaultAttributeMap = new DefaultAttributeMap();
     private List<Method> methods;
 
     @BeforeEach
     public void setup() {
+        repository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
+        select = new SelectTelnet(FrameworkModel.defaultModel());
         String methodName = "getPerson";
         methods = new ArrayList<>();
         for (Method method : DemoService.class.getMethods()) {
@@ -71,7 +72,7 @@ public class SelectTelnetTest {
 
     @AfterEach
     public void after() {
-        ProtocolUtils.closeAll();
+        FrameworkModel.destroyAll();
         reset(mockChannel, mockCommandContext);
     }
 

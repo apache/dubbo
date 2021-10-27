@@ -22,11 +22,11 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 public class TripleServerInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        final AbstractServerStream serverStream = TripleUtil.getServerStream(ctx);
+        final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
         final byte[] data = (byte[]) msg;
         if (serverStream != null) {
-            serverStream.asTransportObserver()
-                    .onData(data, false);
+            serverStream.inboundTransportObserver()
+                .onData(data, false);
         }
     }
 }

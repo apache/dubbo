@@ -21,10 +21,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 
 /**
- * Stream acts as a bi-directional intermediate layer for streaming data processing. It serializes object instance to
- * byte[] then send to remote, and deserializes byte[] to object instance from remote. {@link #asTransportObserver()}
- * and {@link #subscribe(TransportObserver)} provide {@link TransportObserver} to send or receive remote data.
- * {@link #asStreamObserver()} and {@link #subscribe(StreamObserver)} provide {@link StreamObserver}
+ * Stream acts as a bi-directional intermediate layer for processing streaming data . It serializes object instance to
+ * byte[] then send to remote, and deserializes byte[] to object instance from remote. {@link #inboundTransportObserver()}
+ * and {@link #subscribe(OutboundTransportObserver)} provide {@link TransportObserver} to receive or send remote data.
+ * {@link #inboundMessageObserver()} and {@link #subscribe(StreamObserver)} provide {@link StreamObserver}
  * as API for users fetching/emitting objects from/to remote peer.
  */
 public interface Stream {
@@ -36,28 +36,28 @@ public interface Stream {
      *
      * @param observer receives remote byte[] data
      */
-    void subscribe(TransportObserver observer);
+    void subscribe(OutboundTransportObserver observer);
 
     /**
      * Get a downstream data observer for writing byte[] data to this stream
      *
      * @return an observer for writing byte[] to remote peer
      */
-    TransportObserver asTransportObserver();
+    TransportObserver inboundTransportObserver();
 
     /**
-     * Register an upstream data observer to receive byte[] sent by this stream
+     * Register an upstream data observer to receive instance sent by this stream
      *
-     * @param observer receives remote byte[] data
+     * @param outboundMessageObserver receives remote byte[] data
      */
-    void subscribe(StreamObserver<Object> observer);
+    void subscribe(StreamObserver<Object> outboundMessageObserver);
 
     /**
      * Get a downstream data observer for transmitting instances to application code
      *
      * @return an observer for writing byte[] to remote peer
      */
-    StreamObserver<Object> asStreamObserver();
+    StreamObserver<Object> inboundMessageObserver();
 
     /**
      * Execute a task in stream's executor

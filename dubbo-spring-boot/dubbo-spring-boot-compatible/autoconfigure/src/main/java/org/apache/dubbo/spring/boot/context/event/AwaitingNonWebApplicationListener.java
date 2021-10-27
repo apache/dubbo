@@ -57,26 +57,26 @@ public class AwaitingNonWebApplicationListener implements SmartApplicationListen
     private static final Class<? extends ApplicationEvent>[] SUPPORTED_APPLICATION_EVENTS =
             of(ApplicationReadyEvent.class, ContextClosedEvent.class);
 
-    private static final AtomicBoolean awaited = new AtomicBoolean(false);
+    private final AtomicBoolean awaited = new AtomicBoolean(false);
 
     private static final Integer UNDEFINED_ID = Integer.valueOf(-1);
 
     /**
      * Target the application id
      */
-    private static final AtomicInteger applicationContextId = new AtomicInteger(UNDEFINED_ID);
+    private final AtomicInteger applicationContextId = new AtomicInteger(UNDEFINED_ID);
 
-    private static final Lock lock = new ReentrantLock();
+    private final Lock lock = new ReentrantLock();
 
-    private static final Condition condition = lock.newCondition();
+    private final Condition condition = lock.newCondition();
 
-    private static final ExecutorService executorService = newSingleThreadExecutor();
+    private final ExecutorService executorService = newSingleThreadExecutor();
 
     private static <T> T[] of(T... values) {
         return values;
     }
 
-    static AtomicBoolean getAwaited() {
+    AtomicBoolean getAwaited() {
         return awaited;
     }
 

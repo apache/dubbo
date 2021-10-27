@@ -61,6 +61,12 @@ public enum TripleHeaderEnum {
         excludeAttachmentsSet.add(TripleConstant.TE_KEY);
     }
 
+    private final String header;
+
+    TripleHeaderEnum(String header) {
+        this.header = header;
+    }
+
     public static TripleHeaderEnum getEnum(String header) {
         return enumMap.get(header);
     }
@@ -71,12 +77,6 @@ public enum TripleHeaderEnum {
 
     public static boolean containsExcludeAttachments(String key) {
         return excludeAttachmentsSet.contains(key) || enumMap.containsKey(key);
-    }
-
-    private final String header;
-
-    TripleHeaderEnum(String header) {
-        this.header = header;
     }
 
     public String getHeader() {

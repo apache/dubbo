@@ -28,8 +28,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
 class UnaryClientStreamTest {
@@ -38,7 +36,7 @@ class UnaryClientStreamTest {
     public void testInit() {
         URL url = new ServiceConfigURL("test", "1.2.3.4", 8080);
         final UnaryClientStream stream = UnaryClientStream.unary(url);
-        final StreamObserver<Object> observer = stream.asStreamObserver();
+        final StreamObserver<Object> observer = stream.inboundMessageObserver();
         RpcInvocation inv = Mockito.mock(RpcInvocation.class);
         when(inv.getModuleModel()).thenReturn(ApplicationModel.defaultModel().getDefaultModule());
         // no invoker
@@ -46,11 +44,10 @@ class UnaryClientStreamTest {
         // no subscriber
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
 
-        TransportObserver transportObserver = Mockito.mock(TransportObserver.class);
+        OutboundTransportObserver transportObserver = Mockito.mock(OutboundTransportObserver.class);
         stream.subscribe(transportObserver);
         // no method descriptor
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
-        Mockito.verify(transportObserver).onMetadata(any(), anyBoolean());
 
         MethodDescriptor md = Mockito.mock(MethodDescriptor.class);
         when(md.isNeedWrap()).thenReturn(true);

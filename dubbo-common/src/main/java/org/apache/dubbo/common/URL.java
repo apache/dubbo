@@ -1577,6 +1577,11 @@ class URL implements Serializable {
         return attributes.get(key);
     }
 
+    public Object getAttribute(String key, Object defaultValue) {
+        Object val = attributes.get(key);
+        return val != null ? val : defaultValue;
+    }
+
     public URL putAttribute(String key, Object obj) {
         attributes.put(key, obj);
         return this;

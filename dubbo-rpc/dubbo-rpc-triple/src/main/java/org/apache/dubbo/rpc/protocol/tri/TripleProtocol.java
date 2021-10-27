@@ -34,8 +34,6 @@ import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
 import grpc.health.v1.HealthCheckResponse;
 
-import java.util.ArrayList;
-
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
@@ -110,21 +108,11 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     @Override
     public void destroy() {
+        if (logger.isInfoEnabled()) {
+            logger.info("Destroying protocol [" + this.getClass().getSimpleName() + "] ...");
+        }
         PortUnificationExchanger.close();
         pathResolver.destroy();
-        for (String key : new ArrayList<>(exporterMap.keySet())) {
-            Exporter<?> exporter = exporterMap.remove(key);
-            if (exporter != null) {
-                try {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("Unexport service: " + exporter.getInvoker().getUrl());
-                    }
-                    exporter.unexport();
-                } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
-                }
-            }
-        }
-
+        super.destroy();
     }
 }

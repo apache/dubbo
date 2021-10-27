@@ -19,21 +19,15 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-import io.netty.handler.codec.http.HttpHeaderNames;
-
-import java.util.Map;
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.rpcExceptionCodeToGrpc;
+import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.getStatus;
 
 public class UnaryServerStream extends AbstractServerStream implements Stream {
 
@@ -47,20 +41,20 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
     }
 
     @Override
-    protected TransportObserver createTransportObserver() {
+    protected InboundTransportObserver createInboundTransportObserver() {
         return new UnaryServerTransportObserver();
     }
 
-    private class UnaryServerTransportObserver extends UnaryTransportObserver implements TransportObserver {
+    private class UnaryServerTransportObserver extends UnaryInboundTransportObserver implements TransportObserver {
         @Override
-        protected void onError(GrpcStatus status) {
+        public void onError(GrpcStatus status) {
             transportError(status);
         }
 
         @Override
-        public void doOnComplete() {
+        public void onComplete() {
             if (getData() != null) {
-                execute(this::invoke);
+                invoke();
             } else {
                 onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription("Missing request data"));
@@ -68,90 +62,37 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         }
 
         public void invoke() {
-
-            RpcInvocation invocation;
-            try {
-                invocation = buildInvocation(getHeaders());
-                final Object[] arguments = deserializeRequest(getData());
-                if (arguments != null) {
-                    invocation.setArguments(arguments);
-                } else {
-                    return;
-                }
-            } catch (Throwable t) {
-                LOGGER.warn("Exception processing triple message", t);
-                transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Decode request failed:" + t.getMessage()));
+            RpcInvocation invocation = buildInvocation(getHeaders());
+            final Object[] arguments = deserializeRequest(getData());
+            if (arguments == null) {
                 return;
             }
-
+            invocation.setArguments(arguments);
             final Result result = getInvoker().invoke(invocation);
             CompletionStage<Object> future = result.thenApply(Function.identity());
-
-            BiConsumer<Object, Throwable> onComplete = (appResult, t) -> {
-                if (t != null) {
-                    if (t instanceof TimeoutException) {
-                        transportError(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED).withCause(t));
-                    } else {
-                        transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(t));
-                    }
+            future.whenComplete((o, throwable) -> {
+                if (throwable != null) {
+                    LOGGER.error("Invoke error", throwable);
+                    transportError(getStatus(throwable));
                     return;
                 }
-                AppResponse response = (AppResponse) appResult;
-                try {
-                    if (response.hasException()) {
-                        final Throwable exception = response.getException();
-                        if (exception instanceof RpcException) {
-                            transportError(rpcExceptionCodeToGrpc(((RpcException) exception).getCode())
-                                .withCause(exception), response.getObjectAttachments());
-                            final GrpcStatus status = rpcExceptionCodeToGrpc(((RpcException) exception).getCode())
-                                    .withCause(exception);
-                            transportError(status, response.getObjectAttachments());
-                        } else {
-                            transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
-                                .withCause(exception), response.getObjectAttachments());
-                        }
-                        return;
-                    }
-                    Metadata metadata = createRequestMeta();
-                    metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
-                    getTransportSubscriber().onMetadata(metadata, false);
-
-                    final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-                    final byte[] data;
-                    try {
-                        ClassLoadUtil.switchContextLoader(
-                            getProviderModel().getServiceInterfaceClass().getClassLoader());
-                        data = encodeResponse(response.getValue());
-                    } finally {
-                        ClassLoadUtil.switchContextLoader(tccl);
-                    }
-                    getTransportSubscriber().onData(data, false);
-
-                    Metadata trailers = new DefaultMetadata()
-                        .put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
-                    final Map<String, Object> attachments = response.getObjectAttachments();
-                    if (attachments != null) {
-                        convertAttachment(trailers, attachments);
-                    }
-                    getTransportSubscriber().onMetadata(trailers, true);
-                } catch (Throwable e) {
-                    LOGGER.warn("Exception processing triple message", e);
-                    if (e instanceof RpcException) {
-                        final GrpcStatus status = rpcExceptionCodeToGrpc(((RpcException) e).getCode())
-                                .withCause(e);
-                        transportError(status, response.getObjectAttachments());
-                    } else {
-                        transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
-                            .withDescription("Exception occurred in provider's execution:" + e.getMessage())
-                            .withCause(e), response.getObjectAttachments());
-                    }
+                AppResponse response = (AppResponse) o;
+                if (response.hasException()) {
+                    transportError(getStatus(response.getException()));
+                    return;
                 }
-            };
-
-            future.whenComplete(onComplete);
+                Metadata metadata = createResponseMeta();
+                outboundTransportObserver().onMetadata(metadata, false);
+                final byte[] data = encodeResponse(response.getValue());
+                if (data == null) {
+                    return;
+                }
+                outboundTransportObserver().onData(data, false);
+                Metadata trailers = TripleConstant.SUCCESS_RESPONSE_META;
+                convertAttachment(trailers, response.getObjectAttachments());
+                outboundTransportObserver().onMetadata(trailers, true);
+            });
             RpcContext.removeContext();
         }
     }
-
 }

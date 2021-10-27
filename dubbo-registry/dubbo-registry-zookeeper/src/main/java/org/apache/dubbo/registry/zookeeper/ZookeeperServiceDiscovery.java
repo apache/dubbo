@@ -87,6 +87,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void doDestroy() throws Exception {
         serviceDiscovery.close();
+        curatorFramework.close();
     }
 
     @Override

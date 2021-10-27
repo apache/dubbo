@@ -24,7 +24,7 @@ import io.netty.channel.ChannelPipeline;
 
 public class TripleServerInitializer extends ChannelInitializer<Channel> {
 
-    private FrameworkModel frameworkModel;
+    private final FrameworkModel frameworkModel;
 
     public TripleServerInitializer(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
@@ -35,7 +35,7 @@ public class TripleServerInitializer extends ChannelInitializer<Channel> {
         final ChannelPipeline p = ch.pipeline();
         p.addLast(new TripleHttp2FrameServerHandler(frameworkModel));
         // TODO constraint MAX DATA_SIZE
-        p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE));
+        p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE, false));
         p.addLast(new TripleServerInboundHandler());
     }
 }

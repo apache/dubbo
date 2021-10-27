@@ -19,7 +19,10 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.CancellationContext;
 
 public class ClientStream extends AbstractClientStream implements Stream {
 
@@ -28,54 +31,86 @@ public class ClientStream extends AbstractClientStream implements Stream {
     }
 
     @Override
-    protected StreamObserver<Object> createStreamObserver() {
-        ClientStreamObserver clientStreamObserver = new ClientStreamObserver() {
-            boolean metaSent;
-
-            @Override
-            public void onNext(Object data) {
-                if (!metaSent) {
-                    metaSent = true;
-                    final Metadata metadata = createRequestMeta((RpcInvocation) getRequest().getData());
-                    getTransportSubscriber().onMetadata(metadata, false);
-                }
-                final byte[] bytes = encodeRequest(data);
-                getTransportSubscriber().onData(bytes, false);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                transportError(throwable);
-            }
-        };
-        clientStreamObserver.setCancellationContext(getCancellationContext());
-        return clientStreamObserver;
+    protected InboundTransportObserver createInboundTransportObserver() {
+        return new ClientStreamInboundTransportObserverImpl();
     }
 
     @Override
-    protected TransportObserver createTransportObserver() {
-        return new AbstractTransportObserver() {
+    protected void doOnStartCall() {
+        Response response = new Response(getRequestId(), TripleConstant.TRI_VERSION);
+        AppResponse result = getMethodDescriptor().isServerStream() ? callServerStream() : callBiStream();
+        response.setResult(result);
+        DefaultFuture2.received(getConnection(), response);
+    }
 
-            @Override
-            public void onData(byte[] data, boolean endStream) {
-                execute(() -> {
+    private AppResponse callServerStream() {
+        StreamObserver<Object> obServer = (StreamObserver<Object>) getRpcInvocation().getArguments()[1];
+        obServer = attachCancelContext(obServer, getCancellationContext());
+        subscribe(obServer);
+        inboundMessageObserver().onNext(getRpcInvocation().getArguments()[0]);
+        inboundMessageObserver().onCompleted();
+        return new AppResponse();
+    }
+
+    private AppResponse callBiStream() {
+        StreamObserver<Object> obServer = (StreamObserver<Object>) getRpcInvocation().getArguments()[0];
+        obServer = attachCancelContext(obServer, getCancellationContext());
+        subscribe(obServer);
+        return new AppResponse(inboundMessageObserver());
+    }
+
+    private <T> StreamObserver<T> attachCancelContext(StreamObserver<T> observer, CancellationContext context) {
+        if (observer instanceof CancelableStreamObserver) {
+            CancelableStreamObserver<T> streamObserver = (CancelableStreamObserver<T>) observer;
+            streamObserver.setCancellationContext(context);
+            return streamObserver;
+        }
+        return observer;
+    }
+
+    private class ClientStreamInboundTransportObserverImpl extends InboundTransportObserver {
+
+        private boolean error = false;
+
+        @Override
+        public void onData(byte[] data, boolean endStream) {
+            execute(() -> {
+                try {
                     final Object resp = deserializeResponse(data);
-                    getStreamSubscriber().onNext(resp);
-                });
-            }
+                    outboundMessageSubscriber().onNext(resp);
+                } catch (Throwable throwable) {
+                    onError(throwable);
+                }
+            });
+        }
 
-            @Override
-            public void onComplete() {
-                execute(() -> {
-                    final GrpcStatus status = extractStatusFromMeta(getHeaders());
+        @Override
+        public void onError(GrpcStatus status) {
+            onError(status.asException());
+        }
 
-                    if (GrpcStatus.Code.isOk(status.code.code)) {
-                        getStreamSubscriber().onCompleted();
-                    } else {
-                        getStreamSubscriber().onError(status.asException());
-                    }
-                });
+        @Override
+        public void onComplete() {
+            execute(() -> {
+                getState().setServerEndStreamReceived();
+                final GrpcStatus status = extractStatusFromMeta(getHeaders());
+                if (GrpcStatus.Code.isOk(status.code.code)) {
+                    outboundMessageSubscriber().onCompleted();
+                } else {
+                    onError(status.cause);
+                }
+            });
+        }
+
+        private void onError(Throwable throwable) {
+            if (error) {
+                return;
             }
-        };
+            error = true;
+            if (!getState().serverSendStreamReceived()) {
+                cancel(throwable);
+            }
+            outboundMessageSubscriber().onError(throwable);
+        }
     }
 }
