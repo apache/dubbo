@@ -89,5 +89,4 @@ public interface Deployer<E extends ScopeModel> {
 
     void removeDeployListener(DeployListener<E> listener);
 
-    String getIdentifier();
 }

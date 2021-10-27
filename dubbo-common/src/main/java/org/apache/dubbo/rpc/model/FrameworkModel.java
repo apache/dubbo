@@ -91,7 +91,7 @@ public class FrameworkModel extends ScopeModel {
     protected void onDestroy() {
         synchronized (lock) {
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Dubbo framework[" + getInternalId() + "] is destroying ...");
+                LOGGER.info(getDesc() + " is destroying ...");
             }
 
             // destroy all application model
@@ -108,7 +108,7 @@ public class FrameworkModel extends ScopeModel {
             checkApplicationDestroy();
 
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("Dubbo framework[" + getInternalId() + "] is destroyed");
+                LOGGER.info(getDesc() + " is destroyed");
             }
         }
 
