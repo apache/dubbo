@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Constants;
@@ -33,15 +34,18 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.triple.TripleWrapper;
 
+import com.google.protobuf.ByteString;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.AsciiString;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +55,9 @@ import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 
+/**
+ * Abstracting common actions for client streaming.
+ */
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
 
     private final AsciiString scheme;
@@ -62,7 +69,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     protected AbstractClientStream(URL url) {
         super(url);
         this.scheme = getSchemeFromUrl(url);
-        // for client cancel,send rst frame to server
         this.getCancellationContext().addListener(context -> {
             Throwable throwable = this.getCancellationContext().getCancellationCause();
             if (LOGGER.isWarnEnabled()) {
@@ -70,7 +76,9 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                     + getConsumerModel().getServiceName() + "#" + getMethodName() +
                     " was canceled by local exception ", throwable);
             }
-            this.asTransportObserver().onReset(getHttp2Error(throwable));
+            // for client cancel,send rst frame to server
+            this.outboundTransportObserver()
+                .onError(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED).withCause(throwable));
         });
     }
 
@@ -83,6 +91,13 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return new ClientStream(url);
     }
 
+    /**
+     * TODO move this method to somewhere else
+     *
+     * @param req        the request
+     * @param connection connection
+     * @return a client stream
+     */
     public static AbstractClientStream newClientStream(Request req, Connection connection) {
         final RpcInvocation inv = (RpcInvocation) req.getData();
         final URL url = inv.getInvoker().getUrl();
@@ -100,16 +115,38 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return stream;
     }
 
+    private static Compressor getCompressor(URL url, ServiceModel model) {
+        String compressorStr = url.getParameter(COMPRESSOR_KEY);
+        if (compressorStr == null) {
+            // Compressor can not be set by dynamic config
+            compressorStr = ConfigurationUtils
+                .getCachedDynamicProperty(model.getModuleModel(), COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
+        }
+        return Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
+    }
+
+    /**
+     * Get the tri protocol special MethodDescriptor
+     */
+    private static MethodDescriptor getTriMethodDescriptor(ConsumerModel consumerModel, RpcInvocation inv) {
+        List<MethodDescriptor> methodDescriptors = consumerModel.getServiceModel().getMethods(inv.getMethodName());
+        if (CollectionUtils.isEmpty(methodDescriptors)) {
+            throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+        }
+        for (MethodDescriptor methodDescriptor : methodDescriptors) {
+            if (Arrays.equals(inv.getParameterTypes(), methodDescriptor.getRealParameterClasses())) {
+                return methodDescriptor;
+            }
+        }
+        throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+    }
+
     protected void startCall(Http2StreamChannel channel, ChannelPromise promise) {
         execute(() -> {
-            channel.pipeline()
-                .addLast(new TripleHttp2ClientResponseHandler())
-                .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
-                .addLast(new TripleClientInboundHandler());
-            channel.attr(TripleConstant.CLIENT_STREAM_KEY).set(this);
-            final ClientTransportObserver clientTransportObserver = new ClientTransportObserver(channel, promise);
+            final ClientOutboundTransportObserver clientTransportObserver = new ClientOutboundTransportObserver(channel, promise);
             subscribe(clientTransportObserver);
             try {
+                DefaultFuture2.addTimeoutListener(getRequestId(), channel::close);
                 doOnStartCall();
             } catch (Throwable throwable) {
                 cancel(throwable);
@@ -125,63 +162,8 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return new ClientStreamObserverImpl(getCancellationContext());
     }
 
-    protected class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
-
-        public ClientStreamObserverImpl(CancellationContext cancellationContext) {
-            super(cancellationContext);
-        }
-
-        @Override
-        public void onNext(Object data) {
-            if (getState().allowSendMeta()) {
-                final Metadata metadata = createRequestMeta(getRpcInvocation());
-                getTransportSubscriber().onMetadata(metadata, false);
-            }
-            if (getState().allowSendData()) {
-                final byte[] bytes = encodeRequest(data);
-                getTransportSubscriber().onData(bytes, false);
-            }
-        }
-
-        /**
-         * Handle all exceptions in the request process, other procedures directly throw
-         * <p>
-         * other procedures is {@link ClientStreamObserver#onNext(Object)} and {@link ClientStreamObserver#onCompleted()}
-         */
-        @Override
-        public void onError(Throwable throwable) {
-            if (getState().allowSendEndStream()) {
-                GrpcStatus status = GrpcStatus.getStatus(throwable);
-                transportError(status, null, getState().allowSendMeta());
-            } else {
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error("Triple request to "
-                        + getConsumerModel().getServiceName() + "#" + getMethodName() +
-                        " was failed by exception ", throwable);
-                }
-            }
-        }
-
-        @Override
-        public void onCompleted() {
-            if (getState().allowSendEndStream()) {
-                getTransportSubscriber().onComplete();
-            }
-        }
-
-        @Override
-        public void setCompression(String compression) {
-            if (!getState().allowSendMeta()) {
-                cancel(new IllegalStateException("Metadata already has been sent,can not set compression"));
-                return;
-            }
-            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
-            setCompressor(compressor);
-        }
-    }
-
     @Override
-    protected void cancelByRemoteReset(Http2Error http2Error) {
+    protected void cancelByRemoteReset() {
         DefaultFuture2.getFuture(getRequestId()).cancel();
     }
 
@@ -190,18 +172,17 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         getCancellationContext().cancel(throwable);
     }
 
-
     @Override
     public void execute(Runnable runnable) {
         try {
             super.execute(runnable);
         } catch (RejectedExecutionException e) {
             LOGGER.error("Consumer's thread pool is full", e);
-            getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
+            outboundMessageSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
                 .withDescription("Consumer's thread pool is full").asException());
         } catch (Throwable t) {
             LOGGER.error("Consumer submit request to thread pool error ", t);
-            getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+            outboundMessageSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withCause(t)
                 .withDescription("Consumer's error")
                 .asException());
@@ -243,11 +224,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         }
     }
 
-    private Http2Error getHttp2Error(Throwable throwable) {
-        // todo Convert the exception to http2Error
-        return Http2Error.CANCEL;
-    }
-
     public ConsumerModel getConsumerModel() {
         return consumerModel;
     }
@@ -270,17 +246,53 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         } else {
             obj = getRequestValue(value);
         }
-        out = TripleUtil.pack(obj);
+        out = pack(obj);
         return super.compress(out);
     }
 
     private TripleWrapper.TripleRequestWrapper getRequestWrapper(Object value) {
         if (getMethodDescriptor().isStream()) {
             String type = getMethodDescriptor().getParameterClasses()[0].getName();
-            return TripleUtil.wrapReq(getUrl(), getSerializeType(), value, type, getMultipleSerialization());
+            return wrapReq(getUrl(), getSerializeType(), value, type, getMultipleSerialization());
         } else {
             RpcInvocation invocation = (RpcInvocation) value;
-            return TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
+            return wrapReq(getUrl(), invocation, getMultipleSerialization());
+        }
+    }
+
+    private TripleWrapper.TripleRequestWrapper wrapReq(URL url, RpcInvocation invocation,
+                                                       MultipleSerialization serialization) {
+        try {
+            String serializationName = (String) invocation.getObjectAttachment(Constants.SERIALIZATION_KEY);
+            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+                .setSerializeType(convertHessianToWrapper(serializationName));
+            for (int i = 0; i < invocation.getArguments().length; i++) {
+                final String clz = invocation.getParameterTypes()[i].getName();
+                builder.addArgTypes(clz);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                serialization.serialize(url, serializationName, clz, invocation.getArguments()[i], bos);
+                builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
+            }
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
+        }
+    }
+
+    public TripleWrapper.TripleRequestWrapper wrapReq(URL url, String serializeType, Object req,
+                                                      String type,
+                                                      MultipleSerialization multipleSerialization) {
+        try {
+            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+                .addArgTypes(type)
+                .setSerializeType(convertHessianToWrapper(serializeType));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            multipleSerialization.serialize(url, serializeType, type, req, bos);
+            builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
+            bos.close();
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
         }
     }
 
@@ -299,21 +311,35 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                 ClassLoadUtil.switchContextLoader(getConsumerModel().getClassLoader());
             }
             if (getMethodDescriptor().isNeedWrap()) {
-                final TripleWrapper.TripleResponseWrapper wrapper = TripleUtil.unpack(data,
+                final TripleWrapper.TripleResponseWrapper wrapper = unpack(data,
                     TripleWrapper.TripleResponseWrapper.class);
-                if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
+                if (!getSerializeType().equals(convertHessianFromWrapper(wrapper.getSerializeType()))) {
                     throw new UnsupportedOperationException("Received inconsistent serialization type from server, " +
                         "reject to deserialize! Expected:" + getSerializeType() +
-                        " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()));
+                        " Actual:" + convertHessianFromWrapper(wrapper.getSerializeType()));
                 }
-                return TripleUtil.unwrapResp(getUrl(), wrapper, getMultipleSerialization());
+                return unwrapResp(getUrl(), wrapper, getMultipleSerialization());
             } else {
-                return TripleUtil.unpack(data, getMethodDescriptor().getReturnClass());
+                return unpack(data, getMethodDescriptor().getReturnClass());
             }
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
         }
     }
+
+    public Object unwrapResp(URL url, TripleWrapper.TripleResponseWrapper wrap,
+                             MultipleSerialization serialization) {
+        String serializeType = convertHessianFromWrapper(wrap.getSerializeType());
+        try {
+            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
+            final Object ret = serialization.deserialize(url, serializeType, wrap.getType(), bais);
+            bais.close();
+            return ret;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to unwrap resp", e);
+        }
+    }
+
 
     protected Metadata createRequestMeta(RpcInvocation inv) {
         Metadata metadata = new DefaultMetadata();
@@ -347,29 +373,58 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return "/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName();
     }
 
-    private static Compressor getCompressor(URL url, ServiceModel model) {
-        String compressorStr = url.getParameter(COMPRESSOR_KEY);
-        if (compressorStr == null) {
-            // Compressor can not be set by dynamic config
-            compressorStr = ConfigurationUtils
-                .getCachedDynamicProperty(model.getModuleModel(), COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
-        }
-        return Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
-    }
+    protected class ClientStreamObserverImpl extends CancelableStreamObserver<Object> implements ClientStreamObserver<Object> {
 
-    /**
-     * Get the tri protocol special MethodDescriptor
-     */
-    private static MethodDescriptor getTriMethodDescriptor(ConsumerModel consumerModel, RpcInvocation inv) {
-        List<MethodDescriptor> methodDescriptors = consumerModel.getServiceModel().getMethods(inv.getMethodName());
-        if (CollectionUtils.isEmpty(methodDescriptors)) {
-            throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+        public ClientStreamObserverImpl(CancellationContext cancellationContext) {
+            super(cancellationContext);
         }
-        for (MethodDescriptor methodDescriptor : methodDescriptors) {
-            if (Arrays.equals(inv.getParameterTypes(), methodDescriptor.getRealParameterClasses())) {
-                return methodDescriptor;
+
+        @Override
+        public void onNext(Object data) {
+            if (getState().allowSendMeta()) {
+                final Metadata metadata = createRequestMeta(getRpcInvocation());
+                outboundTransportObserver().onMetadata(metadata, false);
+            }
+            if (getState().allowSendData()) {
+                final byte[] bytes = encodeRequest(data);
+                outboundTransportObserver().onData(bytes, false);
             }
         }
-        throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+
+        /**
+         * Handle all exceptions in the request process, other procedures directly throw
+         * <p>
+         * other procedures is {@link ClientStreamObserver#onNext(Object)} and {@link ClientStreamObserver#onCompleted()}
+         */
+        @Override
+        public void onError(Throwable throwable) {
+            if (getState().allowSendEndStream()) {
+                GrpcStatus status = GrpcStatus.getStatus(throwable);
+                transportError(status, null, getState().allowSendMeta());
+            } else {
+                if (LOGGER.isErrorEnabled()) {
+                    LOGGER.error("Triple request to "
+                        + getConsumerModel().getServiceName() + "#" + getMethodName() +
+                        " was failed by exception ", throwable);
+                }
+            }
+        }
+
+        @Override
+        public void onCompleted() {
+            if (getState().allowSendEndStream()) {
+                outboundTransportObserver().onComplete();
+            }
+        }
+
+        @Override
+        public void setCompression(String compression) {
+            if (!getState().allowSendMeta()) {
+                cancel(new IllegalStateException("Metadata already has been sent,can not set compression"));
+                return;
+            }
+            Compressor compressor = Compressor.getCompressor(getUrl().getOrDefaultFrameworkModel(), compression);
+            setCompressor(compressor);
+        }
     }
 }

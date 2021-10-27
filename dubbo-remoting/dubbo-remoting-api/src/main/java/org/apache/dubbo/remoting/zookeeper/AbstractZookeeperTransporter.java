@@ -40,7 +40,7 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 /**
  * AbstractZookeeperTransporter is abstract implements of ZookeeperTransporter.
  * <p>
- * If you want to extends this, implements createZookeeperClient.
+ * If you want to extend this, implements createZookeeperClient.
  */
 public abstract class AbstractZookeeperTransporter implements ZookeeperTransporter {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperTransporter.class);

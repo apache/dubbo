@@ -47,6 +47,12 @@ class TransportStateTest {
 
         transportState = new TransportState();
         Assertions.assertTrue(transportState.allowSendMeta());
+
+        transportState = new TransportState();
+        if (transportState.allowSendMeta()) {
+            transportState.setMetaSend();
+        }
+        Assertions.assertFalse(transportState.allowSendMeta());
     }
 
     @Test

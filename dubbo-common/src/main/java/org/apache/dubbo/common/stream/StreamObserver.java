@@ -17,16 +17,24 @@
 
 package org.apache.dubbo.common.stream;
 
+/**
+ * StreamObserver is a common streaming API. It is an observer for receiving messages.
+ * Implementations are NOT required to be thread-safe.
+ *
+ * @param <T> type of message
+ */
 public interface StreamObserver<T> {
     /**
      * onNext
-     * @param data
+     *
+     * @param data to process
      */
     void onNext(T data);
 
     /**
      * onError
-     * @param throwable
+     *
+     * @param throwable error
      */
     void onError(Throwable throwable);
 

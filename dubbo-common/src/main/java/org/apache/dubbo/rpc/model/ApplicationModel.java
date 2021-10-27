@@ -72,6 +72,7 @@ public class ApplicationModel extends ScopeModel {
     private AtomicInteger moduleIndex = new AtomicInteger(0);
     private Object moduleLock = new Object();
 
+    private final boolean isInternal;
 
     // --------- static methods ----------//
 
@@ -194,14 +195,21 @@ public class ApplicationModel extends ScopeModel {
     // ------------- instance methods ---------------//
 
     public ApplicationModel(FrameworkModel frameworkModel) {
+        this(frameworkModel, false);
+    }
+
+    public ApplicationModel(FrameworkModel frameworkModel, boolean isInternal) {
         super(frameworkModel, ExtensionScope.APPLICATION);
         Assert.notNull(frameworkModel, "FrameworkModel can not be null");
+        this.isInternal = isInternal;
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
         initialize();
         // bind to default instance if absent
-        if (defaultInstance == null) {
-            defaultInstance = this;
+        synchronized (ApplicationModel.class) {
+            if (!isInternal && defaultInstance == null) {
+                defaultInstance = this;
+            }
         }
     }
 
@@ -235,7 +243,20 @@ public class ApplicationModel extends ScopeModel {
 
     @Override
     protected void onDestroy() {
+        // 1. remove from frameworkModel
+        if (defaultInstance == this) {
+            synchronized (ApplicationModel.class) {
+                frameworkModel.removeApplication(this);
+                defaultInstance = null;
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Reset default Dubbo application[" + getInternalId() + "] to null ...");
+                }
+            }
+        } else {
+            frameworkModel.removeApplication(this);
+        }
 
+        // 2. pre-destroy, set stopping
         if (deployer != null) {
             deployer.preDestroy();
         }
@@ -249,15 +270,7 @@ public class ApplicationModel extends ScopeModel {
         // destroy internal module later
         internalModule.destroy();
 
-        if (defaultInstance == this) {
-            synchronized (ApplicationModel.class) {
-                frameworkModel.removeApplication(this);
-                defaultInstance = null;
-            }
-        } else {
-            frameworkModel.removeApplication(this);
-        }
-
+        // post-destroy, release registry resources
         if (deployer != null) {
             deployer.postDestroy();
         }
@@ -277,7 +290,8 @@ public class ApplicationModel extends ScopeModel {
             serviceRepository.destroy();
             serviceRepository = null;
         }
-        // try destroy framework if no any application
+
+        // destroy framework if none application
         frameworkModel.tryDestroy();
     }
 
@@ -448,5 +462,9 @@ public class ApplicationModel extends ScopeModel {
 
     public void setDeployer(ApplicationDeployer deployer) {
         this.deployer = deployer;
+    }
+
+    public boolean isInternal() {
+        return isInternal;
     }
 }
