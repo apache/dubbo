@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -193,6 +194,11 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     public ApplicationConfig(String name) {
+        setName(name);
+    }
+
+    public ApplicationConfig(ApplicationModel applicationModel, String name) {
+        super(applicationModel);
         setName(name);
     }
 

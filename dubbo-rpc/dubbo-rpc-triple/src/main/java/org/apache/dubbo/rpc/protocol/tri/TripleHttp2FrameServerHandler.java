@@ -51,12 +51,12 @@ import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
-    private final PathResolver PATH_RESOLVER;
+    private final PathResolver pathResolver;
     private final FrameworkModel frameworkModel;
 
     public TripleHttp2FrameServerHandler(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
-        this.PATH_RESOLVER = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
+        this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
     }
 
     @Override
@@ -83,7 +83,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
         final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
-        serverStream.cancelByRemote();
+        if (serverStream != null) {
+            serverStream.cancelByRemote();
+        }
         ctx.close();
     }
 
@@ -114,9 +116,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         final String group = headers.contains(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader())
             .toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
-        Invoker<?> invoker = PATH_RESOLVER.resolve(key);
+        Invoker<?> invoker = pathResolver.resolve(key);
         if (invoker == null) {
-            invoker = PATH_RESOLVER.resolve(serviceName);
+            invoker = pathResolver.resolve(serviceName);
         }
         return invoker;
     }

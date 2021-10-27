@@ -17,11 +17,13 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
+import org.apache.dubbo.config.ApplicationConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,8 +40,8 @@ public class FrameworkModel extends ScopeModel {
 
     public static final String NAME = "FrameworkModel";
     private static final AtomicLong index = new AtomicLong(1);
-    // app index starts from 1 in each FrameworkModel
-    private final AtomicLong appIndex = new AtomicLong(1);
+    // internal app index is 0, default app index is 1
+    private final AtomicLong appIndex = new AtomicLong(0);
 
     private volatile static FrameworkModel defaultInstance;
 
@@ -49,7 +51,11 @@ public class FrameworkModel extends ScopeModel {
 
     private List<ApplicationModel> applicationModels = Collections.synchronizedList(new ArrayList<>());
 
+    private List<ApplicationModel> pubApplicationModels = Collections.synchronizedList(new ArrayList<>());
+
     private FrameworkServiceRepository serviceRepository;
+
+    private ApplicationModel internalApplicationModel;
 
     private Object lock = new Object();
 
@@ -58,12 +64,10 @@ public class FrameworkModel extends ScopeModel {
         // register FrameworkModel instance early
         synchronized (FrameworkModel.class) {
             allInstances.add(this);
-            if (defaultInstance == null) {
-                defaultInstance = this;
-            }
+            resetDefaultFrameworkModel();
         }
         initialize();
-        this.setInternalName(buildInternalName(NAME, null, index.getAndIncrement()));
+        this.setInternalId(index.getAndIncrement()+"");
     }
 
     @Override
@@ -76,6 +80,11 @@ public class FrameworkModel extends ScopeModel {
         for (ScopeModelInitializer initializer : initializers) {
             initializer.initializeFrameworkModel(this);
         }
+
+        internalApplicationModel = new ApplicationModel(this, true);
+        internalApplicationModel.getApplicationConfigManager().setApplication(
+            new ApplicationConfig(internalApplicationModel, CommonConstants.DUBBO_INTERNAL_APPLICATION));
+        internalApplicationModel.setModelName(CommonConstants.DUBBO_INTERNAL_APPLICATION);
     }
 
     @Override
@@ -105,9 +114,7 @@ public class FrameworkModel extends ScopeModel {
 
         synchronized (FrameworkModel.class) {
             allInstances.remove(this);
-            if (defaultInstance == this) {
-                defaultInstance = null;
-            }
+            resetDefaultFrameworkModel();
         }
 
         // if all FrameworkModels are destroyed, clean global static resources, shutdown dubbo completely
@@ -118,7 +125,7 @@ public class FrameworkModel extends ScopeModel {
         if (applicationModels.size() > 0) {
             List<String> remainApplications = new ArrayList<>();
             for (ApplicationModel applicationModel : applicationModels) {
-                remainApplications.add(applicationModel.getInternalName());
+                remainApplications.add(applicationModel.getDesc());
             }
             throw new IllegalStateException("Not all application models are completely destroyed, remaining " +
                 remainApplications.size() + " application models may be created during destruction: " + remainApplications);
@@ -191,9 +198,30 @@ public class FrameworkModel extends ScopeModel {
         checkDestroyed();
         synchronized (lock){
             if (!this.applicationModels.contains(applicationModel)) {
+                applicationModel.setInternalId(buildInternalId(getInternalId(), appIndex.getAndIncrement()));
                 this.applicationModels.add(applicationModel);
-                applicationModel.setInternalName(buildInternalName(ApplicationModel.NAME, getInternalId(), appIndex.getAndIncrement()));
+                if (!applicationModel.isInternal()) {
+                    this.pubApplicationModels.add(applicationModel);
+                }
                 resetDefaultAppModel();
+            }
+        }
+    }
+
+    void removeApplication(ApplicationModel model) {
+        synchronized (lock) {
+            this.applicationModels.remove(model);
+            if (!model.isInternal()) {
+                this.pubApplicationModels.remove(model);
+            }
+            resetDefaultAppModel();
+        }
+    }
+
+    void tryDestroy() {
+        synchronized (lock) {
+            if (pubApplicationModels.size() == 0) {
+                destroy();
             }
         }
     }
@@ -204,35 +232,55 @@ public class FrameworkModel extends ScopeModel {
         }
     }
 
-    void removeApplication(ApplicationModel model) {
-        synchronized (lock) {
-            this.applicationModels.remove(model);
-            if (this.defaultAppModel == model) {
-                resetDefaultAppModel();
-            }
-        }
-    }
-
     private void resetDefaultAppModel() {
         synchronized (lock) {
-            if (applicationModels.size() > 0) {
-                this.defaultAppModel = applicationModels.get(0);
+            ApplicationModel oldDefaultAppModel = this.defaultAppModel;
+            if (pubApplicationModels.size() > 0) {
+                this.defaultAppModel = pubApplicationModels.get(0);
             } else {
                 this.defaultAppModel = null;
             }
-        }
-    }
-
-    void tryDestroy() {
-        synchronized (lock) {
-            if (applicationModels.size() == 0) {
-                destroy();
+            if (defaultInstance == this && oldDefaultAppModel != this.defaultAppModel) {
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Reset global default application from " + getModelDesc(oldDefaultAppModel) + " to " + getModelDesc(this.defaultAppModel));
+                }
             }
         }
     }
 
+    private void resetDefaultFrameworkModel() {
+        synchronized (FrameworkModel.class) {
+            if (defaultInstance != null && !defaultInstance.isDestroyed()) {
+                return;
+            }
+            FrameworkModel oldDefaultFrameworkModel = defaultInstance;
+            if (allInstances.size() > 0) {
+                defaultInstance = allInstances.get(0);
+            } else {
+                defaultInstance = null;
+            }
+            if (oldDefaultFrameworkModel != defaultInstance) {
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Reset global default framework from " + getModelDesc(oldDefaultFrameworkModel) + " to " + getModelDesc(defaultInstance));
+                }
+            }
+        }
+    }
+
+    private String getModelDesc(ScopeModel scopeModel) {
+        return scopeModel != null ? "[" + scopeModel.getInternalId() + "]" : null;
+    }
+
     public List<ApplicationModel> getApplicationModels() {
+        return Collections.unmodifiableList(pubApplicationModels);
+    }
+
+    public List<ApplicationModel> getAllApplicationModels() {
         return Collections.unmodifiableList(applicationModels);
+    }
+
+    public ApplicationModel getInternalApplicationModel() {
+        return internalApplicationModel;
     }
 
     public FrameworkServiceRepository getServiceRepository() {

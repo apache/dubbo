@@ -70,6 +70,7 @@ public class ApplicationModel extends ScopeModel {
     private AtomicInteger moduleIndex = new AtomicInteger(0);
     private Object moduleLock = new Object();
 
+    private final boolean isInternal;
 
     // --------- static methods ----------//
 
@@ -185,8 +186,13 @@ public class ApplicationModel extends ScopeModel {
     // ------------- instance methods ---------------//
 
     public ApplicationModel(FrameworkModel frameworkModel) {
+        this(frameworkModel, false);
+    }
+
+    public ApplicationModel(FrameworkModel frameworkModel, boolean isInternal) {
         super(frameworkModel, ExtensionScope.APPLICATION);
         Assert.notNull(frameworkModel, "FrameworkModel can not be null");
+        this.isInternal = isInternal;
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
         initialize();
@@ -222,7 +228,10 @@ public class ApplicationModel extends ScopeModel {
 
     @Override
     protected void onDestroy() {
+        // 1. remove from frameworkModel
+        frameworkModel.removeApplication(this);
 
+        // 2. pre-destroy, set stopping
         if (deployer != null) {
             deployer.preDestroy();
         }
@@ -236,8 +245,7 @@ public class ApplicationModel extends ScopeModel {
         // destroy internal module later
         internalModule.destroy();
 
-        frameworkModel.removeApplication(this);
-
+        // post-destroy, release registry resources
         if (deployer != null) {
             deployer.postDestroy();
         }
@@ -257,7 +265,8 @@ public class ApplicationModel extends ScopeModel {
             serviceRepository.destroy();
             serviceRepository = null;
         }
-        // try destroy framework if no any application
+
+        // destroy framework if none application
         frameworkModel.tryDestroy();
     }
 
@@ -310,7 +319,7 @@ public class ApplicationModel extends ScopeModel {
         synchronized (moduleLock) {
             if (!this.moduleModels.contains(moduleModel)) {
                 this.moduleModels.add(moduleModel);
-                moduleModel.setInternalName(buildInternalName(ModuleModel.NAME, getInternalId(), moduleIndex.getAndIncrement()));
+                moduleModel.setInternalId(buildInternalId(getInternalId(), moduleIndex.getAndIncrement()));
                 if (!isInternal) {
                     pubModuleModels.add(moduleModel);
                 }
@@ -428,5 +437,9 @@ public class ApplicationModel extends ScopeModel {
 
     public void setDeployer(ApplicationDeployer deployer) {
         this.deployer = deployer;
+    }
+
+    public boolean isInternal() {
+        return isInternal;
     }
 }
