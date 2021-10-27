@@ -21,6 +21,9 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invoker;
 
+/**
+ * PathResolver maintains a mapping between request path and Invoker for multiple protocols.
+ */
 @SPI(value = CommonConstants.TRIPLE, scope = ExtensionScope.FRAMEWORK)
 public interface PathResolver {
 

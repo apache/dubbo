@@ -37,14 +37,11 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (msg instanceof Request) {
-            writeRequest(ctx, (Request) msg, promise);
-        } else {
+        if (!(msg instanceof Request)) {
             super.write(ctx, msg, promise);
+            return;
         }
-    }
-
-    private void writeRequest(ChannelHandlerContext ctx, final Request req, final ChannelPromise promise) {
+        final Request req = (Request) msg;
         Connection connection = Connection.getConnectionFromChannel(ctx.channel());
         final AbstractClientStream stream = AbstractClientStream.newClientStream(req, connection);
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());

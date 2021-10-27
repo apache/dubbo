@@ -14,28 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.rpc.model.FrameworkModel;
+abstract class ServerUnaryInboundTransportObserver extends InboundTransportObserver implements TransportObserver {
+    protected static final String DUPLICATED_DATA = "Duplicated data";
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
+    private byte[] data;
 
-public class TripleServerInitializer extends ChannelInitializer<Channel> {
-
-    private final FrameworkModel frameworkModel;
-
-    public TripleServerInitializer(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
+    public byte[] getData() {
+        return data;
     }
 
     @Override
-    protected void initChannel(Channel ch) throws Exception {
-        final ChannelPipeline p = ch.pipeline();
-        p.addLast(new TripleHttp2FrameServerHandler(frameworkModel));
-        // TODO constraint MAX DATA_SIZE
-        p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE, false));
-        p.addLast(new TripleServerInboundHandler());
+    public void onData(byte[] in, boolean endStream) {
+        if (data == null) {
+            this.data = in;
+        } else {
+            onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription(DUPLICATED_DATA));
+        }
     }
 }

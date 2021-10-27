@@ -45,7 +45,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         return new UnaryServerTransportObserver();
     }
 
-    private class UnaryServerTransportObserver extends UnaryInboundTransportObserver implements TransportObserver {
+    private class UnaryServerTransportObserver extends ServerUnaryInboundTransportObserver implements TransportObserver {
         @Override
         public void onError(GrpcStatus status) {
             transportError(status);
@@ -85,8 +85,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                 outboundTransportObserver().onMetadata(metadata, false);
                 final byte[] data = encodeResponse(response.getValue());
                 if (data == null) {
-                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Missing response data"));
+                    // already handled in encodeResponse()
                     return;
                 }
                 outboundTransportObserver().onData(data, false);
