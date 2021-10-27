@@ -85,10 +85,12 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                 outboundTransportObserver().onMetadata(metadata, false);
                 final byte[] data = encodeResponse(response.getValue());
                 if (data == null) {
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription("Missing response data"));
                     return;
                 }
                 outboundTransportObserver().onData(data, false);
-                Metadata trailers = TripleConstant.SUCCESS_RESPONSE_META;
+                Metadata trailers = TripleConstant.getSuccessResponseMeta();
                 convertAttachment(trailers, response.getObjectAttachments());
                 outboundTransportObserver().onMetadata(trailers, true);
             });

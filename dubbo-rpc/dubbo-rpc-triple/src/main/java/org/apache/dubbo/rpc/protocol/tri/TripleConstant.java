@@ -50,7 +50,7 @@ public class TripleConstant {
 
     public static final Metadata SUCCESS_RESPONSE_META = getSuccessResponseMeta();
 
-    private static Metadata getSuccessResponseMeta() {
+    static Metadata getSuccessResponseMeta() {
         Metadata metadata = new DefaultMetadata();
         metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), TripleConstant.SUCCESS_RESPONSE_MESSAGE);
         metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), TripleConstant.SUCCESS_RESPONSE_STATUS);
