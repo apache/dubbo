@@ -17,15 +17,19 @@
 
 package org.apache.dubbo.common.metrics.service;
 
+import org.apache.dubbo.common.metrics.model.MetricsCategory;
+
 import java.util.Map;
 import java.util.Objects;
 
 /**
- * Response entity for {@link MetricsService}
+ * Metrics response entity.
  */
-public class MetricResponse {
+public class MetricsEntity {
+
     private String name;
     private Map<String, String> tags;
+    private MetricsCategory category;
     private Object value;
 
     public String getName() {
@@ -44,6 +48,14 @@ public class MetricResponse {
         this.tags = tags;
     }
 
+    public MetricsCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(MetricsCategory category) {
+        this.category = category;
+    }
+
     public Object getValue() {
         return value;
     }
@@ -56,12 +68,13 @@ public class MetricResponse {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MetricResponse response = (MetricResponse) o;
-        return Objects.equals(name, response.name) && Objects.equals(tags, response.tags) && Objects.equals(value, response.value);
+        MetricsEntity entity = (MetricsEntity) o;
+        return Objects.equals(name, entity.name) && Objects.equals(tags, entity.tags)
+            && Objects.equals(category, entity.category) && Objects.equals(value, entity.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, tags, value);
+        return Objects.hash(name, tags, category, value);
     }
 }

@@ -19,9 +19,10 @@ package org.apache.dubbo.metrics.service;
 
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.metrics.collector.MetricsCollector;
+import org.apache.dubbo.common.metrics.model.MetricsCategory;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
-import org.apache.dubbo.common.metrics.service.MetricResponse;
+import org.apache.dubbo.common.metrics.service.MetricsEntity;
 import org.apache.dubbo.common.metrics.service.MetricsService;
 import org.apache.dubbo.metrics.collector.AggregateMetricsCollector;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,40 +48,39 @@ public class DefaultMetricsService implements MetricsService {
     }
 
     @Override
-    public Map<String, List<MetricResponse>> getMetricsByPrefix(List<String> prefixes) {
-        return getMetricsByPrefix(null, prefixes);
+    public Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(List<MetricsCategory> categories) {
+        return getMetricsByCategories(null, categories);
     }
 
     @Override
-    public Map<String, List<MetricResponse>> getMetricsByPrefix(String serviceUniqueName, List<String> prefixes) {
-        return getMetricsByPrefix(serviceUniqueName, null, null, prefixes);
+    public Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(String serviceUniqueName, List<MetricsCategory> categories) {
+        return getMetricsByCategories(serviceUniqueName, null, null, categories);
     }
 
     @Override
-    public Map<String, List<MetricResponse>> getMetricsByPrefix(String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<String> prefixes) {
-        Map<String, List<MetricResponse>> result = new HashMap<>();
+    public Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<MetricsCategory> categories) {
+        Map<MetricsCategory, List<MetricsEntity>> result = new HashMap<>();
         List<MetricSample> samples = getMetrics();
-        for (String prefix : prefixes) {
-            for (MetricSample sample : samples) {
-                if (sample.getName().startsWith(prefix)) {
-                    List<MetricResponse> responseList = result.computeIfAbsent(prefix, k -> new ArrayList<>());
-                    responseList.add(sampleToResponse(sample));
-                }
+        for (MetricSample sample : samples) {
+            if (categories.contains(sample.getCategory())) {
+                List<MetricsEntity> entities = result.computeIfAbsent(sample.getCategory(), k -> new ArrayList<>());
+                entities.add(sampleToEntity(sample));
             }
         }
 
         return result;
     }
 
-    private MetricResponse sampleToResponse(MetricSample sample) {
-        MetricResponse response = new MetricResponse();
+    private MetricsEntity sampleToEntity(MetricSample sample) {
+        MetricsEntity entity = new MetricsEntity();
 
-        response.setName(sample.getName());
-        response.setTags(sample.getTags());
+        entity.setName(sample.getName());
+        entity.setTags(sample.getTags());
+        entity.setCategory(sample.getCategory());
         switch (sample.getType()) {
             case GAUGE:
                 GaugeMetricSample gaugeSample = (GaugeMetricSample) sample;
-                response.setValue(gaugeSample.getSupplier().get());
+                entity.setValue(gaugeSample.getSupplier().get());
                 break;
             case COUNTER:
             case LONG_TASK_TIMER:
@@ -90,7 +90,7 @@ public class DefaultMetricsService implements MetricsService {
                 break;
         }
 
-        return response;
+        return entity;
     }
 
     private List<MetricSample> getMetrics() {

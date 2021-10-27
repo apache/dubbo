@@ -38,6 +38,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.metrics.model.MetricsCategory.QPS;
+import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
+import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
+
 /**
  * Aggregation metrics collector implementation of {@link MetricsCollector}.
  * This collector only enabled when metrics aggregation config is enabled.
@@ -128,22 +132,19 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.total.aggregate", "Aggregated Total Requests", k.getTags(), v::get)));
-        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.succeed.aggregate", "Aggregated Succeed Requests", k.getTags(), v::get)));
-        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.failed.aggregate", "Aggregated Failed Requests", k.getTags(), v::get)));
+        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.total.aggregate", "Aggregated Total Requests", k.getTags(), REQUESTS, v::get)));
+        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.succeed.aggregate", "Aggregated Succeed Requests", k.getTags(), REQUESTS, v::get)));
+        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.failed.aggregate", "Aggregated Failed Requests", k.getTags(), REQUESTS, v::get)));
     }
 
     private void collectQPS(List<MetricSample> list) {
-        qps.forEach((k, v) -> list.add(new GaugeMetricSample("qps", "Query Per Seconds", k.getTags(), () -> {
-            System.out.println(k.getInterfaceName() + "." + k.getMethodName() + " request count: " + v.get() + ", in time: " + v.bucketLivedSeconds());
-            return v.get() / v.bucketLivedSeconds();
-        })));
+        qps.forEach((k, v) -> list.add(new GaugeMetricSample("qps", "Query Per Seconds", k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
     }
 
     private void collectRT(List<MetricSample> list) {
         rt.forEach((k, v) -> {
-            list.add(new GaugeMetricSample("rt.p99", "Response Time P99", k.getTags(), () -> v.quantile(0.99)));
-            list.add(new GaugeMetricSample("rt.p95", "Response Time P95", k.getTags(), () -> v.quantile(0.95)));
+            list.add(new GaugeMetricSample("rt.p99", "Response Time P99", k.getTags(), RT, () -> v.quantile(0.99)));
+            list.add(new GaugeMetricSample("rt.p95", "Response Time P95", k.getTags(), RT, () -> v.quantile(0.95)));
         });
     }
 }

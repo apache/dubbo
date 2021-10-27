@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.common.metrics.model.sample;
 
+import org.apache.dubbo.common.metrics.model.MetricsCategory;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -24,21 +26,23 @@ import java.util.Objects;
  * MetricSample.
  */
 public class MetricSample {
-    protected String name;
-    protected String description;
-    protected Map<String, String> tags;
-    protected Type type;
-    protected String baseUnit;
+    private String name;
+    private String description;
+    private Map<String, String> tags;
+    private Type type;
+    private MetricsCategory category;
+    private String baseUnit;
 
-    public MetricSample(String name, String description, Map<String, String> tags, Type type) {
-        this(name, description, tags, type, null);
+    public MetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category) {
+        this(name, description, tags, type, category, null);
     }
 
-    public MetricSample(String name, String description, Map<String, String> tags, Type type, String baseUnit) {
+    public MetricSample(String name, String description, Map<String, String> tags, Type type, MetricsCategory category, String baseUnit) {
         this.name = name;
         this.description = description;
         this.tags = tags;
         this.type = type;
+        this.category = category;
         this.baseUnit = baseUnit;
     }
 
@@ -74,6 +78,14 @@ public class MetricSample {
         this.type = type;
     }
 
+    public MetricsCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(MetricsCategory category) {
+        this.category = category;
+    }
+
     public String getBaseUnit() {
         return baseUnit;
     }
@@ -87,12 +99,14 @@ public class MetricSample {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MetricSample that = (MetricSample) o;
-        return Objects.equals(name, that.name) && Objects.equals(description, that.description) && Objects.equals(baseUnit, that.baseUnit) && type == that.type && Objects.equals(tags, that.tags);
+        return Objects.equals(name, that.name) && Objects.equals(description, that.description)
+            && Objects.equals(baseUnit, that.baseUnit) && type == that.type
+            && Objects.equals(category, that.category) && Objects.equals(tags, that.tags);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, description, baseUnit, type, tags);
+        return Objects.hash(name, description, baseUnit, type, category, tags);
     }
 
     @Override
@@ -102,6 +116,7 @@ public class MetricSample {
             ", description='" + description + '\'' +
             ", baseUnit='" + baseUnit + '\'' +
             ", type=" + type +
+            ", category=" + category +
             ", tags=" + tags +
             '}';
     }

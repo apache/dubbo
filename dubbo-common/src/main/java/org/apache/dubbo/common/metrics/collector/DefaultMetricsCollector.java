@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
+import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
+
 /**
  * Default implementation of {@link MetricsCollector}
  */
@@ -160,17 +163,17 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.total", "Total Requests", k.getTags(), v::get)));
-        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.succeed", "Succeed Requests", k.getTags(), v::get)));
-        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.failed", "Failed Requests", k.getTags(), v::get)));
-        processingRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.processing", "Processing Requests", k.getTags(), v::get)));
+        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.total", "Total Requests", k.getTags(), REQUESTS, v::get)));
+        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.succeed", "Succeed Requests", k.getTags(), REQUESTS, v::get)));
+        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.failed", "Failed Requests", k.getTags(), REQUESTS, v::get)));
+        processingRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.processing", "Processing Requests", k.getTags(), REQUESTS, v::get)));
     }
 
     private void collectRT(List<MetricSample> list) {
-        lastRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.last", "Last Response Time", k.getTags(), v::get)));
-        minRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.min", "Min Response Time", k.getTags(), v::get)));
-        maxRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.max", "Max Response Time", k.getTags(), v::get)));
-        avgRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.avg", "Avg Response Time", k.getTags(), v::get)));
-        totalRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.total", "Total Response Time", k.getTags(), v::get)));
+        lastRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.last", "Last Response Time", k.getTags(), RT, v::get)));
+        minRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.min", "Min Response Time", k.getTags(), RT, v::get)));
+        maxRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.max", "Max Response Time", k.getTags(), RT, v::get)));
+        avgRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.avg", "Avg Response Time", k.getTags(), RT, v::get)));
+        totalRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.total", "Total Response Time", k.getTags(), RT, v::get)));
     }
 }

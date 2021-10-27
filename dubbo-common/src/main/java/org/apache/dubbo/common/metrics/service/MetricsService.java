@@ -19,6 +19,7 @@ package org.apache.dubbo.common.metrics.service;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.metrics.model.MetricsCategory;
 
 import java.util.List;
 import java.util.Map;
@@ -45,19 +46,19 @@ public interface MetricsService {
     /**
      * Get metrics by prefixes
      *
-     * @param prefixes prefixes
-     * @return metrics - key=prefix value=metricResponse
+     * @param categories categories
+     * @return metrics - key=MetricCategory value=MetricsEntityList
      */
-    Map<String, List<MetricResponse>> getMetricsByPrefix(List<String> prefixes);
+    Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(List<MetricsCategory> categories);
 
     /**
      * Get metrics by interface and prefixes
      *
      * @param serviceUniqueName serviceUniqueName (eg.group/interfaceName:version)
-     * @param prefixes prefixes
-     * @return metrics - key=prefix value=metricResponse
+     * @param categories categories
+     * @return metrics - key=MetricCategory value=MetricsEntityList
      */
-    Map<String, List<MetricResponse>> getMetricsByPrefix(String serviceUniqueName, List<String> prefixes);
+    Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(String serviceUniqueName, List<MetricsCategory> categories);
 
     /**
      * Get metrics by interface、method and prefixes
@@ -65,8 +66,8 @@ public interface MetricsService {
      * @param serviceUniqueName serviceUniqueName (eg.group/interfaceName:version)
      * @param methodName methodName
      * @param parameterTypes method parameter types
-     * @param prefixes prefixes
-     * @return metrics - key=prefix value=metricResponse
+     * @param categories categories
+     * @return metrics - key=MetricCategory value=MetricsEntityList
      */
-    Map<String, List<MetricResponse>> getMetricsByPrefix(String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<String> prefixes);
+    Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<MetricsCategory> categories);
 }
