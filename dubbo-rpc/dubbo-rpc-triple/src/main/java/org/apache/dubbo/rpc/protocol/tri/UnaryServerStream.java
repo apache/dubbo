@@ -66,10 +66,10 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
             if (getMethodDescriptor().isNeedWrap()) {
                 // For wrapper overload methods, the methodDescriptor needs to get from data, so parse the request first
                 final Object[] arguments = deserializeRequest(getData());
-                invocation = buildInvocation(getHeaders());
                 if (arguments == null) {
                     return;
                 }
+                invocation = buildInvocation(getHeaders());
                 invocation.setArguments(arguments);
             } else {
                 invocation = buildInvocation(getHeaders());
