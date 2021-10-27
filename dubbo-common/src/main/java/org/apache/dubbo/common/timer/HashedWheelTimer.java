@@ -99,7 +99,7 @@ public class HashedWheelTimer implements Timer {
     private static final AtomicIntegerFieldUpdater<HashedWheelTimer> WORKER_STATE_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(HashedWheelTimer.class, "workerState");
 
-    private static final GlobalResourceInitializer<ExecutorService>  DEFAULT_TIMER_TASK_EXECUTOR =
+    private static final GlobalResourceInitializer<ExecutorService> DEFAULT_TIMER_TASK_EXECUTOR =
             new GlobalResourceInitializer<>(() ->
                 Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
                 new NamedThreadFactory("HashedWheelTimerTask", true)),
