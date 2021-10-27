@@ -30,6 +30,22 @@ import java.util.NoSuchElementException;
 
 /**
  * BitList based on BitMap implementation.
+ * BitList is consists of `originList`, `rootSet` and `tailList`.
+ *
+ * originList: Initial elements of the list. This list will not be changed
+ *             in modification actions (expect clear all).
+ * rootSet: A bitMap to store the indexes of originList are still exist.
+ *          Most of the modification actions are operated on this bitMap.
+ * tailList: An additional list for BitList. Worked when adding totally new
+ *           elements to list. These elements will be appended to the last
+ *           of the BitList.
+ *
+ * An example of BitList:
+ *   originList:  A  B  C  D  E             (5 elements)
+ *   rootSet:     x  v  x  v  v
+ *                0  1  0  1  1             (5 elements)
+ *   tailList:                   F  G  H    (3 elements)
+ *   resultList:     B     D  E  F  G  H    (6 elements)
  *
  * @param <E>
  * @since 3.0
@@ -115,6 +131,8 @@ public class BitList<E> extends AbstractList<E> {
      * directly set its index in rootSet to true. (This may change the order of elements.)
      * 
      * If the element is not contained in originList, allocate tailList and add to tailList.
+     *
+     * Notice: It is not recommended adding duplicated element.
      */
     @Override
     public boolean add(E e) {
