@@ -230,6 +230,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private void loadApplicationConfigs() {
         configManager.loadConfigs();
+        if (StringUtils.hasText(applicationModel.getModelName())) {
+            setIdentifier(applicationModel.getDesc());
+        }
     }
 
     private void startConfigCenter() {
@@ -240,6 +243,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // try set model name
         if (StringUtils.isBlank(applicationModel.getModelName())) {
             applicationModel.setModelName(applicationModel.tryGetApplicationName());
+        }
+        if (StringUtils.hasText(applicationModel.getModelName())) {
+            setIdentifier(applicationModel.getDesc());
         }
 
         // load config centers

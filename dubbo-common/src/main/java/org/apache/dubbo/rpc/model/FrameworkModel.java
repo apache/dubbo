@@ -67,6 +67,9 @@ public class FrameworkModel extends ScopeModel {
             allInstances.add(this);
             resetDefaultFrameworkModel();
         }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is created");
+        }
         initialize();
     }
 

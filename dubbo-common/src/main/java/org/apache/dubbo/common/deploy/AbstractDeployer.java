@@ -166,4 +166,8 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
         }
         return identifier;
     }
+
+    protected void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
 }

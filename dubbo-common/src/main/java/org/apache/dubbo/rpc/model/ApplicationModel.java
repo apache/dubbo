@@ -195,6 +195,9 @@ public class ApplicationModel extends ScopeModel {
         this.isInternal = isInternal;
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is created");
+        }
         initialize();
     }
 
