@@ -128,22 +128,6 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     @Override
-    public boolean isAvailable() {
-        if (isDestroyed() || this.forbidden) {
-            return false;
-        }
-        Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
-        if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
-                if (invoker.isAvailable()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
     public synchronized void notify(List<URL> instanceUrls) {
         if (isDestroyed()) {
             return;

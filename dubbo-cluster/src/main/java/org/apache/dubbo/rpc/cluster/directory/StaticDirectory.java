@@ -70,7 +70,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         if (isDestroyed()) {
             return false;
         }
-        for (Invoker<T> invoker : invokers) {
+        for (Invoker<T> invoker : validInvokers) {
             if (invoker.isAvailable()) {
                 return true;
             }

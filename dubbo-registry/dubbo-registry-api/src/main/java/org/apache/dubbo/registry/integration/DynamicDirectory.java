@@ -21,6 +21,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
@@ -256,6 +257,15 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     public List<Invoker<T>> getInvokers() {
         return invokers;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        if (isDestroyed() || this.forbidden) {
+            return false;
+        }
+        return CollectionUtils.isNotEmpty(validInvokers)
+            && validInvokers.stream().anyMatch(Invoker::isAvailable);
     }
 
     @Override

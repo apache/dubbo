@@ -578,16 +578,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
-    @Override
-    public boolean isAvailable() {
-        if (isDestroyed() || this.forbidden) {
-            return false;
-        }
-        Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
-        return CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
-                && localUrlInvokerMap.values().stream().anyMatch(Invoker::isAvailable);
-    }
-
     /**
      * Haomin: added for test purpose
      */
