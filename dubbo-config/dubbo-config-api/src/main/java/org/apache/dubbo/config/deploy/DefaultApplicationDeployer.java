@@ -237,9 +237,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // load application config
         configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
 
-        // set model name
+        // try set model name
         if (StringUtils.isBlank(applicationModel.getModelName())) {
-            applicationModel.setModelName(applicationModel.getApplicationName());
+            applicationModel.setModelName(applicationModel.tryGetApplicationName());
         }
 
         // load config centers
@@ -277,8 +277,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
         }
-
-        configManager.refreshAll();
     }
 
     private void startMetadataCenter() {
