@@ -282,6 +282,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         execute(serviceDiscovery::destroy);
     }
 
+    @Override
+    public boolean isServiceDiscovery() {
+        return true;
+    }
+
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
         serviceNames = new TreeSet<>(serviceNames);
         String serviceNamesKey = toStringKeys(serviceNames);
