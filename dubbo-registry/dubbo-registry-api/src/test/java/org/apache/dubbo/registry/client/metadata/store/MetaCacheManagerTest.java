@@ -50,25 +50,29 @@ public class MetaCacheManagerTest {
 //        when(extensionAccessor.getDefaultExtension(ExecutorRepository.class)).thenReturn(executorRepository);
 
         MetaCacheManager cacheManager = new MetaCacheManager();
+        try {
 //        cacheManager.setExtensionAccessor(extensionAccessor);
 
-        MetadataInfo metadataInfo = cacheManager.get("1");
-        assertNotNull(metadataInfo);
-        assertEquals("demo", metadataInfo.getApp());
-        metadataInfo = cacheManager.get("2");
-        assertNull(metadataInfo);
+            MetadataInfo metadataInfo = cacheManager.get("1");
+            assertNotNull(metadataInfo);
+            assertEquals("demo", metadataInfo.getApp());
+            metadataInfo = cacheManager.get("2");
+            assertNull(metadataInfo);
 
-        Map<String, MetadataInfo> newMetadatas = new HashMap<>();
-        MetadataInfo metadataInfo2 = JsonUtils.getGson().fromJson("{\"app\":\"demo2\",\"services\":{\"greeting/org.apache.dubbo.registry.service.DemoService2:1.0.0:dubbo\":{\"name\":\"org.apache.dubbo.registry.service.DemoService2\",\"group\":\"greeting\",\"version\":\"1.0.0\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.registry.service.DemoService2\",\"params\":{\"application\":\"demo-provider2\",\"sayHello.timeout\":\"7000\",\"version\":\"1.0.0\",\"timeout\":\"5000\",\"group\":\"greeting\"}},\"greeting/org.apache.dubbo.registry.service.DemoService:1.0.0:dubbo\":{\"name\":\"org.apache.dubbo.registry.service.DemoService\",\"group\":\"greeting\",\"version\":\"1.0.0\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.registry.service.DemoService\",\"params\":{\"application\":\"demo-provider2\",\"version\":\"1.0.0\",\"timeout\":\"5000\",\"group\":\"greeting\"}}}}\n", MetadataInfo.class);
-        newMetadatas.put("2", metadataInfo2);
+            Map<String, MetadataInfo> newMetadatas = new HashMap<>();
+            MetadataInfo metadataInfo2 = JsonUtils.getGson().fromJson("{\"app\":\"demo2\",\"services\":{\"greeting/org.apache.dubbo.registry.service.DemoService2:1.0.0:dubbo\":{\"name\":\"org.apache.dubbo.registry.service.DemoService2\",\"group\":\"greeting\",\"version\":\"1.0.0\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.registry.service.DemoService2\",\"params\":{\"application\":\"demo-provider2\",\"sayHello.timeout\":\"7000\",\"version\":\"1.0.0\",\"timeout\":\"5000\",\"group\":\"greeting\"}},\"greeting/org.apache.dubbo.registry.service.DemoService:1.0.0:dubbo\":{\"name\":\"org.apache.dubbo.registry.service.DemoService\",\"group\":\"greeting\",\"version\":\"1.0.0\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.registry.service.DemoService\",\"params\":{\"application\":\"demo-provider2\",\"version\":\"1.0.0\",\"timeout\":\"5000\",\"group\":\"greeting\"}}}}\n", MetadataInfo.class);
+            newMetadatas.put("2", metadataInfo2);
 
-        cacheManager.update(newMetadatas);
-        metadataInfo = cacheManager.get("1");
-        assertNotNull(metadataInfo);
-        assertEquals("demo", metadataInfo.getApp());
-        metadataInfo = cacheManager.get("2");
-        assertNotNull(metadataInfo);
-        assertEquals("demo2", metadataInfo.getApp());
+            cacheManager.update(newMetadatas);
+            metadataInfo = cacheManager.get("1");
+            assertNotNull(metadataInfo);
+            assertEquals("demo", metadataInfo.getApp());
+            metadataInfo = cacheManager.get("2");
+            assertNotNull(metadataInfo);
+            assertEquals("demo2", metadataInfo.getApp());
+        } finally {
+            cacheManager.destroy();
+        }
     }
 
 
@@ -77,17 +81,19 @@ public class MetaCacheManagerTest {
         System.setProperty("dubbo.meta.cache.fileName", "not-exist.dubbo.cache");
         MetadataInfo metadataInfo3 = JsonUtils.getGson().fromJson("{\"app\":\"demo3\",\"services\":{\"greeting/org.apache.dubbo.registry.service.DemoService2:1.0.0:dubbo\":{\"name\":\"org.apache.dubbo.registry.service.DemoService2\",\"group\":\"greeting\",\"version\":\"1.0.0\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.registry.service.DemoService2\",\"params\":{\"application\":\"demo-provider2\",\"sayHello.timeout\":\"7000\",\"version\":\"1.0.0\",\"timeout\":\"5000\",\"group\":\"greeting\"}},\"greeting/org.apache.dubbo.registry.service.DemoService:1.0.0:dubbo\":{\"name\":\"org.apache.dubbo.registry.service.DemoService\",\"group\":\"greeting\",\"version\":\"1.0.0\",\"protocol\":\"dubbo\",\"path\":\"org.apache.dubbo.registry.service.DemoService\",\"params\":{\"application\":\"demo-provider2\",\"version\":\"1.0.0\",\"timeout\":\"5000\",\"group\":\"greeting\"}}}}\n", MetadataInfo.class);
         MetaCacheManager cacheManager = new MetaCacheManager();
-        cacheManager.put("3", metadataInfo3);
+        try {
+            cacheManager.put("3", metadataInfo3);
 
-        MetaCacheManager.CacheRefreshTask task = new MetaCacheManager.CacheRefreshTask(cacheManager.cacheStore, cacheManager.cache);
-        task.run();
+            MetaCacheManager.CacheRefreshTask task = new MetaCacheManager.CacheRefreshTask(cacheManager.cacheStore, cacheManager.cache);
+            task.run();
 
-        MetaCacheManager newCacheManager = new MetaCacheManager();
-        MetadataInfo metadataInfo = newCacheManager.get("3");
-        assertNotNull(metadataInfo);
-        assertEquals("demo3", metadataInfo.getApp());
-
-
+            MetaCacheManager newCacheManager = new MetaCacheManager();
+            MetadataInfo metadataInfo = newCacheManager.get("3");
+            assertNotNull(metadataInfo);
+            assertEquals("demo3", metadataInfo.getApp());
+        } finally {
+            cacheManager.destroy();
+        }
     }
 
 
