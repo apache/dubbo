@@ -112,6 +112,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
                 finalInvokers = routerChain.route(getConsumerUrl(), invokers, invocation);
             } catch (Throwable t) {
                 logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+                return BitList.emptyList();
             }
         }
         return finalInvokers == null ? BitList.emptyList() : finalInvokers;

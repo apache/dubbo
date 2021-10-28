@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -177,6 +178,7 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
             invocation.setAttachment(INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
             //directory will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is absent or not true in invocation, otherwise, a list of mock invokers will return.
             try {
+                RpcContext.getServiceContext().setConsumerUrl(getUrl());
                 invokers = directory.list(invocation);
             } catch (RpcException e) {
                 if (logger.isInfoEnabled()) {

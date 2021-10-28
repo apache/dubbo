@@ -184,6 +184,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             invokers = routerChain.route(getConsumerUrl(), invokers, invocation);
         } catch (Throwable t) {
             logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+            return BitList.emptyList();
         }
 
         return invokers == null ? BitList.emptyList() : invokers;
