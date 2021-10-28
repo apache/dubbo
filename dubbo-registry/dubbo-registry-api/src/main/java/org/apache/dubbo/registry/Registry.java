@@ -33,6 +33,10 @@ public interface Registry extends Node, RegistryService {
         return getUrl().getParameter(REGISTRY_DELAY_NOTIFICATION_KEY, DEFAULT_DELAY_NOTIFICATION_TIME);
     }
 
+    default boolean isServiceDiscovery() {
+        return false;
+    }
+
     default void reExportRegister(URL url) {
         register(url);
     }
