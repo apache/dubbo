@@ -520,8 +520,9 @@ public abstract class AbstractRegistry implements Registry {
             return true;
         }
 
-        return Arrays.stream(COMMA_SPLIT_PATTERN.split(pattern))
-            .anyMatch(p -> p.equalsIgnoreCase(urlToRegistry.getProtocol()));
+        String[] accepts = COMMA_SPLIT_PATTERN.split(pattern);
+        return Arrays.stream(accepts).anyMatch(p -> p.equalsIgnoreCase(urlToRegistry.getProtocol())) &&
+            Arrays.stream(accepts).noneMatch(p -> p.equalsIgnoreCase("-" + urlToRegistry.getProtocol()));
     }
 
     @Override

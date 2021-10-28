@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.common.bytecode;
 
-import javassist.ClassPool;
-import javassist.CtMethod;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
+
+import javassist.ClassPool;
+import javassist.CtMethod;
+import javassist.LoaderClassPath;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -155,7 +157,8 @@ public abstract class Wrapper {
         }
 
         final ClassPool classPool = new ClassPool(ClassPool.getDefault());
-        classPool.insertClassPath(new CustomizedLoaderClassPath(cl));
+        classPool.insertClassPath(new LoaderClassPath(cl));
+        classPool.insertClassPath(new LoaderClassPath(ClassGenerator.class.getClassLoader()));
 
         List<String> allMethod = new ArrayList<>();
         try {
