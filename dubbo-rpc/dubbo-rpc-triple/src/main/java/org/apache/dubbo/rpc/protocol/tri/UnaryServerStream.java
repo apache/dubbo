@@ -45,7 +45,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         return new UnaryServerTransportObserver();
     }
 
-    private class UnaryServerTransportObserver extends UnaryInboundTransportObserver implements TransportObserver {
+    private class UnaryServerTransportObserver extends ServerUnaryInboundTransportObserver implements TransportObserver {
         @Override
         public void onError(GrpcStatus status) {
             transportError(status);
@@ -62,12 +62,23 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         }
 
         public void invoke() {
-            RpcInvocation invocation = buildInvocation(getHeaders());
-            final Object[] arguments = deserializeRequest(getData());
-            if (arguments == null) {
-                return;
+            RpcInvocation invocation;
+            if (getMethodDescriptor().isNeedWrap()) {
+                // For wrapper overload methods, the methodDescriptor needs to get from data, so parse the request first
+                final Object[] arguments = deserializeRequest(getData());
+                if (arguments == null) {
+                    return;
+                }
+                invocation = buildInvocation(getHeaders());
+                invocation.setArguments(arguments);
+            } else {
+                invocation = buildInvocation(getHeaders());
+                final Object[] arguments = deserializeRequest(getData());
+                if (arguments == null) {
+                    return;
+                }
+                invocation.setArguments(arguments);
             }
-            invocation.setArguments(arguments);
             final Result result = getInvoker().invoke(invocation);
             CompletionStage<Object> future = result.thenApply(Function.identity());
             future.whenComplete((o, throwable) -> {
@@ -85,10 +96,11 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                 outboundTransportObserver().onMetadata(metadata, false);
                 final byte[] data = encodeResponse(response.getValue());
                 if (data == null) {
+                    // already handled in encodeResponse()
                     return;
                 }
                 outboundTransportObserver().onData(data, false);
-                Metadata trailers = TripleConstant.SUCCESS_RESPONSE_META;
+                Metadata trailers = TripleConstant.getSuccessResponseMeta();
                 convertAttachment(trailers, response.getObjectAttachments());
                 outboundTransportObserver().onMetadata(trailers, true);
             });

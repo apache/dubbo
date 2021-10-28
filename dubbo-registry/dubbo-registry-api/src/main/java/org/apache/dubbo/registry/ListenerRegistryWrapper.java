@@ -153,6 +153,11 @@ public class ListenerRegistryWrapper implements Registry {
     }
 
     @Override
+    public boolean isServiceDiscovery() {
+        return registry.isServiceDiscovery();
+    }
+
+    @Override
     public List<URL> lookup(URL url) {
         return registry.lookup(url);
     }

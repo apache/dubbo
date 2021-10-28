@@ -169,7 +169,7 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
             // check if it's registered
             Assertions.assertTrue(serviceDiscoveryRegistryInfoWrapper.isRegistered());
             // check if it's subscribed
-            Assertions.assertTrue(serviceDiscoveryRegistryInfoWrapper.isSubscribed());
+            Assertions.assertFalse(serviceDiscoveryRegistryInfoWrapper.isSubscribed());
             InMemoryWritableMetadataService inMemoryWritableMetadataService = serviceDiscoveryRegistryInfoWrapper.getInMemoryWritableMetadataService();
             // check if the count of exported urls is right or not
             Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);

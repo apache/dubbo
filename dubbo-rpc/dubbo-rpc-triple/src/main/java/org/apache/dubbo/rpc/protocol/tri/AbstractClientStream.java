@@ -143,11 +143,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
     protected void startCall(Http2StreamChannel channel, ChannelPromise promise) {
         execute(() -> {
-            channel.pipeline()
-                .addLast(new TripleHttp2ClientResponseHandler())
-                .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
-                .addLast(new TripleClientInboundHandler());
-            channel.attr(TripleConstant.CLIENT_STREAM_KEY).set(this);
             final ClientOutboundTransportObserver clientTransportObserver = new ClientOutboundTransportObserver(channel, promise);
             subscribe(clientTransportObserver);
             try {

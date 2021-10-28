@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.common.convert;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.apache.dubbo.common.utils.StringUtils;
 
-public class TripleServerInboundHandler extends ChannelInboundHandlerAdapter {
+/**
+ * The class to convert {@link String} to {@link Byte}
+ *
+ * @since 3.0.4
+ */
+public class StringToByteConverter implements StringConverter<Byte> {
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
-        final byte[] data = (byte[]) msg;
-        if (serverStream != null) {
-            serverStream.inboundTransportObserver()
-                .onData(data, false);
-        }
+    public Byte convert(String source) {
+        return StringUtils.isNotEmpty(source) ? Byte.valueOf(source) : null;
+    }
+
+    @Override
+    public int getPriority() {
+        return NORMAL_PRIORITY + 9;
     }
 }

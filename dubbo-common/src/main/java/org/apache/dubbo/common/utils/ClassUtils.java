@@ -17,6 +17,8 @@
 package org.apache.dubbo.common.utils;
 
 
+import org.apache.dubbo.common.convert.Converter;
+
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -37,6 +39,8 @@ import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
+import static org.apache.dubbo.common.utils.CollectionUtils.flip;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 
 public class ClassUtils {
     /**
@@ -64,20 +68,20 @@ public class ClassUtils {
      * @since 2.7.6
      */
     public static final Set<Class<?>> SIMPLE_TYPES = ofSet(
-        Void.class,
-        Boolean.class,
-        Character.class,
-        Byte.class,
-        Short.class,
-        Integer.class,
-        Long.class,
-        Float.class,
-        Double.class,
-        String.class,
-        BigDecimal.class,
-        BigInteger.class,
-        Date.class,
-        Object.class
+            Void.class,
+            Boolean.class,
+            Character.class,
+            Byte.class,
+            Short.class,
+            Integer.class,
+            Long.class,
+            Float.class,
+            Double.class,
+            String.class,
+            BigDecimal.class,
+            BigInteger.class,
+            Date.class,
+            Object.class
     );
     /**
      * Prefix for internal array class names: "[L"
@@ -87,13 +91,12 @@ public class ClassUtils {
      * Map with primitive type name as key and corresponding primitive type as
      * value, for example: "int" -> "int.class".
      */
-    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<String, Class<?>>(32);
+    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<>(32);
     /**
      * Map with primitive wrapper type as key and corresponding primitive type
      * as value, for example: Integer.class -> int.class.
      */
-    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
-    private static final char PACKAGE_SEPARATOR_CHAR = '.';
+    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<>(16);
 
     static {
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Boolean.class, boolean.class);
@@ -108,20 +111,31 @@ public class ClassUtils {
         Set<Class<?>> primitiveTypeNames = new HashSet<>(32);
         primitiveTypeNames.addAll(PRIMITIVE_WRAPPER_TYPE_MAP.values());
         primitiveTypeNames.addAll(Arrays
-            .asList(boolean[].class, byte[].class, char[].class, double[].class,
-                float[].class, int[].class, long[].class, short[].class));
+                .asList(boolean[].class, byte[].class, char[].class, double[].class,
+                        float[].class, int[].class, long[].class, short[].class));
         for (Class<?> primitiveTypeName : primitiveTypeNames) {
             PRIMITIVE_TYPE_NAME_MAP.put(primitiveTypeName.getName(), primitiveTypeName);
         }
     }
 
+    /**
+     * Map with primitive type as key and corresponding primitive wrapper type
+     * as value, for example: int.class -> Integer.class.
+     */
+    private static final Map<Class<?>, Class<?>> WRAPPER_PRIMITIVE_TYPE_MAP = flip(PRIMITIVE_WRAPPER_TYPE_MAP);
+
+    /**
+     * Separator char for package
+     */
+    private static final char PACKAGE_SEPARATOR_CHAR = '.';
+
     public static Class<?> forNameWithThreadContextClassLoader(String name)
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         return forName(name, Thread.currentThread().getContextClassLoader());
     }
 
     public static Class<?> forNameWithCallerClassLoader(String name, Class<?> caller)
-        throws ClassNotFoundException {
+            throws ClassNotFoundException {
         return forName(name, caller.getClassLoader());
     }
 
@@ -203,7 +217,7 @@ public class ClassUtils {
      * @see Class#forName(String, boolean, ClassLoader)
      */
     public static Class<?> forName(String name, ClassLoader classLoader)
-        throws ClassNotFoundException, LinkageError {
+            throws ClassNotFoundException, LinkageError {
 
         Class<?> clazz = resolvePrimitiveClassName(name);
         if (clazz != null) {
@@ -223,7 +237,7 @@ public class ClassUtils {
             String elementClassName = null;
             if (internalArrayMarker == 0) {
                 elementClassName = name
-                    .substring(INTERNAL_ARRAY_PREFIX.length(), name.length() - 1);
+                        .substring(INTERNAL_ARRAY_PREFIX.length(), name.length() - 1);
             } else if (name.startsWith("[")) {
                 elementClassName = name.substring(1);
             }
@@ -306,31 +320,17 @@ public class ClassUtils {
     }
 
     public static Object convertPrimitive(Class<?> type, String value) {
-        if (value == null) {
+        if (isEmpty(value)) {
             return null;
-        } else if (type == char.class || type == Character.class) {
-            return value.length() > 0 ? value.charAt(0) : '\0';
-        } else if (type == boolean.class || type == Boolean.class) {
-            return Boolean.valueOf(value);
         }
+        Class<?> wrapperType = WRAPPER_PRIMITIVE_TYPE_MAP.getOrDefault(type, type);
+        Object result = null;
         try {
-            if (type == byte.class || type == Byte.class) {
-                return Byte.valueOf(value);
-            } else if (type == short.class || type == Short.class) {
-                return Short.valueOf(value);
-            } else if (type == int.class || type == Integer.class) {
-                return Integer.valueOf(value);
-            } else if (type == long.class || type == Long.class) {
-                return Long.valueOf(value);
-            } else if (type == float.class || type == Float.class) {
-                return Float.valueOf(value);
-            } else if (type == double.class || type == Double.class) {
-                return Double.valueOf(value);
-            }
-        } catch (NumberFormatException e) {
-            return null;
+            result = Converter.convertIfPossible(value, wrapperType);
+        } catch (Exception e) {
+            // ignore exception
         }
-        return value;
+        return result;
     }
 
 
@@ -343,7 +343,7 @@ public class ClassUtils {
      */
     public static boolean isTypeMatch(Class<?> type, String value) {
         if ((type == boolean.class || type == Boolean.class)
-            && !("true".equals(value) || "false".equals(value))) {
+                && !("true".equals(value) || "false".equals(value))) {
             return false;
         }
         return true;
@@ -397,18 +397,18 @@ public class ClassUtils {
             if (isNotEmpty(interfaces)) {
                 // add current interfaces
                 Arrays.stream(interfaces)
-                    .filter(resolved::add)
-                    .forEach(cls -> {
-                        allInterfaces.add(cls);
-                        waitResolve.add(cls);
-                    });
+                        .filter(resolved::add)
+                        .forEach(cls -> {
+                            allInterfaces.add(cls);
+                            waitResolve.add(cls);
+                        });
             }
 
             // add all super classes to waitResolve
             getAllSuperClasses(clazz)
-                .stream()
-                .filter(resolved::add)
-                .forEach(waitResolve::add);
+                    .stream()
+                    .filter(resolved::add)
+                    .forEach(waitResolve::add);
 
             clazz = waitResolve.poll();
         }
