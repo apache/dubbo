@@ -58,6 +58,8 @@ public abstract class ScopeModel implements ExtensionAccessor {
      */
     private String modelName;
 
+    private String desc;
+
     private Set<ClassLoader> classLoaders;
 
     private final ScopeModel parent;
@@ -212,12 +214,20 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     public void setModelName(String modelName) {
         this.modelName = modelName;
+        this.desc = buildDesc();
     }
 
     /**
      * @return the describe string of this scope model
      */
     public String getDesc() {
+        if (this.desc == null) {
+            this.desc = buildDesc();
+        }
+        return this.desc;
+    }
+
+    private String buildDesc() {
         // Dubbo Framework[1]
         // Dubbo Application[1.1](appName)
         // Dubbo Module[1.1.1](appName/moduleName)

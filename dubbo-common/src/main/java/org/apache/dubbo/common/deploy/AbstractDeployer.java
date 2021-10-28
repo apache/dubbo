@@ -42,7 +42,6 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     private List<DeployListener<E>> listeners = new ArrayList<>();
 
     private E scopeModel;
-    private String identifier;
 
     public AbstractDeployer(E scopeModel) {
         this.scopeModel = scopeModel;
@@ -161,13 +160,6 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     protected String getIdentifier() {
-        if (identifier == null) {
-            identifier = scopeModel.getDesc();
-        }
-        return identifier;
-    }
-
-    protected void setIdentifier(String identifier) {
-        this.identifier = identifier;
+        return scopeModel.getDesc();
     }
 }
