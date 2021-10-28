@@ -178,9 +178,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
         BitList<Invoker<T>> availableInvokers;
         if (validInvokers != null) {
-            availableInvokers = invokers;
-        } else {
             availableInvokers = validInvokers;
+        } else {
+            availableInvokers = invokers;
         }
 
         BitList<Invoker<T>> routedResult = doList(availableInvokers, invocation);
