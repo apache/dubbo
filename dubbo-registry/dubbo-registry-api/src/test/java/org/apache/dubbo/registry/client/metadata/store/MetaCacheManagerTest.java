@@ -87,10 +87,15 @@ public class MetaCacheManagerTest {
             MetaCacheManager.CacheRefreshTask task = new MetaCacheManager.CacheRefreshTask(cacheManager.cacheStore, cacheManager.cache);
             task.run();
 
-            MetaCacheManager newCacheManager = new MetaCacheManager();
-            MetadataInfo metadataInfo = newCacheManager.get("3");
-            assertNotNull(metadataInfo);
-            assertEquals("demo3", metadataInfo.getApp());
+            MetaCacheManager newCacheManager = null;
+            try {
+                newCacheManager = new MetaCacheManager();
+                MetadataInfo metadataInfo = newCacheManager.get("3");
+                assertNotNull(metadataInfo);
+                assertEquals("demo3", metadataInfo.getApp());
+            } finally {
+                newCacheManager.destroy();
+            }
         } finally {
             cacheManager.destroy();
         }
