@@ -614,6 +614,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // ensure init and start internal module first
         prepareInternalModule();
 
+        // always start metadata service on application model start, so it's ready whenever a new module is started
+        // export MetadataService
+        exportMetadataService();
+
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
@@ -631,8 +635,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (!hasPreparedInternalModule.compareAndSet(false, true)) {
                 return;
             }
-            // export MetadataService
-            exportMetadataService();
+
             // start internal module
             ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
             if (!internalModuleDeployer.isStarted()) {
