@@ -253,6 +253,9 @@ public class FrameworkModel extends ScopeModel {
 
     private void resetDefaultAppModel() {
         synchronized (instLock) {
+            if (this.defaultAppModel != null && !this.defaultAppModel.isDestroyed()) {
+                return;
+            }
             ApplicationModel oldDefaultAppModel = this.defaultAppModel;
             if (pubApplicationModels.size() > 0) {
                 this.defaultAppModel = pubApplicationModels.get(0);
