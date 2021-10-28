@@ -360,8 +360,8 @@ public class FailoverClusterInvokerTest {
         }
 
         @Override
-        protected BitList<Invoker<T>> doList(Invocation invocation) throws RpcException {
-            return new BitList<>(super.doList(invocation));
+        protected BitList<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException {
+            return super.doList(invokers, invocation);
         }
     }
 }

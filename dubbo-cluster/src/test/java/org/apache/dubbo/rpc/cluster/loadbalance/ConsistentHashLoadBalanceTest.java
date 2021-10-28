@@ -57,7 +57,7 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
 
         for (int i = 0; i < 100; i++) {
             routerChain.setInvokers(new BitList<>(invokers));
-            List<Invoker<LoadBalanceBaseTest>> routeInvokers = routerChain.route(url, invocation);
+            List<Invoker<LoadBalanceBaseTest>> routeInvokers = routerChain.route(url, new BitList<>(invokers), invocation);
 
             Assertions.assertEquals(originalHashCode, lb.getCorrespondingHashCode(routeInvokers));
         }

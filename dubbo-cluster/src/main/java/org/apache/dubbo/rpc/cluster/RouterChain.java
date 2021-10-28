@@ -168,10 +168,10 @@ public class RouterChain<T> {
      * @param invocation
      * @return
      */
-    public BitList<Invoker<T>> route(URL url, Invocation invocation) {
+    public BitList<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
 
         AddrCache<T> cache = this.cache.get();
-        BitList<Invoker<T>> resultInvokers = invokers.clone();
+        BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
 
         // 1. route state router
         if (cache != null) {
@@ -181,7 +181,7 @@ public class RouterChain<T> {
                     StateRouterResult<Invoker<T>> routeResult = stateRouter.route(resultInvokers, routerCache, url, invocation, false);
                     resultInvokers = routeResult.getResult();
                     if (resultInvokers.isEmpty()) {
-                        printRouterSnapshot(url, invocation);
+                        printRouterSnapshot(url, availableInvokers, invocation);
                         return BitList.emptyList();
                     }
 
@@ -200,7 +200,7 @@ public class RouterChain<T> {
             RouterResult<Invoker<T>> routeResult = router.route(arrayInvokers, url, invocation, false);
             arrayInvokers = routeResult.getResult();
             if (CollectionUtils.isEmpty(arrayInvokers)) {
-                printRouterSnapshot(url, invocation);
+                printRouterSnapshot(url, availableInvokers, invocation);
                 return BitList.emptyList();
             } else {
                 resultInvokers.retainAll(arrayInvokers);
@@ -224,16 +224,16 @@ public class RouterChain<T> {
     /**
      * store each router's input and output, log out if empty
      */
-    private void printRouterSnapshot(URL url, Invocation invocation) {
-        logRouterSnapshot(url, invocation, buildRouterSnapshot(url, invocation));
+    private void printRouterSnapshot(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+        logRouterSnapshot(url, invocation, buildRouterSnapshot(url, availableInvokers, invocation));
     }
 
     /**
      * Build each router's result
      */
-    private RouterSnapshotNode<T> buildRouterSnapshot(URL url, Invocation invocation) {
+    private RouterSnapshotNode<T> buildRouterSnapshot(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         AddrCache<T> cache = this.cache.get();
-        BitList<Invoker<T>> resultInvokers = invokers.clone();
+        BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
         RouterSnapshotNode<T> snapshotNode = new RouterSnapshotNode<T>("Parent", resultInvokers.size());
         snapshotNode.setOutputInvokers(resultInvokers.clone());
 

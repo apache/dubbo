@@ -176,23 +176,24 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new RpcException("Directory already destroyed .url: " + getUrl());
         }
 
-        BitList<Invoker<T>> validResult, routedResult = doList(invocation);
+        BitList<Invoker<T>> availableInvokers;
         if (validInvokers != null) {
-            // routedResult may contains tailList, use routedResult as source List to and
-            validResult = routedResult.and(validInvokers);
+            availableInvokers = invokers;
         } else {
-            validResult = routedResult;
+            availableInvokers = validInvokers;
         }
-        if (validResult.isEmpty()) {
+
+        BitList<Invoker<T>> routedResult = doList(availableInvokers, invocation);
+        if (routedResult.isEmpty()) {
             logger.warn("No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
                 + " all validInvokers' size: " + (validInvokers == null ? 0 : validInvokers.size())
-                + " all routed invokers' size: " + routedResult.size()
-                + " all invokers' size: " + (validInvokers == null ? 0 : validInvokers.size())
+                + "/ all routed invokers' size: " + routedResult.size()
+                + "/ all invokers' size: " + (invokers == null ? 0 : invokers.size())
                 + " from registry " + getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost()
                 + " using the dubbo version " + Version.getVersion() + ".");
         }
-        return validResult;
+        return Collections.unmodifiableList(routedResult);
     }
 
     @Override
@@ -403,6 +404,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return connectivityCheckFuture;
     }
 
-    protected abstract BitList<Invoker<T>> doList(Invocation invocation) throws RpcException;
+    protected abstract BitList<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
 
 }
