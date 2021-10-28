@@ -82,6 +82,12 @@ public class ApplicationModel extends ScopeModel {
         }
     }
 
+    /**
+     * During destroying the default FrameworkModel, FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+     * will get an broken model, maybe cause unpredictable problem.
+     * Recommendation: Avoid using the default model as much as possible.
+     * @return the global default ApplicationModel
+     */
     public static ApplicationModel defaultModel() {
         // should get from default FrameworkModel, avoid out of sync
         return FrameworkModel.defaultModel().defaultApplication();
@@ -321,6 +327,7 @@ public class ApplicationModel extends ScopeModel {
     void addModule(ModuleModel moduleModel, boolean isInternal) {
         synchronized (moduleLock) {
             if (!this.moduleModels.contains(moduleModel)) {
+                checkDestroyed();
                 this.moduleModels.add(moduleModel);
                 moduleModel.setInternalId(buildInternalId(getInternalId(), moduleIndex.getAndIncrement()));
                 if (!isInternal) {
@@ -347,6 +354,12 @@ public class ApplicationModel extends ScopeModel {
         }
     }
 
+    private void checkDestroyed() {
+        if (isDestroyed()) {
+            throw new IllegalStateException("ApplicationModel is destroyed");
+        }
+    }
+
     public List<ModuleModel> getModuleModels() {
         return Collections.unmodifiableList(moduleModels);
     }
@@ -357,9 +370,6 @@ public class ApplicationModel extends ScopeModel {
 
     public ModuleModel getDefaultModule() {
         if (defaultModule == null) {
-            if (isDestroyed()) {
-                return null;
-            }
             synchronized (moduleLock) {
                 if (defaultModule == null) {
                     defaultModule = findDefaultModule();

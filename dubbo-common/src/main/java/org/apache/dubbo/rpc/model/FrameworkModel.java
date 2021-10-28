@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
@@ -43,6 +44,8 @@ public class FrameworkModel extends ScopeModel {
     // internal app index is 0, default app index is 1
     private final AtomicLong appIndex = new AtomicLong(0);
 
+    private static Object globalLock = new Object();
+    
     private volatile static FrameworkModel defaultInstance;
 
     private volatile ApplicationModel defaultAppModel;
@@ -57,13 +60,13 @@ public class FrameworkModel extends ScopeModel {
 
     private ApplicationModel internalApplicationModel;
 
-    private Object lock = new Object();
+    private Object instLock = new Object();
 
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
         this.setInternalId(index.getAndIncrement()+"");
         // register FrameworkModel instance early
-        synchronized (FrameworkModel.class) {
+        synchronized (globalLock) {
             allInstances.add(this);
             resetDefaultFrameworkModel();
         }
@@ -92,7 +95,14 @@ public class FrameworkModel extends ScopeModel {
 
     @Override
     protected void onDestroy() {
-        synchronized (lock) {
+        if (defaultInstance == this) {
+            // NOTE: During destroying the default FrameworkModel, FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+            // will get an broken model, maybe cause unpredictable problem.
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("Destroying default framework model: " + getDesc());
+            }
+        }
+        synchronized (instLock) {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(getDesc() + " is destroying ...");
             }
@@ -115,7 +125,8 @@ public class FrameworkModel extends ScopeModel {
             }
         }
 
-        synchronized (FrameworkModel.class) {
+        // remove from allInstances and reset default FrameworkModel
+        synchronized (globalLock) {
             allInstances.remove(this);
             resetDefaultFrameworkModel();
         }
@@ -126,26 +137,31 @@ public class FrameworkModel extends ScopeModel {
 
     private void checkApplicationDestroy() {
         if (applicationModels.size() > 0) {
-            List<String> remainApplications = new ArrayList<>();
-            for (ApplicationModel applicationModel : applicationModels) {
-                remainApplications.add(applicationModel.getDesc());
-            }
+            List<String> remainApplications = applicationModels.stream()
+                .map(model -> model.getDesc())
+                .collect(Collectors.toList());
             throw new IllegalStateException("Not all application models are completely destroyed, remaining " +
                 remainApplications.size() + " application models may be created during destruction: " + remainApplications);
         }
     }
 
     private void destroyGlobalResources() {
-        synchronized (FrameworkModel.class) {
+        synchronized (globalLock) {
             if (allInstances.isEmpty()) {
                 GlobalResourcesRepository.getInstance().destroy();
             }
         }
     }
 
+    /**
+     * During destroying the default FrameworkModel, FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+     * will get an broken model, maybe cause unpredictable problem.
+     * Recommendation: Avoid using the default model as much as possible.
+     * @return the global default FrameworkModel
+     */
     public static FrameworkModel defaultModel() {
         if (defaultInstance == null) {
-            synchronized (FrameworkModel.class) {
+            synchronized (globalLock) {
                 if (defaultInstance == null) {
                     defaultInstance = new FrameworkModel();
                 }
@@ -182,7 +198,7 @@ public class FrameworkModel extends ScopeModel {
     public ApplicationModel defaultApplication() {
         if (defaultAppModel == null) {
             checkDestroyed();
-            synchronized(lock){
+            synchronized(instLock){
                 resetDefaultAppModel();
                 if (defaultAppModel == null) {
                     defaultAppModel = newApplication();
@@ -199,7 +215,7 @@ public class FrameworkModel extends ScopeModel {
     void addApplication(ApplicationModel applicationModel) {
         // can not add new application if it's destroying
         checkDestroyed();
-        synchronized (lock){
+        synchronized (instLock){
             if (!this.applicationModels.contains(applicationModel)) {
                 applicationModel.setInternalId(buildInternalId(getInternalId(), appIndex.getAndIncrement()));
                 this.applicationModels.add(applicationModel);
@@ -212,7 +228,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     void removeApplication(ApplicationModel model) {
-        synchronized (lock) {
+        synchronized (instLock) {
             this.applicationModels.remove(model);
             if (!model.isInternal()) {
                 this.pubApplicationModels.remove(model);
@@ -222,7 +238,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     void tryDestroy() {
-        synchronized (lock) {
+        synchronized (instLock) {
             if (pubApplicationModels.size() == 0) {
                 destroy();
             }
@@ -236,7 +252,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     private void resetDefaultAppModel() {
-        synchronized (lock) {
+        synchronized (instLock) {
             ApplicationModel oldDefaultAppModel = this.defaultAppModel;
             if (pubApplicationModels.size() > 0) {
                 this.defaultAppModel = pubApplicationModels.get(0);
@@ -252,7 +268,7 @@ public class FrameworkModel extends ScopeModel {
     }
 
     private void resetDefaultFrameworkModel() {
-        synchronized (FrameworkModel.class) {
+        synchronized (globalLock) {
             if (defaultInstance != null && !defaultInstance.isDestroyed()) {
                 return;
             }
