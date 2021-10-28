@@ -107,6 +107,12 @@ public abstract class ScopeModel implements ExtensionAccessor {
                 for (ClassLoader classLoader : copyOfClassLoaders) {
                     removeClassLoader(classLoader);
                 }
+                if (beanFactory != null) {
+                    beanFactory.destroy();
+                }
+                if (extensionDirector != null) {
+                    extensionDirector.destroy();
+                }
             } catch (Throwable t) {
                 LOGGER.error("Error happened when destroying ScopeModel.", t);
             }
