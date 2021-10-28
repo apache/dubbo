@@ -253,8 +253,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
 
-        // Deprecated! Subscribe to override rules in 2.6.x or before.
-        registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+        if (!registry.isServiceDiscovery()) {
+            // Deprecated! Subscribe to override rules in 2.6.x or before.
+            registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+        }
 
         notifyExport(exporter);
         //Ensure that a new exporter instance is returned every time export
@@ -892,7 +894,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                     Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
                     NotifyListener listener = overrideListeners.remove(registerUrl);
                     if (listener != null) {
-                        registry.unsubscribe(subscribeUrl, listener);
+                        if (!registry.isServiceDiscovery()) {
+                            registry.unsubscribe(subscribeUrl, listener);
+                        }
                         ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
                         if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                             for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {

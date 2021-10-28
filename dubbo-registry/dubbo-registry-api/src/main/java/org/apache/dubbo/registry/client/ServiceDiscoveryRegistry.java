@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
+import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.registry.support.RegistryManager;
 
 import java.util.ArrayList;
@@ -39,7 +40,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import static java.lang.String.format;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
@@ -139,6 +139,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             if (logger.isDebugEnabled()) {
                 logger.debug(String.format("The URL[%s] should not be registered.", providerURL));
             }
+        }
+
+        if (!acceptable(providerURL)) {
+            logger.info("URL " + providerURL + " will not be registered to Registry. Registry " + this.getUrl() + " does not accept service of this protocol type.");
+            return false;
         }
 
         return should;
@@ -275,6 +280,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         registryManager.removeDestroyedRegistry(this);
         // stop ServiceDiscovery
         execute(serviceDiscovery::destroy);
+    }
+
+    @Override
+    public boolean isServiceDiscovery() {
+        return true;
     }
 
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
