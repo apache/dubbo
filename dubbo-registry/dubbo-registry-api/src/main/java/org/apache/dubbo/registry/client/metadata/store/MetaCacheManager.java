@@ -112,7 +112,7 @@ public class MetaCacheManager implements ScopeModelAware {
     }
 
     public void destroy() {
-        executorService.shutdown();
+        executorService.shutdownNow();
     }
 
     protected static class CacheRefreshTask implements Runnable {
