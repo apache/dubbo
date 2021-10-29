@@ -158,4 +158,8 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     public boolean isInitialized() {
         return initialized.get();
     }
+
+    protected String getIdentifier() {
+        return scopeModel.getDesc();
+    }
 }

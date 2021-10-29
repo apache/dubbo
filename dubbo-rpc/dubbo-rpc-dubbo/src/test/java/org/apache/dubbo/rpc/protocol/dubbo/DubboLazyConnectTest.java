@@ -69,7 +69,7 @@ public class DubboLazyConnectTest {
         Assertions.assertThrows(RpcException.class, () -> {
             int port = NetUtils.getAvailablePort();
             URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true");
-            IDemoService service = (IDemoService) ProtocolUtils.refer(IDemoService.class, url);
+            IDemoService service = ProtocolUtils.refer(IDemoService.class, url);
             service.get();
         });
     }
@@ -81,7 +81,7 @@ public class DubboLazyConnectTest {
 
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
-        IDemoService service = (IDemoService) ProtocolUtils.refer(IDemoService.class, url);
+        IDemoService service = ProtocolUtils.refer(IDemoService.class, url);
         Assertions.assertEquals("ok", service.get());
     }
 
