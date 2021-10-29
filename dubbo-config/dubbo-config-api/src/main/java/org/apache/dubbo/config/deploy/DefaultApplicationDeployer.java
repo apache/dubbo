@@ -727,7 +727,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * export {@link MetadataService}
      */
     private void exportMetadataService() {
-        metadataServiceExporter.export();
+        // fixme, let's disable local metadata service export at this moment
+        if (!REMOTE_METADATA_STORAGE_TYPE.equals(getMetadataType())) {
+            metadataServiceExporter.export();
+        }
     }
 
     private void unexportMetadataService() {

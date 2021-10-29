@@ -178,7 +178,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
                 }
 
                 Protocol protocol = applicationModel.getExtensionLoader(Protocol.class).getExtension(specifiedProtocol);
-                if (protocol != null) {
+                if (protocol != null && protocol.getServers() != null) {
                     Iterator<ProtocolServer> it = protocol.getServers().iterator();
                     if (it.hasNext()) {
                         String addr = it.next().getAddress();
@@ -209,7 +209,9 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             Map<String, String> params = getApplicationConfig().getParameters();
             if (isNotEmpty(params)) {
                 String rawPort = getApplicationConfig().getParameters().get(METADATA_SERVICE_PORT_KEY);
-                port = Integer.parseInt(rawPort);
+                if (StringUtils.isNotEmpty(rawPort)) {
+                    port = Integer.parseInt(rawPort);
+                }
             }
         }
         return port;
