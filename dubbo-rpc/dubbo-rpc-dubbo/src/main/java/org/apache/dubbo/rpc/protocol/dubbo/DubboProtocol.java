@@ -244,8 +244,8 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     Invoker<?> getInvoker(Channel channel, Invocation inv) throws RemotingException {
-        boolean isCallBackServiceInvoke = false;
-        boolean isStubServiceInvoke = false;
+        boolean isCallBackServiceInvoke;
+        boolean isStubServiceInvoke;
         int port = channel.getLocalAddress().getPort();
         String path = (String) inv.getObjectAttachments().get(PATH_KEY);
 
