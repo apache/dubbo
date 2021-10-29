@@ -19,6 +19,7 @@ package org.apache.dubbo.config.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ArgumentConfig;
@@ -40,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
-import static org.apache.dubbo.common.compiler.support.ClassUtils.isNotEmpty;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
@@ -207,7 +207,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         Integer port = getApplicationConfig().getMetadataServicePort();
         if (port == null) {
             Map<String, String> params = getApplicationConfig().getParameters();
-            if (isNotEmpty(params)) {
+            if (CollectionUtils.isNotEmptyMap(params)) {
                 String rawPort = getApplicationConfig().getParameters().get(METADATA_SERVICE_PORT_KEY);
                 if (StringUtils.isNotEmpty(rawPort)) {
                     port = Integer.parseInt(rawPort);
@@ -221,11 +221,11 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         String protocol = getApplicationConfig().getMetadataServiceProtocol();
         if (StringUtils.isEmpty(protocol)) {
             Map<String, String> params = getApplicationConfig().getParameters();
-            if (isNotEmpty(params)) {
+            if (CollectionUtils.isNotEmptyMap(params)) {
                 protocol = getApplicationConfig().getParameters().get(METADATA_SERVICE_PROTOCOL_KEY);
             }
         }
 
-        return isNotEmpty(protocol) ? protocol : DUBBO_PROTOCOL;
+        return StringUtils.isNotEmpty(protocol) ? protocol : DUBBO_PROTOCOL;
     }
 }
