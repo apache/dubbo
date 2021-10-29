@@ -166,7 +166,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     @Override
-    public BitList<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) {
+    public List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) {
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
@@ -181,13 +181,12 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
         try {
             // Get invokers from cache, only runtime routers will be executed.
-            invokers = routerChain.route(getConsumerUrl(), invokers, invocation);
+            List<Invoker<T>> result = routerChain.route(getConsumerUrl(), invokers, invocation);
+            return result == null ? BitList.emptyList() : invokers;
         } catch (Throwable t) {
             logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
             return BitList.emptyList();
         }
-
-        return invokers == null ? BitList.emptyList() : invokers;
     }
 
     @Override

@@ -634,7 +634,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return;
             }
             // export MetadataService
-            exportMetadataService();
+            if (hasExportedServices()) {
+                exportMetadataService();
+            }
             // start internal module
             ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
             if (!internalModuleDeployer.isStarted()) {

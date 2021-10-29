@@ -168,7 +168,7 @@ public class RouterChain<T> {
      * @param invocation
      * @return
      */
-    public BitList<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+    public List<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
 
         AddrCache<T> cache = this.cache.get();
         BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
@@ -193,32 +193,23 @@ public class RouterChain<T> {
             }
         }
 
+        List<Invoker<T>> commonRouterResult = new ArrayList<>(resultInvokers);
         // 2. route common router
         for (Router router : routers) {
             // Copy resultInvokers to a arrayList. BitList not support
-            List<Invoker<T>> arrayInvokers = new ArrayList<>(resultInvokers);
-            RouterResult<Invoker<T>> routeResult = router.route(arrayInvokers, url, invocation, false);
-            arrayInvokers = routeResult.getResult();
-            if (CollectionUtils.isEmpty(arrayInvokers)) {
+            RouterResult<Invoker<T>> routeResult = router.route(commonRouterResult, url, invocation, false);
+            commonRouterResult = routeResult.getResult();
+            if (CollectionUtils.isEmpty(commonRouterResult)) {
                 printRouterSnapshot(url, availableInvokers, invocation);
                 return BitList.emptyList();
-            } else {
-                resultInvokers.retainAll(arrayInvokers);
-                if (arrayInvokers.size() > resultInvokers.size()) {
-                    // arrayInvokers list contains elements not contain in resultInvokers, put them into tailList
-                    arrayInvokers.removeAll(resultInvokers);
-                    if (arrayInvokers.size() > 0) {
-                        resultInvokers.addAll(arrayInvokers);
-                    }
-                }
             }
 
             // stop continue routing
             if (!routeResult.isNeedContinueRoute()) {
-                return resultInvokers;
+                return commonRouterResult;
             }
         }
-        return resultInvokers;
+        return commonRouterResult;
     }
 
     /**
@@ -266,10 +257,11 @@ public class RouterChain<T> {
             }
         }
 
+        List<Invoker<T>> commonRouterResult = resultInvokers;
         // 2. route common router
         for (Router router : routers) {
             // Copy resultInvokers to a arrayList. BitList not support
-            List<Invoker<T>> inputInvokers = new ArrayList<>(resultInvokers);
+            List<Invoker<T>> inputInvokers = new ArrayList<>(commonRouterResult);
 
             RouterSnapshotNode<T> currentNode = new RouterSnapshotNode<T>(router.getClass().getSimpleName(), inputInvokers.size());
             snapshotNode.appendNode(currentNode);
@@ -285,7 +277,7 @@ public class RouterChain<T> {
             if (CollectionUtils.isEmpty(routeResult)) {
                 return snapshotNode;
             } else {
-                resultInvokers.retainAll(routeResult);
+                commonRouterResult = routeResult;
             }
 
             if (!routeStateResult.isNeedContinueRoute()) {

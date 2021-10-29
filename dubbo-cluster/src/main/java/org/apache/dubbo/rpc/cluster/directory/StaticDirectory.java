@@ -105,17 +105,17 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     @Override
-    protected BitList<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException {
-        BitList<Invoker<T>> finalInvokers = invokers;
+    protected List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException {
         if (routerChain != null) {
             try {
-                finalInvokers = routerChain.route(getConsumerUrl(), invokers, invocation);
+                List<Invoker<T>> finalInvokers = routerChain.route(getConsumerUrl(), invokers, invocation);
+                return finalInvokers == null ? BitList.emptyList() : finalInvokers;
             } catch (Throwable t) {
                 logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
                 return BitList.emptyList();
             }
         }
-        return finalInvokers == null ? BitList.emptyList() : finalInvokers;
+        return invokers;
     }
 
 }

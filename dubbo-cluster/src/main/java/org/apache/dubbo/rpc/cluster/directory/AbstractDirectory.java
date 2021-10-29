@@ -183,7 +183,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             availableInvokers = invokers;
         }
 
-        BitList<Invoker<T>> routedResult = doList(availableInvokers, invocation);
+        List<Invoker<T>> routedResult = doList(availableInvokers, invocation);
         if (routedResult.isEmpty()) {
             logger.warn("No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
                 + " all validInvokers' size: " + (validInvokers == null ? 0 : validInvokers.size())
@@ -401,6 +401,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return connectivityCheckFuture;
     }
 
-    protected abstract BitList<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
+    protected abstract List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
 
 }
