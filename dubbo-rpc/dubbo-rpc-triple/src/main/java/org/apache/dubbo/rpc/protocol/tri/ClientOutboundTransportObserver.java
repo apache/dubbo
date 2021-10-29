@@ -17,15 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.buffer.ByteBuf;
+import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
-import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
-import io.netty.handler.codec.http2.Http2Error;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2StreamChannel;
 
 /**
  * Send stream data to remote
@@ -34,18 +30,15 @@ import io.netty.handler.codec.http2.Http2StreamChannel;
 public class ClientOutboundTransportObserver extends OutboundTransportObserver {
 
     private final ChannelPromise promise;
-    private final Http2StreamChannel streamChannel;
 
-    public ClientOutboundTransportObserver(Http2StreamChannel channel, ChannelPromise promise) {
-        this.streamChannel = channel;
+    public ClientOutboundTransportObserver(WriteQueue writeQueue, ChannelPromise promise) {
+        super(writeQueue);
         this.promise = promise;
     }
 
     @Override
     protected void doOnMetadata(Metadata metadata, boolean endStream) {
-        final Http2Headers headers = new DefaultHttp2Headers(true);
-        metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
-        streamChannel.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(metadata, endStream), true)
             .addListener(future -> {
                 if (!future.isSuccess()) {
                     promise.tryFailure(future.cause());
@@ -55,11 +48,7 @@ public class ClientOutboundTransportObserver extends OutboundTransportObserver {
 
     @Override
     protected void doOnData(byte[] data, boolean endStream) {
-        ByteBuf buf = streamChannel.alloc().buffer();
-        buf.writeByte(getCompressFlag());
-        buf.writeInt(data.length);
-        buf.writeBytes(data);
-        streamChannel.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(data, endStream, true), true)
             .addListener(future -> {
                 if (!future.isSuccess()) {
                     promise.tryFailure(future.cause());
@@ -69,7 +58,7 @@ public class ClientOutboundTransportObserver extends OutboundTransportObserver {
 
     @Override
     protected void doOnError(GrpcStatus status) {
-        streamChannel.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.CANCEL))
+        writeQueue.enqueue(CancelQueueCommand.createCommand(status), true)
             .addListener(future -> {
                 if (future.isSuccess()) {
                     promise.trySuccess();
@@ -81,7 +70,7 @@ public class ClientOutboundTransportObserver extends OutboundTransportObserver {
 
     @Override
     protected void doOnComplete() {
-        streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true))
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(true), true)
             .addListener(future -> {
                 if (future.isSuccess()) {
                     promise.trySuccess();
@@ -91,8 +80,8 @@ public class ClientOutboundTransportObserver extends OutboundTransportObserver {
             });
     }
 
-    private int getCompressFlag() {
-        AbstractClientStream stream = streamChannel.attr(TripleConstant.CLIENT_STREAM_KEY).get();
-        return calcCompressFlag(stream.getCompressor());
-    }
+//    private int getCompressFlag() {
+//        AbstractClientStream stream = writeQueue.getChannel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
+//        return calcCompressFlag(stream.getCompressor());
+//    }
 }

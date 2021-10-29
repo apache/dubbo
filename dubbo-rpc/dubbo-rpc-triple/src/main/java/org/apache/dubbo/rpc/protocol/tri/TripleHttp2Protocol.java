@@ -79,6 +79,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
             @Override
             protected void initChannel(Channel ch) {
                 final ChannelPipeline p = ch.pipeline();
+                p.addLast(new TripleCommandOutBoundHandler());
                 p.addLast(new TripleHttp2FrameServerHandler(frameworkModel));
                 // TODO constraint MAX DATA_SIZE
                 p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE, false));
