@@ -165,33 +165,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
     private synchronized void refreshOverrideAndInvoker(List<URL> instanceUrls) {
         // mock zookeeper://xxx?mock=return null
-        if (enableConfigurationListen) {
-            overrideDirectoryUrl();
-        }
         refreshInvoker(instanceUrls);
-    }
-
-    // TODO: exact
-    private void overrideDirectoryUrl() {
-        // merge override parameters
-        this.overrideDirectoryUrl = directoryUrl;
-        List<Configurator> localAppDynamicConfigurators = getConsumerConfigurationListener(moduleModel).getConfigurators(); // local reference
-        doOverrideUrl(localAppDynamicConfigurators);
-        if (referenceConfigurationListener != null) {
-            List<Configurator> localDynamicConfigurators = referenceConfigurationListener.getConfigurators(); // local reference
-            doOverrideUrl(localDynamicConfigurators);
-        }
-    }
-
-    private void doOverrideUrl(List<Configurator> configurators) {
-        if (CollectionUtils.isNotEmpty(configurators)) {
-            for (Configurator configurator : configurators) {
-                this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
-                Map<String, String> newParams = new HashMap<>(this.overrideDirectoryUrl.getParameters());
-                directoryUrl.getParameters().forEach(newParams::remove);
-                this.overrideQueryMap = newParams;
-            }
-        }
     }
 
     private InstanceAddressURL overrideWithConfigurator(InstanceAddressURL providerUrl) {
