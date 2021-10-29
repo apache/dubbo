@@ -265,53 +265,55 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         // try to submit task, to ensure there is only one task at most for each directory
         if (checkConnectivityPermit.tryAcquire()) {
             this.connectivityCheckFuture = connectivityExecutor.schedule(() -> {
-                if (isDestroyed()) {
-                    return;
-                }
-                RpcContext.getServiceContext().setConsumerUrl(getConsumerUrl());
-                List<Invoker<T>> needDeleteList = new ArrayList<>();
-                List<Invoker<T>> invokersToTry = new ArrayList<>();
+                try {
+                    if (isDestroyed()) {
+                        return;
+                    }
+                    RpcContext.getServiceContext().setConsumerUrl(getConsumerUrl());
+                    List<Invoker<T>> needDeleteList = new ArrayList<>();
+                    List<Invoker<T>> invokersToTry = new ArrayList<>();
 
-                // 1. pick invokers from invokersToReconnect
-                // limit max reconnectTaskTryCount, prevent this task hang up all the connectivityExecutor for long time
-                if (invokersToReconnect.size() < reconnectTaskTryCount) {
-                    invokersToTry.addAll(invokersToReconnect);
-                } else {
-                    for (int i = 0; i < reconnectTaskTryCount; i++) {
-                        Invoker<T> tInvoker = invokersToReconnect.get(ThreadLocalRandom.current().nextInt(invokersToReconnect.size()));
-                        if (!invokersToTry.contains(tInvoker)) {
-                            // ignore if is selected, invokersToTry's size is always smaller than reconnectTaskTryCount + 1
-                            invokersToTry.add(tInvoker);
+                    // 1. pick invokers from invokersToReconnect
+                    // limit max reconnectTaskTryCount, prevent this task hang up all the connectivityExecutor for long time
+                    if (invokersToReconnect.size() < reconnectTaskTryCount) {
+                        invokersToTry.addAll(invokersToReconnect);
+                    } else {
+                        for (int i = 0; i < reconnectTaskTryCount; i++) {
+                            Invoker<T> tInvoker = invokersToReconnect.get(ThreadLocalRandom.current().nextInt(invokersToReconnect.size()));
+                            if (!invokersToTry.contains(tInvoker)) {
+                                // ignore if is selected, invokersToTry's size is always smaller than reconnectTaskTryCount + 1
+                                invokersToTry.add(tInvoker);
+                            }
                         }
                     }
-                }
 
-                // 2. try to check the invoker's status
-                for (Invoker<T> invoker : invokersToTry) {
-                    if (invokers.contains(invoker)) {
-                        if (invoker.isAvailable()) {
+                    // 2. try to check the invoker's status
+                    for (Invoker<T> invoker : invokersToTry) {
+                        if (invokers.contains(invoker)) {
+                            if (invoker.isAvailable()) {
+                                needDeleteList.add(invoker);
+                            }
+                        } else {
                             needDeleteList.add(invoker);
                         }
-                    } else {
-                        needDeleteList.add(invoker);
                     }
-                }
 
-                // 3. recover valid invoker
-                invokerLock.lock();
-                try {
-                    for (Invoker<T> tInvoker : needDeleteList) {
-                        if (invokers.contains(tInvoker)) {
-                            validInvokers.add(tInvoker);
-                            logger.info("Recover service address: " + tInvoker.getUrl() + "  from invalid list.");
+                    // 3. recover valid invoker
+                    invokerLock.lock();
+                    try {
+                        for (Invoker<T> tInvoker : needDeleteList) {
+                            if (invokers.contains(tInvoker)) {
+                                validInvokers.add(tInvoker);
+                                logger.info("Recover service address: " + tInvoker.getUrl() + "  from invalid list.");
+                            }
+                            invokersToReconnect.remove(tInvoker);
                         }
-                        invokersToReconnect.remove(tInvoker);
+                    } finally {
+                        invokerLock.unlock();
                     }
                 } finally {
-                    invokerLock.unlock();
+                    checkConnectivityPermit.release();
                 }
-
-                checkConnectivityPermit.release();
 
                 // 4. submit new task if it has more to recover
                 if (!invokersToReconnect.isEmpty()) {
