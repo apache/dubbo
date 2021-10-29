@@ -34,7 +34,7 @@ import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
 public class DefaultTPSLimiterTest {
 
     private static final int TEST_LIMIT_RATE = 2;
-    private DefaultTPSLimiter defaultTPSLimiter = new DefaultTPSLimiter();
+    private final DefaultTPSLimiter defaultTPSLimiter = new DefaultTPSLimiter();
 
     @Test
     public void testIsAllowable() throws Exception {
@@ -64,6 +64,23 @@ public class DefaultTPSLimiterTest {
         }
     }
 
+    @Test
+    public void testTPSLimiterForMethodLevelConfig() throws Exception {
+        Invocation invocation = new MockInvocation();
+        URL url = URL.valueOf("test://test");
+        url = url.addParameter(INTERFACE_KEY, "org.apache.dubbo.rpc.file.TpsService");
+        url = url.addParameter(TPS_LIMIT_RATE_KEY, TEST_LIMIT_RATE);
+        int tpsConfigForMethodLevel = 3;
+        url = url.addParameter("echo.tps", tpsConfigForMethodLevel);
+        url = url.addParameter(TPS_LIMIT_INTERVAL_KEY, 1000);
+        for (int i = 1; i <= tpsConfigForMethodLevel + 1; i++) {
+            if (i == tpsConfigForMethodLevel + 1) {
+                Assertions.assertFalse(defaultTPSLimiter.isAllowable(url, invocation));
+            } else {
+                Assertions.assertTrue(defaultTPSLimiter.isAllowable(url, invocation));
+            }
+        }
+    }
 
     @Test
     public void testConfigChange() throws Exception {
