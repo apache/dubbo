@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Filter;
@@ -56,7 +57,7 @@ public class TraceFilter implements Filter {
     public static void addTracer(Class<?> type, String method, Channel channel, int max) {
         channel.setAttribute(TRACE_MAX, max);
         channel.setAttribute(TRACE_COUNT, new AtomicInteger());
-        String key = method != null && method.length() > 0 ? type.getName() + "." + method : type.getName();
+        String key = StringUtils.isNotEmpty(method) ? type.getName() + "." + method : type.getName();
         Set<Channel> channels = TRACERS.computeIfAbsent(key, k -> new ConcurrentHashSet<>());
         channels.add(channel);
     }
@@ -64,7 +65,7 @@ public class TraceFilter implements Filter {
     public static void removeTracer(Class<?> type, String method, Channel channel) {
         channel.removeAttribute(TRACE_MAX);
         channel.removeAttribute(TRACE_COUNT);
-        String key = method != null && method.length() > 0 ? type.getName() + "." + method : type.getName();
+        String key = StringUtils.isNotEmpty(method) ? type.getName() + "." + method : type.getName();
         Set<Channel> channels = TRACERS.get(key);
         if (channels != null) {
             channels.remove(channel);
@@ -79,7 +80,7 @@ public class TraceFilter implements Filter {
         if (TRACERS.size() > 0) {
             String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
             Set<Channel> channels = TRACERS.get(key);
-            if (channels == null || channels.isEmpty()) {
+            if (CollectionUtils.isEmpty(channels)) {
                 key = invoker.getInterface().getName();
                 channels = TRACERS.get(key);
             }
@@ -92,7 +93,7 @@ public class TraceFilter implements Filter {
                             if (m != null) {
                                 max = m;
                             }
-                            int count = 0;
+                            int count;
                             AtomicInteger c = (AtomicInteger) channel.getAttribute(TRACE_COUNT);
                             if (c == null) {
                                 c = new AtomicInteger();

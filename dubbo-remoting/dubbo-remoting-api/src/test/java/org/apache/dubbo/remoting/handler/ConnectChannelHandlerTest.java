@@ -21,7 +21,7 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.dispatcher.connection.ConnectionOrderedChannelHandler;
-
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -35,6 +35,7 @@ public class ConnectChannelHandlerTest extends WrappedChannelHandlerTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        url = url.setScopeModel(ApplicationModel.defaultModel());
         handler = new ConnectionOrderedChannelHandler(new BizChannelHandler(true), url);
     }
 

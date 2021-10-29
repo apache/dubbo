@@ -53,6 +53,10 @@ public class ModuleModel extends ScopeModel {
         Assert.notNull(applicationModel, "ApplicationModel can not be null");
         this.applicationModel = applicationModel;
         applicationModel.addModule(this, isInternal);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is created");
+        }
+
         initialize();
         Assert.notNull(serviceRepository, "ModuleServiceRepository can not be null");
         Assert.notNull(moduleConfigManager, "ModuleConfigManager can not be null");

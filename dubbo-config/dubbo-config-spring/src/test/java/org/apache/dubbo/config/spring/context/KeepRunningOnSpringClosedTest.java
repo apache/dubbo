@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring;
+package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizerHolder;
+import org.apache.dubbo.config.spring.DubboStateListener;
+import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -58,6 +59,7 @@ public class KeepRunningOnSpringClosedTest {
             Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
             Assertions.assertEquals(true, applicationDeployer.isStarted());
             Assertions.assertEquals(false, applicationDeployer.isStopped());
+            Assertions.assertNotNull(DubboSpringInitializer.findBySpringContext(providerContext));
 
             // close spring context
             providerContext.close();
@@ -66,6 +68,7 @@ public class KeepRunningOnSpringClosedTest {
             Assertions.assertEquals(DeployState.STARTED, applicationDeployer.getState());
             Assertions.assertEquals(true, applicationDeployer.isStarted());
             Assertions.assertEquals(false, applicationDeployer.isStopped());
+            Assertions.assertNull(DubboSpringInitializer.findBySpringContext(providerContext));
         } finally {
             DubboBootstrap.getInstance().stop();
             SysProps.clear();

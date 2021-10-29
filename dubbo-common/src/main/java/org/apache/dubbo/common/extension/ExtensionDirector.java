@@ -132,4 +132,11 @@ public class ExtensionDirector implements ExtensionAccessor {
     public void removeAllCachedLoader() {
         // extensionLoadersMap.clear();
     }
+
+    public void destroy() {
+        for (ExtensionLoader<?> extensionLoader : extensionLoadersMap.values()) {
+            extensionLoader.destroy();
+        }
+        extensionLoadersMap.clear();
+    }
 }

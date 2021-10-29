@@ -114,7 +114,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private volatile MetadataServiceExporter metadataServiceExporter;
 
     private ScheduledFuture<?> asyncMetadataFuture;
-    private String identifier;
     private volatile CompletableFuture startFuture;
     private DubboShutdownHook dubboShutdownHook;
     private Object stateLock = new Object();
@@ -238,6 +237,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // load application config
         configManager.loadConfigsOfTypeFromProps(ApplicationConfig.class);
 
+        // try set model name
+        if (StringUtils.isBlank(applicationModel.getModelName())) {
+            applicationModel.setModelName(applicationModel.tryGetApplicationName());
+        }
+
         // load config centers
         configManager.loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
 
@@ -273,8 +277,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
         }
-
-        configManager.refreshAll();
     }
 
     private void startMetadataCenter() {
@@ -1079,18 +1081,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private ApplicationConfig getApplication() {
         return configManager.getApplicationOrElseThrow();
-    }
-
-    @Override
-    public String getIdentifier() {
-        if (identifier == null) {
-            identifier = "Dubbo application[" + applicationModel.getInternalId() + "]";
-            if (applicationModel.getModelName() != null
-                && !StringUtils.isEquals(applicationModel.getModelName(), applicationModel.getInternalName())) {
-                identifier += "(" + applicationModel.getModelName() + ")";
-            }
-        }
-        return identifier;
     }
 
 }

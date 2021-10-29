@@ -53,31 +53,20 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
 
         @Override
         public void onComplete() {
-            if (getData() != null) {
-                invoke();
-            } else {
-                onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Missing request data"));
-            }
+            execute(() -> {
+                if (getData() != null) {
+                    invoke();
+                } else {
+                    onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription("Missing request data"));
+                }
+            });
         }
 
         public void invoke() {
-            RpcInvocation invocation;
-            if (getMethodDescriptor().isNeedWrap()) {
-                // For wrapper overload methods, the methodDescriptor needs to get from data, so parse the request first
-                final Object[] arguments = deserializeRequest(getData());
-                if (arguments == null) {
-                    return;
-                }
-                invocation = buildInvocation(getHeaders());
-                invocation.setArguments(arguments);
-            } else {
-                invocation = buildInvocation(getHeaders());
-                final Object[] arguments = deserializeRequest(getData());
-                if (arguments == null) {
-                    return;
-                }
-                invocation.setArguments(arguments);
+            RpcInvocation invocation = buildUnaryInvocation(getHeaders(), getData());
+            if (invocation == null) {
+                return;
             }
             final Result result = getInvoker().invoke(invocation);
             CompletionStage<Object> future = result.thenApply(Function.identity());
