@@ -51,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -525,8 +526,21 @@ public abstract class AbstractRegistry implements Registry {
             return true;
         }
 
-        return Arrays.stream(COMMA_SPLIT_PATTERN.split(pattern))
-            .anyMatch(p -> p.equalsIgnoreCase(urlToRegistry.getProtocol()));
+        String[] accepts = COMMA_SPLIT_PATTERN.split(pattern);
+
+        Set<String> allow = Arrays.stream(accepts).filter(p -> !p.startsWith("-")).collect(Collectors.toSet());
+        Set<String> disAllow = Arrays.stream(accepts).filter(p -> p.startsWith("-")).map(p -> p.substring(1)).collect(Collectors.toSet());
+
+        if (CollectionUtils.isNotEmpty(allow)) {
+            // allow first
+            return allow.contains(urlToRegistry.getProtocol());
+        } else if (CollectionUtils.isNotEmpty(disAllow)) {
+            // contains disAllow, deny
+            return !disAllow.contains(urlToRegistry.getProtocol());
+        } else {
+            // default allow
+            return true;
+        }
     }
 
     @Override

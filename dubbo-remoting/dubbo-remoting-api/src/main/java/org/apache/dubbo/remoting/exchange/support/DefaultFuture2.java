@@ -43,28 +43,26 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * DefaultFuture.
+ * DefaultFuture2.
+ * This class is duplicated with {@link DefaultFuture} because the underlying connection abstraction was not designed for
+ * multiple protocol.
+ * TODO Remove this class and abstract common logic for waiting async result.
  */
 public class DefaultFuture2 extends CompletableFuture<Object> {
 
-    private static GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(
-        () -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true),
-            30, TimeUnit.MILLISECONDS),
-        () -> destroy());
-
+    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER =
+        new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true),
+            30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
     private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
-
     // invoke id.
     private final Request request;
     private final Connection connection;
     private final int timeout;
     private final long start = System.currentTimeMillis();
+    private final List<Runnable> timeoutListeners = new ArrayList<>();
     private volatile long sent;
     private Timeout timeoutCheckTask;
-
-    private List<Runnable> timeoutListeners = new ArrayList<>();
-
     private ExecutorService executor;
 
     private DefaultFuture2(Connection client2, Request request, int timeout) {
@@ -75,17 +73,9 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         FUTURES.put(request.getId(), this);
     }
 
-    public void addTimeoutListener(Runnable runnable) {
-        timeoutListeners.add(runnable);
-    }
-
     public static void addTimeoutListener(long id, Runnable runnable) {
         DefaultFuture2 defaultFuture2 = FUTURES.get(id);
         defaultFuture2.addTimeoutListener(runnable);
-    }
-
-    public List<Runnable> getTimeoutListeners() {
-        return timeoutListeners;
     }
 
     /**
@@ -97,7 +87,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
     }
 
     public static void destroy() {
-        TIME_OUT_TIMER.remove(timer-> timer.stop());
+        TIME_OUT_TIMER.remove(Timer::stop);
         FUTURES.clear();
     }
 
@@ -149,11 +139,19 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
             future.doReceived(response);
         } else {
             logger.warn("The timeout response finally returned at "
-                    + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
-                    + ", response status is " + response.getStatus()
-                    + (connection == null ? "" : ", channel: " + connection.getChannel().localAddress()
-                    + " -> " + connection.getRemote()) + ", please check provider side for detailed result.");
+                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
+                + ", response status is " + response.getStatus()
+                + (connection == null ? "" : ", channel: " + connection.getChannel().localAddress()
+                + " -> " + connection.getRemote()) + ", please check provider side for detailed result.");
         }
+    }
+
+    public void addTimeoutListener(Runnable runnable) {
+        timeoutListeners.add(runnable);
+    }
+
+    public List<Runnable> getTimeoutListeners() {
+        return timeoutListeners;
     }
 
     public ExecutorService getExecutor() {
@@ -202,7 +200,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             if (threadlessExecutor.isWaiting()) {
                 threadlessExecutor.notifyReturn(new IllegalStateException("The result has returned, but the biz thread is still waiting" +
-                        " which is not an expected state, interrupt the thread manually by returning an exception."));
+                    " which is not an expected state, interrupt the thread manually by returning an exception."));
             }
         }
     }
@@ -219,7 +217,6 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         return sent > 0;
     }
 
-
     private int getTimeout() {
         return timeout;
     }
@@ -231,13 +228,13 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
     private String getTimeoutMessage(boolean scan) {
         long nowTimestamp = System.currentTimeMillis();
         return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
-                + (scan ? " by scan timer" : "") + ". start time: "
-                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
-                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp))) + ","
-                + (sent > 0 ? " client elapsed: " + (sent - start)
-                + " ms, server elapsed: " + (nowTimestamp - sent)
-                : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
-                + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : getRequestWithoutData()) + ", channel: " + connection.getChannel();
+            + (scan ? " by scan timer" : "") + ". start time: "
+            + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
+            + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp))) + ","
+            + (sent > 0 ? " client elapsed: " + (sent - start)
+            + " ms, server elapsed: " + (nowTimestamp - sent)
+            : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
+            + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : getRequestWithoutData()) + ", channel: " + connection.getChannel();
     }
 
     private Request getRequestWithoutData() {

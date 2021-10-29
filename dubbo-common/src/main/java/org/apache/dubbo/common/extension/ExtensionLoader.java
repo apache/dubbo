@@ -26,6 +26,7 @@ import org.apache.dubbo.common.extension.support.WrapperComparator;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassLoaderResourceLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
@@ -215,19 +216,32 @@ public class ExtensionLoader<T> {
     }
 
     public void destroy() {
+        // destroy raw extension instance
         extensionInstances.forEach((type, instance) -> {
-            if (instance instanceof Lifecycle) {
-                Lifecycle lifecycle = (Lifecycle) instance;
+            if (instance instanceof Disposable) {
+                Disposable disposable = (Disposable) instance;
                 try {
-                    lifecycle.destroy();
+                    disposable.destroy();
                 } catch (Exception e) {
-                    logger.error("Error destroying extension " + lifecycle, e);
+                    logger.error("Error destroying extension " + disposable, e);
                 }
             }
         });
         extensionInstances.clear();
 
-        // TODO destroy extension loader, release resources.
+        // destroy wrapped extension instance
+        for (Holder<Object> holder : cachedInstances.values()) {
+            Object wrappedInstance = holder.get();
+            if (wrappedInstance instanceof Disposable) {
+                Disposable disposable = (Disposable) wrappedInstance;
+                try {
+                    disposable.destroy();
+                } catch (Exception e) {
+                    logger.error("Error destroying extension " + disposable, e);
+                }
+            }
+        }
+        cachedInstances.clear();
     }
 
     private static ClassLoader findClassLoader() {

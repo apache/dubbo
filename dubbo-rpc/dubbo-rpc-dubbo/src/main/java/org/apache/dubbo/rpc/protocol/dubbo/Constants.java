@@ -61,7 +61,7 @@ public interface Constants {
     boolean DEFAULT_LAZY_CONNECT_INITIAL_STATE = true;
 
     /**
-     * when this warning rises from invocation, program probably have bug.
+     * when this warning rises from invocation, program probably have a bug.
      */
     String LAZY_REQUEST_WITH_WARNING_KEY = "lazyclient_request_with_warning";
 
