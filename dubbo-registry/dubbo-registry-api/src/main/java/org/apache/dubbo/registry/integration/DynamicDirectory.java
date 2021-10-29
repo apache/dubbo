@@ -182,7 +182,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         try {
             // Get invokers from cache, only runtime routers will be executed.
             List<Invoker<T>> result = routerChain.route(getConsumerUrl(), invokers, invocation);
-            return result == null ? BitList.emptyList() : invokers;
+            return result == null ? BitList.emptyList() : result;
         } catch (Throwable t) {
             logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
             return BitList.emptyList();
