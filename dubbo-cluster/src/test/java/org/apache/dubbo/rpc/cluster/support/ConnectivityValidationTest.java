@@ -182,9 +182,7 @@ public class ConnectivityValidationTest {
         Assertions.assertEquals(2, directory.list(invocation).size());
 
         when(invoker1.isAvailable()).thenReturn(false);
-        for (int i = 0; i < 5; i++) {
-            Assertions.assertEquals(invoker2, clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
-        }
+        Assertions.assertEquals(invoker2, clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.singletonList(invoker2)));
         Assertions.assertEquals(1, directory.list(invocation).size());
 
         when(invoker1.isAvailable()).thenReturn(true);
