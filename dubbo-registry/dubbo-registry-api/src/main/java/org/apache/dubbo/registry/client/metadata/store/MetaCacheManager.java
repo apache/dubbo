@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Collections;
@@ -48,6 +49,10 @@ public class MetaCacheManager implements ScopeModelAware, Disposable {
 
     protected FileCacheStore cacheStore;
     protected LRUCache<String, MetadataInfo> cache;
+
+    public static MetaCacheManager getInstance(ScopeModel scopeModel) {
+        return scopeModel.getBeanFactory().getOrRegisterBean(MetaCacheManager.class);
+    }
 
     public MetaCacheManager() {
         String filePath = System.getProperty("dubbo.meta.cache.filePath");

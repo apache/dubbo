@@ -101,7 +101,7 @@ public class ServiceInstancesChangedListener {
         ApplicationModel applicationModel =  ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
         this.scheduler = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
         this.revisionToMetadata = new HashMap<>();
-        this.metaCacheManager = applicationModel.getBeanFactory().getBean(MetaCacheManager.class);
+        this.metaCacheManager = MetaCacheManager.getInstance(applicationModel.getFrameworkModel());
     }
 
     /**
