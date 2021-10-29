@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.metadata.store;
 import org.apache.dubbo.common.cache.FileCacheStore;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -36,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Metadata cache with limited size that uses LRU expiry policy.
  */
-public class MetaCacheManager implements ScopeModelAware {
+public class MetaCacheManager implements ScopeModelAware, Disposable {
     private static final Logger logger = LoggerFactory.getLogger(MetaCacheManager.class);
     private static final String DEFAULT_FILE_NAME = ".metadata";
     private static final String SUFFIX = ".dubbo.cache";
