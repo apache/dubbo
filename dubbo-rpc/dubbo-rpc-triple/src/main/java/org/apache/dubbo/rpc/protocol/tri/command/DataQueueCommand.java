@@ -58,15 +58,15 @@ public class DataQueueCommand extends QueuedCommand.AbstractQueuedCommand {
     }
 
     @Override
-    public void send(ChannelHandlerContext ctx, ChannelPromise promise) {
+    public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
         if (data == null) {
-            ctx.writeAndFlush(new DefaultHttp2DataFrame(endStream), promise);
+            ctx.write(new DefaultHttp2DataFrame(endStream), promise);
         } else {
             ByteBuf buf = ctx.alloc().buffer();
             buf.writeByte(getCompressFlag(ctx));
             buf.writeInt(data.length);
             buf.writeBytes(data);
-            ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream), promise);
+            ctx.write(new DefaultHttp2DataFrame(buf, endStream), promise);
         }
     }
 

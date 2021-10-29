@@ -23,6 +23,8 @@ import io.netty.channel.ChannelPromise;
 
 public interface QueuedCommand {
 
+    void setFlush(boolean flush);
+
     ChannelPromise promise();
 
     void promise(ChannelPromise promise);
@@ -33,9 +35,15 @@ public interface QueuedCommand {
 
         private ChannelPromise promise;
 
+        protected boolean flush = false;
+
         @Override
         public ChannelPromise promise() {
             return promise;
+        }
+
+        public void setFlush(boolean flush) {
+            this.flush = flush;
         }
 
         @Override
@@ -48,7 +56,14 @@ public interface QueuedCommand {
             channel.write(this, promise);
         }
 
-        public abstract void send(ChannelHandlerContext ctx, ChannelPromise promise);
+        public final void send(ChannelHandlerContext ctx, ChannelPromise promise) {
+            doSend(ctx, promise);
+            if (flush) {
+                ctx.flush();
+            }
+        }
+
+        public abstract void doSend(ChannelHandlerContext ctx, ChannelPromise promise);
     }
 
 }

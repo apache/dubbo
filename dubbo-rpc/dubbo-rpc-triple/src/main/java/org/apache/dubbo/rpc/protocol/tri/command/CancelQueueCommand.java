@@ -36,8 +36,9 @@ public class CancelQueueCommand extends QueuedCommand.AbstractQueuedCommand {
         return new CancelQueueCommand(status);
     }
 
+
     @Override
-    public void send(ChannelHandlerContext ctx, ChannelPromise promise) {
-        ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.CANCEL), promise);
+    public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
+        ctx.write(new DefaultHttp2ResetFrame(Http2Error.CANCEL), promise);
     }
 }

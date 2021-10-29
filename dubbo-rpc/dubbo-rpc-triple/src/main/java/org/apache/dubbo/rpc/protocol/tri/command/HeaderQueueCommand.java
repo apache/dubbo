@@ -75,9 +75,7 @@ public class HeaderQueueCommand extends QueuedCommand.AbstractQueuedCommand {
     }
 
     @Override
-    public void send(ChannelHandlerContext ctx, ChannelPromise promise) {
-        Http2Headers http2Headers = new DefaultHttp2Headers(true);
-        this.headers.forEach((kv) -> http2Headers.set(kv.getKey(), kv.getValue()));
-        ctx.writeAndFlush(new DefaultHttp2HeadersFrame(http2Headers, endStream), promise);
+    public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
+        ctx.write(new DefaultHttp2HeadersFrame(headers, endStream), promise);
     }
 }
