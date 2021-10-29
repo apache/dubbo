@@ -79,9 +79,4 @@ public class ClientOutboundTransportObserver extends OutboundTransportObserver {
                 }
             });
     }
-
-//    private int getCompressFlag() {
-//        AbstractClientStream stream = writeQueue.getChannel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
-//        return calcCompressFlag(stream.getCompressor());
-//    }
 }

@@ -24,10 +24,6 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
 
-/**
- * @author earthchen
- * @date 2021/10/29
- **/
 public class CancelQueueCommand extends QueuedCommand.AbstractQueuedCommand {
 
     private final GrpcStatus status;

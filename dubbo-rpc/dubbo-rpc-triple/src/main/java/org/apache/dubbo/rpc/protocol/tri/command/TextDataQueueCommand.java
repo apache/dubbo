@@ -23,10 +23,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 
-/**
- * @author earthchen
- * @date 2021/10/29
- **/
 public class TextDataQueueCommand extends QueuedCommand.AbstractQueuedCommand {
 
     private final String data;

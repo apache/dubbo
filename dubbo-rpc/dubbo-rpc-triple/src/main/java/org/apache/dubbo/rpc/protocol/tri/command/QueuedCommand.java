@@ -21,10 +21,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 
-/**
- * @author earthchen
- * @date 2021/10/29
- **/
 public interface QueuedCommand {
 
     ChannelPromise promise();
