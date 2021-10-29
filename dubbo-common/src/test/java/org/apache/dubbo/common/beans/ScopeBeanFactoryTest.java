@@ -44,5 +44,13 @@ public class ScopeBeanFactoryTest {
 
         Object objectBean = applicationModel.getBeanFactory().getBean(Object.class);
         Assertions.assertNull(objectBean);
+
+        Assertions.assertFalse(beanWithApplicationModel.isDestroyed());
+        Assertions.assertFalse(beanWithFrameworkModel.isDestroyed());
+
+        // destroy
+        frameworkModel.destroy();
+        Assertions.assertTrue(beanWithApplicationModel.isDestroyed());
+        Assertions.assertTrue(beanWithFrameworkModel.isDestroyed());
     }
 }

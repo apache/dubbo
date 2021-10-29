@@ -179,8 +179,8 @@ public class DubboProtocolTest {
         assertEquals("hello world@" + RemoteServiceImpl.class.getName(), remote.sayHello("world"));
 
 //       can't find target service addresses
-        EchoService remoteEecho = (EchoService) remote;
-        assertEquals(remoteEecho.$echo("ok"), "ok");
+        EchoService remoteEcho = (EchoService) remote;
+        assertEquals(remoteEcho.$echo("ok"), "ok");
     }
 
     @Test
