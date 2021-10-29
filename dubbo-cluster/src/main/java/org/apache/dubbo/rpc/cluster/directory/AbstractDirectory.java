@@ -301,12 +301,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 invokerLock.lock();
                 try {
                     for (Invoker<T> tInvoker : needDeleteList) {
-                        try {
-                            // validInvokers.add may throw exception if addresses is notified to change moments before
+                        if (invokers.contains(tInvoker)) {
                             validInvokers.add(tInvoker);
                             logger.info("Recover service address: " + tInvoker.getUrl() + "  from invalid list.");
-                        } catch (Throwable ignore) {
-
                         }
                         invokersToReconnect.remove(tInvoker);
                     }
