@@ -103,15 +103,15 @@ public class DefaultTPSLimiterTest {
         startLatch.countDown();
         stopLatch.await();
 
-        Assertions.assertEquals(taskList.stream().map(task -> task.getCount()).reduce((a, b) -> a + b).get(), 100);
+        Assertions.assertEquals(taskList.stream().map(Task::getCount).reduce(Integer::sum).get(), 100);
     }
 
-    class Task implements Runnable {
-        private DefaultTPSLimiter defaultTPSLimiter;
-        private URL url;
-        private Invocation invocation;
-        private CountDownLatch startLatch;
-        private CountDownLatch stopLatch;
+    static class Task implements Runnable {
+        private final DefaultTPSLimiter defaultTPSLimiter;
+        private final URL url;
+        private final Invocation invocation;
+        private final CountDownLatch startLatch;
+        private final CountDownLatch stopLatch;
         private int count;
 
         public Task(DefaultTPSLimiter defaultTPSLimiter, URL url, Invocation invocation, CountDownLatch startLatch, CountDownLatch stopLatch) {
