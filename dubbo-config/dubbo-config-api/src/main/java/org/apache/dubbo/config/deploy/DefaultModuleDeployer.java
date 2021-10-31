@@ -25,7 +25,6 @@ import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProviderConfig;
@@ -66,7 +65,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
     private final ModuleConfigManager configManager;
 
     private final SimpleReferenceCache referenceCache;
-    private String identifier;
 
     private ApplicationDeployer applicationDeployer;
     private CompletableFuture startFuture;
@@ -434,17 +432,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             .filter(k -> k != null && k)
             .findAny()
             .isPresent();
-    }
-
-    public String getIdentifier() {
-        if (identifier == null) {
-            identifier = "Dubbo module[" + moduleModel.getInternalId() + "]";
-            if (moduleModel.getModelName() != null
-                && !StringUtils.isEquals(moduleModel.getModelName(), moduleModel.getInternalName())) {
-                identifier += "(" + moduleModel.getModelName() + ")";
-            }
-        }
-        return identifier;
     }
 
     @Override

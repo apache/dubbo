@@ -260,6 +260,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 instancesChangedListener.removeListener(protocolServiceKey, listener);
                 if (!instancesChangedListener.hasListeners()) {
                     serviceListeners.remove(serviceNamesKey);
+                    instancesChangedListener.destroy();
                 }
             }
         }
@@ -280,6 +281,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         registryManager.removeDestroyedRegistry(this);
         // stop ServiceDiscovery
         execute(serviceDiscovery::destroy);
+        // destroy all event listener
+        for (ServiceInstancesChangedListener listener : serviceListeners.values()) {
+            listener.destroy();
+        }
+        serviceListeners.clear();
     }
 
     @Override

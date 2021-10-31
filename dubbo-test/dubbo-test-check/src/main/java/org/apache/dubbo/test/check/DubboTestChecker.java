@@ -196,14 +196,14 @@ public class DubboTestChecker implements TestExecutionListener {
 
     @Override
     public void executionStarted(TestIdentifier testIdentifier) {
-//        TestSource testSource = testIdentifier.getSource().orElse(null);
-//        if (testSource instanceof ClassSource) {
+        TestSource testSource = testIdentifier.getSource().orElse(null);
+        if (testSource instanceof ClassSource) {
 //            ClassSource source = (ClassSource) testSource;
 //            log("Run test class: " + source.getClassName());
-//        } else if (testSource instanceof MethodSource) {
-//            MethodSource source = (MethodSource) testSource;
-//            log("Run test method: " + source.getClassName() + "#" + source.getMethodName());
-//        }
+        } else if (testSource instanceof MethodSource) {
+            MethodSource source = (MethodSource) testSource;
+            log("Run test method: " + source.getClassName() + "#" + source.getMethodName());
+        }
     }
 
     @Override

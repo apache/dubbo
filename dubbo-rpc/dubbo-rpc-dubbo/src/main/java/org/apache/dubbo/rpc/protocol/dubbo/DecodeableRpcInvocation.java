@@ -222,7 +222,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             setParameterTypes(pts);
 
             Map<String, Object> map = in.readAttachments();
-            if (map != null && map.size() > 0) {
+            if (CollectionUtils.isNotEmptyMap(map)) {
                 Map<String, Object> attachment = getObjectAttachments();
                 if (attachment == null) {
                     attachment = new HashMap<>();
@@ -237,7 +237,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
 
             setArguments(args);
-            String targetServiceName = buildKey((String) getAttachment(PATH_KEY),
+            String targetServiceName = buildKey(getAttachment(PATH_KEY),
                 getAttachment(GROUP_KEY),
                 getAttachment(VERSION_KEY));
             setTargetServiceUniqueName(targetServiceName);

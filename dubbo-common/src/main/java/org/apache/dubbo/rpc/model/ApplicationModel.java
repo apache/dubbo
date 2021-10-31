@@ -53,8 +53,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ApplicationModel extends ScopeModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
     public static final String NAME = "ApplicationModel";
-    private static volatile ApplicationModel defaultInstance;
-
     private final List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
     private final List<ModuleModel> pubModuleModels = Collections.synchronizedList(new ArrayList<>());
     private Environment environment;
@@ -84,15 +82,15 @@ public class ApplicationModel extends ScopeModel {
         }
     }
 
+    /**
+     * During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+     * will return a broken model, maybe cause unpredictable problem.
+     * Recommendation: Avoid using the default model as much as possible.
+     * @return the global default ApplicationModel
+     */
     public static ApplicationModel defaultModel() {
-        if (defaultInstance == null) {
-            synchronized (ApplicationModel.class) {
-                if (defaultInstance == null) {
-                    defaultInstance = new ApplicationModel(FrameworkModel.defaultModel());
-                }
-            }
-        }
-        return defaultInstance;
+        // should get from default FrameworkModel, avoid out of sync
+        return FrameworkModel.defaultModel().defaultApplication();
     }
 
     /**
@@ -186,9 +184,8 @@ public class ApplicationModel extends ScopeModel {
     // only for unit test
     @Deprecated
     public static void reset() {
-        if (defaultInstance != null) {
-            defaultInstance.destroy();
-            defaultInstance = null;
+        if (FrameworkModel.defaultModel().getDefaultAppModel() != null) {
+            FrameworkModel.defaultModel().getDefaultAppModel().destroy();
         }
     }
 
@@ -204,13 +201,10 @@ public class ApplicationModel extends ScopeModel {
         this.isInternal = isInternal;
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
-        initialize();
-        // bind to default instance if absent
-        synchronized (ApplicationModel.class) {
-            if (!isInternal && defaultInstance == null) {
-                defaultInstance = this;
-            }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is created");
         }
+        initialize();
     }
 
     @Override
@@ -244,17 +238,7 @@ public class ApplicationModel extends ScopeModel {
     @Override
     protected void onDestroy() {
         // 1. remove from frameworkModel
-        if (defaultInstance == this) {
-            synchronized (ApplicationModel.class) {
-                frameworkModel.removeApplication(this);
-                defaultInstance = null;
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("Reset default Dubbo application[" + getInternalId() + "] to null ...");
-                }
-            }
-        } else {
-            frameworkModel.removeApplication(this);
-        }
+        frameworkModel.removeApplication(this);
 
         // 2. pre-destroy, set stopping
         if (deployer != null) {
@@ -343,8 +327,9 @@ public class ApplicationModel extends ScopeModel {
     void addModule(ModuleModel moduleModel, boolean isInternal) {
         synchronized (moduleLock) {
             if (!this.moduleModels.contains(moduleModel)) {
+                checkDestroyed();
                 this.moduleModels.add(moduleModel);
-                moduleModel.setInternalName(buildInternalName(ModuleModel.NAME, getInternalId(), moduleIndex.getAndIncrement()));
+                moduleModel.setInternalId(buildInternalId(getInternalId(), moduleIndex.getAndIncrement()));
                 if (!isInternal) {
                     pubModuleModels.add(moduleModel);
                 }
@@ -369,6 +354,12 @@ public class ApplicationModel extends ScopeModel {
         }
     }
 
+    private void checkDestroyed() {
+        if (isDestroyed()) {
+            throw new IllegalStateException("ApplicationModel is destroyed");
+        }
+    }
+
     public List<ModuleModel> getModuleModels() {
         return Collections.unmodifiableList(moduleModels);
     }
@@ -379,9 +370,6 @@ public class ApplicationModel extends ScopeModel {
 
     public ModuleModel getDefaultModule() {
         if (defaultModule == null) {
-            if (isDestroyed()) {
-                return null;
-            }
             synchronized (moduleLock) {
                 if (defaultModule == null) {
                     defaultModule = findDefaultModule();
