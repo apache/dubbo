@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * ExtensionDirector is a scoped extension loader manager.
@@ -37,6 +38,7 @@ public class ExtensionDirector implements ExtensionAccessor {
     private final ExtensionScope scope;
     private List<ExtensionPostProcessor> extensionPostProcessors = new ArrayList<>();
     private ScopeModel scopeModel;
+    private AtomicBoolean destroyed = new AtomicBoolean();
 
     public ExtensionDirector(ExtensionDirector parent, ExtensionScope scope, ScopeModel scopeModel) {
         this.parent = parent;
@@ -61,6 +63,7 @@ public class ExtensionDirector implements ExtensionAccessor {
 
     @Override
     public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        checkDestroyed();
         if (type == null) {
             throw new IllegalArgumentException("Extension type == null");
         }
@@ -110,6 +113,7 @@ public class ExtensionDirector implements ExtensionAccessor {
     }
 
     private <T> ExtensionLoader<T> createExtensionLoader0(Class<T> type) {
+        checkDestroyed();
         ExtensionLoader<T> loader;
         extensionLoadersMap.putIfAbsent(type, new ExtensionLoader<T>(type, this, scopeModel));
         loader = (ExtensionLoader<T>) extensionLoadersMap.get(type);
@@ -134,9 +138,17 @@ public class ExtensionDirector implements ExtensionAccessor {
     }
 
     public void destroy() {
-        for (ExtensionLoader<?> extensionLoader : extensionLoadersMap.values()) {
-            extensionLoader.destroy();
+        if (destroyed.compareAndSet(false, true)) {
+            for (ExtensionLoader<?> extensionLoader : extensionLoadersMap.values()) {
+                extensionLoader.destroy();
+            }
+            extensionLoadersMap.clear();
         }
-        extensionLoadersMap.clear();
+    }
+
+    private void checkDestroyed() {
+        if (destroyed.get()) {
+            throw new IllegalStateException("ExtensionDirector is destroyed");
+        }
     }
 }

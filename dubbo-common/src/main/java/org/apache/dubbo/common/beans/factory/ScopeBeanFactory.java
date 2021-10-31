@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,6 +50,7 @@ public class ScopeBeanFactory {
     private Map<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
     private List<BeanInfo> registeredBeanInfos = Collections.synchronizedList(new ArrayList<>());
     private InstantiationStrategy instantiationStrategy;
+    private AtomicBoolean destroyed = new AtomicBoolean();
 
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
@@ -78,6 +80,7 @@ public class ScopeBeanFactory {
     }
 
     private <T> T createAndRegisterBean(String name, Class<T> clazz) {
+        checkDestroyed();
         T instance = getBean(name, clazz);
         if (instance != null) {
             throw new ScopeBeanException("already exists bean with same name and type, name=" + name + ", type=" + clazz.getName());
@@ -96,6 +99,7 @@ public class ScopeBeanFactory {
     }
 
     public void registerBean(String name, Object bean) {
+        checkDestroyed();
         // avoid duplicated register same bean
         if (containsBean(name, bean)) {
             return;
@@ -153,6 +157,7 @@ public class ScopeBeanFactory {
     }
 
     private void initializeBean(String name, Object bean) {
+        checkDestroyed();
         try {
             if (bean instanceof ExtensionAccessorAware) {
                 ((ExtensionAccessorAware) bean).setExtensionAccessor(extensionAccessor);
@@ -192,6 +197,7 @@ public class ScopeBeanFactory {
     }
 
     private <T> T getBeanInternal(String name, Class<T> type) {
+        checkDestroyed();
         // All classes are derived from java.lang.Object, cannot filter bean by it
         if (type == Object.class) {
             return null;
@@ -233,17 +239,25 @@ public class ScopeBeanFactory {
     }
 
     public void destroy() {
-        for (BeanInfo beanInfo : registeredBeanInfos) {
-            if (beanInfo.instance instanceof Disposable) {
-                try {
-                    Disposable beanInstance = (Disposable) beanInfo.instance;
-                    beanInstance.destroy();
-                } catch (Throwable e) {
-                    LOGGER.error("An error occurred when destroy bean [name=" + beanInfo.name + ", bean=" + beanInfo.instance + "]: " + e, e);
+        if (destroyed.compareAndSet(false, true)){
+            for (BeanInfo beanInfo : registeredBeanInfos) {
+                if (beanInfo.instance instanceof Disposable) {
+                    try {
+                        Disposable beanInstance = (Disposable) beanInfo.instance;
+                        beanInstance.destroy();
+                    } catch (Throwable e) {
+                        LOGGER.error("An error occurred when destroy bean [name=" + beanInfo.name + ", bean=" + beanInfo.instance + "]: " + e, e);
+                    }
                 }
             }
+            registeredBeanInfos.clear();
         }
-        registeredBeanInfos.clear();
+    }
+
+    private void checkDestroyed() {
+        if (destroyed.get()) {
+            throw new IllegalStateException("ScopeBeanFactory is destroyed");
+        }
     }
 
     static class BeanInfo {
