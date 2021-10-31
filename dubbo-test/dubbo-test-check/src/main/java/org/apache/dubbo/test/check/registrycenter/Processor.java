@@ -16,26 +16,18 @@
  */
 package org.apache.dubbo.test.check.registrycenter;
 
-import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.test.check.exception.DubboTestException;
 
 /**
- * The default zookeeper registry center.
+ * Define the processor to execute {@link Process} with the {@link org.apache.dubbo.test.check.registrycenter.Initializer.Context}
  */
-class DefaultZookeeperRegistryCenter extends ZookeeperRegistryCenter {
+public interface Processor {
 
     /**
-     * Initialize {@link DefaultZookeeperRegistryCenter} instance.
+     * Process the command with the global context.
      *
-     * @param ports the zookeeper server's ports.
+     * @param context the global context.
+     * @throws DubboTestException when any exception occurred.
      */
-    public DefaultZookeeperRegistryCenter(int... ports) {
-        super(ports);
-    }
-
-    /**
-     * Initialize {@link DefaultZookeeperRegistryCenter} instance.
-     */
-    public DefaultZookeeperRegistryCenter() {
-        this(NetUtils.getAvailablePort(), NetUtils.getAvailablePort());
-    }
+    void process(Initializer.Context context) throws DubboTestException;
 }

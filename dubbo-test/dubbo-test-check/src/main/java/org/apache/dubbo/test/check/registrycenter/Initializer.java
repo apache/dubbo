@@ -16,40 +16,24 @@
  */
 package org.apache.dubbo.test.check.registrycenter;
 
+import org.apache.dubbo.test.check.exception.DubboTestException;
+
 /**
- * The mocked zookeeper registry center.
+ * The purpose of this class is to do initialization when we build {@link RegistryCenter}.
  */
-public class MockedZookeeperRegistryCenter {
+public interface Initializer {
 
     /**
-     * The default first port in zookeeper instance.
+     * Initialize the global context.
+     * @param context the global context to be initialized.
+     * @throws DubboTestException when any exception occurred.
      */
-    public static final int PORT1 = 2181;
-    /**
-     * The default second port in zookeeper instance.
-     */
-    public static final int PORT2 = 2182;
+    void initialize(Context context) throws DubboTestException;
 
     /**
-     * The default static zookeeper instance.
+     * The global context to store all initialized variables.
      */
-    private static final RegistryCenter INSTANCE = new DefaultZookeeperRegistryCenter(PORT1,PORT2);
+    interface Context{
 
-    /**
-     * Start the zookeeper registry center.
-     *
-     * @throws Exception when an exception occurred
-     */
-    public static void startup() throws Exception{
-        INSTANCE.startup();
-    }
-
-    /**
-     * Stop the zookeeper registry center.
-     *
-     * @throws Exception when an exception occurred
-     */
-    public static void shutdown() throws Exception{
-        INSTANCE.shutdown();
     }
 }

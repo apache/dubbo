@@ -16,125 +16,111 @@
  */
 package org.apache.dubbo.test.check.registrycenter;
 
-import org.apache.curator.test.InstanceSpec;
-import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import java.io.IOException;
+import org.apache.dubbo.test.check.exception.DubboTestException;
+import org.apache.dubbo.test.check.registrycenter.initializer.ConfigZookeeperInitializer;
+import org.apache.dubbo.test.check.registrycenter.initializer.DownloadZookeeperInitializer;
+import org.apache.dubbo.test.check.registrycenter.initializer.UnpackZookeeperInitializer;
+import org.apache.dubbo.test.check.registrycenter.initializer.ZookeeperInitializer;
+import org.apache.dubbo.test.check.registrycenter.processor.ResetZookeeperProcessor;
+import org.apache.dubbo.test.check.registrycenter.processor.StartZookeeperCommandProcessor;
+import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperCommandProcessor;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * The default implementation of registry center can support single and multiple registry center.
- * <p>Each port represents an instance. You can provide multiple ports to build multiple registry center,
- * if you want to create multiple registry center
+ * Build the registry center with embedded zookeeper, which is run by a new process.
  */
-class ZookeeperRegistryCenter extends AbstractRegistryCenter {
+class ZookeeperRegistryCenter implements RegistryCenter {
 
-    /**
-     * Initialize the default registry center.
-     *
-     * @param ports the registry center's ports.
-     */
-    public ZookeeperRegistryCenter(int... ports) {
-        this.ports = ports;
-        this.instanceSpecs = new ArrayList<>(this.ports.length);
-        this.zookeeperServers = new ArrayList<>(this.ports.length);
+    public ZookeeperRegistryCenter() {
+        this.initializers = new ArrayList<>();
+        this.initializers.add(new DownloadZookeeperInitializer());
+        this.initializers.add(new UnpackZookeeperInitializer());
+        this.initializers.add(new ConfigZookeeperInitializer());
+        this.startZookeeperProcessor = new StartZookeeperCommandProcessor();
+        this.resetZookeeperProcessor = new ResetZookeeperProcessor();
+        this.stopZookeeperProcessor = new StopZookeeperCommandProcessor();
     }
 
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperRegistryCenter.class);
 
     /**
-     * The type of the registry center.
+     * All of {@link ZookeeperInitializer} instances.
      */
-    private static final String DEFAULT_REGISTRY_CENTER_TYPE = "zookeeper";
-
-    private int[] ports;
-
-    private List<InstanceSpec> instanceSpecs;
-
-    private List<TestingServer> zookeeperServers;
-
-    private AtomicBoolean started = new AtomicBoolean(false);
+    private List<Initializer> initializers;
 
     /**
-     * {@inheritDoc}
+     * The global context of zookeeper.
      */
-    @Override
-    public void startup() throws Exception {
-        try {
-            if (started.compareAndSet(false, true)) {
-                logger.info("The ZookeeperRegistryCenter is starting...");
-                for (int port : this.ports) {
-                    InstanceSpec instanceSpec = this.createInstanceSpec(port);
-                    this.instanceSpecs.add(instanceSpec);
-                    this.zookeeperServers.add(new TestingServer(instanceSpec, true));
-                }
-                logger.info("The ZookeeperRegistryCenter is started successfully");
-            }
-        } catch (Exception exception) {
-            started.set(false);
-            throw new Exception("Failed to initialize ZookeeperRegistryCenter instance", exception);
+    private ZookeeperInitializer.ZookeeperContext context = new ZookeeperInitializer.ZookeeperContext();
+
+    /**
+     * Define the {@link Processor} to start zookeeper instances.
+     */
+    private Processor startZookeeperProcessor;
+
+    /**
+     * Define the {@link Processor} to reset zookeeper instances.
+     */
+    private Processor resetZookeeperProcessor;
+
+    /**
+     * Define the {@link Processor} to stop zookeeper instances.
+     */
+    private Processor stopZookeeperProcessor;
+
+    /**
+     * The {@link #INITIALIZED} for flagging the {@link #startup()} method is called or not.
+     */
+    private final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
+
+    /**
+     * Returns the Operating System's name.
+     */
+    private String getOSName() {
+        String os = System.getProperty("os.name").toLowerCase();
+        String binaryVersion = "linux";
+        if (os.contains("mac")) {
+            binaryVersion = "darwin";
+        } else if (os.contains("windows")) {
+            binaryVersion = "windows";
         }
+        return binaryVersion;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<Instance> getRegistryCenterInstance() throws Exception {
-        this.startup();
-        List<Instance> instances = new ArrayList<>(this.instanceSpecs.size());
-        for (InstanceSpec instanceSpec : this.instanceSpecs) {
-            instances.add(new Instance() {
-                @Override
-                public String getType() {
-                    return DEFAULT_REGISTRY_CENTER_TYPE;
-                }
-
-                @Override
-                public String getHostname() {
-                    return instanceSpec.getHostname();
-                }
-
-                @Override
-                public int getPort() {
-                    return instanceSpec.getPort();
-                }
-            });
+    public void startup() throws DubboTestException {
+        if (!this.INITIALIZED.get()) {
+            if (!this.INITIALIZED.compareAndSet(false, true)) {
+                return;
+            }
+            for (Initializer initializer : this.initializers) {
+                initializer.initialize(this.context);
+            }
         }
-        return instances;
+        this.startZookeeperProcessor.process(this.context);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void shutdown() throws Exception {
-        logger.info("The ZookeeperRegistryCenter is stopping...");
-        List<Exception> exceptions = new ArrayList<>(this.zookeeperServers.size());
-        for (TestingServer testingServer : this.zookeeperServers) {
-            try {
-                testingServer.close();
-                logger.info(String.format("The zookeeper instance of %s is shutdown successfully",
-                    testingServer.getConnectString()));
-            } catch (IOException exception) {
-                Exception ex = new Exception(String.format("Failed to close zookeeper instance of %s",
-                    testingServer.getConnectString()),
-                    exception);
-                exceptions.add(ex);
-                logger.error(ex);
-            }
-        }
-        this.instanceSpecs.clear();
-        this.zookeeperServers.clear();
-        if (!exceptions.isEmpty()) {
-            logger.info("The ZookeeperRegistryCenter failed to close.");
-            // throw any one of exceptions
-            throw exceptions.get(0);
-        } else {
-            logger.info("The ZookeeperRegistryCenter close successfully.");
-        }
+    public void reset() throws DubboTestException {
+        this.resetZookeeperProcessor.process(this.context);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void shutdown() throws DubboTestException {
+        this.stopZookeeperProcessor.process(this.context);
     }
 }

@@ -34,6 +34,8 @@
         <skip_maven_deploy>true</skip_maven_deploy>
         <curator.test.version>5.1.0</curator.test.version>
         <zookeeper.version>3.6.0</zookeeper.version>
+        <curator5.version>5.1.0</curator5.version>
+        <commons.compress.version>1.20</commons.compress.version>
     </properties>
 
     <dependencies>
@@ -70,6 +72,18 @@
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
             <version>${zookeeper.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <version>${curator5.version}</version>
+        </dependency>
+        <!-- tar.gz -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${commons.compress.version}</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>

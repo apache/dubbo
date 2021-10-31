@@ -57,13 +57,21 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
         if (testPlan.containsTests()) {
             TestIdentifier engineTestIdentifier = this.getEngineTestIdentifier(testPlan.getRoots());
             TestIdentifier childTestIdentifier = this.getFirstTestIdentifier(testPlan.getChildren(engineTestIdentifier));
-            TestSource testSource = childTestIdentifier.getSource().orElse(null);
-            if (testSource instanceof ClassSource) {
-                String packageName = ((ClassSource) testSource).getJavaClass().getPackage().getName();
-                for (String pkgName : PACKAGE_NAME) {
-                    if (packageName.contains(pkgName)) {
-                        return true;
-                    }
+            return this.needRegistryCenter(childTestIdentifier);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if current {@link TestIdentifier} need registry center.
+     */
+    public boolean needRegistryCenter(TestIdentifier testIdentifier) {
+        TestSource testSource = testIdentifier.getSource().orElse(null);
+        if (testSource instanceof ClassSource) {
+            String packageName = ((ClassSource) testSource).getJavaClass().getPackage().getName();
+            for (String pkgName : PACKAGE_NAME) {
+                if (packageName.contains(pkgName)) {
+                    return true;
                 }
             }
         }
@@ -75,7 +83,7 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
      */
     private TestIdentifier getEngineTestIdentifier(Set<TestIdentifier> testIdentifiers) {
         for (TestIdentifier testIdentifier : testIdentifiers) {
-            if (ENGINE_UNIQUE_ID.equals(testIdentifier.getUniqueId())){
+            if (ENGINE_UNIQUE_ID.equals(testIdentifier.getUniqueId())) {
                 return testIdentifier;
             }
         }

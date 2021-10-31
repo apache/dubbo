@@ -16,30 +16,40 @@
  */
 package org.apache.dubbo.test.check.registrycenter;
 
-import org.apache.dubbo.test.check.exception.DubboTestException;
-
 /**
- * The registry center.
+ * The mocked registry center.
  */
-public interface RegistryCenter {
+public class MockedRegistryCenter {
+
+    /**
+     * The default static registry center instance.
+     */
+    private static final RegistryCenter INSTANCE = new ZookeeperRegistryCenter();
 
     /**
      * Start the registry center.
      *
-     * @throws DubboTestException when an exception occurred
+     * @throws Exception when an exception occurred
      */
-    void startup() throws DubboTestException;
+    public static void startup() throws Exception {
+        INSTANCE.startup();
+    }
 
     /**
-     * Reset the registry center after ut exited.
-     * @throws DubboTestException when an exception occurred
+     * Reset the registry center.
+     *
+     * @throws Exception when an exception occurred
      */
-    void reset() throws DubboTestException;
+    public static void reset() throws Exception {
+        INSTANCE.reset();
+    }
 
     /**
      * Stop the registry center.
      *
-     * @throws DubboTestException when an exception occurred
+     * @throws Exception when an exception occurred
      */
-    void shutdown() throws DubboTestException;
+    public static void shutdown() throws Exception {
+        INSTANCE.shutdown();
+    }
 }

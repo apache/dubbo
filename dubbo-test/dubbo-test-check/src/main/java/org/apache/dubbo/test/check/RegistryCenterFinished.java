@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.test.check;
 
-import org.apache.dubbo.test.check.registrycenter.MockedZookeeperRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
 import org.junit.platform.launcher.TestPlan;
 
 /**
@@ -28,7 +28,7 @@ public class RegistryCenterFinished extends AbstractRegistryCenterTestExecutionL
     public void testPlanExecutionFinished(TestPlan testPlan) {
         try {
             if(needRegistryCenter(testPlan)){
-                MockedZookeeperRegistryCenter.shutdown();
+                MockedRegistryCenter.shutdown();
             }
         } catch (Throwable cause) {
             throw new IllegalStateException("Failed to terminate zookeeper instance in unit test",cause);

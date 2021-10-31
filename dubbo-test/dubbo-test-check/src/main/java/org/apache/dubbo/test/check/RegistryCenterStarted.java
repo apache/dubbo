@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.test.check;
 
-import org.apache.dubbo.test.check.registrycenter.MockedZookeeperRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 
 /**
@@ -28,11 +30,21 @@ public class RegistryCenterStarted extends AbstractRegistryCenterTestExecutionLi
     public void testPlanExecutionStarted(TestPlan testPlan) {
         try {
             if (needRegistryCenter(testPlan)) {
-                MockedZookeeperRegistryCenter.startup();
+                MockedRegistryCenter.startup();
             }
         } catch (Throwable cause) {
             throw new IllegalStateException("Failed to start zookeeper instance in unit test", cause);
         }
     }
 
+    @Override
+    public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
+        try {
+            if (needRegistryCenter(testIdentifier)) {
+                MockedRegistryCenter.reset();
+            }
+        } catch (Throwable cause) {
+            // ignore the exception
+        }
+    }
 }
