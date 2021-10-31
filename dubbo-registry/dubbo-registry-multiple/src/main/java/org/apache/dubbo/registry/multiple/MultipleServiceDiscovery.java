@@ -114,6 +114,15 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
+    public List<ServiceInstance> getInstances(String serviceName) {
+        List<ServiceInstance> serviceInstanceList = new ArrayList<>();
+        for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
+            serviceInstanceList.addAll(serviceDiscovery.getInstances(serviceName));
+        }
+        return serviceInstanceList;
+    }
+
+    @Override
     public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly)
         throws NullPointerException, IllegalArgumentException, UnsupportedOperationException {
 

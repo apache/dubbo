@@ -91,6 +91,7 @@ public class ConfigCenterConfigTest {
                         .initialize();
             } catch (Exception e) {
                 // ignore
+                e.printStackTrace();
             }
 
             Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
@@ -100,6 +101,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
             SysProps.clear();
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -128,6 +130,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
             SysProps.clear();
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -155,6 +158,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
             SysProps.clear();
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -183,6 +187,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
             ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -211,6 +216,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
             SysProps.clear();
+            DubboBootstrap.getInstance().stop();
         }
     }
 
@@ -240,6 +246,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
             ApplicationModel.defaultModel().getModelEnvironment().getPropertiesConfiguration().refresh();
+            DubboBootstrap.getInstance().stop();
         }
     }
 

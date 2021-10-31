@@ -52,6 +52,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
+
 /**
  * These junit tests aim to test unpack and stick pack of dubbo and telnet
  */
@@ -72,11 +74,17 @@ public class DubboTelnetDecodeTest {
     public static void setup() {
         ModuleServiceRepository serviceRepository = ApplicationModel.defaultModel().getDefaultModule().getServiceRepository();
         serviceRepository.registerService(DemoService.class);
+
+        // disable org.apache.dubbo.remoting.transport.CodecSupport.checkSerialization to avoid error:
+        // java.io.IOException: Service org.apache.dubbo.rpc.protocol.dubbo.support.DemoService with version 0.0.0 not found, invocation rejected.
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
     }
 
     @AfterAll
     public static void teardown() {
         FrameworkModel.defaultModel().destroy();
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
+
     }
 
     /**
@@ -469,6 +477,9 @@ public class DubboTelnetDecodeTest {
         ChannelBuffer buffer = new NettyBackedChannelBuffer(dubboByteBuf);
         DubboCodec dubboCodec = new DubboCodec(FrameworkModel.defaultModel());
         dubboCodec.encode(new MockChannel(), buffer, request);
+
+        // register
+        // frameworkModel.getServiceRepository().registerProviderUrl();
 
         return dubboByteBuf;
     }

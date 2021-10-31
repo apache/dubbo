@@ -18,6 +18,8 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -51,6 +53,7 @@ import static org.apache.dubbo.rpc.Constants.INTERFACES;
 
 public class MetadataInfo implements Serializable {
     public static final MetadataInfo EMPTY = new MetadataInfo();
+    private static final Logger logger = LoggerFactory.getLogger(MetadataInfo.class);
 
     private String app;
     private String revision;
@@ -115,7 +118,13 @@ public class MetadataInfo implements Serializable {
             for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
                 sb.append(entry.getValue().toDescString());
             }
-            this.revision = RevisionResolver.calRevision(sb.toString());
+            String tempRevision = RevisionResolver.calRevision(sb.toString());
+            if (!StringUtils.isEquals(this.revision, tempRevision)) {
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("metadata revision changed: %s -> %s, app: %s, services: %d", this.revision, tempRevision, this.app, this.services.size()));
+                }
+                this.revision = tempRevision;
+            }
         }
         return revision;
     }
@@ -194,7 +203,7 @@ public class MetadataInfo implements Serializable {
         if (serviceInfo == null) {
             return null;
         }
-        return serviceInfo.toString();
+        return serviceInfo.toFullString();
     }
 
     @Override
@@ -224,8 +233,25 @@ public class MetadataInfo implements Serializable {
         return "metadata{" +
             "app='" + app + "'," +
             "revision='" + revision + "'," +
+            "size=" + (services == null ? 0 : services.size()) + "," +
+            "services=" + getSimplifiedServices(services) +
+            "}";
+    }
+
+    public String toFullString() {
+        return "metadata{" +
+            "app='" + app + "'," +
+            "revision='" + revision + "'," +
             "services=" + services +
             "}";
+    }
+
+    private String getSimplifiedServices(Map<String, ServiceInfo> services) {
+        if (services == null) {
+            return "[]";
+        }
+
+        return services.keySet().toString();
     }
 
     public static class ServiceInfo implements Serializable {
@@ -509,13 +535,16 @@ public class MetadataInfo implements Serializable {
 
         @Override
         public String toString() {
+            return getMatchKey();
+        }
+
+        public String toFullString() {
             return "service{" +
                 "name='" + name + "'," +
                 "group='" + group + "'," +
                 "version='" + version + "'," +
                 "protocol='" + protocol + "'," +
                 "params=" + params + "," +
-                "consumerParams=" + consumerParams +
                 "}";
         }
     }

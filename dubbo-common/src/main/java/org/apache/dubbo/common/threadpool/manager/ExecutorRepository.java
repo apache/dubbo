@@ -58,7 +58,7 @@ public interface ExecutorRepository {
 
     ExecutorService nextExecutorExecutor();
 
-    ExecutorService getServiceExportExecutor();
+    ScheduledExecutorService getServiceExportExecutor();
 
     /**
      * The executor only used in bootstrap currently, we should call this method to release the resource
@@ -91,6 +91,12 @@ public interface ExecutorRepository {
      * @return
      */
     ExecutorService getSharedExecutor();
+
+    /**
+     * Get the shared schedule executor
+     * @return
+     */
+    ScheduledExecutorService getSharedScheduledExecutor();
 
     ExecutorService getPoolRouterExecutor();
 

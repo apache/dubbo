@@ -17,7 +17,9 @@
 package org.apache.dubbo.remoting.exchange.support.header;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
+import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -48,10 +50,13 @@ public class HeaderExchangeClient implements ExchangeClient {
     private final Client client;
     private final ExchangeChannel channel;
 
-    private static final HashedWheelTimer IDLE_CHECK_TIMER = new HashedWheelTimer(
-            new NamedThreadFactory("dubbo-client-idleCheck", true), 1, TimeUnit.SECONDS, TICKS_PER_WHEEL);
-    private HeartbeatTimerTask heartBeatTimerTask;
-    private ReconnectTimerTask reconnectTimerTask;
+    public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(() ->
+        new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), 1,
+            TimeUnit.SECONDS, TICKS_PER_WHEEL),
+        timer -> timer.stop());
+
+    private Timeout reconnectTimer;
+    private Timeout heartBeatTimer;
 
     public HeaderExchangeClient(Client client, boolean startTimer) {
         Assert.notNull(client, "Client can't be null");
@@ -191,8 +196,8 @@ public class HeaderExchangeClient implements ExchangeClient {
             AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
             int heartbeat = getHeartbeat(url);
             long heartbeatTick = calculateLeastDuration(heartbeat);
-            this.heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
-            IDLE_CHECK_TIMER.newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
+            HeartbeatTimerTask heartBeatTimerTask = new HeartbeatTimerTask(cp, heartbeatTick, heartbeat);
+            heartBeatTimer = IDLE_CHECK_TIMER.get().newTimeout(heartBeatTimerTask, heartbeatTick, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -201,18 +206,19 @@ public class HeaderExchangeClient implements ExchangeClient {
             AbstractTimerTask.ChannelProvider cp = () -> Collections.singletonList(HeaderExchangeClient.this);
             int idleTimeout = getIdleTimeout(url);
             long heartbeatTimeoutTick = calculateLeastDuration(idleTimeout);
-            this.reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, idleTimeout);
-            IDLE_CHECK_TIMER.newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
+            ReconnectTimerTask reconnectTimerTask = new ReconnectTimerTask(cp, heartbeatTimeoutTick, idleTimeout);
+            reconnectTimer = IDLE_CHECK_TIMER.get().newTimeout(reconnectTimerTask, heartbeatTimeoutTick, TimeUnit.MILLISECONDS);
         }
     }
 
     private void doClose() {
-        if (heartBeatTimerTask != null) {
-            heartBeatTimerTask.cancel();
+        if (heartBeatTimer != null) {
+            heartBeatTimer.cancel();
+            heartBeatTimer = null;
         }
-
-        if (reconnectTimerTask != null) {
-            reconnectTimerTask.cancel();
+        if (reconnectTimer != null) {
+            reconnectTimer.cancel();
+            reconnectTimer = null;
         }
     }
 

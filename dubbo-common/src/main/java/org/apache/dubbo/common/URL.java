@@ -568,6 +568,10 @@ class URL implements Serializable {
         return ScopeModelUtil.getApplicationModel(getScopeModel());
     }
 
+    public ApplicationModel getApplicationModel() {
+        return ScopeModelUtil.getOrNullApplicationModel(getScopeModel());
+    }
+
     public ModuleModel getOrDefaultModuleModel() {
         return ScopeModelUtil.getModuleModel(getScopeModel());
     }
@@ -1575,6 +1579,11 @@ class URL implements Serializable {
 
     public Object getAttribute(String key) {
         return attributes.get(key);
+    }
+
+    public Object getAttribute(String key, Object defaultValue) {
+        Object val = attributes.get(key);
+        return val != null ? val : defaultValue;
     }
 
     public URL putAttribute(String key, Object obj) {

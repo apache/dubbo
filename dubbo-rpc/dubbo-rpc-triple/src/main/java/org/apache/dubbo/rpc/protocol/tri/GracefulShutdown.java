@@ -45,13 +45,13 @@ public class GracefulShutdown {
 
     public void gracefulShutdown() {
         Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR, ByteBufUtil
-                .writeAscii(ctx.alloc(), goAwayMessage));
+            .writeAscii(ctx.alloc(), goAwayMessage));
         goAwayFrame.setExtraStreamIds(Integer.MAX_VALUE);
         ctx.write(goAwayFrame);
         pingFuture = ctx.executor().schedule(
-                () -> secondGoAwayAndClose(ctx),
-                GRACEFUL_SHUTDOWN_PING_TIMEOUT_NANOS,
-                TimeUnit.NANOSECONDS);
+            () -> secondGoAwayAndClose(ctx),
+            GRACEFUL_SHUTDOWN_PING_TIMEOUT_NANOS,
+            TimeUnit.NANOSECONDS);
 
         Http2PingFrame pingFrame = new DefaultHttp2PingFrame(GRACEFUL_SHUTDOWN_PING, false);
         ctx.write(pingFrame);
@@ -67,7 +67,7 @@ public class GracefulShutdown {
 
         try {
             Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR,
-                    ByteBufUtil.writeAscii(this.ctx.alloc(), this.goAwayMessage));
+                ByteBufUtil.writeAscii(this.ctx.alloc(), this.goAwayMessage));
             ctx.write(goAwayFrame);
             ctx.flush();
             //TODO support customize graceful shutdown timeout mills

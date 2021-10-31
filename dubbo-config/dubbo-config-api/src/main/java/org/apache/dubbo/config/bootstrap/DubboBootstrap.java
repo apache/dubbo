@@ -46,16 +46,14 @@ import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
 import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -127,10 +125,6 @@ public final class DubboBootstrap {
         return getInstance(frameworkModel.newApplication());
     }
 
-    public static DubboBootstrap newInstance(ApplicationModel applicationModel) {
-        return getInstance(applicationModel);
-    }
-
     /**
      * Try reset dubbo status for new instance.
      *
@@ -153,8 +147,6 @@ public final class DubboBootstrap {
                 instance.destroy();
                 instance = null;
             }
-            AbstractMetadataReportFactory.destroy();
-            destroyAllProtocols();
             FrameworkModel.destroyAll();
         } else {
             instance = null;
@@ -227,7 +219,7 @@ public final class DubboBootstrap {
      * @return
      */
     public DubboBootstrap start(boolean wait) {
-        CompletableFuture future = applicationDeployer.start();
+        Future future = applicationDeployer.start();
         if (wait) {
             try {
                 future.get();
@@ -236,6 +228,14 @@ public final class DubboBootstrap {
             }
         }
         return this;
+    }
+
+    /**
+     * Start dubbo application but no wait for finish.
+     * @return the future object
+     */
+    public Future asyncStart() {
+        return applicationDeployer.start();
     }
 
     /**
@@ -249,7 +249,7 @@ public final class DubboBootstrap {
     }
 
     public void destroy() {
-        applicationDeployer.destroy();
+        applicationModel.destroy();
     }
 
     public boolean isInitialized() {
@@ -328,30 +328,6 @@ public final class DubboBootstrap {
 
     public ReferenceCache getCache() {
         return applicationDeployer.getReferenceCache();
-    }
-
-    /**
-     * Destroy all the protocols.
-     */
-    private static void destroyProtocols(FrameworkModel frameworkModel) {
-        //TODO destroy protocol in framework scope
-        ExtensionLoader<Protocol> loader = frameworkModel.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
-            try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
-                }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
-        }
-    }
-
-    private static void destroyAllProtocols() {
-        for (FrameworkModel frameworkModel : FrameworkModel.getAllInstances()) {
-            destroyProtocols(frameworkModel);
-        }
     }
 
     private void executeMutually(Runnable runnable) {

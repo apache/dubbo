@@ -24,6 +24,7 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -38,24 +39,26 @@ public abstract class ScopeModel implements ExtensionAccessor {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ScopeModel.class);
 
     /**
-     * The internal name is used to represent the hierarchy of the model tree, such as:
+     * The internal id is used to represent the hierarchy of the model tree, such as:
      * <ol>
-     *     <li>FrameworkModel-1</li>
+     *     <li>1</li>
      *     FrameworkModel (index=1)
-     *     <li>ApplicationModel-1.2</li>
+     *     <li>1.2</li>
      *     FrameworkModel (index=1) -> ApplicationModel (index=2)
-     *     <li>ModuleModel-1.2.0</li>
+     *     <li>1.2.0</li>
      *     FrameworkModel (index=1) -> ApplicationModel (index=2) -> ModuleModel (index=0, internal module)
-     *     <li>ModuleModel-1.2.1</li>
+     *     <li>1.2.1</li>
      *     FrameworkModel (index=1) -> ApplicationModel (index=2) -> ModuleModel (index=1, first user module)
      * </ol>
      */
-    private String internalName;
+    private String internalId;
 
     /**
      * Public Model Name, can be set from user
      */
     private String modelName;
+
+    private String desc;
 
     private Set<ClassLoader> classLoaders;
 
@@ -68,8 +71,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
     private List<ScopeModelDestroyListener> destroyListeners;
 
     private Map<String, Object> attributes;
-    private AtomicBoolean destroyed = new AtomicBoolean(false);
-    private volatile boolean stopping;
+    private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
     public ScopeModel(ScopeModel parent, ExtensionScope scope) {
         this.parent = parent;
@@ -92,7 +94,6 @@ public abstract class ScopeModel implements ExtensionAccessor {
         this.destroyListeners = new LinkedList<>();
         this.attributes = new ConcurrentHashMap<>();
         this.classLoaders = new ConcurrentHashSet<>();
-        this.stopping = false;
 
         // Add Framework's ClassLoader by default
         ClassLoader dubboClassLoader = ScopeModel.class.getClassLoader();
@@ -109,6 +110,12 @@ public abstract class ScopeModel implements ExtensionAccessor {
                 for (ClassLoader classLoader : copyOfClassLoaders) {
                     removeClassLoader(classLoader);
                 }
+                if (beanFactory != null) {
+                    beanFactory.destroy();
+                }
+                if (extensionDirector != null) {
+                    extensionDirector.destroy();
+                }
             } catch (Throwable t) {
                 LOGGER.error("Error happened when destroying ScopeModel.", t);
             }
@@ -119,21 +126,13 @@ public abstract class ScopeModel implements ExtensionAccessor {
         return destroyed.get();
     }
 
-    public void setStopping() {
-        stopping = true;
-    }
-
-    public boolean isStopping() {
-        return stopping;
-    }
-
     protected void notifyDestroy() {
         for (ScopeModelDestroyListener destroyListener : destroyListeners) {
             destroyListener.onDestroy(this);
         }
     }
 
-    public abstract void onDestroy();
+    protected abstract void onDestroy();
 
     public final void addDestroyListener(ScopeModelDestroyListener listener) {
         destroyListeners.add(listener);
@@ -155,6 +154,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
         attributes.put(key, value);
     }
 
+    @Override
     public ExtensionDirector getExtensionDirector() {
         return extensionDirector;
     }
@@ -165,15 +165,6 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     public ScopeModel getParent() {
         return parent;
-    }
-
-    public String getInternalName() {
-        return internalName;
-    }
-
-    protected void setInternalName(String internalName) {
-        this.internalName = internalName;
-        this.modelName = internalName;
     }
 
     public void addClassLoader(ClassLoader classLoader) {
@@ -205,21 +196,21 @@ public abstract class ScopeModel implements ExtensionAccessor {
     public abstract Environment getModelEnvironment();
 
     public String getInternalId() {
-        // XxxModule-1.1
-        if (this.internalName == null) {
-            return null;
-        }
-        return this.internalName.substring(this.internalName.indexOf('-') + 1);
+        return this.internalId;
     }
 
-    protected String buildInternalName(String type, String parentInternalId, long childIndex) {
-        // FrameworkModel-1
-        // ApplicationModel-1.1
-        // ModuleModel-1.1.1
-        if (parentInternalId != null) {
-            return type + "-" + parentInternalId + "." + childIndex;
+    void setInternalId(String internalId) {
+        this.internalId = internalId;
+    }
+
+    protected String buildInternalId(String parentInternalId, long childIndex) {
+        // FrameworkModel    1
+        // ApplicationModel  1.1
+        // ModuleModel       1.1.1
+        if (StringUtils.hasText(parentInternalId)) {
+            return parentInternalId + "." + childIndex;
         } else {
-            return type + "-" + childIndex;
+            return "" + childIndex;
         }
     }
 
@@ -229,5 +220,57 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     public void setModelName(String modelName) {
         this.modelName = modelName;
+        this.desc = buildDesc();
+    }
+
+    /**
+     * @return the describe string of this scope model
+     */
+    public String getDesc() {
+        if (this.desc == null) {
+            this.desc = buildDesc();
+        }
+        return this.desc;
+    }
+
+    private String buildDesc() {
+        // Dubbo Framework[1]
+        // Dubbo Application[1.1](appName)
+        // Dubbo Module[1.1.1](appName/moduleName)
+        String type = this.getClass().getSimpleName().replace("Model", "");
+        String desc = "Dubbo " + type + "[" + this.getInternalId() + "]";
+
+        // append model name path
+        String modelNamePath = this.getModelNamePath();
+        if (StringUtils.hasText(modelNamePath)) {
+            desc += "(" + modelNamePath + ")";
+        }
+        return desc;
+    }
+
+    private String getModelNamePath() {
+        if (this instanceof ApplicationModel) {
+            return safeGetAppName((ApplicationModel) this);
+        } else if (this instanceof ModuleModel) {
+            String modelName = this.getModelName();
+            if (StringUtils.hasText(modelName)) {
+                // appName/moduleName
+                return safeGetAppName(((ModuleModel) this).getApplicationModel()) + "/" + modelName;
+            }
+        }
+        return null;
+    }
+
+    private static String safeGetAppName(ApplicationModel applicationModel) {
+        String modelName = applicationModel.getModelName();
+        if (StringUtils.isBlank(modelName)) {
+            modelName = "unknown"; // unknown application
+        }
+        return modelName;
+    }
+
+    @Override
+    public String toString() {
+        return getDesc();
     }
 }

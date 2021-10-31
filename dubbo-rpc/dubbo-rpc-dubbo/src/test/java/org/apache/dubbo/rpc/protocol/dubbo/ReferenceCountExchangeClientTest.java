@@ -68,7 +68,7 @@ public class ReferenceCountExchangeClientTest {
     }
 
     public static Invoker<?> referInvoker(Class<?> type, URL url) {
-        return (Invoker<?>) DubboProtocol.getDubboProtocol().refer(type, url);
+        return DubboProtocol.getDubboProtocol().refer(type, url);
     }
 
     public static <T> Exporter<T> export(T instance, Class<T> type, String url) {
@@ -91,7 +91,7 @@ public class ReferenceCountExchangeClientTest {
         init(0, 1);
         Assertions.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
         Assertions.assertEquals(demoClient, helloClient);
-        destoy();
+        destroy();
     }
 
     /**
@@ -102,14 +102,14 @@ public class ReferenceCountExchangeClientTest {
         init(1, 1);
         Assertions.assertNotSame(demoClient.getLocalAddress(), helloClient.getLocalAddress());
         Assertions.assertNotSame(demoClient, helloClient);
-        destoy();
+        destroy();
     }
 
     /**
      * test using multiple shared connections
      */
     @Test
-    public void test_mult_share_connect() {
+    public void test_multi_share_connect() {
         // here a three shared connection is established between a consumer process and a provider process.
         final int shareConnectionNum = 3;
 
@@ -127,14 +127,14 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertEquals(demoClient.getLocalAddress(), helloClient.getLocalAddress());
         Assertions.assertEquals(demoClient, helloClient);
 
-        destoy();
+        destroy();
     }
 
     /**
      * test counter won't count down incorrectly when invoker is destroyed for multiple times
      */
     @Test
-    public void test_multi_destory() {
+    public void test_multi_destroy() {
         init(0, 1);
         DubboAppender.doStart();
         DubboAppender.clear();
@@ -144,7 +144,7 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertEquals(0, LogUtil.findMessage(errorMsg), "should not  warning message");
         LogUtil.checkNoError();
         DubboAppender.doStop();
-        destoy();
+        destroy();
     }
 
     /**
@@ -208,7 +208,7 @@ public class ReferenceCountExchangeClientTest {
         // revive: initial the lazy client's exchange client again.  
         Assertions.assertEquals("hello", helloService.hello());
 
-        destoy();
+        destroy();
     }
 
     @SuppressWarnings("unchecked")
@@ -238,7 +238,7 @@ public class ReferenceCountExchangeClientTest {
         helloClient = getClient(helloServiceInvoker);
     }
 
-    private void destoy() {
+    private void destroy() {
         demoServiceInvoker.destroy();
         helloServiceInvoker.destroy();
         demoExporter.getInvoker().destroy();

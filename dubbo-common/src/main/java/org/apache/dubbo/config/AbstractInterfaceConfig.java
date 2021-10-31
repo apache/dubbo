@@ -22,11 +22,13 @@ import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -267,7 +269,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void appendMetricsCompatible(Map<String, String> map) {
         MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
         if (metricsConfig != null) {
-            if (!metricsConfig.getProtocol().equals(PROTOCOL_PROMETHEUS)) {
+            if (metricsConfig.getProtocol() != null && !StringUtils.isEquals(metricsConfig.getProtocol(), PROTOCOL_PROMETHEUS)) {
+                Assert.notEmptyString(metricsConfig.getPort(), "Metrics port cannot be null");
                 map.put("metrics.protocol", metricsConfig.getProtocol());
                 map.put("metrics.port", metricsConfig.getPort());
             }
@@ -624,6 +627,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return getConfigManager().getApplicationOrElseThrow();
     }
 
+    /**
+     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
+     * @param application
+     */
     @Deprecated
     public void setApplication(ApplicationConfig application) {
         this.application = application;
@@ -639,6 +646,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return getModuleConfigManager().getModule().orElse(null);
     }
 
+    /**
+     * @deprecated Use {@link AbstractInterfaceConfig#setScopeModel(ScopeModel)}
+     * @param module
+     */
     @Deprecated
     public void setModule(ModuleConfig module) {
         this.module = module;
@@ -700,11 +711,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return getConfigManager().getMonitor().orElse(null);
     }
 
+    /**
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#setMonitor(MonitorConfig)}
+     */
     @Deprecated
     public void setMonitor(String monitor) {
         setMonitor(new MonitorConfig(monitor));
     }
 
+    /**
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#setMonitor(MonitorConfig)}
+     */
     @Deprecated
     public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
@@ -721,6 +738,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.owner = owner;
     }
 
+    /**
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#getConfigCenter(String)}
+     */
     @Deprecated
     public ConfigCenterConfig getConfigCenter() {
         if (configCenter != null) {
@@ -733,6 +753,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return null;
     }
 
+    /**
+     * @deprecated Use {@link org.apache.dubbo.config.context.ConfigManager#addConfigCenter(ConfigCenterConfig)}
+     */
     @Deprecated
     public void setConfigCenter(ConfigCenterConfig configCenter) {
         this.configCenter = configCenter;
@@ -773,6 +796,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.scope = scope;
     }
 
+    /**
+     * @deprecated Use {@link ConfigManager#getMetadataConfigs()}
+     */
     @Deprecated
     public MetadataReportConfig getMetadataReportConfig() {
         if (metadataReportConfig != null) {
@@ -785,6 +811,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return null;
     }
 
+    /**
+     * @deprecated Use {@link ConfigManager#addMetadataReport(MetadataReportConfig)}
+     */
     @Deprecated
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
         this.metadataReportConfig = metadataReportConfig;

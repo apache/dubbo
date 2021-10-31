@@ -24,6 +24,8 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.condition.config.AppRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.tag.TagRouterFactory;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +48,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class AbstractReferenceConfigTest {
+
+    @AfterAll
+    public static void afterAll() throws Exception {
+        FrameworkModel.destroyAll();
+    }
 
     @Test
     public void testCheck() throws Exception {

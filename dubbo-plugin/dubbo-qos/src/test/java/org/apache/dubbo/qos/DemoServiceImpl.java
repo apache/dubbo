@@ -14,28 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.qos;
 
-import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-
-public class TripleServerInitializer extends ChannelInitializer<Channel> {
-
-    private FrameworkModel frameworkModel;
-
-    public TripleServerInitializer(FrameworkModel frameworkModel) {
-        this.frameworkModel = frameworkModel;
-    }
+public class DemoServiceImpl implements DemoService {
 
     @Override
-    protected void initChannel(Channel ch) throws Exception {
-        final ChannelPipeline p = ch.pipeline();
-        p.addLast(new TripleHttp2FrameServerHandler(frameworkModel));
-        // TODO constraint MAX DATA_SIZE
-        p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE));
-        p.addLast(new TripleServerInboundHandler());
+    public String echo(String str) {
+        return "hello world";
     }
 }
