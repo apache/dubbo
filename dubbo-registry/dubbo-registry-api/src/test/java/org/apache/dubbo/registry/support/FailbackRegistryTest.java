@@ -67,19 +67,17 @@ public class FailbackRegistryTest {
         final CountDownLatch latch = new CountDownLatch(2);
 
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
+        URL subscribeUrl = serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false"));
         registry = new MockRegistry(registryUrl, serviceUrl, latch);
         registry.setBad(true);
         registry.register(serviceUrl);
         registry.unregister(serviceUrl);
-        registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listener);
-        registry.unsubscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listener);
+        registry.subscribe(subscribeUrl, listener);
+        registry.unsubscribe(subscribeUrl, listener);
 
         //Failure can not be called to listener.
         assertEquals(false, notified.get());
         assertEquals(2, latch.getCount());
-
-        // wait for first retry failure
-        Thread.sleep(500);
 
         registry.setBad(false);
 
