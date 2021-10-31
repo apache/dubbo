@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ApplicationConfig;
 
 import java.util.ArrayList;
@@ -96,8 +97,8 @@ public class FrameworkModel extends ScopeModel {
     @Override
     protected void onDestroy() {
         if (defaultInstance == this) {
-            // NOTE: During destroying the default FrameworkModel, FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
-            // will get an broken model, maybe cause unpredictable problem.
+            // NOTE: During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+            // will return a broken model, maybe cause unpredictable problem.
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Destroying default framework model: " + getDesc());
             }
@@ -154,20 +155,24 @@ public class FrameworkModel extends ScopeModel {
     }
 
     /**
-     * During destroying the default FrameworkModel, FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
-     * will get an broken model, maybe cause unpredictable problem.
+     * During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+     * will return a broken model, maybe cause unpredictable problem.
      * Recommendation: Avoid using the default model as much as possible.
      * @return the global default FrameworkModel
      */
     public static FrameworkModel defaultModel() {
-        if (defaultInstance == null) {
+        FrameworkModel instance = defaultInstance;
+        if (instance == null) {
             synchronized (globalLock) {
+                resetDefaultFrameworkModel();
                 if (defaultInstance == null) {
                     defaultInstance = new FrameworkModel();
                 }
+                instance = defaultInstance;
+                Assert.notNull(instance, "Default FrameworkModel is null");
             }
         }
-        return defaultInstance;
+        return instance;
     }
 
     /**
@@ -196,16 +201,18 @@ public class FrameworkModel extends ScopeModel {
      * @return
      */
     public ApplicationModel defaultApplication() {
-        if (defaultAppModel == null) {
-            checkDestroyed();
-            synchronized(instLock){
+        ApplicationModel appModel = this.defaultAppModel;
+        if (appModel == null) {
+            synchronized (instLock) {
                 resetDefaultAppModel();
-                if (defaultAppModel == null) {
-                    defaultAppModel = newApplication();
+                if (this.defaultAppModel == null) {
+                    this.defaultAppModel = newApplication();
                 }
+                appModel = this.defaultAppModel;
+                Assert.notNull(appModel, "Default ApplicationModel is null");
             }
         }
-        return defaultAppModel;
+        return appModel;
     }
 
     ApplicationModel getDefaultAppModel() {
@@ -270,7 +277,7 @@ public class FrameworkModel extends ScopeModel {
         }
     }
 
-    private void resetDefaultFrameworkModel() {
+    private static void resetDefaultFrameworkModel() {
         synchronized (globalLock) {
             if (defaultInstance != null && !defaultInstance.isDestroyed()) {
                 return;
@@ -289,7 +296,7 @@ public class FrameworkModel extends ScopeModel {
         }
     }
 
-    private String safeGetModelDesc(ScopeModel scopeModel) {
+    private static String safeGetModelDesc(ScopeModel scopeModel) {
         return scopeModel != null ? scopeModel.getDesc() : null;
     }
 
