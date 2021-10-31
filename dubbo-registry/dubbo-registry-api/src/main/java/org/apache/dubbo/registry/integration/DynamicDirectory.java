@@ -92,7 +92,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     /**
      * Initialization at construction time, assertion not null, and always assign not null value
      */
-    protected volatile URL overrideDirectoryUrl;
     protected volatile URL subscribeUrl;
     protected volatile URL registeredConsumerUrl;
 
@@ -129,7 +128,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.serviceType = serviceType;
         this.serviceKey = super.getConsumerUrl().getServiceKey();
 
-        this.overrideDirectoryUrl = this.directoryUrl = consumerUrl;
+        this.directoryUrl = consumerUrl;
         String group = directoryUrl.getGroup("");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
     }
@@ -207,7 +206,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     @Override
     public URL getConsumerUrl() {
-        return this.overrideDirectoryUrl;
+        return this.consumerUrl;
     }
 
     /**
@@ -216,7 +215,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      * @return URL
      */
     public URL getOriginalConsumerUrl() {
-        return this.overrideDirectoryUrl;
+        return this.consumerUrl;
     }
 
     /**
