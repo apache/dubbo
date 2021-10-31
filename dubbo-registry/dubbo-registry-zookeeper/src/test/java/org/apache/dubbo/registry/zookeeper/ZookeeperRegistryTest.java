@@ -26,6 +26,7 @@ import org.apache.dubbo.registry.status.RegistryStatusChecker;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,12 +63,14 @@ public class ZookeeperRegistryTest {
         this.zkServer.start();
 
         this.registryUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
-        zookeeperRegistryFactory = new ZookeeperRegistryFactory();
+        zookeeperRegistryFactory = new ZookeeperRegistryFactory(FrameworkModel.defaultModel());
         this.zookeeperRegistry = (ZookeeperRegistry) zookeeperRegistryFactory.createRegistry(registryUrl);
     }
 
     @AfterEach
     public void tearDown() throws Exception {
+        // close zk client
+        ZookeeperTransporter.getExtension(FrameworkModel.defaultModel()).close("");
         zkServer.stop();
     }
 
@@ -75,7 +78,7 @@ public class ZookeeperRegistryTest {
     public void testAnyHost() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
-            new ZookeeperRegistryFactory().createRegistry(errorUrl);
+            new ZookeeperRegistryFactory(FrameworkModel.defaultModel()).createRegistry(errorUrl);
         });
     }
 
@@ -114,7 +117,6 @@ public class ZookeeperRegistryTest {
         assertThat(zookeeperRegistry.isAvailable(), is(true));
 
         zookeeperRegistry.destroy();
-        ZookeeperTransporter.getExtension().close("");
         assertThat(zookeeperRegistry.isAvailable(), is(false));
     }
 
@@ -179,7 +181,6 @@ public class ZookeeperRegistryTest {
     @Test
     public void testDestroy() {
         zookeeperRegistry.destroy();
-        ZookeeperTransporter.getExtension().close("");
         assertThat(zookeeperRegistry.isAvailable(), is(false));
     }
 

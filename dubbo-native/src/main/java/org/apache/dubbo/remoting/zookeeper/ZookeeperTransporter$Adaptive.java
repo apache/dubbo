@@ -34,4 +34,6 @@ public void close(String arg0) {
 if (extension == null) throw new IllegalStateException("Zookeeper client of application: " + arg0 + " should not be closed before connection is created.");
 extension.close(arg0);
 }
+public void destroy() {
+}
 }

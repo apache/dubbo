@@ -90,7 +90,6 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
         synchronized (zookeeperApplicationMap) {
             Set<String> appSet = zookeeperApplicationMap.get(zookeeperClient);
             if (appSet == null) {
-                // zookeeperClient might be closed by other zookeeper registry of the same application.
                 if (zookeeperClient.isConnected()) {
                     logger.warn("Application: " + application + " associated with the alive client: "
                             + zookeeperClient.getUrl() + " is not cached in zookeeperApplicationMap.");
@@ -281,5 +280,16 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      */
     public Map<String, ZookeeperClient> getZookeeperClientMap() {
         return zookeeperClientMap;
+    }
+
+    /**
+     * destroy all zk clients
+     */
+    @Override
+    public void destroy() {
+        for (ZookeeperClient client : zookeeperClientMap.values()) {
+            client.close();
+        }
+        zookeeperClientMap.clear();
     }
 }

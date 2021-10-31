@@ -35,8 +35,10 @@ public interface ZookeeperTransporter {
 
     void close(String application);
 
-    static ZookeeperTransporter getExtension() {
-        ExtensionLoader<ZookeeperTransporter> extensionLoader = FrameworkModel.defaultModel().getExtensionLoader(ZookeeperTransporter.class);
+    void destroy();
+
+    static ZookeeperTransporter getExtension(FrameworkModel frameworkModel) {
+        ExtensionLoader<ZookeeperTransporter> extensionLoader = frameworkModel.getExtensionLoader(ZookeeperTransporter.class);
         boolean isHighVersion = isHighVersionCurator();
         if (isHighVersion) {
             return extensionLoader.getExtension(CURATOR_5);
