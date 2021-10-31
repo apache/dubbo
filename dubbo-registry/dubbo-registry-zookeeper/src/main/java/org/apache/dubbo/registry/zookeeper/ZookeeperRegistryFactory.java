@@ -32,6 +32,11 @@ public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
 
     private FrameworkModel frameworkModel;
 
+    // for compatible usage
+    public ZookeeperRegistryFactory() {
+        this(FrameworkModel.defaultModel());
+    }
+
     public ZookeeperRegistryFactory(FrameworkModel frameworkModel) {
         this.frameworkModel = frameworkModel;
         this.zookeeperTransporter = ZookeeperTransporter.getExtension(frameworkModel);
