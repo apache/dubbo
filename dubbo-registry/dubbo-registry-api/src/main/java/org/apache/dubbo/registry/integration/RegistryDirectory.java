@@ -183,7 +183,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
     private synchronized void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
-        overrideDirectoryUrl();
         refreshInvoker(urls);
     }
 
@@ -406,7 +405,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         // FIXME, kept for mock
         if (providerUrl.hasParameter(MOCK_KEY) || providerUrl.getAnyMethodParameter(MOCK_KEY) != null) {
             providerUrl = providerUrl.removeParameter(TAG_KEY);
-            this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters());
         }
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
@@ -479,7 +477,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     protected void destroyAllInvokers() {
         Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
-        if (localUrlInvokerMap != null) {
+        if (!CollectionUtils.isEmptyMap(localUrlInvokerMap)) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
                     invoker.destroyAll();
@@ -494,12 +492,12 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private void destroyUnusedInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, Map<URL, Invoker<T>> newUrlInvokerMap) {
-        if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
+        if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
             destroyAllInvokers();
             return;
         }
 
-        if (oldUrlInvokerMap == null || oldUrlInvokerMap.size() == 0) {
+        if (CollectionUtils.isEmptyMap(oldUrlInvokerMap)) {
             return;
         }
 
@@ -557,7 +555,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public URL getConsumerUrl() {
-        return this.overrideDirectoryUrl;
+        return this.consumerUrl;
     }
 
     @Override
@@ -613,27 +611,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     private boolean isNotCompatibleFor26x(URL url) {
         return StringUtils.isEmpty(url.getParameter(COMPATIBLE_CONFIG_KEY));
-    }
-
-    private void overrideDirectoryUrl() {
-        // merge override parameters
-        this.overrideDirectoryUrl = directoryUrl;
-        List<Configurator> localConfigurators = this.configurators; // local reference
-        doOverrideUrl(localConfigurators);
-        List<Configurator> localAppDynamicConfigurators = consumerConfigurationListener.getConfigurators(); // local reference
-        doOverrideUrl(localAppDynamicConfigurators);
-        if (referenceConfigurationListener != null) {
-            List<Configurator> localDynamicConfigurators = referenceConfigurationListener.getConfigurators(); // local reference
-            doOverrideUrl(localDynamicConfigurators);
-        }
-    }
-
-    private void doOverrideUrl(List<Configurator> configurators) {
-        if (CollectionUtils.isNotEmpty(configurators)) {
-            for (Configurator configurator : configurators) {
-                this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
-            }
-        }
     }
 
     private static class ReferenceConfigurationListener extends AbstractConfiguratorListener {
