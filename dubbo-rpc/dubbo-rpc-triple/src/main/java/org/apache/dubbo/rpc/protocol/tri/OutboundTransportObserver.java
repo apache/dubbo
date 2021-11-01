@@ -23,6 +23,11 @@ package org.apache.dubbo.rpc.protocol.tri;
 public abstract class OutboundTransportObserver implements TransportObserver {
 
     protected final TransportState state = new TransportState();
+    protected final WriteQueue writeQueue;
+
+    public OutboundTransportObserver(WriteQueue writeQueue) {
+        this.writeQueue = writeQueue;
+    }
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
@@ -86,14 +91,6 @@ public abstract class OutboundTransportObserver implements TransportObserver {
     protected abstract void doOnError(GrpcStatus status);
 
     protected abstract void doOnComplete();
-
-
-    protected int calcCompressFlag(Compressor compressor) {
-        if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
-            return 0;
-        }
-        return 1;
-    }
 
 }
 
