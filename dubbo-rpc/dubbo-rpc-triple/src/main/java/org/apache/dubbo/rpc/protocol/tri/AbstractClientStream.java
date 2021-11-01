@@ -40,7 +40,6 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.AsciiString;
 
 import java.io.ByteArrayInputStream;
@@ -141,12 +140,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
     }
 
-    protected void startCall(Http2StreamChannel channel, ChannelPromise promise) {
+    protected void startCall(WriteQueue queue, ChannelPromise promise) {
         execute(() -> {
-            final ClientOutboundTransportObserver clientTransportObserver = new ClientOutboundTransportObserver(channel, promise);
+            final ClientOutboundTransportObserver clientTransportObserver = new ClientOutboundTransportObserver(queue, promise);
             subscribe(clientTransportObserver);
             try {
-                DefaultFuture2.addTimeoutListener(getRequestId(), channel::close);
                 doOnStartCall();
             } catch (Throwable throwable) {
                 cancel(throwable);
