@@ -243,4 +243,33 @@ public class AbstractZookeeperTransporterTest {
             }
         }
     }
+
+    @Test
+    public void testSameZkClientSharedByMultipleApplications() throws Exception {
+        int zkServerPort = NetUtils.getAvailablePort();
+        TestingServer zkServer = new TestingServer(zkServerPort, true);
+
+        URL url = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?backup=127.0.0.1:" + zkServerPort + "&application=provider1&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
+        URL url2 = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?backup=127.0.0.1:" + zkServerPort + "&application=provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
+        ZookeeperClient newZookeeperClient = abstractZookeeperTransporter.connect(url);
+        //just for connected
+        newZookeeperClient.getContent("/dubbo/test");
+        Assertions.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 2);
+        Assertions.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().get("127.0.0.1:" + zkServerPort), newZookeeperClient);
+
+        ZookeeperClient newZookeeperClient2 = abstractZookeeperTransporter.connect(url2);
+        //just for connected
+        newZookeeperClient2.getContent("/dubbo/test");
+        Assertions.assertEquals(newZookeeperClient, newZookeeperClient2);
+
+        abstractZookeeperTransporter.close(newZookeeperClient, url.getParameter(APPLICATION_KEY, ""));
+        Assertions.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 2);
+        Assertions.assertTrue(newZookeeperClient.isConnected());
+        
+        abstractZookeeperTransporter.close(newZookeeperClient2, url2.getParameter(APPLICATION_KEY, ""));
+        Assertions.assertEquals(abstractZookeeperTransporter.getZookeeperClientMap().size(), 1);
+        Assertions.assertFalse(newZookeeperClient.isConnected());
+        
+        zkServer.stop();
+    }
 }
