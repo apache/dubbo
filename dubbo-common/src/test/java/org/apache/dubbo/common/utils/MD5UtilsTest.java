@@ -31,7 +31,7 @@ public class MD5UtilsTest {
 
     @Test
     public void test() {
-        MD5Utils sharedMd5Utils = new MD5Utils();
+        MD5Utils sharedMd5Utils = MD5Utils.getInstance();
         final String[] input = {"provider-appgroup-one/org.apache.dubbo.config.spring.api.HelloService:dubboorg.apache.dubbo.config.spring.api.HelloService{REGISTRY_CLUSTER=registry-one, anyhost=true, application=provider-app, background=false, compiler=javassist, deprecated=false, dubbo=2.0.2, dynamic=true, file.cache=false, generic=false, group=group-one, interface=org.apache.dubbo.config.spring.api.HelloService, logger=slf4j, metadata-type=remote, methods=sayHello, organization=test, owner=com.test, release=, service-name-mapping=true, side=provider}",
             "provider-appgroup-two/org.apache.dubbo.config.spring.api.DemoService:dubboorg.apache.dubbo.config.spring.api.DemoService{REGISTRY_CLUSTER=registry-two, anyhost=true, application=provider-app, background=false, compiler=javassist, deprecated=false, dubbo=2.0.2, dynamic=true, file.cache=false, generic=false, group=group-two, interface=org.apache.dubbo.config.spring.api.DemoService, logger=slf4j, metadata-type=remote, methods=sayName,getBox, organization=test, owner=com.test, release=, service-name-mapping=true, side=provider}"};
         final String[] result = {sharedMd5Utils.getMd5(input[0]), new MD5Utils().getMd5(input[1])};

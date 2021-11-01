@@ -36,6 +36,8 @@ public class MD5Utils {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
 
+    private static volatile MD5Utils instance;
+
     private MessageDigest mdInst;
 
     public MD5Utils() {
@@ -44,6 +46,19 @@ public class MD5Utils {
         } catch (NoSuchAlgorithmException e) {
             logger.error("Failed to obtain md5", e);
         }
+    }
+
+    public static MD5Utils getInstance() {
+        MD5Utils tmpInstance = instance;
+        if (tmpInstance == null) {
+            synchronized (MD5Utils.class) {
+                if (instance == null) {
+                    instance = new MD5Utils();
+                }
+                tmpInstance = instance;
+            }
+        }
+        return tmpInstance;
     }
 
     /**
