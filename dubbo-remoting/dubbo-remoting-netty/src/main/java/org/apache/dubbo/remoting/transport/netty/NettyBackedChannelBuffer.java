@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 
 public class NettyBackedChannelBuffer implements ChannelBuffer {
 
-    private org.jboss.netty.buffer.ChannelBuffer buffer;
+    private final org.jboss.netty.buffer.ChannelBuffer buffer;
 
     public NettyBackedChannelBuffer(org.jboss.netty.buffer.ChannelBuffer buffer) {
         Assert.notNull(buffer, "buffer == null");

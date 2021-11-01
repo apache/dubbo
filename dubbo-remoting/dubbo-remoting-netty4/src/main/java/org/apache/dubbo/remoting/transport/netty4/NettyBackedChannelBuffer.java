@@ -30,7 +30,7 @@ import java.nio.ByteBuffer;
 
 public class NettyBackedChannelBuffer implements ChannelBuffer {
 
-    private ByteBuf buffer;
+    private final ByteBuf buffer;
 
     public NettyBackedChannelBuffer(ByteBuf buffer) {
         Assert.notNull(buffer, "buffer == null");
