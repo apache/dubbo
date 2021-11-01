@@ -48,13 +48,15 @@ public class StartZookeeperCommandProcessor extends ZookeeperCommandProcessor {
             String.valueOf(clientPort),
             String.format("apache-zookeeper-%s-bin", context.getVersion()),
             "bin");
-        if (this.getOSName().contains("windows")) {
+        /*if (this.getOSName().contains("windows")) {
             commands.add(Paths.get(zookeeperBin.toString(), "zkServer.cmd")
                 .toAbsolutePath().toString());
         } else {
             commands.add(Paths.get(zookeeperBin.toString(), "zkServer.sh")
                 .toAbsolutePath().toString());
-        }
+        }*/
+        commands.add(Paths.get(zookeeperBin.toString(), "zkServer.sh")
+            .toAbsolutePath().toString());
         commands.add("start");
         commands.add(Paths.get(zookeeperBin.getParent().toString(),
             "conf",

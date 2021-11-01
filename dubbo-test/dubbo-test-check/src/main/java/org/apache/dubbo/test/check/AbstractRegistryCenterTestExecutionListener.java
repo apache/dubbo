@@ -33,6 +33,11 @@ import java.util.Set;
 public abstract class AbstractRegistryCenterTestExecutionListener implements TestExecutionListener {
 
     /**
+     * The JVM arguments to set if it can use embedded zookeeper, the default value is {@code true}.
+     */
+    private static final String CONFIG_ENABLE_EMBEDDED_ZOOKEEPER = "enableEmbeddedZookeeper";
+
+    /**
      * The registry center should start
      * if we want to run the test cases in the given package.
      */
@@ -43,18 +48,24 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
      */
     private static final String ENGINE_UNIQUE_ID = "[engine:junit-jupiter]";
 
+    /**
+     * Use embedded zookeeper or not.
+     */
+    private static boolean enableEmbeddedZookeeper;
+
     static {
         // dubbo-config module
         PACKAGE_NAME.add("org.apache.dubbo.config");
         // dubbo-test
         PACKAGE_NAME.add("org.apache.dubbo.test");
+        enableEmbeddedZookeeper = Boolean.valueOf(System.getProperty(CONFIG_ENABLE_EMBEDDED_ZOOKEEPER, "true"));
     }
 
     /**
      * Checks if current {@link TestPlan} need registry center.
      */
     public boolean needRegistryCenter(TestPlan testPlan) {
-        if (testPlan.containsTests()) {
+        if (enableEmbeddedZookeeper && testPlan.containsTests()) {
             TestIdentifier engineTestIdentifier = this.getEngineTestIdentifier(testPlan.getRoots());
             TestIdentifier childTestIdentifier = this.getFirstTestIdentifier(testPlan.getChildren(engineTestIdentifier));
             return this.needRegistryCenter(childTestIdentifier);
@@ -66,6 +77,9 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
      * Checks if current {@link TestIdentifier} need registry center.
      */
     public boolean needRegistryCenter(TestIdentifier testIdentifier) {
+        if (!enableEmbeddedZookeeper) {
+            return false;
+        }
         TestSource testSource = testIdentifier.getSource().orElse(null);
         if (testSource instanceof ClassSource) {
             String packageName = ((ClassSource) testSource).getJavaClass().getPackage().getName();
