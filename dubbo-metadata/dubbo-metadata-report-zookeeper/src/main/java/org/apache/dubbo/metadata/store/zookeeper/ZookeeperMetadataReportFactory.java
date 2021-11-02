@@ -17,7 +17,7 @@
 package org.apache.dubbo.metadata.store.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.DisableInject;
+import org.apache.dubbo.common.extension.Inject;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
@@ -33,7 +33,7 @@ public class ZookeeperMetadataReportFactory extends AbstractMetadataReportFactor
         this.zookeeperTransporter = ZookeeperTransporter.getExtension();
     }
 
-    @DisableInject
+    @Inject(disabled = true)
     public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
         this.zookeeperTransporter = zookeeperTransporter;
     }

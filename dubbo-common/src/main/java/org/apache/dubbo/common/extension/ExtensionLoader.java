@@ -707,28 +707,35 @@ public class ExtensionLoader<T> {
                 if (!isSetter(method)) {
                     continue;
                 }
-                /**
-                 * Check {@link DisableInject} to see if we need auto injection for this property
-                 */
-                if (method.getAnnotation(DisableInject.class) != null) {
-                    continue;
-                }
+
                 Class<?> pt = method.getParameterTypes()[0];
                 if (ReflectUtils.isPrimitives(pt)) {
                     continue;
                 }
 
-                try {
-                    String property = getSetterProperty(method);
-                    Object object = objectFactory.getExtension(pt, property);
-                    if (object != null) {
-                        method.invoke(instance, object);
-                    }
-                } catch (Exception e) {
-                    logger.error("Failed to inject via method " + method.getName()
-                            + " of interface " + type.getName() + ": " + e.getMessage(), e);
-                }
+                /*
+                 * Check {@link Inject} to see if we need auto-injection for this property
+                 * {@link Inject#disabled} == true skip inject property phase
+                 * {@link Inject#InjectType#ByName} default inject by name
+                 */
+                Inject inject = method.getAnnotation(Inject.class);
+                if (inject == null || !inject.disabled()) {
+                    try {
+                        String property = getSetterProperty(method);
 
+                        if (inject != null && inject.type() == Inject.InjectType.ByType) {
+                            property = null;
+                        }
+
+                        Object object = objectFactory.getExtension(pt, property);
+                        if (object != null) {
+                            method.invoke(instance, object);
+                        }
+                    } catch (Exception e) {
+                        logger.error("Failed to inject via method " + method.getName()
+                                + " of interface " + type.getName() + ": " + e.getMessage(), e);
+                    }
+                }
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

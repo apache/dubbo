@@ -18,7 +18,7 @@ package org.apache.dubbo.config.context;
 
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
-import org.apache.dubbo.common.extension.DisableInject;
+import org.apache.dubbo.common.extension.Inject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -77,7 +77,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     // ApplicationConfig correlative methods
-    @DisableInject
+    @Inject(disabled = true)
     public void setApplication(ApplicationConfig application) {
         addConfig(application, true);
     }
@@ -92,7 +92,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     // MonitorConfig correlative methods
 
-    @DisableInject
+    @Inject(disabled = true)
     public void setMonitor(MonitorConfig monitor) {
         addConfig(monitor, true);
     }
@@ -102,7 +102,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     // ModuleConfig correlative methods
-    @DisableInject
+    @Inject(disabled = true)
     public void setModule(ModuleConfig module) {
         addConfig(module, true);
     }
@@ -111,7 +111,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(ModuleConfig.class)));
     }
 
-    @DisableInject
+    @Inject(disabled = true)
     public void setMetrics(MetricsConfig metrics) {
         addConfig(metrics, true);
     }
@@ -120,7 +120,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(MetricsConfig.class)));
     }
 
-    @DisableInject
+    @Inject(disabled = true)
     public void setSsl(SslConfig sslConfig) {
         addConfig(sslConfig, true);
     }

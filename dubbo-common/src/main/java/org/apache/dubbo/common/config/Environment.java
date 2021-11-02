@@ -19,7 +19,7 @@ package org.apache.dubbo.common.config;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
-import org.apache.dubbo.common.extension.DisableInject;
+import org.apache.dubbo.common.extension.Inject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.AbstractConfig;
@@ -77,14 +77,14 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         this.appExternalConfiguration.setProperties(appExternalConfigurationMap);
     }
 
-    @DisableInject
+    @Inject(disabled = true)
     public void setExternalConfigMap(Map<String, String> externalConfiguration) {
         if (externalConfiguration != null) {
             this.externalConfigurationMap = externalConfiguration;
         }
     }
 
-    @DisableInject
+    @Inject(disabled = true)
     public void setAppExternalConfigMap(Map<String, String> appExternalConfiguration) {
         if (appExternalConfiguration != null) {
             this.appExternalConfigurationMap = appExternalConfiguration;
@@ -179,7 +179,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         return configCenterFirst;
     }
 
-    @DisableInject
+    @Inject(disabled = true)
     public void setConfigCenterFirst(boolean configCenterFirst) {
         this.configCenterFirst = configCenterFirst;
     }
@@ -188,7 +188,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         return Optional.ofNullable(dynamicConfiguration);
     }
 
-    @DisableInject
+    @Inject(disabled = true)
     public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
         this.dynamicConfiguration = dynamicConfiguration;
     }
