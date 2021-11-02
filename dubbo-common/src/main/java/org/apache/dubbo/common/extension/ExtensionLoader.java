@@ -718,23 +718,24 @@ public class ExtensionLoader<T> {
                  * {@link Inject#enable} == false will skip inject property phase
                  * {@link Inject#InjectType#ByName} default inject by name
                  */
+                String property = getSetterProperty(method);
                 Inject inject = method.getAnnotation(Inject.class);
-                if (inject == null || inject.enable()) {
-                    try {
-                        String property = getSetterProperty(method);
+                if (inject != null && !inject.enable()) {
+                    continue;
+                }
 
-                        if (inject != null && inject.type() == Inject.InjectType.ByType) {
-                            property = null;
-                        }
+                if (inject != null && inject.type() == Inject.InjectType.ByType) {
+                    property = null;
+                }
 
-                        Object object = objectFactory.getExtension(pt, property);
-                        if (object != null) {
-                            method.invoke(instance, object);
-                        }
-                    } catch (Exception e) {
-                        logger.error("Failed to inject via method " + method.getName()
-                                + " of interface " + type.getName() + ": " + e.getMessage(), e);
+                try {
+                    Object object = objectFactory.getExtension(pt, property);
+                    if (object != null) {
+                        method.invoke(instance, object);
                     }
+                } catch (Exception e) {
+                    logger.error("Failed to inject via method " + method.getName()
+                            + " of interface " + type.getName() + ": " + e.getMessage(), e);
                 }
             }
         } catch (Exception e) {
