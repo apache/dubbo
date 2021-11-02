@@ -25,7 +25,6 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +48,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @see MetadataService
  * @since 2.7.5
  */
-public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder, ScopeModelAware {
+public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -58,8 +57,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     private ApplicationModel applicationModel;
     private Integer metadataServicePort;
 
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
+    public StandardMetadataServiceURLBuilder(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
         metadataServicePort = applicationModel.getCurrentConfig().getMetadataServicePort();
     }
