@@ -56,10 +56,12 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     public static final String NAME = "standard";
 
     private ApplicationModel applicationModel;
+    private Integer metadataServicePort;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
+        metadataServicePort = applicationModel.getCurrentConfig().getMetadataServicePort();
     }
 
     /**
@@ -109,7 +111,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
     }
 
     private URL generateUrlWithoutMetadata(String serviceName, String host, Integer instancePort) {
-        Integer port = ApplicationModel.defaultModel().getCurrentConfig().getMetadataServicePort();
+        Integer port = metadataServicePort;
         if (port == null || port < 1) {
             logger.warn("Metadata Service Port is not provided, since DNS is not able to negotiate the metadata port " +
                     "between Provider and Consumer, will try to use instance port as the default metadata port.");
