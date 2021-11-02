@@ -212,13 +212,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     @Override
     public ScheduledExecutorService getServiceExportExecutor() {
+        synchronized (LOCK) {
         if (serviceExportExecutor == null) {
-            synchronized (LOCK) {
-                if (serviceExportExecutor == null) {
-                    int coreSize = getExportThreadNum();
-                    serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
+                int coreSize = getExportThreadNum();
+                serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
                         new NamedThreadFactory("Dubbo-service-export", true));
-                }
             }
         }
         return serviceExportExecutor;
