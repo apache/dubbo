@@ -715,7 +715,7 @@ public class ExtensionLoader<T> {
 
                 /*
                  * Check {@link Inject} to see if we need auto-injection for this property
-                 * {@link Inject#disabled} == true skip inject property phase
+                 * {@link Inject#enable} == false will skip inject property phase
                  * {@link Inject#InjectType#ByName} default inject by name
                  */
                 Inject inject = method.getAnnotation(Inject.class);
