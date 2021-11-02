@@ -202,6 +202,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             methodDescriptor = ServiceDescriptorInternalCache.echoService().getMethods(methodName).get(0);
         } else {
             methodDescriptors = providerModel.getServiceModel().getMethods(methodName);
+            // try upper-case method
+            if (CollectionUtils.isEmpty(methodDescriptors)) {
+                methodDescriptors = providerModel.getServiceModel().getMethods(originalMethodName);
+            }
             if (CollectionUtils.isEmpty(methodDescriptors)) {
                 responseErr(transportObserver, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
                     .withDescription("Method :" + methodName + " not found of service:" + serviceName));
