@@ -28,8 +28,8 @@ import static org.apache.dubbo.common.extension.Inject.InjectType.ByName;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Inject {
-    // whether disable injection or not
-    boolean disabled() default false;
+    // whether enable injection or not
+    boolean enable() default true;
 
     // inject type default by name injection
     InjectType type() default ByName;

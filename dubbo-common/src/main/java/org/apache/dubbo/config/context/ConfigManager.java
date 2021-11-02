@@ -77,7 +77,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     // ApplicationConfig correlative methods
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setApplication(ApplicationConfig application) {
         addConfig(application, true);
     }
@@ -92,7 +92,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     // MonitorConfig correlative methods
 
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setMonitor(MonitorConfig monitor) {
         addConfig(monitor, true);
     }
@@ -102,7 +102,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     // ModuleConfig correlative methods
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setModule(ModuleConfig module) {
         addConfig(module, true);
     }
@@ -111,7 +111,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(ModuleConfig.class)));
     }
 
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setMetrics(MetricsConfig metrics) {
         addConfig(metrics, true);
     }
@@ -120,7 +120,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(MetricsConfig.class)));
     }
 
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setSsl(SslConfig sslConfig) {
         addConfig(sslConfig, true);
     }

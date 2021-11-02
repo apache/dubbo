@@ -33,7 +33,7 @@ public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigu
         this.zookeeperTransporter = ZookeeperTransporter.getExtension();
     }
 
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
         this.zookeeperTransporter = zookeeperTransporter;
     }

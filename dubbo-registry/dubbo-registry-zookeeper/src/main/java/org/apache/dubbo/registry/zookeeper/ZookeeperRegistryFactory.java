@@ -38,7 +38,7 @@ public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
      *
      * @param zookeeperTransporter
      */
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
         this.zookeeperTransporter = zookeeperTransporter;
     }

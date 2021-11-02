@@ -77,14 +77,14 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         this.appExternalConfiguration.setProperties(appExternalConfigurationMap);
     }
 
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setExternalConfigMap(Map<String, String> externalConfiguration) {
         if (externalConfiguration != null) {
             this.externalConfigurationMap = externalConfiguration;
         }
     }
 
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setAppExternalConfigMap(Map<String, String> appExternalConfiguration) {
         if (appExternalConfiguration != null) {
             this.appExternalConfigurationMap = appExternalConfiguration;
@@ -179,7 +179,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         return configCenterFirst;
     }
 
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setConfigCenterFirst(boolean configCenterFirst) {
         this.configCenterFirst = configCenterFirst;
     }
@@ -188,7 +188,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         return Optional.ofNullable(dynamicConfiguration);
     }
 
-    @Inject(disabled = true)
+    @Inject(enable = false)
     public void setDynamicConfiguration(DynamicConfiguration dynamicConfiguration) {
         this.dynamicConfiguration = dynamicConfiguration;
     }

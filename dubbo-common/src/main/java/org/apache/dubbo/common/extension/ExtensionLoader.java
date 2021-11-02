@@ -719,7 +719,7 @@ public class ExtensionLoader<T> {
                  * {@link Inject#InjectType#ByName} default inject by name
                  */
                 Inject inject = method.getAnnotation(Inject.class);
-                if (inject == null || !inject.disabled()) {
+                if (inject == null || inject.enable()) {
                     try {
                         String property = getSetterProperty(method);
 
