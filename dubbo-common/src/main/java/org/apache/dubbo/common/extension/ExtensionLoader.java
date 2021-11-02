@@ -452,6 +452,7 @@ public class ExtensionLoader<T> {
 
     /**
      * get the original type.
+     *
      * @param name
      * @return
      */
@@ -720,28 +721,34 @@ public class ExtensionLoader<T> {
                  */
                 String property = getSetterProperty(method);
                 Inject inject = method.getAnnotation(Inject.class);
-                if (inject != null && !inject.enable()) {
-                    continue;
-                }
-
-                if (inject != null && inject.type() == Inject.InjectType.ByType) {
-                    property = null;
-                }
-
-                try {
-                    Object object = objectFactory.getExtension(pt, property);
-                    if (object != null) {
-                        method.invoke(instance, object);
+                if (inject == null) {
+                    injectValue(instance, method, pt, property);
+                } else {
+                    if (!inject.enable()) {
+                        continue;
                     }
-                } catch (Exception e) {
-                    logger.error("Failed to inject via method " + method.getName()
-                            + " of interface " + type.getName() + ": " + e.getMessage(), e);
+
+                    if (inject.type() == Inject.InjectType.ByType) {
+                        injectValue(instance, method, pt, null);
+                    }
                 }
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
         return instance;
+    }
+
+    private void injectValue(T instance, Method method, Class<?> pt, String property) {
+        try {
+            Object object = objectFactory.getExtension(pt, property);
+            if (object != null) {
+                method.invoke(instance, object);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to inject via method " + method.getName()
+                    + " of interface " + type.getName() + ": " + e.getMessage(), e);
+        }
     }
 
     private void initExtension(T instance) {
