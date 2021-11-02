@@ -68,8 +68,6 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     private volatile ExecutorService serviceReferExecutor;
 
-    private ScheduledExecutorService reconnectScheduledExecutor;
-
     public Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
 
     private Ring<ScheduledExecutorService> serviceDiscoveryAddressNotificationExecutorRing = new Ring<>();
@@ -102,7 +100,6 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 , new ThreadPoolExecutor.AbortPolicy()));
         }
 
-//        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
 
