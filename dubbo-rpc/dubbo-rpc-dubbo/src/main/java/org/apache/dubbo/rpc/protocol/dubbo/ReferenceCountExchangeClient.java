@@ -170,9 +170,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     /**
      * when destroy unused invoker, closeAll should be true
-     * 
+     *
      * @param timeout
-     * @param closeAll  
+     * @param closeAll
      */
     private void closeInternal(int timeout, boolean closeAll) {
         if (closeAll || referenceCount.decrementAndGet() <= 0) {
@@ -209,10 +209,8 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
          */
         if (!(client instanceof LazyConnectExchangeClient)) {
             // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
-            URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
-                    //.addParameter(RECONNECT_KEY, Boolean.FALSE)
-                    .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
-            //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
+            URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE);
+
             client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
         }
     }
@@ -229,7 +227,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         referenceCount.incrementAndGet();
     }
 
-    public int getCount(){
+    public int getCount() {
         return referenceCount.get();
     }
 

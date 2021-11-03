@@ -61,9 +61,8 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     private AtomicLong warningCount = new AtomicLong(0);
 
     public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler) {
-        // lazy connect, need set send.reconnect = true, to avoid channel bad status.
-        this.url = new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), url.getParameters())
-            .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
+        this.url = new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(),
+            url.getHost(), url.getPort(), url.getPath(), url.getParameters());
         this.requestHandler = requestHandler;
         this.initialState = url.getParameter(LAZY_CONNECT_INITIAL_STATE_KEY, DEFAULT_LAZY_CONNECT_INITIAL_STATE);
         this.requestWithWarning = url.getParameter(LAZY_REQUEST_WITH_WARNING_KEY, DEFAULT_LAZY_REQUEST_WITH_WARNING);
@@ -265,7 +264,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     private void checkClient() {
         if (client == null) {
             throw new IllegalStateException(
-                    "LazyConnectExchangeClient state error. the client has not be init .url:" + url);
+                "LazyConnectExchangeClient state error. the client has not be init .url:" + url);
         }
     }
 }
