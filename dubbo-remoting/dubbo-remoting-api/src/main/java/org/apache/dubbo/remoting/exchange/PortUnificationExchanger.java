@@ -24,12 +24,13 @@ import org.apache.dubbo.remoting.api.PortUnificationServer;
 import io.netty.util.internal.PlatformDependent;
 
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class PortUnificationExchanger {
 
     private static final Logger log = LoggerFactory.getLogger(PortUnificationExchanger.class);
-    private static final ConcurrentMap<String, PortUnificationServer> servers = PlatformDependent.newConcurrentHashMap();
+    private static final ConcurrentMap<String, PortUnificationServer> servers = new ConcurrentHashMap<>();
 
     public static void bind(URL url) {
         servers.computeIfAbsent(url.getAddress(), addr -> {

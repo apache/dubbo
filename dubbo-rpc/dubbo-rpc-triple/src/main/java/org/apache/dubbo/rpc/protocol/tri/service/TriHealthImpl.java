@@ -44,7 +44,7 @@ public class TriHealthImpl implements Health {
 
     private final Object watchLock = new Object();
     // Technically a Multimap<String, StreamObserver<HealthCheckResponse>>.  The Boolean value is not
-    // used.  The StreamObservers need to be kept in a identity-equality set, to make sure
+    // used.  The StreamObservers need to be kept in an identity-equality set, to make sure
     // user-defined equals() doesn't confuse our book-keeping of the StreamObservers.  Constructing
     // such Multimap would require extra lines and the end result is not significantly simpler, thus I
     // would rather not have the Guava collections dependency.
