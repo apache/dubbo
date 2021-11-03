@@ -730,6 +730,8 @@ public class ExtensionLoader<T> {
 
                     if (inject.type() == Inject.InjectType.ByType) {
                         injectValue(instance, method, pt, null);
+                    } else {
+                        injectValue(instance, method, pt, property);
                     }
                 }
             }
