@@ -19,6 +19,7 @@ package org.apache.dubbo.test.check.registrycenter.initializer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
+import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 
 import java.io.IOException;
 import java.io.InputStream;

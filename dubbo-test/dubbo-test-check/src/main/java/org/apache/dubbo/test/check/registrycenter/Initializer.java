@@ -29,11 +29,4 @@ public interface Initializer {
      * @throws DubboTestException when any exception occurred.
      */
     void initialize(Context context) throws DubboTestException;
-
-    /**
-     * The global context to store all initialized variables.
-     */
-    interface Context{
-
-    }
 }

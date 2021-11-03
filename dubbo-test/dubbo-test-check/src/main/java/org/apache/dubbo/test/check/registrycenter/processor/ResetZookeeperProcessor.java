@@ -20,9 +20,9 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
 import org.apache.dubbo.test.check.exception.DubboTestException;
-import org.apache.dubbo.test.check.registrycenter.Initializer;
+import org.apache.dubbo.test.check.registrycenter.Context;
 import org.apache.dubbo.test.check.registrycenter.Processor;
-import org.apache.dubbo.test.check.registrycenter.initializer.ZookeeperInitializer;
+import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 
 import java.util.concurrent.TimeUnit;
 
@@ -32,8 +32,8 @@ import java.util.concurrent.TimeUnit;
 public class ResetZookeeperProcessor implements Processor {
 
     @Override
-    public void process(Initializer.Context context) throws DubboTestException {
-        ZookeeperInitializer.ZookeeperContext zookeeperContext = (ZookeeperInitializer.ZookeeperContext)context;
+    public void process(Context context) throws DubboTestException {
+        ZookeeperContext zookeeperContext = (ZookeeperContext)context;
         for (int clientPort : zookeeperContext.getClientPorts()) {
             CuratorFramework client;
             try {

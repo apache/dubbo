@@ -19,34 +19,31 @@ package org.apache.dubbo.test.check.registrycenter.processor;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
-import org.apache.dubbo.test.check.registrycenter.Initializer;
+import org.apache.dubbo.test.check.registrycenter.Context;
 import org.apache.dubbo.test.check.registrycenter.Processor;
-import org.apache.dubbo.test.check.registrycenter.initializer.ZookeeperInitializer;
+import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.regex.Pattern;
 
 /**
- * The abstract implementation of {@link Processor} is to provide some common methods.
+ * The abstract implementation of {@link Processor} is to provide some common methods on Unix OS.
  */
-public abstract class ZookeeperCommandProcessor implements Processor {
+public abstract class ZookeeperUnixProcessor implements Processor {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperCommandProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperUnixProcessor.class);
 
-    /**
-     * Returns the Operating System's name.
-     */
-    protected String getOSName() {
-        String os = System.getProperty("os.name").toLowerCase();
-        String binaryVersion = "linux";
-        if (os.contains("mac")) {
-            binaryVersion = "darwin";
-        } else if (os.contains("windows")) {
-            binaryVersion = "windows";
+    @Override
+    public void process(Context context) throws DubboTestException {
+        ZookeeperContext zookeeperContext = (ZookeeperContext) context;
+        for (int clientPort : zookeeperContext.getClientPorts()) {
+            Process process = this.doProcess(zookeeperContext, clientPort);
+            this.logErrorStream(process.getErrorStream());
+            this.awaitProcessReady(process.getInputStream());
         }
-        return binaryVersion;
     }
 
     /**
@@ -68,16 +65,15 @@ public abstract class ZookeeperCommandProcessor implements Processor {
     /**
      * Wait until the server is started successfully.
      *
-     * @param context     the global context of zookeeper.
      * @param inputStream the log after run {@link Process}.
      * @throws DubboTestException if cannot match the given pattern.
      */
-    private void awaitProcessReady(ZookeeperInitializer.ZookeeperContext context, final InputStream inputStream) throws DubboTestException {
+    private void awaitProcessReady(final InputStream inputStream) throws DubboTestException {
         final StringBuilder log = new StringBuilder();
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (this.check(line))
+                if (this.getPattern().matcher(line).matches())
                     return;
                 log.append('\n').append(line);
             }
@@ -87,34 +83,18 @@ public abstract class ZookeeperCommandProcessor implements Processor {
         throw new DubboTestException("Ready pattern not found in log, log: " + log);
     }
 
-
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void process(Initializer.Context context) throws DubboTestException {
-        ZookeeperInitializer.ZookeeperContext zookeeperContext = (ZookeeperInitializer.ZookeeperContext) context;
-        for (int clientPort : zookeeperContext.getClientPorts()) {
-            Process process = this.start(zookeeperContext, clientPort);
-            this.logErrorStream(process.getErrorStream());
-            this.awaitProcessReady(zookeeperContext, process.getInputStream());
-        }
-    }
-
-    /**
-     * Starts the {@link Process} with the given {@link org.apache.dubbo.test.check.registrycenter.Initializer.Context}
+     * Use {@link Process} to handle the command.
      *
-     * @param context    the global context of zookeeper.
+     * @param context    the global zookeeper context.
      * @param clientPort the client port of zookeeper.
-     * @return the executed process.
+     * @return the instance of {@link Process}.
+     * @throws DubboTestException when any exception occurred.
      */
-    protected abstract Process start(ZookeeperInitializer.ZookeeperContext context, int clientPort);
+    protected abstract Process doProcess(ZookeeperContext context, int clientPort) throws DubboTestException;
 
     /**
-     * Checks the server is ready or not.
-     *
-     * @param message the message to verify.
-     * @return {@code true} if the server is ready, otherwise {@code false}.
+     * Gets the pattern to check the server is ready or not.
      */
-    protected abstract boolean check(String message);
+    protected abstract Pattern getPattern();
 }

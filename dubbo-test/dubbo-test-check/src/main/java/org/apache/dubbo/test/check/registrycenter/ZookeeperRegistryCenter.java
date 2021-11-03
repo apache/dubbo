@@ -16,19 +16,23 @@
  */
 package org.apache.dubbo.test.check.registrycenter;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
+import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 import org.apache.dubbo.test.check.registrycenter.initializer.ConfigZookeeperInitializer;
 import org.apache.dubbo.test.check.registrycenter.initializer.DownloadZookeeperInitializer;
 import org.apache.dubbo.test.check.registrycenter.initializer.UnpackZookeeperInitializer;
 import org.apache.dubbo.test.check.registrycenter.initializer.ZookeeperInitializer;
+import org.apache.dubbo.test.check.registrycenter.processor.StartZookeeperUnixProcessor;
+import org.apache.dubbo.test.check.registrycenter.processor.StartZookeeperWindowsProcessor;
 import org.apache.dubbo.test.check.registrycenter.processor.ResetZookeeperProcessor;
-import org.apache.dubbo.test.check.registrycenter.processor.StartZookeeperCommandProcessor;
-import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperCommandProcessor;
+import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperUnixProcessor;
+import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperWindowsProcessor;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -41,12 +45,24 @@ class ZookeeperRegistryCenter implements RegistryCenter {
         this.initializers.add(new DownloadZookeeperInitializer());
         this.initializers.add(new UnpackZookeeperInitializer());
         this.initializers.add(new ConfigZookeeperInitializer());
-        this.startZookeeperProcessor = new StartZookeeperCommandProcessor();
-        this.resetZookeeperProcessor = new ResetZookeeperProcessor();
-        this.stopZookeeperProcessor = new StopZookeeperCommandProcessor();
+        // start processor
+        this.put(OS.Unix, Command.Start, new StartZookeeperUnixProcessor());
+        this.put(OS.Windows, Command.Start, new StartZookeeperWindowsProcessor());
+
+        // reset processor
+        Processor resetProcessor = new ResetZookeeperProcessor();
+        this.put(OS.Unix, Command.Reset, resetProcessor);
+        this.put(OS.Windows, Command.Reset, resetProcessor);
+
+        // stop processor
+        this.put(OS.Unix, Command.Stop, new StopZookeeperUnixProcessor());
+        this.put(OS.Windows, Command.Stop, new StopZookeeperWindowsProcessor());
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperRegistryCenter.class);
+    /**
+     * The OS type.
+     */
+    private static OS os = getOS();
 
     /**
      * All of {@link ZookeeperInitializer} instances.
@@ -56,22 +72,12 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     /**
      * The global context of zookeeper.
      */
-    private ZookeeperInitializer.ZookeeperContext context = new ZookeeperInitializer.ZookeeperContext();
+    private ZookeeperContext context = new ZookeeperContext();
 
     /**
-     * Define the {@link Processor} to start zookeeper instances.
+     * To store all processor instances.
      */
-    private Processor startZookeeperProcessor;
-
-    /**
-     * Define the {@link Processor} to reset zookeeper instances.
-     */
-    private Processor resetZookeeperProcessor;
-
-    /**
-     * Define the {@link Processor} to stop zookeeper instances.
-     */
-    private Processor stopZookeeperProcessor;
+    private Map<OS, Map<Command, Processor>> processors = new HashMap<>();
 
     /**
      * The {@link #INITIALIZED} for flagging the {@link #startup()} method is called or not.
@@ -79,17 +85,46 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     private final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
     /**
-     * Returns the Operating System's name.
+     * Returns the Operating System.
      */
-    private String getOSName() {
-        String os = System.getProperty("os.name").toLowerCase();
-        String binaryVersion = "linux";
-        if (os.contains("mac")) {
-            binaryVersion = "darwin";
-        } else if (os.contains("windows")) {
-            binaryVersion = "windows";
+    private static OS getOS() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        OS os = OS.Unix;
+        if (osName.contains("windows")) {
+            os = OS.Windows;
         }
-        return binaryVersion;
+        return os;
+    }
+
+    /**
+     * Store all initialized processor instances.
+     *
+     * @param os        the {@link OS} type.
+     * @param command   the {@link Command} to execute.
+     * @param processor the {@link Processor} to run.
+     */
+    private void put(OS os, Command command, Processor processor) {
+        Map<Command, Processor> commandProcessorMap = this.processors.get(os);
+        if (commandProcessorMap == null) {
+            commandProcessorMap = new HashMap<>();
+            this.processors.put(os, commandProcessorMap);
+        }
+        commandProcessorMap.put(command, processor);
+    }
+
+    /**
+     * Gets the {@link Processor} with the given {@link OS} type and {@link Command}.
+     *
+     * @param os      the {@link OS} type.
+     * @param command the {@link Command} to execute.
+     * @return the {@link Processor} to run.
+     */
+    private Processor get(OS os, Command command) {
+        Map<Command, Processor> commandProcessorMap = this.processors.get(os);
+        Objects.requireNonNull(commandProcessorMap, "The command with the OS cannot be null");
+        Processor processor = commandProcessorMap.get(command);
+        Objects.requireNonNull(processor, "The processor cannot be null");
+        return processor;
     }
 
     /**
@@ -105,7 +140,7 @@ class ZookeeperRegistryCenter implements RegistryCenter {
                 initializer.initialize(this.context);
             }
         }
-        this.startZookeeperProcessor.process(this.context);
+        this.get(os, Command.Start).process(this.context);
     }
 
     /**
@@ -113,7 +148,7 @@ class ZookeeperRegistryCenter implements RegistryCenter {
      */
     @Override
     public void reset() throws DubboTestException {
-        this.resetZookeeperProcessor.process(this.context);
+        this.get(os, Command.Reset).process(this.context);
     }
 
     /**
@@ -121,6 +156,23 @@ class ZookeeperRegistryCenter implements RegistryCenter {
      */
     @Override
     public void shutdown() throws DubboTestException {
-        this.stopZookeeperProcessor.process(this.context);
+        this.get(os, Command.Stop).process(this.context);
+    }
+
+    /**
+     * The type of OS.
+     */
+    enum OS {
+        Windows,
+        Unix
+    }
+
+    /**
+     * The commands to support the zookeeper.
+     */
+    enum Command {
+        Start,
+        Reset,
+        Stop
     }
 }

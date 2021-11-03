@@ -16,18 +16,8 @@
  */
 package org.apache.dubbo.test.check.registrycenter;
 
-import org.apache.dubbo.test.check.exception.DubboTestException;
-
 /**
- * Define the processor to execute {@link Process} with the {@link org.apache.dubbo.test.check.registrycenter.Initializer.Context}
+ * The global context to store all initialized variables.
  */
-public interface Processor {
-
-    /**
-     * Process the command with the global context.
-     *
-     * @param context the global context.
-     * @throws DubboTestException when any exception occurred.
-     */
-    void process(Context context) throws DubboTestException;
+public interface Context {
 }

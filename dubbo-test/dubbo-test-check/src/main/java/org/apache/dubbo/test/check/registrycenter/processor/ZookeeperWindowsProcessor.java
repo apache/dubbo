@@ -14,20 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.check.registrycenter;
+package org.apache.dubbo.test.check.registrycenter.processor;
 
 import org.apache.dubbo.test.check.exception.DubboTestException;
-
+import org.apache.dubbo.test.check.registrycenter.Context;
+import org.apache.dubbo.test.check.registrycenter.Processor;
+import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
 /**
- * Define the processor to execute {@link Process} with the {@link org.apache.dubbo.test.check.registrycenter.Initializer.Context}
+ * The abstract implementation of {@link Processor} is to provide some common methods on Windows OS.
  */
-public interface Processor {
+public abstract class ZookeeperWindowsProcessor implements Processor {
+
+    @Override
+    public void process(Context context) throws DubboTestException {
+        ZookeeperWindowsContext zookeeperWindowsContext = (ZookeeperWindowsContext) context;
+        this.doProcess(zookeeperWindowsContext);
+    }
 
     /**
-     * Process the command with the global context.
+     * Use {@link Process} to handle the command.
      *
-     * @param context the global context.
+     * @param context    the global zookeeper context.
      * @throws DubboTestException when any exception occurred.
      */
-    void process(Context context) throws DubboTestException;
+    protected abstract void doProcess(ZookeeperWindowsContext context) throws DubboTestException;
 }

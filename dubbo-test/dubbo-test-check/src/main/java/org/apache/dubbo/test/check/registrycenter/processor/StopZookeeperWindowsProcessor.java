@@ -14,20 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.check.registrycenter;
+package org.apache.dubbo.test.check.registrycenter.processor;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
+import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
 
 /**
- * Define the processor to execute {@link Process} with the {@link org.apache.dubbo.test.check.registrycenter.Initializer.Context}
+ * Create {@link Process} to stop zookeeper on Windows OS.
  */
-public interface Processor {
+public class StopZookeeperWindowsProcessor extends ZookeeperWindowsProcessor {
 
-    /**
-     * Process the command with the global context.
-     *
-     * @param context the global context.
-     * @throws DubboTestException when any exception occurred.
-     */
-    void process(Context context) throws DubboTestException;
+    private static final Logger logger = LoggerFactory.getLogger(StopZookeeperWindowsProcessor.class);
+
+    @Override
+    protected void doProcess(ZookeeperWindowsContext context) throws DubboTestException {
+        logger.info("The zookeeper instances are stopping...");
+        context.destroy();
+    }
 }
