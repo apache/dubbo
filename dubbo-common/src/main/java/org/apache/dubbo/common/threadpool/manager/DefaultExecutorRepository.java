@@ -68,6 +68,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     private volatile ExecutorService serviceReferExecutor;
 
+    private ScheduledExecutorService connectivityScheduledExecutor;
+
     public Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
 
     private Ring<ScheduledExecutorService> serviceDiscoveryAddressNotificationExecutorRing = new Ring<>();
@@ -100,6 +102,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 , new ThreadPoolExecutor.AbortPolicy()));
         }
 
+        connectivityScheduledExecutor = Executors.newScheduledThreadPool(DEFAULT_SCHEDULER_SIZE, new NamedThreadFactory("Dubbo-connectivity-scheduler", true));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
 
@@ -360,6 +363,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     @Override
+    public ScheduledExecutorService getConnectivityScheduledExecutor() {
+        return connectivityScheduledExecutor;
+    }
+
+    @Override
     public void destroyAll() {
         logger.info("destroying executor repository ..");
         shutdownExecutorService(poolRouterExecutor, "poolRouterExecutor");
@@ -389,6 +397,9 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
         // executorServiceRing
         shutdownExecutorServices(executorServiceRing.listItems(), "executorServiceRing");
+
+        // connectivityScheduledExecutor
+        shutdownExecutorService(connectivityScheduledExecutor, "connectivityScheduledExecutor");
 
         // shutdown share executor
         shutdownExecutorService(sharedExecutor, "sharedExecutor");

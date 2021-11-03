@@ -56,9 +56,28 @@ public interface StateRouter extends Comparable<StateRouter> {
      * @throws RpcException
      * @Since 3.0
      */
-    <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation)
-        throws
-        RpcException;
+    @Deprecated
+    default <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation)
+        throws RpcException {
+        return null;
+    }
+
+    /***
+     * ** This method can return the state of whether routerChain needed to continue route. **
+     * Filter invokers with current routing rule and only return the invokers that comply with the rule.
+     * Caching address lists in BitMap mode improves routing performance.
+     * @param invokers  invoker bit list
+     * @param cache      router address cache
+     * @param url        refer url
+     * @param invocation invocation
+     * @param needToPrintMessage whether to print router state. Such as `use router branch a`.
+     * @return state with route result
+     * @since 3.0
+     */
+    default <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation,
+                                                          boolean needToPrintMessage) throws RpcException {
+        return new StateRouterResult<>(route(invokers, cache, url, invocation));
+    }
 
     default <T> void notify(List<Invoker<T>> invokers) {
 

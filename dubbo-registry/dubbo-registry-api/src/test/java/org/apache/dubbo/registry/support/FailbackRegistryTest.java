@@ -17,9 +17,10 @@
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,8 +34,10 @@ import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FailbackRegistryTest {
-    private static URL serviceUrl;
-    private static URL registryUrl;
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private URL serviceUrl;
+    private URL registryUrl;
     private MockRegistry registry;
     private final int FAILED_PERIOD = 200;
     private final int sleepTime = 100;
@@ -45,8 +48,9 @@ public class FailbackRegistryTest {
      */
     @BeforeEach
     public void setUp() throws Exception {
-        serviceUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get");
-        registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A").addParameter(REGISTRY_RETRY_PERIOD_KEY, String.valueOf(FAILED_PERIOD));
+        String failedPeriod = String.valueOf(FAILED_PERIOD);
+        serviceUrl = URL.valueOf("remote://127.0.0.1/demoservice?method=get").addParameter(REGISTRY_RETRY_PERIOD_KEY, failedPeriod);
+        registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A").addParameter(REGISTRY_RETRY_PERIOD_KEY, failedPeriod);
     }
 
     /**
@@ -63,12 +67,13 @@ public class FailbackRegistryTest {
         final CountDownLatch latch = new CountDownLatch(2);
 
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-        registry = new MockRegistry(registryUrl, latch);
+        URL subscribeUrl = serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false"));
+        registry = new MockRegistry(registryUrl, serviceUrl, latch);
         registry.setBad(true);
         registry.register(serviceUrl);
         registry.unregister(serviceUrl);
-        registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listener);
-        registry.unsubscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listener);
+        registry.subscribe(subscribeUrl, listener);
+        registry.unsubscribe(subscribeUrl, listener);
 
         //Failure can not be called to listener.
         assertEquals(false, notified.get());
@@ -76,8 +81,8 @@ public class FailbackRegistryTest {
 
         registry.setBad(false);
 
-        for (int i = 0; i < tryTimes; i++) {
-            System.out.println("failback registry retry ,times:" + i);
+        for (int i = 0; i < 20; i++) {
+            logger.info("failback registry retry, times:" + i);
             //System.out.println(latch.getCount());
             if (latch.getCount() == 0)
                 break;
@@ -93,7 +98,7 @@ public class FailbackRegistryTest {
 
         final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
 
-        registry = new MockRegistry(registryUrl, latch);
+        registry = new MockRegistry(registryUrl, serviceUrl, latch);
         registry.setBad(true);
         registry.register(serviceUrl);
 
@@ -115,7 +120,7 @@ public class FailbackRegistryTest {
         final CountDownLatch latch = new CountDownLatch(1);//All of them are called 4 times. A successful attempt to lose 1. subscribe will not be done
 
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-        registry = new MockRegistry(registryUrl, latch);
+        registry = new MockRegistry(registryUrl, serviceUrl, latch);
         registry.setBad(true);
         registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listener);
 
@@ -142,7 +147,7 @@ public class FailbackRegistryTest {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
 
-        MockRegistry mockRegistry = new MockRegistry(registryUrl, countDownLatch);
+        MockRegistry mockRegistry = new MockRegistry(registryUrl, serviceUrl, countDownLatch);
         mockRegistry.register(serviceUrl);
         mockRegistry.subscribe(serviceUrl, listener);
         Assertions.assertEquals(1, mockRegistry.getRegistered().size());
@@ -156,14 +161,17 @@ public class FailbackRegistryTest {
     }
 
     private static class MockRegistry extends FailbackRegistry {
+        private final URL serviceUrl;
         CountDownLatch latch;
-        private boolean bad = false;
+        private volatile boolean bad = false;
 
         /**
          * @param url
+         * @param serviceUrl
          */
-        public MockRegistry(URL url, CountDownLatch latch) {
+        public MockRegistry(URL url, URL serviceUrl, CountDownLatch latch) {
             super(url);
+            this.serviceUrl = serviceUrl;
             this.latch = latch;
         }
 
