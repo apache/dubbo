@@ -1007,9 +1007,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             } catch (Exception e) {
                 logger.error("refresh metadata failed: " + e.getMessage(), e);
             }
-            // shutdown export/refer executor after started
-            executorRepository.shutdownServiceExportExecutor();
-            executorRepository.shutdownServiceReferExecutor();
         } finally {
             // complete future
             completeStartFuture(true);
@@ -1051,6 +1048,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void destroyExecutorRepository() {
+        // shutdown export/refer executor
+        executorRepository.shutdownServiceExportExecutor();
+        executorRepository.shutdownServiceReferExecutor();
         getExtensionLoader(ExecutorRepository.class).getDefaultExtension().destroyAll();
     }
 
