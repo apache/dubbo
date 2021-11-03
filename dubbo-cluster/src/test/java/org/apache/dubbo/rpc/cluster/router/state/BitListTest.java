@@ -20,15 +20,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 public class BitListTest {
     @Test
     public void test() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList = new BitList<>(list);
-        Assertions.assertEquals(bitList.getUnmodifiableList(), list);
+        Assertions.assertEquals(bitList.getOriginList(), list);
         Assertions.assertEquals(3, bitList.size());
 
         Assertions.assertEquals("A", bitList.get(0));
@@ -39,9 +42,7 @@ public class BitListTest {
         Assertions.assertTrue(bitList.contains("B"));
         Assertions.assertTrue(bitList.contains("C"));
 
-        Iterator<String> iterator = bitList.iterator();
-        while (iterator.hasNext()) {
-            String str = iterator.next();
+        for (String str : bitList) {
             Assertions.assertTrue(list.contains(str));
         }
 
@@ -61,7 +62,10 @@ public class BitListTest {
 
         newObjects = new Object[10];
         copiedList = bitList.toArray(newObjects);
-        Assertions.assertNull(copiedList);
+        Assertions.assertEquals(copiedList.length, 10);
+        Assertions.assertEquals("A", copiedList[0]);
+        Assertions.assertEquals("B", copiedList[1]);
+        Assertions.assertEquals("C", copiedList[2]);
 
         bitList.remove(0);
         Assertions.assertEquals("B", bitList.get(0));
@@ -82,10 +86,471 @@ public class BitListTest {
         BitList<String> aBitList = new BitList<>(aList);
         BitList<String> bBitList = new BitList<>(bList);
 
-        BitList<String> intersectBitList = aBitList.intersect(bBitList, totalList);
+        BitList<String> intersectBitList = aBitList.and(bBitList);
         Assertions.assertEquals(intersectBitList.size(), 2);
         Assertions.assertEquals(intersectBitList.get(0), totalList.get(0));
         Assertions.assertEquals(intersectBitList.get(1), totalList.get(1));
+
+        aBitList.add("D");
+        intersectBitList = aBitList.and(bBitList);
+        Assertions.assertEquals(intersectBitList.size(), 3);
+        Assertions.assertEquals(intersectBitList.get(0), totalList.get(0));
+        Assertions.assertEquals(intersectBitList.get(1), totalList.get(1));
+        Assertions.assertEquals("D", intersectBitList.get(2));
     }
 
+    @Test
+    public void testIsEmpty() {
+        List<String> list = Arrays.asList("A", "B", "C");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.add("D");
+
+        bitList.removeAll(list);
+        Assertions.assertEquals(1, bitList.size());
+
+        bitList.remove("D");
+        Assertions.assertTrue(bitList.isEmpty());
+    }
+
+    @Test
+    public void testAdd() {
+        List<String> list = Arrays.asList("A", "B", "C");
+        BitList<String> bitList = new BitList<>(list);
+
+        bitList.remove("A");
+
+        Assertions.assertEquals(2, bitList.size());
+
+        bitList.addAll(Collections.singletonList("A"));
+        Assertions.assertEquals(3, bitList.size());
+
+        bitList.addAll(Collections.singletonList("D"));
+        Assertions.assertEquals(4, bitList.size());
+        Assertions.assertEquals("D", bitList.get(3));
+        Assertions.assertTrue(bitList.hasMoreElementInTailList());
+        Assertions.assertEquals(Collections.singletonList("D"), bitList.getTailList());
+
+        bitList.clear();
+
+        bitList.addAll(Collections.singletonList("A"));
+        Assertions.assertEquals(1, bitList.size());
+        Assertions.assertEquals("A", bitList.get(0));
+    }
+
+    @Test
+    public void testGet() {
+        List<String> list = Arrays.asList("A", "B", "C");
+        BitList<String> bitList = new BitList<>(list);
+
+        Assertions.assertEquals("A", bitList.get(0));
+        Assertions.assertEquals("B", bitList.get(1));
+        Assertions.assertEquals("C", bitList.get(2));
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.get(-1));
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.get(3));
+
+        bitList.add("D");
+        Assertions.assertEquals("D", bitList.get(3));
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.get(-1));
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.get(4));
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.get(5));
+    }
+
+    @Test
+    public void testRemove() {
+        List<String> list = Arrays.asList("A", "B", "C");
+        BitList<String> bitList = new BitList<>(list);
+
+        Assertions.assertTrue(bitList.remove("A"));
+        Assertions.assertFalse(bitList.remove("A"));
+
+        Assertions.assertTrue(bitList.removeAll(Collections.singletonList("B")));
+        Assertions.assertFalse(bitList.removeAll(Collections.singletonList("B")));
+
+        Assertions.assertFalse(bitList.removeAll(Collections.singletonList("D")));
+
+        bitList.add("D");
+        Assertions.assertTrue(bitList.removeAll(Collections.singletonList("D")));
+        Assertions.assertFalse(bitList.hasMoreElementInTailList());
+
+        bitList.add("A");
+        bitList.add("E");
+        bitList.add("F");
+
+        Assertions.assertEquals(4, bitList.size());
+
+        Assertions.assertFalse(bitList.removeAll(Collections.singletonList("D")));
+        Assertions.assertTrue(bitList.removeAll(Collections.singletonList("A")));
+        Assertions.assertTrue(bitList.removeAll(Collections.singletonList("C")));
+        Assertions.assertTrue(bitList.removeAll(Collections.singletonList("E")));
+        Assertions.assertTrue(bitList.removeAll(Collections.singletonList("F")));
+
+        Assertions.assertTrue(bitList.isEmpty());
+    }
+
+    @Test
+    public void testRemoveIndex() {
+        List<String> list = Arrays.asList("A", "B", "C");
+        BitList<String> bitList = new BitList<>(list);
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.remove(3));
+        Assertions.assertNotNull(bitList.remove(1));
+        Assertions.assertNotNull(bitList.remove(0));
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.remove(1));
+
+        bitList.add("D");
+        Assertions.assertNotNull(bitList.remove(1));
+
+        bitList.add("A");
+        bitList.add("E");
+        bitList.add("F");
+        // A C E F
+        Assertions.assertEquals(4, bitList.size());
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.remove(4));
+        Assertions.assertEquals("F", bitList.remove(3));
+        Assertions.assertEquals("E", bitList.remove(2));
+        Assertions.assertEquals("C", bitList.remove(1));
+        Assertions.assertEquals("A", bitList.remove(0));
+
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> bitList.remove(0));
+
+        Assertions.assertTrue(bitList.isEmpty());
+    }
+
+    @Test
+    public void testRetain() {
+        List<String> list = Arrays.asList("A", "B", "C");
+        BitList<String> bitList = new BitList<>(list);
+
+        List<String> list1 = Arrays.asList("B", "C");
+        Assertions.assertTrue(bitList.retainAll(list1));
+
+        Assertions.assertTrue(bitList.containsAll(list1));
+        Assertions.assertFalse(bitList.containsAll(list));
+        Assertions.assertFalse(bitList.contains("A"));
+
+        bitList = new BitList<>(list);
+        bitList.add("D");
+        bitList.add("E");
+        List<String> list2 = Arrays.asList("B", "C", "D");
+        Assertions.assertTrue(bitList.retainAll(list2));
+
+        Assertions.assertTrue(bitList.containsAll(list2));
+        Assertions.assertFalse(bitList.containsAll(list));
+        Assertions.assertFalse(bitList.contains("A"));
+        Assertions.assertFalse(bitList.contains("E"));
+    }
+
+    @Test
+    public void testIndex() {
+        List<String> list = Arrays.asList("A", "B", "A");
+        BitList<String> bitList = new BitList<>(list);
+
+        Assertions.assertEquals(0, bitList.indexOf("A"));
+        Assertions.assertEquals(2, bitList.lastIndexOf("A"));
+
+        Assertions.assertEquals(-1, bitList.indexOf("D"));
+        Assertions.assertEquals(-1, bitList.lastIndexOf("D"));
+
+        bitList.add("D");
+        bitList.add("E");
+
+        Assertions.assertEquals(0, bitList.indexOf("A"));
+        Assertions.assertEquals(2, bitList.lastIndexOf("A"));
+        Assertions.assertEquals(3, bitList.indexOf("D"));
+        Assertions.assertEquals(3, bitList.lastIndexOf("D"));
+
+        Assertions.assertEquals(-1, bitList.indexOf("F"));
+    }
+
+    @Test
+    public void testSubList() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.addAll(Arrays.asList("F", "G", "H", "I"));
+
+        BitList<String> subList1 = bitList.subList(0, 5);
+        Assertions.assertEquals(Arrays.asList("A", "B", "C", "D", "E"), subList1);
+
+        BitList<String> subList2 = bitList.subList(1, 5);
+        Assertions.assertEquals(Arrays.asList("B", "C", "D", "E"), subList2);
+
+        BitList<String> subList3 = bitList.subList(0, 4);
+        Assertions.assertEquals(Arrays.asList("A", "B", "C", "D"), subList3);
+
+        BitList<String> subList4 = bitList.subList(1, 4);
+        Assertions.assertEquals(Arrays.asList("B", "C", "D"), subList4);
+
+        BitList<String> subList5 = bitList.subList(2, 3);
+        Assertions.assertEquals(Collections.singletonList("C"), subList5);
+        Assertions.assertFalse(subList5.hasMoreElementInTailList());
+
+        BitList<String> subList6 = bitList.subList(0, 9);
+        Assertions.assertEquals(Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I"), subList6);
+        Assertions.assertEquals(Arrays.asList("F", "G", "H", "I"), subList6.getTailList());
+
+        BitList<String> subList7 = bitList.subList(1, 8);
+        Assertions.assertEquals(Arrays.asList("B", "C", "D", "E", "F", "G", "H"), subList7);
+        Assertions.assertEquals(Arrays.asList("F", "G", "H"), subList7.getTailList());
+
+        BitList<String> subList8 = bitList.subList(4, 8);
+        Assertions.assertEquals(Arrays.asList("E", "F", "G", "H"), subList8);
+        Assertions.assertEquals(Arrays.asList("F", "G", "H"), subList8.getTailList());
+
+        BitList<String> subList9 = bitList.subList(5, 8);
+        Assertions.assertEquals(Arrays.asList("F", "G", "H"), subList9);
+        Assertions.assertEquals(Arrays.asList("F", "G", "H"), subList9.getTailList());
+
+        BitList<String> subList10 = bitList.subList(6, 8);
+        Assertions.assertEquals(Arrays.asList("G", "H"), subList10);
+        Assertions.assertEquals(Arrays.asList("G", "H"), subList10.getTailList());
+
+        BitList<String> subList11 = bitList.subList(6, 7);
+        Assertions.assertEquals(Collections.singletonList("G"), subList11);
+        Assertions.assertEquals(Collections.singletonList("G"), subList11.getTailList());
+    }
+
+    @Test
+    public void testListIterator1() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+
+        ListIterator<String> listIterator = bitList.listIterator(2);
+        ListIterator<String> expectedIterator = list.listIterator(2);
+
+        while (listIterator.hasNext()) {
+            Assertions.assertEquals(expectedIterator.nextIndex(), listIterator.nextIndex());
+            Assertions.assertEquals(expectedIterator.next(), listIterator.next());
+        }
+
+        while (listIterator.hasPrevious()) {
+            Assertions.assertEquals(expectedIterator.previousIndex(), listIterator.previousIndex());
+            Assertions.assertEquals(expectedIterator.previous(), listIterator.previous());
+        }
+    }
+
+    @Test
+    public void testListIterator2() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.addAll(Arrays.asList("F", "G", "H", "I"));
+        List<String> expectedResult = Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I");
+
+        ListIterator<String> listIterator = bitList.listIterator(2);
+        ListIterator<String> expectedIterator = expectedResult.listIterator(2);
+
+        while (listIterator.hasNext()) {
+            Assertions.assertEquals(expectedIterator.nextIndex(), listIterator.nextIndex());
+            Assertions.assertEquals(expectedIterator.next(), listIterator.next());
+        }
+
+        while (listIterator.hasPrevious()) {
+            Assertions.assertEquals(expectedIterator.previousIndex(), listIterator.previousIndex());
+            Assertions.assertEquals(expectedIterator.previous(), listIterator.previous());
+        }
+    }
+
+    @Test
+    public void testListIterator3() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.addAll(Arrays.asList("F", "G", "H", "I"));
+        List<String> expectedResult = Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I");
+
+        ListIterator<String> listIterator = bitList.listIterator(7);
+        ListIterator<String> expectedIterator = expectedResult.listIterator(7);
+
+        while (listIterator.hasNext()) {
+            Assertions.assertEquals(expectedIterator.nextIndex(), listIterator.nextIndex());
+            Assertions.assertEquals(expectedIterator.next(), listIterator.next());
+        }
+
+        while (listIterator.hasPrevious()) {
+            Assertions.assertEquals(expectedIterator.previousIndex(), listIterator.previousIndex());
+            Assertions.assertEquals(expectedIterator.previous(), listIterator.previous());
+        }
+    }
+
+    @Test
+    public void testListIterator4() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.addAll(Arrays.asList("F", "G", "H", "I"));
+        List<String> expectedResult = Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I");
+
+        ListIterator<String> listIterator = bitList.listIterator(8);
+        ListIterator<String> expectedIterator = expectedResult.listIterator(8);
+
+        while (listIterator.hasNext()) {
+            Assertions.assertEquals(expectedIterator.nextIndex(), listIterator.nextIndex());
+            Assertions.assertEquals(expectedIterator.next(), listIterator.next());
+        }
+
+        while (listIterator.hasPrevious()) {
+            Assertions.assertEquals(expectedIterator.previousIndex(), listIterator.previousIndex());
+            Assertions.assertEquals(expectedIterator.previous(), listIterator.previous());
+        }
+    }
+
+    @Test
+    public void testListIterator5() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.addAll(Arrays.asList("F", "G", "H", "I"));
+        List<String> expectedResult = new LinkedList<>(Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I"));
+
+        ListIterator<String> listIterator = bitList.listIterator(2);
+        ListIterator<String> expectedIterator = expectedResult.listIterator(2);
+
+        while (listIterator.hasNext()) {
+            Assertions.assertEquals(expectedIterator.nextIndex(), listIterator.nextIndex());
+            Assertions.assertEquals(expectedIterator.next(), listIterator.next());
+            listIterator.remove();
+            expectedIterator.remove();
+        }
+
+        Assertions.assertEquals(expectedResult, bitList);
+
+
+        while (listIterator.hasPrevious()) {
+            Assertions.assertEquals(expectedIterator.previousIndex(), listIterator.previousIndex());
+            Assertions.assertEquals(expectedIterator.previous(), listIterator.previous());
+            listIterator.remove();
+            expectedIterator.remove();
+        }
+
+        Assertions.assertEquals(expectedResult, bitList);
+    }
+
+    @Test
+    public void testListIterator6() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.addAll(Arrays.asList("F", "G", "H", "I"));
+        List<String> expectedResult = new LinkedList<>(Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I"));
+
+        ListIterator<String> listIterator = bitList.listIterator(2);
+        ListIterator<String> expectedIterator = expectedResult.listIterator(2);
+
+        while (listIterator.hasPrevious()) {
+            Assertions.assertEquals(expectedIterator.previousIndex(), listIterator.previousIndex());
+            Assertions.assertEquals(expectedIterator.previous(), listIterator.previous());
+            listIterator.remove();
+            expectedIterator.remove();
+        }
+
+        Assertions.assertEquals(expectedResult, bitList);
+
+        while (listIterator.hasNext()) {
+            Assertions.assertEquals(expectedIterator.nextIndex(), listIterator.nextIndex());
+            Assertions.assertEquals(expectedIterator.next(), listIterator.next());
+            listIterator.remove();
+            expectedIterator.remove();
+        }
+
+        Assertions.assertEquals(expectedResult, bitList);
+    }
+
+    @Test
+    public void testListIterator7() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.addAll(Arrays.asList("F", "G", "H", "I"));
+        List<String> expectedResult = new LinkedList<>(Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I"));
+
+        ListIterator<String> listIterator = bitList.listIterator(7);
+        ListIterator<String> expectedIterator = expectedResult.listIterator(7);
+
+        while (listIterator.hasNext()) {
+            Assertions.assertEquals(expectedIterator.nextIndex(), listIterator.nextIndex());
+            Assertions.assertEquals(expectedIterator.next(), listIterator.next());
+            listIterator.remove();
+            expectedIterator.remove();
+        }
+
+        Assertions.assertEquals(expectedResult, bitList);
+
+        while (listIterator.hasPrevious()) {
+            Assertions.assertEquals(expectedIterator.previousIndex(), listIterator.previousIndex());
+            Assertions.assertEquals(expectedIterator.previous(), listIterator.previous());
+            listIterator.remove();
+            expectedIterator.remove();
+        }
+
+        Assertions.assertEquals(expectedResult, bitList);
+    }
+
+    @Test
+    public void testListIterator8() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.addAll(Arrays.asList("F", "G", "H", "I"));
+        List<String> expectedResult = new LinkedList<>(Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H", "I"));
+
+        ListIterator<String> listIterator = bitList.listIterator(7);
+        ListIterator<String> expectedIterator = expectedResult.listIterator(7);
+
+        while (listIterator.hasPrevious()) {
+            Assertions.assertEquals(expectedIterator.previousIndex(), listIterator.previousIndex());
+            Assertions.assertEquals(expectedIterator.previous(), listIterator.previous());
+            listIterator.remove();
+            expectedIterator.remove();
+        }
+
+        Assertions.assertEquals(expectedResult, bitList);
+
+        while (listIterator.hasNext()) {
+            Assertions.assertEquals(expectedIterator.nextIndex(), listIterator.nextIndex());
+            Assertions.assertEquals(expectedIterator.next(), listIterator.next());
+            listIterator.remove();
+            expectedIterator.remove();
+        }
+
+        Assertions.assertEquals(expectedResult, bitList);
+    }
+
+    @Test
+    public void testClone1() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+
+        BitList<String> clone1 = bitList.clone();
+        Assertions.assertNotSame(bitList, clone1);
+        Assertions.assertEquals(bitList, clone1);
+
+        HashSet<Object> set = new HashSet<>();
+        set.add(bitList);
+        set.add(clone1);
+        Assertions.assertEquals(1, set.size());
+
+        set.add(new LinkedList<>());
+        Assertions.assertEquals(2, set.size());
+
+        set.add(new LinkedList<>(Arrays.asList("A", "B", "C", "D", "E")));
+        Assertions.assertEquals(2, set.size());
+    }
+
+    @Test
+    public void testClone2() {
+        List<String> list = Arrays.asList("A", "B", "C", "D", "E");
+        BitList<String> bitList = new BitList<>(list);
+        bitList.addAll(Arrays.asList("F", "G"));
+
+        BitList<String> clone1 = bitList.clone();
+        Assertions.assertNotSame(bitList, clone1);
+        Assertions.assertEquals(bitList, clone1);
+
+        HashSet<Object> set = new HashSet<>();
+        set.add(bitList);
+        set.add(clone1);
+        Assertions.assertEquals(1, set.size());
+
+        set.add(new LinkedList<>());
+        Assertions.assertEquals(2, set.size());
+
+        set.add(new LinkedList<>(Arrays.asList("A", "B", "C", "D", "E", "F", "G")));
+        Assertions.assertEquals(2, set.size());
+    }
 }

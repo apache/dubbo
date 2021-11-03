@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -285,6 +286,8 @@ public class FailoverClusterInvokerTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
 
+        MockDirectory<Demo> dic = new MockDirectory<>(url, invokers);
+
         Callable<Object> callable = () -> {
             //Simulation: all invokers are destroyed
             for (Invoker<Demo> invoker : invokers) {
@@ -294,6 +297,7 @@ public class FailoverClusterInvokerTest {
             MockInvoker<Demo> invoker3 = new MockInvoker<>(Demo.class, url);
             invoker3.setResult(AsyncRpcResult.newDefaultAsyncResult(null));
             invokers.add(invoker3);
+            dic.notify(invokers);
             return null;
         };
         invoker1.setCallable(callable);
@@ -301,8 +305,6 @@ public class FailoverClusterInvokerTest {
 
         RpcInvocation inv = new RpcInvocation();
         inv.setMethodName("test");
-
-        Directory<Demo> dic = new MockDirectory<>(url, invokers);
 
         FailoverClusterInvoker<Demo> clusterInvoker = new FailoverClusterInvoker<>(dic);
         clusterInvoker.invoke(inv);
@@ -358,8 +360,8 @@ public class FailoverClusterInvokerTest {
         }
 
         @Override
-        protected List<Invoker<T>> doList(Invocation invocation) throws RpcException {
-            return new ArrayList<>(super.doList(invocation));
+        protected List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException {
+            return super.doList(invokers, invocation);
         }
     }
 }

@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
@@ -127,22 +128,6 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     @Override
-    public boolean isAvailable() {
-        if (isDestroyed() || this.forbidden) {
-            return false;
-        }
-        Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
-        if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
-                if (invoker.isAvailable()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
     public synchronized void notify(List<URL> instanceUrls) {
         if (isDestroyed()) {
             return;
@@ -219,7 +204,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         if (invokerUrls.size() == 0) {
             logger.info("Received empty url list...");
             this.forbidden = true; // Forbid to access
-            this.invokers = Collections.emptyList();
+            this.invokers = BitList.emptyList();
+            this.validInvokers = BitList.emptyList();
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
@@ -243,10 +229,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            // pre-route and build cache, notice that route cache should build on original Invoker list.
-            // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
-            routerChain.setInvokers(newInvokers);
-            this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
+            this.invokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
+            // pre-route and build cache
+            routerChain.setInvokers(this.invokers);
             this.urlInvokerMap = newUrlInvokerMap;
 
             if (oldUrlInvokerMap != null) {
@@ -366,6 +351,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         this.urlInvokerMap = null;
         this.invokers = null;
+        this.validInvokers = null;
     }
 
     /**
