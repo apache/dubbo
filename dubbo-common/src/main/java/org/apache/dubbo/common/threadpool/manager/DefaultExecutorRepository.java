@@ -239,13 +239,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     @Override
     public ExecutorService getServiceReferExecutor() {
-        if (serviceReferExecutor == null) {
-            synchronized (LOCK) {
-                if (serviceReferExecutor == null) {
-                    int coreSize = getReferThreadNum();
-                    serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
+        synchronized (LOCK) {
+            if (serviceReferExecutor == null) {
+                int coreSize = getReferThreadNum();
+                serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
                         new NamedThreadFactory("Dubbo-service-refer", true));
-                }
             }
         }
         return serviceReferExecutor;
