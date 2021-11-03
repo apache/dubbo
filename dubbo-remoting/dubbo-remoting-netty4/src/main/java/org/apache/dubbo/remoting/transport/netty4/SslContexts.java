@@ -49,7 +49,6 @@ public class SslContexts {
         try {
             serverKeyCertChainPathStream = sslConfig.getServerKeyCertChainPathStream();
             serverPrivateKeyPathStream = sslConfig.getServerPrivateKeyPathStream();
-            sslConfig.getServerPrivateKeyPathStream();
             String password = sslConfig.getServerKeyPassword();
             if (password != null) {
                 sslClientContextBuilder = SslContextBuilder.forServer(serverKeyCertChainPathStream,
