@@ -30,7 +30,6 @@ public class TransportState {
     private static final int SERVER_SEND_STREAM_RECEIVED = 0b00000000000000000000000000001000;
     private static final int ALLOW_META_SEND = 0b00000000000000000000000000000000;
     private static final int ALLOW_DATA_SEND = META_SEND;
-    private static final int ALLOW_END_STREAM_SEND = META_SEND;
     private volatile int state = 0;
 
     public void setMetaSend() {
@@ -66,7 +65,7 @@ public class TransportState {
     }
 
     public boolean allowSendEndStream() {
-        return (this.state & END_STREAM_SEND) != END_STREAM_SEND;
+        return allowSendReset() && (this.state & END_STREAM_SEND) != END_STREAM_SEND;
     }
 
 }
