@@ -66,7 +66,7 @@ public class TransportState {
     }
 
     public boolean allowSendEndStream() {
-        return this.state == ALLOW_END_STREAM_SEND;
+        return (this.state & RESET_SEND) != RESET_SEND;
     }
 
 }
