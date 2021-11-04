@@ -19,6 +19,7 @@ package org.apache.dubbo.test.check.registrycenter.processor;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
+import org.apache.dubbo.test.check.registrycenter.Processor;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
 
 /**
@@ -28,9 +29,24 @@ public class StopZookeeperWindowsProcessor extends ZookeeperWindowsProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(StopZookeeperWindowsProcessor.class);
 
+    /**
+     * The {@link Processor} to find the pid of zookeeper instance.
+     */
+    private final Processor findPidProcessor = new FindPidWindowsProcessor();
+
+    /**
+     * The {@link Processor} to kill the pid of zookeeper instance.
+     */
+    private final Processor killPidProcessor = new KillProcessWindowsProcessor();
+
     @Override
     protected void doProcess(ZookeeperWindowsContext context) throws DubboTestException {
-        logger.info("The zookeeper instances are stopping...");
+        logger.info("All of zookeeper instances are stopping...");
+        // find pid and save into global context.
+        this.findPidProcessor.process(context);
+        // kill pid of zookeeper instance if exists
+        this.killPidProcessor.process(context);
+        // destroy all resources
         context.destroy();
     }
 }

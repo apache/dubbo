@@ -65,10 +65,38 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
                     throw new RuntimeException(String.format("Failed to create the data directory to save zookeeper binary file, file path:%s", context.getSourceFile()), e);
                 }
             }
-            properties.setProperty("dataDir", String.valueOf(adminServerPort));
+            properties.setProperty("dataDir", dataDir.toString());
             FileOutputStream oFile = null;
             try {
                 oFile = new FileOutputStream(Paths.get(zookeeperConf.toString(), "zoo.cfg").toFile());
+                properties.store(oFile, "");
+            } finally {
+                try {
+                    oFile.close();
+                } catch (IOException e) {
+                    throw new DubboTestException("Failed to close file", e);
+                }
+            }
+        } catch (IOException e) {
+            throw new DubboTestException(String.format("Failed to update %s file", zooSample.toString()), e);
+        }
+
+        File log4j = Paths.get(zookeeperConf.toString(), "log4j.properties").toFile();
+        try {
+            properties.load(new FileInputStream(log4j));
+            Path logDir = Paths.get(zookeeperConf.getParent().toString(), "logs");
+            if (!Files.exists(logDir)) {
+                try {
+                    logger.info("It is creating the log directory...");
+                    Files.createDirectories(logDir);
+                } catch (IOException e) {
+                    throw new RuntimeException(String.format("Failed to create the log directory to save zookeeper binary file, file path:%s", context.getSourceFile()), e);
+                }
+            }
+            properties.setProperty("zookeeper.log.dir", logDir.toString());
+            FileOutputStream oFile = null;
+            try {
+                oFile = new FileOutputStream(Paths.get(zookeeperConf.toString(), "log4j.properties").toFile());
                 properties.store(oFile, "");
             } finally {
                 try {

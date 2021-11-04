@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.test.check.registrycenter.context;
 
+import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 
 import java.util.HashMap;
@@ -38,18 +39,33 @@ public class ZookeeperWindowsContext extends ZookeeperContext {
         new NamedInternalThreadFactory("mocked-zookeeper", true), new ThreadPoolExecutor.AbortPolicy());
 
     /**
-     * The map to store the pair of clientPort and process
+     * Define the default {@link ExecuteWatchdog} for terminating all registered zookeeper processes.
      */
-    private Map<Integer, Process> processes = new HashMap<>();
+    private final ExecuteWatchdog WATCHDOG = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
 
     /**
-     * Register the process of zookeeper.
+     * The map to store the pair of clientPort and PID.
+     */
+    private Map<Integer, Integer> processIds = new HashMap<>();
+
+    /**
+     * Register the process id of zookeeper.
      *
      * @param clientPort the client port of zookeeper.
-     * @param process    the process of zookeeper instance.
+     * @param pid        the process id of zookeeper instance.
      */
-    public void register(int clientPort, Process process) {
-        this.processes.put(clientPort, process);
+    public void register(int clientPort, int pid) {
+        this.processIds.put(clientPort, pid);
+    }
+
+    /**
+     * Returns the pid of zookeeper instance with the given client port.
+     *
+     * @param clientPort the client port of zookeeper instance.
+     * @return the pid of zookeeper instance.
+     */
+    public Integer getPid(int clientPort) {
+        return this.processIds.get(clientPort);
     }
 
     /**
@@ -60,12 +76,18 @@ public class ZookeeperWindowsContext extends ZookeeperContext {
     }
 
     /**
+     * Returns the {@link ExecuteWatchdog}.
+     */
+    public ExecuteWatchdog getWatchdog() {
+        return WATCHDOG;
+    }
+
+    /**
      * Destroy all registered resources.
      */
     public void destroy() {
-        for (Process process : this.processes.values()) {
-            process.destroy();
-        }
+        this.processIds.clear();
+        this.WATCHDOG.destroyProcess();
         try {
             DEFAULT_EXECUTOR_SERVICE.shutdownNow();
         } catch (SecurityException | NullPointerException ex) {
