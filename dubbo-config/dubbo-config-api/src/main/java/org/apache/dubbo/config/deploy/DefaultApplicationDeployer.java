@@ -554,6 +554,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 doStart();
             } catch (Throwable e) {
                 onFailed(getIdentifier() + " start failure", e);
+                throw e;
             }
 
             return startFuture;
