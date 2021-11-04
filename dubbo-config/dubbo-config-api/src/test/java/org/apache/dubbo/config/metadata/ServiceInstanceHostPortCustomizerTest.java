@@ -18,11 +18,13 @@ package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -51,22 +53,19 @@ class ServiceInstanceHostPortCustomizerTest {
         
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(applicationModel);
         
-        // Only have tri protocol
-        writableMetadataService.exportURL(
-            URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService")
-        );
-        
         // Trigger the fallback strategy
-        ServiceInstance serviceInstance1 = new DefaultServiceInstance("without-preferredProtocol", applicationModel);
+        DefaultServiceInstance serviceInstance1 = new DefaultServiceInstance("without-preferredProtocol", applicationModel);
+        MetadataInfo metadataInfo = new MetadataInfo();
+        metadataInfo.addService(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService"));
+        serviceInstance1.setServiceMetadata(metadataInfo);
         serviceInstanceHostPortCustomizer.customize(serviceInstance1);
         Assertions.assertEquals("127.1.1.1", serviceInstance1.getHost());
         Assertions.assertEquals(50052, serviceInstance1.getPort());
         
         
         // Add the default protocol
-        writableMetadataService.exportURL(
-            URL.valueOf("dubbo://127.1.2.3:20889/org.apache.dubbo.demo.HelloService")
-        );
+        metadataInfo.addService(URL.valueOf("dubbo://127.1.2.3:20889/org.apache.dubbo.demo.HelloService"));
+        serviceInstance1.setServiceMetadata(metadataInfo);
         
         // pick the preferredProtocol
         ServiceInstance serviceInstance2 = new DefaultServiceInstance("with-preferredProtocol", applicationModel);

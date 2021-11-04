@@ -22,7 +22,6 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 public class ServerStream extends AbstractServerStream implements Stream {
     protected ServerStream(URL url) {
@@ -107,7 +106,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onMetadata(Metadata metadata, boolean endStream) {
             super.onMetadata(metadata, endStream);
-            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+            if (getMethodDescriptor().isServerStream()) {
                 return;
             }
             execute(() -> {

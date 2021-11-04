@@ -17,16 +17,21 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
+import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * ServiceModel and ServiceMetadata are to some extend duplicated with each other. We should merge them in the future.
@@ -37,11 +42,18 @@ public class ServiceDescriptor {
     // to accelerate search
     private final Map<String, List<MethodDescriptor>> methods = new HashMap<>();
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
+    private ConcurrentNavigableMap<String, FullServiceDefinition> serviceDefinitions = new ConcurrentSkipListMap<>();
 
     public ServiceDescriptor(Class<?> interfaceClass) {
         this.serviceInterfaceClass = interfaceClass;
         this.serviceName = interfaceClass.getName();
         initMethods();
+        initServiceDefinition(interfaceClass);
+    }
+
+    private void initServiceDefinition(Class<?> interfaceClass) {
+        FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass, Collections.emptyMap());
+        serviceDefinitions.put(serviceName, fullServiceDefinition);
     }
 
     private void initMethods() {
@@ -114,6 +126,14 @@ public class ServiceDescriptor {
 
     public List<MethodDescriptor> getMethods(String methodName) {
         return methods.get(methodName);
+    }
+
+    public ConcurrentNavigableMap<String, FullServiceDefinition> getServiceDefinitions() {
+        return serviceDefinitions;
+    }
+
+    public FullServiceDefinition getServiceDefinition(String serviceName) {
+        return serviceDefinitions.get(serviceName);
     }
 
     @Override

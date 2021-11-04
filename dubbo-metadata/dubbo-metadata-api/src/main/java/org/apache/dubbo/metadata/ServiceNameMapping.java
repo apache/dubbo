@@ -18,13 +18,14 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
@@ -65,14 +66,25 @@ public interface ServiceNameMapping {
     }
 
     static String toStringKeys(Set<String> serviceNames) {
-        return serviceNames.toString();
+        if (CollectionUtils.isEmpty(serviceNames)) {
+            return "";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (String n : serviceNames) {
+            builder.append(n);
+            builder.append(COMMA_SEPARATOR);
+        }
+
+        builder.deleteCharAt(builder.length() - 1);
+        return builder.toString();
     }
 
     static Set<String> getAppNames(String content) {
         if (StringUtils.isBlank(content)) {
             return emptySet();
         }
-        return new HashSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
+        return new TreeSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
     }
 
     /**
@@ -86,5 +98,15 @@ public interface ServiceNameMapping {
      * 2.check Interface-App mapping
      * 3.use the services specified in registry url.
      */
-    Set<String> getAndListenServices(URL registryURL, URL subscribedURL, MappingListener listener);
+    Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener);
+
+    MappingListener stopListen(URL subscribeURL);
+
+    void putCachedMapping(String serviceKey, Set<String> apps);
+
+    Set<String> getCachedMapping(String mappingKey);
+
+    Set<String> getCachedMapping(URL consumerURL);
+
+    Set<String> removeCachedMapping(String serviceKey);
 }

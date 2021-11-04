@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.report;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -31,9 +32,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
 /**
- * 2019-08-09
+ * Repository of MetadataReport instances that can talk to remote metadata server.
+ *
+ * MetadataReport instances are initiated during the beginning of deployer.start() and used by components that need to interact with metadata server.
  */
-public class MetadataReportInstance {
+public class MetadataReportInstance implements Disposable {
 
     private AtomicBoolean init = new AtomicBoolean(false);
 
@@ -88,4 +91,11 @@ public class MetadataReportInstance {
         }
     }
 
+    @Override
+    public void destroy() {
+        metadataReports.forEach((_k, reporter) -> {
+//            reporter.destroy();
+        });
+        metadataReports.clear();
+    }
 }

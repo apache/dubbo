@@ -185,8 +185,6 @@ public interface MetadataService {
 
     MetadataInfo getMetadataInfo(String revision);
 
-    Map<String, MetadataInfo> getMetadataInfos();
-
     /**
      * Is the {@link URL} for the {@link MetadataService} or not?
      *
@@ -275,4 +273,7 @@ public interface MetadataService {
     default String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
         throw new UnsupportedOperationException("This operation is not supported for consumer.");
     }
+
+    List<MetadataInfo> getMetadataInfos();
+
 }

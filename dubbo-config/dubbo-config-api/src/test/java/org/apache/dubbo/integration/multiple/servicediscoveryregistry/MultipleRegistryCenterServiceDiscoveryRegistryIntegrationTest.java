@@ -26,7 +26,7 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.registry.RegistryServiceListener;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
+import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
 
@@ -179,7 +179,7 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
             Assertions.assertTrue(serviceDiscoveryRegistryInfoWrapper.isRegistered());
             // check if it's subscribed
             Assertions.assertFalse(serviceDiscoveryRegistryInfoWrapper.isSubscribed());
-            InMemoryWritableMetadataService inMemoryWritableMetadataService = serviceDiscoveryRegistryInfoWrapper.getInMemoryWritableMetadataService();
+            MetadataServiceDelegation inMemoryWritableMetadataService = serviceDiscoveryRegistryInfoWrapper.getInMemoryWritableMetadataService();
             // check if the count of exported urls is right or not
             Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);
             // check the exported url is right or not.

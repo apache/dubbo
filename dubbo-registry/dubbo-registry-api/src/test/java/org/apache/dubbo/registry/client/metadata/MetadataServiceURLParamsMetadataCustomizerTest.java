@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
+import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +49,7 @@ public class MetadataServiceURLParamsMetadataCustomizerTest {
     private static final Gson gson = new Gson();
 
     public DefaultServiceInstance instance;
-    private InMemoryWritableMetadataService metadataService;
+    private MetadataServiceDelegation metadataService;
     private URL metadataServiceURL = URL.valueOf("metadata://127.0.0.1:21881/" + MetadataService.class.getName() +
         "?application=demo&group=g1&version=1.0.0&timestamp=1632662388960");
 
@@ -60,7 +61,7 @@ public class MetadataServiceURLParamsMetadataCustomizerTest {
     @BeforeEach
     public void init() {
         instance = createInstance();
-        metadataService = mock(InMemoryWritableMetadataService.class);
+        metadataService = mock(MetadataServiceDelegation.class);
         when(metadataService.getMetadataServiceURL()).thenReturn(metadataServiceURL);
     }
 

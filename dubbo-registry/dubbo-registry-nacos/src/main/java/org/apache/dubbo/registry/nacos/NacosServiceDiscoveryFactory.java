@@ -27,7 +27,7 @@ public class NacosServiceDiscoveryFactory extends AbstractServiceDiscoveryFactor
 
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
-        return new NacosServiceDiscovery();
+        return new NacosServiceDiscovery(applicationModel.getApplicationName());
     }
 
 }

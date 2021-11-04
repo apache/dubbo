@@ -22,7 +22,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
+import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterAll;
@@ -33,19 +33,16 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.util.HashMap;
-import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_LABELS;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class ServiceInstanceMetadataCustomizerTest {
     public DefaultServiceInstance instance;
-    private InMemoryWritableMetadataService metadataService;
+    private MetadataServiceDelegation metadataService;
 
     public static DefaultServiceInstance createInstance() {
         return new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
@@ -65,15 +62,13 @@ public class ServiceInstanceMetadataCustomizerTest {
     @BeforeEach
     public void init() {
         instance = createInstance();
-        metadataService = mock(InMemoryWritableMetadataService.class);
+        metadataService = mock(MetadataServiceDelegation.class);
 
         URL url = URL.valueOf("dubbo://30.10.104.63:20880/org.apache.dubbo.demo.GreetingService?" + "params-filter=-default&" +
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
         MetadataInfo metadataInfo = new MetadataInfo();
-        metadataInfo.addService(new MetadataInfo.ServiceInfo(url));
-        Map<String, MetadataInfo> metadataInfoMap = new HashMap<>();
-        metadataInfoMap.put(DEFAULT_KEY, metadataInfo);
-        when(metadataService.getMetadataInfos()).thenReturn(metadataInfoMap);
+        metadataInfo.addService(url);
+        instance.setServiceMetadata(metadataInfo);
     }
 
     @Test
@@ -83,8 +78,6 @@ public class ServiceInstanceMetadataCustomizerTest {
             try (MockedStatic<WritableMetadataService> mockMetadataService = Mockito.mockStatic(WritableMetadataService.class)) {
                 mockMetadataService.when(() -> WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel())).thenReturn(metadataService);
                 mockedUtils.when(() -> ConfigurationUtils.getProperty(ApplicationModel.defaultModel(), DUBBO_LABELS)).thenReturn("k1=v1;k2=v2");
-//            mockedUtils.when(() -> ConfigurationUtils.getProperty(DUBBO_ENV_KEYS)).thenReturn("ENV_KEY1;ENV_KEY1");
-//            mockedUtils.when(() -> ConfigurationUtils.getProperty(ENV_KEY1)).thenReturn("");
 
                 // check parameters loaded from infra adapters.
                 customizer.customize(instance);
@@ -117,10 +110,8 @@ public class ServiceInstanceMetadataCustomizerTest {
         URL url = URL.valueOf("dubbo://30.10.104.63:20880/org.apache.dubbo.demo.GreetingService?" + "params-filter=" + filters + "&" +
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
         MetadataInfo metadataInfo = new MetadataInfo();
-        metadataInfo.addService(new MetadataInfo.ServiceInfo(url));
-        Map<String, MetadataInfo> metadataInfoMap = new HashMap<>();
-        metadataInfoMap.put(DEFAULT_KEY, metadataInfo);
-        when(metadataService.getMetadataInfos()).thenReturn(metadataInfoMap);
+        metadataInfo.addService(url);
+        instance.setServiceMetadata(metadataInfo);
     }
 
 }

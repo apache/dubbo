@@ -568,6 +568,10 @@ class URL implements Serializable {
         return ScopeModelUtil.getApplicationModel(getScopeModel());
     }
 
+    public ApplicationModel getApplicationModel() {
+        return ScopeModelUtil.getOrNullApplicationModel(getScopeModel());
+    }
+
     public ModuleModel getOrDefaultModuleModel() {
         return ScopeModelUtil.getModuleModel(getScopeModel());
     }

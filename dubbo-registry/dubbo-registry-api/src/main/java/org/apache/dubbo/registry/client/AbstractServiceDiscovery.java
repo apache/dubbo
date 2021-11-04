@@ -17,16 +17,87 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
+import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.isInstanceUpdated;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.resetInstanceUpdateKey;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
+import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.customizeInstance;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 
+/**
+ * Each service discovery is bond to one application.
+ */
+public abstract class AbstractServiceDiscovery implements ServiceDiscovery, ScopeModelAware {
+    private Logger logger = LoggerFactory.getLogger(AbstractServiceDiscovery.class);
     private volatile boolean isDestroy;
 
+    private final String serviceName;
     protected volatile ServiceInstance serviceInstance;
+    protected volatile MetadataInfo metadataInfo;
+    protected MetadataReport metadataReport;
+
+    private ApplicationModel applicationModel;
+
+    // fixme
+    protected Map<String, MetadataInfo> revisionToMetadata;
+
+    public AbstractServiceDiscovery(String serviceName) {
+        this.serviceName = serviceName;
+        this.metadataInfo = new MetadataInfo(serviceName);
+        this.revisionToMetadata = new ConcurrentHashMap<>();
+    }
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
+
+    @Override
+    public final void initialize(URL registryURL) throws Exception {
+        doInitialize(registryURL);
+        String registryCluster = registryURL.getParameter(REGISTRY_CLUSTER_KEY);
+        metadataReport = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReport(registryCluster);
+    }
+
+    public final void register() throws RuntimeException {
+        this.serviceInstance = createServiceInstance();
+        customizeInstance(this.serviceInstance);
+        boolean revisionUpdated = calOrUpdateInstanceRevision();
+        if (revisionUpdated) {
+            reportMetadata();
+            doRegister(serviceInstance);
+        }
+    }
+
+    @Override
+    public final void update() throws RuntimeException {
+        if (this.serviceInstance == null) {
+            this.serviceInstance = createServiceInstance();
+        }
+        boolean revisionUpdated = calOrUpdateInstanceRevision();
+        if (revisionUpdated) {
+            doUpdate();
+        }
+    }
+
+    @Override
+    public final void unregister() throws RuntimeException {
+        doUnregister();
+    }
 
     @Override
     public final ServiceInstance getLocalInstance() {
@@ -34,46 +105,9 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public final void initialize(URL registryURL) throws Exception {
-        doInitialize(registryURL);
+    public MetadataInfo getMetadata() {
+        return metadataInfo;
     }
-
-    public abstract void doInitialize(URL registryURL) throws Exception;
-
-    @Override
-    public final void register(ServiceInstance serviceInstance) throws RuntimeException {
-        if (ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance) == null) {
-            ServiceInstanceMetadataUtils.calInstanceRevision(this, serviceInstance);
-        }
-        doRegister(serviceInstance);
-        this.serviceInstance = serviceInstance;
-    }
-
-    public abstract void doRegister(ServiceInstance serviceInstance) throws RuntimeException;
-
-
-    @Override
-    public final void update(ServiceInstance serviceInstance) throws RuntimeException {
-        if (this.serviceInstance == null) {
-            this.register(serviceInstance);
-            return;
-        }
-        if (!isInstanceUpdated(serviceInstance)) {
-            return;
-        }
-        doUpdate(serviceInstance);
-        resetInstanceUpdateKey(serviceInstance);
-        this.serviceInstance = serviceInstance;
-    }
-
-    public abstract void doUpdate(ServiceInstance serviceInstance) throws RuntimeException;
-
-    @Override
-    public final void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        doUnregister(serviceInstance);
-    }
-
-    public abstract void doUnregister(ServiceInstance serviceInstance);
 
     @Override
     public final void destroy() throws Exception {
@@ -81,10 +115,76 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         doDestroy();
     }
 
-    public abstract void doDestroy() throws Exception;
-
     @Override
     public final boolean isDestroy() {
         return isDestroy;
     }
+
+    @Override
+    public void register(URL url) {
+        metadataInfo.addService(url);
+    }
+
+    @Override
+    public void unregister(URL url) {
+        metadataInfo.removeService(url);
+    }
+
+    @Override
+    public void subscribe(URL url, NotifyListener listener) {
+        metadataInfo.addSubscribedURL(url);
+    }
+
+    @Override
+    public void unsubscribe(URL url, NotifyListener listener) {
+        metadataInfo.removeSubscribedURL(url);
+    }
+
+    @Override
+    public List<URL> lookup(URL url) {
+       throw new UnsupportedOperationException("Service discovery implementation does not support lookup of url list.");
+    }
+
+    public void doUpdate() throws RuntimeException {
+        this.unregister();
+
+        reportMetadata();
+        this.register();
+    }
+
+    public abstract void doRegister(ServiceInstance serviceInstance) throws RuntimeException;
+
+    public abstract void doUnregister();
+
+    public abstract void doInitialize(URL registryURL) throws Exception;
+
+    public abstract void doDestroy() throws Exception;
+
+    private ServiceInstance createServiceInstance() {
+        DefaultServiceInstance instance = new DefaultServiceInstance(serviceName, applicationModel);
+        instance.setServiceMetadata(metadataInfo);
+        String metadataType = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getMetadataType();
+        setMetadataStorageType(instance, metadataType);
+        ServiceInstanceMetadataUtils.customizeInstance(instance);
+        return instance;
+    }
+
+    protected boolean calOrUpdateInstanceRevision() {
+        String existingInstanceRevision = serviceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
+        String newRevision = metadataInfo.calAndGetRevision();
+        if (!newRevision.equals(existingInstanceRevision)) {
+            if (EMPTY_REVISION.equals(newRevision)) {
+                return false;
+            }
+            serviceInstance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
+            return true;
+        }
+        return false;
+    }
+
+    protected void reportMetadata() {
+        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
+        metadataReport.publishAppMetadata(identifier, metadataInfo);
+    }
+
 }

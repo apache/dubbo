@@ -27,12 +27,17 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
@@ -61,7 +66,10 @@ public class MetadataInfo implements Serializable {
 
     // used at runtime
     private transient Map<String, String> extendParams;
-    private transient AtomicBoolean reported = new AtomicBoolean(false);
+    protected transient AtomicBoolean updated = new AtomicBoolean(false);
+    private transient ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
+    private transient ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs;
+    private transient ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
 
     public MetadataInfo() {
         this(null);
@@ -78,37 +86,40 @@ public class MetadataInfo implements Serializable {
         this.extendParams = new ConcurrentHashMap<>();
     }
 
-    public void addService(ServiceInfo serviceInfo) {
-        if (serviceInfo == null) {
-            return;
-        }
+    public synchronized void addService(URL url) {
+        ServiceInfo serviceInfo = new ServiceInfo(url);
         this.services.put(serviceInfo.getMatchKey(), serviceInfo);
-        markChanged();
+
+        if (exportedServiceURLs == null) {
+            exportedServiceURLs = new ConcurrentSkipListMap<>();
+        }
+        addURL(exportedServiceURLs, url);
+        updated.compareAndSet(false, true);
     }
 
-    public void removeService(ServiceInfo serviceInfo) {
-        if (serviceInfo == null) {
+    public synchronized void removeService(URL url) {
+        if (url == null) {
             return;
         }
-        this.services.remove(serviceInfo.getMatchKey());
-        markChanged();
+        this.services.remove(url.getProtocolServiceKey());
+        this.exportedServiceURLs.remove(url);
+
+        updated.compareAndSet(false, true);
     }
 
-    public void removeService(String key) {
-        if (key == null) {
-            return;
-        }
-        this.services.remove(key);
-        markChanged();
+    public String getRevision() {
+        return revision;
     }
 
     /**
      * Reported status and metadata modification must be synchronized if used in multiple threads.
      */
-    public String calAndGetRevision() {
-        if (revision != null && hasReported()) {
+    public synchronized String calAndGetRevision() {
+        if (revision != null && updated.get()) {
             return revision;
         }
+
+        updated.compareAndSet(true, false);
 
         if (CollectionUtils.isEmptyMap(services)) {
             this.revision = EMPTY_REVISION;
@@ -131,27 +142,6 @@ public class MetadataInfo implements Serializable {
 
     public void setRevision(String revision) {
         this.revision = revision;
-    }
-
-    /**
-     * Reported status and metadata modification must be synchronized if used in multiple threads.
-     */
-    public boolean hasReported() {
-        return reported.get();
-    }
-
-    /**
-     * Reported status and metadata modification must be synchronized if used in multiple threads.
-     */
-    public void markReported() {
-        reported.compareAndSet(false, true);
-    }
-
-    /**
-     * Reported status and metadata modification must be synchronized if used in multiple threads.
-     */
-    public void markChanged() {
-        reported.compareAndSet(true, false);
     }
 
     public String getApp() {
@@ -204,6 +194,46 @@ public class MetadataInfo implements Serializable {
             return null;
         }
         return serviceInfo.toFullString();
+    }
+
+    public void addSubscribedURL(URL url) {
+        addURL(subscribedServiceURLs, url);
+    }
+
+    public boolean removeSubscribedURL(URL url) {
+        return removeURL(subscribedServiceURLs, url);
+    }
+
+    public ConcurrentNavigableMap<String, SortedSet<URL>> getSubscribedServiceURLs() {
+        return subscribedServiceURLs;
+    }
+
+    public ConcurrentNavigableMap<String, SortedSet<URL>> getExportedServiceURLs() {
+        return exportedServiceURLs;
+    }
+
+    private boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
+        SortedSet<URL> urls = serviceURLs.computeIfAbsent(url.getServiceKey(), this::newSortedURLs);
+        // make sure the parameters of tmpUrl is variable
+        return urls.add(url);
+    }
+
+    boolean removeURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
+        String key = url.getServiceKey();
+        SortedSet<URL> urls = serviceURLs.getOrDefault(key, null);
+        if (urls == null) {
+            return true;
+        }
+        boolean r = urls.remove(url);
+        // if it is empty
+        if (urls.isEmpty()) {
+            serviceURLs.remove(key);
+        }
+        return r;
+    }
+
+    private SortedSet<URL> newSortedURLs(String serviceKey) {
+        return new TreeSet<>(URLComparator.INSTANCE);
     }
 
     @Override
@@ -546,6 +576,16 @@ public class MetadataInfo implements Serializable {
                 "protocol='" + protocol + "'," +
                 "params=" + params + "," +
                 "}";
+        }
+    }
+
+    static class URLComparator implements Comparator<URL> {
+
+        public static final URLComparator INSTANCE = new URLComparator();
+
+        @Override
+        public int compare(URL o1, URL o2) {
+            return o1.toFullString().compareTo(o2.toFullString());
         }
     }
 }

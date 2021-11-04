@@ -32,9 +32,7 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -133,7 +131,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
     private final List<ServiceListener> serviceListeners = new ArrayList<>();
-    private WritableMetadataService localMetadataService;
+    ModuleServiceRepository repository = getScopeModel().getServiceRepository();
 
     public ServiceConfig() {
     }
@@ -147,7 +145,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
         protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        localMetadataService = this.getScopeModel().getDefaultExtension(WritableMetadataService.class);
     }
 
     @Override
@@ -252,6 +249,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     boolean succeeded = serviceNameMapping.map(url);
                     if (succeeded) {
                         logger.info("Successfully registered interface application mapping for service " + url.getServiceKey());
+                    } else {
+                        logger.error("Failed register interface application mapping for service " + url.getServiceKey());
                     }
                 } catch (Exception e) {
                     logger.error("Failed register interface application mapping for service " + url.getServiceKey(), e);
@@ -357,7 +356,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
-        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(getInterfaceClass());
         providerModel = new ProviderModel(getUniqueServiceName(),
             ref,
@@ -561,7 +559,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 url = exportRemote(url, registryURLs);
-                MetadataUtils.publishServiceDefinition(url);
+                MetadataUtils.publishServiceDefinition(repository.getService(interfaceName), getApplicationModel());
             }
 
         }
@@ -604,10 +602,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
 
         } else {
-
-            if (MetadataService.class.getName().equals(url.getServiceInterface())) {
-                localMetadataService.setMetadataServiceURL(url);
-            }
 
             if (logger.isInfoEnabled()) {
                 logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);

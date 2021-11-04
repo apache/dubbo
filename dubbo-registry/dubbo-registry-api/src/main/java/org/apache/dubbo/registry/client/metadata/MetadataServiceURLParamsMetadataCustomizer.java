@@ -16,10 +16,14 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
@@ -29,7 +33,14 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 /**
  * Used to interact with non-dubbo systems, also see {@link SpringCloudMetadataServiceURLBuilder}
  */
-public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer {
+public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer, ScopeModelAware {
+
+    private ApplicationModel applicationModel;
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
@@ -49,7 +60,11 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
     }
 
     private String resolveMetadataPropertyValue(ServiceInstance serviceInstance) {
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
-        return getMetadataServiceParameter(writableMetadataService.getMetadataServiceURL());
+        MetadataServiceExporter metadataServiceExporter = applicationModel.getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
+        if (metadataServiceExporter.isExported()) {
+            List<URL> metadataURLs = metadataServiceExporter.getExportedURLs();
+            return getMetadataServiceParameter(metadataURLs.get(0));
+        }
+        return "";
     }
 }

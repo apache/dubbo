@@ -78,6 +78,10 @@ public interface MetadataReport {
         return false;
     }
 
+    default void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
+
+    }
+
     /**
      * Service<-->Application Mapping -- START
      **/

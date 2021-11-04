@@ -23,10 +23,9 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataParamsFilter;
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
@@ -61,15 +60,7 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
         ApplicationModel applicationModel = serviceInstance.getApplicationModel();
         ExtensionLoader<MetadataParamsFilter> loader = applicationModel.getExtensionLoader(MetadataParamsFilter.class);
 
-        InMemoryWritableMetadataService localMetadataService
-                = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
-        // pick the first interface metadata available.
-        // FIXME, check the same key in different urls have the same value
-        Map<String, MetadataInfo> metadataInfos = localMetadataService.getMetadataInfos();
-        if (CollectionUtils.isEmptyMap(metadataInfos)) {
-            return;
-        }
-        MetadataInfo metadataInfo = metadataInfos.values().iterator().next();
+        MetadataInfo metadataInfo = ((DefaultServiceInstance)serviceInstance).getServiceMetadata();
         if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getServices())) {
             return;
         }

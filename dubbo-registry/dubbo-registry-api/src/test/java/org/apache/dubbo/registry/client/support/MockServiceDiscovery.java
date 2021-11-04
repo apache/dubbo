@@ -23,6 +23,10 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import java.util.Set;
 
 public class MockServiceDiscovery extends AbstractServiceDiscovery {
+    public MockServiceDiscovery(String serviceName) {
+        super(serviceName);
+    }
+
     @Override
     public void doInitialize(URL registryURL) throws Exception {
 
@@ -34,12 +38,12 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate() throws RuntimeException {
 
     }
 
     @Override
-    public void doUnregister(ServiceInstance serviceInstance) {
+    public void doUnregister() {
 
     }
 

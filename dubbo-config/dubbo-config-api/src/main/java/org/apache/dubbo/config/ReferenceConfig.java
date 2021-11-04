@@ -31,7 +31,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.registry.client.metadata.MetadataUtils;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -247,12 +247,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         //init serviceMetadata
         initServiceMetadata(consumer);
+
         serviceMetadata.setServiceType(getServiceInterfaceClass());
         // TODO, uncomment this line once service key is unified
         serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
 
         Map<String, String> referenceParameters = appendConfig();
-
+        // init service-application mapping
+        initServiceAppsMapping(referenceParameters);
 
         ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
@@ -272,6 +274,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         consumerModel.initMethodModels();
 
         checkInvokerAvailable();
+    }
+
+    private void initServiceAppsMapping(Map<String, String> referenceParameters) {
+        ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(getScopeModel());
+        serviceNameMapping.getServices(new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceName, referenceParameters));
     }
 
     /**
@@ -385,7 +392,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             referenceParameters.get(INTERFACE_KEY), referenceParameters);
         consumerUrl = consumerUrl.setScopeModel(getScopeModel());
         consumerUrl = consumerUrl.setServiceModel(consumerModel);
-        MetadataUtils.publishServiceDefinition(consumerUrl);
 
         // create service proxy
         return (T) proxyFactory.getProxy(invoker, ProtocolUtils.isGeneric(generic));

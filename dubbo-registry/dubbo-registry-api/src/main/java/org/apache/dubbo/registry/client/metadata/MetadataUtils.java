@@ -18,53 +18,78 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
+import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
 
 public class MetadataUtils {
+    public static final Logger logger = LoggerFactory.getLogger(MetadataUtils.class);
 
     public static ConcurrentMap<String, MetadataService> metadataServiceProxies = new ConcurrentHashMap<>();
 
     public static ConcurrentMap<String, Invoker<?>> metadataServiceInvokers = new ConcurrentHashMap<>();
 
-    public static RemoteMetadataServiceImpl getRemoteMetadataService(ScopeModel scopeModel) {
-        return scopeModel.getBeanFactory().getBean(RemoteMetadataServiceImpl.class);
+    public static ConcurrentMap<String, Invoker<?>> getMetadataServiceInvokers() {
+        return metadataServiceInvokers;
     }
 
-    public static void publishServiceDefinition(URL url) {
-        // store in local
-        WritableMetadataService.getDefaultExtension(url.getScopeModel()).publishServiceDefinition(url);
-        // send to remote
-        if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(url.getParameter(METADATA_KEY))) {
-            getRemoteMetadataService(url.getOrDefaultApplicationModel()).publishServiceDefinition(url);
+    public static synchronized MetadataService getMetadataServiceProxy(ServiceInstance instance) {
+        return metadataServiceProxies.computeIfAbsent(computeKey(instance), k -> referProxy(k, instance));
+    }
+
+    public static void publishServiceDefinition(ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
+        checkRemoteConfigured(applicationModel);
+
+        String serviceName = serviceDescriptor.getServiceName();
+        FullServiceDefinition serviceDefinition = serviceDescriptor.getServiceDefinition(serviceName);
+
+        try {
+            if (StringUtils.isNotEmpty(serviceName)) {
+                for (Map.Entry<String, MetadataReport> entry : getMetadataReports(applicationModel).entrySet()) {
+                    MetadataReport metadataReport = entry.getValue();
+                    metadataReport.storeProviderMetadata(new MetadataIdentifier(serviceName,
+                        "", "",
+                        PROVIDER_SIDE, applicationModel.getApplicationName()), serviceDefinition);
+                }
+                return;
+            }
+            logger.error("publishProvider interfaceName is empty.");
+        } catch (Exception e) {
+            //ignore error
+            logger.error("publishProvider getServiceDescriptor error.", e);
         }
     }
 
     public static String computeKey(ServiceInstance serviceInstance) {
         return serviceInstance.getServiceName() + "##" + serviceInstance.getAddress() + "##" +
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
-    }
-
-    public static synchronized MetadataService getMetadataServiceProxy(ServiceInstance instance) {
-        return metadataServiceProxies.computeIfAbsent(computeKey(instance), k -> referProxy(k, instance));
     }
 
     public static synchronized void destroyMetadataServiceProxy(ServiceInstance instance) {
@@ -110,7 +135,93 @@ public class MetadataUtils {
         return metadataServiceProxies;
     }
 
-    public static ConcurrentMap<String, Invoker<?>> getMetadataServiceInvokers() {
-        return metadataServiceInvokers;
+    public static MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance, Map<String, MetadataInfo> revisionToMetadata, MetadataReport metadataReport) {
+        MetadataInfo metadata = revisionToMetadata.get(revision);
+
+        if (metadata != null && metadata != MetadataInfo.EMPTY) {
+            // metadata loaded from cache
+            if (logger.isDebugEnabled()) {
+                logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
+                    + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
+            }
+            return metadata;
+        }
+
+        // try to load metadata from remote.
+        int triedTimes = 0;
+        while (triedTimes < 3) {
+            metadata = doGetMetadataInfo(instance, metadataReport);
+
+            if (metadata != MetadataInfo.EMPTY) {// succeeded
+                break;
+            } else {// failed
+                logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
+                    + "&cluster=" + instance.getRegistryCluster() + ", wait for retry.");
+                triedTimes++;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+
+        revisionToMetadata.putIfAbsent(revision, metadata);
+        return metadata;
     }
+
+    protected static MetadataInfo doGetMetadataInfo(ServiceInstance instance, MetadataReport metadataReport) {
+        String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
+        MetadataInfo metadataInfo = null;
+        try {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
+            }
+            if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
+                getMetadata(instance, metadataReport);
+            } else {
+                // change the instance used to communicate to avoid all requests route to the same instance
+                MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
+                metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+                MetadataUtils.destroyMetadataServiceProxy(instance);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load service metadata, meta type is " + metadataType, e);
+            metadataInfo = null;
+        }
+
+        if (metadataInfo == null) {
+            metadataInfo = MetadataInfo.EMPTY;
+        }
+        return metadataInfo;
+    }
+
+    public static MetadataInfo getMetadata(ServiceInstance instance, MetadataReport metadataReport) {
+        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(),
+            ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+
+        if (metadataReport == null) {
+            throw new IllegalStateException("No valid remote metadata report specified.");
+        }
+
+        String registryCluster = instance.getRegistryCluster();
+        Map<String, String> params = new HashMap<>(instance.getExtendParams());
+        if (registryCluster != null && !registryCluster.equalsIgnoreCase(params.get(REGISTRY_CLUSTER_KEY))) {
+            params.put(REGISTRY_CLUSTER_KEY, registryCluster);
+        }
+
+        return metadataReport.getAppMetadata(identifier, params);
+    }
+
+    private static void checkRemoteConfigured(ApplicationModel applicationModel) {
+        if (getMetadataReports(applicationModel).size() == 0) {
+            String msg = "Remote Metadata Report Server not hasn't been configured or unavailable . Unable to get Metadata from remote!";
+            logger.error(msg);
+            throw new IllegalStateException(msg);
+        }
+    }
+
+    private static Map<String, MetadataReport> getMetadataReports(ApplicationModel applicationModel) {
+        return applicationModel.getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReports(false);
+    }
+
 }

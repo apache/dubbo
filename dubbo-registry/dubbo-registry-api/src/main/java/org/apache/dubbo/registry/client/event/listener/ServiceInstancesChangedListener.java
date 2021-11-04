@@ -24,19 +24,13 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.RetryServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
-import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
@@ -54,18 +48,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
 /**
- * The Service Discovery Changed Listener
- *
- * @see ServiceInstancesChangedEvent
- * @since 2.7.5
+ * TODO, refactor to move revision-metadata mapping to ServiceDiscovery. Instances should already being mapped with metadata when reached here.
  */
 public class ServiceInstancesChangedListener {
 
@@ -81,10 +70,7 @@ public class ServiceInstancesChangedListener {
 
     protected Map<String, List<ServiceInstance>> allInstances;
     protected Map<String, Object> serviceUrls;
-    protected MetaCacheManager metaCacheManager;
-    Map<String, MetadataInfo> revisionToMetadata;// not necessary
 
-    private volatile boolean hasEmptyMetadata = false;
     private volatile long lastRefreshTime;
     private Semaphore retryPermission;
     private volatile ScheduledFuture<?> retryFuture;
@@ -98,10 +84,8 @@ public class ServiceInstancesChangedListener {
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
         retryPermission = new Semaphore(1);
-        ApplicationModel applicationModel =  ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel());
-        this.scheduler = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
-        this.revisionToMetadata = new HashMap<>();
-        this.metaCacheManager = MetaCacheManager.getInstance(applicationModel.getFrameworkModel());
+        this.scheduler = ScopeModelUtil.getApplicationModel(serviceDiscovery == null || serviceDiscovery.getUrl() == null ? null : serviceDiscovery.getUrl().getScopeModel())
+            .getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
     }
 
     /**
@@ -110,7 +94,7 @@ public class ServiceInstancesChangedListener {
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public synchronized void onEvent(ServiceInstancesChangedEvent event) {
-        if (destroyed.get() || !accept(event) || isRetryAndExpired(event)) {
+        if (destroyed.get() || !accept(event)) {
             return;
         }
 
@@ -140,44 +124,15 @@ public class ServiceInstancesChangedListener {
             }
         }
 
-        // get MetadataInfo for every unique revision
+        // get MetadataInfo with revision
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
             String revision = entry.getKey();
-            List<ServiceInstance> subInstances = entry.getValue();
-            ServiceInstance instance = selectInstance(subInstances);
-            MetadataInfo metadata = getRemoteMetadata(revision, localServiceToRevisions, instance);
-            // update metadata into each instance, in case new instance created.
-            for (ServiceInstance tmpInstance : subInstances) {
-                ((DefaultServiceInstance) tmpInstance).setServiceMetadata(metadata);
-            }
-//            ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
-            newRevisionToMetadata.putIfAbsent(revision, metadata);
+            List<ServiceInstance> instances = entry.getValue();
+            // instances should never be empty.
+            DefaultServiceInstance instance = (DefaultServiceInstance)instances.iterator().next();
+            parseMetadata(revision, instance.getServiceMetadata(), localServiceToRevisions);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(newRevisionToMetadata.size() + " unique revisions: " + newRevisionToMetadata.keySet());
-        }
-
-        if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
-            hasEmptyMetadata = true;
-            if (retryPermission.tryAcquire()) {
-                retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
-                logger.warn("Address refresh try task submitted.");
-            }
-            logger.error("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
-            return;
-        }
-
-        hasEmptyMetadata = false;
-        this.revisionToMetadata = newRevisionToMetadata;
-
-        /*
-        * Calculate serviceUrls, that is, determine the exact urls that each service should get notified.
-        *
-        * Since most services from the same provider application may likely be mapping to the same revision or revisions,
-        * we keep a 'revisions - urls' mapping to reduce calculation cost.
-        * In this way, as long as the first 'service  -> revisions -> urls' is determined, the urls of the following services can be returned directly.
-        * */
         Map<String, Map<Set<String>, Object>> protocolRevisionsToUrls = new HashMap<>();
         Map<String, Object> newServiceUrls = new HashMap<>();
         for (Map.Entry<String, Map<String, Set<String>>> entry : localServiceToRevisions.entrySet()) {
@@ -273,33 +228,12 @@ public class ServiceInstancesChangedListener {
         return allInstances.get(appName);
     }
 
-    public Map<String, MetadataInfo> getRevisionToMetadata() {
-        return revisionToMetadata;
-    }
-
-    public MetadataInfo getMetadata(String revision) {
-        return revisionToMetadata.get(revision);
-    }
-
     /**
      * @param event {@link ServiceInstancesChangedEvent event}
      * @return If service name matches, return <code>true</code>, or <code>false</code>
      */
     private boolean accept(ServiceInstancesChangedEvent event) {
         return serviceNames.contains(event.getServiceName());
-    }
-
-    protected boolean isRetryAndExpired(ServiceInstancesChangedEvent event) {
-        if (event instanceof RetryServiceInstancesChangedEvent) {
-            RetryServiceInstancesChangedEvent retryEvent = (RetryServiceInstancesChangedEvent) event;
-            logger.warn("Received address refresh retry event, " + retryEvent.getFailureRecordTime());
-            if (retryEvent.getFailureRecordTime() < lastRefreshTime && !hasEmptyMetadata) {
-                logger.warn("Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
-                return true;
-            }
-            logger.warn("Retrying address notification...");
-        }
-        return false;
     }
 
     private void refreshInstance(ServiceInstancesChangedEvent event) {
@@ -325,43 +259,6 @@ public class ServiceInstancesChangedListener {
         return false;
     }
 
-    protected MetadataInfo getRemoteMetadata(String revision, Map<String, Map<String, Set<String>>> localServiceToRevisions, ServiceInstance instance) {
-        MetadataInfo metadata = metaCacheManager.get(revision);
-
-        if (metadata != null && metadata != MetadataInfo.EMPTY) {
-            // metadata loaded from cache
-            if (logger.isDebugEnabled()) {
-                logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                    + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
-            }
-            parseMetadata(revision, metadata, localServiceToRevisions);
-            return metadata;
-        }
-
-        // try to load metadata from remote.
-        int triedTimes = 0;
-        while (triedTimes < 3) {
-            metadata = doGetMetadataInfo(instance);
-
-            if (metadata != MetadataInfo.EMPTY) {// succeeded
-                parseMetadata(revision, metadata, localServiceToRevisions);
-                break;
-            } else {// failed
-                logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                    + "&cluster=" + instance.getRegistryCluster() + ", wait for retry.");
-                triedTimes++;
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
-            }
-        }
-
-        metaCacheManager.put(revision, metadata);
-        revisionToMetadata.put(revision, metadata);
-        return metadata;
-    }
-
     protected Map<String, Map<String, Set<String>>> parseMetadata(String revision, MetadataInfo metadata, Map<String, Map<String, Set<String>>> localServiceToRevisions) {
         Map<String, ServiceInfo> serviceInfos = metadata.getServices();
         for (Map.Entry<String, ServiceInfo> entry : serviceInfos.entrySet()) {
@@ -373,37 +270,6 @@ public class ServiceInstancesChangedListener {
         }
 
         return localServiceToRevisions;
-    }
-
-    protected MetadataInfo doGetMetadataInfo(ServiceInstance instance) {
-        String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
-        // FIXME, check "REGISTRY_CLUSTER_KEY" must be set by every registry implementation.
-        if (instance.getRegistryCluster() == null) {
-            instance.setRegistryCluster(RegistryClusterIdentifier.getExtension(url).consumerKey(url));
-        }
-        MetadataInfo metadataInfo;
-        try {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
-            }
-            if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService(instance.getApplicationModel());
-                metadataInfo = remoteMetadataService.getMetadata(instance);
-            } else {
-                // change the instance used to communicate to avoid all requests route to the same instance
-                MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
-                metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
-                MetadataUtils.destroyMetadataServiceProxy(instance);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to load service metadata, meta type is " + metadataType, e);
-            metadataInfo = null;
-        }
-
-        if (metadataInfo == null) {
-            metadataInfo = MetadataInfo.EMPTY;
-        }
-        return metadataInfo;
     }
 
     private ServiceInstance selectInstance(List<ServiceInstance> instances) {
@@ -463,7 +329,6 @@ public class ServiceInstancesChangedListener {
                 if (destroyed.compareAndSet(false, true)) {
                     allInstances.clear();
                     serviceUrls.clear();
-                    revisionToMetadata.clear();
                     if (retryFuture != null && !retryFuture.isDone()) {
                         retryFuture.cancel(true);
                     }
@@ -491,22 +356,6 @@ public class ServiceInstancesChangedListener {
     @Override
     public int hashCode() {
         return Objects.hash(getClass(), getServiceNames());
-    }
-
-    protected class AddressRefreshRetryTask implements Runnable {
-        private final RetryServiceInstancesChangedEvent retryEvent;
-        private final Semaphore retryPermission;
-
-        public AddressRefreshRetryTask(Semaphore semaphore, String serviceName) {
-            this.retryEvent = new RetryServiceInstancesChangedEvent(serviceName);
-            this.retryPermission = semaphore;
-        }
-
-        @Override
-        public void run() {
-            retryPermission.release();
-            ServiceInstancesChangedListener.this.onEvent(retryEvent);
-        }
     }
 
     protected static class NotifyListenerWithKey {
@@ -542,10 +391,5 @@ public class ServiceInstancesChangedListener {
         public int hashCode() {
             return Objects.hash(serviceKey, notifyListener);
         }
-    }
-
-    // for test only
-    protected void setMetaCacheManager(MetaCacheManager cacheManager) {
-        this.metaCacheManager = cacheManager;
     }
 }

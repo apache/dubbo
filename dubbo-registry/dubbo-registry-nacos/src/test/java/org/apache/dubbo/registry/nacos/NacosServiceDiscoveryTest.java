@@ -74,7 +74,7 @@ public class NacosServiceDiscoveryTest {
         this.registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort());
         registryUrl.setScopeModel(ApplicationModel.defaultModel());
 
-        this.nacosServiceDiscovery = new NacosServiceDiscovery();
+        this.nacosServiceDiscovery = new NacosServiceDiscovery(SERVICE_NAME);
         Field namingService = nacosServiceDiscovery.getClass().getDeclaredField("namingService");
         namingService.setAccessible(true);
         namingServiceWrapper = mock(NacosNamingServiceWrapper.class);
@@ -130,7 +130,7 @@ public class NacosServiceDiscoveryTest {
         assertEquals(3, namingServiceWrapper.getAllInstances(anyString(), anyString()).size());
 
         // unRegister
-        nacosServiceDiscovery.doUnregister(serviceInstance);
+        nacosServiceDiscovery.doUnregister();
     }
 
     @Test
@@ -166,9 +166,9 @@ public class NacosServiceDiscoveryTest {
                 }
             });
 
-        nacosServiceDiscovery.register(createServiceInstance(SERVICE_NAME, LOCALHOST, 8082));
-        nacosServiceDiscovery.update(createServiceInstance(SERVICE_NAME, LOCALHOST, 8082));
-        nacosServiceDiscovery.unregister(createServiceInstance(SERVICE_NAME, LOCALHOST, 8082));
+        nacosServiceDiscovery.register();
+        nacosServiceDiscovery.update();
+        nacosServiceDiscovery.unregister();
 
         assertTrue(serviceInstances.isEmpty());
     }
