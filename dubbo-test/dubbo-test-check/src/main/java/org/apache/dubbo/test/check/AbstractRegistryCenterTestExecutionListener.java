@@ -68,7 +68,7 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
         if (enableEmbeddedZookeeper && testPlan.containsTests()) {
             TestIdentifier engineTestIdentifier = this.getEngineTestIdentifier(testPlan.getRoots());
             TestIdentifier childTestIdentifier = this.getFirstTestIdentifier(testPlan.getChildren(engineTestIdentifier));
-            return this.needRegistryCenter(childTestIdentifier);
+            return childTestIdentifier == null ? false : this.needRegistryCenter(childTestIdentifier);
         }
         return false;
     }
@@ -117,6 +117,6 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
                 return testIdentifier;
             }
         }
-        throw new IllegalArgumentException("The collection of TestIdentifier cannot be null or empty");
+        return null;
     }
 }
