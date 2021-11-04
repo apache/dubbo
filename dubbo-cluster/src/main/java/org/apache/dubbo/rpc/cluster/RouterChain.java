@@ -222,7 +222,7 @@ public class RouterChain<T> {
     /**
      * Build each router's result
      */
-    private RouterSnapshotNode<T> buildRouterSnapshot(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+    public RouterSnapshotNode<T> buildRouterSnapshot(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         AddrCache<T> cache = this.cache.get();
         BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
         RouterSnapshotNode<T> snapshotNode = new RouterSnapshotNode<T>("Parent", resultInvokers.size());

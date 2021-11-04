@@ -253,10 +253,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.setRouterChain(RouterChain.buildChain(url));
     }
 
-    public List<Invoker<T>> getInvokers() {
-        return invokers;
-    }
-
     @Override
     public boolean isAvailable() {
         if (isDestroyed() || this.forbidden) {

@@ -403,6 +403,22 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return connectivityCheckFuture;
     }
 
+    public BitList<Invoker<T>> getInvokers() {
+        return invokers;
+    }
+
+    public BitList<Invoker<T>> getValidInvokers() {
+        return validInvokers;
+    }
+
+    public List<Invoker<T>> getInvokersToReconnect() {
+        return invokersToReconnect;
+    }
+
+    public Set<Invoker<T>> getDisabledInvokers() {
+        return disabledInvokers;
+    }
+
     protected abstract List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
 
 }
