@@ -108,6 +108,9 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static String getMetadataServiceParameter(URL url) {
+        if (url == null) {
+            return "";
+        }
         url = url.removeParameter(APPLICATION_KEY);
         url = url.removeParameter(GROUP_KEY);
         url = url.removeParameter(DEPRECATED_KEY);
