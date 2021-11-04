@@ -71,9 +71,9 @@ public class Curator5ZookeeperClient extends AbstractZookeeperClient<Curator5Zoo
                     .retryPolicy(new RetryNTimes(1, 1000))
                     .connectionTimeoutMs(timeout)
                     .sessionTimeoutMs(sessionExpireMs);
-            String authority = url.getAuthority();
-            if (authority != null && authority.length() > 0) {
-                builder = builder.authorization("digest", authority.getBytes());
+            String userInformation = url.getUserInformation();
+            if (userInformation != null && userInformation.length() > 0) {
+                builder = builder.authorization("digest", userInformation.getBytes());
             }
             client = builder.build();
             client.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(url));

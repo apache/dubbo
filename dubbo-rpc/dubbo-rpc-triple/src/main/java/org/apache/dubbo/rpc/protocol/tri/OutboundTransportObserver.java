@@ -37,11 +37,14 @@ public abstract class OutboundTransportObserver implements TransportObserver {
 
     protected void checkSendMeta(Object metadata, boolean endStream) {
         if (endStream) {
+            // trailers-only or metadata + trailers
             if (!state.allowSendEndStream()) {
                 throw new IllegalStateException("Metadata endStream already sent to peer, send " + metadata + " failed!");
             }
+            state.setMetaSend();
             state.setEndStreamSend();
         } else {
+            // metadata
             if (!state.allowSendMeta()) {
                 throw new IllegalStateException("Metadata already sent to peer, send " + metadata + " failed!");
             }

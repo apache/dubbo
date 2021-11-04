@@ -155,6 +155,10 @@ public class ServiceInstancesChangedListener {
 
         if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
             if (retryPermission.tryAcquire()) {
+                if (retryFuture != null && !retryFuture.isDone()) {
+                    // cancel last retryFuture because only one retryFuture will be canceled at destroy().
+                    retryFuture.cancel(true);
+                }
                 retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted.");
             }
