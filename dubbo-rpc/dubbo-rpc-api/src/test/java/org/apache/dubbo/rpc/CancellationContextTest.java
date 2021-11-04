@@ -29,7 +29,7 @@ public class CancellationContextTest {
 
     @Test
     public void test() throws Exception {
-        CancellationContext cancellationContext = RpcContext.getCancellationContext();
+        CancellationContext cancellationContext = new CancellationContext();
 
         CountDownLatch latch = new CountDownLatch(2);
         cancellationContext.addListener(rpcServiceContext -> {
@@ -48,7 +48,7 @@ public class CancellationContextTest {
 
     @Test
     public void testAddListenerAfterCancel() throws Exception {
-        CancellationContext cancellationContext = RpcContext.getCancellationContext();
+        CancellationContext cancellationContext = new CancellationContext();
 
         cancellationContext.cancel(null);
         CountDownLatch latch = new CountDownLatch(1);
