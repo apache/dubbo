@@ -41,6 +41,8 @@ public interface CommonConstants {
 
     String METADATA_SERVICE_PORT_KEY = "metadata-service-port";
 
+    String METADATA_SERVICE_PROTOCOL_KEY = "metadata-service-protocol";
+
     String LIVENESS_PROBE_KEY = "liveness-probe";
 
     String READINESS_PROBE_KEY = "readiness-probe";
