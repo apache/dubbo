@@ -41,35 +41,50 @@ public class FindPidWindowsProcessor extends ZookeeperWindowsProcessor {
     @Override
     protected void doProcess(ZookeeperWindowsContext context) throws DubboTestException {
         for (int clientPort : context.getClientPorts()) {
-            logger.info(String.format("Find the pid of the zookeeper with port %d", clientPort));
-            Executor executor = new DefaultExecutor();
-            executor.setExitValues(null);
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ByteArrayOutputStream ins = new ByteArrayOutputStream();
-            ByteArrayInputStream in = new ByteArrayInputStream(ins.toByteArray());
-            executor.setStreamHandler(new PumpStreamHandler(out, null, in));
-            CommandLine cmdLine = new CommandLine("cmd.exe");
-            cmdLine.addArgument("/c");
-            cmdLine.addArgument("netstat -ano | findstr " + clientPort);
-            try {
-                executor.execute(cmdLine);
-                String result = out.toString();
-                logger.info(String.format("Find result: %s", result));
-                if (StringUtils.isNotEmpty(result)) {
-                    String[] values = result.split("\\r\\n");
-                    if (values != null && values.length > 0) {
-                        String[] segments = values[0].split(" ");
+            this.findPid(context,clientPort);
+        }
+    }
+
+    /**
+     * Find the pid of zookeeper instance.
+     * @param context the global context.
+     * @param clientPort the client port of zookeeper instance.
+     */
+    private void findPid(ZookeeperWindowsContext context, int clientPort){
+        logger.info(String.format("Find the pid of the zookeeper with port %d", clientPort));
+        Executor executor = new DefaultExecutor();
+        executor.setExitValues(null);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream ins = new ByteArrayOutputStream();
+        ByteArrayInputStream in = new ByteArrayInputStream(ins.toByteArray());
+        executor.setStreamHandler(new PumpStreamHandler(out, null, in));
+        CommandLine cmdLine = new CommandLine("cmd.exe");
+        cmdLine.addArgument("/c");
+        cmdLine.addArgument("netstat -ano | findstr " + clientPort);
+        try {
+            executor.execute(cmdLine);
+            String result = out.toString();
+            logger.info(String.format("Find result: %s", result));
+            if (StringUtils.isNotEmpty(result)) {
+                String[] values = result.split("\\r\\n");
+                if (values != null && values.length > 0) {
+                    for (int i = 0; i < values.length; i++) {
+                        String[] segments = values[i].split(" ");
                         if (segments != null && segments.length > 0) {
-                            int pid = Integer.valueOf(segments[segments.length - 1]);
-                            if (pid > 0) {
-                                context.register(clientPort, pid);
+                            for (int j = 0; i < segments.length; j++) {
+                                if (("[::]:" + clientPort).equalsIgnoreCase(segments[j])
+                                    || ("0.0.0.0:" + clientPort).equalsIgnoreCase(segments[j])) {
+                                    int pid = Integer.valueOf(segments[segments.length - 1]);
+                                    context.register(clientPort, pid);
+                                    return;
+                                }
                             }
                         }
                     }
                 }
-            } catch (IOException e) {
-                throw new DubboTestException(String.format("Failed to find the PID of zookeeper with port %d", clientPort), e);
             }
+        } catch (IOException e) {
+            throw new DubboTestException(String.format("Failed to find the PID of zookeeper with port %d", clientPort), e);
         }
     }
 }
