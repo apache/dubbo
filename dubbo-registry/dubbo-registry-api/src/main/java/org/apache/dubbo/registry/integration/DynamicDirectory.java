@@ -21,6 +21,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
@@ -36,6 +37,7 @@ import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
 import java.util.Collections;
 import java.util.List;
@@ -92,7 +94,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     /**
      * Initialization at construction time, assertion not null, and always assign not null value
      */
-    protected volatile URL overrideDirectoryUrl;
     protected volatile URL subscribeUrl;
     protected volatile URL registeredConsumerUrl;
 
@@ -104,8 +105,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      * Rule two: for all providers <* ,timeout=5000>
      */
     protected volatile List<Configurator> configurators;
-
-    protected volatile List<Invoker<T>> invokers;
 
     protected ServiceInstancesChangedListener serviceListener;
 
@@ -129,7 +128,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.serviceType = serviceType;
         this.serviceKey = super.getConsumerUrl().getServiceKey();
 
-        this.overrideDirectoryUrl = this.directoryUrl = consumerUrl;
+        this.directoryUrl = consumerUrl;
         String group = directoryUrl.getGroup("");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
     }
@@ -166,7 +165,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     @Override
-    public List<Invoker<T>> doList(Invocation invocation) {
+    public List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) {
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
@@ -176,18 +175,17 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         }
 
         if (multiGroup) {
-            return this.invokers == null ? Collections.emptyList() : this.invokers;
+            return this.invokers == null ? BitList.emptyList() : this.invokers;
         }
 
-        List<Invoker<T>> invokers = null;
         try {
             // Get invokers from cache, only runtime routers will be executed.
-            invokers = routerChain.route(getConsumerUrl(), invocation);
+            List<Invoker<T>> result = routerChain.route(getConsumerUrl(), invokers, invocation);
+            return result == null ? BitList.emptyList() : result;
         } catch (Throwable t) {
             logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+            return BitList.emptyList();
         }
-
-        return invokers == null ? Collections.emptyList() : invokers;
     }
 
     @Override
@@ -207,7 +205,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     @Override
     public URL getConsumerUrl() {
-        return this.overrideDirectoryUrl;
+        return this.consumerUrl;
     }
 
     /**
@@ -216,7 +214,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      * @return URL
      */
     public URL getOriginalConsumerUrl() {
-        return this.overrideDirectoryUrl;
+        return this.consumerUrl;
     }
 
     /**
@@ -255,8 +253,13 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.setRouterChain(RouterChain.buildChain(url));
     }
 
-    public List<Invoker<T>> getInvokers() {
-        return invokers;
+    @Override
+    public boolean isAvailable() {
+        if (isDestroyed() || this.forbidden) {
+            return false;
+        }
+        return CollectionUtils.isNotEmpty(validInvokers)
+            && validInvokers.stream().anyMatch(Invoker::isAvailable);
     }
 
     @Override
@@ -324,6 +327,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     protected synchronized void invokersChanged() {
+        refreshInvoker();
         invokersChanged = true;
         if (invokersChangedListener != null) {
             invokersChangedListener.onChange();

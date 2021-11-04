@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ApplicationConfig;
 
 import java.util.ArrayList;
@@ -96,33 +97,31 @@ public class FrameworkModel extends ScopeModel {
     @Override
     protected void onDestroy() {
         if (defaultInstance == this) {
-            // NOTE: During destroying the default FrameworkModel, FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
-            // will get an broken model, maybe cause unpredictable problem.
+            // NOTE: During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+            // will return a broken model, maybe cause unpredictable problem.
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Destroying default framework model: " + getDesc());
             }
         }
-        synchronized (instLock) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(getDesc() + " is destroying ...");
-            }
 
-            // destroy all application model
-            for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
-                applicationModel.destroy();
-            }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is destroying ...");
+        }
 
-            // check whether all application models are destroyed
-            checkApplicationDestroy();
+        // destroy all application model
+        for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
+            applicationModel.destroy();
+        }
+        // check whether all application models are destroyed
+        checkApplicationDestroy();
 
-            // notify destroy and clean framework resources
-            // see org.apache.dubbo.config.deploy.FrameworkModelCleaner
-            notifyDestroy();
-            checkApplicationDestroy();
+        // notify destroy and clean framework resources
+        // see org.apache.dubbo.config.deploy.FrameworkModelCleaner
+        notifyDestroy();
+        checkApplicationDestroy();
 
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(getDesc() + " is destroyed");
-            }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is destroyed");
         }
 
         // remove from allInstances and reset default FrameworkModel
@@ -154,20 +153,24 @@ public class FrameworkModel extends ScopeModel {
     }
 
     /**
-     * During destroying the default FrameworkModel, FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
-     * will get an broken model, maybe cause unpredictable problem.
+     * During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+     * will return a broken model, maybe cause unpredictable problem.
      * Recommendation: Avoid using the default model as much as possible.
      * @return the global default FrameworkModel
      */
     public static FrameworkModel defaultModel() {
-        if (defaultInstance == null) {
+        FrameworkModel instance = defaultInstance;
+        if (instance == null) {
             synchronized (globalLock) {
+                resetDefaultFrameworkModel();
                 if (defaultInstance == null) {
                     defaultInstance = new FrameworkModel();
                 }
+                instance = defaultInstance;
             }
         }
-        return defaultInstance;
+        Assert.notNull(instance, "Default FrameworkModel is null");
+        return instance;
     }
 
     /**
@@ -196,16 +199,22 @@ public class FrameworkModel extends ScopeModel {
      * @return
      */
     public ApplicationModel defaultApplication() {
-        if (defaultAppModel == null) {
+        ApplicationModel appModel = this.defaultAppModel;
+        if (appModel == null) {
+            // check destroyed before acquire inst lock, avoid blocking during destroying
             checkDestroyed();
-            synchronized(instLock){
-                resetDefaultAppModel();
-                if (defaultAppModel == null) {
-                    defaultAppModel = newApplication();
+            resetDefaultAppModel();
+            if ((appModel = this.defaultAppModel) == null) {
+                synchronized (instLock) {
+                    if (this.defaultAppModel == null) {
+                        this.defaultAppModel = newApplication();
+                    }
+                    appModel = this.defaultAppModel;
                 }
             }
         }
-        return defaultAppModel;
+        Assert.notNull(appModel, "Default ApplicationModel is null");
+        return appModel;
     }
 
     ApplicationModel getDefaultAppModel() {
@@ -215,7 +224,7 @@ public class FrameworkModel extends ScopeModel {
     void addApplication(ApplicationModel applicationModel) {
         // can not add new application if it's destroying
         checkDestroyed();
-        synchronized (instLock){
+        synchronized (instLock) {
             if (!this.applicationModels.contains(applicationModel)) {
                 applicationModel.setInternalId(buildInternalId(getInternalId(), appIndex.getAndIncrement()));
                 this.applicationModels.add(applicationModel);
@@ -270,7 +279,7 @@ public class FrameworkModel extends ScopeModel {
         }
     }
 
-    private void resetDefaultFrameworkModel() {
+    private static void resetDefaultFrameworkModel() {
         synchronized (globalLock) {
             if (defaultInstance != null && !defaultInstance.isDestroyed()) {
                 return;
@@ -289,7 +298,7 @@ public class FrameworkModel extends ScopeModel {
         }
     }
 
-    private String safeGetModelDesc(ScopeModel scopeModel) {
+    private static String safeGetModelDesc(ScopeModel scopeModel) {
         return scopeModel != null ? scopeModel.getDesc() : null;
     }
 

@@ -721,7 +721,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private Integer findConfigedPorts(ProtocolConfig protocolConfig,
                                       String name,
                                       Map<String, String> map) {
-        Integer portToBind = null;
+        Integer portToBind;
 
         // parse bind port from environment
         String port = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_BIND);

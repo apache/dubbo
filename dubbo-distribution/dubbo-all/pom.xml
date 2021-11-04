@@ -356,10 +356,6 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.roaringbitmap</groupId>
-            <artifactId>RoaringBitmap</artifactId>
-        </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
         <dependency>

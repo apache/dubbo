@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.filter.tps;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Judge whether a particular invocation of service provider method should be allowed within a configured time interval.
@@ -24,35 +25,32 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 class StatItem {
 
-    private String name;
+    private final String name;
 
-    private long lastResetTime;
+    private final AtomicLong lastResetTime;
 
-    private long interval;
+    private final long interval;
 
-    private AtomicInteger token;
+    private final AtomicInteger token;
 
-    private int rate;
+    private final int rate;
 
     StatItem(String name, int rate, long interval) {
         this.name = name;
         this.rate = rate;
         this.interval = interval;
-        this.lastResetTime = System.currentTimeMillis();
+        this.lastResetTime = new AtomicLong(System.currentTimeMillis());
         this.token = new AtomicInteger(rate);
     }
 
     public boolean isAllowable() {
         long now = System.currentTimeMillis();
-        if (now > lastResetTime + interval) {
+        if (now > lastResetTime.get() + interval) {
             token.set(rate);
-            lastResetTime = now;
+            lastResetTime.set(now);
         }
 
-        if (token.decrementAndGet() < 0) {
-            return false;
-        }
-        return true;
+        return token.decrementAndGet() >= 0;
     }
 
     public long getInterval() {
@@ -66,7 +64,7 @@ class StatItem {
 
 
     long getLastResetTime() {
-        return lastResetTime;
+        return lastResetTime.get();
     }
 
     int getToken() {
@@ -75,11 +73,10 @@ class StatItem {
 
     @Override
     public String toString() {
-        return new StringBuilder(32).append("StatItem ")
-                .append("[name=").append(name).append(", ")
-                .append("rate = ").append(rate).append(", ")
-                .append("interval = ").append(interval).append(']')
-                .toString();
+        return "StatItem " +
+            "[name=" + name + ", " +
+            "rate = " + rate + ", " +
+            "interval = " + interval + ']';
     }
 
 }
