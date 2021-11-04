@@ -355,15 +355,29 @@ public class AnnotationUtilsTest {
     private void assertADeclaredAnnotations(List<Annotation> annotations, int offset) {
         int size = 3 + offset;
         assertEquals(size, annotations.size());
-        Service service = (Service) annotations.get(offset++);
-        assertEquals("java.lang.CharSequence", service.interfaceName());
-        assertEquals(CharSequence.class, service.interfaceClass());
+        boolean apacheServiceFound = false;
+        boolean alibabaServiceFound = false;
+        boolean adaptiveFound = false;
 
-        com.alibaba.dubbo.config.annotation.Service s = (com.alibaba.dubbo.config.annotation.Service) annotations.get(offset++);
-        assertEquals("java.lang.CharSequence", service.interfaceName());
-        assertEquals(CharSequence.class, service.interfaceClass());
-
-        Adaptive adaptive = (Adaptive) annotations.get(offset++);
-        assertArrayEquals(new String[]{"a", "b", "c"}, adaptive.value());
+        for (Annotation annotation: annotations) {
+            if (!apacheServiceFound && (annotation instanceof Service)) {
+                assertEquals("java.lang.CharSequence", ((Service)annotation).interfaceName());
+                assertEquals(CharSequence.class, ((Service)annotation).interfaceClass());
+                apacheServiceFound = true;
+                continue;
+            }
+            if (!alibabaServiceFound && (annotation instanceof com.alibaba.dubbo.config.annotation.Service)) {
+                assertEquals("java.lang.CharSequence", ((com.alibaba.dubbo.config.annotation.Service)annotation).interfaceName());
+                assertEquals(CharSequence.class, ((com.alibaba.dubbo.config.annotation.Service)annotation).interfaceClass());
+                alibabaServiceFound = true;
+                continue;
+            }
+            if (!adaptiveFound && (annotation instanceof Adaptive)) {
+                assertArrayEquals(new String[]{"a", "b", "c"}, ((Adaptive)annotation).value());
+                adaptiveFound = true;
+                continue;
+            }
+        }
+        assertTrue(apacheServiceFound && alibabaServiceFound && adaptiveFound);
     }
 }

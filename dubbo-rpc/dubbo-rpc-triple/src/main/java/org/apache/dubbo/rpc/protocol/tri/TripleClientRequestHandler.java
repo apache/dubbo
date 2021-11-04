@@ -50,12 +50,15 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
                 if (future.isSuccess()) {
                     final Http2StreamChannel channel = (Http2StreamChannel) future.get();
                     channel.pipeline()
+                        .addLast(new TripleCommandOutBoundHandler())
                         .addLast(new TripleHttp2ClientResponseHandler())
                         .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
                         .addLast(new TripleClientInboundHandler());
                     channel.attr(TripleConstant.CLIENT_STREAM_KEY).set(stream);
+                    DefaultFuture2.addTimeoutListener(req.getId(), channel::close);
+                    WriteQueue writeQueue = new WriteQueue(channel);
                     // Start call only when the channel creation is successful
-                    stream.startCall(channel, promise);
+                    stream.startCall(writeQueue, promise);
                 } else {
                     promise.tryFailure(future.cause());
                     DefaultFuture2.getFuture(req.getId()).cancel();

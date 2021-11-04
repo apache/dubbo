@@ -19,30 +19,24 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
-import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
-import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2Headers;
 
 public class ServerOutboundTransportObserver extends OutboundTransportObserver {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerOutboundTransportObserver.class);
 
-    private final ChannelHandlerContext ctx;
-
-    public ServerOutboundTransportObserver(ChannelHandlerContext ctx) {
-        this.ctx = ctx;
+    public ServerOutboundTransportObserver(WriteQueue queue) {
+        super(queue);
     }
 
     public void onMetadata(Http2Headers headers, boolean endStream) {
         checkSendMeta(headers, endStream);
-        ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, endStream), true)
             .addListener(future -> {
                 if (!future.isSuccess()) {
                     LOGGER.warn("send header error endStream=" + endStream, future.cause());
@@ -69,16 +63,17 @@ public class ServerOutboundTransportObserver extends OutboundTransportObserver {
 
     @Override
     protected void doOnData(byte[] data, boolean endStream) {
-        ByteBuf buf = ctx.alloc().buffer();
-        buf.writeByte(getCompressFlag());
-        buf.writeInt(data.length);
-        buf.writeBytes(data);
-        onData(buf, endStream);
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(data, endStream, false), true)
+            .addListener(future -> {
+                if (!future.isSuccess()) {
+                    LOGGER.warn("send data error endStream=" + endStream, future.cause());
+                }
+            });
     }
 
     @Override
     protected void doOnError(GrpcStatus status) {
-        ctx.writeAndFlush(new DefaultHttp2ResetFrame(Http2Error.CANCEL))
+        writeQueue.enqueue(CancelQueueCommand.createCommand(status), true)
             .addListener(future -> {
                 if (!future.isSuccess()) {
                     LOGGER.warn("write reset error", future.cause());
@@ -89,25 +84,5 @@ public class ServerOutboundTransportObserver extends OutboundTransportObserver {
     @Override
     protected void doOnComplete() {
 
-    }
-
-    public void onData(String str, boolean endStream) {
-        ByteBuf buf = ByteBufUtil.writeUtf8(ctx.alloc(), str);
-        onData(buf, endStream);
-    }
-
-    public void onData(ByteBuf buf, boolean endStream) {
-        checkSendData(endStream);
-        ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
-            .addListener(future -> {
-                if (!future.isSuccess()) {
-                    LOGGER.warn("send data error endStream=" + endStream, future.cause());
-                }
-            });
-    }
-
-    private int getCompressFlag() {
-        AbstractServerStream stream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
-        return calcCompressFlag(stream.getCompressor());
     }
 }

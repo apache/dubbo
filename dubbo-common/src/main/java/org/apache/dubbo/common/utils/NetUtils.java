@@ -102,8 +102,8 @@ public class NetUtils {
     }
 
     public synchronized static int getAvailablePort(int port) {
-        if (port < MIN_PORT) {
-            return port = MIN_PORT;
+         if (port < MIN_PORT) {
+            return MIN_PORT;
         }
         for (int i = port; i < MAX_PORT; i++) {
             if (USED_PORT.get(i)) {
@@ -111,13 +111,15 @@ public class NetUtils {
             }
             try (ServerSocket ignored = new ServerSocket(i)) {
                 USED_PORT.set(i);
-                return i;
+                port = i;
+                break;
             } catch (IOException e) {
                 // continue
             }
         }
         return port;
     }
+
 
     /**
      * Check the port whether is in use in os

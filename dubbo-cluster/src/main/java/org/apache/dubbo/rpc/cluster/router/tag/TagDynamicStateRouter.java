@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
@@ -83,9 +84,8 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
     }
 
     @Override
-    public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url,
-                                         Invocation invocation) throws RpcException {
-
+    public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url,
+                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
 
         final TagRouterRule tagRouterRuleCopy = (TagRouterRule) cache.getAddrMetadata();
 
@@ -95,16 +95,16 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
         ConcurrentMap<String, BitList<Invoker<T>>> addrPool = cache.getAddrPool();
 
         if (StringUtils.isEmpty(tag)) {
-            return invokers.intersect(addrPool.get(NO_TAG), invokers.getUnmodifiableList());
+            return new StateRouterResult<>(invokers.and(addrPool.get(NO_TAG)));
         } else {
             BitList<Invoker<T>> result = addrPool.get(tag);
 
             if (CollectionUtils.isNotEmpty(result) || (tagRouterRuleCopy != null && tagRouterRuleCopy.isForce())
                 || isForceUseTag(invocation)) {
-                return invokers.intersect(result, invokers.getUnmodifiableList());
+                return new StateRouterResult<>(invokers.and(result));
             } else {
                 invocation.setAttachment(TAG_KEY, NO_TAG);
-                return invokers;
+                return new StateRouterResult<>(invokers);
             }
         }
     }

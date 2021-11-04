@@ -105,6 +105,7 @@ public class ConfigManagerTest {
         configManager.setApplication(config);
         assertTrue(configManager.getApplication().isPresent());
         assertEquals(config, configManager.getApplication().get());
+        assertEquals(config, moduleConfigManager.getApplication().get());
     }
 
     // Test MonitorConfig correlative methods
@@ -115,6 +116,7 @@ public class ConfigManagerTest {
         configManager.setMonitor(monitorConfig);
         assertTrue(configManager.getMonitor().isPresent());
         assertEquals(monitorConfig, configManager.getMonitor().get());
+        assertEquals(monitorConfig, moduleConfigManager.getMonitor().get());
     }
 
     // Test MonitorConfig correlative methods
@@ -134,6 +136,7 @@ public class ConfigManagerTest {
         configManager.setMetrics(config);
         assertTrue(configManager.getMetrics().isPresent());
         assertEquals(config, configManager.getMetrics().get());
+        assertEquals(config, moduleConfigManager.getMetrics().get());
     }
 
     // Test ProviderConfig correlative methods
@@ -183,6 +186,7 @@ public class ConfigManagerTest {
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
         assertFalse(configManager.getDefaultProtocols().isEmpty());
+        assertEquals(configs, moduleConfigManager.getProtocols());
     }
 
     // Test RegistryConfig correlative methods
@@ -194,6 +198,7 @@ public class ConfigManagerTest {
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
         assertFalse(configManager.getDefaultRegistries().isEmpty());
+        assertEquals(configs, moduleConfigManager.getRegistries());
     }
 
     // Test ConfigCenterConfig correlative methods
@@ -215,7 +220,7 @@ public class ConfigManagerTest {
         configs = configManager.getConfigCenters();
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
-
+        assertEquals(configs, moduleConfigManager.getConfigCenters());
     }
 
     @Test
@@ -232,6 +237,7 @@ public class ConfigManagerTest {
     @Test
     public void testRefreshAll() {
         configManager.refreshAll();
+        moduleConfigManager.refreshAll();
     }
 
     @Test

@@ -616,6 +616,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // ensure init and start internal module first
         prepareInternalModule();
 
+        // always start metadata service on application model start, so it's ready whenever a new module is started
+        // export MetadataService
+        exportMetadataService();
+
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
@@ -633,8 +637,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (!hasPreparedInternalModule.compareAndSet(false, true)) {
                 return;
             }
-            // export MetadataService
-            exportMetadataService();
+
             // start internal module
             ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
             if (!internalModuleDeployer.isStarted()) {
@@ -726,7 +729,10 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * export {@link MetadataService}
      */
     private void exportMetadataService() {
-        metadataServiceExporter.export();
+        // fixme, let's disable local metadata service export at this moment
+        if (!REMOTE_METADATA_STORAGE_TYPE.equals(getMetadataType())) {
+            metadataServiceExporter.export();
+        }
     }
 
     private void unexportMetadataService() {
@@ -1007,9 +1013,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             } catch (Exception e) {
                 logger.error("refresh metadata failed: " + e.getMessage(), e);
             }
-            // shutdown export/refer executor after started
-            executorRepository.shutdownServiceExportExecutor();
-            executorRepository.shutdownServiceReferExecutor();
         } finally {
             // complete future
             completeStartFuture(true);
@@ -1051,6 +1054,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void destroyExecutorRepository() {
+        // shutdown export/refer executor
+        executorRepository.shutdownServiceExportExecutor();
+        executorRepository.shutdownServiceReferExecutor();
         getExtensionLoader(ExecutorRepository.class).getDefaultExtension().destroyAll();
     }
 
