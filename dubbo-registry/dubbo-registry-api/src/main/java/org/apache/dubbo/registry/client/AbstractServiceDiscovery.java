@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -51,11 +52,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery, Scop
 
     private ApplicationModel applicationModel;
 
+    // fixme
     protected Map<String, MetadataInfo> revisionToMetadata;
 
     public AbstractServiceDiscovery(String serviceName) {
         this.serviceName = serviceName;
         this.metadataInfo = new MetadataInfo(serviceName);
+        this.revisionToMetadata = new ConcurrentHashMap<>();
     }
 
     @Override

@@ -16,20 +16,24 @@
  */
 package org.apache.dubbo.registry.zookeeper.util;
 
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.test.TestingServer;
-import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.test.TestingServer;
+import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +48,7 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.RO
 class CuratorFrameworkUtilsTest {
     private static TestingServer zkServer;
     private static URL registryUrl;
+    private static MetadataReport metadataReport;
 
     @BeforeAll
     public static void init() throws Exception {
@@ -53,6 +58,8 @@ class CuratorFrameworkUtilsTest {
 
         registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
         registryUrl.setScopeModel(ApplicationModel.defaultModel());
+
+        metadataReport = Mockito.mock(MetadataReport.class);
     }
 
     @AfterAll
@@ -99,11 +106,11 @@ class CuratorFrameworkUtilsTest {
         Assertions.assertEquals(payload.getName(), dubboServiceInstance.getServiceName());
 
         // convert {org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>} to {org.apache.dubbo.registry.client.ServiceInstance}
-        ServiceInstance serviceInstance = CuratorFrameworkUtils.build(registryUrl, curatorServiceInstance);
+        ServiceInstance serviceInstance = CuratorFrameworkUtils.build(registryUrl, curatorServiceInstance, new HashMap<>(), metadataReport);
         Assertions.assertEquals(serviceInstance, dubboServiceInstance);
 
         // convert {Collection<org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>>} to {List<org.apache.dubbo.registry.client.ServiceInstance>}
-        List<ServiceInstance> serviceInstances = CuratorFrameworkUtils.build(registryUrl, Arrays.asList(curatorServiceInstance));
+        List<ServiceInstance> serviceInstances = CuratorFrameworkUtils.build(registryUrl, Arrays.asList(curatorServiceInstance), new HashMap<>(), metadataReport);
         Assertions.assertNotNull(serviceInstances);
         Assertions.assertEquals(serviceInstances.get(0), dubboServiceInstance);
     }

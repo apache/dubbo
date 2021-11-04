@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +40,10 @@ public class InMemoryServiceDiscovery extends AbstractServiceDiscovery {
     private Map<String, List<ServiceInstance>> repository = new HashMap<>();
 
     private URL registryURL;
+
+    public InMemoryServiceDiscovery(String serviceName) {
+        super(serviceName);
+    }
 
     @Override
     public Set<String> getServices() {
@@ -87,13 +90,7 @@ public class InMemoryServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
-        unregister(serviceInstance);
-        register(serviceInstance);
-    }
-
-    @Override
-    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUnregister() throws RuntimeException {
         String serviceName = serviceInstance.getServiceName();
         List<ServiceInstance> serviceInstances = repository.computeIfAbsent(serviceName, s -> new LinkedList<>());
         serviceInstances.remove(serviceInstance);

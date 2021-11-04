@@ -26,6 +26,10 @@ import java.util.Set;
 public class MockServiceDiscovery extends AbstractServiceDiscovery {
     private URL registryURL;
 
+    public MockServiceDiscovery(String serviceName) {
+        super(serviceName);
+    }
+
     @Override
     public void doInitialize(URL registryURL) throws Exception {
         this.registryURL = registryURL;
@@ -41,11 +45,11 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate() throws RuntimeException {
     }
 
     @Override
-    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUnregister() throws RuntimeException {
     }
 
     @Override

@@ -18,12 +18,12 @@ package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.listener.MockServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +74,7 @@ public class ServiceDiscoveryRegistryTest {
     private ServiceDiscoveryRegistry serviceDiscoveryRegistry;
     private ServiceDiscovery serviceDiscovery;
     private MockServiceInstancesChangedListener instanceListener;
-    private WritableMetadataService spiedMetadataService;
+    private ServiceNameMapping serviceNameMapping;
 
     @BeforeAll
     public static void setUp() {
@@ -103,8 +103,7 @@ public class ServiceDiscoveryRegistryTest {
         when(applicationModel.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
         registryURL = registryURL.setScopeModel(applicationModel);
 
-        spiedMetadataService = spy(WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel()));
-        serviceDiscoveryRegistry = new ServiceDiscoveryRegistry(registryURL, serviceDiscovery, spiedMetadataService);
+        serviceDiscoveryRegistry = new ServiceDiscoveryRegistry(registryURL, serviceDiscovery, mapping);
     }
 
     /**
@@ -119,15 +118,15 @@ public class ServiceDiscoveryRegistryTest {
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         when(applicationModel.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
         // Exception case, no interface-app mapping found
-        when(mapping.getAndListenServices(any(), any(), any())).thenReturn(Collections.emptySet());
+        when(mapping.getAndListen(any(), any(), any())).thenReturn(Collections.emptySet());
         // when check = false
         try {
             registryURL = registryURL.setScopeModel(applicationModel);
-            serviceDiscoveryRegistry = new ServiceDiscoveryRegistry(registryURL, serviceDiscovery, spiedMetadataService);
+            serviceDiscoveryRegistry = new ServiceDiscoveryRegistry(registryURL, serviceDiscovery, mapping);
             serviceDiscoveryRegistry.doSubscribe(url, testServiceListener);
         } finally {
             registryURL = registryURL.setScopeModel(null);
-            spiedMetadataService.unsubscribeURL(url);
+            serviceDiscoveryRegistry.unsubscribe(url, testServiceListener);
         }
         // when check = true
         URL checkURL = url.addParameter(CHECK_KEY, true);
@@ -137,7 +136,7 @@ public class ServiceDiscoveryRegistryTest {
         } catch (IllegalStateException e) {
             exceptionShouldHappen = e;
         } finally {
-            spiedMetadataService.unsubscribeURL(checkURL);
+            serviceDiscoveryRegistry.unsubscribe(checkURL, testServiceListener);
         }
         if (exceptionShouldHappen == null) {
             fail();
@@ -146,11 +145,11 @@ public class ServiceDiscoveryRegistryTest {
         // Normal case
         Set<String> singleApp = new HashSet<>();
         singleApp.add(APP_NAME1);
-        when(mapping.getAndListenServices(any(), any(), any())).thenReturn(singleApp);
+        when(mapping.getAndListen(any(), any(), any())).thenReturn(singleApp);
         try {
             serviceDiscoveryRegistry.doSubscribe(checkURL, testServiceListener);
         } finally {
-            spiedMetadataService.unsubscribeURL(checkURL);
+            serviceDiscoveryRegistry.unsubscribe(checkURL, testServiceListener);
         }
     }
 
@@ -238,13 +237,13 @@ public class ServiceDiscoveryRegistryTest {
         assertEquals(1, serviceDiscoveryRegistry.getServiceListeners().size());
 
         // do unsubscribe
-        when(spiedMetadataService.getCachedMapping(url2)).thenReturn(multiApps);
+        when(mapping.getCachedMapping(url2)).thenReturn(multiApps);
         serviceDiscoveryRegistry.doUnsubscribe(url2, testServiceListener2);
         assertEquals(1, serviceDiscoveryRegistry.getServiceListeners().size());
         assertEquals(1, serviceDiscoveryRegistry.getServiceListeners().size());
         ServiceInstancesChangedListener instancesChangedListener = serviceDiscoveryRegistry.getServiceListeners().entrySet().iterator().next().getValue();
         assertTrue(instancesChangedListener.hasListeners());
-        when(spiedMetadataService.getCachedMapping(url)).thenReturn(multiApps);
+        when(mapping.getCachedMapping(url)).thenReturn(multiApps);
         serviceDiscoveryRegistry.doUnsubscribe(url, testServiceListener);
         assertEquals(0, serviceDiscoveryRegistry.getServiceListeners().size());
         assertFalse(instancesChangedListener.hasListeners());

@@ -176,7 +176,7 @@ public class ServiceInstanceMetadataUtilsTest {
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel());
 
         // Construct serviceDiscoveryRegistry
-        InMemoryServiceDiscovery inMemoryServiceDiscovery = new InMemoryServiceDiscovery();
+        InMemoryServiceDiscovery inMemoryServiceDiscovery = new InMemoryServiceDiscovery("ServiceInstanceMetadataUtilsTest");
         URL registryURL = URL.valueOf("registry://localhost:2181?registry=zookeeper");
         Constructor<ServiceDiscoveryRegistry> constructor = ServiceDiscoveryRegistry.class.getDeclaredConstructor(URL.class, ServiceDiscovery.class, WritableMetadataService.class);
         constructor.setAccessible(true);
