@@ -41,16 +41,17 @@ public class FindPidWindowsProcessor extends ZookeeperWindowsProcessor {
     @Override
     protected void doProcess(ZookeeperWindowsContext context) throws DubboTestException {
         for (int clientPort : context.getClientPorts()) {
-            this.findPid(context,clientPort);
+            this.findPid(context, clientPort);
         }
     }
 
     /**
      * Find the pid of zookeeper instance.
-     * @param context the global context.
+     *
+     * @param context    the global context.
      * @param clientPort the client port of zookeeper instance.
      */
-    private void findPid(ZookeeperWindowsContext context, int clientPort){
+    private void findPid(ZookeeperWindowsContext context, int clientPort) {
         logger.info(String.format("Find the pid of the zookeeper with port %d", clientPort));
         Executor executor = new DefaultExecutor();
         executor.setExitValues(null);
@@ -71,9 +72,8 @@ public class FindPidWindowsProcessor extends ZookeeperWindowsProcessor {
                     for (int i = 0; i < values.length; i++) {
                         String[] segments = values[i].split(" ");
                         if (segments != null && segments.length > 0) {
-                            for (int j = 0; i < segments.length; j++) {
-                                if (("[::]:" + clientPort).equalsIgnoreCase(segments[j])
-                                    || ("0.0.0.0:" + clientPort).equalsIgnoreCase(segments[j])) {
+                            for (int j = 0; j < segments.length; j++) {
+                                if (this.check(segments[i], clientPort)) {
                                     int pid = Integer.valueOf(segments[segments.length - 1]);
                                     context.register(clientPort, pid);
                                     return;
@@ -86,5 +86,18 @@ public class FindPidWindowsProcessor extends ZookeeperWindowsProcessor {
         } catch (IOException e) {
             throw new DubboTestException(String.format("Failed to find the PID of zookeeper with port %d", clientPort), e);
         }
+    }
+
+    /**
+     * Checks if segment is valid ip and port pair.
+     *
+     * @param segment    the segment to check
+     * @param clientPort the client port of zookeeper instance
+     * @return {@code true} if segment is valid pair of ip and port, otherwise {@code false}
+     */
+    private boolean check(String segment, int clientPort) {
+        return ("[::]:" + clientPort).equalsIgnoreCase(segment)
+            || ("0.0.0.0:" + clientPort).equalsIgnoreCase(segment)
+            || ("127.0.0.1:" + clientPort).equalsIgnoreCase(segment);
     }
 }

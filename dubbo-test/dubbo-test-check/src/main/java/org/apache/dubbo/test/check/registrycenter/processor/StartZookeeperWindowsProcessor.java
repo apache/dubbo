@@ -27,6 +27,8 @@ import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContex
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
+
 /**
  * Create {@link Process} to start zookeeper on Windows OS.
  */
@@ -64,6 +66,16 @@ public class StartZookeeperWindowsProcessor extends ZookeeperWindowsProcessor {
             cmdLine.addArgument(Paths.get(zookeeperBin.toString(), "zkServer.cmd")
                 .toAbsolutePath().toString());
             context.getExecutorService().submit(() -> executor.execute(cmdLine));
+        }
+        try {
+            // TODO: Help me to optimize the ugly sleep.
+            // sleep to wait all of zookeeper instances are started successfully.
+            // The best way is to check the output log with the specified keywords,
+            // however, there maybe keep waiting for check when any exception occurred,
+            // because the output stream will be blocked to wait for continuous data without any break
+            TimeUnit.SECONDS.sleep(3);
+        } catch (InterruptedException e) {
+            // ignored
         }
     }
 }
