@@ -555,11 +555,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         return urlInvokerMap;
     }
 
-    @Override
-    public List<Invoker<T>> getInvokers() {
-        return invokers;
-    }
-
     private boolean isValidCategory(URL url) {
         String category = url.getCategory(DEFAULT_CATEGORY);
         if ((ROUTERS_CATEGORY.equals(category) || ROUTE_PROTOCOL.equals(url.getProtocol())) ||
