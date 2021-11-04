@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * The global context for zookeeper on Windows OS.
  */
-public abstract class ZookeeperWindowsContext extends ZookeeperContext {
+public class ZookeeperWindowsContext extends ZookeeperContext {
 
     /**
      * The default executor service to manage the lifecycle of zookeeper.

@@ -18,6 +18,7 @@ package org.apache.dubbo.test.check.registrycenter;
 
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
+import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
 import org.apache.dubbo.test.check.registrycenter.initializer.ConfigZookeeperInitializer;
 import org.apache.dubbo.test.check.registrycenter.initializer.DownloadZookeeperInitializer;
 import org.apache.dubbo.test.check.registrycenter.initializer.UnpackZookeeperInitializer;
@@ -57,6 +58,13 @@ class ZookeeperRegistryCenter implements RegistryCenter {
         // stop processor
         this.put(OS.Unix, Command.Stop, new StopZookeeperUnixProcessor());
         this.put(OS.Windows, Command.Stop, new StopZookeeperWindowsProcessor());
+
+        // initialize the global context
+        if (OS.Unix.equals(os)) {
+            this.context = new ZookeeperContext();
+        } else {
+            this.context = new ZookeeperWindowsContext();
+        }
     }
 
     /**
@@ -72,7 +80,7 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     /**
      * The global context of zookeeper.
      */
-    private ZookeeperContext context = new ZookeeperContext();
+    private ZookeeperContext context;
 
     /**
      * To store all processor instances.

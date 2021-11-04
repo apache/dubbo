@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  */
 public class StopZookeeperUnixProcessor extends ZookeeperUnixProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(StartZookeeperUnixProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(StopZookeeperUnixProcessor.class);
 
     @Override
     protected Process doProcess(ZookeeperContext context, int clientPort) throws DubboTestException {
