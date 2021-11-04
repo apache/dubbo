@@ -609,10 +609,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // ensure init and start internal module first
         prepareInternalModule();
 
-        // filter and start pending modules, ignore new module during starting
-        applicationModel.getModuleModels().stream()
-            .filter(moduleModel -> moduleModel.getDeployer().isPending())
-            .forEach(moduleModel -> moduleModel.getDeployer().start());
+        // filter and start pending modules, ignore new module during starting, throw exception of module start
+        for (ModuleModel moduleModel : new ArrayList<>(applicationModel.getModuleModels())) {
+            if (moduleModel.getDeployer().isPending()) {
+                moduleModel.getDeployer().start();
+            }
+        }
     }
 
     @Override
