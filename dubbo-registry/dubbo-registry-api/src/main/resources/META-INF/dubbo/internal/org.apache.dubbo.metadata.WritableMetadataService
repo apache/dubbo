@@ -1,1 +1,1 @@
-default=org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService
+default=org.apache.dubbo.registry.client.metadata.store.WritableMetadataServiceDelegation

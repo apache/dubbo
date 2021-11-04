@@ -17,8 +17,12 @@
 package org.apache.dubbo.registry.zookeeper.util;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -86,17 +90,19 @@ public abstract class CuratorFrameworkUtils {
 
 
     public static List<ServiceInstance> build(URL registryUrl, Collection<org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>>
-        instances) {
-        return instances.stream().map((i)->build(registryUrl, i)).collect(Collectors.toList());
+        instances, Map<String, MetadataInfo> revisionToMetadata, MetadataReport metadataReport) {
+        return instances.stream().map((i)->build(registryUrl, i, revisionToMetadata, metadataReport)).collect(Collectors.toList());
     }
 
-    public static ServiceInstance build(URL registryUrl, org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> instance) {
+    public static ServiceInstance build(URL registryUrl, org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance> instance, Map<String, MetadataInfo> revisionToMetadata, MetadataReport metadataReport) {
         String name = instance.getName();
         String host = instance.getAddress();
         int port = instance.getPort();
         ZookeeperInstance zookeeperInstance = instance.getPayload();
         DefaultServiceInstance serviceInstance = new DefaultServiceInstance(name, host, port, ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
         serviceInstance.setMetadata(zookeeperInstance.getMetadata());
+        String revision = ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
+        serviceInstance.setServiceMetadata(MetadataUtils.getRemoteMetadata(revision, serviceInstance, revisionToMetadata, metadataReport));
         return serviceInstance;
     }
 

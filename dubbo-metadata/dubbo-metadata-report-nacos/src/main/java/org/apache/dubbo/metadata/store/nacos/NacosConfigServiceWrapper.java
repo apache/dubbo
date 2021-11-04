@@ -45,6 +45,10 @@ public class NacosConfigServiceWrapper {
         configService.addListener(handleInnerSymbol(dataId), handleInnerSymbol(group), listener);
     }
 
+    public void removeListener(String dataId, String group, Listener listener) throws NacosException {
+        configService.removeListener(handleInnerSymbol(dataId), handleInnerSymbol(group), listener);
+    }
+
     public String getConfig(String dataId, String group) throws NacosException {
         return configService.getConfig(handleInnerSymbol(dataId), handleInnerSymbol(group), DEFAULT_TIMEOUT);
     }

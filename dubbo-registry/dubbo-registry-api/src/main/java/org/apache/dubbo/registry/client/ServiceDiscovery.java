@@ -20,9 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import java.util.LinkedHashMap;
@@ -30,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
@@ -43,10 +41,7 @@ import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
  * @since 2.7.5
  */
 @SPI(value = "zookeeper", scope = APPLICATION)
-public interface ServiceDiscovery extends Prioritized {
-
-    // ==================================== Lifecycle ==================================== //
-
+public interface ServiceDiscovery extends RegistryService, Prioritized {
     /**
      * Initializes the {@link ServiceDiscovery}
      *
@@ -64,37 +59,12 @@ public interface ServiceDiscovery extends Prioritized {
 
     boolean isDestroy();
 
-    // ==================================================================================== //
 
-    // =================================== Registration =================================== //
+    void register() throws RuntimeException;
 
-    /**
-     * Registers an instance of {@link ServiceInstance}.
-     *
-     * @param serviceInstance an instance of {@link ServiceInstance} to be registered
-     * @throws RuntimeException if failed
-     */
-    void register(ServiceInstance serviceInstance) throws RuntimeException;
+    void update() throws RuntimeException;
 
-    /**
-     * Updates the registered {@link ServiceInstance}.
-     *
-     * @param serviceInstance the registered {@link ServiceInstance}
-     * @throws RuntimeException if failed
-     */
-    void update(ServiceInstance serviceInstance) throws RuntimeException;
-
-    /**
-     * Unregisters an instance of {@link ServiceInstance}.
-     *
-     * @param serviceInstance an instance of {@link ServiceInstance} to be unregistered
-     * @throws RuntimeException if failed
-     */
-    void unregister(ServiceInstance serviceInstance) throws RuntimeException;
-
-    // ==================================================================================== //
-
-    // ==================================== Discovery ===================================== //
+    void unregister() throws RuntimeException;
 
     /**
      * Get the default size of pagination query
@@ -196,44 +166,12 @@ public interface ServiceDiscovery extends Prioritized {
         return unmodifiableMap(instances);
     }
 
-    default void dispatchServiceInstancesChangedEvent(String serviceName) {
-        dispatchServiceInstancesChangedEvent(serviceName, getInstances(serviceName));
-    }
-
-    default void dispatchServiceInstancesChangedEvent(String serviceName, String... otherServiceNames) {
-        dispatchServiceInstancesChangedEvent(serviceName, getInstances(serviceName));
-        if (otherServiceNames != null) {
-            Stream.of(otherServiceNames)
-                    .filter(StringUtils::isNotEmpty)
-                    .forEach(this::dispatchServiceInstancesChangedEvent);
-        }
-    }
-
-    default void dispatchServiceInstancesChangedEvent(String serviceName, List<ServiceInstance> serviceInstances) {
-        dispatchServiceInstancesChangedEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
-    }
-
-    default void dispatchServiceInstancesChangedEvent(ServiceInstancesChangedEvent event) {}
-
-    /**
-     * Add an instance of {@link ServiceInstancesChangedListener} for specified service
-     * <p>
-     * Default, Current method will be invoked by {@link ServiceDiscoveryRegistry#subscribe(URL, NotifyListener)
-     * the ServiceDiscoveryRegistry on the subscription}, this method is used to
-     * trigger or adapt the vendor's change notification mechanism typically, like Zookeeper Watcher,
-     * Nacos EventListener. If the registry observes the change, It's suggested that the implementation could invoke
-     * {@link #dispatchServiceInstancesChangedEvent(String)} method or variants
-     *
-     * @param listener an instance of {@link ServiceInstancesChangedListener}
-     * @throws NullPointerException
-     * @throws IllegalArgumentException
-     */
     default void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
     }
 
     /**
-     * unsubscribe to instances change event.
+     * unsubscribe to instance change event.
      *
      * @param listener
      * @throws IllegalArgumentException
@@ -246,15 +184,13 @@ public interface ServiceDiscovery extends Prioritized {
         return new ServiceInstancesChangedListener(serviceNames, this);
     }
 
-    // ==================================================================================== //
+    ServiceInstance getLocalInstance();
 
-//    String getKey(URL exportedURL);
+    MetadataInfo getMetadata();
 
     default URL getUrl() {
         return null;
     }
-
-    ServiceInstance getLocalInstance();
 
     default long getDelay() {
         return getUrl().getParameter(REGISTRY_DELAY_NOTIFICATION_KEY, 5000);

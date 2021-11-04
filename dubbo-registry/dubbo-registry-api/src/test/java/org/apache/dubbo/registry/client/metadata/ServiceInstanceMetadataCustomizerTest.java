@@ -22,7 +22,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
+import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterAll;
@@ -45,7 +45,7 @@ import static org.mockito.Mockito.when;
 
 public class ServiceInstanceMetadataCustomizerTest {
     public DefaultServiceInstance instance;
-    private InMemoryWritableMetadataService metadataService;
+    private MetadataServiceDelegation metadataService;
 
     public static DefaultServiceInstance createInstance() {
         return new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
@@ -65,7 +65,7 @@ public class ServiceInstanceMetadataCustomizerTest {
     @BeforeEach
     public void init() {
         instance = createInstance();
-        metadataService = mock(InMemoryWritableMetadataService.class);
+        metadataService = mock(MetadataServiceDelegation.class);
 
         URL url = URL.valueOf("dubbo://30.10.104.63:20880/org.apache.dubbo.demo.GreetingService?" + "params-filter=-default&" +
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");

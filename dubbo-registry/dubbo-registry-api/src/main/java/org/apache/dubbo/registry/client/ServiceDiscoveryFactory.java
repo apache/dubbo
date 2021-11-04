@@ -20,13 +20,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 
+import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
+
 /**
  * The factory to create {@link ServiceDiscovery}
  *
  * @see ServiceDiscovery
  * @since 2.7.5
  */
-@SPI("default")
+@SPI(value = "default", scope = APPLICATION)
 public interface ServiceDiscoveryFactory {
 
     /**

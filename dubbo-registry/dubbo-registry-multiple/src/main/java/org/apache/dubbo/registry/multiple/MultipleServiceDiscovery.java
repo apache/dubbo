@@ -20,6 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -80,19 +82,18 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
-        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
+    public void register() throws RuntimeException {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.register());
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.update(serviceInstance));
+    public void update() throws RuntimeException {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.update());
     }
 
     @Override
-    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.unregister(serviceInstance));
+    public void unregister() throws RuntimeException {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.unregister());
     }
 
     @Override
@@ -147,6 +148,36 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     @Override
     public ServiceInstance getLocalInstance() {
         return serviceInstance;
+    }
+
+    @Override
+    public MetadataInfo getMetadata() {
+        throw new UnsupportedOperationException("Multiple registry implementation does not support getMetadata() method.");
+    }
+
+    @Override
+    public void register(URL url) {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.register(url));
+    }
+
+    @Override
+    public void unregister(URL url) {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.unregister(url));
+    }
+
+    @Override
+    public void subscribe(URL url, NotifyListener listener) {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.subscribe(url, listener));
+    }
+
+    @Override
+    public void unsubscribe(URL url, NotifyListener listener) {
+        serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.unsubscribe(url, listener));
+    }
+
+    @Override
+    public List<URL> lookup(URL url) {
+        throw new UnsupportedOperationException("Multiple registry implementation does not support lookup() method.");
     }
 
     protected static class MultiServiceInstancesChangedListener extends ServiceInstancesChangedListener {

@@ -17,10 +17,10 @@
 
 package org.apache.dubbo.metadata.report.support;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -28,6 +28,8 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -314,6 +316,11 @@ public class AbstractMetadataReportTest {
         public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
+
+        @Override
+        public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
+            throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        }
     }
 
     private static class RetryMetadataReport extends AbstractMetadataReport {
@@ -373,6 +380,11 @@ public class AbstractMetadataReportTest {
 
         @Override
         public String getServiceDefinition(MetadataIdentifier consumerMetadataIdentifier) {
+            throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
+        }
+
+        @Override
+        public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
             throw new UnsupportedOperationException("This extension does not support working as a remote metadata center.");
         }
 

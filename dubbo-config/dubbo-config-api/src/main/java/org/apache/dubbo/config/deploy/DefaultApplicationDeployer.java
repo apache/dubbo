@@ -49,11 +49,7 @@ import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
-import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
-import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -83,8 +79,6 @@ import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.calInstanceRevision;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
@@ -103,8 +97,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final ReferenceCache referenceCache;
 
     private final ExecutorRepository executorRepository;
-
-    private volatile ServiceInstance serviceInstance;
 
     private AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
     private AtomicBoolean hasPreparedInternalModule = new AtomicBoolean(false);
@@ -739,19 +731,13 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private void registerServiceInstance() {
-        if (isRegisteredServiceInstance()) {
-            return;
-        }
+    private volatile boolean registered;
 
-        ApplicationConfig application = getApplication();
-        String serviceName = application.getName();
-        ServiceInstance serviceInstance = createServiceInstance(serviceName);
-        boolean registered = true;
+    private void registerServiceInstance() {
         try {
-            ServiceInstanceMetadataUtils.registerMetadataAndInstance(serviceInstance);
+            registered = true;
+            ServiceInstanceMetadataUtils.registerMetadataAndInstance(applicationModel);
         } catch (Exception e) {
-            registered = false;
             logger.error("Register instance error", e);
         }
         if (registered) {
@@ -762,77 +748,23 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 if (applicationModel.isDestroyed()) {
                     return;
                 }
-
-                InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
-                localMetadataService.blockUntilUpdated();
                 try {
                     if (!applicationModel.isDestroyed()) {
-                        ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                        ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
                     }
                 } catch (Exception e) {
                     if (!applicationModel.isDestroyed()) {
                         logger.error("Refresh instance and metadata error", e);
                     }
-                } finally {
-                    localMetadataService.releaseBlock();
                 }
             }, 0, ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
         }
     }
 
-    private boolean isRegisteredServiceInstance() {
-        return this.serviceInstance != null;
-    }
-
-    private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
-        // register instance only when at least one service is exported.
-        if (serviceInstance.getPort() > 0) {
-            publishMetadataToRemote(serviceInstance);
-            logger.info("Start registering instance address to registry.");
-            RegistryManager.getInstance(applicationModel).getServiceDiscoveries().forEach(serviceDiscovery ->
-            {
-                ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
-                calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
-                if (logger.isDebugEnabled()) {
-                    logger.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstanceForRegistry);
-                }
-                // register metadata
-                serviceDiscovery.register(serviceInstanceForRegistry);
-            });
-        }
-    }
-
-    private void publishMetadataToRemote(ServiceInstance serviceInstance) {
-//        InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService)WritableMetadataService.getDefaultExtension();
-//        localMetadataService.blockUntilUpdated();
-        if (logger.isInfoEnabled()) {
-            logger.info("Start publishing metadata to remote center, this only makes sense for applications enabled remote metadata center.");
-        }
-        RemoteMetadataServiceImpl remoteMetadataService = applicationModel.getBeanFactory().getBean(RemoteMetadataServiceImpl.class);
-        remoteMetadataService.publishMetadata(serviceInstance.getServiceName());
-    }
-
     private void unregisterServiceInstance() {
-        if (isRegisteredServiceInstance()) {
-            RegistryManager.getInstance(applicationModel).getServiceDiscoveries().forEach(serviceDiscovery -> {
-                try {
-                    serviceDiscovery.unregister(serviceInstance);
-                } catch (Exception ignored) {
-                    // ignored
-                }
-            });
+        if (registered) {
+            ServiceInstanceMetadataUtils.unregisterMetadataAndInstance(applicationModel);
         }
-    }
-
-    private ServiceInstance createServiceInstance(String serviceName) {
-        this.serviceInstance = new DefaultServiceInstance(serviceName, applicationModel);
-        setMetadataStorageType(serviceInstance, getMetadataType());
-        ServiceInstanceMetadataUtils.customizeInstance(this.serviceInstance);
-        return this.serviceInstance;
-    }
-
-    public ServiceInstance getServiceInstance() {
-        return serviceInstance;
     }
 
     @Override
@@ -1001,11 +933,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             }
             // refresh metadata
             try {
-                if (serviceInstance != null) {
-                    ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                if (registered) {
+                    ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
                 }
             } catch (Exception e) {
-                logger.error("refresh metadata failed: " + e.getMessage(), e);
+                logger.error("refresh meta and instance failed: " + e.getMessage(), e);
             }
             // shutdown export/refer executor after started
             executorRepository.shutdownServiceExportExecutor();

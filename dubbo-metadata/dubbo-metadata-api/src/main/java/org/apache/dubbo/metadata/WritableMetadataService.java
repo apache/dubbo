@@ -17,83 +17,21 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import java.util.Map;
-import java.util.Set;
-
 /**
- * Local {@link MetadataService} that extends {@link MetadataService} and provides the modification, which is used for
- * Dubbo's consumers and providers.
- *
- * @since 2.7.5
+ * FIXME, this class is not needed anymore.
  */
 @SPI(value = "default", scope = ExtensionScope.APPLICATION)
 public interface WritableMetadataService extends MetadataService {
-
-    /**
-     * Exports a {@link URL}
-     *
-     * @param url a {@link URL}
-     * @return If success , return <code>true</code>
-     */
-    boolean exportURL(URL url);
-
-    /**
-     * Unexports a {@link URL}
-     *
-     * @param url a {@link URL}
-     * @return If success , return <code>true</code>
-     */
-    boolean unexportURL(URL url);
-
-    /**
-     * Subscribes a {@link URL}
-     *
-     * @param url a {@link URL}
-     * @return If success , return <code>true</code>
-     */
-    boolean subscribeURL(URL url);
-
-    /**
-     * Unsubscribes a {@link URL}
-     *
-     * @param url a {@link URL}
-     * @return If success , return <code>true</code>
-     */
-    boolean unsubscribeURL(URL url);
-
-    void publishServiceDefinition(URL url);
-
-    default void setMetadataServiceURL(URL url) {
-
-    }
 
     default URL getMetadataServiceURL() {
         return null;
     }
 
-    void putCachedMapping(String serviceKey, Set<String> apps);
-
-    Set<String> getCachedMapping(String mappingKey);
-
-    Set<String> getCachedMapping(URL consumerURL);
-
-    Set<String> removeCachedMapping(String serviceKey);
-
-    Map<String, Set<String>> getCachedMapping();
-
-    MetadataInfo getDefaultMetadataInfo();
-
-    /**
-     * Get {@link ExtensionLoader#getDefaultExtension() the defautl extension} of {@link WritableMetadataService}
-     *
-     * @return non-null
-     */
     static WritableMetadataService getDefaultExtension(ScopeModel scopeModel) {
         return ScopeModelUtil.getExtensionLoader(WritableMetadataService.class, scopeModel).getDefaultExtension();
     }

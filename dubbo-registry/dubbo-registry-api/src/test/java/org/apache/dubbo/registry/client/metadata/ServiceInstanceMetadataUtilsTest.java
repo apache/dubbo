@@ -18,15 +18,12 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.InMemoryServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -38,7 +35,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -48,11 +44,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.INSTANCE_REVISION_UPDATED_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_CLUSTER_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_STORAGE_TYPE_PROPERTY_NAME;
@@ -140,15 +133,6 @@ public class ServiceInstanceMetadataUtilsTest {
     }
 
     @Test
-    public void testInstanceUpdateKey() {
-        serviceInstance.getExtendParams().put(INSTANCE_REVISION_UPDATED_KEY, "true");
-        Assertions.assertTrue(ServiceInstanceMetadataUtils.isInstanceUpdated(serviceInstance));
-
-        ServiceInstanceMetadataUtils.resetInstanceUpdateKey(serviceInstance);
-        Assertions.assertFalse(ServiceInstanceMetadataUtils.isInstanceUpdated(serviceInstance));
-    }
-
-    @Test
     public void testEndpoints() {
         Assertions.assertFalse(ServiceInstanceMetadataUtils.hasEndpoints(serviceInstance));
 
@@ -167,31 +151,9 @@ public class ServiceInstanceMetadataUtilsTest {
     }
 
     @Test
-    public void testCalInstanceRevision() {
-        URL url1 = URL.valueOf("test://127.0.0.1:8080/" + ServiceInstanceMetadataUtils.class.getName() + "?version=1.0.0");
-        URL url2 = URL.valueOf("test://127.0.0.1:8080/" + ServiceInstanceMetadataUtils.class.getName() + "?version=2.0.0");
-
-        ServiceDiscovery serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
-
-        InMemoryWritableMetadataService writableMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
-        MetadataInfo metadataInfo = new MetadataInfo("demo");
-        metadataInfo.addService(new MetadataInfo.ServiceInfo(url1));
-        writableMetadataService.addMetadataInfo(DEFAULT_KEY, metadataInfo);
-
-        ServiceInstanceMetadataUtils.calInstanceRevision(serviceDiscovery, serviceInstance);
-        Assertions.assertEquals(metadataInfo.calAndGetRevision(), serviceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
-        Assertions.assertNull(serviceInstance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
-
-        writableMetadataService.getMetadataInfos().get(DEFAULT_KEY).addService(new MetadataInfo.ServiceInfo(url2));
-        ServiceInstanceMetadataUtils.calInstanceRevision(serviceDiscovery, serviceInstance);
-        Assertions.assertEquals(metadataInfo.calAndGetRevision(), serviceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
-        Assertions.assertEquals(serviceInstance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY), "true");
-    }
-
-    @Test
     public void testRegisterMetadataAndInstance() throws Exception {
         InMemoryServiceDiscovery inMemoryServiceDiscovery = prepare();
-        ServiceInstanceMetadataUtils.registerMetadataAndInstance(serviceInstance);
+        ServiceInstanceMetadataUtils.registerMetadataAndInstance(ApplicationModel.defaultModel());
 
         Assertions.assertTrue(inMemoryServiceDiscovery.getServices().contains(serviceInstance.getServiceName()));
     }
@@ -202,7 +164,7 @@ public class ServiceInstanceMetadataUtilsTest {
 
         Assertions.assertNull(inMemoryServiceDiscovery.getLocalInstance());
 
-        ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+        ServiceInstanceMetadataUtils.refreshMetadataAndInstance(ApplicationModel.defaultModel());
 
         Assertions.assertEquals(inMemoryServiceDiscovery.getLocalInstance().getServiceName(), serviceInstance.getServiceName());
         Assertions.assertEquals(inMemoryServiceDiscovery.getLocalInstance().getHost(), serviceInstance.getHost());
@@ -211,14 +173,7 @@ public class ServiceInstanceMetadataUtilsTest {
     }
 
     private InMemoryServiceDiscovery prepare() throws NoSuchMethodException, InstantiationException, IllegalAccessException, java.lang.reflect.InvocationTargetException, NoSuchFieldException {
-
-
-
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel());
-        // Prevent NPE  when calling the refreshMetadataAndInstance method (customizeInstance -> MetadataServiceURLParamsMetadataCustomizer.customize)
-        URL metadataURL = URL.valueOf("dubbo://127.0.0.1:8080/" + MetadataService.class);
-        writableMetadataService.setMetadataServiceURL(metadataURL);
-
 
         // Construct serviceDiscoveryRegistry
         InMemoryServiceDiscovery inMemoryServiceDiscovery = new InMemoryServiceDiscovery();

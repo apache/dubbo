@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata.store;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -25,6 +24,8 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.registry.MockLogger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -73,7 +74,7 @@ public class InMemoryMetadataServiceTest {
      */
     @Test
     public void testExport() {
-        InMemoryWritableMetadataService metadataService = new InMemoryWritableMetadataService();
+        MetadataServiceDelegation metadataService = new MetadataServiceDelegation();
         metadataService.setApplicationModel(ApplicationModel.defaultModel());
         // export normal url
         URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
@@ -160,7 +161,7 @@ public class InMemoryMetadataServiceTest {
      */
     @Test
     public void testUnExport() {
-        InMemoryWritableMetadataService metadataService = new InMemoryWritableMetadataService();
+        MetadataServiceDelegation metadataService = new MetadataServiceDelegation();
         metadataService.setApplicationModel(ApplicationModel.defaultModel());
         // export normal url
         URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
@@ -183,7 +184,7 @@ public class InMemoryMetadataServiceTest {
     @Test
     public void testServiceDefinition() {
         URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService");
-        InMemoryWritableMetadataService metadataService = new InMemoryWritableMetadataService();
+        MetadataServiceDelegation metadataService = new MetadataServiceDelegation();
         metadataService.setApplicationModel(ApplicationModel.defaultModel());
         metadataService.publishServiceDefinition(url);
 
@@ -195,7 +196,7 @@ public class InMemoryMetadataServiceTest {
 
     @Test
     public void testSubscribe() {
-        InMemoryWritableMetadataService metadataService = new InMemoryWritableMetadataService();
+        MetadataServiceDelegation metadataService = new MetadataServiceDelegation();
         metadataService.setApplicationModel(ApplicationModel.defaultModel());
 
         URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService");

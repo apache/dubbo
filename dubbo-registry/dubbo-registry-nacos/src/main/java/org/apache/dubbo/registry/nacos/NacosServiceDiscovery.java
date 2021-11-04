@@ -56,6 +56,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private URL registryURL;
 
+    public NacosServiceDiscovery(String serviceName) {
+        super(serviceName);
+    }
+
     @Override
     public void doInitialize(URL registryURL) throws Exception {
         this.namingService = createNamingService(registryURL);
@@ -79,14 +83,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUpdate(ServiceInstance serviceInstance) {
-        ServiceInstance oldInstance = this.serviceInstance;
-        unregister(oldInstance);
-        register(serviceInstance);
-    }
-
-    @Override
-    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUnregister() throws RuntimeException {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
             // Should not register real group for ServiceInstance
@@ -111,7 +108,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
             service.selectInstances(serviceName, Constants.DEFAULT_GROUP, true)
-                .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+                .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i, revisionToMetadata, metadataReport))
                 .collect(Collectors.toList())
         );
     }
@@ -142,7 +139,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         String serviceName = event.getServiceName();
         List<ServiceInstance> serviceInstances = event.getInstances()
             .stream()
-            .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
+            .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i, revisionToMetadata, metadataReport))
             .collect(Collectors.toList());
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }

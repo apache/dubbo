@@ -29,6 +29,10 @@ import java.util.Set;
 public class MulticastServiceDiscovery extends AbstractServiceDiscovery {
     private URL registryURL;
 
+    public MulticastServiceDiscovery(String serviceName) {
+        super(serviceName);
+    }
+
     @Override
     public void doInitialize(URL registryURL) throws Exception {
         this.registryURL = registryURL;
@@ -44,11 +48,11 @@ public class MulticastServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate() throws RuntimeException {
     }
 
     @Override
-    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUnregister() throws RuntimeException {
         this.serviceInstance = null;
     }
 
