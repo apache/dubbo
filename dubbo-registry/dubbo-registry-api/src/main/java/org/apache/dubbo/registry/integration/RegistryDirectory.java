@@ -203,9 +203,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 && invokerUrls.get(0) != null
                 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
-            this.invokers = BitList.emptyList();
-            this.validInvokers = BitList.emptyList();
-            routerChain.setInvokers(this.invokers);
+            this.setInvokers(BitList.emptyList());
+            this.setValidInvokers(BitList.emptyList());
+            routerChain.setInvokers(this.getInvokers());
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
@@ -247,9 +247,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
 
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            this.invokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
+            this.setInvokers(multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers));
             // pre-route and build cache
-            routerChain.setInvokers(this.invokers);
+            routerChain.setInvokers(this.getInvokers());
             this.urlInvokerMap = newUrlInvokerMap;
 
             try {
@@ -485,8 +485,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
             localUrlInvokerMap.clear();
         }
-        invokers = null;
-        validInvokers = null;
+        destroyInvokers();
+        destroyValidInvokers();
         cachedInvokerUrls = null;
     }
 
@@ -524,7 +524,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public List<Invoker<T>> getAllInvokers() {
-        return this.invokers == null ? Collections.emptyList() : this.invokers;
+        return this.getInvokers();
     }
 
     @Override

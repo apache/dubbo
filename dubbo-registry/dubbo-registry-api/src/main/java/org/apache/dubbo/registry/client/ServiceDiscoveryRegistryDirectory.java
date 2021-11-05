@@ -204,9 +204,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         if (invokerUrls.size() == 0) {
             logger.info("Received empty url list...");
             this.forbidden = true; // Forbid to access
-            this.invokers = BitList.emptyList();
-            this.validInvokers = BitList.emptyList();
-            routerChain.setInvokers(this.invokers);
+            this.setInvokers(BitList.emptyList());
+            this.setValidInvokers(BitList.emptyList());
+            routerChain.setInvokers(this.getInvokers());
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow accessing
@@ -229,9 +229,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            this.invokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
+            this.setInvokers(multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers));
             // pre-route and build cache
-            routerChain.setInvokers(this.invokers);
+            routerChain.setInvokers(this.getInvokers());
             this.urlInvokerMap = newUrlInvokerMap;
 
             if (oldUrlInvokerMap != null) {
@@ -350,8 +350,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         this.urlInvokerMap = null;
-        this.invokers = null;
-        this.validInvokers = null;
+        this.destroyInvokers();
+        this.destroyValidInvokers();
     }
 
     /**

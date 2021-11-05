@@ -85,12 +85,17 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     /**
      * All invokers from registry
      */
-    protected volatile BitList<Invoker<T>> invokers = new BitList(Collections.emptyList());
+    private volatile BitList<Invoker<T>> invokers = new BitList(Collections.emptyList());
 
     /**
      * Valid Invoker. All invokers from registry exclude unavailable and disabled invokers.
      */
-    protected volatile BitList<Invoker<T>> validInvokers = new BitList(Collections.emptyList());
+    private volatile BitList<Invoker<T>> validInvokers = new BitList(Collections.emptyList());
+
+    /**
+     * Valid Invokers initialized flag.
+     */
+    private volatile boolean validInvokersInitialized = false;
 
     /**
      * Waiting to reconnect invokers.
@@ -177,7 +182,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         BitList<Invoker<T>> availableInvokers;
-        if (!validInvokers.isEmpty()) {
+        if (validInvokersInitialized) {
             availableInvokers = validInvokers;
         } else {
             availableInvokers = invokers;
@@ -299,7 +304,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                     try {
                         for (Invoker<T> tInvoker : needDeleteList) {
                             if (invokers.contains(tInvoker)) {
-                                validInvokers.add(tInvoker);
+                                addValidInvoker(tInvoker);
                                 logger.info("Recover service address: " + tInvoker.getUrl() + "  from invalid list.");
                             }
                             invokersToReconnect.remove(tInvoker);
@@ -333,7 +338,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 BitList<Invoker<T>> copiedInvokers = invokers.clone();
                 refreshInvokers(copiedInvokers, invokersToReconnect);
                 refreshInvokers(copiedInvokers, disabledInvokers);
-                validInvokers = copiedInvokers;
+                setValidInvokers(copiedInvokers);
             }
         } finally {
             invokerLock.unlock();
@@ -372,7 +377,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         try {
             if (disabledInvokers.remove(invoker)) {
                 try {
-                    validInvokers.add(invoker);
+                    addValidInvoker(invoker);
                     logger.info("Recover service address: " + invoker.getUrl() + "  from disabled list.");
                 } catch (Throwable ignore) {
 
@@ -413,6 +418,29 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     public Set<Invoker<T>> getDisabledInvokers() {
         return disabledInvokers;
+    }
+
+    protected void addValidInvoker(Invoker<T> invoker) {
+        validInvokers.add(invoker);
+        validInvokersInitialized = true;
+    }
+
+    protected void setInvokers(BitList<Invoker<T>> invokers) {
+        this.invokers = invokers;
+    }
+
+    protected void setValidInvokers(BitList<Invoker<T>> validInvokers) {
+        this.validInvokers = validInvokers;
+        validInvokersInitialized = true;
+    }
+
+    protected void destroyInvokers() {
+        invokers.clear();
+    }
+
+    protected void destroyValidInvokers() {
+        validInvokers.clear();
+        validInvokersInitialized = false;
     }
 
     protected abstract List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
