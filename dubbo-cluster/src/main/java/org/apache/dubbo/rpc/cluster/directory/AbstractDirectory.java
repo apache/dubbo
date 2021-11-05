@@ -85,12 +85,12 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     /**
      * All invokers from registry
      */
-    protected volatile BitList<Invoker<T>> invokers;
+    protected volatile BitList<Invoker<T>> invokers = new BitList(Collections.emptyList());
 
     /**
      * Valid Invoker. All invokers from registry exclude unavailable and disabled invokers.
      */
-    protected volatile BitList<Invoker<T>> validInvokers;
+    protected volatile BitList<Invoker<T>> validInvokers = new BitList(Collections.emptyList());
 
     /**
      * Waiting to reconnect invokers.
@@ -177,7 +177,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         BitList<Invoker<T>> availableInvokers;
-        if (validInvokers != null) {
+        if (!validInvokers.isEmpty()) {
             availableInvokers = validInvokers;
         } else {
             availableInvokers = invokers;
@@ -186,9 +186,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         List<Invoker<T>> routedResult = doList(availableInvokers, invocation);
         if (routedResult.isEmpty()) {
             logger.warn("No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
-                + " all validInvokers' size: " + (validInvokers == null ? 0 : validInvokers.size())
+                + " all validInvokers' size: " + validInvokers.size()
                 + "/ all routed invokers' size: " + routedResult.size()
-                + "/ all invokers' size: " + (invokers == null ? 0 : invokers.size())
+                + "/ all invokers' size: " + invokers.size()
                 + " from registry " + getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost()
                 + " using the dubbo version " + Version.getVersion() + ".");
@@ -230,12 +230,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     @Override
     public void destroy() {
         destroyed = true;
-        if (invokers != null) {
-            invokers.clear();
-        }
-        if (validInvokers != null) {
-            validInvokers.clear();
-        }
+        invokers.clear();
+        validInvokers.clear();
         invokersToReconnect.clear();
         disabledInvokers.clear();
     }
@@ -333,7 +329,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public synchronized void refreshInvoker() {
         invokerLock.lock();
         try {
-            if (invokers != null) {
+            if (!invokers.isEmpty()) {
                 BitList<Invoker<T>> copiedInvokers = invokers.clone();
                 refreshInvokers(copiedInvokers, invokersToReconnect);
                 refreshInvokers(copiedInvokers, disabledInvokers);
