@@ -26,6 +26,7 @@ public class RegistryCenterFinished extends AbstractRegistryCenterTestExecutionL
 
     @Override
     public void testPlanExecutionFinished(TestPlan testPlan) {
+        super.testPlanExecutionFinished(testPlan);
         try {
             if(needRegistryCenter(testPlan)){
                 MockedRegistryCenter.shutdown();

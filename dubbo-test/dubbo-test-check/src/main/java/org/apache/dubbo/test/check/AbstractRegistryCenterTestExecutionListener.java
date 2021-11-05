@@ -21,8 +21,6 @@ import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
-
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,11 +42,6 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
     private static final Set<String> PACKAGE_NAME = new HashSet<>();
 
     /**
-     * The unique id for the engine.
-     */
-    private static final String ENGINE_UNIQUE_ID = "[engine:junit-jupiter]";
-
-    /**
      * Use embedded zookeeper or not.
      */
     private static boolean enableEmbeddedZookeeper;
@@ -56,7 +49,7 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
     static {
         // dubbo-config module
         PACKAGE_NAME.add("org.apache.dubbo.config");
-        // dubbo-test
+        // dubbo-test module
         PACKAGE_NAME.add("org.apache.dubbo.test");
         enableEmbeddedZookeeper = Boolean.valueOf(System.getProperty(CONFIG_ENABLE_EMBEDDED_ZOOKEEPER, "true"));
     }
@@ -65,18 +58,24 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
      * Checks if current {@link TestPlan} need registry center.
      */
     public boolean needRegistryCenter(TestPlan testPlan) {
-        if (enableEmbeddedZookeeper && testPlan.containsTests()) {
-            TestIdentifier engineTestIdentifier = this.getEngineTestIdentifier(testPlan.getRoots());
-            TestIdentifier childTestIdentifier = this.getFirstTestIdentifier(testPlan.getChildren(engineTestIdentifier));
-            return childTestIdentifier == null ? false : this.needRegistryCenter(childTestIdentifier);
-        }
-        return false;
+        return testPlan.getRoots().stream()
+            .flatMap(testIdentifier -> testPlan.getChildren(testIdentifier).stream())
+            .filter(testIdentifier -> testIdentifier.getSource().isPresent())
+            .filter(testIdentifier -> supportEmbeddedZookeeper(testIdentifier))
+            .count() > 0;
     }
 
     /**
      * Checks if current {@link TestIdentifier} need registry center.
      */
     public boolean needRegistryCenter(TestIdentifier testIdentifier) {
+        return supportEmbeddedZookeeper(testIdentifier);
+    }
+
+    /**
+     * Checks if the current {@link TestIdentifier} need embedded zookeeper.
+     */
+    private boolean supportEmbeddedZookeeper(TestIdentifier testIdentifier) {
         if (!enableEmbeddedZookeeper) {
             return false;
         }
@@ -90,33 +89,5 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
             }
         }
         return false;
-    }
-
-    /**
-     * Returns the {@link TestIdentifier} of the test engine.
-     */
-    private TestIdentifier getEngineTestIdentifier(Set<TestIdentifier> testIdentifiers) {
-        for (TestIdentifier testIdentifier : testIdentifiers) {
-            if (ENGINE_UNIQUE_ID.equals(testIdentifier.getUniqueId())) {
-                return testIdentifier;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Returns the first {@link TestIdentifier} from the given collections.
-     *
-     * @param testIdentifiers the collection of {@link TestIdentifier}s
-     * @return the first {@link TestIdentifier}
-     */
-    private TestIdentifier getFirstTestIdentifier(Collection<TestIdentifier> testIdentifiers) {
-        if (testIdentifiers != null
-            && !testIdentifiers.isEmpty()) {
-            for (TestIdentifier testIdentifier : testIdentifiers) {
-                return testIdentifier;
-            }
-        }
-        return null;
     }
 }
