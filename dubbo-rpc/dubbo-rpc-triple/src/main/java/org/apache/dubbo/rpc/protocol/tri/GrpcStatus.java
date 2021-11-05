@@ -150,7 +150,7 @@ public class GrpcStatus {
     }
 
     public static String fromMessage(String raw) {
-        if (raw == null || raw.isEmpty()) {
+        if (StringUtils.isEmpty(raw)) {
             return "";
         }
         return QueryStringDecoder.decodeComponent(raw);

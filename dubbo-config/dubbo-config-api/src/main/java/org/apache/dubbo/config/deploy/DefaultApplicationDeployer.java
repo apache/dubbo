@@ -526,31 +526,36 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 throw new IllegalStateException(getIdentifier() + " is stopping or stopped, can not start again");
             }
 
-            // maybe call start again after add new module, check if any new module
-            boolean hasPendingModule = hasPendingModule();
+            try {
+                // maybe call start again after add new module, check if any new module
+                boolean hasPendingModule = hasPendingModule();
 
-            if (isStarting()) {
-                // currently is starting, maybe both start by module and application
-                // if has new modules, start them
-                if (hasPendingModule) {
-                    startModules();
+                if (isStarting()) {
+                    // currently is starting, maybe both start by module and application
+                    // if has new modules, start them
+                    if (hasPendingModule) {
+                        startModules();
+                    }
+                    // if is starting, reuse previous startFuture
+                    return startFuture;
                 }
-                // if is starting, reuse previous startFuture
-                return startFuture;
+
+                // if is started and no new module, just return
+                if (isStarted() && !hasPendingModule) {
+                    return CompletableFuture.completedFuture(false);
+                }
+
+                // pending -> starting : first start app
+                // started -> starting : re-start app
+                onStarting();
+
+                initialize();
+
+                doStart();
+            } catch (Throwable e) {
+                onFailed(getIdentifier() + " start failure", e);
+                throw e;
             }
-
-            // if is started and no new module, just return
-            if (isStarted() && !hasPendingModule) {
-                return CompletableFuture.completedFuture(false);
-            }
-
-            // pending -> starting : first start app
-            // started -> starting : re-start app
-            onStarting();
-
-            initialize();
-
-            doStart();
 
             return startFuture;
         }
@@ -578,37 +583,40 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // prepare application instance
         prepareApplicationInstance();
 
-        executorRepository.getSharedExecutor().submit(() -> {
-            try {
-                while (isStarting()) {
-                    // notify when any module state changed
-                    synchronized (stateLock) {
-                        try {
-                            stateLock.wait(500);
-                        } catch (InterruptedException e) {
-                            // ignore
-                        }
-                    }
-
-                    // if has new module, do start again
-                    if (hasPendingModule()) {
-                        startModules();
-                    }
-                }
-            } catch (Exception e) {
-                logger.warn("waiting for application startup occurred an exception", e);
-            }
-        });
+        // Ignore checking new module after start
+//        executorRepository.getSharedExecutor().submit(() -> {
+//            try {
+//                while (isStarting()) {
+//                    // notify when any module state changed
+//                    synchronized (stateLock) {
+//                        try {
+//                            stateLock.wait(500);
+//                        } catch (InterruptedException e) {
+//                            // ignore
+//                        }
+//                    }
+//
+//                    // if has new module, do start again
+//                    if (hasPendingModule()) {
+//                        startModules();
+//                    }
+//                }
+//            } catch (Throwable e) {
+//                onFailed(getIdentifier() + " check start occurred an exception", e);
+//            }
+//        });
     }
 
     private void startModules() {
         // ensure init and start internal module first
         prepareInternalModule();
 
-        // filter and start pending modules, ignore new module during starting
-        applicationModel.getModuleModels().stream()
-            .filter(moduleModel -> moduleModel.getDeployer().isPending())
-            .forEach(moduleModel -> moduleModel.getDeployer().start());
+        // filter and start pending modules, ignore new module during starting, throw exception of module start
+        for (ModuleModel moduleModel : new ArrayList<>(applicationModel.getModuleModels())) {
+            if (moduleModel.getDeployer().isPending()) {
+                moduleModel.getDeployer().start();
+            }
+        }
     }
 
     @Override
@@ -848,7 +856,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void preDestroy() {
-        synchronized(destroyLock) {
+        synchronized (destroyLock) {
             if (isStopping() || isStopped()) {
                 return;
             }
@@ -865,7 +873,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void postDestroy() {
-        synchronized(destroyLock) {
+        synchronized (destroyLock) {
             // expect application model is destroyed before here
             if (isStopped()) {
                 return;
@@ -887,8 +895,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
                 onStopped();
             } catch (Throwable ex) {
-                logger.error(getIdentifier() + " an error occurred while stopping application: " + ex.getMessage(), ex);
-                setFailed(ex);
+                String msg = getIdentifier() + " an error occurred while stopping application: " + ex.getMessage();
+                onFailed(msg, ex);
             }
         }
     }
@@ -925,6 +933,19 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 case STOPPED:
                     onStopped();
                     break;
+                case FAILED:
+                    Throwable error = null;
+                    ModuleModel errorModule = null;
+                    for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+                        ModuleDeployer deployer = moduleModel.getDeployer();
+                        if (deployer.isFailed() && deployer.getError() != null) {
+                            error = deployer.getError();
+                            errorModule = moduleModel;
+                            break;
+                        }
+                    }
+                    onFailed(getIdentifier() + " found failed module: " + errorModule.getDesc(), error);
+                    break;
                 case PENDING:
                     // cannot change to pending from other state
                     // setPending();
@@ -935,7 +956,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private DeployState calculateState() {
         DeployState newState = DeployState.UNKNOWN;
-        int pending = 0, starting = 0, started = 0, stopping = 0, stopped = 0;
+        int pending = 0, starting = 0, started = 0, stopping = 0, stopped = 0, failed = 0;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             ModuleDeployer deployer = moduleModel.getDeployer();
             if (deployer.isPending()) {
@@ -948,10 +969,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 stopping++;
             } else if (deployer.isStopped()) {
                 stopped++;
+            } else if (deployer.isFailed()) {
+                failed++;
             }
         }
 
-        if (started > 0) {
+        if (failed > 0) {
+            newState = DeployState.FAILED;
+        } else if (started > 0) {
             if (pending + starting + stopping + stopped == 0) {
                 // all modules have been started
                 newState = DeployState.STARTED;
@@ -1048,6 +1073,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " has stopped.");
             }
+        } finally {
+            completeStartFuture(false);
+        }
+    }
+
+    private void onFailed(String msg, Throwable ex) {
+        try {
+            setFailed(ex);
+            logger.error(msg, ex);
         } finally {
             completeStartFuture(false);
         }
