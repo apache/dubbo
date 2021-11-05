@@ -69,6 +69,14 @@ public class ZookeeperWindowsContext extends ZookeeperContext {
     }
 
     /**
+     * Remove the registered pid with the given client port.
+     * @param clientPort the client port of zookeeper instance.
+     */
+    public void removePid(int clientPort){
+        this.processIds.remove(clientPort);
+    }
+
+    /**
      * Returns the default executor service to manage the lifecycle of zookeeper.
      */
     public ExecutorService getExecutorService() {

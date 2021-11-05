@@ -29,6 +29,9 @@ import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContex
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -68,16 +71,29 @@ public class FindPidWindowsProcessor extends ZookeeperWindowsProcessor {
             logger.info(String.format("Find result: %s", result));
             if (StringUtils.isNotEmpty(result)) {
                 String[] values = result.split("\\r\\n");
+                // values sample:
+                // Protocol Local address          Foreign address        Status          PID
+                //   TCP    127.0.0.1:2182         127.0.0.1:56672        ESTABLISHED     4020
+                //   TCP    127.0.0.1:56672        127.0.0.1:2182         ESTABLISHED     1980
+                //   TCP    127.0.0.1:56692        127.0.0.1:2182         ESTABLISHED     1980
+                //   TCP    127.0.0.1:56723        127.0.0.1:2182         ESTABLISHED     1980
+                //   TCP    [::]:2182              [::]:0                 LISTENING       4020
                 if (values != null && values.length > 0) {
                     for (int i = 0; i < values.length; i++) {
-                        String[] segments = values[i].split(" ");
-                        if (segments != null && segments.length > 0) {
-                            for (int j = 0; j < segments.length; j++) {
-                                if (this.check(segments[i], clientPort)) {
-                                    int pid = Integer.valueOf(segments[segments.length - 1]);
-                                    context.register(clientPort, pid);
-                                    return;
-                                }
+                        List<String> segments = Arrays.stream(values[i].trim().split(" "))
+                            .filter(str -> !"".equals(str))
+                            .collect(Collectors.toList());
+                        // segments sample:
+                        // TCP
+                        // 127.0.0.1:2182
+                        // 127.0.0.1:56672
+                        // ESTABLISHED
+                        // 4020
+                        if (segments != null && segments.size() == 5) {
+                            if (this.check(segments.get(1), clientPort)) {
+                                int pid = Integer.valueOf(segments.get(segments.size() - 1).trim());
+                                context.register(clientPort, pid);
+                                return;
                             }
                         }
                     }

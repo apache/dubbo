@@ -51,6 +51,8 @@ public class KillProcessWindowsProcessor extends ZookeeperWindowsProcessor {
             cmdLine.addArgument("taskkill /PID " + pid + " -t -f");
             try {
                 executor.execute(cmdLine);
+                // clear pid
+                context.removePid(clientPort);
             } catch (IOException e) {
                 throw new DubboTestException(String.format("Failed to kill the pid %d of zookeeper with port %d", pid, clientPort), e);
             }
