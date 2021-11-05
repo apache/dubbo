@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
