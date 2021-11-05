@@ -30,6 +30,7 @@ import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -245,7 +246,7 @@ public class MetadataServiceExporterTest {
     @BeforeAll
     public static void beforeAll() {
         FrameworkModel.destroyAll();
-        registryConfig = new RegistryConfig("zookeeper://127.0.0.1:2181");
+        registryConfig = new RegistryConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
         // pre-check threads
         //precheckUnclosedThreads();
     }

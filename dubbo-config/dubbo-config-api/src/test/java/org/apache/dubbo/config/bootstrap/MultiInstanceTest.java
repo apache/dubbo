@@ -40,6 +40,7 @@ import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.test.check.DubboTestChecker;
+import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -69,7 +70,7 @@ public class MultiInstanceTest {
     @BeforeAll
     public static void beforeAll() {
         FrameworkModel.destroyAll();
-        registryConfig = new RegistryConfig("zookeeper://127.0.0.1:2181");
+        registryConfig = new RegistryConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
 
         // pre-check threads
         //precheckUnclosedThreads();
@@ -337,7 +338,7 @@ public class MultiInstanceTest {
             Assertions.assertTrue(stackTraces1.size() > 0, "Get threads of provider app 1 failed");
 
             // start zk server 2
-            RegistryConfig registryConfig2 = new RegistryConfig("zookeeper://127.0.0.1:2182");
+            RegistryConfig registryConfig2 = new RegistryConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS2);
 
             // start provider app 2 use a difference zk server 2
             ServiceConfig serviceConfig2 = new ServiceConfig();

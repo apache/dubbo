@@ -21,6 +21,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,11 +61,11 @@ public class ConfigCenterConfigTest {
         ConfigCenterConfig config = new ConfigCenterConfig();
         config.setNamespace("namespace");
         config.setGroup("group");
-        config.setAddress("zookeeper://127.0.0.1:2181");
+        config.setAddress(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
         config.setHighestPriority(null);
         config.refresh();
 
-        Assertions.assertEquals("zookeeper://127.0.0.1:2181/ConfigCenterConfig?check=true&" +
+        Assertions.assertEquals(MockedRegistryCenter.ZOOKEEPER_ADDRESS1+"/ConfigCenterConfig?check=true&" +
                         "config-file=dubbo.properties&group=group&" +
                         "namespace=namespace&timeout=3000",
                 config.toUrl().toFullString()
@@ -74,7 +75,7 @@ public class ConfigCenterConfigTest {
     @Test
     public void testOverrideConfig() {
 
-        String zkAddr = "zookeeper://127.0.0.1:2181";
+        String zkAddr = MockedRegistryCenter.ZOOKEEPER_ADDRESS1;
         // sysprops has no id
         SysProps.setProperty("dubbo.config-center.check", "false");
         SysProps.setProperty("dubbo.config-center.address", zkAddr);
@@ -116,7 +117,7 @@ public class ConfigCenterConfigTest {
         try {
             //No id but has address
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            configCenter.setAddress("zookeeper://127.0.0.1:2181");
+            configCenter.setAddress(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
 
             DubboBootstrap.getInstance()
                     .application("demo-app")
@@ -277,7 +278,7 @@ public class ConfigCenterConfigTest {
     @Test
     public void testAttributes() {
         ConfigCenterConfig cc = new ConfigCenterConfig();
-        cc.setAddress("zookeeper://127.0.0.1:2181");
+        cc.setAddress(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
         Map<String, String> attributes = new LinkedHashMap<>();
         ConfigCenterConfig.appendAttributes(attributes, cc);
 
@@ -291,7 +292,7 @@ public class ConfigCenterConfigTest {
 
     @Test
     public void testSetAddress() {
-        String address = "zookeeper://127.0.0.1:2181";
+        String address = MockedRegistryCenter.ZOOKEEPER_ADDRESS1;
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setUsername("user123"); // set username first
         cc.setPassword("pass123");

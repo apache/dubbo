@@ -28,6 +28,7 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -92,8 +93,8 @@ public class MultipleRegistryCenterExportMetadataIntegrationTest implements Inte
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
             .protocol(new ProtocolConfig(PROTOCOL_NAME))
             .service(serviceConfig)
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:2182"));
+            .registry(new RegistryConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS1))
+            .registry(new RegistryConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS2));
     }
 
     /**
