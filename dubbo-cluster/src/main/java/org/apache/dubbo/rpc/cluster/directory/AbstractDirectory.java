@@ -88,6 +88,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     private volatile BitList<Invoker<T>> invokers = new BitList(Collections.emptyList());
 
     /**
+     * All invokers initialized flag.
+     */
+    private volatile boolean invokersInitialized = false;
+
+    /**
      * Valid Invoker. All invokers from registry exclude unavailable and disabled invokers.
      */
     private volatile BitList<Invoker<T>> validInvokers = new BitList(Collections.emptyList());
@@ -334,7 +339,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public synchronized void refreshInvoker() {
         invokerLock.lock();
         try {
-            if (!invokers.isEmpty()) {
+            if (invokersInitialized) {
                 BitList<Invoker<T>> copiedInvokers = invokers.clone();
                 refreshInvokers(copiedInvokers, invokersToReconnect);
                 refreshInvokers(copiedInvokers, disabledInvokers);
@@ -427,6 +432,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected void setInvokers(BitList<Invoker<T>> invokers) {
         this.invokers = invokers;
+        invokersInitialized = true;
     }
 
     protected void setValidInvokers(BitList<Invoker<T>> validInvokers) {
@@ -436,6 +442,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected void destroyInvokers() {
         invokers.clear();
+        invokersInitialized = false;
     }
 
     protected void destroyValidInvokers() {
