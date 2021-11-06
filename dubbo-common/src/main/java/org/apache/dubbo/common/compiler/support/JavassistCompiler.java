@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
+import org.apache.dubbo.common.bytecode.DubboLoaderClassPath;
+
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -86,7 +88,7 @@ public class JavassistCompiler extends AbstractCompiler {
             classLoader = cp.getClassLoader();
         }
         cp.insertClassPath(new LoaderClassPath(classLoader));
-        cp.insertClassPath(new LoaderClassPath(JavassistCompiler.class.getClassLoader()));
+        cp.insertClassPath(new DubboLoaderClassPath());
 
         try {
             return cp.toClass(cls, neighbor, classLoader, JavassistCompiler.class.getProtectionDomain());
