@@ -102,7 +102,7 @@
         <zookeeper_version>3.4.13</zookeeper_version>
         <curator_version>4.2.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
-        <jedis_version>3.6.0</jedis_version>
+        <jedis_version>3.7.0</jedis_version>
         <consul_version>1.4.2</consul_version>
         <consul_process_version>2.2.1</consul_process_version>
         <consul_client_version>1.3.7</consul_client_version>
@@ -130,7 +130,7 @@
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>9.0.48</tomcat_embed_version>
-        <jetcd_version>0.5.3</jetcd_version>
+        <jetcd_version>0.5.7</jetcd_version>
         <nacos_version>1.4.2</nacos_version>
         <grpc.version>1.31.1</grpc.version>
         <!-- Log libs -->
@@ -155,7 +155,7 @@
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
         <test_container_version>1.15.2</test_container_version>
-        <etcd_launcher_version>0.5.3</etcd_launcher_version>
+        <etcd_launcher_version>0.5.7</etcd_launcher_version>
         <hessian_lite_version>3.2.11</hessian_lite_version>
         <xmlrpc_version>3.1.3</xmlrpc_version>
         <swagger_version>1.5.19</swagger_version>
