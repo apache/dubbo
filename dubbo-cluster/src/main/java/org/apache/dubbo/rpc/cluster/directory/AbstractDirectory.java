@@ -386,11 +386,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     public BitList<Invoker<T>> getInvokers() {
-        return (BitList<Invoker<T>>) Collections.unmodifiableList(invokers);
+        // return clone to avoid being modified.
+        return invokers.clone();
     }
 
     public BitList<Invoker<T>> getValidInvokers() {
-        return (BitList<Invoker<T>>) Collections.unmodifiableList(validInvokers);
+        // return clone to avoid being modified.
+        return validInvokers.clone();
     }
 
     public List<Invoker<T>> getInvokersToReconnect() {
