@@ -25,7 +25,7 @@
     <dubbo:application name="zookeeper-dubbo-spring-consumer"/>
 
     <!-- 连接注册中心配置 -->
-    <dubbo:registry address="zookeeper://127.0.0.1:2181?registry-type=service" use-as-config-center="true"
+    <dubbo:registry address="${zookeeper.connection.address}?registry-type=service" use-as-config-center="true"
                     use-as-metadata-center="true"/>
 
     <dubbo:reference id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService"
