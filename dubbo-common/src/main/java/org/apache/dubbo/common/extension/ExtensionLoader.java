@@ -352,7 +352,7 @@ public class ExtensionLoader<T> {
                                     keyPairs[i][1] = arr[1];
                                 } else {
                                     keyPairs[i] = new String[1];
-                                    keyPairs[1][0] = activateValue[i];
+                                    keyPairs[i][0] = activateValue[i];
                                 }
                             }
                             cachedActivateValues.put(name, keyPairs);
