@@ -249,7 +249,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     @Override
     public void addInvalidateInvoker(Invoker<T> invoker) {
         // 1. remove this invoker from validInvokers list, this invoker will not be listed in the next time
-        if (validInvokers.remove(invoker)) {
+        boolean hasIt;
+        synchronized (validInvokers) {
+            hasIt = validInvokers.remove(invoker);
+        }
+        if (hasIt) {
             // 2. add this invoker to reconnect list
             invokersToReconnect.add(invoker);
             // 3. try start check connectivity task
@@ -346,7 +350,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public void addDisabledInvoker(Invoker<T> invoker) {
         if (invokers.contains(invoker)) {
             disabledInvokers.add(invoker);
-            validInvokers.remove(invoker);
+            synchronized (validInvokers) {
+                validInvokers.remove(invoker);
+            }
             logger.info("Disable service address: " + invoker.getUrl() + ".");
         }
     }
@@ -415,7 +421,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     private void addValidInvoker(Invoker<T> invoker) {
-        this.validInvokers.add(invoker);
+        synchronized (this.validInvokers) {
+            this.validInvokers.add(invoker);
+        }
         this.validInvokersInitialized = true;
     }
 
