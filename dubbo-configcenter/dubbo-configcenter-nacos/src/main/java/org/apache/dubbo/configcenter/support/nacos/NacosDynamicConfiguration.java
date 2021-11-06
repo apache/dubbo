@@ -17,17 +17,6 @@
 
 package org.apache.dubbo.configcenter.support.nacos;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
-import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
-import org.apache.dubbo.common.config.configcenter.ConfigItem;
-import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
-import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.MD5Utils;
-import org.apache.dubbo.common.utils.StringUtils;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -38,6 +27,16 @@ import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.client.config.http.HttpAgent;
 import com.alibaba.nacos.common.http.HttpRestResult;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.MD5Utils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -85,6 +84,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
      * The map store the key to {@link NacosConfigListener} mapping
      */
     private final Map<String, NacosConfigListener> watchListenerMap;
+
+    private MD5Utils md5Utils = new MD5Utils();
 
     NacosDynamicConfiguration(URL url) {
         this.nacosProperties = buildNacosProperties(url);
@@ -177,6 +178,11 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
+    public void close() throws Exception {
+        configService.shutdown();
+    }
+
+    @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         String listenerKey = buildListenerKey(key, group);
         NacosConfigListener nacosConfigListener =
@@ -217,7 +223,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         String content = getConfig(key, group);
         String casMd5 = "";
         if (StringUtils.isNotEmpty(content)) {
-            casMd5 = MD5Utils.getMd5(content);
+            casMd5 = md5Utils.getMd5(content);
         }
         return new ConfigItem(content, casMd5);
     }

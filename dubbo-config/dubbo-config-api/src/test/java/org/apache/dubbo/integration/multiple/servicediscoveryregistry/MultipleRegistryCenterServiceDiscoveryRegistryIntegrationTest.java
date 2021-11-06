@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.RegistryServiceListener;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -177,7 +178,7 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
             // check if it's registered
             Assertions.assertTrue(serviceDiscoveryRegistryInfoWrapper.isRegistered());
             // check if it's subscribed
-            Assertions.assertTrue(serviceDiscoveryRegistryInfoWrapper.isSubscribed());
+            Assertions.assertFalse(serviceDiscoveryRegistryInfoWrapper.isSubscribed());
             InMemoryWritableMetadataService inMemoryWritableMetadataService = serviceDiscoveryRegistryInfoWrapper.getInMemoryWritableMetadataService();
             // check if the count of exported urls is right or not
             Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);

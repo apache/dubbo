@@ -90,7 +90,7 @@ public class StubProxyFactoryWrapper implements ProxyFactory {
                             urlBuilder.addParameter(STUB_EVENT_METHODS_KEY, StringUtils.join(Wrapper.getWrapper(proxy.getClass()).getDeclaredMethodNames(), ","));
                             urlBuilder.addParameter(IS_SERVER_KEY, Boolean.FALSE.toString());
                             try {
-                                export(proxy, (Class) invoker.getInterface(), urlBuilder.build());
+                                export(proxy, invoker.getInterface(), urlBuilder.build());
                             } catch (Exception e) {
                                 LOGGER.error("export a stub service error.", e);
                             }

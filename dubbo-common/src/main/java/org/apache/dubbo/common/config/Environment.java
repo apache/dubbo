@@ -99,6 +99,9 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         this.localMigrationRule = ConfigUtils.loadMigrationRule(scopeModel.getClassLoaders(), path);
     }
 
+    /**
+     * @deprecated only for ut
+     */
     @Deprecated
     public void setLocalMigrationRule(String localMigrationRule) {
         this.localMigrationRule = localMigrationRule;
@@ -246,7 +249,14 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
         globalConfiguration = null;
         globalConfigurationMaps = null;
         defaultDynamicGlobalConfiguration = null;
-        defaultDynamicConfiguration = null;
+        if (defaultDynamicConfiguration != null) {
+            try {
+                defaultDynamicConfiguration.close();
+            } catch (Exception e) {
+                logger.warn("close dynamic configuration failed: " + e.getMessage(), e);
+            }
+            defaultDynamicConfiguration = null;
+        }
     }
 
     /**

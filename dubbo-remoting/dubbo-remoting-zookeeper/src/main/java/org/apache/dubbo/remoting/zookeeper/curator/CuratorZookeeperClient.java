@@ -16,16 +16,6 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigItem;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.zookeeper.ChildListener;
-import org.apache.dubbo.remoting.zookeeper.DataListener;
-import org.apache.dubbo.remoting.zookeeper.EventType;
-import org.apache.dubbo.remoting.zookeeper.StateListener;
-import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperClient;
-
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.api.CuratorWatcher;
@@ -35,6 +25,15 @@ import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.framework.state.ConnectionState;
 import org.apache.curator.framework.state.ConnectionStateListener;
 import org.apache.curator.retry.RetryNTimes;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.ChildListener;
+import org.apache.dubbo.remoting.zookeeper.DataListener;
+import org.apache.dubbo.remoting.zookeeper.EventType;
+import org.apache.dubbo.remoting.zookeeper.StateListener;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
@@ -72,9 +71,9 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                     .retryPolicy(new RetryNTimes(1, 1000))
                     .connectionTimeoutMs(timeout)
                     .sessionTimeoutMs(sessionExpireMs);
-            String authority = url.getAuthority();
-            if (authority != null && authority.length() > 0) {
-                builder = builder.authorization("digest", authority.getBytes());
+            String userInformation = url.getUserInformation();
+            if (userInformation != null && userInformation.length() > 0) {
+                builder = builder.authorization("digest", userInformation.getBytes());
             }
             client = builder.build();
             client.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(url));
@@ -84,6 +83,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                 throw new IllegalStateException("zookeeper not connected");
             }
         } catch (Exception e) {
+            close();
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
@@ -252,6 +252,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     public void doClose() {
+        super.close();
         client.close();
     }
 

@@ -30,10 +30,12 @@ import java.lang.reflect.Type;
  */
 public class Hessian2ObjectInput implements ObjectInput, Cleanable {
     private final Hessian2Input mH2i;
+    private final Hessian2FactoryInitializer hessian2FactoryInitializer;
 
     public Hessian2ObjectInput(InputStream is) {
         mH2i = new Hessian2Input(is);
-        mH2i.setSerializerFactory(Hessian2FactoryInitializer.getInstance().getSerializerFactory());
+        hessian2FactoryInitializer = Hessian2FactoryInitializer.getInstance();
+        mH2i.setSerializerFactory(hessian2FactoryInitializer.getSerializerFactory());
     }
 
     @Override
@@ -84,7 +86,7 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
     @Override
     public Object readObject() throws IOException {
         if (!mH2i.getSerializerFactory().getClassLoader().equals(Thread.currentThread().getContextClassLoader())) {
-            mH2i.setSerializerFactory(Hessian2FactoryInitializer.getInstance().getSerializerFactory());
+            mH2i.setSerializerFactory(hessian2FactoryInitializer.getSerializerFactory());
         }
         return mH2i.readObject();
     }
@@ -94,7 +96,7 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
     public <T> T readObject(Class<T> cls) throws IOException,
             ClassNotFoundException {
         if (!mH2i.getSerializerFactory().getClassLoader().equals(Thread.currentThread().getContextClassLoader())) {
-            mH2i.setSerializerFactory(Hessian2FactoryInitializer.getInstance().getSerializerFactory());
+            mH2i.setSerializerFactory(hessian2FactoryInitializer.getSerializerFactory());
         }
         return (T) mH2i.readObject(cls);
     }
@@ -102,7 +104,7 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
     @Override
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
         if (!mH2i.getSerializerFactory().getClassLoader().equals(Thread.currentThread().getContextClassLoader())) {
-            mH2i.setSerializerFactory(Hessian2FactoryInitializer.getInstance().getSerializerFactory());
+            mH2i.setSerializerFactory(hessian2FactoryInitializer.getSerializerFactory());
         }
         return readObject(cls);
     }

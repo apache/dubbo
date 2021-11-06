@@ -209,6 +209,7 @@ public class ServiceConfigTest {
         delayService.addServiceListener(new ServiceListener() {
             @Override
             public void exported(ServiceConfig sc) {
+                assertEquals(delayService, sc);
                 assertThat(delayService.getExportedUrls(), hasSize(1));
                 latch.countDown();
             }

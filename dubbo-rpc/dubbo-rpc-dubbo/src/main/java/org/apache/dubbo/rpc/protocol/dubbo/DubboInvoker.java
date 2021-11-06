@@ -186,7 +186,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private int calculateTimeout(Invocation invocation, String methodName) {
         Object countdown = RpcContext.getClientAttachment().getObjectAttachment(TIME_COUNTDOWN_KEY);
-        int timeout = DEFAULT_TIMEOUT;
+        int timeout;
         if (countdown == null) {
             timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getClientAttachment(), DEFAULT_TIMEOUT);
             if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {

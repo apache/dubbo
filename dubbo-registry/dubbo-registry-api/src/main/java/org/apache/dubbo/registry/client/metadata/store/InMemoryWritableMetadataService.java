@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata.store;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
@@ -37,6 +36,9 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import com.google.gson.Gson;
+
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -134,7 +136,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.metadataPublishDelayTime = ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L;
+        this.metadataPublishDelayTime = ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY);
     }
 
     @Override
@@ -196,10 +198,18 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
         }
     }
 
+    public void addMetadataInfo(String key, MetadataInfo metadataInfo) {
+        updateLock.readLock().lock();
+        try {
+            metadataInfos.put(key, metadataInfo);
+        } finally {
+            updateLock.readLock().unlock();
+        }
+    }
+
     @Override
     public boolean unexportURL(URL url) {
         if (MetadataService.class.getName().equals(url.getServiceInterface())) {
-            // TODO, metadata service need to be unexported.
             this.metadataServiceURL = null;
             return true;
         }
@@ -286,6 +296,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
                 return metadataInfo;
             }
         }
+        if (logger.isInfoEnabled()) {
+            logger.info("metadata not found for revision: " + revision);
+        }
         return null;
     }
 
@@ -324,7 +337,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
             metadataSemaphore.drainPermits();
             updateLock.writeLock().lock();
         } catch (InterruptedException e) {
-            if (!applicationModel.isStopping()) {
+            if (!applicationModel.isDestroyed()) {
                 logger.warn("metadata refresh thread has been interrupted unexpectedly while waiting for update.", e);
             }
         }
@@ -335,7 +348,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
     }
 
     public Map<String, MetadataInfo> getMetadataInfos() {
-        return metadataInfos;
+        return Collections.unmodifiableMap(metadataInfos);
     }
 
     void addMetaServiceURL(URL url) {

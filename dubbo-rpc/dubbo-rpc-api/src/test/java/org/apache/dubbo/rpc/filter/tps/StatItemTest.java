@@ -17,10 +17,16 @@
 package org.apache.dubbo.rpc.filter.tps;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class StatItemTest {
 
@@ -47,10 +53,60 @@ public class StatItemTest {
         final int EXPECTED_RATE = 5;
         statItem = new StatItem("test", EXPECTED_RATE, 60_000L);
         for (int i = 1; i <= EXPECTED_RATE; i++) {
-            assertEquals(true, statItem.isAllowable());
+            assertTrue(statItem.isAllowable());
         }
 
         // Must block the 6th item
-        assertEquals(false, statItem.isAllowable());
+        assertFalse(statItem.isAllowable());
+    }
+
+    @Test
+    public void testConcurrency() throws Exception {
+        statItem = new StatItem("test", 100, 100000);
+
+        List<Task> taskList = new ArrayList<>();
+        int threadNum = 50;
+        CountDownLatch stopLatch = new CountDownLatch(threadNum);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        for (int i = 0; i < threadNum; i++) {
+            taskList.add(new Task(statItem, startLatch, stopLatch));
+
+        }
+        startLatch.countDown();
+        stopLatch.await();
+
+        Assertions.assertEquals(taskList.stream().map(Task::getCount).reduce(Integer::sum).get(), 100);
+    }
+
+
+    static class Task implements Runnable {
+        private final StatItem statItem;
+        private final CountDownLatch startLatch;
+        private final CountDownLatch stopLatch;
+        private int count;
+
+        public Task(StatItem statItem, CountDownLatch startLatch, CountDownLatch stopLatch) {
+            this.statItem = statItem;
+            this.startLatch = startLatch;
+            this.stopLatch = stopLatch;
+            new Thread(this).start();
+        }
+
+        @Override
+        public void run() {
+            try {
+                startLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            for (int j = 0; j < 10000; j++) {
+                count = statItem.isAllowable() ? count + 1 : count;
+            }
+            stopLatch.countDown();
+        }
+
+        public int getCount() {
+            return count;
+        }
     }
 }

@@ -24,7 +24,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -66,7 +65,7 @@ public class ConfigurationUtils {
      * @return
      */
     public static Configuration getSystemConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getSystemConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getSystemConfiguration();
     }
 
     /**
@@ -76,7 +75,7 @@ public class ConfigurationUtils {
      */
 
     public static Configuration getEnvConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getEnvironmentConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getEnvironmentConfiguration();
     }
 
     /**
@@ -88,7 +87,7 @@ public class ConfigurationUtils {
      */
 
     public static Configuration getGlobalConfiguration(ScopeModel scopeModel) {
-        return ScopeModelUtil.getOrDefaultApplicationModel(scopeModel).getModelEnvironment().getConfiguration();
+        return getScopeModelOrDefaultApplicationModel(scopeModel).getModelEnvironment().getConfiguration();
     }
 
     public static Configuration getDynamicGlobalConfiguration(ScopeModel scopeModel) {
@@ -127,10 +126,17 @@ public class ConfigurationUtils {
     }
 
     public static String getCachedDynamicProperty(ScopeModel realScopeModel, String key, String defaultValue) {
-        ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(realScopeModel);
+        ScopeModel scopeModel = getScopeModelOrDefaultApplicationModel(realScopeModel);
         ConfigurationCache configurationCache = scopeModel.getBeanFactory().getBean(ConfigurationCache.class);
         String value = configurationCache.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(scopeModel, _k, ""));
         return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    private static ScopeModel getScopeModelOrDefaultApplicationModel(ScopeModel realScopeModel) {
+        if (realScopeModel == null) {
+            return ApplicationModel.defaultModel();
+        }
+        return realScopeModel;
     }
 
     public static String getDynamicProperty(ScopeModel scopeModel, String property) {
@@ -326,52 +332,89 @@ public class ConfigurationUtils {
 
     /**
      * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getSystemConfiguration(ScopeModel)}
      */
     @Deprecated
     public static Configuration getSystemConfiguration() {
         return ApplicationModel.defaultModel().getModelEnvironment().getSystemConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getEnvConfiguration(ScopeModel)}
+     */
     @Deprecated
     public static Configuration getEnvConfiguration() {
         return ApplicationModel.defaultModel().getModelEnvironment().getEnvironmentConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getGlobalConfiguration(ScopeModel)}
+     */
     @Deprecated
     public static Configuration getGlobalConfiguration() {
         return ApplicationModel.defaultModel().getModelEnvironment().getConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getDynamicGlobalConfiguration(ScopeModel)}
+     */
     @Deprecated
     public static Configuration getDynamicGlobalConfiguration() {
         return ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().getDynamicGlobalConfiguration();
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getCachedDynamicProperty(ScopeModel, String, String)}
+     */
     @Deprecated
     public static String getCachedDynamicProperty(String key, String defaultValue) {
         return getCachedDynamicProperty(ApplicationModel.defaultModel(), key, defaultValue);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getDynamicProperty(ScopeModel, String)}
+     */
     @Deprecated
     public static String getDynamicProperty(String property) {
         return getDynamicProperty(ApplicationModel.defaultModel(), property);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getDynamicProperty(ScopeModel, String, String)}
+     */
     @Deprecated
     public static String getDynamicProperty(String property, String defaultValue) {
         return getDynamicProperty(ApplicationModel.defaultModel(), property, defaultValue);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getProperty(ScopeModel, String)}
+     */
     @Deprecated
     public static String getProperty(String property) {
         return getProperty(ApplicationModel.defaultModel(), property);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#getProperty(ScopeModel, String, String)}
+     */
     @Deprecated
     public static String getProperty(String property, String defaultValue) {
         return getProperty(ApplicationModel.defaultModel(), property, defaultValue);
     }
 
+    /**
+     * For compact single instance
+     * @deprecated Replaced to {@link ConfigurationUtils#get(ScopeModel, String, int)}
+     */
     @Deprecated
     public static int get(String property, int defaultValue) {
         return get(ApplicationModel.defaultModel(), property, defaultValue);

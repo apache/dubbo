@@ -21,15 +21,15 @@ import org.apache.dubbo.common.extension.SPI;
 
 public class ScopeModelUtil {
 
-    public static ScopeModel getOrDefault(ScopeModel scopeModel, Class type) {
+    public static <T> ScopeModel getOrDefault(ScopeModel scopeModel, Class<T> type) {
         if (scopeModel != null) {
             return scopeModel;
         }
         return getDefaultScopeModel(type);
     }
 
-    private static ScopeModel getDefaultScopeModel(Class type) {
-        SPI spi = (SPI) type.getAnnotation(SPI.class);
+    private static <T>ScopeModel getDefaultScopeModel(Class<T> type) {
+        SPI spi = type.getAnnotation(SPI.class);
         if (spi == null) {
             throw new IllegalArgumentException("SPI annotation not found for class: " + type.getName());
         }
@@ -56,8 +56,19 @@ public class ScopeModelUtil {
     }
 
     public static ApplicationModel getApplicationModel(ScopeModel scopeModel) {
+        return getOrDefaultApplicationModel(scopeModel);
+    }
+
+    public static ApplicationModel getOrDefaultApplicationModel(ScopeModel scopeModel) {
         if (scopeModel == null) {
             return ApplicationModel.defaultModel();
+        }
+        return getOrNullApplicationModel(scopeModel);
+    }
+
+    public static ApplicationModel getOrNullApplicationModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            return null;
         }
         if (scopeModel instanceof ApplicationModel) {
             return (ApplicationModel) scopeModel;
@@ -67,13 +78,6 @@ public class ScopeModelUtil {
         } else {
             throw new IllegalArgumentException("Unable to get ApplicationModel from " + scopeModel);
         }
-    }
-
-    public static ScopeModel getOrDefaultApplicationModel(ScopeModel scopeModel) {
-        if(scopeModel == null) {
-            return ApplicationModel.defaultModel();
-        }
-        return scopeModel;
     }
 
     public static FrameworkModel getFrameworkModel(ScopeModel scopeModel) {

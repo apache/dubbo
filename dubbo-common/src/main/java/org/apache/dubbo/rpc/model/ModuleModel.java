@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.config.ModuleEnvironment;
 import org.apache.dubbo.common.context.ModuleExt;
+import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
@@ -27,7 +29,6 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Model of a service module
@@ -35,7 +36,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ModuleModel extends ScopeModel {
     private static final Logger logger = LoggerFactory.getLogger(ModuleModel.class);
 
-    private static final AtomicLong index = new AtomicLong(0);
     public static final String NAME = "ModuleModel";
 
     private final ApplicationModel applicationModel;
@@ -53,8 +53,20 @@ public class ModuleModel extends ScopeModel {
         Assert.notNull(applicationModel, "ApplicationModel can not be null");
         this.applicationModel = applicationModel;
         applicationModel.addModule(this, isInternal);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is created");
+        }
+
         initialize();
-        Assert.notNull(applicationModel, "ApplicationModel can not be null");
+        Assert.notNull(serviceRepository, "ModuleServiceRepository can not be null");
+        Assert.notNull(moduleConfigManager, "ModuleConfigManager can not be null");
+        Assert.assertTrue(moduleConfigManager.isInitialized(), "ModuleConfigManager can not be initialized");
+
+        // notify application check state
+        ApplicationDeployer applicationDeployer = applicationModel.getDeployer();
+        if (applicationDeployer != null) {
+            applicationDeployer.notifyModuleChanged(this, DeployState.PENDING);
+        }
     }
 
     @Override
@@ -81,14 +93,23 @@ public class ModuleModel extends ScopeModel {
     }
 
     @Override
-    public void onDestroy() {
-        notifyDestroy();
+    protected void onDestroy() {
+        // 1. remove from applicationModel
         applicationModel.removeModule(this);
 
+        // 2. set stopping
         if (deployer != null) {
-            deployer.destroy();
-            deployer = null;
+            deployer.preDestroy();
         }
+
+        // 3. release services
+        if (deployer != null) {
+            deployer.postDestroy();
+        }
+
+        // destroy other resources
+        notifyDestroy();
+
         if (serviceRepository != null) {
             serviceRepository.destroy();
             serviceRepository = null;
@@ -98,6 +119,9 @@ public class ModuleModel extends ScopeModel {
             moduleEnvironment.destroy();
             moduleEnvironment = null;
         }
+
+        // destroy application if none pub module
+        applicationModel.tryDestroy();
     }
 
     public ApplicationModel getApplicationModel() {
@@ -143,21 +167,5 @@ public class ModuleModel extends ScopeModel {
     @Deprecated
     public void setModuleEnvironment(ModuleEnvironment moduleEnvironment) {
         this.moduleEnvironment = moduleEnvironment;
-    }
-
-    /**
-     * for ut only
-     */
-    @Deprecated
-    public void setServiceRepository(ModuleServiceRepository serviceRepository) {
-        this.serviceRepository = serviceRepository;
-    }
-
-    /**
-     * for ut only
-     */
-    @Deprecated
-    public void setModuleConfigManager(ModuleConfigManager moduleConfigManager) {
-        this.moduleConfigManager = moduleConfigManager;
     }
 }

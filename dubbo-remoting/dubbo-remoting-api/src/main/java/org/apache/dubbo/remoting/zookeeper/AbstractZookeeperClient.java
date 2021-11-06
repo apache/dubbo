@@ -206,7 +206,10 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         return doGetConfigItem(path);
     }
 
-    protected abstract void doClose();
+    protected void doClose() {
+        // Break circular reference of zk client
+        stateListeners.clear();
+    }
 
     protected abstract void createPersistent(String path);
 

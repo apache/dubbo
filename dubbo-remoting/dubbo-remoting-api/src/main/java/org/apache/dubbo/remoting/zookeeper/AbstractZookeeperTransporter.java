@@ -35,7 +35,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 /**
  * AbstractZookeeperTransporter is abstract implements of ZookeeperTransporter.
  * <p>
- * If you want to extends this, implements createZookeeperClient.
+ * If you want to extend this, implements createZookeeperClient.
  */
 public abstract class AbstractZookeeperTransporter implements ZookeeperTransporter {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperTransporter.class);
@@ -97,6 +97,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
                 break;
             }
         }
+        // mapping new backup address
         if (zookeeperClient != null && zookeeperClient.isConnected()) {
             writeToClientMap(addressList, zookeeperClient);
         }
@@ -177,5 +178,14 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      */
     public Map<String, ZookeeperClient> getZookeeperClientMap() {
         return zookeeperClientMap;
+    }
+
+    @Override
+    public void destroy() {
+        // only destroy zk clients here
+        for (ZookeeperClient client : zookeeperClientMap.values()) {
+            client.close();
+        }
+        zookeeperClientMap.clear();
     }
 }

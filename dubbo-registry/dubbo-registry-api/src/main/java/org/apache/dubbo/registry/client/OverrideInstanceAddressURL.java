@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
@@ -292,6 +293,16 @@ public class OverrideInstanceAddressURL extends InstanceAddressURL {
     @Override
     public ApplicationModel getOrDefaultApplicationModel() {
         return originUrl.getOrDefaultApplicationModel();
+    }
+
+    @Override
+    public ApplicationModel getApplicationModel() {
+        return originUrl.getApplicationModel();
+    }
+
+    @Override
+    public ModuleModel getOrDefaultModuleModel() {
+        return originUrl.getOrDefaultModuleModel();
     }
 
     @Override

@@ -44,7 +44,7 @@ public abstract class AbstractServer extends AbstractEndpoint implements Remotin
 
     protected static final String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
     private static final Logger logger = LoggerFactory.getLogger(AbstractServer.class);
-    ExecutorService executor;
+    private ExecutorService executor;
     private InetSocketAddress localAddress;
     private InetSocketAddress bindAddress;
     private int accepts;

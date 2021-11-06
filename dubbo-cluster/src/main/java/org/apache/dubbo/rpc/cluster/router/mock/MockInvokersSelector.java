@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
+import org.apache.dubbo.rpc.cluster.router.RouterResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,23 +44,23 @@ public class MockInvokersSelector extends AbstractRouter {
     }
 
     @Override
-    public <T> List<Invoker<T>> route(final List<Invoker<T>> invokers,
-                                      URL url, final Invocation invocation) throws RpcException {
+    public <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url,
+                                              Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (CollectionUtils.isEmpty(invokers)) {
-            return invokers;
+            return new RouterResult<>(invokers);
         }
 
         if (invocation.getObjectAttachments() == null) {
-            return getNormalInvokers(invokers);
+            return new RouterResult<>(getNormalInvokers(invokers));
         } else {
             String value = (String) invocation.getObjectAttachments().get(INVOCATION_NEED_MOCK);
             if (value == null) {
-                return getNormalInvokers(invokers);
+                return new RouterResult<>(getNormalInvokers(invokers));
             } else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
-                return getMockedInvokers(invokers);
+                return new RouterResult<>(getMockedInvokers(invokers));
             }
         }
-        return invokers;
+        return new RouterResult<>(invokers);
     }
 
     private <T> List<Invoker<T>> getMockedInvokers(final List<Invoker<T>> invokers) {

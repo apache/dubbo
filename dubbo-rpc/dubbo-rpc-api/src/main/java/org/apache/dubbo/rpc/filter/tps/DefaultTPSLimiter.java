@@ -38,8 +38,8 @@ public class DefaultTPSLimiter implements TPSLimiter {
 
     @Override
     public boolean isAllowable(URL url, Invocation invocation) {
-        int rate = url.getParameter(TPS_LIMIT_RATE_KEY, -1);
-        long interval = url.getParameter(TPS_LIMIT_INTERVAL_KEY, DEFAULT_TPS_LIMIT_INTERVAL);
+        int rate = url.getMethodParameter(invocation.getMethodName(), TPS_LIMIT_RATE_KEY, -1);
+        long interval = url.getMethodParameter(invocation.getMethodName(), TPS_LIMIT_INTERVAL_KEY, DEFAULT_TPS_LIMIT_INTERVAL);
         String serviceKey = url.getServiceKey();
         if (rate > 0) {
             StatItem statItem = stats.get(serviceKey);

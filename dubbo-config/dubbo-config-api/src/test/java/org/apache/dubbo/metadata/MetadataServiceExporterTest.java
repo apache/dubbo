@@ -16,20 +16,36 @@
  */
 package org.apache.dubbo.metadata;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
+import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.registrycenter.RegistryCenter;
+import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.List;
+
 import static org.apache.dubbo.common.constants.CommonConstants.COMPOSITE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -52,8 +68,6 @@ public class MetadataServiceExporterTest {
 
     @Test
     public void test() {
-        ApplicationModel.defaultModel().getInternalModule().getDeployer().start();
-
         MetadataService metadataService = Mockito.mock(MetadataService.class);
         ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
         exporter.setMetadataService(metadataService);
@@ -84,6 +98,165 @@ public class MetadataServiceExporterTest {
 
         applicationModel.getDeployer().stop();
         assertFalse(exporter.isExported());
+    }
+
+    /**
+     * test reuse of port started by normal service
+     */
+    @Test
+    public void testPortReuse() throws Exception {
+        DubboBootstrap providerBootstrap = DubboBootstrap.newInstance();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRef(new DemoServiceImpl());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig("exporter-test");
+        applicationConfig.setMetadataType(DEFAULT_METADATA_STORAGE_TYPE);
+
+        providerBootstrap
+            .application(applicationConfig)
+            .registry(registryConfig)
+            .protocol(new ProtocolConfig("dubbo", 2002))
+            .service(serviceConfig);
+
+        // will start exporter
+        providerBootstrap.start();
+        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) providerBootstrap.getApplicationModel().getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
+
+        try {
+            assertTrue(exporter.isExported());
+            List<URL> urls = exporter.getExportedURLs();
+            assertNotNull(urls);
+            assertEquals(2002, urls.get(0).getPort());
+            assertEquals(DUBBO_PROTOCOL, urls.get(0).getProtocol());
+        } finally {
+            providerBootstrap.stop();
+        }
+        assertFalse(exporter.isExported());
+    }
+
+    /**
+     * test user specified port and protocol
+     * @throws Exception
+     */
+    @Test
+    public void testSpecifiedPortAndProtocol() throws Exception {
+        DubboBootstrap providerBootstrap = DubboBootstrap.newInstance();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRef(new DemoServiceImpl());
+
+        ApplicationConfig applicationConfig = new ApplicationConfig("exporter-test");
+        applicationConfig.setMetadataType(DEFAULT_METADATA_STORAGE_TYPE);
+        applicationConfig.setMetadataServiceProtocol("tri");
+        applicationConfig.setMetadataServicePort(8089);
+
+        providerBootstrap
+            .application(applicationConfig)
+            .registry(registryConfig)
+            .protocol(new ProtocolConfig("dubbo", 2002))
+            .service(serviceConfig);
+
+        // will start exporter.export()
+        providerBootstrap.start();
+        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) providerBootstrap.getApplicationModel().getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
+
+        try {
+            assertTrue(exporter.isExported());
+            List<URL> urls = exporter.getExportedURLs();
+            assertNotNull(urls);
+            assertEquals(8089, urls.get(0).getPort());
+            assertEquals("tri", urls.get(0).getProtocol());
+        } finally {
+            providerBootstrap.stop();
+        }
+        assertFalse(exporter.isExported());
+    }
+
+    @Test
+    public void testMetadataStartsBeforeNormalService() throws Exception {
+        DubboBootstrap providerBootstrap = DubboBootstrap.newInstance();
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRef(new DemoServiceImpl());
+        serviceConfig.setDelay(1000);
+
+        ApplicationConfig applicationConfig = new ApplicationConfig("exporter-test");
+        applicationConfig.setMetadataType(DEFAULT_METADATA_STORAGE_TYPE);
+//        applicationConfig.setMetadataServiceProtocol("triple");
+//        applicationConfig.setMetadataServicePort(8089);
+
+        providerBootstrap
+            .application(applicationConfig)
+            .registry(registryConfig)
+            .protocol(new ProtocolConfig("dubbo", 2002))
+            .service(serviceConfig);
+
+        // will start exporter.export()
+        providerBootstrap.start();
+        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) providerBootstrap.getApplicationModel().getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
+
+        try {
+            assertTrue(exporter.isExported());
+            List<URL> urls = exporter.getExportedURLs();
+            assertNotNull(urls);
+            assertNotEquals(2002, urls.get(0).getPort());
+            assertEquals("dubbo", urls.get(0).getProtocol());
+        } finally {
+            providerBootstrap.stop();
+        }
+        assertFalse(exporter.isExported());
+    }
+//
+//    /**
+//     * test multiple protocols
+//     * @throws Exception
+//     */
+//    @Test
+//    public void testMultiProtocols() throws Exception {
+//        DubboBootstrap providerBootstrap = DubboBootstrap.newInstance();
+//        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+//        serviceConfig.setInterface(DemoService.class);
+//        serviceConfig.setRef(new DemoServiceImpl());
+//
+//        providerBootstrap
+//            .application("provider-app")
+//            .registry(registryConfig)
+//            .protocol(new ProtocolConfig("dubbo", 2002))
+//            .service(serviceConfig);
+//
+//        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) applicationModel.getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
+//        MetadataService metadataService = Mockito.mock(MetadataService.class);
+//        exporter.setMetadataService(metadataService);
+//
+//        try {
+//            providerBootstrap.start();
+//            assertTrue(exporter.isExported());
+//            assertTrue(exporter.supports(DEFAULT_METADATA_STORAGE_TYPE));
+//            assertTrue(exporter.supports(REMOTE_METADATA_STORAGE_TYPE));
+//            assertTrue(exporter.supports(COMPOSITE_METADATA_STORAGE_TYPE));
+//        } finally {
+//            providerBootstrap.stop();
+//        }
+//        assertFalse(exporter.isExported());
+//    }
+
+    private static ZookeeperSingleRegistryCenter registryCenter;
+    private static RegistryConfig registryConfig;
+
+    @BeforeAll
+    public static void beforeAll() {
+        FrameworkModel.destroyAll();
+        registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
+        registryCenter.startup();
+        RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
+        registryConfig = new RegistryConfig(String.format("%s://%s:%s",
+            instance.getType(),
+            instance.getHostname(),
+            instance.getPort()));
+
+        // pre-check threads
+        //precheckUnclosedThreads();
     }
 
 }

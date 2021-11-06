@@ -39,21 +39,15 @@ public class ExchangeHandlerDispatcher implements ExchangeHandler {
     private final TelnetHandler telnetHandler;
 
     public ExchangeHandlerDispatcher() {
-        replierDispatcher = new ReplierDispatcher();
-        handlerDispatcher = new ChannelHandlerDispatcher();
-        telnetHandler = new TelnetHandlerAdapter();
+        this(null, null);
     }
 
     public ExchangeHandlerDispatcher(Replier<?> replier) {
-        replierDispatcher = new ReplierDispatcher(replier);
-        handlerDispatcher = new ChannelHandlerDispatcher();
-        telnetHandler = new TelnetHandlerAdapter();
+        this(replier, null);
     }
 
     public ExchangeHandlerDispatcher(ChannelHandler... handlers) {
-        replierDispatcher = new ReplierDispatcher();
-        handlerDispatcher = new ChannelHandlerDispatcher(handlers);
-        telnetHandler = new TelnetHandlerAdapter();
+        this(null, handlers);
     }
 
     public ExchangeHandlerDispatcher(Replier<?> replier, ChannelHandler... handlers) {

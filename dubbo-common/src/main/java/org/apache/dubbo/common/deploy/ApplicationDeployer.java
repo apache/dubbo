@@ -18,8 +18,9 @@ package org.apache.dubbo.common.deploy;
 
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * initialize and start application instance
@@ -33,17 +34,31 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
 
     /**
      * Starts the component.
+     * @return
      */
-    CompletableFuture start() throws IllegalStateException;
+    Future start() throws IllegalStateException;
 
     /**
      * Stops the component.
      */
     void stop() throws IllegalStateException;
 
+    Future getStartFuture();
+
+    /**
+     * Register application instance and start internal services
+     */
     void prepareApplicationInstance();
 
-    void destroy();
+    /**
+     * Pre-processing before destroy model
+     */
+    void preDestroy();
+
+    /**
+     * Post-processing after destroy model
+     */
+    void postDestroy();
 
     /**
      * Indicates that the Application is initialized or not.
@@ -59,8 +74,11 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
      */
     boolean isBackground();
 
-    void checkStarting();
+    /**
+     * check all module state and update application state
+     */
+    void checkState();
 
-    void checkStarted(CompletableFuture checkerStartFuture);
-
+    // module state changed callbacks
+    void notifyModuleChanged(ModuleModel moduleModel, DeployState state);
 }

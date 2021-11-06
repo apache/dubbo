@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
@@ -43,6 +42,8 @@ import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+
+import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -288,7 +289,7 @@ public class DubboBootstrapTest {
             .service(service)
             .start();
 
-        assertMetadataService(bootstrap, availablePort, false);
+        assertMetadataService(bootstrap, availablePort, true);
     }
 
     @Test
@@ -330,32 +331,35 @@ public class DubboBootstrapTest {
             .metadataReport(new MetadataReportConfig(zkServerAddress))
             .start();
 
-        assertMetadataService(DubboBootstrap.getInstance(), availablePort, true);
+        assertMetadataService(DubboBootstrap.getInstance(), availablePort, false);
 
     }
 
     private void assertMetadataService(DubboBootstrap bootstrap, int availablePort, boolean shouldReport) {
         DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(bootstrap.getApplicationModel());
         MetadataServiceExporter metadataServiceExporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
-        Assertions.assertTrue(metadataServiceExporter.isExported());
         DubboProtocol protocol = DubboProtocol.getDubboProtocol(bootstrap.getApplicationModel());
         Map<String, Exporter<?>> exporters = protocol.getExporterMap();
-        Assertions.assertEquals(2, exporters.size());
 
         ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setRegistry(new RegistryConfig("N/A"));
         serviceConfig.setInterface(MetadataService.class);
         serviceConfig.setGroup(ApplicationModel.defaultModel().getCurrentConfig().getName());
         serviceConfig.setVersion(MetadataService.VERSION);
-        assertThat(exporters, hasEntry(is(serviceConfig.getUniqueServiceName() + ":" + availablePort), anything()));
 
         WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel());
         MetadataInfo metadataInfo = metadataService.getDefaultMetadataInfo();
+
         Assertions.assertNotNull(metadataInfo);
         if (shouldReport) {
-            Assertions.assertTrue(metadataInfo.hasReported());
-        } else {
+            Assertions.assertTrue(metadataServiceExporter.isExported());
+            Assertions.assertEquals(2, exporters.size());
+            assertThat(exporters, hasEntry(is(serviceConfig.getUniqueServiceName() + ":" + availablePort), anything()));
             Assertions.assertFalse(metadataInfo.hasReported());
+        } else {
+            Assertions.assertFalse(metadataServiceExporter.isExported());
+            Assertions.assertEquals(1, exporters.size());
+            Assertions.assertTrue(metadataInfo.hasReported());
         }
     }
 

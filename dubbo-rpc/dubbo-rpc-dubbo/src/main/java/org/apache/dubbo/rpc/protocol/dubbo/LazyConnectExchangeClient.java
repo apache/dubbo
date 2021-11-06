@@ -58,7 +58,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
      */
     private final boolean initialState;
     private volatile ExchangeClient client;
-    private AtomicLong warningcount = new AtomicLong(0);
+    private AtomicLong warningCount = new AtomicLong(0);
 
     public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler) {
         // lazy connect, need set send.reconnect = true, to avoid channel bad status.
@@ -130,14 +130,14 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     }
 
     /**
-     * If {@link #REQUEST_WITH_WARNING_KEY} is configured, then warn once every 5000 invocations.
+     * If {@link Constants.LAZY_REQUEST_WITH_WARNING_KEY} is configured, then warn once every 5000 invocations.
      */
     private void warning() {
         if (requestWithWarning) {
-            if (warningcount.get() % warningPeriod == 0) {
+            if (warningCount.get() % warningPeriod == 0) {
                 logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
             }
-            warningcount.incrementAndGet();
+            warningCount.incrementAndGet();
         }
     }
 
