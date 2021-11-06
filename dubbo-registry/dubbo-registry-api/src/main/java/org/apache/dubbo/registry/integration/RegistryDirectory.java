@@ -203,9 +203,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 && invokerUrls.get(0) != null
                 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
-            this.setInvokers(BitList.emptyList());
-            this.setValidInvokers(BitList.emptyList());
-            routerChain.setInvokers(this.getInvokers());
+            routerChain.setInvokers(BitList.emptyList());
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
