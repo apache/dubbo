@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.router.state;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
@@ -52,7 +51,7 @@ import java.util.NoSuchElementException;
  */
 public class BitList<E> extends AbstractList<E> {
     private final BitSet rootSet;
-    private final List<E> originList;
+    private volatile List<E> originList;
     private final static BitList emptyList = new BitList(Collections.emptyList());
     private volatile List<E> tailList = null;
 
@@ -61,7 +60,7 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     public BitList(List<E> originList, boolean empty) {
-        this.originList = new ArrayList<>(originList);
+        this.originList = originList;
         this.rootSet = new BitSet();
         if (!empty) {
             this.rootSet.set(0, originList.size());
@@ -69,7 +68,7 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     public BitList(List<E> originList, BitSet rootSet, List<E> tailList) {
-        this.originList = new ArrayList<>(originList);
+        this.originList = originList;
         this.rootSet = rootSet;
         this.tailList = tailList;
     }
@@ -175,9 +174,9 @@ public class BitList<E> extends AbstractList<E> {
     public void clear() {
         rootSet.clear();
         // to remove references
-        originList.clear();
+        originList = Collections.emptyList();
         if (CollectionUtils.isNotEmpty(tailList)) {
-            tailList.clear();
+            tailList = null;
         }
     }
 

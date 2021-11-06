@@ -330,7 +330,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      * @return invokers
      */
     private Map<URL, Invoker<T>> toInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
-        Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>();
+        Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>(urls == null ? 1 : (int) (urls.size() / 0.75f + 1));
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }

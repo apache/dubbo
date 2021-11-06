@@ -30,9 +30,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -48,51 +47,46 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 @SpringBootTest(
-        properties = {
-                "dubbo.application.NAME = dubbo-demo-application",
-                "dubbo.module.name = dubbo-demo-module",
-                "dubbo.registry.address = zookeeper://192.168.99.100:32770",
-                "dubbo.protocol.name=dubbo",
-                "dubbo.protocol.port=20880",
-                "dubbo.metrics.protocol=prometheus",
-                "dubbo.metrics.prometheus.exporter.enabled=true",
-                "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
-                "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
-                "dubbo.metrics.prometheus.exporter.metrics-port=20888",
-                "dubbo.metrics.prometheus.exporter.metrics-path=/metrics",
-                "dubbo.metrics.aggregation.enabled=true",
-                "dubbo.metrics.aggregation.bucket-num=5",
-                "dubbo.metrics.aggregation.time-window-seconds=120",
-                "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
-                "dubbo.Config-center.address=zookeeper://127.0.0.1:2181",
-                "dubbo.config-Center.group=group1",
-                "dubbo.metadata-report.address=zookeeper://127.0.0.1:2182",
-                "dubbo.METADATA-REPORT.username=User",
-                "dubbo.provider.host=127.0.0.1",
-                "dubbo.consumer.client=netty"
-        },
-        classes = {
-                SpringBootConfigPropsTest.class
-        }
+    properties = {
+        "dubbo.application.NAME = dubbo-demo-application",
+        "dubbo.module.name = dubbo-demo-module",
+        "dubbo.registry.address = zookeeper://192.168.99.100:32770",
+        "dubbo.protocol.name=dubbo",
+        "dubbo.protocol.port=20880",
+        "dubbo.metrics.protocol=prometheus",
+        "dubbo.metrics.prometheus.exporter.enabled=true",
+        "dubbo.metrics.prometheus.exporter.enable-http-service-discovery=true",
+        "dubbo.metrics.prometheus.exporter.http-service-discovery-url=localhost:8080",
+        "dubbo.metrics.prometheus.exporter.metrics-port=20888",
+        "dubbo.metrics.prometheus.exporter.metrics-path=/metrics",
+        "dubbo.metrics.aggregation.enabled=true",
+        "dubbo.metrics.aggregation.bucket-num=5",
+        "dubbo.metrics.aggregation.time-window-seconds=120",
+        "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
+        "dubbo.Config-center.address=${zookeeper.connection.address.1}",
+        "dubbo.config-Center.group=group1",
+        "dubbo.metadata-report.address=${zookeeper.connection.address.2}",
+        "dubbo.METADATA-REPORT.username=User",
+        "dubbo.provider.host=127.0.0.1",
+        "dubbo.consumer.client=netty"
+    },
+    classes = {
+        SpringBootConfigPropsTest.class
+    }
 )
 @Configuration
 @ComponentScan
 @EnableDubbo
 public class SpringBootConfigPropsTest {
 
-    private static RegistryCenter multipleRegistryCenter;
-
     @BeforeAll
     public static void beforeAll() {
-        multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
-        multipleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
-        multipleRegistryCenter.shutdown();
     }
 
     @Autowired
@@ -135,13 +129,13 @@ public class SpringBootConfigPropsTest {
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         Assertions.assertEquals(1, configCenters.size());
         ConfigCenterConfig centerConfig = configCenters.iterator().next();
-        Assertions.assertEquals("zookeeper://127.0.0.1:2181", centerConfig.getAddress());
+        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress1(), centerConfig.getAddress());
         Assertions.assertEquals("group1", centerConfig.getGroup());
 
         Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
         Assertions.assertEquals(1, metadataConfigs.size());
         MetadataReportConfig reportConfig = metadataConfigs.iterator().next();
-        Assertions.assertEquals("zookeeper://127.0.0.1:2182", reportConfig.getAddress());
+        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress2(), reportConfig.getAddress());
         Assertions.assertEquals("User", reportConfig.getUsername());
 
         // module configs

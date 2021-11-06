@@ -44,6 +44,7 @@ import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.test.check.DubboTestChecker;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -65,8 +66,6 @@ public class MultiInstanceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiInstanceTest.class);
 
-    private static ZookeeperSingleRegistryCenter registryCenter;
-
     private static RegistryConfig registryConfig;
 
     private static DubboTestChecker testChecker;
@@ -75,13 +74,7 @@ public class MultiInstanceTest {
     @BeforeAll
     public static void beforeAll() {
         FrameworkModel.destroyAll();
-        registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
-        registryCenter.startup();
-        RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
-        registryConfig = new RegistryConfig(String.format("%s://%s:%s",
-            instance.getType(),
-            instance.getHostname(),
-            instance.getPort()));
+        registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress1());
 
         // pre-check threads
         //precheckUnclosedThreads();
@@ -89,7 +82,6 @@ public class MultiInstanceTest {
 
     @AfterAll
     public static void afterAll() throws Exception {
-        registryCenter.shutdown();
         FrameworkModel.destroyAll();
 
         // check threads
@@ -323,7 +315,6 @@ public class MultiInstanceTest {
 
         DubboBootstrap providerBootstrap1 = null;
         DubboBootstrap providerBootstrap2 = null;
-        ZookeeperSingleRegistryCenter registryCenter2 = null;
 
         try {
 
@@ -351,13 +342,7 @@ public class MultiInstanceTest {
             Assertions.assertTrue(stackTraces1.size() > 0, "Get threads of provider app 1 failed");
 
             // start zk server 2
-            registryCenter2 = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
-            registryCenter2.startup();
-            RegistryCenter.Instance instance = registryCenter2.getRegistryCenterInstance().get(0);
-            RegistryConfig registryConfig2 = new RegistryConfig(String.format("%s://%s:%s",
-                instance.getType(),
-                instance.getHostname(),
-                instance.getPort()));
+            RegistryConfig registryConfig2 = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress2());
 
             // start provider app 2 use a difference zk server 2
             ServiceConfig serviceConfig2 = new ServiceConfig();
@@ -390,7 +375,6 @@ public class MultiInstanceTest {
             // stop provider app 2 and check threads
             providerBootstrap2.stop();
             // shutdown register center after dubbo application to avoid unregister services blocking
-            registryCenter2.shutdown();
             checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", null);
 
         } finally {
@@ -399,9 +383,6 @@ public class MultiInstanceTest {
             }
             if (providerBootstrap2 != null) {
                 providerBootstrap2.stop();
-            }
-            if (registryCenter2 != null) {
-                registryCenter2.shutdown();
             }
         }
     }
