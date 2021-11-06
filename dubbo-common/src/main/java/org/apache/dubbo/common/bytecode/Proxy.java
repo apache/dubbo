@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -39,7 +40,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.MAX_PROXY_COUNT;
  * Proxy.
  */
 
-public abstract class Proxy {
+public class Proxy {
     public static final InvocationHandler RETURN_NULL_INVOKER = (proxy, method, args) -> null;
     public static final InvocationHandler THROW_UNSUPPORTED_INVOKER = new InvocationHandler() {
         @Override
@@ -137,10 +138,9 @@ public abstract class Proxy {
                         }
                     } else {
                         try {
-                            proxy = (Proxy) clazz.newInstance();
+                            proxy = new Proxy();
+                            proxy.setClassToCreate(clazz);
                             return proxy;
-                        } catch (InstantiationException | IllegalAccessException e) {
-                            throw new RuntimeException(e);
                         } finally {
                             if (null == proxy) {
                                 cache.remove(key);
@@ -165,17 +165,18 @@ public abstract class Proxy {
             List<Method> methods = new ArrayList<>();
 
             for (int i = 0; i < ics.length; i++) {
-                if (!Modifier.isPublic(ics[i].getModifiers())) {
-                    String npkg = ics[i].getPackage().getName();
-                    if (pkg == null) {
-                        pkg = npkg;
-                        neighbor = ics[i];
-                    } else {
+                String npkg = ics[i].getPackage().getName();
+                if (pkg == null) {
+                    pkg = npkg;
+                    neighbor = ics[i];
+                } else {
+                    if (!Modifier.isPublic(ics[i].getModifiers())) {
                         if (!pkg.equals(npkg)) {
                             throw new IllegalArgumentException("non-public interfaces from different packages");
                         }
                     }
                 }
+
                 ccp.addInterface(ics[i]);
 
                 for (Method method : ics[i].getMethods()) {
@@ -219,17 +220,11 @@ public abstract class Proxy {
             clazz.getField("methods").set(null, methods.toArray(new Method[0]));
 
             // create Proxy class.
-            String fcn = Proxy.class.getName() + id;
-            ccm = ClassGenerator.newInstance(cl);
-            ccm.setClassName(fcn);
-            ccm.addDefaultConstructor();
-            ccm.setSuperClass(Proxy.class);
-            ccm.addMethod("public Object newInstance(" + InvocationHandler.class.getName() + " h){ return new " + pcn + "($1); }");
-            Class<?> pc = ccm.toClass(Proxy.class, appClassLoader, domain);
-            proxy = (Proxy) pc.newInstance();
+            proxy = new Proxy();
+            proxy.setClassToCreate(clazz);
 
             synchronized (classCache) {
-                classCache.put(key, new SoftReference<Class<?>>(pc));
+                classCache.put(key, new SoftReference<Class<?>>(clazz));
             }
         } catch (RuntimeException e) {
             throw e;
@@ -295,10 +290,24 @@ public abstract class Proxy {
         return newInstance(THROW_UNSUPPORTED_INVOKER);
     }
 
+    public Class<?> classToCreate = null;
+
     /**
      * get instance with special handler.
      *
      * @return instance.
      */
-    abstract public Object newInstance(InvocationHandler handler);
+    public Object newInstance(InvocationHandler handler) {
+        Constructor<?> constructor;
+        try {
+            constructor = classToCreate.getDeclaredConstructor(InvocationHandler.class);
+            return constructor.newInstance(handler);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setClassToCreate(Class<?> classToCreate) {
+        this.classToCreate = classToCreate;
+    }
 }
