@@ -51,7 +51,7 @@ import java.util.NoSuchElementException;
  */
 public class BitList<E> extends AbstractList<E> {
     private final BitSet rootSet;
-    private final List<E> originList;
+    private volatile List<E> originList;
     private final static BitList emptyList = new BitList(Collections.emptyList());
     private volatile List<E> tailList = null;
 
@@ -174,9 +174,9 @@ public class BitList<E> extends AbstractList<E> {
     public void clear() {
         rootSet.clear();
         // to remove references
-        originList.clear();
+        originList = Collections.emptyList();
         if (CollectionUtils.isNotEmpty(tailList)) {
-            tailList.clear();
+            tailList = null;
         }
     }
 
