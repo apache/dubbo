@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.router.state;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
@@ -61,7 +60,7 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     public BitList(List<E> originList, boolean empty) {
-        this.originList = new ArrayList<>(originList);
+        this.originList = Collections.unmodifiableList(originList);
         this.rootSet = new BitSet();
         if (!empty) {
             this.rootSet.set(0, originList.size());
@@ -69,7 +68,7 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     public BitList(List<E> originList, BitSet rootSet, List<E> tailList) {
-        this.originList = new ArrayList<>(originList);
+        this.originList = Collections.unmodifiableList(originList);
         this.rootSet = rootSet;
         this.tailList = tailList;
     }
