@@ -16,12 +16,10 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-
-import org.apache.dubbo.common.bytecode.CustomizedLoaderClassPath;
-
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.LoaderClassPath;
 
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -87,7 +85,8 @@ public class JavassistCompiler extends AbstractCompiler {
         if (classLoader == null) {
             classLoader = cp.getClassLoader();
         }
-        cp.insertClassPath(new CustomizedLoaderClassPath(classLoader));
+        cp.insertClassPath(new LoaderClassPath(classLoader));
+        cp.insertClassPath(new LoaderClassPath(JavassistCompiler.class.getClassLoader()));
 
         try {
             return cp.toClass(cls, neighbor, classLoader, JavassistCompiler.class.getProtectionDomain());
