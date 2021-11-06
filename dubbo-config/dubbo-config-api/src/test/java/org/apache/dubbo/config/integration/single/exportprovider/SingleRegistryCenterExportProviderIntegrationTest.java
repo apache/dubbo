@@ -33,7 +33,7 @@ import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -111,7 +111,7 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
             .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
 
-        RegistryConfig registryConfig = new RegistryConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
+        RegistryConfig registryConfig = new RegistryConfig(GlobalRegistryCenterConfig.getConnectionAddress());
         Map<String, String> parameters = new HashMap<>();
         parameters.put(REGISTRY_PROTOCOL_LISTENER_KEY, "singleConfigCenterExportProvider");
         registryConfig.updateParameters(parameters);

@@ -22,7 +22,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -203,7 +203,7 @@ public class RegistryConfigTest {
     public void testEquals() throws Exception {
         RegistryConfig registry1 = new RegistryConfig();
         RegistryConfig registry2 = new RegistryConfig();
-        registry1.setAddress(MockedRegistryCenter.ZOOKEEPER_ADDRESS2);
+        registry1.setAddress(GlobalRegistryCenterConfig.getConnectionAddress2());
         registry2.setAddress("zookeeper://127.0.0.1:2183");
         Assertions.assertNotEquals(registry1, registry2);
     }
@@ -242,7 +242,7 @@ public class RegistryConfigTest {
         // process Parameter annotation
         AbstractConfig.appendParameters(map, registry);
         // Simulate the check that ZoneAwareClusterInvoker#doInvoke do
-        URL url = UrlUtils.parseURL(MockedRegistryCenter.ZOOKEEPER_ADDRESS1, map);
+        URL url = UrlUtils.parseURL(GlobalRegistryCenterConfig.getConnectionAddress1(), map);
         Assertions.assertTrue(url.getParameter(PREFERRED_KEY, false));
     }
 
@@ -254,7 +254,7 @@ public class RegistryConfigTest {
         // Process Parameter annotation
         AbstractConfig.appendParameters(map, registry);
         // Simulate the check that ZoneAwareClusterInvoker#doInvoke do
-        URL url = UrlUtils.parseURL(MockedRegistryCenter.ZOOKEEPER_ADDRESS1, map);
+        URL url = UrlUtils.parseURL(GlobalRegistryCenterConfig.getConnectionAddress1(), map);
         Assertions.assertFalse(url.getParameter(PREFERRED_KEY, false));
     }
 

@@ -17,19 +17,9 @@
 package org.apache.dubbo.test.check.registrycenter;
 
 /**
- * The mocked registry center.
+ * The global registry center.
  */
-public class MockedRegistryCenter {
-
-    /**
-     * The first global zookeeper address
-     */
-    public static final String ZOOKEEPER_ADDRESS1 = "zookeeper://127.0.0.1:2181";
-
-    /**
-     * The second global zookeeper address
-     */
-    public static final String ZOOKEEPER_ADDRESS2 = "zookeeper://127.0.0.1:2182";
+public class GlobalRegistryCenter {
 
     /**
      * The default static registry center instance.

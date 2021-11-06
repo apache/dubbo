@@ -39,7 +39,7 @@ import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -113,7 +113,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
             .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
-        registryConfig = new RegistryConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
+        registryConfig = new RegistryConfig(GlobalRegistryCenterConfig.getConnectionAddress());
         DubboBootstrap.getInstance().registry(registryConfig);
     }
 

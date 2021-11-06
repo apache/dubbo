@@ -24,7 +24,7 @@
     <dubbo:application name="demo-consumer">
     </dubbo:application>
 
-    <!--    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>-->
+    <!--    <dubbo:metadata-report address="${zookeeper.connection.address}"/>-->
 
     <dubbo:registry address="${dubbo.registry.address}"/>
 

@@ -23,7 +23,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
 import org.apache.dubbo.config.bootstrap.rest.UserServiceImpl;
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
 
 import java.util.Arrays;
 
@@ -46,11 +46,11 @@ public class DubboServiceProviderBootstrap {
 
         RegistryConfig interfaceRegistry = new RegistryConfig();
         interfaceRegistry.setId("interfaceRegistry");
-        interfaceRegistry.setAddress(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
+        interfaceRegistry.setAddress(GlobalRegistryCenterConfig.getConnectionAddress());
 
         RegistryConfig serviceRegistry = new RegistryConfig();
         serviceRegistry.setId("serviceRegistry");
-        serviceRegistry.setAddress(MockedRegistryCenter.ZOOKEEPER_ADDRESS1+"?registry-type=service");
+        serviceRegistry.setAddress(GlobalRegistryCenterConfig.getConnectionAddress()+"?registry-type=service");
 
         ServiceConfig<EchoService> echoService = new ServiceConfig<>();
         echoService.setInterface(EchoService.class.getName());
@@ -74,7 +74,7 @@ public class DubboServiceProviderBootstrap {
                 .registries(Arrays.asList(interfaceRegistry, serviceRegistry))
 //                .registry(RegistryBuilder.newBuilder().address("consul://127.0.0.1:8500?registry.type=service").build())
                 .protocol(builder -> builder.port(-1).name("dubbo"))
-                .metadataReport(new MetadataReportConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS1))
+                .metadataReport(new MetadataReportConfig(GlobalRegistryCenterConfig.getConnectionAddress()))
                 .service(echoService)
                 .service(userService)
                 .start()

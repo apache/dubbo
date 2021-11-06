@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.config.bootstrap.rest.UserService;
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMPOSITE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
@@ -34,7 +34,7 @@ public class ZookeeperDubboServiceConsumerBootstrap {
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application("zookeeper-dubbo-consumer", app -> app.metadata(COMPOSITE_METADATA_STORAGE_TYPE))
-                .registry("zookeeper", builder -> builder.address(MockedRegistryCenter.ZOOKEEPER_ADDRESS1)
+                .registry("zookeeper", builder -> builder.address(GlobalRegistryCenterConfig.getConnectionAddress())
                         .parameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)
                         .useAsConfigCenter(true)
                         .useAsMetadataCenter(true))

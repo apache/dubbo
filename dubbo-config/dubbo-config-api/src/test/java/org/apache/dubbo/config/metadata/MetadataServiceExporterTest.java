@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -29,8 +28,7 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -246,7 +244,7 @@ public class MetadataServiceExporterTest {
     @BeforeAll
     public static void beforeAll() {
         FrameworkModel.destroyAll();
-        registryConfig = new RegistryConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
+        registryConfig = new RegistryConfig(GlobalRegistryCenterConfig.getConnectionAddress());
         // pre-check threads
         //precheckUnclosedThreads();
     }

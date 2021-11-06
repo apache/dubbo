@@ -17,6 +17,7 @@
 package org.apache.dubbo.test.check.registrycenter.context;
 
 import org.apache.dubbo.test.check.registrycenter.Context;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperConfig;
 
 import java.nio.file.Path;
 
@@ -26,19 +27,9 @@ import java.nio.file.Path;
 public class ZookeeperContext implements Context {
 
     /**
-     * The default version of zookeeper.
+     * The config of zookeeper.
      */
-    private static final String DEFAULT_ZOOKEEPER_VERSION = "3.6.0";
-
-    /**
-     * The default client ports of zookeeper.
-     */
-    private static final int[] DEFAULT_CLIENT_PORTS = new int[]{2181, 2182};
-
-    /**
-     * The default admin server ports of zookeeper.
-     */
-    private static final int[] DEFAULT_ADMIN_SERVER_PORTS = new int[]{8081, 8082};
+    private ZookeeperConfig config = new ZookeeperConfig();
 
     /**
      * The the source file path of downloaded zookeeper binary archive.
@@ -63,20 +54,20 @@ public class ZookeeperContext implements Context {
      * Returns the zookeeper's version.
      */
     public String getVersion() {
-        return DEFAULT_ZOOKEEPER_VERSION;
+        return config.getVersion();
     }
 
     /**
      * Returns the client ports of zookeeper.
      */
     public int[] getClientPorts() {
-        return DEFAULT_CLIENT_PORTS;
+        return config.getClientPorts();
     }
 
     /**
      * Returns the admin server ports of zookeeper.
      */
     public int[] getAdminServerPorts() {
-        return DEFAULT_ADMIN_SERVER_PORTS;
+        return config.getAdminServerPorts();
     }
 }

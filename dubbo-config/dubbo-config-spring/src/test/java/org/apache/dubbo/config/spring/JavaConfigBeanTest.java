@@ -31,11 +31,9 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
-import org.junit.jupiter.api.AfterAll;
+import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -67,7 +65,7 @@ public class JavaConfigBeanTest {
         SysProps.setProperty("dubbo.application.qos-enable", "false");
         SysProps.setProperty("dubbo.protocol.name", "dubbo");
         SysProps.setProperty("dubbo.protocol.port", "2346");
-        String registryAddress = MockedRegistryCenter.ZOOKEEPER_ADDRESS1;
+        String registryAddress = GlobalRegistryCenterConfig.getConnectionAddress();
         SysProps.setProperty("dubbo.registry.address", registryAddress);
         SysProps.setProperty("dubbo.provider.group", "test");
 

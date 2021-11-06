@@ -27,7 +27,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.integration.IntegrationTest;
 import org.apache.dubbo.registry.RegistryServiceListener;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -94,19 +95,19 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
         serviceConfig.setRef(new MultipleRegistryCenterServiceDiscoveryRegistryServiceImpl());
         serviceConfig.setAsync(false);
 
-        RegistryConfig registryConfig1 = new RegistryConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
+        RegistryConfig registryConfig1 = new RegistryConfig(GlobalRegistryCenterConfig.getConnectionAddress1());
         Map<String, String> parameters1 = new HashMap<>();
         parameters1.put("registry.listeners", MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY);
         registryConfig1.updateParameters(parameters1);
         DubboBootstrap.getInstance().registry(registryConfig1);
-        ports.add(2181);
+        ports.add(ZookeeperConfig.DEFAULT_CLIENT_PORT_1);
 
-        RegistryConfig registryConfig2 = new RegistryConfig(MockedRegistryCenter.ZOOKEEPER_ADDRESS2);
+        RegistryConfig registryConfig2 = new RegistryConfig(GlobalRegistryCenterConfig.getConnectionAddress2());
         Map<String, String> parameters2 = new HashMap<>();
         parameters2.put("registry.listeners", MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY);
         registryConfig2.updateParameters(parameters2);
         DubboBootstrap.getInstance().registry(registryConfig2);
-        ports.add(2182);
+        ports.add(ZookeeperConfig.DEFAULT_CLIENT_PORT_2);
 
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))

@@ -23,7 +23,6 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -54,7 +53,7 @@ import java.util.List;
     })
 @TestPropertySource(properties = {
     "dubbo.protocol.port=-1",
-    "dubbo.registry.address="+ MockedRegistryCenter.ZOOKEEPER_ADDRESS1
+    "dubbo.registry.address=${zookeeper.connection.address}"
 })
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)

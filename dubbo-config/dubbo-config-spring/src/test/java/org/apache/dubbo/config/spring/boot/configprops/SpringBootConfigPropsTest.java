@@ -31,7 +31,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -63,9 +63,9 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         "dubbo.metrics.aggregation.bucket-num=5",
         "dubbo.metrics.aggregation.time-window-seconds=120",
         "dubbo.monitor.address=zookeeper://127.0.0.1:32770",
-        "dubbo.Config-center.address=" + MockedRegistryCenter.ZOOKEEPER_ADDRESS1,
+        "dubbo.Config-center.address=${zookeeper.connection.address.1}",
         "dubbo.config-Center.group=group1",
-        "dubbo.metadata-report.address=" + MockedRegistryCenter.ZOOKEEPER_ADDRESS2,
+        "dubbo.metadata-report.address=${zookeeper.connection.address.2}",
         "dubbo.METADATA-REPORT.username=User",
         "dubbo.provider.host=127.0.0.1",
         "dubbo.consumer.client=netty"
@@ -129,13 +129,13 @@ public class SpringBootConfigPropsTest {
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         Assertions.assertEquals(1, configCenters.size());
         ConfigCenterConfig centerConfig = configCenters.iterator().next();
-        Assertions.assertEquals(MockedRegistryCenter.ZOOKEEPER_ADDRESS1, centerConfig.getAddress());
+        Assertions.assertEquals(GlobalRegistryCenterConfig.getConnectionAddress1(), centerConfig.getAddress());
         Assertions.assertEquals("group1", centerConfig.getGroup());
 
         Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
         Assertions.assertEquals(1, metadataConfigs.size());
         MetadataReportConfig reportConfig = metadataConfigs.iterator().next();
-        Assertions.assertEquals(MockedRegistryCenter.ZOOKEEPER_ADDRESS2, reportConfig.getAddress());
+        Assertions.assertEquals(GlobalRegistryCenterConfig.getConnectionAddress2(), reportConfig.getAddress());
         Assertions.assertEquals("User", reportConfig.getUsername());
 
         // module configs

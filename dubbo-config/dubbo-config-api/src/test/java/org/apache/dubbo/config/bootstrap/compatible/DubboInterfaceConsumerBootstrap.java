@@ -20,7 +20,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.bootstrap.EchoService;
 import org.apache.dubbo.config.bootstrap.rest.UserService;
-import org.apache.dubbo.test.check.registrycenter.MockedRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
 
 /**
  * Dubbo Provider Bootstrap
@@ -32,7 +32,7 @@ public class DubboInterfaceConsumerBootstrap {
     public static void main(String[] args) throws Exception {
         RegistryConfig interfaceRegistry = new RegistryConfig();
         interfaceRegistry.setId("interfaceRegistry");
-        interfaceRegistry.setAddress(MockedRegistryCenter.ZOOKEEPER_ADDRESS1);
+        interfaceRegistry.setAddress(GlobalRegistryCenterConfig.getConnectionAddress());
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application("dubbo-consumer-demo")
