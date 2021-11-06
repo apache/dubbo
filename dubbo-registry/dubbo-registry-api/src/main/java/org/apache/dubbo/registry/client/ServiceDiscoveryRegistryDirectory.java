@@ -212,10 +212,10 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
 
-            // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
-            Map<String, Invoker<T>> oldUrlInvokerMap = null;
-            // use local reference to avoid NPE as this.urlInvokerMap will be set null by destroyAllInvokers().
+            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at destroyAllInvokers().
             Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
+            // can't use local reference as oldUrlInvokerMap's mappings might be removed directly at toInvokers().
+            Map<String, Invoker<T>> oldUrlInvokerMap = null;
             if (localUrlInvokerMap != null) {
                 // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
                 oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
@@ -351,7 +351,6 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         this.urlInvokerMap = null;
         this.destroyInvokers();
-        this.destroyValidInvokers();
     }
 
     /**

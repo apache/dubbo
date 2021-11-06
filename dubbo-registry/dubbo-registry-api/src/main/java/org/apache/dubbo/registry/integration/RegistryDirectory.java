@@ -224,9 +224,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
 
-            // use local reference to avoid NPE as this.urlInvokerMap will be set null by destroyAllInvokers().
+            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at destroyAllInvokers().
             Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
-            // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
+            // can't use local reference as oldUrlInvokerMap's mappings might be removed directly at toInvokers().
             Map<URL, Invoker<T>> oldUrlInvokerMap = null;
             if (localUrlInvokerMap != null) {
                 // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
@@ -492,7 +492,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         this.urlInvokerMap = null;
         this.cachedInvokerUrls = null;
         destroyInvokers();
-        destroyValidInvokers();
     }
 
     private void destroyUnusedInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, Map<URL, Invoker<T>> newUrlInvokerMap) {

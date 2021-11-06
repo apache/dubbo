@@ -241,7 +241,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public void destroy() {
         destroyed = true;
         destroyInvokers();
-        destroyValidInvokers();
         invokersToReconnect.clear();
         disabledInvokers.clear();
     }
@@ -425,29 +424,27 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         return disabledInvokers;
     }
 
-    protected void addValidInvoker(Invoker<T> invoker) {
-        validInvokers.add(invoker);
-        validInvokersInitialized = true;
-    }
-
     protected void setInvokers(BitList<Invoker<T>> invokers) {
         this.invokers = invokers;
         invokersInitialized = true;
-    }
-
-    protected void setValidInvokers(BitList<Invoker<T>> validInvokers) {
-        this.validInvokers = validInvokers;
-        validInvokersInitialized = true;
+        setValidInvokers(invokers.clone());
     }
 
     protected void destroyInvokers() {
         invokers.clear();
         invokersInitialized = false;
-    }
-
-    protected void destroyValidInvokers() {
         validInvokers.clear();
         validInvokersInitialized = false;
+    }
+
+    private void setValidInvokers(BitList<Invoker<T>> validInvokers) {
+        this.validInvokers = validInvokers;
+        validInvokersInitialized = true;
+    }
+
+    private void addValidInvoker(Invoker<T> invoker) {
+        validInvokers.add(invoker);
+        validInvokersInitialized = true;
     }
 
     protected abstract List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
