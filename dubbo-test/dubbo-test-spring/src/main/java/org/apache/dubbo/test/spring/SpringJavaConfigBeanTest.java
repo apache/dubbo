@@ -30,7 +30,7 @@ import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.apache.dubbo.test.common.SysProps;
 import org.apache.dubbo.test.common.api.DemoService;
 import org.apache.dubbo.test.common.impl.DemoServiceImpl;
@@ -80,7 +80,7 @@ public class SpringJavaConfigBeanTest {
         SysProps.setProperty("dubbo.application.qos-enable", "false");
         SysProps.setProperty("dubbo.protocol.name", "dubbo");
         SysProps.setProperty("dubbo.protocol.port", "2346");
-        String registryAddress = GlobalRegistryCenterConfig.getConnectionAddress();
+        String registryAddress = ZookeeperRegistryCenterConfig.getConnectionAddress();
         SysProps.setProperty("dubbo.registry.address", registryAddress);
         SysProps.setProperty("dubbo.provider.group", "test");
 

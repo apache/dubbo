@@ -21,7 +21,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,11 +61,11 @@ public class ConfigCenterConfigTest {
         ConfigCenterConfig config = new ConfigCenterConfig();
         config.setNamespace("namespace");
         config.setGroup("group");
-        config.setAddress(GlobalRegistryCenterConfig.getConnectionAddress());
+        config.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress());
         config.setHighestPriority(null);
         config.refresh();
 
-        Assertions.assertEquals(GlobalRegistryCenterConfig.getConnectionAddress()+"/ConfigCenterConfig?check=true&" +
+        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress()+"/ConfigCenterConfig?check=true&" +
                         "config-file=dubbo.properties&group=group&" +
                         "namespace=namespace&timeout=3000",
                 config.toUrl().toFullString()
@@ -75,7 +75,7 @@ public class ConfigCenterConfigTest {
     @Test
     public void testOverrideConfig() {
 
-        String zkAddr = GlobalRegistryCenterConfig.getConnectionAddress();
+        String zkAddr = ZookeeperRegistryCenterConfig.getConnectionAddress();
         // sysprops has no id
         SysProps.setProperty("dubbo.config-center.check", "false");
         SysProps.setProperty("dubbo.config-center.address", zkAddr);
@@ -117,7 +117,7 @@ public class ConfigCenterConfigTest {
         try {
             //No id but has address
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            configCenter.setAddress(GlobalRegistryCenterConfig.getConnectionAddress());
+            configCenter.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress());
 
             DubboBootstrap.getInstance()
                     .application("demo-app")
@@ -278,7 +278,7 @@ public class ConfigCenterConfigTest {
     @Test
     public void testAttributes() {
         ConfigCenterConfig cc = new ConfigCenterConfig();
-        cc.setAddress(GlobalRegistryCenterConfig.getConnectionAddress());
+        cc.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress());
         Map<String, String> attributes = new LinkedHashMap<>();
         ConfigCenterConfig.appendAttributes(attributes, cc);
 
@@ -292,7 +292,7 @@ public class ConfigCenterConfigTest {
 
     @Test
     public void testSetAddress() {
-        String address = GlobalRegistryCenterConfig.getConnectionAddress();
+        String address = ZookeeperRegistryCenterConfig.getConnectionAddress();
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setUsername("user123"); // set username first
         cc.setPassword("pass123");

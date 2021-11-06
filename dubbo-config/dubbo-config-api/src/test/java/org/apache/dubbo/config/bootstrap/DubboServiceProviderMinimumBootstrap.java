@@ -18,7 +18,7 @@ package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.config.bootstrap.rest.UserService;
 import org.apache.dubbo.config.bootstrap.rest.UserServiceImpl;
-import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
 /**
  * TODO
@@ -28,7 +28,7 @@ public class DubboServiceProviderMinimumBootstrap {
     public static void main(String[] args) {
         DubboBootstrap.getInstance()
                 .application("dubbo-provider-demo")
-                .registry(builder -> builder.address(GlobalRegistryCenterConfig.getConnectionAddress()+"?registry-type=service"))
+                .registry(builder -> builder.address(ZookeeperRegistryCenterConfig.getConnectionAddress()+"?registry-type=service"))
 //                .registry(builder -> builder.address("eureka://127.0.0.1:8761?registry-type=service"))
                 .protocol(builder -> builder.port(-1).name("dubbo"))
                 .service("echo", builder -> builder.interfaceClass(EchoService.class).ref(new EchoServiceImpl()))

@@ -27,7 +27,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.integration.IntegrationTest;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,8 +91,8 @@ public class MultipleRegistryCenterInjvmIntegrationTest implements IntegrationTe
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
             .protocol(new ProtocolConfig("injvm"))
             .service(serviceConfig)
-            .registry(new RegistryConfig(GlobalRegistryCenterConfig.getConnectionAddress1()))
-            .registry(new RegistryConfig(GlobalRegistryCenterConfig.getConnectionAddress2()));
+            .registry(new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress1()))
+            .registry(new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress2()));
     }
 
     /**

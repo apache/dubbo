@@ -40,7 +40,7 @@ import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.test.check.DubboTestChecker;
-import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -70,7 +70,7 @@ public class MultiInstanceTest {
     @BeforeAll
     public static void beforeAll() {
         FrameworkModel.destroyAll();
-        registryConfig = new RegistryConfig(GlobalRegistryCenterConfig.getConnectionAddress1());
+        registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress1());
 
         // pre-check threads
         //precheckUnclosedThreads();
@@ -338,7 +338,7 @@ public class MultiInstanceTest {
             Assertions.assertTrue(stackTraces1.size() > 0, "Get threads of provider app 1 failed");
 
             // start zk server 2
-            RegistryConfig registryConfig2 = new RegistryConfig(GlobalRegistryCenterConfig.getConnectionAddress2());
+            RegistryConfig registryConfig2 = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress2());
 
             // start provider app 2 use a difference zk server 2
             ServiceConfig serviceConfig2 = new ServiceConfig();

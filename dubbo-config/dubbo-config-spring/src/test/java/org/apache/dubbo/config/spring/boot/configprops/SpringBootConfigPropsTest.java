@@ -31,7 +31,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -129,13 +129,13 @@ public class SpringBootConfigPropsTest {
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         Assertions.assertEquals(1, configCenters.size());
         ConfigCenterConfig centerConfig = configCenters.iterator().next();
-        Assertions.assertEquals(GlobalRegistryCenterConfig.getConnectionAddress1(), centerConfig.getAddress());
+        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress1(), centerConfig.getAddress());
         Assertions.assertEquals("group1", centerConfig.getGroup());
 
         Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
         Assertions.assertEquals(1, metadataConfigs.size());
         MetadataReportConfig reportConfig = metadataConfigs.iterator().next();
-        Assertions.assertEquals(GlobalRegistryCenterConfig.getConnectionAddress2(), reportConfig.getAddress());
+        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress2(), reportConfig.getAddress());
         Assertions.assertEquals("User", reportConfig.getUsername());
 
         // module configs

@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.check.registrycenter;
+package org.apache.dubbo.test.check.registrycenter.config;
 
-import org.apache.dubbo.test.check.registrycenter.config.ZookeeperConfig;
+import org.apache.dubbo.test.check.registrycenter.Config;
 
 /**
- * Define the global config for registry center.
+ * Define the zookeeper global config for registry center.
  */
-public class GlobalRegistryCenterConfig {
+public class ZookeeperRegistryCenterConfig {
 
     /**
      * Define the {@link Config} instance.
@@ -53,7 +53,7 @@ public class GlobalRegistryCenterConfig {
      * Returns the default connection address key in single registry center.
      * <h3>How to use</h3>
      * <pre>
-     * System.getProperty({@link GlobalRegistryCenterConfig#getConnectionAddressKey()})
+     * System.getProperty({@link ZookeeperRegistryCenterConfig#getConnectionAddressKey()})
      * </pre>
      */
     public static String getConnectionAddressKey() {
@@ -64,7 +64,7 @@ public class GlobalRegistryCenterConfig {
      * Returns the first connection address key in multiple registry center.
      * <h3>How to use</h3>
      * <pre>
-     * System.getProperty({@link GlobalRegistryCenterConfig#getConnectionAddressKey1()})
+     * System.getProperty({@link ZookeeperRegistryCenterConfig#getConnectionAddressKey1()})
      * </pre>
      */
     public static String getConnectionAddressKey1() {
@@ -75,7 +75,7 @@ public class GlobalRegistryCenterConfig {
      * Returns the second connection address key in multiple registry center.
      * <h3>How to use</h3>
      * <pre>
-     * System.getProperty({@link GlobalRegistryCenterConfig#getConnectionAddressKey2()})
+     * System.getProperty({@link ZookeeperRegistryCenterConfig#getConnectionAddressKey2()})
      * </pre>
      */
     public static String getConnectionAddressKey2() {

@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenterConfig;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +36,7 @@ public class DubboSpringInitCustomizerTest {
     @BeforeAll
     public static void beforeAll() {
         DubboBootstrap.reset();
-        SysProps.setProperty("dubbo.registry.address", GlobalRegistryCenterConfig.getConnectionAddress());
+        SysProps.setProperty("dubbo.registry.address", ZookeeperRegistryCenterConfig.getConnectionAddress());
 
     }
 
