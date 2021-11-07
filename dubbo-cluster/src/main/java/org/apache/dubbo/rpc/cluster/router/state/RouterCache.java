@@ -16,10 +16,10 @@
  */
 package org.apache.dubbo.rpc.cluster.router.state;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import org.apache.dubbo.rpc.Invoker;
+
+import java.util.Collections;
+import java.util.Map;
 
 /***
  * Cache the address list for each Router.
@@ -27,23 +27,27 @@ import org.apache.dubbo.rpc.Invoker;
  * @since 3.0
  */
 public class RouterCache<T> {
-    private final static ConcurrentHashMap EMPTY_MAP = new ConcurrentHashMap<>();
-    protected ConcurrentMap<String, BitList<Invoker<T>>> addrPool = EMPTY_MAP;
-    protected Object addrMetadata;
+    private final Map<String, BitList<Invoker<T>>> addressPool;
+    private final Object routerMetadata;
 
-    public ConcurrentMap<String, BitList<Invoker<T>>> getAddrPool() {
-        return addrPool;
+    public RouterCache() {
+        this(Collections.emptyMap(), null);
     }
 
-    public void setAddrPool(ConcurrentHashMap<String, BitList<Invoker<T>>> addrPool) {
-        this.addrPool = addrPool;
+    public RouterCache(Map<String, BitList<Invoker<T>>> addressPool) {
+        this(addressPool, null);
     }
 
-    public Object getAddrMetadata() {
-        return addrMetadata;
+    public RouterCache(Map<String, BitList<Invoker<T>>> addressPool, Object routerMetadata) {
+        this.addressPool = addressPool;
+        this.routerMetadata = routerMetadata;
     }
 
-    public void setAddrMetadata(Object addrMetadata) {
-        this.addrMetadata = addrMetadata;
+    public Map<String, BitList<Invoker<T>>> getAddressPool() {
+        return addressPool;
+    }
+
+    public Object getRouterMetadata() {
+        return routerMetadata;
     }
 }

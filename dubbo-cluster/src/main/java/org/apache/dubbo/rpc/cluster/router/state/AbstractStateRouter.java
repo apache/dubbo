@@ -17,38 +17,22 @@
 package org.apache.dubbo.rpc.cluster.router.state;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 /***
  * The abstract class of StateRoute.
  * @since 3.0
  */
 public abstract class AbstractStateRouter implements StateRouter {
-    final protected RouterChain chain;
-    protected int priority = DEFAULT_PRIORITY;
-    protected boolean force = false;
-    protected URL url;
-    protected List<Invoker> invokers;
-    protected AtomicReference<AddrCache> cache;
-    protected GovernanceRuleRepository ruleRepository;
+    private volatile int priority = DEFAULT_PRIORITY;
+    private volatile boolean force = false;
+    private volatile URL url;
 
-    public AbstractStateRouter(URL url, RouterChain chain) {
+    private final GovernanceRuleRepository ruleRepository;
+
+    public AbstractStateRouter(URL url) {
         this.ruleRepository = url.getOrDefaultModuleModel().getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
-        this.chain = chain;
         this.url = url;
-    }
-
-    @Override
-    public <T> void notify(List<Invoker<T>> invokers) {
-        this.invokers = (List)invokers;
     }
 
     @Override
@@ -83,40 +67,8 @@ public abstract class AbstractStateRouter implements StateRouter {
         this.priority = priority;
     }
 
-    @Override
-    public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url,
-        Invocation invocation, boolean needToPrintMessage) throws RpcException {
-
-        List<String> tags = getTags(url, invocation);
-
-        if (tags == null) {
-            return new StateRouterResult<>(invokers);
-        }
-        for (String tag : tags) {
-            BitList<Invoker<T>> tagInvokers = cache.getAddrPool().get(tag);
-            if (tagMatchFail(tagInvokers)) {
-                continue;
-            }
-            if (needToPrintMessage) {
-                return new StateRouterResult<>(invokers.and(tagInvokers), "use tag " + tag + " to route");
-            } else {
-                return new StateRouterResult<>(invokers.and(tagInvokers));
-            }
-        }
-
-        return new StateRouterResult<>(invokers);
+    public GovernanceRuleRepository getRuleRepository() {
+        return this.ruleRepository;
     }
 
-    protected List<String> getTags(URL url, Invocation invocation) {
-        return new ArrayList<String>();
-    }
-
-    public <T> Boolean tagMatchFail(BitList<Invoker<T>> invokers) {
-        return invokers == null || invokers.isEmpty();
-    }
-
-    @Override
-    public void pool() {
-        chain.loop(false);
-    }
 }

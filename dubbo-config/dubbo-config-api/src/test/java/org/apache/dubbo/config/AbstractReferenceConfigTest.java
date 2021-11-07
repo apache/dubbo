@@ -23,8 +23,8 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.condition.config.AppRouterFactory;
-import org.apache.dubbo.rpc.cluster.router.tag.TagRouterFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -110,11 +110,10 @@ public class AbstractReferenceConfigTest {
         when(url.getParameter(ROUTER_KEY)).thenReturn("condition");
         List<RouterFactory> routerFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(url, ROUTER_KEY);
         assertThat(routerFactories.stream().anyMatch(routerFactory -> routerFactory.getClass().equals(ConditionRouterFactory.class)), is(true));
-        when(url.getParameter(ROUTER_KEY)).thenReturn("-tag,-app");
+        when(url.getParameter(ROUTER_KEY)).thenReturn("-app");
         routerFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(url, ROUTER_KEY);
         assertThat(routerFactories.stream()
-                .allMatch(routerFactory -> !routerFactory.getClass().equals(TagRouterFactory.class)
-                        && !routerFactory.getClass().equals(AppRouterFactory.class)), is(true));
+            .noneMatch(routerFactory -> routerFactory.getClass().equals(AppRouterFactory.class)), is(true));
     }
 
     @Test

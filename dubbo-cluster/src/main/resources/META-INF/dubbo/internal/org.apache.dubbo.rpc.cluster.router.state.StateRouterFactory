@@ -1,2 +1,1 @@
-tag-dynamic=org.apache.dubbo.rpc.cluster.router.tag.TagDynamicStateRouterFactory
-tag-static=org.apache.dubbo.rpc.cluster.router.tag.TagStaticStateRouterFactory
+tag=org.apache.dubbo.rpc.cluster.router.tag.TagStateRouterFactory

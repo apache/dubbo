@@ -16,11 +16,9 @@
  */
 package org.apache.dubbo.rpc.cluster.router.state;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.dubbo.rpc.Invoker;
+
+import java.util.Map;
 
 /***
  * Address cache,
@@ -30,22 +28,27 @@ import org.apache.dubbo.rpc.Invoker;
  */
 public class AddrCache<T> {
 
-    private List<Invoker<T>> invokers;
-    private Map<String, RouterCache<T>> cache = Collections.emptyMap();
+    /**
+     * Total invokers
+     */
+    private final BitList<Invoker<T>> invokers;
 
-    public List<Invoker<T>> getInvokers() {
+    /**
+     * Router's Result Cache
+     * K - StateRouter Class, V - Cache
+     */
+    private final Map<Class<? extends StateRouter>, RouterCache<T>> cache;
+
+    public AddrCache(BitList<Invoker<T>> invokers, Map<Class<? extends StateRouter>, RouterCache<T>> cache) {
+        this.invokers = invokers;
+        this.cache = cache;
+    }
+
+    public BitList<Invoker<T>> getInvokers() {
         return invokers;
     }
 
-    public void setInvokers(List<Invoker<T>> invokers) {
-        this.invokers = invokers;
-    }
-
-    public Map<String, RouterCache<T>> getCache() {
+    public Map<Class<? extends StateRouter>, RouterCache<T>> getCache() {
         return cache;
-    }
-
-    public void setCache(Map<String, RouterCache<T>> cache) {
-        this.cache = cache;
     }
 }
