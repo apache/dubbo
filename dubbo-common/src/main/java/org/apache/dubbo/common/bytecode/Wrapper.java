@@ -255,7 +255,7 @@ public abstract class Wrapper {
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();
         ClassGenerator cc = ClassGenerator.newInstance(cl);
         Class<?> neighborClass = Modifier.isPublic(c.getModifiers()) ? c : Wrapper.class;
-        cc.setClassName((Modifier.isPublic(c.getModifiers()) ? c.getName() : Wrapper.class.getName() + "$sw") + id);
+        cc.setClassName((Modifier.isPublic(c.getModifiers()) ? c.getName() : Wrapper.class.getName() + "$sw") + "DubboWrap" + id);
         cc.setSuperClass(Wrapper.class);
 
         cc.addDefaultConstructor();
