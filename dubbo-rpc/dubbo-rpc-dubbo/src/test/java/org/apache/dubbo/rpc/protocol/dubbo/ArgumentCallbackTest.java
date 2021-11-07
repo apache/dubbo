@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -280,15 +281,15 @@ public class ArgumentCallbackTest {
         }
     }
 
-    interface IDemoCallback {
+    public interface IDemoCallback {
         String yyy(String msg);
     }
 
-    interface IHelloService {
+    public interface IHelloService {
         String sayHello();
     }
 
-    interface IDemoService {
+    public interface IDemoService {
         String get();
 
         int getCallbackCount();
