@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router.state;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
 /***
@@ -71,4 +72,8 @@ public abstract class AbstractStateRouter implements StateRouter {
         return this.ruleRepository;
     }
 
+    @Override
+    public <T> void notify(BitList<Invoker<T>> invokers) {
+
+    }
 }

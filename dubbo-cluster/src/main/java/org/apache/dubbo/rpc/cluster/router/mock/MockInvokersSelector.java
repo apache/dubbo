@@ -21,11 +21,9 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
-import org.apache.dubbo.rpc.cluster.router.RouterResult;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
@@ -34,71 +32,63 @@ import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
  * A specific Router designed to realize mock feature.
  * If a request is configured to use mock, then this router guarantees that only the invokers with protocol MOCK appear in final the invoker list, all other invokers will be excluded.
  */
-public class MockInvokersSelector extends AbstractRouter {
+public class MockInvokersSelector extends AbstractStateRouter {
 
     public static final String NAME = "MOCK_ROUTER";
     private static final int MOCK_INVOKERS_DEFAULT_PRIORITY = -100;
 
-    public MockInvokersSelector() {
+    private volatile BitList normalInvokers = BitList.emptyList();
+    private volatile BitList mockedInvokers = BitList.emptyList();
+
+    public MockInvokersSelector(URL url) {
+        super(url);
         this.setPriority(MOCK_INVOKERS_DEFAULT_PRIORITY);
     }
 
     @Override
-    public <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url,
-                                              Invocation invocation, boolean needToPrintMessage) throws RpcException {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
+                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (CollectionUtils.isEmpty(invokers)) {
-            return new RouterResult<>(invokers);
+            return new StateRouterResult<>(invokers,
+                needToPrintMessage ? "Empty invokers. Directly return." : null);
         }
 
         if (invocation.getObjectAttachments() == null) {
-            return new RouterResult<>(getNormalInvokers(invokers));
+            return new StateRouterResult<>(invokers.and(normalInvokers),
+                needToPrintMessage ? "ObjectAttachments from invocation are null. Return normal Invokers." : null);
         } else {
             String value = (String) invocation.getObjectAttachments().get(INVOCATION_NEED_MOCK);
             if (value == null) {
-                return new RouterResult<>(getNormalInvokers(invokers));
+                return new StateRouterResult<>(invokers.and(normalInvokers),
+                    needToPrintMessage ? "invocation.need.mock not set. Return normal Invokers." : null);
             } else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
-                return new RouterResult<>(getMockedInvokers(invokers));
+                return new StateRouterResult<>(invokers.and(mockedInvokers),
+                    needToPrintMessage ? "invocation.need.mock is true. Return mocked Invokers." : null);
             }
         }
-        return new RouterResult<>(invokers);
+        return new StateRouterResult<>(invokers);
     }
 
-    private <T> List<Invoker<T>> getMockedInvokers(final List<Invoker<T>> invokers) {
-        if (!hasMockProviders(invokers)) {
-            return null;
-        }
-        List<Invoker<T>> sInvokers = new ArrayList<Invoker<T>>(1);
-        for (Invoker<T> invoker : invokers) {
-            if (invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL)) {
-                sInvokers.add(invoker);
-            }
-        }
-        return sInvokers;
+    @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public <T> void notify(BitList<Invoker<T>> invokers) {
+        cacheMockedInvokers((BitList) invokers);
+        cacheNormalInvokers((BitList) invokers);
     }
 
-    private <T> List<Invoker<T>> getNormalInvokers(final List<Invoker<T>> invokers) {
-        if (!hasMockProviders(invokers)) {
-            return invokers;
-        } else {
-            List<Invoker<T>> sInvokers = new ArrayList<Invoker<T>>(invokers.size());
-            for (Invoker<T> invoker : invokers) {
-                if (!invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL)) {
-                    sInvokers.add(invoker);
-                }
-            }
-            return sInvokers;
-        }
+    @SuppressWarnings("rawtypes")
+    private void cacheMockedInvokers(BitList<Invoker> invokers) {
+        BitList<Invoker> clonedInvokers = invokers.clone();
+        clonedInvokers.removeIf((invoker) -> !invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL));
+        mockedInvokers = clonedInvokers;
     }
 
-    private <T> boolean hasMockProviders(final List<Invoker<T>> invokers) {
-        boolean hasMockProvider = false;
-        for (Invoker<T> invoker : invokers) {
-            if (invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL)) {
-                hasMockProvider = true;
-                break;
-            }
-        }
-        return hasMockProvider;
+    @SuppressWarnings("rawtypes")
+    private void cacheNormalInvokers(BitList<Invoker> invokers) {
+        BitList<Invoker> clonedInvokers = invokers.clone();
+        clonedInvokers.removeIf((invoker) -> invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL));
+        normalInvokers = clonedInvokers;
     }
 
 }

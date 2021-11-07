@@ -14,36 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
+package org.apache.dubbo.rpc.cluster.router.condition;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.rpc.cluster.router.state.CacheableStateRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 /**
- * Application level router factory
+ * ConditionRouterFactory
+ * Load when "override://" is configured {@link ConditionStateRouter}
  */
-@Activate(order = 200)
-public class AppRouterFactory implements RouterFactory {
-    public static final String NAME = "app";
+public class ConditionStateRouterFactory extends CacheableStateRouterFactory {
 
-    private volatile Router router;
+    public static final String NAME = "condition";
 
     @Override
-    public Router getRouter(URL url) {
-        if (router != null) {
-            return router;
-        }
-        synchronized (this) {
-            if (router == null) {
-                router = createRouter(url);
-            }
-        }
-        return router;
-    }
-
-    private Router createRouter(URL url) {
-        return new AppRouter(url);
+    protected StateRouter createRouter(URL url) {
+        return new ConditionStateRouter(url);
     }
 }

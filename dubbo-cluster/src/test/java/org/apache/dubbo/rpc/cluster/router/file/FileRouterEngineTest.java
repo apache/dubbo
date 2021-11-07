@@ -27,8 +27,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import org.junit.jupiter.api.AfterEach;
@@ -56,7 +56,7 @@ public class FileRouterEngineTest {
     Invocation invocation;
     StaticDirectory<FileRouterEngineTest> dic;
     Result result = new AppResponse();
-    private RouterFactory routerFactory = ExtensionLoader.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
+    private StateRouterFactory routerFactory = ExtensionLoader.getExtensionLoader(StateRouterFactory.class).getAdaptiveExtension();
 
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
@@ -173,7 +173,7 @@ public class FileRouterEngineTest {
         URL dicInitUrl = URL.valueOf("consumer://localhost:20880/org.apache.dubbo.rpc.cluster.router.file.FileRouterEngineTest?application=FileRouterEngineTest");
         dic = new StaticDirectory<>(dicInitUrl, invokers);
         dic.buildRouterChain();
-        dic.getRouterChain().initWithRouters(Arrays.asList(routerFactory.getRouter(url)));
+        dic.getRouterChain().initWithStateRouters(Arrays.asList(routerFactory.getRouter(url)));
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {

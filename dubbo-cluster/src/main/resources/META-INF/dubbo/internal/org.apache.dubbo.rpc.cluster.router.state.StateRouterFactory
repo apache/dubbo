@@ -1,1 +1,6 @@
 tag=org.apache.dubbo.rpc.cluster.router.tag.TagStateRouterFactory
+condition=org.apache.dubbo.rpc.cluster.router.condition.ConditionStateRouterFactory
+service=org.apache.dubbo.rpc.cluster.router.condition.config.ServiceStateRouterFactory
+app=org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouterFactory
+file=org.apache.dubbo.rpc.cluster.router.file.FileStateRouterFactory
+mock=org.apache.dubbo.rpc.cluster.router.mock.MockStateRouterFactory

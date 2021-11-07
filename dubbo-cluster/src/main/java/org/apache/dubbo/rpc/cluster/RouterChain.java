@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.STATE_ROUTER_KEY;
 
 /**
  * Router chain
@@ -81,7 +80,7 @@ public class RouterChain<T> {
 
         List<StateRouterFactory> extensionStateRouterFactories = url.getOrDefaultApplicationModel()
             .getExtensionLoader(StateRouterFactory.class)
-            .getActivateExtension(url, STATE_ROUTER_KEY);
+            .getActivateExtension(url, ROUTER_KEY);
 
         List<StateRouter> stateRouters = extensionStateRouterFactories.stream()
             .map(factory -> factory.getRouter(url))
@@ -94,14 +93,18 @@ public class RouterChain<T> {
 
     /**
      * the resident routers must being initialized before address notification.
-     * FIXME: this method should not be public
+     * only for ut
      */
     public void initWithRouters(List<Router> builtinRouters) {
         this.builtinRouters = builtinRouters;
         this.routers = new ArrayList<>(builtinRouters);
     }
 
-    private void initWithStateRouters(List<StateRouter> builtinRouters) {
+    /**
+     * the resident routers must being initialized before address notification.
+     * only for ut
+     */
+    public void initWithStateRouters(List<StateRouter> builtinRouters) {
         this.builtinStateRouters = builtinRouters;
         setStateRouters(builtinStateRouters);
     }

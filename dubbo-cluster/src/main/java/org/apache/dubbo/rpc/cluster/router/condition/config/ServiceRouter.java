@@ -22,7 +22,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 /**
  * Service level router, "server-unique-name.condition-router"
  */
-public class ServiceRouter extends ListenableRouter {
+public class ServiceRouter extends ListenableStateRouter {
     public static final String NAME = "SERVICE_ROUTER";
     /**
      * ServiceRouter should before AppRouter

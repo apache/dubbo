@@ -24,8 +24,9 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
-import org.apache.dubbo.rpc.cluster.router.RouterResult;
+import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 
 import javax.script.Bindings;
 import javax.script.Compilable;
@@ -57,10 +58,10 @@ import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 /**
  * ScriptRouter
  */
-public class ScriptRouter extends AbstractRouter {
+public class ScriptStateRouter extends AbstractStateRouter {
     public static final String NAME = "SCRIPT_ROUTER";
     private static final int SCRIPT_ROUTER_DEFAULT_PRIORITY = 0;
-    private static final Logger logger = LoggerFactory.getLogger(ScriptRouter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptStateRouter.class);
 
     private static final Map<String, ScriptEngine> ENGINES = new ConcurrentHashMap<>();
 
@@ -81,7 +82,8 @@ public class ScriptRouter extends AbstractRouter {
         accessControlContext = new AccessControlContext(new ProtectionDomain[]{domain});
     }
 
-    public ScriptRouter(URL url) {
+    public ScriptStateRouter(URL url) {
+        super(url);
         this.setUrl(url);
         this.setPriority(url.getParameter(PRIORITY_KEY, SCRIPT_ROUTER_DEFAULT_PRIORITY));
 
@@ -124,13 +126,13 @@ public class ScriptRouter extends AbstractRouter {
 
 
     @Override
-    public <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url,
-                                              Invocation invocation, boolean needToPrintMessage) throws RpcException {
+    public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
+                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (engine == null || function == null) {
-            return new RouterResult<>(invokers);
+            return new StateRouterResult<>(invokers);
         }
         Bindings bindings = createBindings(invokers, invocation);
-        return new RouterResult<>(getRoutedInvokers(AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+        return new StateRouterResult<>(getRoutedInvokers(invokers, AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
                 return function.eval(bindings);
             } catch (ScriptException e) {
@@ -145,14 +147,16 @@ public class ScriptRouter extends AbstractRouter {
      * get routed invokers from result of script rule evaluation
      */
     @SuppressWarnings("unchecked")
-    protected <T> List<Invoker<T>> getRoutedInvokers(Object obj) {
+    protected <T> BitList<Invoker<T>> getRoutedInvokers(BitList<Invoker<T>> invokers, Object obj) {
+        BitList<Invoker<T>> result = invokers.clone();
         if (obj instanceof Invoker[]) {
-            return Arrays.asList((Invoker<T>[]) obj);
+            result.retainAll(Arrays.asList((Invoker<T>[]) obj));
         } else if (obj instanceof Object[]) {
-            return Arrays.stream((Object[]) obj).map(item -> (Invoker<T>) item).collect(Collectors.toList());
+            result.retainAll(Arrays.stream((Object[]) obj).map(item -> (Invoker<T>) item).collect(Collectors.toList()));
         } else {
-            return (List<Invoker<T>>) obj;
+            result.retainAll((List<Invoker<T>>) obj);
         }
+        return result;
     }
 
     /**

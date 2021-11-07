@@ -18,19 +18,19 @@ package org.apache.dubbo.rpc.cluster.router.mock;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 /**
  *
  */
 @Activate
-public class MockRouterFactory implements RouterFactory {
+public class MockStateRouterFactory implements StateRouterFactory {
     public static final String NAME = "mock";
 
     @Override
-    public Router getRouter(URL url) {
-        return new MockInvokersSelector();
+    public StateRouter getRouter(URL url) {
+        return new MockInvokersSelector(url);
     }
 
 }

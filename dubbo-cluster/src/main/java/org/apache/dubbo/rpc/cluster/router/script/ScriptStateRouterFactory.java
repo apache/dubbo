@@ -14,23 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition;
+package org.apache.dubbo.rpc.cluster.router.script;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 /**
- * ConditionRouterFactory
- * Load when "override://" is configured {@link ConditionRouter}
+ * ScriptRouterFactory
+ * <p>
+ * Example URLS used by Script Router Factory：
+ * <ol>
+ * <li> script://registryAddress?type=js&rule=xxxx
+ * <li> script:///path/to/routerfile.js?type=js&rule=xxxx
+ * <li> script://D:\path\to\routerfile.js?type=js&rule=xxxx
+ * <li> script://C:/path/to/routerfile.js?type=js&rule=xxxx
+ * </ol>
+ * The host value in URL points out the address of the source content of the Script Router，Registry、File etc
+ *
  */
-public class ConditionRouterFactory implements RouterFactory {
+public class ScriptStateRouterFactory implements StateRouterFactory {
 
-    public static final String NAME = "condition";
+    public static final String NAME = "script";
 
     @Override
-    public Router getRouter(URL url) {
-        return new ConditionRouter(url);
+    public StateRouter getRouter(URL url) {
+        return new ScriptStateRouter(url);
     }
 
 }
