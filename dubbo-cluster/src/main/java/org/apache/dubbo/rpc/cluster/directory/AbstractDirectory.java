@@ -79,24 +79,19 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     protected final Map<String, String> queryMap;
 
     /**
-     * All invokers from registry
-     */
-    private volatile BitList<Invoker<T>> invokers = new BitList(Collections.emptyList());
-
-    /**
-     * All invokers initialized flag.
+     * Invokers initialized flag.
      */
     private volatile boolean invokersInitialized = false;
 
     /**
-     * Valid Invoker. All invokers from registry exclude unavailable and disabled invokers.
+     * All invokers from registry
      */
-    private volatile BitList<Invoker<T>> validInvokers = new BitList(Collections.emptyList());
+    private volatile BitList<Invoker<T>> invokers = BitList.emptyList();
 
     /**
-     * Valid Invokers initialized flag.
+     * Valid Invoker. All invokers from registry exclude unavailable and disabled invokers.
      */
-    private volatile boolean validInvokersInitialized = false;
+    private volatile BitList<Invoker<T>> validInvokers = BitList.emptyList();
 
     /**
      * Waiting to reconnect invokers.
@@ -183,10 +178,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         BitList<Invoker<T>> availableInvokers;
-        if (validInvokersInitialized) {
-            availableInvokers = validInvokers;
+        // use clone to avoid being modified at doList().
+        if (invokersInitialized) {
+            availableInvokers = validInvokers.clone();
         } else {
-            availableInvokers = invokers;
+            availableInvokers = invokers.clone();
         }
 
         List<Invoker<T>> routedResult = doList(availableInvokers, invocation);
@@ -249,11 +245,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     @Override
     public void addInvalidateInvoker(Invoker<T> invoker) {
         // 1. remove this invoker from validInvokers list, this invoker will not be listed in the next time
-        boolean hasIt;
-        synchronized (validInvokers) {
-            hasIt = validInvokers.remove(invoker);
-        }
-        if (hasIt) {
+        if (removeValidInvoker(invoker)) {
             // 2. add this invoker to reconnect list
             invokersToReconnect.add(invoker);
             // 3. try start check connectivity task
@@ -330,7 +322,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             BitList<Invoker<T>> copiedInvokers = invokers.clone();
             refreshInvokers(copiedInvokers, invokersToReconnect);
             refreshInvokers(copiedInvokers, disabledInvokers);
-            setValidInvokers(copiedInvokers);
+            this.validInvokers = copiedInvokers;
         }
     }
 
@@ -350,9 +342,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public void addDisabledInvoker(Invoker<T> invoker) {
         if (invokers.contains(invoker)) {
             disabledInvokers.add(invoker);
-            synchronized (validInvokers) {
-                validInvokers.remove(invoker);
-            }
+            removeValidInvoker(invoker);
             logger.info("Disable service address: " + invoker.getUrl() + ".");
         }
     }
@@ -405,28 +395,27 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected void setInvokers(BitList<Invoker<T>> invokers) {
         this.invokers = invokers;
+        this.validInvokers = invokers.clone();
         this.invokersInitialized = true;
-        setValidInvokers(invokers.clone());
     }
 
     protected void destroyInvokers() {
         // set empty instead of clearing to support concurrent access.
-        this.invokers = new BitList(Collections.emptyList());
-        this.validInvokers = new BitList(Collections.emptyList());
+        this.invokers = BitList.emptyList();
+        this.validInvokers = BitList.emptyList();
         this.invokersInitialized = false;
-        this.validInvokersInitialized = false;
     }
 
-    private void setValidInvokers(BitList<Invoker<T>> validInvokers) {
-        this.validInvokers = validInvokers;
-        this.validInvokersInitialized = true;
-    }
-
-    private void addValidInvoker(Invoker<T> invoker) {
+    private boolean addValidInvoker(Invoker<T> invoker) {
         synchronized (this.validInvokers) {
-            this.validInvokers.add(invoker);
+            return this.validInvokers.add(invoker);
         }
-        this.validInvokersInitialized = true;
+    }
+
+    private boolean removeValidInvoker(Invoker<T> invoker) {
+        synchronized (this.validInvokers) {
+            return this.validInvokers.remove(invoker);
+        }
     }
 
     protected abstract List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException;
