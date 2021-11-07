@@ -20,12 +20,11 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizerHolder;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,22 +33,16 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class DubboSpringInitCustomizerTest {
 
-    private static RegistryCenter singleRegistryCenter;
-
     @BeforeAll
     public static void beforeAll() {
         DubboBootstrap.reset();
-        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
-        singleRegistryCenter.startup();
-        RegistryCenter.Instance registryCenterInstance = singleRegistryCenter.getRegistryCenterInstance().get(0);
-        SysProps.setProperty("dubbo.registry.address", registryCenterInstance.toURL());
+        SysProps.setProperty("dubbo.registry.address", ZookeeperRegistryCenterConfig.getConnectionAddress());
 
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
-        singleRegistryCenter.shutdown();
         SysProps.clear();
     }
 

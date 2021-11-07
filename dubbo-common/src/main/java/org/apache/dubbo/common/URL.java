@@ -1515,9 +1515,14 @@ class URL implements Serializable {
         return configuration;
     }
 
+    private volatile int hashCodeCache = -1;
+
     @Override
     public int hashCode() {
-        return Objects.hash(urlAddress, urlParam);
+        if (hashCodeCache == -1) {
+            hashCodeCache = Objects.hash(urlAddress, urlParam);
+        }
+        return hashCodeCache;
     }
 
     @Override

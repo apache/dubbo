@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ExtensionDirector implements ExtensionAccessor {
 
     private final ConcurrentMap<Class<?>, ExtensionLoader<?>> extensionLoadersMap = new ConcurrentHashMap<>(64);
+    private final ConcurrentMap<Class<?>, ExtensionScope> extensionScopeMap = new ConcurrentHashMap<>(64);
     private ExtensionDirector parent;
     private final ExtensionScope scope;
     private List<ExtensionPostProcessor> extensionPostProcessors = new ArrayList<>();
@@ -78,8 +79,12 @@ public class ExtensionDirector implements ExtensionAccessor {
         // 1. find in local cache
         ExtensionLoader<T> loader = (ExtensionLoader<T>) extensionLoadersMap.get(type);
 
-        final SPI annotation = type.getAnnotation(SPI.class);
-        ExtensionScope scope = annotation.scope();
+        ExtensionScope scope = extensionScopeMap.get(type);
+        if (scope == null) {
+            SPI annotation = type.getAnnotation(SPI.class);
+            scope = annotation.scope();
+            extensionScopeMap.put(type, scope);
+        }
 
         if (loader == null && scope == ExtensionScope.SELF) {
             // create an instance in self scope
