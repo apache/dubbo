@@ -322,7 +322,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             BitList<Invoker<T>> copiedInvokers = invokers.clone();
             refreshInvokers(copiedInvokers, invokersToReconnect);
             refreshInvokers(copiedInvokers, disabledInvokers);
-            this.validInvokers = copiedInvokers;
+            validInvokers = copiedInvokers;
         }
     }
 
@@ -395,8 +395,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected void setInvokers(BitList<Invoker<T>> invokers) {
         this.invokers = invokers;
-        this.validInvokers = invokers.clone();
+        // set invokersInitialized first to set validInvokers at refreshInvoker().
         this.invokersInitialized = true;
+        refreshInvoker();
     }
 
     protected void destroyInvokers() {
