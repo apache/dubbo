@@ -37,9 +37,6 @@ import grpc.health.v1.HealthCheckResponse;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
-/**
- *
- */
 public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);

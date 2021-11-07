@@ -315,13 +315,12 @@ public class RouterChain<T> {
             return;
         }
         AddrCache<T> origin = cache.get();
-        List<Invoker<T>> copyInvokers = new ArrayList<>(this.invokers);
         AddrCache<T> newCache = new AddrCache<T>();
         Map<String, RouterCache<T>> routerCacheMap = new HashMap<>((int) (stateRouters.size() / 0.75f) + 1);
         newCache.setInvokers(invokers);
         for (StateRouter stateRouter : stateRouters) {
             try {
-                RouterCache routerCache = poolRouter(stateRouter, origin, copyInvokers, notify);
+                RouterCache routerCache = poolRouter(stateRouter, origin, invokers, notify);
                 //file cache
                 routerCacheMap.put(stateRouter.getName(), routerCache);
             } catch (Throwable t) {

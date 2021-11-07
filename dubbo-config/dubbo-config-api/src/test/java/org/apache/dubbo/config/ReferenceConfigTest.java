@@ -32,8 +32,6 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
-import org.apache.dubbo.registrycenter.RegistryCenter;
-import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -54,7 +52,6 @@ import demo.MultiClassLoaderServiceResult;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.NotFoundException;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -127,17 +124,11 @@ public class ReferenceConfigTest {
     private static String zkUrl1;
     private static String zkUrl2;
     private static String registryUrl1;
-    private static RegistryCenter registryCenter1;
-    private static RegistryCenter registryCenter2;
 
     @BeforeAll
     public static void beforeAll() {
-        int zkServerPort1 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
-        registryCenter1 = new ZookeeperSingleRegistryCenter(zkServerPort1);
-        registryCenter1.startup();
-        int zkServerPort2 = NetUtils.getAvailablePort(NetUtils.getRandomPort());
-        registryCenter2 = new ZookeeperSingleRegistryCenter(zkServerPort2);
-        registryCenter2.startup();
+        int zkServerPort1 = 2181;
+        int zkServerPort2 = 2182;
         zkUrl1 = "zookeeper://localhost:" + zkServerPort1;
         zkUrl2 = "zookeeper://localhost:" + zkServerPort2;
         registryUrl1 = "registry://localhost:" + zkServerPort1 + "?registry=zookeeper";
@@ -154,12 +145,6 @@ public class ReferenceConfigTest {
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
         Mockito.framework().clearInlineMocks();
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        registryCenter1.shutdown();
-        registryCenter2.shutdown();
     }
 
     /**
