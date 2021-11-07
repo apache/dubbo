@@ -59,11 +59,5 @@
             <artifactId>zookeeper</artifactId>
             <version>${zookeeper_version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-test</artifactId>
-            <version>${curator5_version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>
