@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -109,6 +110,11 @@ public class ConnectivityValidationTest {
 
         directory = new StaticDirectory(invokerList);
         clusterInvoker = new ConnectivityClusterInvoker(directory);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        clusterInvoker.destroy();
     }
 
     private void configInvoker(Invoker invoker) {

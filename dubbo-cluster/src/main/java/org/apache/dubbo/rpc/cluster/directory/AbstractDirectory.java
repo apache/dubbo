@@ -253,7 +253,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
     }
 
-    public void checkConnectivity() {
+    public ScheduledFuture<?> checkConnectivity() {
         // try to submit task, to ensure there is only one task at most for each directory
         if (checkConnectivityPermit.tryAcquire()) {
             this.connectivityCheckFuture = connectivityExecutor.schedule(() -> {
@@ -304,10 +304,22 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
                 // 4. submit new task if it has more to recover
                 if (!invokersToReconnect.isEmpty()) {
-                    checkConnectivity();
+                    ScheduledFuture<?> newTaskFuture = checkConnectivity();
+                    if (newTaskFuture == null) {
+                        logger.warn("Failed to submit new task.");
+                        return;
+                    }
+                    try {
+                        // 5. wait new task finished because the connectivityCheckFuture that caller has been waiting for is older. 
+                        newTaskFuture.wait();
+                    } catch (InterruptedException e) {
+                        logger.warn("Failed to wait new task.", e);
+                    }
                 }
             }, reconnectTaskPeriod, TimeUnit.MILLISECONDS);
+            return this.connectivityCheckFuture;
         }
+        return null;
     }
 
     /**
