@@ -73,32 +73,36 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
 
     @Override
     public MetricsServiceExporter export() {
-        if (!isExported()) {
+        if (metricsService != null) {
+            if (!isExported()) {
+                ApplicationConfig applicationConfig = getApplicationConfig();
+                ServiceConfig<MetricsService> serviceConfig = new ServiceConfig<>();
+                serviceConfig.setScopeModel(applicationModel.getInternalModule());
+                serviceConfig.setApplication(applicationConfig);
+                serviceConfig.setRegistry(new RegistryConfig("N/A"));
+                serviceConfig.setProtocol(generateMetricsProtocol());
+                serviceConfig.setInterface(MetricsService.class);
+                serviceConfig.setDelay(0);
+                serviceConfig.setRef(metricsService);
+                serviceConfig.setGroup(applicationConfig.getName());
+                serviceConfig.setVersion(MetricsService.VERSION);
 
-            ApplicationConfig applicationConfig = getApplicationConfig();
-            ServiceConfig<MetricsService> serviceConfig = new ServiceConfig<>();
-            serviceConfig.setScopeModel(applicationModel.getInternalModule());
-            serviceConfig.setApplication(applicationConfig);
-            serviceConfig.setRegistry(new RegistryConfig("N/A"));
-            serviceConfig.setProtocol(generateMetricsProtocol());
-            serviceConfig.setInterface(MetricsService.class);
-            serviceConfig.setDelay(0);
-            serviceConfig.setRef(metricsService);
-            serviceConfig.setGroup(applicationConfig.getName());
-            serviceConfig.setVersion(MetricsService.VERSION);
+                // export
+                serviceConfig.export();
 
-            // export
-            serviceConfig.exportOnly();
+                if (logger.isInfoEnabled()) {
+                    logger.info("The MetricsService exports urls : " + serviceConfig.getExportedUrls());
+                }
 
-            if (logger.isInfoEnabled()) {
-                logger.info("The MetricsService exports urls : " + serviceConfig.getExportedUrls());
+                this.serviceConfig = serviceConfig;
+            } else {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("The MetricsService has been exported : " + serviceConfig.getExportedUrls());
+                }
             }
-
-            this.serviceConfig = serviceConfig;
-
         } else {
             if (logger.isWarnEnabled()) {
-                logger.warn("The MetricsService has been exported : " + serviceConfig.getExportedUrls());
+                logger.warn("The MetricsConfig not exist, will not export metrics service.");
             }
         }
 
