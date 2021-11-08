@@ -317,13 +317,17 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
      * 3. all the invokers disappeared from total invokers should be removed in the need to reconnect list
      * 4. all the invokers disappeared from total invokers should be removed in the disabled invokers list
      */
-    public synchronized void refreshInvoker() {
+    public void refreshInvoker() {
         if (invokersInitialized) {
-            BitList<Invoker<T>> copiedInvokers = invokers.clone();
-            refreshInvokers(copiedInvokers, invokersToReconnect);
-            refreshInvokers(copiedInvokers, disabledInvokers);
-            validInvokers = copiedInvokers;
+            refreshInvokerInternal();
         }
+    }
+
+    private synchronized void refreshInvokerInternal() {
+        BitList<Invoker<T>> copiedInvokers = invokers.clone();
+        refreshInvokers(copiedInvokers, invokersToReconnect);
+        refreshInvokers(copiedInvokers, disabledInvokers);
+        validInvokers = copiedInvokers;
     }
 
     private void refreshInvokers(BitList<Invoker<T>> targetInvokers, Collection<Invoker<T>> invokersToRemove) {
@@ -395,9 +399,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected void setInvokers(BitList<Invoker<T>> invokers) {
         this.invokers = invokers;
-        // set invokersInitialized first to set validInvokers at refreshInvoker().
+        refreshInvokerInternal();
         this.invokersInitialized = true;
-        refreshInvoker();
     }
 
     protected void destroyInvokers() {
