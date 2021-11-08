@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.metadata.definition;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.metadata.definition.builder.DefaultTypeBuilder;
 import org.apache.dubbo.metadata.definition.builder.TypeBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -37,11 +37,10 @@ import java.util.Set;
  */
 public class TypeDefinitionBuilder {
     private static final Logger logger = LoggerFactory.getLogger(TypeDefinitionBuilder.class);
-    static final List<TypeBuilder> BUILDERS;
+    public static List<TypeBuilder> BUILDERS;
 
-    static {
-        ExtensionLoader<TypeBuilder> extensionLoader = ExtensionLoader.getExtensionLoader(TypeBuilder.class);
-        Set<TypeBuilder> tbs = extensionLoader.getSupportedExtensionInstances();
+    public static void initBuilders(FrameworkModel model) {
+        Set<TypeBuilder> tbs = model.getExtensionLoader(TypeBuilder.class).getSupportedExtensionInstances();
         BUILDERS = new ArrayList<>(tbs);
     }
 

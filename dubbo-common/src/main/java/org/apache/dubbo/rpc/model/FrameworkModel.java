@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,6 +66,7 @@ public class FrameworkModel extends ScopeModel {
 
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
+
         this.setInternalId(index.getAndIncrement()+"");
         // register FrameworkModel instance early
         synchronized (globalLock) {
@@ -80,6 +82,9 @@ public class FrameworkModel extends ScopeModel {
     @Override
     protected void initialize() {
         super.initialize();
+
+        TypeDefinitionBuilder.initBuilders(this);
+
         serviceRepository = new FrameworkServiceRepository(this);
 
         ExtensionLoader<ScopeModelInitializer> initializerExtensionLoader = this.getExtensionLoader(ScopeModelInitializer.class);

@@ -23,9 +23,11 @@ import org.apache.dubbo.metadata.definition.common.ResultWithRawCollections;
 import org.apache.dubbo.metadata.definition.common.TestService;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -34,6 +36,11 @@ import org.junit.jupiter.api.Test;
  * 16/9/22.
  */
 public class MetadataTest {
+
+    @BeforeAll
+    public static void setup() {
+        TypeDefinitionBuilder.initBuilders(FrameworkModel.defaultModel());
+    }
 
     /**
      *

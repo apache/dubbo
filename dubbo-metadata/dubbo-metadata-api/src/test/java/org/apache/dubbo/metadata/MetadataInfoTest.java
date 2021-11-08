@@ -127,14 +127,14 @@ public class MetadataInfoTest {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
 
         // export normal url again
-        metadataInfo.addService(new MetadataInfo.ServiceInfo(url));
+        metadataInfo.addService(url);
         Gson gson = new Gson();
        System.out.println(gson.toJson(metadataInfo));
 
         MetadataInfo metadataInfo2 = new MetadataInfo("demo");
         // export normal url again
-        metadataInfo2.addService(new MetadataInfo.ServiceInfo(url));
-        metadataInfo2.addService(new MetadataInfo.ServiceInfo(url2));
+        metadataInfo2.addService(url);
+        metadataInfo2.addService(url2);
         System.out.println(gson.toJson(metadataInfo2));
 
     }
