@@ -465,11 +465,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
      */
     public abstract void export();
 
-    /**
-     * export service only, do not register application instance, for exporting services in batches by module
-     */
-    public abstract void exportOnly();
-
     public abstract void unexport();
 
     public abstract boolean isExported();

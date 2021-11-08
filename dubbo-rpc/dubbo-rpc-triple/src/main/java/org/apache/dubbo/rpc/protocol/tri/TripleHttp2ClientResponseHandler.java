@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
-import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
@@ -32,7 +31,7 @@ import io.netty.handler.codec.http2.Http2StreamFrame;
 import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 public final class TripleHttp2ClientResponseHandler extends SimpleChannelInboundHandler<Http2StreamFrame> {
-    private static final Logger logger = LoggerFactory.getLogger(TripleHttp2ClientResponseHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2ClientResponseHandler.class);
 
     public TripleHttp2ClientResponseHandler() {
         super(false);
@@ -44,7 +43,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         if (evt instanceof Http2GoAwayFrame) {
             Http2GoAwayFrame event = (Http2GoAwayFrame) evt;
             ctx.close();
-            logger.debug(
+            LOGGER.debug(
                 "Event triggered, event name is: " + event.name() + ", last stream id is: " + event.lastStreamId());
         } else if (evt instanceof Http2ResetFrame) {
             onResetRead(ctx, (Http2ResetFrame) evt);
@@ -64,7 +63,8 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
 
     private void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame resetFrame) {
         final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
-        clientStream.cancelByRemote(Http2Error.valueOf(resetFrame.errorCode()));
+        LOGGER.warn("Triple Client received remote reset errorCode=" + resetFrame.errorCode());
+        clientStream.cancelByRemote();
         ctx.close();
     }
 
@@ -85,7 +85,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
                 }
             }
         }
-        final TransportObserver observer = clientStream.asTransportObserver();
+        final TransportObserver observer = clientStream.inboundTransportObserver();
         observer.onMetadata(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {
             observer.onComplete();
@@ -100,8 +100,8 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         Metadata metadata = new DefaultMetadata();
         metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(status.code.code));
         metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
-        logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code, cause);
-        clientStream.asStreamObserver().onError(status.asException());
+        LOGGER.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code, cause);
+        clientStream.inboundMessageObserver().onError(status.asException());
         ctx.close();
     }
 
@@ -111,7 +111,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
             final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
             // stream already closed;
             if (clientStream != null) {
-                clientStream.asTransportObserver().onComplete();
+                clientStream.inboundTransportObserver().onComplete();
             }
         }
     }

@@ -99,21 +99,29 @@ public class ServiceConfigURL extends URL {
     @Override
     public URL addAttributes(Map<String, Object> attributes) {
         Map<String, Object> newAttributes = new HashMap<>();
-        newAttributes.putAll(this.attributes);
+        if (this.attributes != null) {
+            newAttributes.putAll(this.attributes);
+        }
         newAttributes.putAll(attributes);
         return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
     }
 
     @Override
     public ServiceConfigURL putAttribute(String key, Object obj) {
-        Map<String, Object> newAttributes = new HashMap<>(attributes);
+        Map<String, Object> newAttributes = new HashMap<>();
+        if (attributes != null) {
+            newAttributes.putAll(attributes);
+        }
         newAttributes.put(key, obj);
         return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
     }
 
     @Override
     public URL removeAttribute(String key) {
-        Map<String, Object> newAttributes = new HashMap<>(attributes);
+        Map<String, Object> newAttributes = new HashMap<>();
+        if (attributes != null) {
+            newAttributes.putAll(attributes);
+        }
         newAttributes.remove(key);
         return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
     }

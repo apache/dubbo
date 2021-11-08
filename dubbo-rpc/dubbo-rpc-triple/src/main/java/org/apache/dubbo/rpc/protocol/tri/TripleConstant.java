@@ -16,29 +16,42 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-
 import io.netty.util.AsciiString;
 import io.netty.util.AttributeKey;
 
-public interface TripleConstant {
-    String CONTENT_PROTO = "application/grpc+proto";
-    String APPLICATION_GRPC = "application/grpc";
-    String TRI_VERSION = "1.0.0";
+public class TripleConstant {
 
-    String SERIALIZATION_KEY = "serialization";
-    String TE_KEY = "te";
+    public static final String CONTENT_PROTO = "application/grpc+proto";
+    public static final String APPLICATION_GRPC = "application/grpc";
+    public static final String TEXT_PLAIN_UTF8 = "text/plain; encoding=utf-8";
+    public static final String TRI_VERSION = "1.0.0";
 
-    AttributeKey<Boolean> SSL_ATTRIBUTE_KEY = AttributeKey.valueOf(CommonConstants.SSL_ENABLED_KEY);
-
-
-    AsciiString HTTPS_SCHEME = AsciiString.of("https");
-    AsciiString HTTP_SCHEME = AsciiString.of("http");
+    public static final String SERIALIZATION_KEY = "serialization";
+    public static final String TE_KEY = "te";
 
 
-    AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance(
-        "tri_server_stream");
-    AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
-        "tri_client_stream");
+    public static final String HESSIAN4 = "hessian4";
+    public static final String HESSIAN2 = "hessian2";
+
+
+    public static final String GRPC_BIN_SUFFIX = "-bin";
+
+    public static final AsciiString HTTPS_SCHEME = AsciiString.of("https");
+    public static final AsciiString HTTP_SCHEME = AsciiString.of("http");
+
+    public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf("tri_server_stream");
+    public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.valueOf("tri_client_stream");
+
+    public static final String SUCCESS_RESPONSE_MESSAGE = "OK";
+    public static final String SUCCESS_RESPONSE_STATUS = Integer.toString(GrpcStatus.Code.OK.code);
+
+    public static final Metadata SUCCESS_RESPONSE_META = getSuccessResponseMeta();
+
+    static Metadata getSuccessResponseMeta() {
+        Metadata metadata = new DefaultMetadata();
+        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), TripleConstant.SUCCESS_RESPONSE_MESSAGE);
+        metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), TripleConstant.SUCCESS_RESPONSE_STATUS);
+        return metadata;
+    }
 
 }

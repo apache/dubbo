@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -199,13 +198,20 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @Override
-    public synchronized T get() {
+    public T get() {
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
         }
 
         if (ref == null) {
-            init();
+            // ensure start module, compatible with old api usage
+            getScopeModel().getDeployer().start();
+
+            synchronized (this) {
+                if (ref == null) {
+                    init();
+                }
+            }
         }
 
         return ref;
@@ -238,13 +244,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (initialized) {
             return;
         }
-
-        if (getScopeModel() == null) {
-            setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
-        }
-
-        // prepare application for reference
-        getScopeModel().getDeployer().prepare();
+        initialized = true;
 
         if (!this.isRefreshed()) {
             this.refresh();
@@ -275,8 +275,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         consumerModel.setProxyObject(ref);
         consumerModel.initMethodModels();
-
-        initialized = true;
 
         checkInvokerAvailable();
     }

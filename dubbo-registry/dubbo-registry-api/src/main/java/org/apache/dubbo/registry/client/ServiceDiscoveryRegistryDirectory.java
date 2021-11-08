@@ -35,16 +35,17 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
@@ -127,22 +128,6 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     @Override
-    public boolean isAvailable() {
-        if (isDestroyed() || this.forbidden) {
-            return false;
-        }
-        Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
-        if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
-                if (invoker.isAvailable()) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
     public synchronized void notify(List<URL> instanceUrls) {
         if (isDestroyed()) {
             return;
@@ -165,33 +150,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
     private synchronized void refreshOverrideAndInvoker(List<URL> instanceUrls) {
         // mock zookeeper://xxx?mock=return null
-        if (enableConfigurationListen) {
-            overrideDirectoryUrl();
-        }
         refreshInvoker(instanceUrls);
-    }
-
-    // TODO: exact
-    private void overrideDirectoryUrl() {
-        // merge override parameters
-        this.overrideDirectoryUrl = directoryUrl;
-        List<Configurator> localAppDynamicConfigurators = getConsumerConfigurationListener(moduleModel).getConfigurators(); // local reference
-        doOverrideUrl(localAppDynamicConfigurators);
-        if (referenceConfigurationListener != null) {
-            List<Configurator> localDynamicConfigurators = referenceConfigurationListener.getConfigurators(); // local reference
-            doOverrideUrl(localDynamicConfigurators);
-        }
-    }
-
-    private void doOverrideUrl(List<Configurator> configurators) {
-        if (CollectionUtils.isNotEmpty(configurators)) {
-            for (Configurator configurator : configurators) {
-                this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
-                Map<String, String> newParams = new HashMap<>(this.overrideDirectoryUrl.getParameters());
-                directoryUrl.getParameters().forEach(newParams::remove);
-                this.overrideQueryMap = newParams;
-            }
-        }
     }
 
     private InstanceAddressURL overrideWithConfigurator(InstanceAddressURL providerUrl) {
@@ -245,7 +204,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         if (invokerUrls.size() == 0) {
             logger.info("Received empty url list...");
             this.forbidden = true; // Forbid to access
-            this.invokers = Collections.emptyList();
+            this.invokers = BitList.emptyList();
+            this.validInvokers = BitList.emptyList();
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
@@ -269,10 +229,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            // pre-route and build cache, notice that route cache should build on original Invoker list.
-            // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
-            routerChain.setInvokers(newInvokers);
-            this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
+            this.invokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
+            // pre-route and build cache
+            routerChain.setInvokers(this.invokers);
             this.urlInvokerMap = newUrlInvokerMap;
 
             if (oldUrlInvokerMap != null) {
@@ -297,7 +256,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
      * @return invokers
      */
     private Map<String, Invoker<T>> toInvokers(Map<String, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
-        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<>();
+        Map<String, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>(urls == null ? 1 : (int) (urls.size() / 0.75f + 1));
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
@@ -392,6 +351,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         this.urlInvokerMap = null;
         this.invokers = null;
+        this.validInvokers = null;
     }
 
     /**

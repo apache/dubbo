@@ -253,8 +253,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
 
-        // Deprecated! Subscribe to override rules in 2.6.x or before.
-        registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+        if (!registry.isServiceDiscovery()) {
+            // Deprecated! Subscribe to override rules in 2.6.x or before.
+            registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+        }
 
         notifyExport(exporter);
         //Ensure that a new exporter instance is returned every time export
@@ -645,7 +647,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     public static class InvokerDelegate<T> extends InvokerWrapper<T> {
-        private final Invoker<T> invoker;
 
         /**
          * @param invoker
@@ -653,7 +654,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
          */
         public InvokerDelegate(Invoker<T> invoker, URL url) {
             super(invoker, url);
-            this.invoker = invoker;
         }
 
         public Invoker<T> getInvoker() {
@@ -894,7 +894,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                     Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
                     NotifyListener listener = overrideListeners.remove(registerUrl);
                     if (listener != null) {
-                        registry.unsubscribe(subscribeUrl, listener);
+                        if (!registry.isServiceDiscovery()) {
+                            registry.unsubscribe(subscribeUrl, listener);
+                        }
                         ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
                         if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                             for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {

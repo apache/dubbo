@@ -32,6 +32,12 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <skip_maven_deploy>true</skip_maven_deploy>
+        <curator.test.version>5.1.0</curator.test.version>
+        <zookeeper.version>3.6.0</zookeeper.version>
+        <curator5.version>5.1.0</curator5.version>
+        <commons.compress.version>1.20</commons.compress.version>
+        <junit.platform.launcher.version>1.6.2</junit.platform.launcher.version>
+        <commons.exec.version>1.3</commons.exec.version>
     </properties>
 
     <dependencies>
@@ -42,11 +48,49 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>1.6.2</version>
+            <version>${junit.platform.launcher.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+            <version>${curator.test.version}</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>${zookeeper.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <version>${curator5.version}</version>
+        </dependency>
+        <!-- tar.gz -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>${commons.compress.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-exec</artifactId>
+            <version>${commons.exec.version}</version>
         </dependency>
     </dependencies>
 </project>

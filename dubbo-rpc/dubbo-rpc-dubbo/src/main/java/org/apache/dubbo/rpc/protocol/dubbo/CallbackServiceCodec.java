@@ -61,7 +61,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.IS_CALLBACK_SERVICE;
 /**
  * callback service helper
  */
-class CallbackServiceCodec {
+public class CallbackServiceCodec {
     private static final Logger logger = LoggerFactory.getLogger(CallbackServiceCodec.class);
 
     private static final byte CALLBACK_NONE = 0x0;

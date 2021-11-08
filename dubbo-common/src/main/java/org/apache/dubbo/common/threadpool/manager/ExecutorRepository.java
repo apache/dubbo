@@ -101,6 +101,13 @@ public interface ExecutorRepository {
     ExecutorService getPoolRouterExecutor();
 
     /**
+     * Scheduled executor handle connectivity check task
+     *
+     * @return
+     */
+    ScheduledExecutorService getConnectivityScheduledExecutor();
+
+    /**
      * Destroy all executors that are not in shutdown state
      */
     void destroyAll();

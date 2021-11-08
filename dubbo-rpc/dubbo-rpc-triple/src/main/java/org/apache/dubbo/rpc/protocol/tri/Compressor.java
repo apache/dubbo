@@ -34,11 +34,16 @@ import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 @SPI(value = DEFAULT_COMPRESSOR, scope = ExtensionScope.FRAMEWORK)
 public interface Compressor {
 
+    Compressor NONE = new IdentityCompressor();
+
     String DEFAULT_COMPRESSOR = "identity";
 
     static Compressor getCompressor(FrameworkModel frameworkModel, String compressorStr) {
         if (null == compressorStr) {
             return null;
+        }
+        if (compressorStr.equals(DEFAULT_COMPRESSOR)) {
+            return NONE;
         }
         return frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
     }

@@ -53,8 +53,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ApplicationModel extends ScopeModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
     public static final String NAME = "ApplicationModel";
-    private static volatile ApplicationModel defaultInstance;
-
     private final List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
     private final List<ModuleModel> pubModuleModels = Collections.synchronizedList(new ArrayList<>());
     private Environment environment;
@@ -72,6 +70,7 @@ public class ApplicationModel extends ScopeModel {
     private AtomicInteger moduleIndex = new AtomicInteger(0);
     private Object moduleLock = new Object();
 
+    private final boolean isInternal;
 
     // --------- static methods ----------//
 
@@ -83,15 +82,15 @@ public class ApplicationModel extends ScopeModel {
         }
     }
 
+    /**
+     * During destroying the default FrameworkModel, the FrameworkModel.defaultModel() or ApplicationModel.defaultModel()
+     * will return a broken model, maybe cause unpredictable problem.
+     * Recommendation: Avoid using the default model as much as possible.
+     * @return the global default ApplicationModel
+     */
     public static ApplicationModel defaultModel() {
-        if (defaultInstance == null) {
-            synchronized (ApplicationModel.class) {
-                if (defaultInstance == null) {
-                    defaultInstance = new ApplicationModel(FrameworkModel.defaultModel());
-                }
-            }
-        }
-        return defaultInstance;
+        // should get from default FrameworkModel, avoid out of sync
+        return FrameworkModel.defaultModel().defaultApplication();
     }
 
     /**
@@ -185,24 +184,27 @@ public class ApplicationModel extends ScopeModel {
     // only for unit test
     @Deprecated
     public static void reset() {
-        if (defaultInstance != null) {
-            defaultInstance.destroy();
-            defaultInstance = null;
+        if (FrameworkModel.defaultModel().getDefaultAppModel() != null) {
+            FrameworkModel.defaultModel().getDefaultAppModel().destroy();
         }
     }
 
     // ------------- instance methods ---------------//
 
     public ApplicationModel(FrameworkModel frameworkModel) {
+        this(frameworkModel, false);
+    }
+
+    public ApplicationModel(FrameworkModel frameworkModel, boolean isInternal) {
         super(frameworkModel, ExtensionScope.APPLICATION);
         Assert.notNull(frameworkModel, "FrameworkModel can not be null");
+        this.isInternal = isInternal;
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
-        initialize();
-        // bind to default instance if absent
-        if (defaultInstance == null) {
-            defaultInstance = this;
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is created");
         }
+        initialize();
     }
 
     @Override
@@ -235,7 +237,10 @@ public class ApplicationModel extends ScopeModel {
 
     @Override
     protected void onDestroy() {
+        // 1. remove from frameworkModel
+        frameworkModel.removeApplication(this);
 
+        // 2. pre-destroy, set stopping
         if (deployer != null) {
             deployer.preDestroy();
         }
@@ -249,15 +254,7 @@ public class ApplicationModel extends ScopeModel {
         // destroy internal module later
         internalModule.destroy();
 
-        if (defaultInstance == this) {
-            synchronized (ApplicationModel.class) {
-                frameworkModel.removeApplication(this);
-                defaultInstance = null;
-            }
-        } else {
-            frameworkModel.removeApplication(this);
-        }
-
+        // post-destroy, release registry resources
         if (deployer != null) {
             deployer.postDestroy();
         }
@@ -277,7 +274,8 @@ public class ApplicationModel extends ScopeModel {
             serviceRepository.destroy();
             serviceRepository = null;
         }
-        // try destroy framework if no any application
+
+        // destroy framework if none application
         frameworkModel.tryDestroy();
     }
 
@@ -329,8 +327,9 @@ public class ApplicationModel extends ScopeModel {
     void addModule(ModuleModel moduleModel, boolean isInternal) {
         synchronized (moduleLock) {
             if (!this.moduleModels.contains(moduleModel)) {
+                checkDestroyed();
                 this.moduleModels.add(moduleModel);
-                moduleModel.setInternalName(buildInternalName(ModuleModel.NAME, getInternalId(), moduleIndex.getAndIncrement()));
+                moduleModel.setInternalId(buildInternalId(getInternalId(), moduleIndex.getAndIncrement()));
                 if (!isInternal) {
                     pubModuleModels.add(moduleModel);
                 }
@@ -355,6 +354,12 @@ public class ApplicationModel extends ScopeModel {
         }
     }
 
+    private void checkDestroyed() {
+        if (isDestroyed()) {
+            throw new IllegalStateException("ApplicationModel is destroyed");
+        }
+    }
+
     public List<ModuleModel> getModuleModels() {
         return Collections.unmodifiableList(moduleModels);
     }
@@ -365,9 +370,6 @@ public class ApplicationModel extends ScopeModel {
 
     public ModuleModel getDefaultModule() {
         if (defaultModule == null) {
-            if (isDestroyed()) {
-                return null;
-            }
             synchronized (moduleLock) {
                 if (defaultModule == null) {
                     defaultModule = findDefaultModule();
@@ -448,5 +450,9 @@ public class ApplicationModel extends ScopeModel {
 
     public void setDeployer(ApplicationDeployer deployer) {
         this.deployer = deployer;
+    }
+
+    public boolean isInternal() {
+        return isInternal;
     }
 }

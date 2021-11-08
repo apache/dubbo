@@ -509,6 +509,11 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
+    public ApplicationModel getApplicationModel() {
+        return instance.getApplicationModel();
+    }
+
+    @Override
     public ServiceModel getServiceModel() {
         return RpcContext.getServiceContext().getConsumerUrl().getServiceModel();
     }

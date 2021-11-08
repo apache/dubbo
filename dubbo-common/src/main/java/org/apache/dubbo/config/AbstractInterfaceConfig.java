@@ -22,6 +22,7 @@ import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -276,7 +277,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected void appendMetricsCompatible(Map<String, String> map) {
         MetricsConfig metricsConfig = getConfigManager().getMetrics().orElse(null);
         if (metricsConfig != null) {
-            if (!metricsConfig.getProtocol().equals(PROTOCOL_PROMETHEUS)) {
+            if (metricsConfig.getProtocol() != null && !StringUtils.isEquals(metricsConfig.getProtocol(), PROTOCOL_PROMETHEUS)) {
+                Assert.notEmptyString(metricsConfig.getPort(), "Metrics port cannot be null");
                 map.put("metrics.protocol", metricsConfig.getProtocol());
                 map.put("metrics.port", metricsConfig.getPort());
             }

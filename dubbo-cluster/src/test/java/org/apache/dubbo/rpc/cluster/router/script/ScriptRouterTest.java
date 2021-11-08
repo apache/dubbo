@@ -56,7 +56,7 @@ public class ScriptRouterTest {
         invokers.add(new MockInvoker<String>());
         invokers.add(new MockInvoker<String>());
         invokers.add(new MockInvoker<String>());
-        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
+        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
         Assertions.assertEquals(invokers, filteredInvokers);
     }
 
@@ -79,7 +79,7 @@ public class ScriptRouterTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
         invokers.add(invoker3);
-        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
+        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
         Assertions.assertEquals(2, filteredInvokers.size());
         Assertions.assertEquals(invoker2, filteredInvokers.get(0));
         Assertions.assertEquals(invoker3, filteredInvokers.get(1));
@@ -109,7 +109,7 @@ public class ScriptRouterTest {
                 "route(invokers, invocation, context) ";
 
         Router router = new ScriptRouterFactory().getRouter(getRouteUrl(script));
-        List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
+        List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
         Assertions.assertEquals(1, routeResult.size());
         Assertions.assertEquals(invoker2, routeResult.get(0));
     }
@@ -126,7 +126,7 @@ public class ScriptRouterTest {
 
         String script = "/";
         Router router = new ScriptRouterFactory().getRouter(getRouteUrl(script));
-        List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation());
+        List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
         Assertions.assertEquals(3, routeResult.size());
     }
 }

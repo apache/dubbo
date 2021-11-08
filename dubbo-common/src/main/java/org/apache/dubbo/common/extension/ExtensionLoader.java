@@ -26,6 +26,7 @@ import org.apache.dubbo.common.extension.support.WrapperComparator;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ClassLoaderResourceLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
@@ -65,6 +66,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
@@ -111,7 +113,7 @@ public class ExtensionLoader<T> {
 
     private final Map<String, Object> cachedActivates = Collections.synchronizedMap(new LinkedHashMap<>());
     private final Map<String, Set<String>> cachedActivateGroups = Collections.synchronizedMap(new LinkedHashMap<>());
-    private final Map<String, String[]> cachedActivateValues = Collections.synchronizedMap(new LinkedHashMap<>());
+    private final Map<String, String[][]> cachedActivateValues = Collections.synchronizedMap(new LinkedHashMap<>());
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
     private volatile Class<?> cachedAdaptiveClass = null;
@@ -134,6 +136,7 @@ public class ExtensionLoader<T> {
     private Environment environment;
     private ActivateComparator activateComparator;
     private ScopeModel scopeModel;
+    private AtomicBoolean destroyed = new AtomicBoolean();
 
     public static void setLoadingStrategies(LoadingStrategy... strategies) {
         if (ArrayUtils.isNotEmpty(strategies)) {
@@ -215,19 +218,41 @@ public class ExtensionLoader<T> {
     }
 
     public void destroy() {
+        if (!destroyed.compareAndSet(false, true)) {
+            return;
+        }
+        // destroy raw extension instance
         extensionInstances.forEach((type, instance) -> {
-            if (instance instanceof Lifecycle) {
-                Lifecycle lifecycle = (Lifecycle) instance;
+            if (instance instanceof Disposable) {
+                Disposable disposable = (Disposable) instance;
                 try {
-                    lifecycle.destroy();
+                    disposable.destroy();
                 } catch (Exception e) {
-                    logger.error("Error destroying extension " + lifecycle, e);
+                    logger.error("Error destroying extension " + disposable, e);
                 }
             }
         });
         extensionInstances.clear();
 
-        // TODO destroy extension loader, release resources.
+        // destroy wrapped extension instance
+        for (Holder<Object> holder : cachedInstances.values()) {
+            Object wrappedInstance = holder.get();
+            if (wrappedInstance instanceof Disposable) {
+                Disposable disposable = (Disposable) wrappedInstance;
+                try {
+                    disposable.destroy();
+                } catch (Exception e) {
+                    logger.error("Error destroying extension " + disposable, e);
+                }
+            }
+        }
+        cachedInstances.clear();
+    }
+
+    private void checkDestroyed() {
+        if (destroyed.get()) {
+            throw new IllegalStateException("ExtensionLoader is destroyed: " + type);
+        }
     }
 
     private static ClassLoader findClassLoader() {
@@ -291,6 +316,7 @@ public class ExtensionLoader<T> {
      * @see org.apache.dubbo.common.extension.Activate
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
+        checkDestroyed();
         // solve the bug of using @SPI's wrapper method to report a null pointer exception.
         Map<Class<?>, T> activateExtensionsMap = new TreeMap<>(activateComparator);
         List<String> names = values == null ? new ArrayList<>(0) : asList(values);
@@ -317,7 +343,19 @@ public class ExtensionLoader<T> {
                                 continue;
                             }
                             cachedActivateGroups.put(name, new HashSet<>(Arrays.asList(activateGroup)));
-                            cachedActivateValues.put(name, activateValue);
+                            String[][] keyPairs = new String[activateValue.length][];
+                            for (int i = 0; i < activateValue.length; i++) {
+                                if (activateValue[i].contains(":")) {
+                                    keyPairs[i] = new String[2];
+                                    String[] arr = activateValue[i].split(":");
+                                    keyPairs[i][0] = arr[0];
+                                    keyPairs[i][1] = arr[1];
+                                } else {
+                                    keyPairs[i] = new String[1];
+                                    keyPairs[i][0] = activateValue[i];
+                                }
+                            }
+                            cachedActivateValues.put(name, keyPairs);
                         }
                     }
                 }
@@ -371,6 +409,7 @@ public class ExtensionLoader<T> {
     }
 
     public List<T> getActivateExtensions() {
+        checkDestroyed();
         List<T> activateExtensions = new ArrayList<>();
         TreeMap<Class<?>, T> activateExtensionsMap = new TreeMap<>(activateComparator);
         getExtensionClasses();
@@ -399,17 +438,19 @@ public class ExtensionLoader<T> {
         return false;
     }
 
-    private boolean isActive(String[] keys, URL url) {
-        if (keys.length == 0) {
+    private boolean isActive(String[][] keyPairs, URL url) {
+        if (keyPairs.length == 0) {
             return true;
         }
-        for (String key : keys) {
+        for (String[] keyPair : keyPairs) {
             // @Active(value="key1:value1, key2:value2")
+            String key = null;
             String keyValue = null;
-            if (key.contains(":")) {
-                String[] arr = key.split(":");
-                key = arr[0];
-                keyValue = arr[1];
+            if (keyPair.length > 1) {
+                key = keyPair[0];
+                keyValue = keyPair[1];
+            } else {
+                key = keyPair[0];
             }
 
             String realValue = url.getParameter(key);
@@ -433,6 +474,7 @@ public class ExtensionLoader<T> {
      */
     @SuppressWarnings("unchecked")
     public T getLoadedExtension(String name) {
+        checkDestroyed();
         if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException("Extension name == null");
         }
@@ -461,6 +503,7 @@ public class ExtensionLoader<T> {
     }
 
     public List<T> getLoadedExtensionInstances() {
+        checkDestroyed();
         List<T> instances = new ArrayList<>();
         cachedInstances.values().forEach(holder -> instances.add((T) holder.get()));
         return instances;
@@ -484,6 +527,7 @@ public class ExtensionLoader<T> {
     }
 
     public T getExtension(String name, boolean wrap) {
+        checkDestroyed();
         if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException("Extension name == null");
         }
@@ -530,6 +574,7 @@ public class ExtensionLoader<T> {
     }
 
     public boolean hasExtension(String name) {
+        checkDestroyed();
         if (StringUtils.isEmpty(name)) {
             throw new IllegalArgumentException("Extension name == null");
         }
@@ -538,11 +583,13 @@ public class ExtensionLoader<T> {
     }
 
     public Set<String> getSupportedExtensions() {
+        checkDestroyed();
         Map<String, Class<?>> clazzes = getExtensionClasses();
         return Collections.unmodifiableSet(new TreeSet<>(clazzes.keySet()));
     }
 
     public Set<T> getSupportedExtensionInstances() {
+        checkDestroyed();
         List<T> instances = new LinkedList<>();
         Set<String> supportedExtensions = getSupportedExtensions();
         if (CollectionUtils.isNotEmpty(supportedExtensions)) {
@@ -571,6 +618,7 @@ public class ExtensionLoader<T> {
      * @throws IllegalStateException when extension with the same name has already been registered.
      */
     public void addExtension(String name, Class<?> clazz) {
+        checkDestroyed();
         getExtensionClasses(); // load classes
 
         if (!type.isAssignableFrom(clazz)) {
@@ -612,6 +660,7 @@ public class ExtensionLoader<T> {
      */
     @Deprecated
     public void replaceExtension(String name, Class<?> clazz) {
+        checkDestroyed();
         getExtensionClasses(); // load classes
 
         if (!type.isAssignableFrom(clazz)) {
@@ -647,6 +696,7 @@ public class ExtensionLoader<T> {
 
     @SuppressWarnings("unchecked")
     public T getAdaptiveExtension() {
+        checkDestroyed();
         Object instance = cachedAdaptiveInstance.get();
         if (instance == null) {
             if (createAdaptiveInstanceError != null) {
@@ -869,6 +919,7 @@ public class ExtensionLoader<T> {
      * synchronized in getExtensionClasses
      */
     private Map<String, Class<?>> loadExtensionClasses() {
+        checkDestroyed();
         cacheDefaultExtensionName();
 
         Map<String, Class<?>> extensionClasses = new HashMap<>();

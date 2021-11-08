@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import grpc.health.v1.HealthCheckResponse;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,12 +32,11 @@ import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
+import grpc.health.v1.HealthCheckResponse;
+
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
-/**
- *
- */
 public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);

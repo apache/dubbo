@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
+import org.apache.dubbo.rpc.cluster.router.RouterResult;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -176,23 +177,24 @@ public class ConditionRouter extends AbstractRouter {
     }
 
     @Override
-    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation)
-            throws RpcException {
+    public <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url,
+                                              Invocation invocation, boolean needToPrintMessage) throws RpcException {
+
         if (!enabled) {
-            return invokers;
+            return new RouterResult<>(invokers);
         }
 
         if (CollectionUtils.isEmpty(invokers)) {
-            return invokers;
+            return new RouterResult<>(invokers);
         }
         try {
             if (!matchWhen(url, invocation)) {
-                return invokers;
+                return new RouterResult<>(invokers);
             }
             List<Invoker<T>> result = new ArrayList<Invoker<T>>();
             if (thenCondition == null) {
                 logger.warn("The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());
-                return result;
+                return new RouterResult<>(result);
             }
             for (Invoker<T> invoker : invokers) {
                 if (matchThen(invoker.getUrl(), url)) {
@@ -200,15 +202,15 @@ public class ConditionRouter extends AbstractRouter {
                 }
             }
             if (!result.isEmpty()) {
-                return result;
+                return new RouterResult<>(result);
             } else if (this.isForce()) {
                 logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
-                return result;
+                return new RouterResult<>(result);
             }
         } catch (Throwable t) {
             logger.error("Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(), t);
         }
-        return invokers;
+        return new RouterResult<>(invokers);
     }
 
     @Override
