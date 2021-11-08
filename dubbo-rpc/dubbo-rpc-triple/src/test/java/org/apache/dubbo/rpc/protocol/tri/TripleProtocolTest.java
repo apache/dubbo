@@ -17,6 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -70,6 +73,7 @@ public class TripleProtocolTest {
         Assertions.assertEquals("hello world", serviceImpl.echo("hello world"));
         // fixme will throw exception
         // Assertions.assertEquals("hello world", serviceImpl.echoAsync("hello world").get());
+        CountDownLatch latch = new CountDownLatch(1);
         serviceImpl.serverStream("hello world", new StreamObserver<String>() {
             @Override
             public void onNext(String data) {
@@ -83,11 +87,15 @@ public class TripleProtocolTest {
 
             @Override
             public void onCompleted() {
+                latch.countDown();
                 System.out.println("onCompleted");
             }
         });
 
+        // release CPU to run StreamObserver methods.
+        latch.await(1000, TimeUnit.MILLISECONDS);
         // resource recycle.
         serviceRepository.destroy();
+        System.out.println("serviceRepository destroyed");
     }
 }

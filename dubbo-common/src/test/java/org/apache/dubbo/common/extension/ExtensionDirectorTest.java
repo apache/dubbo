@@ -265,5 +265,14 @@ public class ExtensionDirectorTest {
         Assertions.assertNull(frameworkService.getAppProvider());
         Assertions.assertNull(frameworkService.getModuleProvider());
 
+        Assertions.assertFalse(moduleService.isDestroyed());
+        Assertions.assertFalse(appService.isDestroyed());
+        Assertions.assertFalse(frameworkService.isDestroyed());
+
+        // destroy
+        frameworkModel.destroy();
+        Assertions.assertTrue(moduleService.isDestroyed());
+        Assertions.assertTrue(appService.isDestroyed());
+        Assertions.assertTrue(frameworkService.isDestroyed());
     }
 }

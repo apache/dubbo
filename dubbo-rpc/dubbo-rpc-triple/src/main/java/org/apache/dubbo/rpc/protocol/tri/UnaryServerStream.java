@@ -45,7 +45,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         return new UnaryServerTransportObserver();
     }
 
-    private class UnaryServerTransportObserver extends ServerUnaryInboundTransportObserver implements TransportObserver {
+    private class UnaryServerTransportObserver extends ServerUnaryInboundTransportObserver {
         @Override
         public void onError(GrpcStatus status) {
             transportError(status);
@@ -53,21 +53,21 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
 
         @Override
         public void onComplete() {
-            if (getData() != null) {
-                invoke();
-            } else {
-                onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Missing request data"));
-            }
+            execute(() -> {
+                if (getData() != null) {
+                    invoke();
+                } else {
+                    onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription("Missing request data"));
+                }
+            });
         }
 
         public void invoke() {
-            RpcInvocation invocation = buildInvocation(getHeaders());
-            final Object[] arguments = deserializeRequest(getData());
-            if (arguments == null) {
+            RpcInvocation invocation = buildUnaryInvocation(getHeaders(), getData());
+            if (invocation == null) {
                 return;
             }
-            invocation.setArguments(arguments);
             final Result result = getInvoker().invoke(invocation);
             CompletionStage<Object> future = result.thenApply(Function.identity());
             future.whenComplete((o, throwable) -> {

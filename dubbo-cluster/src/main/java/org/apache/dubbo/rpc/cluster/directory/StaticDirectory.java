@@ -24,8 +24,8 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,8 +33,6 @@ import java.util.List;
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(StaticDirectory.class);
-
-    private final List<Invoker<T>> invokers;
 
     public StaticDirectory(List<Invoker<T>> invokers) {
         this(null, invokers, null);
@@ -53,17 +51,17 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new IllegalArgumentException("invokers == null");
         }
-        this.invokers = invokers;
+        this.setInvokers(new BitList<>(invokers));
     }
 
     @Override
     public Class<T> getInterface() {
-        return invokers.get(0).getInterface();
+        return getInvokers().get(0).getInterface();
     }
 
     @Override
     public List<Invoker<T>> getAllInvokers() {
-        return invokers;
+        return getInvokers();
     }
 
     @Override
@@ -71,7 +69,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         if (isDestroyed()) {
             return false;
         }
-        for (Invoker<T> invoker : invokers) {
+        for (Invoker<T> invoker : getValidInvokers()) {
             if (invoker.isAvailable()) {
                 return true;
             }
@@ -84,31 +82,38 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         if (isDestroyed()) {
             return;
         }
-        super.destroy();
-        for (Invoker<T> invoker : invokers) {
+        for (Invoker<T> invoker : getInvokers()) {
             invoker.destroy();
         }
-        invokers.clear();
+        super.destroy();
     }
 
     public void buildRouterChain() {
         RouterChain<T> routerChain = RouterChain.buildChain(getUrl());
-        routerChain.setInvokers(invokers);
+        routerChain.setInvokers(getInvokers());
         routerChain.loop(true);
         this.setRouterChain(routerChain);
     }
 
+    public void notify(List<Invoker<T>> invokers) {
+        this.setInvokers(new BitList<>(invokers));
+        if (routerChain != null) {
+            routerChain.setInvokers(this.getInvokers());
+        }
+    }
+
     @Override
-    protected List<Invoker<T>> doList(Invocation invocation) throws RpcException {
-        List<Invoker<T>> finalInvokers = invokers;
+    protected List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) throws RpcException {
         if (routerChain != null) {
             try {
-                finalInvokers = routerChain.route(getConsumerUrl(), invocation);
+                List<Invoker<T>> finalInvokers = routerChain.route(getConsumerUrl(), invokers, invocation);
+                return finalInvokers == null ? BitList.emptyList() : finalInvokers;
             } catch (Throwable t) {
                 logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+                return BitList.emptyList();
             }
         }
-        return finalInvokers == null ? Collections.emptyList() : finalInvokers;
+        return invokers;
     }
 
 }

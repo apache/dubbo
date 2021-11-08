@@ -43,6 +43,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CollectionUtilsTest {
@@ -88,6 +89,22 @@ public class CollectionUtilsTest {
         assertNull(CollectionUtils.sortSimpleName(null));
 
         assertTrue(CollectionUtils.sortSimpleName(new ArrayList<String>()).isEmpty());
+    }
+
+    @Test
+    public void testFlip() {
+        assertEquals(CollectionUtils.flip(null), null);
+        Map<String, String> input1 = new HashMap<>();
+        input1.put("k1", null);
+        input1.put("k2", "v2");
+        Map<String, String> output1 = new HashMap<>();
+        output1.put(null, "k1");
+        output1.put("v2", "k2");
+        assertEquals(CollectionUtils.flip(input1), output1);
+        Map<String, String> input2 = new HashMap<>();
+        input2.put("k1", null);
+        input2.put("k2", null);
+        assertThrows(IllegalArgumentException.class, () -> CollectionUtils.flip(input2));
     }
 
     @Test

@@ -254,4 +254,10 @@ public abstract class ServiceAddressURL extends URL {
         }
         return super.equals(obj);
     }
+
+    @Override
+    public String toString() {
+        URLParam totalParam = getUrlParam().addParametersIfAbsent(consumerURL.getParameters());
+        return new ServiceConfigURL(getUrlAddress(), totalParam, null).toString();
+    }
 }

@@ -129,6 +129,8 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
         } catch (Exception e) {
             logger.error("An error occurred when stop dubbo module: " + e.getMessage(), e);
         }
+        // remove context bind cache
+        DubboSpringInitializer.remove(event.getApplicationContext());
     }
 
     @Override

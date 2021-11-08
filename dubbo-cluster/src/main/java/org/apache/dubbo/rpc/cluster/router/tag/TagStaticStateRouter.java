@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,9 +53,10 @@ public class TagStaticStateRouter extends AbstractStateRouter {
         return url;
     }
 
+
     @Override
-    public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> routerCache, URL url, Invocation invocation)
-        throws RpcException {
+    public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> routerCache, URL url,
+                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
 
         String tag = isNoTag(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
             invocation.getAttachment(TAG_KEY);
@@ -65,9 +67,9 @@ public class TagStaticStateRouter extends AbstractStateRouter {
         ConcurrentMap<String, BitList<Invoker<T>>> pool = routerCache.getAddrPool();
         BitList<Invoker<T>> res = pool.get(tag);
         if (res == null) {
-            return invokers;
+            return new StateRouterResult<>(invokers);
         }
-        return invokers.intersect(res, invokers.getUnmodifiableList());
+        return new StateRouterResult<>(invokers.and(res));
     }
 
     private boolean isNoTag(String tag) {
