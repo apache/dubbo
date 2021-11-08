@@ -84,15 +84,25 @@ public abstract class ListenableStateRouter extends AbstractStateRouter implemen
     public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
                                                    Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (CollectionUtils.isEmpty(invokers) || conditionRouters.size() == 0) {
-            return new StateRouterResult<>(invokers);
+            return new StateRouterResult<>(invokers,
+                needToPrintMessage ? "Directly return. Reason: Invokers from previous router is empty or conditionRouters is empty." : null);
         }
 
         // We will check enabled status inside each router.
+        StringBuilder resultMessage = null;
+        if (needToPrintMessage) {
+            resultMessage = new StringBuilder();
+        }
         for (StateRouter router : conditionRouters) {
-            invokers = router.route(invokers, url, invocation, needToPrintMessage).getResult();
+            StateRouterResult<Invoker<T>> routerResult = router.route(invokers, url, invocation, needToPrintMessage);
+            invokers = routerResult.getResult();
+            if (needToPrintMessage) {
+                resultMessage.append(routerResult.getMessage());
+            }
         }
 
-        return new StateRouterResult<>(invokers);
+        return new StateRouterResult<>(invokers,
+            needToPrintMessage ? resultMessage.toString() : null);
     }
 
     @Override

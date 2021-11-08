@@ -82,7 +82,8 @@ public class TagStateRouter extends AbstractStateRouter implements Configuration
     public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
                                                    Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (CollectionUtils.isEmpty(invokers)) {
-            return new StateRouterResult<>(invokers);
+            return new StateRouterResult<>(invokers,
+                needToPrintMessage ? "Directly Return. Reason: Invokers from previous router is empty." : null);
         }
 
         // since the rule can be changed by config center, we should copy one to use.

@@ -67,7 +67,8 @@ public class MockInvokersSelector extends AbstractStateRouter {
                     needToPrintMessage ? "invocation.need.mock is true. Return mocked Invokers." : null);
             }
         }
-        return new StateRouterResult<>(invokers);
+        return new StateRouterResult<>(invokers,
+            needToPrintMessage ? "Directly Return. Reason: invocation.need.mock is set but not match true" : null);
     }
 
     @Override

@@ -129,7 +129,8 @@ public class ScriptStateRouter extends AbstractStateRouter {
     public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
                                                    Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (engine == null || function == null) {
-            return new StateRouterResult<>(invokers);
+            return new StateRouterResult<>(invokers,
+                needToPrintMessage ? "Directly Return. Reason: engine or function is null" : null);
         }
         Bindings bindings = createBindings(invokers, invocation);
         return new StateRouterResult<>(getRoutedInvokers(invokers, AccessController.doPrivileged((PrivilegedAction<Object>) () -> {

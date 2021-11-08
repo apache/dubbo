@@ -183,33 +183,40 @@ public class ConditionStateRouter extends AbstractStateRouter {
                                                    Invocation invocation, boolean needToPrintMessage) throws RpcException {
 
         if (!enabled) {
-            return new StateRouterResult<>(invokers);
+            return new StateRouterResult<>(invokers,
+                needToPrintMessage ? "Directly return. Reason: ConditionRouter disabled." : null);
         }
 
         if (CollectionUtils.isEmpty(invokers)) {
-            return new StateRouterResult<>(invokers);
+            return new StateRouterResult<>(invokers,
+                needToPrintMessage ? "Directly return. Reason: Invokers from previous router is empty." : null);
         }
         try {
             if (!matchWhen(url, invocation)) {
-                return new StateRouterResult<>(invokers);
+                return new StateRouterResult<>(invokers,
+                    needToPrintMessage ? "Directly return. Reason: WhenCondition not match." : null);
             }
             if (thenCondition == null) {
                 logger.warn("The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());
-                return new StateRouterResult<>(BitList.emptyList());
+                return new StateRouterResult<>(BitList.emptyList(),
+                    needToPrintMessage ? "Empty return. Reason: ThenCondition is empty." : null);
             }
             BitList<Invoker<T>> result = invokers.clone();
             result.removeIf(invoker -> !matchThen(invoker.getUrl(), url));
 
             if (!result.isEmpty()) {
-                return new StateRouterResult<>(result);
+                return new StateRouterResult<>(result,
+                    needToPrintMessage ? "Match return." : null);
             } else if (this.isForce()) {
                 logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
-                return new StateRouterResult<>(result);
+                return new StateRouterResult<>(result,
+                    needToPrintMessage ? "Empty return. Reason: Empty result from condition and condition is force." : null);
             }
         } catch (Throwable t) {
             logger.error("Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(), t);
         }
-        return new StateRouterResult<>(invokers);
+        return new StateRouterResult<>(invokers,
+            needToPrintMessage ? "Directly return. Reason: Error occurred ( or result is empty )." : null);
     }
 
     @Override
