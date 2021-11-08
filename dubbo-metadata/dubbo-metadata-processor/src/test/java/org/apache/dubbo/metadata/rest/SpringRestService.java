@@ -42,7 +42,7 @@ public class SpringRestService implements RestService {
     @Override
     @GetMapping(value = "/param")
     public String param(@RequestParam(defaultValue = "value-param") String param) {
-        return param;
+        return null;
     }
 
     @Override
