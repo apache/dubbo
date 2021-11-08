@@ -45,7 +45,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -257,10 +256,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     public void checkConnectivity() {
         // try to submit task, to ensure there is only one task at most for each directory
         if (checkConnectivityPermit.tryAcquire()) {
-            this.connectivityCheckFuture = connectivityExecutor.schedule((Callable<ScheduledFuture<?>>) () -> {
+            this.connectivityCheckFuture = connectivityExecutor.schedule(() -> {
                 try {
                     if (isDestroyed()) {
-                        return this.connectivityCheckFuture;
+                        return;
                     }
                     RpcContext.getServiceContext().setConsumerUrl(getConsumerUrl());
                     List<Invoker<T>> needDeleteList = new ArrayList<>();
@@ -307,7 +306,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 if (!invokersToReconnect.isEmpty()) {
                     checkConnectivity();
                 }
-                return this.connectivityCheckFuture;
             }, reconnectTaskPeriod, TimeUnit.MILLISECONDS);
         }
     }
