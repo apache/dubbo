@@ -42,13 +42,13 @@ public class SpringRestService implements RestService {
     @Override
     @GetMapping(value = "/param")
     public String param(@RequestParam(defaultValue = "value-param") String param) {
-        return param;
+        return null;
     }
 
     @Override
     @PostMapping("/params")
     public String params(@RequestParam(defaultValue = "value-a") int a, @RequestParam(defaultValue = "value-b") String b) {
-        return a + b;
+        return null;
     }
 
     @Override
@@ -56,16 +56,14 @@ public class SpringRestService implements RestService {
     public String headers(@RequestHeader(name = "h", defaultValue = "value-h") String header,
                           @RequestHeader(name = "h2", defaultValue = "value-h2") String header2,
                           @RequestParam(value = "v", defaultValue = "1") Integer param) {
-        String result = header + " , " + header2 + " , " + param;
-        return result;
+        return null;
     }
 
     @Override
     @GetMapping("/path-variables/{p1}/{p2}")
     public String pathVariables(@PathVariable("p1") String path1,
                                 @PathVariable("p2") String path2, @RequestParam("v") String param) {
-        String result = path1 + " , " + path2 + " , " + param;
-        return result;
+        return null;
     }
 
     @Override

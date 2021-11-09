@@ -20,8 +20,6 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.test.common.api.DemoService;
-import org.apache.dubbo.test.common.registrycenter.RegistryCenter;
-import org.apache.dubbo.test.common.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.test.spring.context.MockSpringInitCustomizer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -34,19 +32,14 @@ import org.springframework.context.annotation.PropertySource;
 
 public class SpringAnnotationBeanTest {
 
-    private static RegistryCenter registryCenter;
-
     @BeforeAll
     public static void beforeAll() {
-        registryCenter = new ZookeeperSingleRegistryCenter();
-        registryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll(){
         DubboBootstrap.reset();
-        registryCenter.shutdown();
     }
 
     @Test

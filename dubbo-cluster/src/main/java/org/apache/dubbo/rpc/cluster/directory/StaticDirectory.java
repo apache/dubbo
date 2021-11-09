@@ -51,18 +51,17 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new IllegalArgumentException("invokers == null");
         }
-        this.invokers = new BitList<>(invokers);
-        this.validInvokers = this.invokers.clone();
+        this.setInvokers(new BitList<>(invokers));
     }
 
     @Override
     public Class<T> getInterface() {
-        return invokers.get(0).getInterface();
+        return getInvokers().get(0).getInterface();
     }
 
     @Override
     public List<Invoker<T>> getAllInvokers() {
-        return invokers;
+        return getInvokers();
     }
 
     @Override
@@ -70,7 +69,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         if (isDestroyed()) {
             return false;
         }
-        for (Invoker<T> invoker : validInvokers) {
+        for (Invoker<T> invoker : getValidInvokers()) {
             if (invoker.isAvailable()) {
                 return true;
             }
@@ -83,7 +82,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
         if (isDestroyed()) {
             return;
         }
-        for (Invoker<T> invoker : invokers) {
+        for (Invoker<T> invoker : getInvokers()) {
             invoker.destroy();
         }
         super.destroy();
@@ -91,15 +90,14 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
 
     public void buildRouterChain() {
         RouterChain<T> routerChain = RouterChain.buildChain(getUrl());
-        routerChain.setInvokers(invokers);
+        routerChain.setInvokers(getInvokers());
         this.setRouterChain(routerChain);
     }
 
     public void notify(List<Invoker<T>> invokers) {
-        this.invokers = new BitList<>(invokers);
-        refreshInvoker();
+        this.setInvokers(new BitList<>(invokers));
         if (routerChain != null) {
-            routerChain.setInvokers(this.invokers);
+            routerChain.setInvokers(this.getInvokers());
         }
     }
 

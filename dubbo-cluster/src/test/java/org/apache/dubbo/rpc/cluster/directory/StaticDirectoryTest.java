@@ -65,7 +65,7 @@ public class StaticDirectoryTest {
         List<Invoker<String>> newInvokers = staticDirectory.list(new MockDirInvocation());
         Assertions.assertTrue(newInvokers.size() > 0);
         staticDirectory.destroy();
-        Assertions.assertEquals(0, staticDirectory.invokers.size());
-        Assertions.assertEquals(0, staticDirectory.validInvokers.size());
+        Assertions.assertEquals(0, staticDirectory.getInvokers().size());
+        Assertions.assertEquals(0, staticDirectory.getValidInvokers().size());
     }
 }
