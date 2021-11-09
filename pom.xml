@@ -157,6 +157,7 @@
         <module>dubbo-native</module>
         <module>dubbo-test</module>
         <module>dubbo-native-plugin</module>
+        <module>dubbo-demo-spring-boot-consumer</module>
     </modules>
 
     <dependencyManagement>
