@@ -298,7 +298,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             checkRef();
-            generic = Boolean.FALSE.toString();
         }
         if (local != null) {
             if ("true".equals(local)) {
