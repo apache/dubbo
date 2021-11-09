@@ -323,9 +323,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void initMetricsReporter() {
+        DefaultMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
         MetricsConfig metricsConfig = configManager.getMetrics().orElse(null);
         if (metricsConfig != null) {
-            DefaultMetricsCollector collector = applicationModel.getBeanFactory().getOrRegisterBean(DefaultMetricsCollector.class);
             collector.setCollectEnabled(true);
             String protocol = metricsConfig.getProtocol();
             if (StringUtils.isNotEmpty(protocol)) {
