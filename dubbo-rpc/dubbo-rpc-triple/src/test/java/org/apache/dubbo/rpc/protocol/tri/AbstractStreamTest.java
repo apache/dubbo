@@ -86,7 +86,7 @@ public class AbstractStreamTest {
         TripleWrapper.TripleRequestWrapper requestWrapper = TripleWrapper.TripleRequestWrapper.newBuilder()
             .addArgTypes(ReflectUtils.getDesc(String.class))
             .addArgs(ByteString.copyFrom("TEST_ARG".getBytes(StandardCharsets.UTF_8)))
-            .setSerializeType("hessian4")
+            .setSerializeType(TripleConstant.HESSIAN4)
             .build();
 
         byte[] bytes = stream.pack(requestWrapper);

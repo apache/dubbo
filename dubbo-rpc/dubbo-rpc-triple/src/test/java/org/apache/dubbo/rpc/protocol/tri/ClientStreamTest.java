@@ -26,7 +26,9 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http2.*;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.util.Attribute;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -57,6 +59,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -142,9 +145,10 @@ public class ClientStreamTest {
     public void testStartCall_UnaryClientStream() throws Throwable {
         //  1. test startCall
         Method echoMethod = IGreeter.class.getDeclaredMethod("echo", String.class);
-        RpcInvocation rpcInvocation = new RpcInvocation(consumerModel, echoMethod, IGreeter.class.getName(), url.getProtocolServiceKey(), new Object[]{"ECHO"});
+        RpcInvocation rpcInvocation = new RpcInvocation(consumerModel, echoMethod, IGreeter.class.getName(),
+            url.getProtocolServiceKey(), new Object[]{"ECHO"});
         rpcInvocation.setInvoker(invoker);
-        rpcInvocation.setObjectAttachment(Constants.SERIALIZATION_KEY, "hessian2");
+        rpcInvocation.setObjectAttachment(Constants.SERIALIZATION_KEY, TripleConstant.HESSIAN2);
         rpcInvocation.setObjectAttachment(CommonConstants.PATH_KEY, url.getPath());
         rpcInvocation.put(CommonConstants.TIMEOUT_KEY, timeout);
         Request request = new Request(1);
@@ -188,6 +192,11 @@ public class ClientStreamTest {
         Assertions.assertTrue(dataQueueCommand1.getData().length > 0);
         Assertions.assertFalse(dataQueueCommand1.isEndStream());
         Assertions.assertTrue(dataQueueCommand1.isClient());
+        TripleWrapper.TripleRequestWrapper requestWrapper = stream.unpack(dataQueueCommand1.getData(), TripleWrapper.TripleRequestWrapper.class);
+        ByteArrayInputStream bais = new ByteArrayInputStream(requestWrapper.getArgs(0).toByteArray());
+        Object ret = stream.getMultipleSerialization().deserialize(url, stream.getSerializeType(), requestWrapper.getArgTypes(0), bais);
+        bais.close();
+        Assertions.assertEquals(ret.toString(), "ECHO");
 
         DataQueueCommand dataQueueCommand2 = (DataQueueCommand) queuedCommands.get(2);
         Assertions.assertNull(dataQueueCommand2.getData());
@@ -196,10 +205,10 @@ public class ClientStreamTest {
         // NOTE: The onXX method of inboundTransportObserver is usually triggered when receiving server data,
         // here we manually call to simulate the behavior of the [server -> client]
         TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
-        headers = mockHttp2Headers(stream);
+        headers = getHttp2Headers(stream);
         inboundTransportObserver.onMetadata(new Http2HeaderMeta(headers), false);
         Object resp = "RESPONSE";
-        byte[] bytes = mockPackedData(stream, resp);
+        byte[] bytes = getPackedData(stream, resp);
         inboundTransportObserver.onData(bytes, false);
         inboundTransportObserver.onMetadata(TripleConstant.getSuccessResponseMeta(), false); // trailers
         inboundTransportObserver.onComplete();
@@ -216,7 +225,7 @@ public class ClientStreamTest {
         RpcInvocation rpcInvocation = new RpcInvocation(consumerModel, serverStreamMethod, IGreeter.class.getName(),
             url.getProtocolServiceKey(), new Object[]{"stringData", outboundMessageSubscriber});
         rpcInvocation.setInvoker(invoker);
-        rpcInvocation.setObjectAttachment(Constants.SERIALIZATION_KEY, "hessian2");
+        rpcInvocation.setObjectAttachment(Constants.SERIALIZATION_KEY, TripleConstant.HESSIAN2);
         Request request = new Request(1);
         request.setData(rpcInvocation);
         ExecutorService executor = Mockito.mock(ExecutorService.class);
@@ -234,17 +243,17 @@ public class ClientStreamTest {
         }
         Assertions.assertNull(DefaultFuture2.getFuture(request.getId()));
         Assertions.assertNull(((AppResponse) future.get()).recreate());
-        Mockito.verify(streamChannel, Mockito.times(3)).write(Mockito.any(), Mockito.any());
         // NOTE: Send one header frame and two data frames. The previous test case has been verified, so I won’t go into details here.
+        Mockito.verify(streamChannel, Mockito.times(3)).write(Mockito.any(), Mockito.any());
 
         // 2. Verify the data from the server()
         // NOTE: The onXX method of inboundTransportObserver is usually triggered when receiving server data,
         // here we manually call to simulate the behavior of the [server -> client]
         TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
-        DefaultHttp2Headers headers = mockHttp2Headers(stream);
+        DefaultHttp2Headers headers = getHttp2Headers(stream);
         inboundTransportObserver.onMetadata(new Http2HeaderMeta(headers), false);
         Object resp = "RESPONSE";
-        byte[] bytes = mockPackedData(stream, resp);
+        byte[] bytes = getPackedData(stream, resp);
         inboundTransportObserver.onData(bytes, false);
         inboundTransportObserver.onMetadata(TripleConstant.SUCCESS_RESPONSE_META, false);
         inboundTransportObserver.onComplete();
@@ -264,7 +273,7 @@ public class ClientStreamTest {
         RpcInvocation rpcInvocation = new RpcInvocation(consumerModel, bidirectionalStreamMethod, IGreeter.class.getName(),
             url.getProtocolServiceKey(), new Object[]{outboundMessageSubscriber});
         rpcInvocation.setInvoker(invoker);
-        rpcInvocation.setObjectAttachment(Constants.SERIALIZATION_KEY, "hessian2");
+        rpcInvocation.setObjectAttachment(Constants.SERIALIZATION_KEY, TripleConstant.HESSIAN2);
         Request request = new Request(1);
         request.setData(rpcInvocation);
         ExecutorService executor = Mockito.mock(ExecutorService.class);
@@ -297,10 +306,10 @@ public class ClientStreamTest {
         // NOTE: The onXX method of inboundTransportObserver is usually triggered when receiving server data,
         // here we manually call to simulate the behavior of the [server -> client]
         TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
-        DefaultHttp2Headers headers = mockHttp2Headers(stream);
+        DefaultHttp2Headers headers = getHttp2Headers(stream);
         inboundTransportObserver.onMetadata(new Http2HeaderMeta(headers), false);
         Object resp = "RESPONSE";
-        byte[] bytes = mockPackedData(stream, resp);
+        byte[] bytes = getPackedData(stream, resp);
         inboundTransportObserver.onData(bytes, false);
         inboundTransportObserver.onMetadata(TripleConstant.SUCCESS_RESPONSE_META, false);
         inboundTransportObserver.onComplete();
@@ -334,7 +343,7 @@ public class ClientStreamTest {
         return streamChannel;
     }
 
-    private DefaultHttp2Headers mockHttp2Headers(AbstractClientStream stream) {
+    private DefaultHttp2Headers getHttp2Headers(AbstractClientStream stream) {
         DefaultHttp2Headers headers = new DefaultHttp2Headers(true);
         headers.set(Http2Headers.PseudoHeaderName.STATUS.value(), HttpResponseStatus.OK.codeAsText());
         headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
@@ -343,7 +352,7 @@ public class ClientStreamTest {
         return headers;
     }
 
-    private byte[] mockPackedData(AbstractClientStream stream, Object resp) throws IOException {
+    private byte[] getPackedData(AbstractClientStream stream, Object resp) throws IOException {
         final TripleWrapper.TripleResponseWrapper.Builder builder = TripleWrapper.TripleResponseWrapper.newBuilder()
             .setType(stream.getMethodDescriptor().getReturnClass().getName())
             .setSerializeType(TripleConstant.HESSIAN4);
