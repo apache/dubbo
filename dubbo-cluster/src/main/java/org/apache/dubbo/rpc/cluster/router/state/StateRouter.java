@@ -80,6 +80,14 @@ public interface StateRouter extends Comparable<StateRouter> {
      */
     int getPriority();
 
+    /**
+     * Notify the router the invoker list. Invoker list may change from time to time. This method gives the router a
+     * chance to prepare before {@link StateRouter#route(BitList, URL, Invocation, boolean)} gets called.
+     *
+     * @param invokers invoker list
+     */
+    <T> void notify(BitList<Invoker<T>> invokers);
+
     @Override
     default int compareTo(StateRouter o) {
         if (o == null) {
@@ -91,16 +99,4 @@ public interface StateRouter extends Comparable<StateRouter> {
     default void stop() {
         //do nothing by default
     }
-
-    // ----- StateRouter Start
-
-    /**
-     * Notify the router the invoker list. Invoker list may change from time to time. This method gives the router a
-     * chance to prepare before {@link StateRouter#route(BitList, URL, Invocation, boolean)} gets called.
-     *
-     * @param invokers invoker list
-     */
-    <T> void notify(BitList<Invoker<T>> invokers);
-
-    // ----- StateRouter End
 }
