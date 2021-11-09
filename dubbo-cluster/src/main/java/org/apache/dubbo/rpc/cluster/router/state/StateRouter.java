@@ -43,23 +43,6 @@ public interface StateRouter extends Comparable<StateRouter> {
     URL getUrl();
 
     /***
-     * Filter invokers with current routing rule and only return the invokers that comply with the rule.
-     * Caching address lists in BitMap mode improves routing performance.
-     * @param invokers  invoker bit list
-     * @param url        refer url
-     * @param invocation invocation
-     * @param <T>
-     * @return routed invokers
-     * @throws RpcException
-     * @Since 3.0
-     */
-    @Deprecated
-    default <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation)
-        throws RpcException {
-        return null;
-    }
-
-    /***
      * ** This method can return the state of whether routerChain needed to continue route. **
      * Filter invokers with current routing rule and only return the invokers that comply with the rule.
      * Caching address lists in BitMap mode improves routing performance.
@@ -70,10 +53,8 @@ public interface StateRouter extends Comparable<StateRouter> {
      * @return state with route result
      * @since 3.0
      */
-    default <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
-                                                          boolean needToPrintMessage) throws RpcException {
-        return new StateRouterResult<>(route(invokers, url, invocation));
-    }
+    <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                                            boolean needToPrintMessage) throws RpcException;
 
     /**
      * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or
