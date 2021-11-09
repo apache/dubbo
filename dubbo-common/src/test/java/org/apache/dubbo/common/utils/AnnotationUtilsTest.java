@@ -29,7 +29,7 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -174,38 +174,40 @@ public class AnnotationUtilsTest {
         assertEquals(Inherited.class, metaAnnotations.get(0).annotationType());
 
         metaAnnotations = getMetaAnnotations(Service.class);
-        List<String> testAnnotations = new ArrayList<>();
-        for(int i = 0; i < metaAnnotations.size(); i++) {
-            testAnnotations.add(metaAnnotations.get(i).annotationType().toString());
-        }
+        HashSet<Object> set1 = new HashSet<>();
+        metaAnnotations.forEach(t -> set1.add(t.annotationType()));
+        HashSet<Object> set2 = new HashSet<>();
+        set2.add(Inherited.class);
+        set2.add(Deprecated.class);
         assertEquals(2, metaAnnotations.size());
-        assertTrue(testAnnotations.contains(Inherited.class.toString()));
-        assertTrue(testAnnotations.contains(Deprecated.class.toString()));
+        assertEquals(set1, set2);
     }
 
     @Test
     public void testGetAllMetaAnnotations() {
         List<Annotation> metaAnnotations = getAllMetaAnnotations(Service5.class);
+        int offset = 0;
 
-        List<String> testAnnotations1 = new ArrayList<>();
-        for(int i = 0; i < metaAnnotations.size(); i++) {
-            testAnnotations1.add(metaAnnotations.get(i).annotationType().toString());
-        }
+        HashSet<Object> set1 = new HashSet<>();
+        metaAnnotations.forEach(t -> set1.add(t.annotationType()));
+        HashSet<Object> set2 = new HashSet<>();
+        set2.add(Inherited.class);
+        set2.add(DubboService.class);
+        set2.add(Service4.class);
+        set2.add(Service3.class);
+        set2.add(Service2.class);
         assertEquals(9, metaAnnotations.size());
-        assertTrue(testAnnotations1.contains(Inherited.class.toString()));
-        assertTrue(testAnnotations1.contains(DubboService.class.toString()));
-        assertTrue(testAnnotations1.contains(Service4.class.toString()));
-        assertTrue(testAnnotations1.contains(Service3.class.toString()));
-        assertTrue(testAnnotations1.contains(Service2.class.toString()));
+        assertEquals(set1, set2);
 
         metaAnnotations = getAllMetaAnnotations(MyAdaptive.class);
-        List<String> testAnnotations2 = new ArrayList<>();
-        for(int i = 0; i < metaAnnotations.size(); i++) {
-            testAnnotations2.add(metaAnnotations.get(i).annotationType().toString());    
-        }
+        HashSet<Object> set3 = new HashSet<>();
+        metaAnnotations.forEach(t -> set3.add(t.annotationType()));
+        HashSet<Object> set4 = new HashSet<>();
+        metaAnnotations.forEach(t -> set3.add(t.annotationType()));
+        set4.add(Inherited.class);
+        set4.add(Adaptive.class);
         assertEquals(2, metaAnnotations.size());
-        assertTrue(testAnnotations2.contains(Inherited.class.toString()));
-        assertTrue(testAnnotations2.contains(Adaptive.class.toString()));
+        assertEquals(set3, set4);
     }
 
 
