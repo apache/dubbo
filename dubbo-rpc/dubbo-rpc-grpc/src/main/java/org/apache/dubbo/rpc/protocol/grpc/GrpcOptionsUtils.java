@@ -164,6 +164,7 @@ public class GrpcOptionsUtils {
         SslContextBuilder sslClientContextBuilder = null;
         InputStream serverKeyCertChainPathStream = null;
         InputStream serverPrivateKeyPathStream = null;
+        InputStream trustCertCollectionFilePath = null;
         try {
             serverKeyCertChainPathStream = sslConfig.getServerKeyCertChainPathStream();
             serverPrivateKeyPathStream = sslConfig.getServerPrivateKeyPathStream();
@@ -176,7 +177,7 @@ public class GrpcOptionsUtils {
                         serverPrivateKeyPathStream);
             }
 
-            InputStream trustCertCollectionFilePath = sslConfig.getServerTrustCertCollectionPathStream();
+            trustCertCollectionFilePath = sslConfig.getServerTrustCertCollectionPathStream();
             if (trustCertCollectionFilePath != null) {
                 sslClientContextBuilder.trustManager(trustCertCollectionFilePath);
                 sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
@@ -186,6 +187,7 @@ public class GrpcOptionsUtils {
         }finally {
             safeCloseStream(serverKeyCertChainPathStream);
             safeCloseStream(serverPrivateKeyPathStream);
+            safeCloseStream(trustCertCollectionFilePath);
         }
         try {
             return sslClientContextBuilder.build();
