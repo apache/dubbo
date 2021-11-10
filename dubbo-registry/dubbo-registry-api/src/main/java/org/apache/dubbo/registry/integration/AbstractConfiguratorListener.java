@@ -89,11 +89,10 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
                     ", raw config content is:\n " + event.getContent());
         }
 
-        if (event.getChangeType().equals(ConfigChangeType.ADDED)) {
-            return;
-        } else if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
+        if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             configurators.clear();
         } else {
+            // ADDED or MODIFIED
             if (!genConfiguratorsFromRawRule(event.getContent())) {
                 return;
             }
@@ -113,8 +112,8 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
                 .collect(Collectors.toList());
             configurators = Configurator.toConfigurators(safeUrls).orElse(configurators);
         } catch (Exception e) {
-            logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " +
-                    rawConfig, e);
+            logger.warn("Failed to parse raw dynamic config and it will not take effect, the raw config is: " +
+                    rawConfig + ", cause: " + e.getMessage());
             parseSuccess = false;
         }
         return parseSuccess;
