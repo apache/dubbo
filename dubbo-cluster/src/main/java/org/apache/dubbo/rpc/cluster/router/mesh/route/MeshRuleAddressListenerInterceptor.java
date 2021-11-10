@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
 import java.util.Set;
@@ -33,16 +34,20 @@ public class MeshRuleAddressListenerInterceptor implements AddressListener {
 
     private static final Set<String> APP_SET = new ConcurrentHashSet<>();
 
+    private final MeshRuleManager meshRuleManager;
+
+    public MeshRuleAddressListenerInterceptor(ModuleModel moduleModel) {
+        this.meshRuleManager = moduleModel.getBeanFactory().getBean(MeshRuleManager.class);
+    }
+
     @Override
     public List<URL> notify(List<URL> addresses, URL consumerUrl, Directory registryDirectory) {
-
         if (CollectionUtils.isNotEmpty(addresses)) {
             for (URL url : addresses) {
-
                 String app = url.getRemoteApplication();
                 if (StringUtils.isNotEmpty(app)) {
                     if (APP_SET.add(app)) {
-                        MeshRuleManager.subscribeAppRule(consumerUrl, app);
+                        meshRuleManager.subscribeAppRule(app);
                     }
                 }
             }
@@ -53,8 +58,9 @@ public class MeshRuleAddressListenerInterceptor implements AddressListener {
 
     @Override
     public void destroy(URL consumerUrl, Directory registryDirectory) {
-        for (String app : APP_SET) {
-            MeshRuleManager.unsubscribeAppRule(consumerUrl, app);
-        }
+        // TODO: reference count
+//        for (String app : APP_SET) {
+//            meshRuleManager.unsubscribeAppRule(app);
+//        }
     }
 }

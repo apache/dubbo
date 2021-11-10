@@ -17,12 +17,14 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice;
 
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.DoubleMatch;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.DubboAttachmentMatch;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.DubboMethodMatch;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 
 import java.util.Map;
+import java.util.Set;
 
 
 public class DubboMatchRequest {
@@ -31,7 +33,6 @@ public class DubboMatchRequest {
     private Map<String, String> sourceLabels;
     private DubboAttachmentMatch attachments;
     private Map<String, StringMatch> headers;
-    private DoubleMatch threshold;
 
     public String getName() {
         return name;
@@ -73,58 +74,42 @@ public class DubboMatchRequest {
         this.headers = headers;
     }
 
-    public DoubleMatch getThreshold() {
-        return threshold;
+    @Override
+    public String toString() {
+        return "DubboMatchRequest{" +
+            "name='" + name + '\'' +
+            ", method=" + method +
+            ", sourceLabels=" + sourceLabels +
+            ", attachments=" + attachments +
+            ", headers=" + headers +
+            '}';
     }
 
-    public void setThreshold(DoubleMatch threshold) {
-        this.threshold = threshold;
-    }
-
-
-    public static boolean isMatch(DubboMatchRequest dubboMatchRequest,
-                                  String methodName, String[] parameterTypeList, Object[] parameters,
-                                  Map<String, String> sourceLabels,
-                                  Map<String, String> eagleeyeContext, Map<String, String> dubboContext,
-                                  Map<String, String> headers
-    ) {
-        if (dubboMatchRequest.getMethod() != null) {
-            if (!DubboMethodMatch.isMatch(dubboMatchRequest.getMethod(), methodName, parameterTypeList, parameters)) {
+    public boolean isMatch(Invocation invocation, Map<String, String> sourceLabels, Set<TracingContextProvider> contextProviders) {
+        // Match method
+        if (getMethod() != null) {
+            if (!getMethod().isMatch(invocation)) {
                 return false;
             }
         }
 
-        if (dubboMatchRequest.getSourceLabels() != null) {
-            for (Map.Entry<String, String> entry : dubboMatchRequest.getSourceLabels().entrySet()) {
+        // Match Source Labels
+        if (getSourceLabels() != null) {
+            for (Map.Entry<String, String> entry : getSourceLabels().entrySet()) {
                 String value = sourceLabels.get(entry.getKey());
-                if (value == null || !entry.getValue().equals(value)) {
+                if (!entry.getValue().equals(value)) {
                     return false;
                 }
             }
         }
 
-        if (dubboMatchRequest.getAttachments() != null) {
-            if (!DubboAttachmentMatch.isMatch(dubboMatchRequest.getAttachments(),eagleeyeContext,dubboContext)){
-                return false;
-            }
+        // Match attachment
+        if (getAttachments() != null) {
+            return getAttachments().isMatch(invocation, contextProviders);
         }
 
-        //TODO headers
-
+        // TODO Match headers
 
         return true;
-
-    }
-
-    @Override
-    public String toString() {
-        return "DubboMatchRequest{" +
-                "name='" + name + '\'' +
-                ", method=" + method +
-                ", sourceLabels=" + sourceLabels +
-                ", attachments=" + attachments +
-                ", headers=" + headers +
-                ", threshold=" + threshold +
-                '}';
     }
 }

@@ -24,9 +24,9 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 
 
 @Activate(order = -50)
-public class MeshRuleRouterFactory implements RouterFactory {
+public class StandardMeshRuleRouterFactory implements RouterFactory {
     @Override
     public Router getRouter(URL url) {
-        return new MeshRuleRouter(url);
+        return new StandardMeshRuleRouter(url);
     }
 }

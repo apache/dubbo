@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.util;
 
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,11 +29,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 
-class VsDestinationGroupRuleDispatcherTest {
+class MeshRuleDispatcherTest {
 
     @Test
     public void post() {
-        VsDestinationGroupRuleDispatcher vsDestinationGroupRuleDispatcher = new VsDestinationGroupRuleDispatcher();
+        MeshRuleDispatcher vsDestinationGroupRuleDispatcher = new MeshRuleDispatcher();
 
         VsDestinationGroupRuleListener vsDestinationGroupRuleListener = mock(VsDestinationGroupRuleListener.class);
 
@@ -47,7 +48,7 @@ class VsDestinationGroupRuleDispatcherTest {
 
     @Test
     public void register() {
-        VsDestinationGroupRuleDispatcher vsDestinationGroupRuleDispatcher = new VsDestinationGroupRuleDispatcher();
+        MeshRuleDispatcher vsDestinationGroupRuleDispatcher = new MeshRuleDispatcher();
 
         VsDestinationGroupRuleListener vsDestinationGroupRuleListener = mock(VsDestinationGroupRuleListener.class);
 
@@ -59,7 +60,7 @@ class VsDestinationGroupRuleDispatcherTest {
     @Test
     public void unregister() {
 
-        VsDestinationGroupRuleDispatcher vsDestinationGroupRuleDispatcher = new VsDestinationGroupRuleDispatcher();
+        MeshRuleDispatcher vsDestinationGroupRuleDispatcher = new MeshRuleDispatcher();
 
         VsDestinationGroupRuleListener vsDestinationGroupRuleListener = mock(VsDestinationGroupRuleListener.class);
         vsDestinationGroupRuleDispatcher.register(vsDestinationGroupRuleListener);

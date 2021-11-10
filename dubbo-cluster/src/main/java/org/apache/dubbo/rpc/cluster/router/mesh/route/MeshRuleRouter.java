@@ -18,7 +18,10 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -26,8 +29,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRuleSpec;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.Subset;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboMatchRequest;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRoute;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboRouteDetail;
@@ -36,6 +37,7 @@ import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServi
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.DubboDestination;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.DubboRouteDestination;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.VsDestinationGroupRuleListener;
 
 import java.util.ArrayList;
@@ -43,30 +45,35 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+public abstract class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
-public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
+    public static final Logger logger = LoggerFactory.getLogger(MeshRuleRouter.class);
 
-    private int priority = -500;
-    private boolean force = false;
-    private URL url;
+    private final URL url;
 
-    private volatile VsDestinationGroup vsDestinationGroup;
 
     private Map<String, String> sourcesLabels = new HashMap<>();
-
     private volatile List<Invoker<?>> invokerList = new ArrayList<>();
-
-    private volatile Map<String, List<Invoker<?>>> subsetMap;
-
     private volatile String remoteAppName;
 
     private static final String INVALID_APP_NAME = "unknown";
+    public static final String DESTINATION_RULE_KEY = "DestinationRule";
+    public static final String VIRTUAL_SERVICE_KEY = "VirtualService";
+    public static final String KIND_KEY = "kind";
+
+    protected MeshRuleManager meshRuleManager;
+    protected Set<TracingContextProvider> tracingContextProviders;
+
+    protected volatile MeshRuleCache meshRuleCache = MeshRuleCache.emptyCache();
 
     public MeshRuleRouter(URL url) {
         this.url = url;
         sourcesLabels.putAll(url.getParameters());
+        this.meshRuleManager = url.getScopeModel().getBeanFactory().getBean(MeshRuleManager.class);
+        this.tracingContextProviders = url.getOrDefaultApplicationModel().getExtensionLoader(TracingContextProvider.class).getSupportedExtensionInstances();
     }
 
     @Override
@@ -76,46 +83,70 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-
-        List<DubboRouteDestination> routeDestination = getDubboRouteDestination(invocation);
-
-        if (routeDestination == null) {
+        MeshRuleCache ruleCache = this.meshRuleCache;
+        if (!ruleCache.containsRule()) {
             return invokers;
-        } else {
-            DubboRouteDestination dubboRouteDestination = routeDestination.get(ThreadLocalRandom.current().nextInt(routeDestination.size()));
-
-            DubboDestination dubboDestination = dubboRouteDestination.getDestination();
-
-            String subset = dubboDestination.getSubset();
-
-            List<Invoker<?>> result;
-
-            Map<String, List<Invoker<?>>> subsetMapCopy = this.subsetMap;
-
-            //TODO make intersection with invokers
-            if (subsetMapCopy != null) {
-
-                do {
-                    result = subsetMapCopy.get(subset);
-
-                    if (CollectionUtils.isNotEmpty(result)) {
-                        return (List) result;
-                    }
-
-                    dubboRouteDestination = dubboDestination.getFallback();
-                    if (dubboRouteDestination == null) {
-                        break;
-                    }
-                    dubboDestination = dubboRouteDestination.getDestination();
-
-                    subset = dubboDestination.getSubset();
-                } while (true);
-
-                return null;
-            }
         }
 
+        for (String appName : meshRuleCache.getAppList()) {
+            List<DubboRouteDestination> routeDestination = getDubboRouteDestination(meshRuleCache.getVsDestinationGroup(appName), invocation);
+            if (routeDestination == null) {
+                return invokers;
+            } else {
+                // TODO aggregation
+                return randomSelectDestination(invokers, meshRuleCache, appName, routeDestination);
+            }
+        }
         return invokers;
+    }
+
+    protected <T> List<Invoker<T>> randomSelectDestination(List<Invoker<T>> invokers, MeshRuleCache meshRuleCache, String appName, List<DubboRouteDestination> routeDestination) throws RpcException {
+        int totalWeight = 0;
+        for (DubboRouteDestination dubboRouteDestination : routeDestination) {
+            totalWeight += Math.max(dubboRouteDestination.getWeight(), 1);
+        }
+        int target = ThreadLocalRandom.current().nextInt(totalWeight);
+        for (DubboRouteDestination destination : routeDestination) {
+            target -= Math.max(destination.getWeight(), 1);
+            if (target <= 0) {
+                List<Invoker<T>> result = computeDestination(invokers, meshRuleCache, appName, destination.getDestination());
+                if (CollectionUtils.isNotEmpty(result)) {
+                    return result;
+                }
+            }
+        }
+        for (DubboRouteDestination destination : routeDestination) {
+            List<Invoker<T>> result = computeDestination(invokers, meshRuleCache, appName, destination.getDestination());
+            if (CollectionUtils.isNotEmpty(result)) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    protected <T> List<Invoker<T>> computeDestination(List<Invoker<T>> invokers, MeshRuleCache meshRuleCache, String appName, DubboDestination dubboDestination) throws RpcException {
+        String subset = dubboDestination.getSubset();
+
+        List<Invoker<?>> result;
+
+        // TODO make intersection with invokers
+        do {
+            result = meshRuleCache.getSubsetInvokers(appName, subset);
+
+            if (CollectionUtils.isNotEmpty(result)) {
+                return (List) result;
+            }
+
+            DubboRouteDestination dubboRouteDestination = dubboDestination.getFallback();
+            if (dubboRouteDestination == null) {
+                break;
+            }
+            dubboDestination = dubboRouteDestination.getDestination();
+
+            subset = dubboDestination.getSubset();
+        } while (true);
+
+        return null;
     }
 
     @Override
@@ -123,9 +154,8 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
         List invokerList = invokers == null ? Collections.emptyList() : invokers;
         this.invokerList = invokerList;
         registerAppRule(invokerList);
-        computeSubset();
+        computeSubset(this.meshRuleCache != null ? this.meshRuleCache.getAppToVDGroup() : null);
     }
-
 
     private void registerAppRule(List<Invoker<?>> invokers) {
         if (StringUtils.isEmpty(remoteAppName)) {
@@ -135,7 +165,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
                         String applicationName = invoker.getUrl().getRemoteApplication();
                         if (StringUtils.isNotEmpty(applicationName) && !INVALID_APP_NAME.equals(applicationName)) {
                             remoteAppName = applicationName;
-                            MeshRuleManager.register(remoteAppName, this);
+                            meshRuleManager.register(remoteAppName, this);
                             break;
                         }
                     }
@@ -144,11 +174,38 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
         }
     }
 
+    @Override
+    public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+        Map<String, VsDestinationGroup> appToVDGroup = new HashMap<>();
+        try {
+            VsDestinationGroup vsDestinationGroup = new VsDestinationGroup();
+            vsDestinationGroup.setAppName(appName);
+
+            for (Map<String, Object> rule : rules) {
+                if (DESTINATION_RULE_KEY.equals(rule.get(KIND_KEY))) {
+                    DestinationRule destinationRule = PojoUtils.mapToPojo(rule, DestinationRule.class);
+                    vsDestinationGroup.getDestinationRuleList().add(destinationRule);
+                } else if (VIRTUAL_SERVICE_KEY.equals(rule.get(KIND_KEY))) {
+                    VirtualServiceRule virtualServiceRule = PojoUtils.mapToPojo(rule, VirtualServiceRule.class);
+                    vsDestinationGroup.getVirtualServiceRuleList().add(virtualServiceRule);
+                }
+            }
+            appToVDGroup.put(appName, vsDestinationGroup);
+        } catch (Throwable t) {
+            logger.error("");
+            appToVDGroup = this.meshRuleCache != null ? this.meshRuleCache.getAppToVDGroup() : null;
+        }
+
+        computeSubset(appToVDGroup);
+    }
 
     @Override
-    public void onRuleChange(VsDestinationGroup vsDestinationGroup) {
-        this.vsDestinationGroup = vsDestinationGroup;
-        computeSubset();
+    public void clearRule(String appName) {
+        computeSubset(null);
+    }
+
+    protected void computeSubset(Map<String, VsDestinationGroup> vsDestinationGroupMap) {
+        this.meshRuleCache = MeshRuleCache.build(url.getProtocolServiceKey(), this.invokerList, vsDestinationGroupMap);
     }
 
     @Override
@@ -156,20 +213,8 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
         return true;
     }
 
-    @Override
-    public boolean isForce() {
-        return force;
-    }
-
-    @Override
-    public int getPriority() {
-        return priority;
-    }
-
-    private List<DubboRouteDestination> getDubboRouteDestination(Invocation invocation) {
-
+    protected List<DubboRouteDestination> getDubboRouteDestination(VsDestinationGroup vsDestinationGroup, Invocation invocation) {
         if (vsDestinationGroup != null) {
-
             List<VirtualServiceRule> virtualServiceRuleList = vsDestinationGroup.getVirtualServiceRuleList();
             if (virtualServiceRuleList.size() > 0) {
                 for (VirtualServiceRule virtualServiceRule : virtualServiceRuleList) {
@@ -195,7 +240,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
                     return dubboRoute;
                 }
                 for (StringMatch stringMatch : stringMatchList) {
-                    if (StringMatch.isMatch(stringMatch, serviceName)) {
+                    if (stringMatch.isMatch(serviceName)) {
                         return dubboRoute;
                     }
                 }
@@ -206,7 +251,6 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
 
     protected List<DubboRouteDestination> getDubboRouteDestination(DubboRoute dubboRoute, Invocation invocation) {
-
         List<DubboRouteDetail> dubboRouteDetailList = dubboRoute.getRoutedetail();
         if (dubboRouteDetailList.size() > 0) {
             DubboRouteDetail dubboRouteDetail = findMatchDubboRouteDetail(dubboRouteDetailList, invocation);
@@ -219,156 +263,22 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
     }
 
     protected DubboRouteDetail findMatchDubboRouteDetail(List<DubboRouteDetail> dubboRouteDetailList, Invocation invocation) {
-
-        String methodName = invocation.getMethodName();
-        String[] parameterTypeList = invocation.getCompatibleParamSignatures();
-        Object[] parameters = invocation.getArguments();
-
-
         for (DubboRouteDetail dubboRouteDetail : dubboRouteDetailList) {
             List<DubboMatchRequest> matchRequestList = dubboRouteDetail.getMatch();
             if (CollectionUtils.isEmpty(matchRequestList)) {
                 return dubboRouteDetail;
             }
 
-            boolean match = true;
-
-            //FIXME to deal with headers
-            for (DubboMatchRequest dubboMatchRequest : matchRequestList) {
-                if (!DubboMatchRequest.isMatch(dubboMatchRequest, methodName, parameterTypeList, parameters,
-                        sourcesLabels,
-                        new HashMap<>(), invocation.getAttachments(),
-                        new HashMap<>())) {
-                    match = false;
-                    break;
-                }
-            }
-
-            if (match) {
+            if (matchRequestList.stream().allMatch(
+                request -> request.isMatch(invocation, sourcesLabels, tracingContextProviders))) {
                 return dubboRouteDetail;
             }
         }
         return null;
     }
 
-
-    protected synchronized void computeSubset() {
-        if (CollectionUtils.isEmpty(invokerList)) {
-            this.subsetMap = null;
-            return;
-        }
-
-        if (vsDestinationGroup == null) {
-            this.subsetMap = null;
-            return;
-        }
-
-        Map<String, List<Invoker<?>>> subsetMap = computeSubsetMap(invokerList, vsDestinationGroup.getDestinationRuleList());
-
-        if (subsetMap.size() == 0) {
-            this.subsetMap = null;
-        } else {
-            this.subsetMap = subsetMap;
-        }
-    }
-
-
-    protected Map<String, List<Invoker<?>>> computeSubsetMap(List<Invoker<?>> invokers, List<DestinationRule> destinationRules) {
-        Map<String, List<Invoker<?>>> subsetMap = new HashMap<>();
-
-        for (DestinationRule destinationRule : destinationRules) {
-            DestinationRuleSpec destinationRuleSpec = destinationRule.getSpec();
-            List<Subset> subsetList = destinationRuleSpec.getSubsets();
-
-            for (Subset subset : subsetList) {
-                String subsetName = subset.getName();
-                List<Invoker<?>> subsetInvokerList = new ArrayList<>();
-                subsetMap.put(subsetName, subsetInvokerList);
-
-                Map<String, String> labels = subset.getLabels();
-
-                for (Invoker<?> invoker : invokers) {
-                    Map<String, String> parameters = invoker.getUrl().getServiceParameters(url.getProtocolServiceKey());
-                    if (containMapKeyValue(parameters, labels)) {
-                        subsetInvokerList.add(invoker);
-                    }
-                }
-            }
-        }
-
-        return subsetMap;
-    }
-
-
-    protected boolean containMapKeyValue(Map<String, String> originMap, Map<String, String> inputMap) {
-        if (inputMap == null || inputMap.size() == 0) {
-            return true;
-        }
-
-        for (Map.Entry<String, String> entry : inputMap.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            String originMapValue = originMap.get(key);
-            if (!value.equals(originMapValue)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     @Override
     public void stop() {
-        MeshRuleManager.unregister(this);
-    }
-
-    /**
-     * just for test
-     * @param vsDestinationGroup
-     */
-    protected void setVsDestinationGroup(VsDestinationGroup vsDestinationGroup) {
-        this.vsDestinationGroup = vsDestinationGroup;
-    }
-
-    /**
-     * just for test
-     * @param sourcesLabels
-     */
-    protected void setSourcesLabels(Map<String, String> sourcesLabels) {
-        this.sourcesLabels = sourcesLabels;
-    }
-
-    /**
-     * just for test
-     * @param invokerList
-     */
-    protected void setInvokerList(List<Invoker<?>> invokerList) {
-        this.invokerList = invokerList;
-    }
-
-    /**
-     * just for test
-     * @param subsetMap
-     */
-    protected void setSubsetMap(Map<String, List<Invoker<?>>> subsetMap) {
-        this.subsetMap = subsetMap;
-    }
-
-
-    public VsDestinationGroup getVsDestinationGroup() {
-        return vsDestinationGroup;
-    }
-
-    public Map<String, String> getSourcesLabels() {
-        return sourcesLabels;
-    }
-
-    public List<Invoker<?>> getInvokerList() {
-        return invokerList;
-    }
-
-    public Map<String, List<Invoker<?>>> getSubsetMap() {
-        return subsetMap;
+        meshRuleManager.unregister(this);
     }
 }

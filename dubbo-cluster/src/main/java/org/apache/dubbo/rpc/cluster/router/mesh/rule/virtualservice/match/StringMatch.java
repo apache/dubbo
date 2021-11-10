@@ -66,29 +66,20 @@ public class StringMatch {
         this.empty = empty;
     }
 
-
-    public static boolean isMatch(StringMatch stringMatch, String input) {
-        if (stringMatch.getExact() != null && input != null) {
-            if (input.equals(stringMatch.getExact())) {
-                return true;
-            }
-        } else if (stringMatch.getPrefix() != null && input != null) {
-            if (input.startsWith(stringMatch.getPrefix())) {
-                return true;
-            }
-        } else if (stringMatch.getRegex() != null && input != null) {
-            if (input.matches(stringMatch.getRegex())) {
-                return true;
-            }
-        } else if (stringMatch.getEmpty() != null) {
+    public boolean isMatch(String input) {
+        if (getExact() != null && input != null) {
+            return input.equals(getExact());
+        } else if (getPrefix() != null && input != null) {
+            return input.startsWith(getPrefix());
+        } else if (getRegex() != null && input != null) {
+            return input.matches(getRegex());
+        } else if (getEmpty() != null) {
             return input == null || "".equals(input);
-        } else if (stringMatch.getNoempty() != null) {
+        } else if (getNoempty() != null) {
             return input != null && input.length() > 0;
         } else {
             return false;
         }
-
-        return false;
     }
 
 
