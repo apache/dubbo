@@ -19,7 +19,7 @@ package org.apache.dubbo.monitor.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.monitor.MonitorService;
+import org.apache.dubbo.monitor.Constants;
 
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
@@ -34,16 +34,16 @@ public class StatisticsTest {
     @Test
     public void testEquals() {
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
-                .addParameter(MonitorService.APPLICATION, "morgan")
-                .addParameter(MonitorService.INTERFACE, "MemberService")
-                .addParameter(MonitorService.METHOD, "findPerson")
-                .addParameter(MonitorService.CONSUMER, "10.20.153.11")
-                .addParameter(MonitorService.SUCCESS, 1)
-                .addParameter(MonitorService.FAILURE, 0)
-                .addParameter(MonitorService.ELAPSED, 3)
-                .addParameter(MonitorService.MAX_ELAPSED, 3)
-                .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1)
+                .addParameter(Constants.APPLICATION, "morgan")
+                .addParameter(Constants.INTERFACE, "MemberService")
+                .addParameter(Constants.METHOD, "findPerson")
+                .addParameter(Constants.CONSUMER, "10.20.153.11")
+                .addParameter(Constants.SUCCESS, 1)
+                .addParameter(Constants.FAILURE, 0)
+                .addParameter(Constants.ELAPSED, 3)
+                .addParameter(Constants.MAX_ELAPSED, 3)
+                .addParameter(Constants.CONCURRENT, 1)
+                .addParameter(Constants.MAX_CONCURRENT, 1)
                 .build();
 
         Statistics statistics1 = new Statistics(statistics);
@@ -76,17 +76,17 @@ public class StatisticsTest {
         assertThat(statistics.toString(), is("dubbo://10.20.153.10"));
 
         Statistics statisticsWithDetailInfo = new Statistics(new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
-                .addParameter(MonitorService.APPLICATION, "morgan")
-                .addParameter(MonitorService.INTERFACE, "MemberService")
-                .addParameter(MonitorService.METHOD, "findPerson")
-                .addParameter(MonitorService.CONSUMER, "10.20.153.11")
-                .addParameter(MonitorService.GROUP, "unit-test")
-                .addParameter(MonitorService.SUCCESS, 1)
-                .addParameter(MonitorService.FAILURE, 0)
-                .addParameter(MonitorService.ELAPSED, 3)
-                .addParameter(MonitorService.MAX_ELAPSED, 3)
-                .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1)
+                .addParameter(Constants.APPLICATION, "morgan")
+                .addParameter(Constants.INTERFACE, "MemberService")
+                .addParameter(Constants.METHOD, "findPerson")
+                .addParameter(Constants.CONSUMER, "10.20.153.11")
+                .addParameter(Constants.GROUP, "unit-test")
+                .addParameter(Constants.SUCCESS, 1)
+                .addParameter(Constants.FAILURE, 0)
+                .addParameter(Constants.ELAPSED, 3)
+                .addParameter(Constants.MAX_ELAPSED, 3)
+                .addParameter(Constants.CONCURRENT, 1)
+                .addParameter(Constants.MAX_CONCURRENT, 1)
                 .build());
 
         MatcherAssert.assertThat(statisticsWithDetailInfo.getServer(), equalTo(statistics.getServer()));

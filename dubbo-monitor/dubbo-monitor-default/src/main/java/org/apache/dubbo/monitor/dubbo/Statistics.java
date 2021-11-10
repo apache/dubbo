@@ -17,7 +17,7 @@
 package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.monitor.MonitorService;
+import org.apache.dubbo.monitor.Constants;
 
 import java.io.Serializable;
 
@@ -46,13 +46,13 @@ public class Statistics implements Serializable {
 
     public Statistics(URL url) {
         this.url = url;
-        this.application = url.getParameter(MonitorService.APPLICATION);
-        this.service = url.getParameter(MonitorService.INTERFACE);
-        this.method = url.getParameter(MonitorService.METHOD);
-        this.group = url.getParameter(MonitorService.GROUP);
-        this.version = url.getParameter(MonitorService.VERSION);
-        this.client = url.getParameter(MonitorService.CONSUMER, url.getAddress());
-        this.server = url.getParameter(MonitorService.PROVIDER, url.getAddress());
+        this.application = url.getParameter(Constants.APPLICATION);
+        this.service = url.getParameter(Constants.INTERFACE);
+        this.method = url.getParameter(Constants.METHOD);
+        this.group = url.getParameter(Constants.GROUP);
+        this.version = url.getParameter(Constants.VERSION);
+        this.client = url.getParameter(Constants.CONSUMER, url.getAddress());
+        this.server = url.getParameter(Constants.PROVIDER, url.getAddress());
     }
 
     public URL getUrl() {

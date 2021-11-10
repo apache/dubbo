@@ -19,6 +19,7 @@ package org.apache.dubbo.monitor.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.monitor.Constants;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
@@ -96,35 +97,35 @@ public class DubboMonitorTest {
     public void testCount() throws Exception {
         DubboMonitor monitor = new DubboMonitor(monitorInvoker, monitorService);
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
-                .addParameter(MonitorService.APPLICATION, "morgan")
-                .addParameter(MonitorService.INTERFACE, "MemberService")
-                .addParameter(MonitorService.METHOD, "findPerson")
-                .addParameter(MonitorService.CONSUMER, "10.20.153.11")
-                .addParameter(MonitorService.SUCCESS, 1)
-                .addParameter(MonitorService.FAILURE, 0)
-                .addParameter(MonitorService.ELAPSED, 3)
-                .addParameter(MonitorService.MAX_ELAPSED, 3)
-                .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1)
+                .addParameter(Constants.APPLICATION, "morgan")
+                .addParameter(Constants.INTERFACE, "MemberService")
+                .addParameter(Constants.METHOD, "findPerson")
+                .addParameter(Constants.CONSUMER, "10.20.153.11")
+                .addParameter(Constants.SUCCESS, 1)
+                .addParameter(Constants.FAILURE, 0)
+                .addParameter(Constants.ELAPSED, 3)
+                .addParameter(Constants.MAX_ELAPSED, 3)
+                .addParameter(Constants.CONCURRENT, 1)
+                .addParameter(Constants.MAX_CONCURRENT, 1)
                 .build();
         monitor.collect(statistics.toSerializableURL());
         monitor.send();
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
-        Assertions.assertEquals("morgan", lastStatistics.getParameter(MonitorService.APPLICATION));
+        Assertions.assertEquals("morgan", lastStatistics.getParameter(Constants.APPLICATION));
         Assertions.assertEquals("dubbo", lastStatistics.getProtocol());
         Assertions.assertEquals("10.20.153.10", lastStatistics.getHost());
-        Assertions.assertEquals("morgan", lastStatistics.getParameter(MonitorService.APPLICATION));
-        Assertions.assertEquals("MemberService", lastStatistics.getParameter(MonitorService.INTERFACE));
-        Assertions.assertEquals("findPerson", lastStatistics.getParameter(MonitorService.METHOD));
-        Assertions.assertEquals("10.20.153.11", lastStatistics.getParameter(MonitorService.CONSUMER));
-        Assertions.assertEquals("1", lastStatistics.getParameter(MonitorService.SUCCESS));
-        Assertions.assertEquals("0", lastStatistics.getParameter(MonitorService.FAILURE));
-        Assertions.assertEquals("3", lastStatistics.getParameter(MonitorService.ELAPSED));
-        Assertions.assertEquals("3", lastStatistics.getParameter(MonitorService.MAX_ELAPSED));
-        Assertions.assertEquals("1", lastStatistics.getParameter(MonitorService.CONCURRENT));
-        Assertions.assertEquals("1", lastStatistics.getParameter(MonitorService.MAX_CONCURRENT));
+        Assertions.assertEquals("morgan", lastStatistics.getParameter(Constants.APPLICATION));
+        Assertions.assertEquals("MemberService", lastStatistics.getParameter(Constants.INTERFACE));
+        Assertions.assertEquals("findPerson", lastStatistics.getParameter(Constants.METHOD));
+        Assertions.assertEquals("10.20.153.11", lastStatistics.getParameter(Constants.CONSUMER));
+        Assertions.assertEquals("1", lastStatistics.getParameter(Constants.SUCCESS));
+        Assertions.assertEquals("0", lastStatistics.getParameter(Constants.FAILURE));
+        Assertions.assertEquals("3", lastStatistics.getParameter(Constants.ELAPSED));
+        Assertions.assertEquals("3", lastStatistics.getParameter(Constants.MAX_ELAPSED));
+        Assertions.assertEquals("1", lastStatistics.getParameter(Constants.CONCURRENT));
+        Assertions.assertEquals("1", lastStatistics.getParameter(Constants.MAX_CONCURRENT));
         monitor.destroy();
     }
 
@@ -132,16 +133,16 @@ public class DubboMonitorTest {
     public void testMonitorFactory() throws Exception {
         MockMonitorService monitorService = new MockMonitorService();
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
-                .addParameter(MonitorService.APPLICATION, "morgan")
-                .addParameter(MonitorService.INTERFACE, "MemberService")
-                .addParameter(MonitorService.METHOD, "findPerson")
-                .addParameter(MonitorService.CONSUMER, "10.20.153.11")
-                .addParameter(MonitorService.SUCCESS, 1)
-                .addParameter(MonitorService.FAILURE, 0)
-                .addParameter(MonitorService.ELAPSED, 3)
-                .addParameter(MonitorService.MAX_ELAPSED, 3)
-                .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1)
+                .addParameter(Constants.APPLICATION, "morgan")
+                .addParameter(Constants.INTERFACE, "MemberService")
+                .addParameter(Constants.METHOD, "findPerson")
+                .addParameter(Constants.CONSUMER, "10.20.153.11")
+                .addParameter(Constants.SUCCESS, 1)
+                .addParameter(Constants.FAILURE, 0)
+                .addParameter(Constants.ELAPSED, 3)
+                .addParameter(Constants.MAX_ELAPSED, 3)
+                .addParameter(Constants.CONCURRENT, 1)
+                .addParameter(Constants.MAX_CONCURRENT, 1)
                 .build();
 
         Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -165,8 +166,8 @@ public class DubboMonitorTest {
                         Thread.sleep(10);
                     }
                     URL result = monitorService.getStatistics();
-                    Assertions.assertEquals(1, result.getParameter(MonitorService.SUCCESS, 0));
-                    Assertions.assertEquals(3, result.getParameter(MonitorService.ELAPSED, 0));
+                    Assertions.assertEquals(1, result.getParameter(Constants.SUCCESS, 0));
+                    Assertions.assertEquals(3, result.getParameter(Constants.ELAPSED, 0));
                 } finally {
                     monitor.destroy();
                 }
@@ -194,16 +195,16 @@ public class DubboMonitorTest {
     @Test
     public void testSum() {
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.11", 0)
-                .addParameter(MonitorService.APPLICATION, "morgan")
-                .addParameter(MonitorService.INTERFACE, "MemberService")
-                .addParameter(MonitorService.METHOD, "findPerson")
-                .addParameter(MonitorService.CONSUMER, "10.20.153.11")
-                .addParameter(MonitorService.SUCCESS, 1)
-                .addParameter(MonitorService.FAILURE, 0)
-                .addParameter(MonitorService.ELAPSED, 3)
-                .addParameter(MonitorService.MAX_ELAPSED, 3)
-                .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1)
+                .addParameter(Constants.APPLICATION, "morgan")
+                .addParameter(Constants.INTERFACE, "MemberService")
+                .addParameter(Constants.METHOD, "findPerson")
+                .addParameter(Constants.CONSUMER, "10.20.153.11")
+                .addParameter(Constants.SUCCESS, 1)
+                .addParameter(Constants.FAILURE, 0)
+                .addParameter(Constants.ELAPSED, 3)
+                .addParameter(Constants.MAX_ELAPSED, 3)
+                .addParameter(Constants.CONCURRENT, 1)
+                .addParameter(Constants.MAX_CONCURRENT, 1)
                 .build();
         Invoker invoker = mock(Invoker.class);
         MonitorService monitorService = mock(MonitorService.class);
@@ -212,9 +213,9 @@ public class DubboMonitorTest {
         DubboMonitor dubboMonitor = new DubboMonitor(invoker, monitorService);
 
         dubboMonitor.collect(statistics.toSerializableURL());
-        dubboMonitor.collect(statistics.addParameter(MonitorService.SUCCESS, 3).addParameter(MonitorService.CONCURRENT, 2)
-                .addParameter(MonitorService.INPUT, 1).addParameter(MonitorService.OUTPUT, 2).toSerializableURL());
-        dubboMonitor.collect(statistics.addParameter(MonitorService.SUCCESS, 6).addParameter(MonitorService.ELAPSED, 2).toSerializableURL());
+        dubboMonitor.collect(statistics.addParameter(Constants.SUCCESS, 3).addParameter(Constants.CONCURRENT, 2)
+                .addParameter(Constants.INPUT, 1).addParameter(Constants.OUTPUT, 2).toSerializableURL());
+        dubboMonitor.collect(statistics.addParameter(Constants.SUCCESS, 6).addParameter(Constants.ELAPSED, 2).toSerializableURL());
 
         dubboMonitor.send();
 
@@ -228,7 +229,7 @@ public class DubboMonitorTest {
             @Override
             public boolean matches(Object item) {
                 URL url = (URL) item;
-                return Integer.valueOf(url.getParameter(MonitorService.SUCCESS)) > 1;
+                return Integer.valueOf(url.getParameter(Constants.SUCCESS)) > 1;
             }
         }));
     }

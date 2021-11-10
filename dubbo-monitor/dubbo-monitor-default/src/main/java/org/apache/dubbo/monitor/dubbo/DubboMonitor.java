@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.monitor.Constants;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.rpc.Invoker;
@@ -61,14 +62,14 @@ public class DubboMonitor implements Monitor {
 
     private final MonitorService monitorService;
 
-    private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap = new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();
+    private final ConcurrentMap<Statistics, AtomicReference<StatisticsItem>> statisticsMap = new ConcurrentHashMap<>();
 
     public DubboMonitor(Invoker<MonitorService> monitorInvoker, MonitorService monitorService) {
         this.monitorInvoker = monitorInvoker;
         this.monitorService = monitorService;
         scheduledExecutorService = monitorInvoker.getUrl().getOrDefaultApplicationModel().getApplicationExecutorRepository().getSharedScheduledExecutor();
         // The time interval for timer <b>scheduledExecutorService</b> to send data
-        final long monitorInterval = monitorInvoker.getUrl().getPositiveParameter("interval", 60000);
+        final long monitorInterval = monitorInvoker.getUrl().getPositiveParameter(Constants.MONITOR_SEND_DATA_INTERVAL_KEY, Constants.DEFAULT_MONITOR_SEND_DATA_INTERVAL);
         // collect timer for collecting statistics data
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
@@ -86,59 +87,45 @@ public class DubboMonitor implements Monitor {
         }
 
         String timestamp = String.valueOf(System.currentTimeMillis());
-        for (Map.Entry<Statistics, AtomicReference<long[]>> entry : statisticsMap.entrySet()) {
+        for (Map.Entry<Statistics, AtomicReference<StatisticsItem>> entry : statisticsMap.entrySet()) {
             // get statistics data
             Statistics statistics = entry.getKey();
-            AtomicReference<long[]> reference = entry.getValue();
-            long[] numbers = reference.get();
-            long success = numbers[0];
-            long failure = numbers[1];
-            long input = numbers[2];
-            long output = numbers[3];
-            long elapsed = numbers[4];
-            long concurrent = numbers[5];
-            long maxInput = numbers[6];
-            long maxOutput = numbers[7];
-            long maxElapsed = numbers[8];
-            long maxConcurrent = numbers[9];
-            String protocol = getUrl().getParameter(DEFAULT_PROTOCOL);
+            AtomicReference<StatisticsItem> reference = entry.getValue();
+            StatisticsItem statisticsItem = reference.get();
 
             // send statistics data
             URL url = statistics.getUrl()
-                    .addParameters(MonitorService.TIMESTAMP, timestamp,
-                            MonitorService.SUCCESS, String.valueOf(success),
-                            MonitorService.FAILURE, String.valueOf(failure),
-                            MonitorService.INPUT, String.valueOf(input),
-                            MonitorService.OUTPUT, String.valueOf(output),
-                            MonitorService.ELAPSED, String.valueOf(elapsed),
-                            MonitorService.CONCURRENT, String.valueOf(concurrent),
-                            MonitorService.MAX_INPUT, String.valueOf(maxInput),
-                            MonitorService.MAX_OUTPUT, String.valueOf(maxOutput),
-                            MonitorService.MAX_ELAPSED, String.valueOf(maxElapsed),
-                            MonitorService.MAX_CONCURRENT, String.valueOf(maxConcurrent),
-                            DEFAULT_PROTOCOL, protocol
-                    );
+                .addParameters(Constants.TIMESTAMP, timestamp,
+                    Constants.SUCCESS, String.valueOf(statisticsItem.getSuccess()),
+                    Constants.FAILURE, String.valueOf(statisticsItem.getFailure()),
+                    Constants.INPUT, String.valueOf(statisticsItem.getInput()),
+                    Constants.OUTPUT, String.valueOf(statisticsItem.getOutput()),
+                    Constants.ELAPSED, String.valueOf(statisticsItem.getElapsed()),
+                    Constants.CONCURRENT, String.valueOf(statisticsItem.getConcurrent()),
+                    Constants.MAX_INPUT, String.valueOf(statisticsItem.getMaxInput()),
+                    Constants.MAX_OUTPUT, String.valueOf(statisticsItem.getMaxOutput()),
+                    Constants.MAX_ELAPSED, String.valueOf(statisticsItem.getMaxElapsed()),
+                    Constants.MAX_CONCURRENT, String.valueOf(statisticsItem.getMaxConcurrent()),
+                    DEFAULT_PROTOCOL, getUrl().getParameter(DEFAULT_PROTOCOL)
+                );
             monitorService.collect(url.toSerializableURL());
 
             // reset
-            long[] current;
-            long[] update = new long[LENGTH];
+            StatisticsItem current;
+            StatisticsItem update = new StatisticsItem();
             do {
                 current = reference.get();
                 if (current == null) {
-                    update[0] = 0;
-                    update[1] = 0;
-                    update[2] = 0;
-                    update[3] = 0;
-                    update[4] = 0;
-                    update[5] = 0;
+                    update.setItems(0, 0, 0, 0, 0, 0);
                 } else {
-                    update[0] = current[0] - success;
-                    update[1] = current[1] - failure;
-                    update[2] = current[2] - input;
-                    update[3] = current[3] - output;
-                    update[4] = current[4] - elapsed;
-                    update[5] = current[5] - concurrent;
+                    update.setItems(
+                        current.getSuccess() - statisticsItem.getSuccess(),
+                        current.getFailure() - statisticsItem.getFailure(),
+                        current.getInput() - statisticsItem.getInput(),
+                        current.getOutput() - statisticsItem.getOutput(),
+                        current.getElapsed() - statisticsItem.getElapsed(),
+                        current.getConcurrent() - statisticsItem.getConcurrent()
+                    );
                 }
             } while (!reference.compareAndSet(current, update));
         }
@@ -147,42 +134,35 @@ public class DubboMonitor implements Monitor {
     @Override
     public void collect(URL url) {
         // data to collect from url
-        int success = url.getParameter(MonitorService.SUCCESS, 0);
-        int failure = url.getParameter(MonitorService.FAILURE, 0);
-        int input = url.getParameter(MonitorService.INPUT, 0);
-        int output = url.getParameter(MonitorService.OUTPUT, 0);
-        int elapsed = url.getParameter(MonitorService.ELAPSED, 0);
-        int concurrent = url.getParameter(MonitorService.CONCURRENT, 0);
+        int success = url.getParameter(Constants.SUCCESS, 0);
+        int failure = url.getParameter(Constants.FAILURE, 0);
+        int input = url.getParameter(Constants.INPUT, 0);
+        int output = url.getParameter(Constants.OUTPUT, 0);
+        int elapsed = url.getParameter(Constants.ELAPSED, 0);
+        int concurrent = url.getParameter(Constants.CONCURRENT, 0);
         // init atomic reference
         Statistics statistics = new Statistics(url);
-        AtomicReference<long[]> reference = statisticsMap.computeIfAbsent(statistics, k -> new AtomicReference<>());
+        AtomicReference<StatisticsItem> reference = statisticsMap.computeIfAbsent(statistics, k -> new AtomicReference<>());
         // use CompareAndSet to sum
-        long[] current;
-        long[] update = new long[LENGTH];
+        StatisticsItem current;
+        StatisticsItem update = new StatisticsItem();
         do {
             current = reference.get();
             if (current == null) {
-                update[0] = success;
-                update[1] = failure;
-                update[2] = input;
-                update[3] = output;
-                update[4] = elapsed;
-                update[5] = concurrent;
-                update[6] = input;
-                update[7] = output;
-                update[8] = elapsed;
-                update[9] = concurrent;
+                update.setItems(success, failure, input, output, elapsed, concurrent, input, output, elapsed, concurrent);
             } else {
-                update[0] = current[0] + success;
-                update[1] = current[1] + failure;
-                update[2] = current[2] + input;
-                update[3] = current[3] + output;
-                update[4] = current[4] + elapsed;
-                update[5] = (current[5] + concurrent) / 2;
-                update[6] = current[6] > input ? current[6] : input;
-                update[7] = current[7] > output ? current[7] : output;
-                update[8] = current[8] > elapsed ? current[8] : elapsed;
-                update[9] = current[9] > concurrent ? current[9] : concurrent;
+                update.setItems(
+                    current.getSuccess() + success,
+                    current.getFailure() + failure,
+                    current.getInput() + input,
+                    current.getOutput() + output,
+                    current.getElapsed() + elapsed,
+                    (current.getConcurrent() + concurrent) / 2,
+                    current.getMaxInput() > input ? current.getMaxInput() : input,
+                    current.getMaxOutput() > output ? current.getMaxOutput() : output,
+                    current.getMaxElapsed() > elapsed ? current.getMaxElapsed() : elapsed,
+                    current.getMaxConcurrent() > concurrent ? current.getMaxConcurrent() : concurrent
+                );
             }
         } while (!reference.compareAndSet(current, update));
     }
