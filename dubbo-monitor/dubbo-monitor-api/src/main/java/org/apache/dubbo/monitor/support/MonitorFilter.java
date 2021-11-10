@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.monitor.Constants;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.rpc.Filter;
@@ -37,13 +36,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.monitor.Constants.CONCURRENT_KEY;
 import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
+import static org.apache.dubbo.monitor.Constants.ELAPSED_KEY;
+import static org.apache.dubbo.monitor.Constants.FAILURE_KEY;
+import static org.apache.dubbo.monitor.Constants.SUCCESS_KEY;
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
 import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 
@@ -185,12 +192,12 @@ public class MonitorFilter implements Filter, Filter.Listener {
         if (CONSUMER_SIDE.equals(invoker.getUrl().getSide())) {
             // ---- for service consumer ----
             localPort = 0;
-            remoteKey = Constants.PROVIDER;
+            remoteKey = PROVIDER;
             remoteValue = invoker.getUrl().getAddress();
         } else {
             // ---- for service provider ----
             localPort = invoker.getUrl().getPort();
-            remoteKey = Constants.CONSUMER;
+            remoteKey = CONSUMER;
             remoteValue = remoteHost;
         }
         String input = "", output = "";
@@ -203,13 +210,13 @@ public class MonitorFilter implements Filter, Filter.Listener {
 
         return new ServiceConfigURL(COUNT_PROTOCOL, NetUtils.getLocalHost(), localPort,
             service + PATH_SEPARATOR + method,
-            Constants.APPLICATION, application,
-            Constants.INTERFACE, service,
-            Constants.METHOD, method,
+            APPLICATION_KEY, application,
+            INTERFACE_KEY, service,
+            METHOD_KEY, method,
             remoteKey, remoteValue,
-            error ? Constants.FAILURE : Constants.SUCCESS, "1",
-            Constants.ELAPSED, String.valueOf(elapsed),
-            Constants.CONCURRENT, String.valueOf(concurrent),
+            error ? FAILURE_KEY : SUCCESS_KEY, "1",
+            ELAPSED_KEY, String.valueOf(elapsed),
+            CONCURRENT_KEY, String.valueOf(concurrent),
             INPUT_KEY, input,
             OUTPUT_KEY, output,
             GROUP_KEY, group,

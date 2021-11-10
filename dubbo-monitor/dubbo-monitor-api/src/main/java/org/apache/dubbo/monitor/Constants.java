@@ -30,11 +30,7 @@ public interface Constants {
 
     String SERVICE = "service";
 
-    String METHOD = "method";
-
     String DUBBO_GROUP = "dubbo";
-
-    String METRICS_KEY = "metrics";
 
     String LOGSTAT_PROTOCOL = "logstat";
 
@@ -44,37 +40,23 @@ public interface Constants {
 
     int DEFAULT_MONITOR_SEND_DATA_INTERVAL = 60000;
 
-    String APPLICATION = "application";
+    String SUCCESS_KEY = "success";
 
-    String INTERFACE = "interface";
+    String FAILURE_KEY = "failure";
 
-    String GROUP = "group";
+    String INPUT_KEY = "input";
 
-    String VERSION = "version";
+    String OUTPUT_KEY = "output";
 
-    String CONSUMER = "consumer";
+    String ELAPSED_KEY = "elapsed";
 
-    String PROVIDER = "provider";
+    String CONCURRENT_KEY = "concurrent";
 
-    String TIMESTAMP = "timestamp";
+    String MAX_INPUT_KEY = "max.input";
 
-    String SUCCESS = "success";
+    String MAX_OUTPUT_KEY = "max.output";
 
-    String FAILURE = "failure";
+    String MAX_ELAPSED_KEY = "max.elapsed";
 
-    String INPUT = INPUT_KEY;
-
-    String OUTPUT = OUTPUT_KEY;
-
-    String ELAPSED = "elapsed";
-
-    String CONCURRENT = "concurrent";
-
-    String MAX_INPUT = "max.input";
-
-    String MAX_OUTPUT = "max.output";
-
-    String MAX_ELAPSED = "max.elapsed";
-
-    String MAX_CONCURRENT = "max.concurrent";
+    String MAX_CONCURRENT_KEY = "max.concurrent";
 }

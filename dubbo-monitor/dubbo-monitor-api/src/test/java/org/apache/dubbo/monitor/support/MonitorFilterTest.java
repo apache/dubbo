@@ -18,7 +18,6 @@ package org.apache.dubbo.monitor.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.monitor.Constants;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
@@ -38,9 +37,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.monitor.Constants.CONCURRENT_KEY;
+import static org.apache.dubbo.monitor.Constants.FAILURE_KEY;
+import static org.apache.dubbo.monitor.Constants.SUCCESS_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -124,15 +130,15 @@ public class MonitorFilterTest {
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
-        Assertions.assertEquals("abc", lastStatistics.getParameter(Constants.APPLICATION));
-        Assertions.assertEquals(MonitorService.class.getName(), lastStatistics.getParameter(Constants.INTERFACE));
-        Assertions.assertEquals("aaa", lastStatistics.getParameter(Constants.METHOD));
-        Assertions.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(Constants.PROVIDER));
+        Assertions.assertEquals("abc", lastStatistics.getParameter(APPLICATION_KEY));
+        Assertions.assertEquals(MonitorService.class.getName(), lastStatistics.getParameter(INTERFACE_KEY));
+        Assertions.assertEquals("aaa", lastStatistics.getParameter(METHOD_KEY));
+        Assertions.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(PROVIDER));
         Assertions.assertEquals(NetUtils.getLocalHost(), lastStatistics.getAddress());
-        Assertions.assertNull(lastStatistics.getParameter(Constants.CONSUMER));
-        Assertions.assertEquals(1, lastStatistics.getParameter(Constants.SUCCESS, 0));
-        Assertions.assertEquals(0, lastStatistics.getParameter(Constants.FAILURE, 0));
-        Assertions.assertEquals(1, lastStatistics.getParameter(Constants.CONCURRENT, 0));
+        Assertions.assertNull(lastStatistics.getParameter(CONSUMER));
+        Assertions.assertEquals(1, lastStatistics.getParameter(SUCCESS_KEY, 0));
+        Assertions.assertEquals(0, lastStatistics.getParameter(FAILURE_KEY, 0));
+        Assertions.assertEquals(1, lastStatistics.getParameter(CONCURRENT_KEY, 0));
         Assertions.assertEquals(invocation, lastInvocation);
     }
 
@@ -167,15 +173,15 @@ public class MonitorFilterTest {
         while (lastStatistics == null) {
             Thread.sleep(10);
         }
-        Assertions.assertEquals("abc", lastStatistics.getParameter(Constants.APPLICATION));
-        Assertions.assertEquals(MonitorService.class.getName(), lastStatistics.getParameter(Constants.INTERFACE));
-        Assertions.assertEquals("xxx", lastStatistics.getParameter(Constants.METHOD));
-        Assertions.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(Constants.PROVIDER));
+        Assertions.assertEquals("abc", lastStatistics.getParameter(APPLICATION_KEY));
+        Assertions.assertEquals(MonitorService.class.getName(), lastStatistics.getParameter(INTERFACE_KEY));
+        Assertions.assertEquals("xxx", lastStatistics.getParameter(METHOD_KEY));
+        Assertions.assertEquals(NetUtils.getLocalHost() + ":20880", lastStatistics.getParameter(PROVIDER));
         Assertions.assertEquals(NetUtils.getLocalHost(), lastStatistics.getAddress());
-        Assertions.assertNull(lastStatistics.getParameter(Constants.CONSUMER));
-        Assertions.assertEquals(1, lastStatistics.getParameter(Constants.SUCCESS, 0));
-        Assertions.assertEquals(0, lastStatistics.getParameter(Constants.FAILURE, 0));
-        Assertions.assertEquals(1, lastStatistics.getParameter(Constants.CONCURRENT, 0));
+        Assertions.assertNull(lastStatistics.getParameter(CONSUMER));
+        Assertions.assertEquals(1, lastStatistics.getParameter(SUCCESS_KEY, 0));
+        Assertions.assertEquals(0, lastStatistics.getParameter(FAILURE_KEY, 0));
+        Assertions.assertEquals(1, lastStatistics.getParameter(CONCURRENT_KEY, 0));
         Assertions.assertEquals(invocation, lastInvocation);
     }
 

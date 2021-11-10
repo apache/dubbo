@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.monitor.Constants;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.rpc.Invoker;
@@ -35,6 +34,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.monitor.Constants.CONCURRENT_KEY;
+import static org.apache.dubbo.monitor.Constants.DEFAULT_MONITOR_SEND_DATA_INTERVAL;
+import static org.apache.dubbo.monitor.Constants.ELAPSED_KEY;
+import static org.apache.dubbo.monitor.Constants.FAILURE_KEY;
+import static org.apache.dubbo.monitor.Constants.INPUT_KEY;
+import static org.apache.dubbo.monitor.Constants.MAX_CONCURRENT_KEY;
+import static org.apache.dubbo.monitor.Constants.MAX_ELAPSED_KEY;
+import static org.apache.dubbo.monitor.Constants.MAX_INPUT_KEY;
+import static org.apache.dubbo.monitor.Constants.MAX_OUTPUT_KEY;
+import static org.apache.dubbo.monitor.Constants.MONITOR_SEND_DATA_INTERVAL_KEY;
+import static org.apache.dubbo.monitor.Constants.OUTPUT_KEY;
+import static org.apache.dubbo.monitor.Constants.SUCCESS_KEY;
 
 /**
  * DubboMonitor
@@ -42,11 +54,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL
 public class DubboMonitor implements Monitor {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboMonitor.class);
-
-    /**
-     * The length of the array which is a container of the statistics
-     */
-    private static final int LENGTH = 10;
 
     /**
      * The timer for sending statistics
@@ -69,7 +76,7 @@ public class DubboMonitor implements Monitor {
         this.monitorService = monitorService;
         scheduledExecutorService = monitorInvoker.getUrl().getOrDefaultApplicationModel().getApplicationExecutorRepository().getSharedScheduledExecutor();
         // The time interval for timer <b>scheduledExecutorService</b> to send data
-        final long monitorInterval = monitorInvoker.getUrl().getPositiveParameter(Constants.MONITOR_SEND_DATA_INTERVAL_KEY, Constants.DEFAULT_MONITOR_SEND_DATA_INTERVAL);
+        final long monitorInterval = monitorInvoker.getUrl().getPositiveParameter(MONITOR_SEND_DATA_INTERVAL_KEY, DEFAULT_MONITOR_SEND_DATA_INTERVAL);
         // collect timer for collecting statistics data
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
@@ -95,17 +102,17 @@ public class DubboMonitor implements Monitor {
 
             // send statistics data
             URL url = statistics.getUrl()
-                .addParameters(Constants.TIMESTAMP, timestamp,
-                    Constants.SUCCESS, String.valueOf(statisticsItem.getSuccess()),
-                    Constants.FAILURE, String.valueOf(statisticsItem.getFailure()),
-                    Constants.INPUT, String.valueOf(statisticsItem.getInput()),
-                    Constants.OUTPUT, String.valueOf(statisticsItem.getOutput()),
-                    Constants.ELAPSED, String.valueOf(statisticsItem.getElapsed()),
-                    Constants.CONCURRENT, String.valueOf(statisticsItem.getConcurrent()),
-                    Constants.MAX_INPUT, String.valueOf(statisticsItem.getMaxInput()),
-                    Constants.MAX_OUTPUT, String.valueOf(statisticsItem.getMaxOutput()),
-                    Constants.MAX_ELAPSED, String.valueOf(statisticsItem.getMaxElapsed()),
-                    Constants.MAX_CONCURRENT, String.valueOf(statisticsItem.getMaxConcurrent()),
+                .addParameters(TIMESTAMP_KEY, timestamp,
+                    SUCCESS_KEY, String.valueOf(statisticsItem.getSuccess()),
+                    FAILURE_KEY, String.valueOf(statisticsItem.getFailure()),
+                    INPUT_KEY, String.valueOf(statisticsItem.getInput()),
+                    OUTPUT_KEY, String.valueOf(statisticsItem.getOutput()),
+                    ELAPSED_KEY, String.valueOf(statisticsItem.getElapsed()),
+                    CONCURRENT_KEY, String.valueOf(statisticsItem.getConcurrent()),
+                    MAX_INPUT_KEY, String.valueOf(statisticsItem.getMaxInput()),
+                    MAX_OUTPUT_KEY, String.valueOf(statisticsItem.getMaxOutput()),
+                    MAX_ELAPSED_KEY, String.valueOf(statisticsItem.getMaxElapsed()),
+                    MAX_CONCURRENT_KEY, String.valueOf(statisticsItem.getMaxConcurrent()),
                     DEFAULT_PROTOCOL, getUrl().getParameter(DEFAULT_PROTOCOL)
                 );
             monitorService.collect(url.toSerializableURL());
@@ -134,12 +141,12 @@ public class DubboMonitor implements Monitor {
     @Override
     public void collect(URL url) {
         // data to collect from url
-        int success = url.getParameter(Constants.SUCCESS, 0);
-        int failure = url.getParameter(Constants.FAILURE, 0);
-        int input = url.getParameter(Constants.INPUT, 0);
-        int output = url.getParameter(Constants.OUTPUT, 0);
-        int elapsed = url.getParameter(Constants.ELAPSED, 0);
-        int concurrent = url.getParameter(Constants.CONCURRENT, 0);
+        int success = url.getParameter(SUCCESS_KEY, 0);
+        int failure = url.getParameter(FAILURE_KEY, 0);
+        int input = url.getParameter(INPUT_KEY, 0);
+        int output = url.getParameter(OUTPUT_KEY, 0);
+        int elapsed = url.getParameter(ELAPSED_KEY, 0);
+        int concurrent = url.getParameter(CONCURRENT_KEY, 0);
         // init atomic reference
         Statistics statistics = new Statistics(url);
         AtomicReference<StatisticsItem> reference = statisticsMap.computeIfAbsent(statistics, k -> new AtomicReference<>());
