@@ -46,9 +46,11 @@ public class SslContexts {
         SslContextBuilder sslClientContextBuilder = null;
         InputStream serverKeyCertChainPathStream = null;
         InputStream serverPrivateKeyPathStream = null;
+        InputStream serverTrustCertStream = null;
         try {
             serverKeyCertChainPathStream = sslConfig.getServerKeyCertChainPathStream();
             serverPrivateKeyPathStream = sslConfig.getServerPrivateKeyPathStream();
+            serverTrustCertStream = sslConfig.getServerTrustCertCollectionPathStream();
             String password = sslConfig.getServerKeyPassword();
             if (password != null) {
                 sslClientContextBuilder = SslContextBuilder.forServer(serverKeyCertChainPathStream,
@@ -58,8 +60,8 @@ public class SslContexts {
                         serverPrivateKeyPathStream);
             }
 
-            if (sslConfig.getServerTrustCertCollectionPathStream() != null) {
-                sslClientContextBuilder.trustManager(sslConfig.getServerTrustCertCollectionPathStream());
+            if (serverTrustCertStream != null) {
+                sslClientContextBuilder.trustManager(serverTrustCertStream);
                 sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
             }
             if (sslConfig.getCiphers() != null) {
@@ -74,6 +76,7 @@ public class SslContexts {
         }finally {
             safeCloseStream(serverKeyCertChainPathStream);
             safeCloseStream(serverPrivateKeyPathStream);
+            safeCloseStream(serverTrustCertStream);
         }
         try {
             return sslClientContextBuilder.sslProvider(findSslProvider()).build();
