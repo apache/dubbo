@@ -135,40 +135,46 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(ServiceModel serviceModel, Method method, String serviceName, String protocolServiceKey, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {
-        this(serviceModel, method.getName(), serviceName, protocolServiceKey, method.getParameterTypes(), arguments, attachment, null, attributes);
+        this(null, serviceModel, method.getName(), serviceName, protocolServiceKey, method.getParameterTypes(), arguments, attachment, null, attributes);
     }
 
     @Deprecated
     public RpcInvocation(Method method, String serviceName, String protocolServiceKey, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {
-        this(null, method.getName(), serviceName, protocolServiceKey, method.getParameterTypes(), arguments, attachment, null, attributes);
+        this(null, null, method.getName(), serviceName, protocolServiceKey, method.getParameterTypes(), arguments, attachment, null, attributes);
     }
 
     public RpcInvocation(ServiceModel serviceModel, String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments) {
-        this(serviceModel, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, null, null, null);
+        this(null, serviceModel, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, null, null, null);
     }
 
     @Deprecated
     public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments) {
-        this(null, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, null, null, null);
+        this(null, null, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, null, null, null);
     }
 
     public RpcInvocation(ServiceModel serviceModel, String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments) {
-        this(serviceModel, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, null, null);
+        this(null, serviceModel, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, null, null);
     }
 
     @Deprecated
     public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments) {
-        this(null, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, null, null);
+        this(null, null, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, null, null);
     }
 
     @Deprecated
     public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments,
                          Map<String, Object> attachments, Invoker<?> invoker, Map<Object, Object> attributes) {
-        this(null, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, invoker, attributes);
+        this(null, null, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, invoker, attributes);
     }
 
     public RpcInvocation(ServiceModel serviceModel, String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments,
                          Map<String, Object> attachments, Invoker<?> invoker, Map<Object, Object> attributes) {
+        this(null, serviceModel, methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, invoker, attributes);
+    }
+
+    public RpcInvocation(String targetServiceUniqueName, ServiceModel serviceModel, String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments,
+                         Map<String, Object> attachments, Invoker<?> invoker, Map<Object, Object> attributes) {
+        this.targetServiceUniqueName = targetServiceUniqueName;
         this.serviceModel = serviceModel;
         this.methodName = methodName;
         this.serviceName = serviceName;
