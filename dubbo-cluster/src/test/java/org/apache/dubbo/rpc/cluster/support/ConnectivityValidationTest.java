@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,8 +37,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -111,6 +115,11 @@ public class ConnectivityValidationTest {
         clusterInvoker = new ConnectivityClusterInvoker(directory);
     }
 
+    @AfterEach
+    public void tearDown() {
+        clusterInvoker.destroy();
+    }
+
     private void configInvoker(Invoker invoker) {
         when(invoker.getUrl()).thenReturn(URL.valueOf(""));
         when(invoker.isAvailable()).thenReturn(true);
@@ -145,26 +154,30 @@ public class ConnectivityValidationTest {
         Assertions.assertEquals(0, directory.list(invocation).size());
 
         when(invoker1.isAvailable()).thenReturn(true);
-        waitRefresh();
+        Set<Invoker> invokerSet = new HashSet<>();
+        invokerSet.add(invoker1);
+        waitRefresh(invokerSet);
         Assertions.assertEquals(1, directory.list(invocation).size());
         Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
 
         when(invoker2.isAvailable()).thenReturn(true);
-        waitRefresh();
+        invokerSet.add(invoker2);
+        waitRefresh(invokerSet);
         Assertions.assertEquals(2, directory.list(invocation).size());
         Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
 
         invokerList.remove(invoker5);
         directory.notify(invokerList);
         when(invoker2.isAvailable()).thenReturn(true);
-        waitRefresh();
+        waitRefresh(invokerSet);
         Assertions.assertEquals(2, directory.list(invocation).size());
         Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
 
         when(invoker3.isAvailable()).thenReturn(true);
         when(invoker4.isAvailable()).thenReturn(true);
-
-        waitRefresh();
+        invokerSet.add(invoker3);
+        invokerSet.add(invoker4);
+        waitRefresh(invokerSet);
         Assertions.assertEquals(4, directory.list(invocation).size());
         Assertions.assertNotNull(clusterInvoker.select(loadBalance, invocation, directory.list(invocation), Collections.emptyList()));
     }
@@ -186,7 +199,9 @@ public class ConnectivityValidationTest {
         Assertions.assertEquals(1, directory.list(invocation).size());
 
         when(invoker1.isAvailable()).thenReturn(true);
-        waitRefresh();
+        Set<Invoker> invokerSet = new HashSet<>();
+        invokerSet.add(invoker1);
+        waitRefresh(invokerSet);
         Assertions.assertEquals(2, directory.list(invocation).size());
     }
 
@@ -251,7 +266,23 @@ public class ConnectivityValidationTest {
         when(invoker14.isAvailable()).thenReturn(true);
         when(invoker15.isAvailable()).thenReturn(true);
 
-        waitRefresh();
+        Set<Invoker> invokerSet = new HashSet<>();
+        invokerSet.add(invoker1);
+        invokerSet.add(invoker2);
+        invokerSet.add(invoker3);
+        invokerSet.add(invoker4);
+        invokerSet.add(invoker5);
+        invokerSet.add(invoker6);
+        invokerSet.add(invoker7);
+        invokerSet.add(invoker8);
+        invokerSet.add(invoker9);
+        invokerSet.add(invoker10);
+        invokerSet.add(invoker11);
+        invokerSet.add(invoker12);
+        invokerSet.add(invoker13);
+        invokerSet.add(invoker14);
+        invokerSet.add(invoker15);
+        waitRefresh(invokerSet);
         Assertions.assertTrue(directory.list(invocation).size() > 1);
     }
 
@@ -271,15 +302,15 @@ public class ConnectivityValidationTest {
         }
     }
 
-    private void waitRefresh() throws InterruptedException {
-        ScheduledFuture future = directory.getConnectivityCheckFuture();
-        while (!future.isDone()) {
-            Thread.sleep(10);
-        }
+    private void waitRefresh(Set<Invoker> invokerSet) throws InterruptedException {
         directory.checkConnectivity();
-        future = directory.getConnectivityCheckFuture();
-        while (!future.isDone()) {
-            Thread.sleep(10);
+        while (true) {
+            List<Invoker> reconnectList = directory.getInvokersToReconnect();
+            if (reconnectList.stream().anyMatch(invoker -> invokerSet.contains(invoker))) {
+                Thread.sleep(10);
+                continue;
+            }
+            break;
         }
     }
 

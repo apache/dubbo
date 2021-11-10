@@ -34,6 +34,8 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
@@ -801,7 +803,8 @@ public class MultiInstanceTest {
                 .service(serviceConfig)
                 .asyncStart();
             logger.warn("provider app has start async");
-            Assertions.assertFalse(serviceConfig.getScopeModel().getDeployer().isStarted(), "Async export seems something wrong");
+            // it might be started if running on fast machine.
+            // Assertions.assertFalse(serviceConfig.getScopeModel().getDeployer().isStarted(), "Async export seems something wrong");
 
             // consumer app
             Future consumerFuture = consumerBootstrap
@@ -810,7 +813,8 @@ public class MultiInstanceTest {
                 .reference(referenceConfig)
                 .asyncStart();
             logger.warn("consumer app has start async");
-            Assertions.assertFalse(referenceConfig.getScopeModel().getDeployer().isStarted(), "Async refer seems something wrong");
+            // it might be started if running on fast machine.
+            // Assertions.assertFalse(referenceConfig.getScopeModel().getDeployer().isStarted(), "Async refer seems something wrong");
 
             // wait for provider app startup
             providerFuture.get();
@@ -824,6 +828,15 @@ public class MultiInstanceTest {
             logger.warn("consumer app is startup");
             Object target = referenceConfig.getServiceMetadata().getTarget();
             Assertions.assertNotNull(target);
+            // wait for invokers notified from registry
+            MigrationInvoker migrationInvoker = (MigrationInvoker) referenceConfig.getInvoker(); 
+            for (int i = 0; i < 10; i++) {
+                if (((List<Invoker>) migrationInvoker.getDirectory().getAllInvokers())
+                        .stream().anyMatch(invoker -> invoker.getInterface() == Greeting.class)) {
+                    break;
+                }
+                Thread.sleep(100);
+            }
             Greeting greetingService = (Greeting) target;
             String result = greetingService.hello();
             Assertions.assertEquals("local", result);

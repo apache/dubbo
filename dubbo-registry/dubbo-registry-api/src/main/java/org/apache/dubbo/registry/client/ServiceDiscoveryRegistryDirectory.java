@@ -204,9 +204,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         if (invokerUrls.size() == 0) {
             logger.info("Received empty url list...");
             this.forbidden = true; // Forbid to access
-            this.invokers = BitList.emptyList();
-            this.validInvokers = BitList.emptyList();
-            routerChain.setInvokers(this.invokers);
+            routerChain.setInvokers(BitList.emptyList());
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow accessing
@@ -214,12 +212,14 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
 
-            // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
+            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at destroyAllInvokers().
+            Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
+            // can't use local reference as oldUrlInvokerMap's mappings might be removed directly at toInvokers().
             Map<String, Invoker<T>> oldUrlInvokerMap = null;
-            if (this.urlInvokerMap != null) {
+            if (localUrlInvokerMap != null) {
                 // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
-                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + this.urlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
-                this.urlInvokerMap.forEach(oldUrlInvokerMap::put);
+                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
+                localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
             logger.info("Refreshed invoker size " + newUrlInvokerMap.size());
@@ -229,9 +229,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 return;
             }
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            this.invokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
+            this.setInvokers(multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers));
             // pre-route and build cache
-            routerChain.setInvokers(this.invokers);
+            routerChain.setInvokers(this.getInvokers());
             this.urlInvokerMap = newUrlInvokerMap;
 
             if (oldUrlInvokerMap != null) {
@@ -251,7 +251,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
      * Turn urls into invokers, and if url has been refer, will not re-reference.
      * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
-     * @param oldUrlInvokerMap
+     * @param oldUrlInvokerMap it might be modified during the process.
      * @param urls
      * @return invokers
      */
@@ -350,8 +350,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         this.urlInvokerMap = null;
-        this.invokers = null;
-        this.validInvokers = null;
+        this.destroyInvokers();
     }
 
     /**
