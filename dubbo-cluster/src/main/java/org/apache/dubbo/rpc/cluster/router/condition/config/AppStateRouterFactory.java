@@ -31,7 +31,7 @@ public class AppStateRouterFactory implements StateRouterFactory {
     private volatile StateRouter router;
 
     @Override
-    public StateRouter getRouter(URL url) {
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
         if (router != null) {
             return router;
         }
@@ -43,7 +43,7 @@ public class AppStateRouterFactory implements StateRouterFactory {
         return router;
     }
 
-    private StateRouter createRouter(URL url) {
-        return new AppStateRouter(url);
+    private <T> StateRouter<T> createRouter(URL url) {
+        return new AppStateRouter<>(url);
     }
 }

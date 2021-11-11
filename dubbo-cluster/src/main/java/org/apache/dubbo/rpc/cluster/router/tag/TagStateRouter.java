@@ -45,7 +45,7 @@ import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 /**
  * TagRouter, "application.tag-router"
  */
-public class TagStateRouter extends AbstractStateRouter implements ConfigurationListener {
+public class TagStateRouter<T> extends AbstractStateRouter<T> implements ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
     private static final int TAG_ROUTER_DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagStateRouter.class);
@@ -79,7 +79,7 @@ public class TagStateRouter extends AbstractStateRouter implements Configuration
     }
 
     @Override
-    public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
+    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
                                                    Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (CollectionUtils.isEmpty(invokers)) {
             return new StateRouterResult<>(invokers,
@@ -233,7 +233,7 @@ public class TagStateRouter extends AbstractStateRouter implements Configuration
     }
 
     @Override
-    public <T> void notify(BitList<Invoker<T>> invokers) {
+    public void notify(BitList<Invoker<T>> invokers) {
         if (CollectionUtils.isEmpty(invokers)) {
             return;
         }

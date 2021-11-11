@@ -30,5 +30,5 @@ public interface StateRouterFactory {
      * @since 3.0
      */
     @Adaptive("protocol")
-    StateRouter getRouter(URL url);
+    <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url);
 }

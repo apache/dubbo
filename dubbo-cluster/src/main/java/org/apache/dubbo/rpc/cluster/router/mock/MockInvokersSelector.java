@@ -32,13 +32,13 @@ import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
  * A specific Router designed to realize mock feature.
  * If a request is configured to use mock, then this router guarantees that only the invokers with protocol MOCK appear in final the invoker list, all other invokers will be excluded.
  */
-public class MockInvokersSelector extends AbstractStateRouter {
+public class MockInvokersSelector<T> extends AbstractStateRouter<T> {
 
     public static final String NAME = "MOCK_ROUTER";
     private static final int MOCK_INVOKERS_DEFAULT_PRIORITY = -100;
 
-    private volatile BitList normalInvokers = BitList.emptyList();
-    private volatile BitList mockedInvokers = BitList.emptyList();
+    private volatile BitList<Invoker<T>> normalInvokers = BitList.emptyList();
+    private volatile BitList<Invoker<T>> mockedInvokers = BitList.emptyList();
 
     public MockInvokersSelector(URL url) {
         super(url);
@@ -46,8 +46,7 @@ public class MockInvokersSelector extends AbstractStateRouter {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
+    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
                                                    Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (CollectionUtils.isEmpty(invokers)) {
             return new StateRouterResult<>(invokers,
@@ -72,22 +71,20 @@ public class MockInvokersSelector extends AbstractStateRouter {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public <T> void notify(BitList<Invoker<T>> invokers) {
-        cacheMockedInvokers((BitList) invokers);
-        cacheNormalInvokers((BitList) invokers);
+    public void notify(BitList<Invoker<T>> invokers) {
+        cacheMockedInvokers(invokers);
+        cacheNormalInvokers(invokers);
     }
 
-    @SuppressWarnings("rawtypes")
-    private void cacheMockedInvokers(BitList<Invoker> invokers) {
-        BitList<Invoker> clonedInvokers = invokers.clone();
+    private void cacheMockedInvokers(BitList<Invoker<T>> invokers) {
+        BitList<Invoker<T>> clonedInvokers = invokers.clone();
         clonedInvokers.removeIf((invoker) -> !invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL));
         mockedInvokers = clonedInvokers;
     }
 
     @SuppressWarnings("rawtypes")
-    private void cacheNormalInvokers(BitList<Invoker> invokers) {
-        BitList<Invoker> clonedInvokers = invokers.clone();
+    private void cacheNormalInvokers(BitList<Invoker<T>> invokers) {
+        BitList<Invoker<T>> clonedInvokers = invokers.clone();
         clonedInvokers.removeIf((invoker) -> invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL));
         normalInvokers = clonedInvokers;
     }

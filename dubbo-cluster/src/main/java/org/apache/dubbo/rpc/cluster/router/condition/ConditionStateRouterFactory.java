@@ -29,7 +29,7 @@ public class ConditionStateRouterFactory extends CacheableStateRouterFactory {
     public static final String NAME = "condition";
 
     @Override
-    protected StateRouter createRouter(URL url) {
-        return new ConditionStateRouter(url);
+    protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
+        return new ConditionStateRouter<T>(url);
     }
 }

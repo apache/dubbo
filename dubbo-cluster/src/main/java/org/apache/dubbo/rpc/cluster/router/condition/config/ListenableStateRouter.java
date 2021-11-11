@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 /**
  * Abstract router which listens to dynamic configuration
  */
-public abstract class ListenableStateRouter extends AbstractStateRouter implements ConfigurationListener {
+public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> implements ConfigurationListener {
     public static final String NAME = "LISTENABLE_ROUTER";
     private static final String RULE_SUFFIX = ".condition-router";
 
@@ -81,7 +81,7 @@ public abstract class ListenableStateRouter extends AbstractStateRouter implemen
     }
 
     @Override
-    public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
+    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
                                                    Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (CollectionUtils.isEmpty(invokers) || conditionRouters.size() == 0) {
             return new StateRouterResult<>(invokers,

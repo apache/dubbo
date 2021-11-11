@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URL;
 /**
  * Application level router, "application.condition-router"
  */
-public class AppStateRouter extends ListenableStateRouter {
+public class AppStateRouter<T> extends ListenableStateRouter<T> {
     public static final String NAME = "APP_ROUTER";
     /**
      * AppRouter should after ServiceRouter

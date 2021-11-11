@@ -29,8 +29,8 @@ public class MockStateRouterFactory implements StateRouterFactory {
     public static final String NAME = "mock";
 
     @Override
-    public StateRouter getRouter(URL url) {
-        return new MockInvokersSelector(url);
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        return new MockInvokersSelector<T>(url);
     }
 
 }

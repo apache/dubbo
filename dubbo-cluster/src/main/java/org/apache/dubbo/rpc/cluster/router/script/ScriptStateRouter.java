@@ -58,7 +58,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 /**
  * ScriptRouter
  */
-public class ScriptStateRouter extends AbstractStateRouter {
+public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
     public static final String NAME = "SCRIPT_ROUTER";
     private static final int SCRIPT_ROUTER_DEFAULT_PRIORITY = 0;
     private static final Logger logger = LoggerFactory.getLogger(ScriptStateRouter.class);
@@ -126,7 +126,7 @@ public class ScriptStateRouter extends AbstractStateRouter {
 
 
     @Override
-    public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
+    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
                                                    Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (engine == null || function == null) {
             return new StateRouterResult<>(invokers,
@@ -148,7 +148,7 @@ public class ScriptStateRouter extends AbstractStateRouter {
      * get routed invokers from result of script rule evaluation
      */
     @SuppressWarnings("unchecked")
-    protected <T> BitList<Invoker<T>> getRoutedInvokers(BitList<Invoker<T>> invokers, Object obj) {
+    protected BitList<Invoker<T>> getRoutedInvokers(BitList<Invoker<T>> invokers, Object obj) {
         BitList<Invoker<T>> result = invokers.clone();
         if (obj instanceof Invoker[]) {
             result.retainAll(Arrays.asList((Invoker<T>[]) obj));
@@ -163,7 +163,7 @@ public class ScriptStateRouter extends AbstractStateRouter {
     /**
      * create bindings for script engine
      */
-    private <T> Bindings createBindings(List<Invoker<T>> invokers, Invocation invocation) {
+    private Bindings createBindings(List<Invoker<T>> invokers, Invocation invocation) {
         Bindings bindings = engine.createBindings();
         // create a new List of invokers
         bindings.put("invokers", new ArrayList<>(invokers));

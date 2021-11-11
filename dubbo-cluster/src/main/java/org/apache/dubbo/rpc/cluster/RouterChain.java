@@ -60,14 +60,14 @@ public class RouterChain<T> {
      */
     private volatile List<Router> builtinRouters = Collections.emptyList();
 
-    private volatile List<StateRouter> builtinStateRouters = Collections.emptyList();
-    private volatile List<StateRouter> stateRouters = Collections.emptyList();
+    private volatile List<StateRouter<T>> builtinStateRouters = Collections.emptyList();
+    private volatile List<StateRouter<T>> stateRouters = Collections.emptyList();
 
-    public static <T> RouterChain<T> buildChain(URL url) {
-        return new RouterChain<>(url);
+    public static <T> RouterChain<T> buildChain(Class<T> interfaceClass, URL url) {
+        return new RouterChain<>(interfaceClass, url);
     }
 
-    private RouterChain(URL url) {
+    private RouterChain(Class<T> interfaceClass, URL url) {
         List<RouterFactory> extensionFactories = url.getOrDefaultApplicationModel().getExtensionLoader(RouterFactory.class)
             .getActivateExtension(url, ROUTER_KEY);
 
@@ -82,8 +82,8 @@ public class RouterChain<T> {
             .getExtensionLoader(StateRouterFactory.class)
             .getActivateExtension(url, ROUTER_KEY);
 
-        List<StateRouter> stateRouters = extensionStateRouterFactories.stream()
-            .map(factory -> factory.getRouter(url))
+        List<StateRouter<T>> stateRouters = extensionStateRouterFactories.stream()
+            .map(factory -> factory.getRouter(interfaceClass, url))
             .sorted(StateRouter::compareTo)
             .collect(Collectors.toList());
 
@@ -104,12 +104,12 @@ public class RouterChain<T> {
      * the resident routers must being initialized before address notification.
      * only for ut
      */
-    public void initWithStateRouters(List<StateRouter> builtinRouters) {
+    public void initWithStateRouters(List<StateRouter<T>> builtinRouters) {
         this.builtinStateRouters = builtinRouters;
         setStateRouters(builtinStateRouters);
     }
 
-    private void setStateRouters(List<StateRouter> stateRouters) {
+    private void setStateRouters(List<StateRouter<T>> stateRouters) {
         this.stateRouters = new ArrayList<>(stateRouters);
     }
 
@@ -129,8 +129,8 @@ public class RouterChain<T> {
         this.routers = newRouters;
     }
 
-    public void addStateRouters(List<StateRouter> stateRouters) {
-        List<StateRouter> newStateRouters = new ArrayList<>();
+    public void addStateRouters(List<StateRouter<T>> stateRouters) {
+        List<StateRouter<T>> newStateRouters = new ArrayList<>();
         newStateRouters.addAll(builtinStateRouters);
         newStateRouters.addAll(stateRouters);
         CollectionUtils.sort(newStateRouters);
@@ -141,7 +141,7 @@ public class RouterChain<T> {
         return routers;
     }
 
-    public List<StateRouter> getStateRouters() {
+    public List<StateRouter<T>> getStateRouters() {
         return stateRouters;
     }
 
@@ -155,7 +155,7 @@ public class RouterChain<T> {
         BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
 
         // 1. route state router
-        for (StateRouter stateRouter : stateRouters) {
+        for (StateRouter<T> stateRouter : stateRouters) {
             StateRouterResult<Invoker<T>> routeResult = stateRouter.route(resultInvokers, url, invocation, false);
             resultInvokers = routeResult.getResult();
             if (resultInvokers.isEmpty()) {

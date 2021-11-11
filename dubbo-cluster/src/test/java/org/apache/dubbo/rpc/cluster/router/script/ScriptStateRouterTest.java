@@ -52,7 +52,7 @@ public class ScriptStateRouterTest {
 
     @Test
     public void testRouteReturnAll() {
-        StateRouter router = new ScriptStateRouterFactory().getRouter(getRouteUrl("function route(op1,op2){return op1} route(invokers)"));
+        StateRouter router = new ScriptStateRouterFactory().getRouter(String.class, getRouteUrl("function route(op1,op2){return op1} route(invokers)"));
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         originInvokers.add(new MockInvoker<String>());
         originInvokers.add(new MockInvoker<String>());
@@ -73,7 +73,7 @@ public class ScriptStateRouterTest {
                 "} ; " +
                 "return result;";
         String script = "function route(invokers,invocation,context){" + rule + "} route(invokers,invocation,context)";
-        StateRouter router = new ScriptStateRouterFactory().getRouter(getRouteUrl(script));
+        StateRouter router = new ScriptStateRouterFactory().getRouter(String.class, getRouteUrl(script));
 
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
         Invoker<String> invoker1 = new MockInvoker<String>(false);
@@ -114,7 +114,7 @@ public class ScriptStateRouterTest {
                 "} " +
                 "route(invokers, invocation, context) ";
 
-        StateRouter router = new ScriptStateRouterFactory().getRouter(getRouteUrl(script));
+        StateRouter router = new ScriptStateRouterFactory().getRouter(String.class, getRouteUrl(script));
         List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
         Assertions.assertEquals(1, routeResult.size());
         Assertions.assertEquals(invoker2, routeResult.get(0));
@@ -132,7 +132,7 @@ public class ScriptStateRouterTest {
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
 
         String script = "/";
-        StateRouter router = new ScriptStateRouterFactory().getRouter(getRouteUrl(script));
+        StateRouter router = new ScriptStateRouterFactory().getRouter(String.class, getRouteUrl(script));
         List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
         Assertions.assertEquals(3, routeResult.size());
     }

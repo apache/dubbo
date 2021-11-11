@@ -46,7 +46,7 @@ public class RouterChainTest {
             DemoService.class.getName(),
             parameters);
 
-        RouterChain<DemoService> routerChain = RouterChain.buildChain(url);
+        RouterChain<DemoService> routerChain = RouterChain.buildChain(DemoService.class, url);
         Assertions.assertEquals(1, routerChain.getRouters().size());
         Assertions.assertEquals(4, routerChain.getStateRouters().size());
     }

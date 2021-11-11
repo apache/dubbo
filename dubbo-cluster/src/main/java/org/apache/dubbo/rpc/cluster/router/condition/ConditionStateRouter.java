@@ -58,7 +58,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
  * and {@link AppStateRouter}
  * refer to https://dubbo.apache.org/zh/docs/v2.7/user/examples/routing-rule/ .
  */
-public class ConditionStateRouter extends AbstractStateRouter {
+public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
     public static final String NAME = "condition";
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionStateRouter.class);
@@ -179,7 +179,7 @@ public class ConditionStateRouter extends AbstractStateRouter {
     }
 
     @Override
-    public <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
+    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
                                                    Invocation invocation, boolean needToPrintMessage) throws RpcException {
 
         if (!enabled) {

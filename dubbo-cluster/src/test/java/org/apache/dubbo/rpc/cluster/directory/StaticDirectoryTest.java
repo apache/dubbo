@@ -45,7 +45,7 @@ public class StaticDirectoryTest {
 
     @Test
     public void testStaticDirectory() {
-        StateRouter router = new ConditionStateRouterFactory().getRouter(getRouteUrl(" => " + " host = " + NetUtils.getLocalHost()));
+        StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl(" => " + " host = " + NetUtils.getLocalHost()));
         List<StateRouter> routers = new ArrayList<StateRouter>();
         routers.add(router);
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();

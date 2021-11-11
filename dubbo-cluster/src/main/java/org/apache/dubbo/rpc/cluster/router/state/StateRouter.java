@@ -31,7 +31,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
  * @see Directory#list(Invocation)
  * @since 3.0
  */
-public interface StateRouter extends Comparable<StateRouter> {
+public interface StateRouter<T> extends Comparable<StateRouter<T>> {
 
     int DEFAULT_PRIORITY = Integer.MAX_VALUE;
 
@@ -53,7 +53,7 @@ public interface StateRouter extends Comparable<StateRouter> {
      * @return state with route result
      * @since 3.0
      */
-    <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+    StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
                                             boolean needToPrintMessage) throws RpcException;
 
     /**
@@ -86,7 +86,7 @@ public interface StateRouter extends Comparable<StateRouter> {
      *
      * @param invokers invoker list
      */
-    <T> void notify(BitList<Invoker<T>> invokers);
+    void notify(BitList<Invoker<T>> invokers);
 
     @Override
     default int compareTo(StateRouter o) {
