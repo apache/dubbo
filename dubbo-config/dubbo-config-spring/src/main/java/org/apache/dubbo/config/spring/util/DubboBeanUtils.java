@@ -167,7 +167,7 @@ public interface DubboBeanUtils {
 
     static boolean checkBeanExists(ConfigurableListableBeanFactory beanFactory, Class<?> targetClass) {
         String[] beanNames = beanFactory.getBeanNamesForType(targetClass, true, false);
-        return (beanNames != null && beanNames.length > 0);
+        return beanNames.length > 0;
     }
 
 
