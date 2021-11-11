@@ -68,6 +68,14 @@ public class InvokeTelnetTest {
     }
 
     @Test
+    public void testInvokeWithoutServicePrefixAndWithoutDefaultService() throws RemotingException {
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
+        String result = invoke.execute(mockCommandContext, new String[]{"echo(\"ok\")"});
+        assertTrue(result.contains("If you want to invoke like [invoke sayHello(\"xxxx\")], please execute cd command first," +
+            " or you can execute it like [invoke IHelloService.sayHello(\"xxxx\")]"));
+    }
+
+    @Test
     public void testInvokeDefaultService() throws RemotingException {
         defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
