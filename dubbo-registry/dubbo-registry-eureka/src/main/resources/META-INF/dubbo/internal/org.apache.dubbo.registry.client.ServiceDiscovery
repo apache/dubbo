@@ -1,0 +1,1 @@
+eureka=org.apache.dubbo.registry.eureka.EurekaServiceDiscovery

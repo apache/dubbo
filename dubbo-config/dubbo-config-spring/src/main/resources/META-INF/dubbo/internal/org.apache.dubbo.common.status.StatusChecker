@@ -1,0 +1,2 @@
+spring=org.apache.dubbo.config.spring.status.SpringStatusChecker
+datasource=org.apache.dubbo.config.spring.status.DataSourceStatusChecker

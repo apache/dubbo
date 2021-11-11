@@ -1,0 +1,2 @@
+consumersign=org.apache.dubbo.auth.filter.ConsumerSignFilter
+providerauth=org.apache.dubbo.auth.filter.ProviderAuthFilter

@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<dataset>
-  <users id="1" username="test1" password="50bda5cce0cc4c3cd6eb90b0191b9a23" enabled="1" role="A" creator="ff" service_privilege="com.alibaba.crm.*" />
-   <users id="2" username="test2" password="xx2" enabled="0" role="M" creator="ff" service_privilege="org.esb.*"  />
-</dataset>

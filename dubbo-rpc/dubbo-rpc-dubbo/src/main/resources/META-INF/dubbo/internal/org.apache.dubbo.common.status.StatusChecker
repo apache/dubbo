@@ -1,0 +1,2 @@
+server=org.apache.dubbo.rpc.protocol.dubbo.status.ServerStatusChecker
+threadpool=org.apache.dubbo.rpc.protocol.dubbo.status.ThreadPoolStatusChecker

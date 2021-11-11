@@ -1,8 +1,24 @@
-namespace dubbo_java com.alibaba.dubbo.rpc.gen.dubbo
-namespace dubbo_cpp  com.alibaba.dubbo.rpc.gen.dubbo
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+namespace dubbo_java org.apache.dubbo.rpc.gen.dubbo
+namespace dubbo_cpp  org.apache.dubbo.rpc.gen.dubbo
 
-namespace java com.alibaba.dubbo.rpc.gen.thrift
-namespace cpp  com.alibaba.dubbo.rpc.gen.thrift
+namespace java org.apache.dubbo.rpc.gen.thrift
+namespace cpp  org.apache.dubbo.rpc.gen.thrift
 
 service Demo {
     bool echoBool( 1:required bool arg );

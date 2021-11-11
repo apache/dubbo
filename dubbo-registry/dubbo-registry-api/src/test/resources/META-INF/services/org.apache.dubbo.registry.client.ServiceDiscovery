@@ -1,0 +1,1 @@
+in-memory=org.apache.dubbo.registry.client.InMemoryServiceDiscovery

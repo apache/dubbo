@@ -1,0 +1,1 @@
+zookeeper=org.apache.dubbo.metadata.store.zookeeper.ZookeeperMetadataReportFactory

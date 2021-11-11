@@ -1,0 +1,4 @@
+array=org.apache.dubbo.metadata.definition.builder.ArrayTypeBuilder
+collection=org.apache.dubbo.metadata.definition.builder.CollectionTypeBuilder
+map=org.apache.dubbo.metadata.definition.builder.MapTypeBuilder
+enum=org.apache.dubbo.metadata.definition.builder.EnumTypeBuilder

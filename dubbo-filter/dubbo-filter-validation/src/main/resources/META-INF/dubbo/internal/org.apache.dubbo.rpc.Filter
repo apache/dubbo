@@ -1,0 +1,1 @@
+validation=org.apache.dubbo.validation.filter.ValidationFilter

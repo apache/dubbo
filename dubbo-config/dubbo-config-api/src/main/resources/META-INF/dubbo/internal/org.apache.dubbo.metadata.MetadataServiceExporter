@@ -1,0 +1,2 @@
+# since 2.7.8
+local = org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter

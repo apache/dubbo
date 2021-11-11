@@ -1,0 +1,3 @@
+wrapper1=org.apache.dubbo.common.extension.activate.impl.ActivateWrapperExt1Wrapper
+extImp1=org.apache.dubbo.common.extension.activate.impl.ActivateWrapperExt1Impl1
+extImp2=org.apache.dubbo.common.extension.activate.impl.ActivateWrapperExt1Impl2

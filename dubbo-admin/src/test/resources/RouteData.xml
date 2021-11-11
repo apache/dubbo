@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<dataset>
-	<routes  id="1" parent_id="0"  name="r1" match_rule="service=com.alibaba.service1&amp;service!=service2&amp;consumer.version=1.0.0" filter_rule="provider.version=1.0.2&amp;provider.version!=1.0.6"
-	enabled="1"	priority="10" username="chjr"/>
-	<routes  id="2" parent_id="0"  name="r2" match_rule="service=com.alibaba.service66&amp;service!=service44&amp;consumer.version=1.0.0&amp;consumer.version!=1.0.10" filter_rule="provider.version=1.0.2&amp;provider.version!=1.0.6"
-	enabled="1"	priority="100" username="chjr2"/>
-	<routes  id="3" parent_id="0"  name="r3" match_rule="service!=service2&amp;consumer.version=1.0.0" filter_rule="provider.version=1.0.2&amp;provider.version!=1.0.6"
-	enabled="0"	priority="10" username="chjr3"/>
-</dataset>

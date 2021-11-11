@@ -1,0 +1,3 @@
+java.lang.String
+java.lang.StringBuilder
+org.apache.dubbo.common.utils.DefaultCharSequence

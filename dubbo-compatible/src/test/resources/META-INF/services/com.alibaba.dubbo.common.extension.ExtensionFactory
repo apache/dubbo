@@ -1,0 +1,1 @@
+myfactory=org.apache.dubbo.common.extension.MyExtensionFactory

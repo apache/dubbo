@@ -1,0 +1,1 @@
+native-hessian=org.apache.dubbo.serialize.hessian.Hessian2Serialization
