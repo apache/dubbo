@@ -50,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -613,10 +614,16 @@ public class NacosRegistry extends FailbackRegistry {
     }
 
     private class RegistryChildListenerImpl implements EventListener {
-        private RegistryNotifier notifier;
+        private final RegistryNotifier notifier;
+
+        private final String serviceName;
+
+        private final URL consumerUrl;
 
         public RegistryChildListenerImpl(String serviceName, URL consumerUrl, NotifyListener listener) {
-            notifier = new RegistryNotifier(getUrl(), NacosRegistry.this.getDelay()) {
+            this.serviceName = serviceName;
+            this.consumerUrl = consumerUrl;
+            this.notifier = new RegistryNotifier(getUrl(), NacosRegistry.this.getDelay()) {
                 @Override
                 protected void doNotify(Object rawAddresses) {
                     List<Instance> instances = (List<Instance>) rawAddresses;
@@ -639,6 +646,23 @@ public class NacosRegistry extends FailbackRegistry {
                 NamingEvent e = (NamingEvent) event;
                 notifier.notify(e.getInstances());
             }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            RegistryChildListenerImpl that = (RegistryChildListenerImpl) o;
+            return Objects.equals(serviceName, that.serviceName) && Objects.equals(consumerUrl, that.consumerUrl);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(serviceName, consumerUrl);
         }
     }
 
