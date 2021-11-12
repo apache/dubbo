@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 
 /**
- * tri internal  service like grpc internal service
+ * tri internal service like grpc internal service
  **/
 public class TriBuiltinService {
 

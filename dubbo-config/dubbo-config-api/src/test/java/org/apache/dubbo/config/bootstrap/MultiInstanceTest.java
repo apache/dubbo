@@ -34,14 +34,15 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
-import org.apache.dubbo.registrycenter.RegistryCenter;
-import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
+import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.test.check.DubboTestChecker;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -63,8 +64,6 @@ public class MultiInstanceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(MultiInstanceTest.class);
 
-    private static ZookeeperSingleRegistryCenter registryCenter;
-
     private static RegistryConfig registryConfig;
 
     private static DubboTestChecker testChecker;
@@ -73,13 +72,7 @@ public class MultiInstanceTest {
     @BeforeAll
     public static void beforeAll() {
         FrameworkModel.destroyAll();
-        registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
-        registryCenter.startup();
-        RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
-        registryConfig = new RegistryConfig(String.format("%s://%s:%s",
-            instance.getType(),
-            instance.getHostname(),
-            instance.getPort()));
+        registryConfig = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress1());
 
         // pre-check threads
         //precheckUnclosedThreads();
@@ -87,7 +80,6 @@ public class MultiInstanceTest {
 
     @AfterAll
     public static void afterAll() throws Exception {
-        registryCenter.shutdown();
         FrameworkModel.destroyAll();
 
         // check threads
@@ -321,7 +313,6 @@ public class MultiInstanceTest {
 
         DubboBootstrap providerBootstrap1 = null;
         DubboBootstrap providerBootstrap2 = null;
-        ZookeeperSingleRegistryCenter registryCenter2 = null;
 
         try {
 
@@ -349,13 +340,7 @@ public class MultiInstanceTest {
             Assertions.assertTrue(stackTraces1.size() > 0, "Get threads of provider app 1 failed");
 
             // start zk server 2
-            registryCenter2 = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
-            registryCenter2.startup();
-            RegistryCenter.Instance instance = registryCenter2.getRegistryCenterInstance().get(0);
-            RegistryConfig registryConfig2 = new RegistryConfig(String.format("%s://%s:%s",
-                instance.getType(),
-                instance.getHostname(),
-                instance.getPort()));
+            RegistryConfig registryConfig2 = new RegistryConfig(ZookeeperRegistryCenterConfig.getConnectionAddress2());
 
             // start provider app 2 use a difference zk server 2
             ServiceConfig serviceConfig2 = new ServiceConfig();
@@ -388,7 +373,6 @@ public class MultiInstanceTest {
             // stop provider app 2 and check threads
             providerBootstrap2.stop();
             // shutdown register center after dubbo application to avoid unregister services blocking
-            registryCenter2.shutdown();
             checkUnclosedThreadsOfApp(stackTraces2, "Found unclosed threads of app 2: ", null);
 
         } finally {
@@ -397,9 +381,6 @@ public class MultiInstanceTest {
             }
             if (providerBootstrap2 != null) {
                 providerBootstrap2.stop();
-            }
-            if (registryCenter2 != null) {
-                registryCenter2.shutdown();
             }
         }
     }
@@ -822,7 +803,8 @@ public class MultiInstanceTest {
                 .service(serviceConfig)
                 .asyncStart();
             logger.warn("provider app has start async");
-            Assertions.assertFalse(serviceConfig.getScopeModel().getDeployer().isStarted(), "Async export seems something wrong");
+            // it might be started if running on fast machine.
+            // Assertions.assertFalse(serviceConfig.getScopeModel().getDeployer().isStarted(), "Async export seems something wrong");
 
             // consumer app
             Future consumerFuture = consumerBootstrap
@@ -831,7 +813,8 @@ public class MultiInstanceTest {
                 .reference(referenceConfig)
                 .asyncStart();
             logger.warn("consumer app has start async");
-            Assertions.assertFalse(referenceConfig.getScopeModel().getDeployer().isStarted(), "Async refer seems something wrong");
+            // it might be started if running on fast machine.
+            // Assertions.assertFalse(referenceConfig.getScopeModel().getDeployer().isStarted(), "Async refer seems something wrong");
 
             // wait for provider app startup
             providerFuture.get();
@@ -845,6 +828,15 @@ public class MultiInstanceTest {
             logger.warn("consumer app is startup");
             Object target = referenceConfig.getServiceMetadata().getTarget();
             Assertions.assertNotNull(target);
+            // wait for invokers notified from registry
+            MigrationInvoker migrationInvoker = (MigrationInvoker) referenceConfig.getInvoker(); 
+            for (int i = 0; i < 10; i++) {
+                if (((List<Invoker>) migrationInvoker.getDirectory().getAllInvokers())
+                        .stream().anyMatch(invoker -> invoker.getInterface() == Greeting.class)) {
+                    break;
+                }
+                Thread.sleep(100);
+            }
             Greeting greetingService = (Greeting) target;
             String result = greetingService.hello();
             Assertions.assertEquals("local", result);

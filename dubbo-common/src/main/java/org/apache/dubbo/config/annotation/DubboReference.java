@@ -269,8 +269,8 @@ public @interface DubboReference {
     String[] parameters() default {};
 
     /**
-     * Application associated name
-     * @deprecated Do not set it and use the global Application Config
+     * Application name
+     * @deprecated This attribute was deprecated, use bind application/module of spring ApplicationContext
      */
     @Deprecated
     String application() default "";

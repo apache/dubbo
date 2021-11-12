@@ -30,6 +30,7 @@ import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 
 import com.google.gson.Gson;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -108,6 +109,8 @@ public class ServiceInstancesChangedListenerTest {
 
     static ServiceDiscovery serviceDiscovery;
 
+    ServiceInstancesChangedListener listener = null;
+
     @BeforeAll
     public static void setUp() {
         List<Object> urlsSameRevision = new ArrayList<>();
@@ -154,6 +157,14 @@ public class ServiceInstancesChangedListenerTest {
         serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
     }
 
+    @AfterEach
+    public void tearDown() {
+        if (listener != null) {
+            listener.destroy();
+            listener = null;
+        }
+    }
+
     // 正常场景。单应用app1 通知地址基本流程，只做instance-metadata关联，没有metadata内容的解析
     @Test
     @Order(1)
@@ -161,7 +172,8 @@ public class ServiceInstancesChangedListenerTest {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
         ServiceDiscovery serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
-        ServiceInstancesChangedListener spyListener = Mockito.spy(new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        ServiceInstancesChangedListener spyListener = Mockito.spy(listener);
         Mockito.doReturn(metadataInfo_111).when(spyListener).getRemoteMetadata(eq("111"), Mockito.anyMap(), Mockito.any());
         ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1Instances);
         spyListener.onEvent(event);
@@ -189,7 +201,7 @@ public class ServiceInstancesChangedListenerTest {
     public void testInstanceNotificationAndMetadataParse() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
-        ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
 
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
             mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
@@ -222,7 +234,7 @@ public class ServiceInstancesChangedListenerTest {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
         serviceNames.add("app2");
-        ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
 
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
             mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
@@ -264,7 +276,7 @@ public class ServiceInstancesChangedListenerTest {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
         serviceNames.add("app2");
-        ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
 
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
             mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
@@ -328,7 +340,7 @@ public class ServiceInstancesChangedListenerTest {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
         serviceNames.add("app2");
-        ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
         NotifyListener demoServiceListener = Mockito.mock(NotifyListener.class);
         NotifyListener demoService2Listener = Mockito.mock(NotifyListener.class);
         listener.addListenerAndNotify(service1 + ":dubbo", demoServiceListener);
@@ -377,7 +389,7 @@ public class ServiceInstancesChangedListenerTest {
     public void testRevisionFailureOnStartup() {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
-        ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
         try (MockedStatic<MetadataUtils> mockedMetadataUtils = Mockito.mockStatic(MetadataUtils.class)) {
             mockedMetadataUtils.when(() -> MetadataUtils.getMetadataServiceProxy(Mockito.any())).thenReturn(metadataService);
             // notify app1 instance change
@@ -403,7 +415,7 @@ public class ServiceInstancesChangedListenerTest {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
         serviceNames.add("app2");
-        ServiceInstancesChangedListener listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
 
         ConcurrentMap tmpProxyMap = MetadataUtils.metadataServiceProxies;
 
@@ -477,7 +489,8 @@ public class ServiceInstancesChangedListenerTest {
         Set<String> serviceNames = new HashSet<>();
         serviceNames.add("app1");
         ServiceDiscovery serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
-        ServiceInstancesChangedListener spyListener = Mockito.spy(new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
+        listener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+        ServiceInstancesChangedListener spyListener = Mockito.spy(listener);
         Mockito.doReturn(null).when(spyListener).getRemoteMetadata(eq(null), Mockito.anyMap(), Mockito.any());
         ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1InstancesWithNoRevision);
         spyListener.onEvent(event);

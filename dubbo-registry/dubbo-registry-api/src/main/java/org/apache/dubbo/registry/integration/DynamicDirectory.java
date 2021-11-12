@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -175,7 +174,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         }
 
         if (multiGroup) {
-            return this.invokers == null ? BitList.emptyList() : this.invokers;
+            return this.getInvokers();
         }
 
         try {
@@ -195,7 +194,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     @Override
     public List<Invoker<T>> getAllInvokers() {
-        return this.invokers == null ? Collections.emptyList() : this.invokers;
+        return this.getInvokers();
     }
 
     /**
@@ -253,17 +252,13 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.setRouterChain(RouterChain.buildChain(url));
     }
 
-    public List<Invoker<T>> getInvokers() {
-        return invokers;
-    }
-
     @Override
     public boolean isAvailable() {
         if (isDestroyed() || this.forbidden) {
             return false;
         }
-        return CollectionUtils.isNotEmpty(validInvokers)
-            && validInvokers.stream().anyMatch(Invoker::isAvailable);
+        return CollectionUtils.isNotEmpty(getValidInvokers())
+            && getValidInvokers().stream().anyMatch(Invoker::isAvailable);
     }
 
     @Override

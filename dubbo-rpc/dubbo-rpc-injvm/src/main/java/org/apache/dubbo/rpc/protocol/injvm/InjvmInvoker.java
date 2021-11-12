@@ -149,7 +149,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
         String methodName = invocation.getMethodName();
         if(CommonConstants.$INVOKE.equals(methodName)) {
             // generic invoke, skip copy arguments
-            RpcInvocation copiedInvocation = new RpcInvocation(providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
+            RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
+                providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                 invocation.getParameterTypes(), invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
                 invocation.getInvoker(), invocation.getAttributes());
             copiedInvocation.setInvoker(invoker);
@@ -177,7 +178,8 @@ public class InjvmInvoker<T> extends AbstractInvoker<T> {
                     realArgument = args;
                 }
 
-                RpcInvocation copiedInvocation = new RpcInvocation(providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
+                RpcInvocation copiedInvocation = new RpcInvocation(invocation.getTargetServiceUniqueName(),
+                    providerServiceModel, methodName, invocation.getServiceName(), invocation.getProtocolServiceKey(),
                     pts, realArgument, new HashMap<>(invocation.getObjectAttachments()),
                     invocation.getInvoker(), invocation.getAttributes());
                 copiedInvocation.setInvoker(invoker);

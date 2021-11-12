@@ -129,12 +129,12 @@ class URL implements Serializable {
 
     private transient String serviceKey;
     private transient String protocolServiceKey;
-    protected final Map<String, Object> attributes;
+    protected volatile Map<String, Object> attributes;
 
     protected URL() {
         this.urlAddress = null;
         this.urlParam = null;
-        this.attributes = new HashMap<>();
+        this.attributes = null;
     }
 
     public URL(URLAddress urlAddress, URLParam urlParam) {
@@ -144,7 +144,7 @@ class URL implements Serializable {
     public URL(URLAddress urlAddress, URLParam urlParam, Map<String, Object> attributes) {
         this.urlAddress = urlAddress;
         this.urlParam = urlParam;
-        this.attributes = (attributes != null ? attributes : new HashMap<>());
+        this.attributes = (attributes != null ? attributes.isEmpty() ? null : attributes : null);
     }
 
     public URL(String protocol, String host, int port) {
@@ -193,7 +193,7 @@ class URL implements Serializable {
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
         this.urlParam = URLParam.parse(parameters);
-        this.attributes = new HashMap<>();
+        this.attributes = null;
     }
 
     protected URL(String protocol,
@@ -211,7 +211,7 @@ class URL implements Serializable {
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
         this.urlParam = URLParam.parse(parameters);
-        this.attributes = new HashMap<>();
+        this.attributes = null;
     }
 
     public static URL cacheableValueOf(String url) {
@@ -1515,9 +1515,14 @@ class URL implements Serializable {
         return configuration;
     }
 
+    private volatile int hashCodeCache = -1;
+
     @Override
     public int hashCode() {
-        return Objects.hash(urlAddress, urlParam);
+        if (hashCodeCache == -1) {
+            hashCodeCache = Objects.hash(urlAddress, urlParam);
+        }
+        return hashCodeCache;
     }
 
     @Override
@@ -1609,35 +1614,42 @@ class URL implements Serializable {
 
     /* Service Config URL, START*/
     public Map<String, Object> getAttributes() {
-        return attributes;
+        return attributes == null ? Collections.emptyMap() : attributes;
     }
 
     public URL addAttributes(Map<String, Object> attributes) {
-        attributes.putAll(attributes);
+        if (attributes != null) {
+            attributes.putAll(attributes);
+        }
         return this;
     }
 
     public Object getAttribute(String key) {
-        return attributes.get(key);
+        return attributes == null ? null : attributes.get(key);
     }
 
     public Object getAttribute(String key, Object defaultValue) {
-        Object val = attributes.get(key);
+        Object val = attributes == null ? null : attributes.get(key);
         return val != null ? val : defaultValue;
     }
 
     public URL putAttribute(String key, Object obj) {
+        if (attributes == null) {
+            this.attributes = new HashMap<>();
+        }
         attributes.put(key, obj);
         return this;
     }
 
     public URL removeAttribute(String key) {
-        attributes.remove(key);
+        if (attributes != null) {
+            attributes.remove(key);
+        }
         return this;
     }
 
     public boolean hasAttribute(String key) {
-        return attributes.containsKey(key);
+        return attributes != null && attributes.containsKey(key);
     }
 
     /* Service Config URL, END*/
