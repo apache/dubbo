@@ -123,7 +123,7 @@ public class InvokeTelnetTest {
 
     @Test
     public void testInvokeByPassingEnumValue() throws RemotingException {
-        defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(null);
+        defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
         defaultAttributeMap.attr(SelectTelnet.SELECT_KEY).set(null);
 
         given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
