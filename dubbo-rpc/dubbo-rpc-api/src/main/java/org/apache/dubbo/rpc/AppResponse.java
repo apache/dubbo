@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.rpc.proxy.InvokerInvocationHandler;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -80,7 +78,7 @@ public class AppResponse implements Result {
         if (exception != null) {
             // fix issue#619
             try {
-                Object stackTrace = InvokerInvocationHandler.stackTraceField.get(exception);
+                Object stackTrace = exception.getStackTrace();
                 if (stackTrace == null) {
                     exception.setStackTrace(new StackTraceElement[0]);
                 }
