@@ -27,6 +27,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.SslConfig;
@@ -37,6 +39,7 @@ import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerInterceptor;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerTransportFilter;
 
 import javax.net.ssl.SSLException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +63,8 @@ import static org.apache.dubbo.rpc.protocol.grpc.GrpcConstants.TRANSPORT_FILTERS
  * Support gRPC configs in a Dubbo specific way.
  */
 public class GrpcOptionsUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(GrpcOptionsUtils.class);
 
     static ServerBuilder buildServerBuilder(URL url, NettyServerBuilder builder) {
 
@@ -155,23 +160,32 @@ public class GrpcOptionsUtils {
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder sslClientContextBuilder = null;
+        InputStream serverKeyCertChainPathStream = null;
+        InputStream serverPrivateKeyPathStream = null;
+        InputStream trustCertCollectionFilePath = null;
         try {
+            serverKeyCertChainPathStream = sslConfig.getServerKeyCertChainPathStream();
+            serverPrivateKeyPathStream = sslConfig.getServerPrivateKeyPathStream();
             String password = sslConfig.getServerKeyPassword();
             if (password != null) {
-                sslClientContextBuilder = GrpcSslContexts.forServer(sslConfig.getServerKeyCertChainPathStream(),
-                        sslConfig.getServerPrivateKeyPathStream(), password);
+                sslClientContextBuilder = GrpcSslContexts.forServer(serverKeyCertChainPathStream,
+                    serverPrivateKeyPathStream, password);
             } else {
-                sslClientContextBuilder = GrpcSslContexts.forServer(sslConfig.getServerKeyCertChainPathStream(),
-                        sslConfig.getServerPrivateKeyPathStream());
+                sslClientContextBuilder = GrpcSslContexts.forServer(serverKeyCertChainPathStream,
+                    serverPrivateKeyPathStream);
             }
 
-            InputStream trustCertCollectionFilePath = sslConfig.getServerTrustCertCollectionPathStream();
+            trustCertCollectionFilePath = sslConfig.getServerTrustCertCollectionPathStream();
             if (trustCertCollectionFilePath != null) {
                 sslClientContextBuilder.trustManager(trustCertCollectionFilePath);
                 sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or the certificate is invalid.", e);
+        } finally {
+            safeCloseStream(trustCertCollectionFilePath);
+            safeCloseStream(serverKeyCertChainPathStream);
+            safeCloseStream(serverPrivateKeyPathStream);
         }
         try {
             return sslClientContextBuilder.build();
@@ -186,13 +200,16 @@ public class GrpcOptionsUtils {
 
 
         SslContextBuilder builder = GrpcSslContexts.forClient();
+        InputStream trustCertCollectionFilePath = null;
+        InputStream clientCertChainFilePath = null;
+        InputStream clientPrivateKeyFilePath = null;
         try {
-            InputStream trustCertCollectionFilePath = sslConfig.getClientTrustCertCollectionPathStream();
+            trustCertCollectionFilePath = sslConfig.getClientTrustCertCollectionPathStream();
             if (trustCertCollectionFilePath != null) {
                 builder.trustManager(trustCertCollectionFilePath);
             }
-            InputStream clientCertChainFilePath = sslConfig.getClientKeyCertChainPathStream();
-            InputStream clientPrivateKeyFilePath = sslConfig.getClientPrivateKeyPathStream();
+            clientCertChainFilePath = sslConfig.getClientKeyCertChainPathStream();
+            clientPrivateKeyFilePath = sslConfig.getClientPrivateKeyPathStream();
             if (clientCertChainFilePath != null && clientPrivateKeyFilePath != null) {
                 String password = sslConfig.getClientKeyPassword();
                 if (password != null) {
@@ -203,6 +220,10 @@ public class GrpcOptionsUtils {
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or find invalid certificate.", e);
+        } finally {
+            safeCloseStream(trustCertCollectionFilePath);
+            safeCloseStream(clientCertChainFilePath);
+            safeCloseStream(clientPrivateKeyFilePath);
         }
         try {
             return builder.build();
@@ -219,5 +240,16 @@ public class GrpcOptionsUtils {
             return Optional.of(configurators.iterator().next());
         }
         return Optional.empty();
+    }
+
+    private static void safeCloseStream(InputStream stream) {
+        if (stream == null) {
+            return;
+        }
+        try {
+            stream.close();
+        } catch (IOException e) {
+            logger.warn("Failed to close a stream.", e);
+        }
     }
 }

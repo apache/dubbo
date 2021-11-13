@@ -695,21 +695,22 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 }
             }
 
-            String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
-
-            String appGroup = getApplication().getName();
-            String appConfigContent = null;
-            if (isNotEmpty(appGroup)) {
-                appConfigContent = dynamicConfiguration.getProperties
-                    (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                        appGroup
-                    );
-            }
-            try {
-                environment.updateExternalConfigMap(parseProperties(configContent));
-                environment.updateAppExternalConfigMap(parseProperties(appConfigContent));
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
+            if (StringUtils.isNotEmpty(configCenter.getConfigFile())) {
+                String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
+                String appGroup = getApplication().getName();
+                String appConfigContent = null;
+                if (isNotEmpty(appGroup)) {
+                    appConfigContent = dynamicConfiguration.getProperties
+                        (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
+                            appGroup
+                        );
+                }
+                try {
+                    environment.updateExternalConfigMap(parseProperties(configContent));
+                    environment.updateAppExternalConfigMap(parseProperties(appConfigContent));
+                } catch (IOException e) {
+                    throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
+                }
             }
             return dynamicConfiguration;
         }

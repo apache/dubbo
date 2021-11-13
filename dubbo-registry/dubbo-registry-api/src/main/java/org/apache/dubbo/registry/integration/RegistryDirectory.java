@@ -203,9 +203,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 && invokerUrls.get(0) != null
                 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
-            this.invokers = BitList.emptyList();
-            this.validInvokers = BitList.emptyList();
-            routerChain.setInvokers(this.invokers);
+            routerChain.setInvokers(BitList.emptyList());
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
@@ -213,22 +211,27 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
             }
-            if (invokerUrls.isEmpty() && this.cachedInvokerUrls != null) {
-                invokerUrls.addAll(this.cachedInvokerUrls);
+            // use local reference to avoid NPE as this.cachedInvokerUrls will be set null by destroyAllInvokers().
+            Set<URL> localCachedInvokerUrls = this.cachedInvokerUrls;
+            if (invokerUrls.isEmpty() && localCachedInvokerUrls != null) {
+                invokerUrls.addAll(localCachedInvokerUrls);
             } else {
-                this.cachedInvokerUrls = new HashSet<>();
-                this.cachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
+                localCachedInvokerUrls = new HashSet<>();
+                localCachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
+                this.cachedInvokerUrls = localCachedInvokerUrls;
             }
             if (invokerUrls.isEmpty()) {
                 return;
             }
-            
-            // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
+
+            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at destroyAllInvokers().
+            Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
+            // can't use local reference as oldUrlInvokerMap's mappings might be removed directly at toInvokers().
             Map<URL, Invoker<T>> oldUrlInvokerMap = null;
-            if (this.urlInvokerMap != null) {
+            if (localUrlInvokerMap != null) {
                 // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
-                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + this.urlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
-                this.urlInvokerMap.forEach(oldUrlInvokerMap::put);
+                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
+                localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
             Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
 
@@ -247,9 +250,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
 
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            this.invokers = multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers);
+            this.setInvokers(multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers));
             // pre-route and build cache
-            routerChain.setInvokers(this.invokers);
+            routerChain.setInvokers(this.getInvokers());
             this.urlInvokerMap = newUrlInvokerMap;
 
             try {
@@ -322,7 +325,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      * Turn urls into invokers, and if url has been refer, will not re-reference.
      * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
-     * @param oldUrlInvokerMap     
+     * @param oldUrlInvokerMap it might be modified during the process.
      * @param urls
      * @return invokers
      */
@@ -485,9 +488,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
             localUrlInvokerMap.clear();
         }
-        invokers = null;
-        validInvokers = null;
-        cachedInvokerUrls = null;
+
+        this.urlInvokerMap = null;
+        this.cachedInvokerUrls = null;
+        destroyInvokers();
     }
 
     private void destroyUnusedInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, Map<URL, Invoker<T>> newUrlInvokerMap) {
@@ -524,7 +528,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public List<Invoker<T>> getAllInvokers() {
-        return this.invokers == null ? Collections.emptyList() : this.invokers;
+        return this.getInvokers();
     }
 
     @Override
