@@ -46,6 +46,10 @@ public class MetricsFilter implements Filter, ScopeModelAware {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        if (collector == null || !collector.isCollectEnabled()) {
+            return invoker.invoke(invocation);
+        }
+
         String serviceUniqueName = invocation.getTargetServiceUniqueName();
         String methodName = invocation.getMethodName();
         String parameterTypesDesc = ReflectUtils.getDesc(invocation.getParameterTypes());
@@ -59,8 +63,9 @@ public class MetricsFilter implements Filter, ScopeModelAware {
             interfaceAndVersion = arr[0];
         }
 
-        String interfaceName = interfaceAndVersion.split(":")[0];
-        String version = interfaceAndVersion.split(":")[1];
+        String[] ivArr = interfaceAndVersion.split(":");
+        String interfaceName = ivArr[0];
+        String version = ivArr.length == 2 ? ivArr[1] : null;
         collector.increaseTotalRequests(interfaceName, methodName, parameterTypesDesc, group, version);
         collector.increaseProcessingRequests(interfaceName, methodName, parameterTypesDesc, group, version);
 
