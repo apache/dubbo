@@ -71,7 +71,7 @@ public class ZookeeperConfig implements Config {
     /**
      * The default admin server ports of zookeeper.
      */
-    private static final int[] DEFAULT_ADMIN_SERVER_PORTS = new int[]{8081, 8082};
+    private static final int[] DEFAULT_ADMIN_SERVER_PORTS = new int[]{18081, 18082};
 
     /**
      * The default version of zookeeper.
