@@ -89,7 +89,7 @@ public class InjvmDeepCopyTest {
         applicationModel.destroy();
     }
 
-    public interface DemoInterface {
+    interface DemoInterface {
         Data call(Data obj);
     }
 

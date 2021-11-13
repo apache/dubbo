@@ -18,20 +18,18 @@ package org.apache.dubbo.common.bytecode;
 
 import org.apache.dubbo.common.utils.ReflectUtils;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.MAX_PROXY_COUNT;
@@ -41,22 +39,20 @@ import static org.apache.dubbo.common.constants.CommonConstants.MAX_PROXY_COUNT;
  */
 
 public class Proxy {
-    public static final InvocationHandler RETURN_NULL_INVOKER = (proxy, method, args) -> null;
     public static final InvocationHandler THROW_UNSUPPORTED_INVOKER = new InvocationHandler() {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) {
             throw new UnsupportedOperationException("Method [" + ReflectUtils.getName(method) + "] unimplemented.");
         }
     };
+
     private static final AtomicLong PROXY_CLASS_COUNTER = new AtomicLong(0);
-    private static final String PACKAGE_NAME = Proxy.class.getPackage().getName();
-    private static final Map<ClassLoader, Map<String, Object>> PROXY_CACHE_MAP = new WeakHashMap<ClassLoader, Map<String, Object>>();
-    // cache class, avoid PermGen OOM.
-    private static final Map<ClassLoader, Map<String, Object>> PROXY_CLASS_MAP = new WeakHashMap<ClassLoader, Map<String, Object>>();
+    private static final Map<ClassLoader, Map<String, Proxy>> PROXY_CACHE_MAP = new WeakHashMap<>();
 
-    private static final Object PENDING_GENERATION_MARKER = new Object();
+    private final Class<?> classToCreate;
 
-    protected Proxy() {
+    protected Proxy(Class<?> classToCreate) {
+        this.classToCreate = classToCreate;
     }
 
     /**
@@ -72,114 +68,76 @@ public class Proxy {
 
         // ClassLoader from App Interface should support load some class from Dubbo
         ClassLoader cl = ics[0].getClassLoader();
-        ClassLoader appClassLoader = ics[0].getClassLoader();
         ProtectionDomain domain = ics[0].getProtectionDomain();
 
+        // use interface class name list as key.
+        String key = buildInterfacesKey(cl, ics);
+
+        // get cache by class loader.
+        final Map<String, Proxy> cache;
+        synchronized (PROXY_CACHE_MAP) {
+            cache = PROXY_CACHE_MAP.computeIfAbsent(cl, k -> new ConcurrentHashMap<>());
+        }
+
+        Proxy proxy = cache.get(key);
+        if (proxy == null) {
+            synchronized (ics[0]) {
+                proxy = cache.get(key);
+                if (proxy == null) {
+                    // create Proxy class.
+                    proxy = new Proxy(buildProxyClass(cl, ics, domain));
+                    cache.put(key, proxy);
+                }
+            }
+        }
+        return proxy;
+    }
+
+    private static String buildInterfacesKey(ClassLoader cl, Class<?>[] ics) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < ics.length; i++) {
-            String itf = ics[i].getName();
-            if (!ics[i].isInterface()) {
+        for (Class<?> ic : ics) {
+            String itf = ic.getName();
+            if (!ic.isInterface()) {
                 throw new RuntimeException(itf + " is not a interface.");
             }
 
             Class<?> tmp = null;
             try {
                 tmp = Class.forName(itf, false, cl);
-            } catch (ClassNotFoundException e) {
+            } catch (ClassNotFoundException ignore) {
             }
 
-            if (tmp != ics[i]) {
-                throw new IllegalArgumentException(ics[i] + " is not visible from class loader");
+            if (tmp != ic) {
+                throw new IllegalArgumentException(ic + " is not visible from class loader");
             }
 
             sb.append(itf).append(';');
         }
+        return sb.toString();
+    }
 
-        // use interface class name list as key.
-        String key = sb.toString();
-
-        // get cache by class loader.
-        final Map<String, Object> cache;
-        // cache class
-        final Map<String, Object> classCache;
-        synchronized (PROXY_CACHE_MAP) {
-            cache = PROXY_CACHE_MAP.computeIfAbsent(cl, k -> new HashMap<>());
-            classCache = PROXY_CLASS_MAP.computeIfAbsent(cl, k -> new HashMap<>());
-        }
-
-        Proxy proxy = null;
-        synchronized (cache) {
-            do {
-                Object value = cache.get(key);
-                if (value instanceof Reference<?>) {
-                    proxy = (Proxy) ((Reference<?>) value).get();
-                    if (proxy != null) {
-                        return proxy;
-                    }
-                }
-
-                // get Class by key.
-                Object clazzObj = classCache.get(key);
-                if (null == clazzObj || clazzObj instanceof Reference<?>) {
-                    Class<?> clazz = null;
-                    if (clazzObj instanceof Reference<?>) {
-                        clazz = (Class<?>) ((Reference<?>) clazzObj).get();
-                    }
-
-                    if (null == clazz) {
-                        if (value == PENDING_GENERATION_MARKER) {
-                            try {
-                                cache.wait();
-                            } catch (InterruptedException e) {
-                            }
-                        } else {
-                            cache.put(key, PENDING_GENERATION_MARKER);
-                            break;
-                        }
-                    } else {
-                        try {
-                            proxy = new Proxy();
-                            proxy.setClassToCreate(clazz);
-                            return proxy;
-                        } finally {
-                            if (null == proxy) {
-                                cache.remove(key);
-                            } else {
-                                cache.put(key, new SoftReference<>(proxy));
-                            }
-                        }
-                    }
-                }
-            }
-            while (true);
-        }
-
-        long id = PROXY_CLASS_COUNTER.getAndIncrement();
-        String pkg = null;
-        ClassGenerator ccp = null, ccm = null;
-        Class<?> neighbor = null;
+    private static Class<?> buildProxyClass(ClassLoader cl, Class<?>[] ics, ProtectionDomain domain) {
+        ClassGenerator ccp = null;
         try {
             ccp = ClassGenerator.newInstance(cl);
 
             Set<String> worked = new HashSet<>();
             List<Method> methods = new ArrayList<>();
 
-            for (int i = 0; i < ics.length; i++) {
-                String npkg = ics[i].getPackage().getName();
-                if (pkg == null) {
-                    pkg = npkg;
-                    neighbor = ics[i];
-                } else {
-                    if (!Modifier.isPublic(ics[i].getModifiers())) {
-                        if (!pkg.equals(npkg)) {
-                            throw new IllegalArgumentException("non-public interfaces from different packages");
-                        }
+            String pkg = ics[0].getPackage().getName();
+            Class<?> neighbor = ics[0];
+
+            for (Class<?> ic : ics) {
+                String npkg = ic.getPackage().getName();
+                if (!Modifier.isPublic(ic.getModifiers())) {
+                    if (!pkg.equals(npkg)) {
+                        throw new IllegalArgumentException("non-public interfaces from different packages");
                     }
                 }
 
-                ccp.addInterface(ics[i]);
+                ccp.addInterface(ic);
 
-                for (Method method : ics[i].getMethods()) {
+                for (Method method : ic.getMethods()) {
                     String desc = ReflectUtils.getDesc(method);
                     if (worked.contains(desc) || Modifier.isStatic(method.getModifiers())) {
                         continue;
@@ -204,28 +162,16 @@ public class Proxy {
                 }
             }
 
-            if (pkg == null) {
-                pkg = PACKAGE_NAME;
-                neighbor = Proxy.class;
-            }
-
             // create ProxyInstance class.
-            String pcn = pkg + ".proxy" + id;
+            String pcn = neighbor.getName() + "DubboProxy" + PROXY_CLASS_COUNTER.getAndIncrement();
             ccp.setClassName(pcn);
             ccp.addField("public static java.lang.reflect.Method[] methods;");
             ccp.addField("private " + InvocationHandler.class.getName() + " handler;");
-            ccp.addConstructor(Modifier.PUBLIC, new Class<?>[] {InvocationHandler.class}, new Class<?>[0], "handler=$1;");
+            ccp.addConstructor(Modifier.PUBLIC, new Class<?>[]{InvocationHandler.class}, new Class<?>[0], "handler=$1;");
             ccp.addDefaultConstructor();
-            Class<?> clazz = ccp.toClass(neighbor, appClassLoader, domain);
+            Class<?> clazz = ccp.toClass(neighbor, cl, domain);
             clazz.getField("methods").set(null, methods.toArray(new Method[0]));
-
-            // create Proxy class.
-            proxy = new Proxy();
-            proxy.setClassToCreate(clazz);
-
-            synchronized (classCache) {
-                classCache.put(key, new SoftReference<Class<?>>(clazz));
-            }
+            return clazz;
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -235,19 +181,7 @@ public class Proxy {
             if (ccp != null) {
                 ccp.release();
             }
-            if (ccm != null) {
-                ccm.release();
-            }
-            synchronized (cache) {
-                if (proxy == null) {
-                    cache.remove(key);
-                } else {
-                    cache.put(key, new SoftReference<Proxy>(proxy));
-                }
-                cache.notifyAll();
-            }
         }
-        return proxy;
     }
 
     private static String asArgument(Class<?> cl, String name) {
@@ -290,8 +224,6 @@ public class Proxy {
         return newInstance(THROW_UNSUPPORTED_INVOKER);
     }
 
-    public Class<?> classToCreate = null;
-
     /**
      * get instance with special handler.
      *
@@ -307,7 +239,7 @@ public class Proxy {
         }
     }
 
-    public void setClassToCreate(Class<?> classToCreate) {
-        this.classToCreate = classToCreate;
+    public Class<?> getClassToCreate() {
+        return classToCreate;
     }
 }

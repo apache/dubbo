@@ -151,8 +151,8 @@ public abstract class Wrapper {
                 continue;
             }
 
-            c1.append(" if( $2.equals(\"").append(fn).append("\") ){ ((" + f.getDeclaringClass().getName() + ")w).").append(fn).append('=').append(arg(ft, "$3")).append("; return; }");
-            c2.append(" if( $2.equals(\"").append(fn).append("\") ){ return ($w)((" + f.getDeclaringClass().getName() + ")w).").append(fn).append("; }");
+            c1.append(" if( $2.equals(\"").append(fn).append("\") ){ ((").append(f.getDeclaringClass().getName()).append(")w).").append(fn).append('=').append(arg(ft, "$3")).append("; return; }");
+            c2.append(" if( $2.equals(\"").append(fn).append("\") ){ return ($w)((").append(f.getDeclaringClass().getName()).append(")w).").append(fn).append("; }");
             pts.put(fn, ft);
         }
 
@@ -226,7 +226,7 @@ public abstract class Wrapper {
             c3.append(" }");
         }
 
-        c3.append(" throw new " + NoSuchMethodException.class.getName() + "(\"Not found method \\\"\"+$2+\"\\\" in class " + c.getName() + ".\"); }");
+        c3.append(" throw new ").append(NoSuchMethodException.class.getName()).append("(\"Not found method \\\"\"+$2+\"\\\" in class ").append(c.getName()).append(".\"); }");
 
         // deal with get/set method.
         Matcher matcher;
@@ -248,14 +248,13 @@ public abstract class Wrapper {
                 pts.put(pn, pt);
             }
         }
-        c1.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
-        c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or getter method in class " + c.getName() + ".\"); }");
+        c1.append(" throw new ").append(NoSuchPropertyException.class.getName()).append("(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class ").append(c.getName()).append(".\"); }");
+        c2.append(" throw new ").append(NoSuchPropertyException.class.getName()).append("(\"Not found property \\\"\"+$2+\"\\\" field or getter method in class ").append(c.getName()).append(".\"); }");
 
         // make class
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();
         ClassGenerator cc = ClassGenerator.newInstance(cl);
-        Class<?> neighborClass = Modifier.isPublic(c.getModifiers()) ? c : Wrapper.class;
-        cc.setClassName((Modifier.isPublic(c.getModifiers()) ? c.getName() : Wrapper.class.getName() + "$sw") + "DubboWrap" + id);
+        cc.setClassName(c.getName() + "DubboWrap" + id);
         cc.setSuperClass(Wrapper.class);
 
         cc.addDefaultConstructor();
@@ -277,7 +276,7 @@ public abstract class Wrapper {
         cc.addMethod(c3.toString());
 
         try {
-            Class<?> wc = cc.toClass(neighborClass);
+            Class<?> wc = cc.toClass(c);
             // setup static field.
             wc.getField("pts").set(null, pts);
             wc.getField("pns").set(null, pts.keySet().toArray(new String[0]));

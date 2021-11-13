@@ -281,15 +281,15 @@ public class ArgumentCallbackTest {
         }
     }
 
-    public interface IDemoCallback {
+    interface IDemoCallback {
         String yyy(String msg);
     }
 
-    public interface IHelloService {
+    interface IHelloService {
         String sayHello();
     }
 
-    public interface IDemoService {
+    interface IDemoService {
         String get();
 
         int getCallbackCount();
