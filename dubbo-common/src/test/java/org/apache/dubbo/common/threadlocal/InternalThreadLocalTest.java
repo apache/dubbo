@@ -18,6 +18,7 @@
 package org.apache.dubbo.common.threadlocal;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
@@ -32,6 +33,11 @@ public class InternalThreadLocalTest {
     private static final int PERFORMANCE_THREAD_COUNT = 1000;
 
     private static final int GET_COUNT = 1000000;
+
+    @BeforeEach
+    public void setup() {
+        InternalThreadLocalMap.remove();
+    }
 
     @Test
     public void testInternalThreadLocal() throws InterruptedException {
