@@ -228,11 +228,6 @@ public class ReferenceCreatorTest {
             return new NotifyService();
         }
 
-        @Bean(DubboSpringInitializer.MODULE_MODEL_BEAN_NAME)
-        public ModuleModel moduleModel() {
-            return ApplicationModel.defaultModel().getDefaultModule();
-        }
-
         @Bean(CONSUMER_CONFIG_ID)
         public ConsumerConfig consumerConfig() {
             return new ConsumerConfig();
