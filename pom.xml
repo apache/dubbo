@@ -88,14 +88,14 @@
 
     <properties>
         <!-- Test libs -->
-        <junit_jupiter_version>5.6.0</junit_jupiter_version>
+        <junit_jupiter_version>5.8.1</junit_jupiter_version>
         <hazelcast_version>3.11.1</hazelcast_version>
         <hamcrest_version>2.2</hamcrest_version>
         <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
         <el_api_version>2.2.4</el_api_version>
         <jaxb_api_version>2.2.7</jaxb_api_version>
         <cglib_version>2.2</cglib_version>
-        <mockito_version>3.8.0</mockito_version>
+        <mockito_version>3.12.4</mockito_version>
         <!-- Build args -->
         <argline>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8
             -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m

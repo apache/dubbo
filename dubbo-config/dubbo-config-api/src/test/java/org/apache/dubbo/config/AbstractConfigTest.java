@@ -23,11 +23,14 @@ import org.apache.dubbo.config.support.Nested;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -517,6 +520,7 @@ public class AbstractConfigTest {
     }
 
     @Test
+    @DisabledForJreRange(min = JRE.JAVA_16)
     public void testOnlyPrefixedKeyTakeEffect() {
         try {
             OverrideConfig overrideConfig = new OverrideConfig();
