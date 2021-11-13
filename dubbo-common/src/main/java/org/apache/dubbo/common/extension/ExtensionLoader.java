@@ -113,7 +113,7 @@ public class ExtensionLoader<T> {
 
     private final Map<String, Object> cachedActivates = Collections.synchronizedMap(new LinkedHashMap<>());
     private final Map<String, Set<String>> cachedActivateGroups = Collections.synchronizedMap(new LinkedHashMap<>());
-    private final Map<String, String[]> cachedActivateValues = Collections.synchronizedMap(new LinkedHashMap<>());
+    private final Map<String, String[][]> cachedActivateValues = Collections.synchronizedMap(new LinkedHashMap<>());
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
     private volatile Class<?> cachedAdaptiveClass = null;
@@ -343,7 +343,19 @@ public class ExtensionLoader<T> {
                                 continue;
                             }
                             cachedActivateGroups.put(name, new HashSet<>(Arrays.asList(activateGroup)));
-                            cachedActivateValues.put(name, activateValue);
+                            String[][] keyPairs = new String[activateValue.length][];
+                            for (int i = 0; i < activateValue.length; i++) {
+                                if (activateValue[i].contains(":")) {
+                                    keyPairs[i] = new String[2];
+                                    String[] arr = activateValue[i].split(":");
+                                    keyPairs[i][0] = arr[0];
+                                    keyPairs[i][1] = arr[1];
+                                } else {
+                                    keyPairs[i] = new String[1];
+                                    keyPairs[i][0] = activateValue[i];
+                                }
+                            }
+                            cachedActivateValues.put(name, keyPairs);
                         }
                     }
                 }
@@ -426,17 +438,19 @@ public class ExtensionLoader<T> {
         return false;
     }
 
-    private boolean isActive(String[] keys, URL url) {
-        if (keys.length == 0) {
+    private boolean isActive(String[][] keyPairs, URL url) {
+        if (keyPairs.length == 0) {
             return true;
         }
-        for (String key : keys) {
+        for (String[] keyPair : keyPairs) {
             // @Active(value="key1:value1, key2:value2")
+            String key = null;
             String keyValue = null;
-            if (key.contains(":")) {
-                String[] arr = key.split(":");
-                key = arr[0];
-                keyValue = arr[1];
+            if (keyPair.length > 1) {
+                key = keyPair[0];
+                keyValue = keyPair[1];
+            } else {
+                key = keyPair[0];
             }
 
             String realValue = url.getParameter(key);

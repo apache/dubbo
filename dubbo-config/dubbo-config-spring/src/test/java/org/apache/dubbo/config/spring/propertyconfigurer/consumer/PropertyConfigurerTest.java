@@ -19,8 +19,6 @@ package org.apache.dubbo.config.spring.propertyconfigurer.consumer;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,19 +32,14 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class PropertyConfigurerTest {
 
-    private static RegistryCenter singleRegistryCenter;
-
     @BeforeAll
     public static void beforeAll() {
-        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
-        singleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
-        singleRegistryCenter.shutdown();
     }
 
     @Test

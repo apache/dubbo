@@ -30,10 +30,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.context.ModuleConfigManager;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.model.ModuleModel;
-
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -65,9 +63,9 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
         "dubbo.metricses.my-metrics.aggregation.bucket-num=5",
         "dubbo.metricses.my-metrics.aggregation.time-window-seconds=120",
         "dubbo.monitors.my-monitor.address=zookeeper://127.0.0.1:32770",
-        "dubbo.config-centers.my-configcenter.address=zookeeper://127.0.0.1:2181",
+        "dubbo.config-centers.my-configcenter.address=${zookeeper.connection.address.1}",
         "dubbo.config-centers.my-configcenter.group=group1",
-        "dubbo.metadata-reports.my-metadata.address=zookeeper://127.0.0.1:2182",
+        "dubbo.metadata-reports.my-metadata.address=${zookeeper.connection.address.2}",
         "dubbo.metadata-reports.my-metadata.username=User",
         "dubbo.providers.my-provider.host=127.0.0.1",
         "dubbo.consumers.my-consumer.client=netty"
@@ -81,19 +79,14 @@ import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMET
 @EnableDubbo
 public class SpringBootMultipleConfigPropsTest {
 
-    private static RegistryCenter multipleRegistryCenter;
-
     @BeforeAll
     public static void beforeAll() {
-        multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
-        multipleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
-        multipleRegistryCenter.shutdown();
     }
 
     @Autowired
@@ -137,13 +130,13 @@ public class SpringBootMultipleConfigPropsTest {
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         Assertions.assertEquals(1, configCenters.size());
         ConfigCenterConfig centerConfig = configCenters.iterator().next();
-        Assertions.assertEquals("zookeeper://127.0.0.1:2181", centerConfig.getAddress());
+        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress1(), centerConfig.getAddress());
         Assertions.assertEquals("group1", centerConfig.getGroup());
 
         Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
         Assertions.assertEquals(1, metadataConfigs.size());
         MetadataReportConfig reportConfig = metadataConfigs.iterator().next();
-        Assertions.assertEquals("zookeeper://127.0.0.1:2182", reportConfig.getAddress());
+        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress2(), reportConfig.getAddress());
         Assertions.assertEquals("User", reportConfig.getUsername());
 
         // module configs
