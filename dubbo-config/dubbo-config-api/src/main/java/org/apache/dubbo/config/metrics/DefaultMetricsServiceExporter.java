@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.ScopeModelAware;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.MetricsConstants.PROTOCOL_PROMETHEUS;
 
 /**
  * Default implementation of {@link MetricsServiceExporter}
@@ -56,7 +57,8 @@ public class DefaultMetricsServiceExporter implements MetricsServiceExporter, Sc
 
     private void initialize() {
         MetricsConfig metricsConfig = applicationModel.getApplicationConfigManager().getMetrics().orElse(null);
-        if (metricsConfig != null) {
+        // TODO compatible with old usage of metrics, remove protocol check after new metrics is ready for use.
+        if (metricsConfig != null && PROTOCOL_PROMETHEUS.equals(metricsConfig.getProtocol())) {
             ExtensionLoader<MetricsService> extensionLoader = applicationModel.getExtensionLoader(MetricsService.class);
             if (!extensionLoader.hasExtension(MetricsService.DEFAULT_EXTENSION_NAME)) {
                 throw new IllegalStateException("Metrics config exist, but the dubbo-metrics-api dependency is missing. Please check your project dependencies.");
