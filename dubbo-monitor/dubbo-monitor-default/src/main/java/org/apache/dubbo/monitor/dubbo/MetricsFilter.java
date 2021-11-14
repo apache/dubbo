@@ -99,7 +99,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
             Protocol protocol = extensionAccessor.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
             this.port = invoker.getUrl().getParameter(METRICS_PORT) == null ?
-                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
+                    protocol.getDefaultPort() : Integer.parseInt(invoker.getUrl().getParameter(METRICS_PORT));
 
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 
@@ -146,7 +146,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModel
         method.append('(');
 
         for (int i = 0; i < argTypes.length; i++) {
-            method.append((i == 0 ? "" : ", ") + argTypes[i].getSimpleName());
+            method.append(i == 0 ? "" : ", ").append(argTypes[i].getSimpleName());
         }
         method.append(')');
         Class<?> returnType = RpcUtils.getReturnType(invocation);
