@@ -58,13 +58,13 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.4.6</version>
+            <version>${mockito_version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.4.6</version>
+            <version>${mockito_version}</version>
             <scope>test</scope>
         </dependency>
 
