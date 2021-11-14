@@ -73,7 +73,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-18.04, windows-2019 ]
-        jdk: [ 8, 11 ]
+        jdk: [ 8, 11, 17 ]
     env:
       DISABLE_FILE_SYSTEM_TEST: true
     steps:
