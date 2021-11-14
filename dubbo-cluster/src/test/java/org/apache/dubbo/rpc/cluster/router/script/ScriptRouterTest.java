@@ -27,12 +27,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class ScriptRouterTest {
 
     private URL SCRIPT_URL = URL.valueOf("script://javascript?type=javascript");
