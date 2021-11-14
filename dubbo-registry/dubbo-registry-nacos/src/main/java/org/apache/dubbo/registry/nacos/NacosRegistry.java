@@ -54,6 +54,8 @@ import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -128,6 +130,8 @@ public class NacosRegistry extends FailbackRegistry {
      * {@link ScheduledExecutorService} lookup Nacos service names(only for Dubbo-OPS)
      */
     private volatile ScheduledExecutorService scheduledExecutorService;
+
+    private final ConcurrentMap<URL, ConcurrentMap<String, EventListener>> nacosListeners = new ConcurrentHashMap<>();
 
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
@@ -518,7 +522,12 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void subscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
         throws NacosException {
-        EventListener eventListener = new RegistryChildListenerImpl(serviceName, url, listener);
+        ConcurrentMap<String, EventListener> listeners = nacosListeners.computeIfAbsent(url,
+            k -> new ConcurrentHashMap<>());
+
+        EventListener eventListener = listeners.computeIfAbsent(serviceName,
+            k -> new RegistryChildListenerImpl(serviceName, url, listener));
+
         namingService.subscribe(serviceName,
             getUrl().getGroup(Constants.DEFAULT_GROUP),
             eventListener);
