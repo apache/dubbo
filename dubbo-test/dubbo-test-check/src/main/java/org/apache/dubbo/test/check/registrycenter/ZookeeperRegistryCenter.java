@@ -93,11 +93,6 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
     /**
-     * The {@link #STOPPED} for flagging the {@link #shutdown()} method is called or not.
-     */
-    private static final AtomicBoolean STOPPED = new AtomicBoolean(false);
-
-    /**
      * Returns the Operating System.
      */
     private static OS getOS() {
@@ -152,11 +147,11 @@ class ZookeeperRegistryCenter implements RegistryCenter {
                     for (Initializer initializer : this.initializers) {
                         initializer.initialize(this.context);
                     }
-                    this.get(os, Command.Start).process(this.context);
                     INITIALIZED.set(true);
                 }
             }
         }
+        this.get(os, Command.Start).process(this.context);
     }
 
     /**
@@ -172,15 +167,7 @@ class ZookeeperRegistryCenter implements RegistryCenter {
      */
     @Override
     public void shutdown() throws DubboTestException {
-        if (!STOPPED.get()) {
-            // global look, make sure only one thread can stop the zookeeper instances.
-            synchronized (ZookeeperRegistryCenter.class) {
-                if (!STOPPED.get()) {
-                    this.get(os, Command.Stop).process(this.context);
-                }
-                STOPPED.set(true);
-            }
-        }
+        this.get(os, Command.Stop).process(this.context);
     }
 
     /**
