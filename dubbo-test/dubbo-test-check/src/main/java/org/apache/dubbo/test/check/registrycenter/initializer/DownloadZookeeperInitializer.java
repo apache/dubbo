@@ -21,10 +21,12 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
@@ -41,52 +43,117 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
     private static final String ZOOKEEPER_FILE_NAME_FORMAT = "apache-zookeeper-%s-bin.tar.gz";
 
     /**
+     * The target name of zookeeper binary file.
+     */
+    private static final String TARGET_ZOOKEEPER_FILE_NAME = "apache-zookeeper-bin.tar.gz";
+
+    /**
+     * The target directory.
+     * The zookeeper binary file named {@link #TARGET_ZOOKEEPER_FILE_NAME} will be saved in
+     * {@link #TARGET_DIRECTORY} if it downloaded successfully.
+     */
+    private static final String TARGET_DIRECTORY = "test" + File.separator + "zookeeper";
+
+    /**
      * The url format for zookeeper binary file.
      */
     private static final String ZOOKEEPER_BINARY_URL_FORMAT = "https://archive.apache.org/dist/zookeeper/zookeeper-%s/" + ZOOKEEPER_FILE_NAME_FORMAT;
 
     /**
-     * The temporary directory name
+     * The path of target zookeeper binary file.
      */
-    private static final String TEMPORARY_DIRECTORY_NAME = "dubbo-mocked-zookeeper";
+    private static final Path TARGET_FILE_PATH = getTargetFilePath();
+
+    /**
+     * Returns the target file path.
+     */
+    private static Path getTargetFilePath() {
+        String currentWorkDirectory = System.getProperty("user.dir");
+        logger.info("Current work directory: " + currentWorkDirectory);
+        int index = currentWorkDirectory.lastIndexOf(File.separator + "dubbo" + File.separator);
+        Path targetFilePath = Paths.get(currentWorkDirectory.substring(0, index),
+            "dubbo",
+            TARGET_DIRECTORY,
+            TARGET_ZOOKEEPER_FILE_NAME);
+        logger.info("Target file's absolute directory: " + targetFilePath.toString());
+        return targetFilePath;
+    }
+
+    /**
+     * Returns {@code true} if the file exists with the given file path, otherwise {@code false}.
+     *
+     * @param filePath the file path to check.
+     */
+    private boolean checkFile(Path filePath) {
+        return Files.exists(filePath) && filePath.toFile().isFile();
+    }
 
     @Override
     protected void doInitialize(ZookeeperContext context) throws DubboTestException {
-        String zookeeperFileName = String.format(ZOOKEEPER_FILE_NAME_FORMAT, context.getVersion());
-        try {
-            context.setSourceFile(Paths.get(Files.createTempDirectory("").getParent().toString(),
-                TEMPORARY_DIRECTORY_NAME,
-                zookeeperFileName));
-        } catch (IOException e) {
-            throw new RuntimeException(String.format("Cannot create the temporary directory, related directory:%s/%s",
-                TEMPORARY_DIRECTORY_NAME, zookeeperFileName), e);
-        }
-        // check if the zookeeper binary file exists
-        if (context.getSourceFile() != null && context.getSourceFile().toFile().isFile()) {
+        // checks the zookeeper binary file exists or not
+        if (checkFile(TARGET_FILE_PATH)) {
+            context.setSourceFile(TARGET_FILE_PATH);
             return;
         }
-        // create the temporary directory path.
-        if (!Files.exists(context.getSourceFile())) {
+        String zookeeperFileName = String.format(ZOOKEEPER_FILE_NAME_FORMAT, context.getVersion());
+        Path temporaryFilePath;
+        try {
+            temporaryFilePath = Paths.get(Files.createTempDirectory("").getParent().toString(),
+                TARGET_DIRECTORY,
+                zookeeperFileName);
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Cannot create the temporary directory, related directory:%s/%s",
+                TARGET_DIRECTORY, zookeeperFileName), e);
+        }
+
+        // delete the downloaded zookeeper binary file in temporary, because it maybe a broken file.
+        if (Files.exists(temporaryFilePath)) {
             try {
-                Files.createDirectories(context.getSourceFile());
+                Files.deleteIfExists(temporaryFilePath);
             } catch (IOException e) {
-                throw new RuntimeException(String.format("Failed to create the temporary directory to save zookeeper binary file, file path:%s", context.getSourceFile()), e);
+                //ignored
+                logger.warn("Failed to delete the zookeeper binary file, file path: " + temporaryFilePath.toString(), e);
             }
         }
-        // download zookeeper binary file
+
+        // create the temporary directory path.
+        try {
+            Files.createDirectories(temporaryFilePath.getParent());
+        } catch (IOException e) {
+            throw new RuntimeException(String.format("Failed to create the temporary directory to save zookeeper binary file, file path:%s", temporaryFilePath.getParent()), e);
+        }
+
+        // download zookeeper binary file in temporary directory.
         String zookeeperBinaryUrl = String.format(ZOOKEEPER_BINARY_URL_FORMAT, context.getVersion(), context.getVersion());
         try {
             logger.info("It is beginning to download the zookeeper binary archive, it will take several minutes...");
             URL zookeeperBinaryURL = new URL(zookeeperBinaryUrl);
             InputStream inputStream = zookeeperBinaryURL.openStream();
-            Files.copy(inputStream, context.getSourceFile(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(inputStream, temporaryFilePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception e) {
             throw new RuntimeException(String.format("Download zookeeper binary archive failed, download url:%s, file path:%s",
                 zookeeperBinaryUrl, context.getSourceFile()), e);
         }
-        // check if the zookeeper binary file exists again.
-        if (context.getSourceFile() == null || !context.getSourceFile().toFile().isFile()) {
-            throw new IllegalArgumentException(String.format("The zookeeper binary archive file doesn't exist, file path:%s", context.getSourceFile()));
+
+        // check downloaded zookeeper binary file in temporary directory.
+        if (!checkFile(temporaryFilePath)) {
+            throw new IllegalArgumentException(String.format("There are some unknown problem occurred when downloaded the zookeeper binary archive file, file path:%s", temporaryFilePath));
         }
+
+        // move the downloaded zookeeper binary file into the target file path
+        try {
+            // make sure the action of MOVE is atomic.
+            Files.move(temporaryFilePath, TARGET_FILE_PATH, StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(String.format("Failed to move file, the source file path: %s, the target file path: %s", temporaryFilePath, TARGET_FILE_PATH));
+        }
+
+        // checks the zookeeper binary file exists or not again
+        if (!checkFile(TARGET_FILE_PATH)) {
+            throw new IllegalArgumentException(String.format("The zookeeper binary archive file doesn't exist, file path:%s", TARGET_FILE_PATH));
+        }
+
+        // set the source file's path.
+        context.setSourceFile(TARGET_FILE_PATH);
     }
 }

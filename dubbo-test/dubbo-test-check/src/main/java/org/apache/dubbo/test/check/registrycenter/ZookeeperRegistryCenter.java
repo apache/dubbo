@@ -90,7 +90,12 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     /**
      * The {@link #INITIALIZED} for flagging the {@link #startup()} method is called or not.
      */
-    private final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
+    private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
+
+    /**
+     * The {@link #STOPPED} for flagging the {@link #shutdown()} method is called or not.
+     */
+    private static final AtomicBoolean STOPPED = new AtomicBoolean(false);
 
     /**
      * Returns the Operating System.
@@ -140,15 +145,18 @@ class ZookeeperRegistryCenter implements RegistryCenter {
      */
     @Override
     public void startup() throws DubboTestException {
-        if (!this.INITIALIZED.get()) {
-            if (!this.INITIALIZED.compareAndSet(false, true)) {
-                return;
-            }
-            for (Initializer initializer : this.initializers) {
-                initializer.initialize(this.context);
+        if (!INITIALIZED.get()) {
+            // global look, make sure only one thread can initialize the zookeeper instances.
+            synchronized (ZookeeperRegistryCenter.class) {
+                if (!INITIALIZED.get()) {
+                    for (Initializer initializer : this.initializers) {
+                        initializer.initialize(this.context);
+                    }
+                    this.get(os, Command.Start).process(this.context);
+                    INITIALIZED.set(true);
+                }
             }
         }
-        this.get(os, Command.Start).process(this.context);
     }
 
     /**
@@ -164,7 +172,15 @@ class ZookeeperRegistryCenter implements RegistryCenter {
      */
     @Override
     public void shutdown() throws DubboTestException {
-        this.get(os, Command.Stop).process(this.context);
+        if (!STOPPED.get()) {
+            // global look, make sure only one thread can stop the zookeeper instances.
+            synchronized (ZookeeperRegistryCenter.class) {
+                if (!STOPPED.get()) {
+                    this.get(os, Command.Stop).process(this.context);
+                }
+                STOPPED.set(true);
+            }
+        }
     }
 
     /**

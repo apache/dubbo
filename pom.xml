@@ -628,6 +628,7 @@
                         <exclude>Jenkinsfile</exclude>
                         <exclude>**/codestyle/*</exclude>
                         <exclude>**/resources/META-INF/**</exclude>
+                        <exclude>**/test/**</exclude>
                         <!-- exclude the netty files -->
                         <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
                         <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>

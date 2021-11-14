@@ -41,7 +41,7 @@ public class StartZookeeperUnixProcessor extends ZookeeperUnixProcessor {
         List<String> commands = new ArrayList<>();
         Path zookeeperBin = Paths.get(context.getSourceFile().getParent().toString(),
             String.valueOf(clientPort),
-            String.format("apache-zookeeper-%s-bin", context.getVersion()),
+            String.format("apache-zookeeper-bin", context.getVersion()),
             "bin");
         commands.add(Paths.get(zookeeperBin.toString(), "zkServer.sh")
             .toAbsolutePath().toString());
