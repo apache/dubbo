@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.store.zookeeper;
 
-import com.google.gson.Gson;
-import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -30,7 +28,9 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.AfterEach;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
+
+import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,24 +52,16 @@ import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP
  * 2018/10/9
  */
 public class ZookeeperMetadataReportTest {
-    private TestingServer zkServer;
     private ZookeeperMetadataReport zookeeperMetadataReport;
     private URL registryUrl;
     private ZookeeperMetadataReportFactory zookeeperMetadataReportFactory;
 
     @BeforeEach
     public void setUp() throws Exception {
-        int zkServerPort = NetUtils.getAvailablePort();
-        this.zkServer = new TestingServer(zkServerPort, true);
-        this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
+        this.registryUrl = URL.valueOf(ZookeeperRegistryCenterConfig.getConnectionAddress());
 
         zookeeperMetadataReportFactory = new ZookeeperMetadataReportFactory(ApplicationModel.defaultModel());
         this.zookeeperMetadataReport = (ZookeeperMetadataReport) zookeeperMetadataReportFactory.getMetadataReport(registryUrl);
-    }
-
-    @AfterEach
-    public void tearDown() throws Exception {
-        zkServer.stop();
     }
 
     private void deletePath(MetadataIdentifier metadataIdentifier, ZookeeperMetadataReport zookeeperMetadataReport) {
