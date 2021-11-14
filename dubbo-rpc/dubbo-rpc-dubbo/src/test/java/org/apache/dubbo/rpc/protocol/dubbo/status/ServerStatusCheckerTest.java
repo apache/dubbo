@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.decode.MockChannel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -56,12 +57,16 @@ public class ServerStatusCheckerTest {
             mockDubboProtocol.when(() -> DubboProtocol.getDubboProtocol()).thenReturn(dubboProtocol);
             status = serverStatusChecker.check();
             Assertions.assertEquals(status.getLevel(), Status.Level.OK);
-            Assertions.assertEquals(status.getMessage(), "127.0.0.1:9999(clients:1)");
+            // 127.0.0.1/<unresolved>:9999(clients:1)
+            Assertions.assertTrue(status.getMessage().contains("127.0.0.1"));
+            Assertions.assertTrue(status.getMessage().contains("9999(clients:1)"));
 
             Mockito.when(remotingServer.isBound()).thenReturn(false);
             status = serverStatusChecker.check();
             Assertions.assertEquals(status.getLevel(), Status.Level.ERROR);
-            Assertions.assertEquals(status.getMessage(), "127.0.0.1:9999");
+            // 127.0.0.1/<unresolved>:9999
+            Assertions.assertTrue(status.getMessage().contains("127.0.0.1"));
+            Assertions.assertTrue(status.getMessage().contains("9999"));
         }
     }
 }
