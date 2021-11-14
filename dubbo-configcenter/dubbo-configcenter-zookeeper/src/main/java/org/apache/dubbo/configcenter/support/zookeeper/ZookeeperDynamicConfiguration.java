@@ -25,6 +25,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+
 import org.apache.zookeeper.data.Stat;
 
 import java.util.Collection;
@@ -59,10 +60,10 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
         final String threadName = this.getClass().getSimpleName();
         this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
-                THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(DEFAULT_QUEUE),
-                new NamedThreadFactory(threadName, true),
-                new AbortPolicyWithReport(threadName, url));
+            THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<Runnable>(DEFAULT_QUEUE),
+            new NamedThreadFactory(threadName, true),
+            new AbortPolicyWithReport(threadName, url));
 
         zkClient = zookeeperTransporter.connect(url);
         boolean isConnected = zkClient.isConnected();

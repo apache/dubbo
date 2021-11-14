@@ -76,7 +76,6 @@
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
             <version>${zookeeper_version}</version>
-            <scope>test</scope>
         </dependency>
 
     </dependencies>
