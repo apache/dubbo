@@ -42,9 +42,8 @@ import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
-
-import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -79,20 +78,11 @@ import static org.hamcrest.Matchers.is;
 public class DubboBootstrapTest {
 
     private static File dubboProperties;
-    private static TestingServer server;
-    private static int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
-    private static String zkServerAddress = "zookeeper://127.0.0.1:" + zkServerPort;
+    private static String zkServerAddress = ZookeeperRegistryCenterConfig.getConnectionAddress();
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
         DubboBootstrap.reset();
-        try {
-            server = new TestingServer(zkServerPort, true);
-            server.start();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assertions.fail(e.getMessage());
-        }
         dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
         System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
@@ -100,12 +90,6 @@ public class DubboBootstrapTest {
     @AfterAll
     public static void tearDown() {
         System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
-        try {
-            server.stop();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Assertions.fail(e.getMessage());
-        }
     }
 
     @AfterEach
