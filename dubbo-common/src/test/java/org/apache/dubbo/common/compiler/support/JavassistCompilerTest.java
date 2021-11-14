@@ -18,6 +18,8 @@ package org.apache.dubbo.common.compiler.support;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import java.lang.reflect.Method;
 
@@ -37,6 +39,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
      * javassist compile will find HelloService in classpath
      */
     @Test
+    @DisabledForJreRange(min = JRE.JAVA_16)
     public void testCompileJavaClass0() throws Exception {
         boolean ignoreWithoutPackage = shouldIgnoreWithoutPackage();
         JavassistCompiler compiler = new JavassistCompiler();
