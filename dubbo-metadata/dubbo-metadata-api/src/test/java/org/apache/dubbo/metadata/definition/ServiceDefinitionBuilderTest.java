@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.service.ComplexObject;
 import org.apache.dubbo.metadata.definition.service.DemoService;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -40,8 +41,9 @@ public class ServiceDefinitionBuilderTest {
 
 
     void checkComplexObjectAsParam(FullServiceDefinition fullServiceDefinition) {
-        Assertions.assertEquals(fullServiceDefinition.getAnnotations(),
-            Arrays.asList("@org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation(value=666)"));
+        Assertions.assertTrue(fullServiceDefinition.getAnnotations().contains("@org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation(value=666)")
+            // JDK 17 style
+            || fullServiceDefinition.getAnnotations().contains("@org.apache.dubbo.metadata.definition.service.annotation.MockTypeAnnotation(666)"));
 
         List<MethodDefinition> methodDefinitions = fullServiceDefinition.getMethods();
         MethodDefinition complexCompute = null;
