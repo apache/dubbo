@@ -65,9 +65,13 @@ public class ServiceDefinitionBuilderTest {
             String[].class.getCanonicalName(), "java.util.List<java.lang.Integer>", ComplexObject.TestEnum.class.getCanonicalName()}));
         Assertions.assertEquals(findComplexObject.getReturnType(), ComplexObject.class.getCanonicalName());
 
-        Assertions.assertEquals(testAnnotation.getAnnotations(), Arrays.asList(
+        Assertions.assertTrue(testAnnotation.getAnnotations().equals(Arrays.asList(
             "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation(value=777)",
-            "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation2(value=888)"));
+            "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation2(value=888)"))
+            // JDK 17 style
+            || testAnnotation.getAnnotations().equals(Arrays.asList(
+            "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation(777)",
+            "@org.apache.dubbo.metadata.definition.service.annotation.MockMethodAnnotation2(888)")));
         Assertions.assertEquals(testAnnotation.getReturnType(), "void");
 
 
