@@ -30,6 +30,8 @@ import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.mockito.internal.util.collections.Sets;
 
 import java.util.HashMap;
@@ -50,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.7.5
  */
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class ZookeeperServiceDiscoveryTest {
 
     private static final String SERVICE_NAME = "A";

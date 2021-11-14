@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
-import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -25,11 +24,15 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import java.util.List;
 import java.util.Map;
@@ -44,6 +47,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class ZookeeperRegistryTest {
     private TestingServer zkServer;
     private ZookeeperRegistry zookeeperRegistry;

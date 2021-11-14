@@ -16,18 +16,21 @@
  */
 package org.apache.dubbo.registry.zookeeper.util;
 
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.test.TestingServer;
-import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.test.TestingServer;
+import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,6 +44,7 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.RO
 /**
  * {@link CuratorFrameworkUtils} Test
  */
+@DisabledForJreRange(min = JRE.JAVA_16)
 class CuratorFrameworkUtilsTest {
     private static TestingServer zkServer;
     private static URL registryUrl;

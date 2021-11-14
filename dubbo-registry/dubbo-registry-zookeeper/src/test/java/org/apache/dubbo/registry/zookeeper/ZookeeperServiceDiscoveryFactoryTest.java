@@ -18,9 +18,13 @@ package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class ZookeeperServiceDiscoveryFactoryTest {
 
     @Test
