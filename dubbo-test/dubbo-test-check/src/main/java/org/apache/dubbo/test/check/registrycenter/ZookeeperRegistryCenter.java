@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.test.check.registrycenter;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
@@ -29,6 +31,9 @@ import org.apache.dubbo.test.check.registrycenter.processor.ResetZookeeperProces
 import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperUnixProcessor;
 import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperWindowsProcessor;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -65,7 +70,12 @@ class ZookeeperRegistryCenter implements RegistryCenter {
         } else {
             this.context = new ZookeeperWindowsContext();
         }
+
+        // set target file path
+        this.context.setSourceFile(TARGET_FILE_PATH);
     }
+
+    private static final Logger logger = LoggerFactory.getLogger(ZookeeperRegistryCenter.class);
 
     /**
      * The OS type.
@@ -88,9 +98,41 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     private Map<OS, Map<Command, Processor>> processors = new HashMap<>();
 
     /**
+     * The target name of zookeeper binary file.
+     */
+    private static final String TARGET_ZOOKEEPER_FILE_NAME = "apache-zookeeper-bin.tar.gz";
+
+    /**
+     * The target directory.
+     * The zookeeper binary file named {@link #TARGET_ZOOKEEPER_FILE_NAME} will be saved in
+     * {@link #TARGET_DIRECTORY} if it downloaded successfully.
+     */
+    private static final String TARGET_DIRECTORY = "test" + File.separator + "zookeeper";
+
+    /**
+     * The path of target zookeeper binary file.
+     */
+    private static final Path TARGET_FILE_PATH = getTargetFilePath();
+
+    /**
      * The {@link #INITIALIZED} for flagging the {@link #startup()} method is called or not.
      */
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
+
+    /**
+     * Returns the target file path.
+     */
+    private static Path getTargetFilePath() {
+        String currentWorkDirectory = System.getProperty("user.dir");
+        logger.info("Current work directory: " + currentWorkDirectory);
+        int index = currentWorkDirectory.lastIndexOf(File.separator + "dubbo" + File.separator);
+        Path targetFilePath = Paths.get(currentWorkDirectory.substring(0, index),
+            "dubbo",
+            TARGET_DIRECTORY,
+            TARGET_ZOOKEEPER_FILE_NAME);
+        logger.info("Target file's absolute directory: " + targetFilePath.toString());
+        return targetFilePath;
+    }
 
     /**
      * Returns the Operating System.
