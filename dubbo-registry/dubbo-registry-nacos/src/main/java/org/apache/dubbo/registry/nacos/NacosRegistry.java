@@ -131,7 +131,7 @@ public class NacosRegistry extends FailbackRegistry {
      */
     private volatile ScheduledExecutorService scheduledExecutorService;
 
-    private final ConcurrentMap<URL, ConcurrentMap<String, EventListener>> nacosListeners = new ConcurrentHashMap<>();
+    private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ConcurrentMap<String, EventListener>>> nacosListeners = new ConcurrentHashMap<>();
 
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
@@ -522,10 +522,13 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void subscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
         throws NacosException {
-        ConcurrentMap<String, EventListener> listeners = nacosListeners.computeIfAbsent(url,
+        ConcurrentMap<NotifyListener, ConcurrentMap<String, EventListener>> listeners = nacosListeners.computeIfAbsent(url,
             k -> new ConcurrentHashMap<>());
 
-        EventListener eventListener = listeners.computeIfAbsent(serviceName,
+        ConcurrentMap<String, EventListener> eventListeners = listeners.computeIfAbsent(listener,
+            k -> new ConcurrentHashMap<>());
+
+        EventListener eventListener = eventListeners.computeIfAbsent(serviceName,
             k -> new RegistryChildListenerImpl(serviceName, url, listener));
 
         namingService.subscribe(serviceName,
@@ -629,9 +632,12 @@ public class NacosRegistry extends FailbackRegistry {
 
         private final URL consumerUrl;
 
+        private final NotifyListener listener;
+
         public RegistryChildListenerImpl(String serviceName, URL consumerUrl, NotifyListener listener) {
             this.serviceName = serviceName;
             this.consumerUrl = consumerUrl;
+            this.listener = listener;
             this.notifier = new RegistryNotifier(getUrl(), NacosRegistry.this.getDelay()) {
                 @Override
                 protected void doNotify(Object rawAddresses) {
@@ -666,12 +672,12 @@ public class NacosRegistry extends FailbackRegistry {
                 return false;
             }
             RegistryChildListenerImpl that = (RegistryChildListenerImpl) o;
-            return Objects.equals(serviceName, that.serviceName) && Objects.equals(consumerUrl, that.consumerUrl);
+            return Objects.equals(serviceName, that.serviceName) && Objects.equals(consumerUrl, that.consumerUrl) && Objects.equals(listener, that.listener);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(serviceName, consumerUrl);
+            return Objects.hash(serviceName, consumerUrl, listener);
         }
     }
 
