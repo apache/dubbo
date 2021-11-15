@@ -18,7 +18,6 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ProviderModel;
 
 @Cmd(name = "onlineApp", summary = "online app addresses", example = {
         "onlineApp dubbo",
