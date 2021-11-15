@@ -21,6 +21,7 @@ import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -51,6 +52,12 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
         PACKAGE_NAME.add("org.apache.dubbo.config");
         // dubbo-test module
         PACKAGE_NAME.add("org.apache.dubbo.test");
+        // dubbo-registry-multiple
+        PACKAGE_NAME.add("org.apache.dubbo.registry.multiple");
+        // dubbo-cenfigcenter-zookeeper
+        PACKAGE_NAME.add("org.apache.dubbo.configcenter.support.zookeeper");
+        // dubbo-metadata-report-zookeeper
+        PACKAGE_NAME.add("org.apache.dubbo.metadata.store.zookeeper");
         enableEmbeddedZookeeper = Boolean.valueOf(System.getProperty(CONFIG_ENABLE_EMBEDDED_ZOOKEEPER, "true"));
     }
 
