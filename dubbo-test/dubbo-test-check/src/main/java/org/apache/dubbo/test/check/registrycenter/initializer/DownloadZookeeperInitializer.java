@@ -109,11 +109,11 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
             }
         }
 
-        // move the downloaded zookeeper binary file into the target file path
+        // copy the downloaded zookeeper binary file into the target file path
         try {
-            Files.move(temporaryFilePath, context.getSourceFile(), StandardCopyOption.ATOMIC_MOVE);
+            Files.copy(temporaryFilePath, context.getSourceFile(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Failed to move file, the source file path: %s, the target file path: %s", temporaryFilePath, context.getSourceFile()), e);
+            throw new IllegalArgumentException(String.format("Failed to copy file, the source file path: %s, the target file path: %s", temporaryFilePath, context.getSourceFile()), e);
         }
 
         // checks the zookeeper binary file exists or not again
