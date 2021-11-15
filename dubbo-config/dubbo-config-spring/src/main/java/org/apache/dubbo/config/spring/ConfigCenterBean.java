@@ -62,8 +62,11 @@ public class ConfigCenterBean extends ConfigCenterConfig implements ApplicationC
     }
 
     private Map<String, String> getConfigurations(String key, Environment environment) {
+        Map<String, String> externalProperties = new HashMap<>(8);
+        if (StringUtils.isEmpty(key)) {
+            return externalProperties;
+        }
         Object rawProperties = environment.getProperty(key, Object.class);
-        Map<String, String> externalProperties = new HashMap<>();
         try {
             if (rawProperties instanceof Map) {
                 externalProperties.putAll((Map<String, String>) rawProperties);
@@ -73,13 +76,11 @@ public class ConfigCenterBean extends ConfigCenterConfig implements ApplicationC
 
             if (environment instanceof ConfigurableEnvironment && externalProperties.isEmpty()) {
                 ConfigurableEnvironment configurableEnvironment = (ConfigurableEnvironment) environment;
-                PropertySource propertySource = configurableEnvironment.getPropertySources().get(key);
+                PropertySource<?> propertySource = configurableEnvironment.getPropertySources().get(key);
                 if (propertySource != null) {
                     Object source = propertySource.getSource();
                     if (source instanceof Map) {
-                        ((Map<String, Object>) source).forEach((k, v) -> {
-                            externalProperties.put(k, (String) v);
-                        });
+                        ((Map<String, Object>) source).forEach((k, v) -> externalProperties.put(k, (String) v));
                     }
                 }
             }
