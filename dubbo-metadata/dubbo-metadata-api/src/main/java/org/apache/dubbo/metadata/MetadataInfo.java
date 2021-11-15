@@ -65,11 +65,13 @@ public class MetadataInfo implements Serializable {
     private Map<String, ServiceInfo> services;
 
     // used at runtime
-    private transient Map<String, String> extendParams;
+    private transient final Map<String, String> extendParams;
+    private transient final Map<String, String> instanceParams;
     protected transient AtomicBoolean updated = new AtomicBoolean(false);
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs;
     private transient ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private transient ExtensionLoader<MetadataParamsFilter> loader;
 
     public MetadataInfo() {
         this(null);
@@ -84,11 +86,18 @@ public class MetadataInfo implements Serializable {
         this.revision = revision;
         this.services = services == null ? new ConcurrentHashMap<>() : services;
         this.extendParams = new ConcurrentHashMap<>();
+        this.instanceParams = new ConcurrentHashMap<>();
     }
 
     public synchronized void addService(URL url) {
-        ServiceInfo serviceInfo = new ServiceInfo(url);
+        // fixme, pass in application mode context during initialization of MetadataInfo.
+        this.loader = url.getOrDefaultApplicationModel().getExtensionLoader(MetadataParamsFilter.class);
+        List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
+        // generate service level metadata
+        ServiceInfo serviceInfo = new ServiceInfo(url, filters);
         this.services.put(serviceInfo.getMatchKey(), serviceInfo);
+        // extract common instance level params
+        extractInstanceParams(url, filters);
 
         if (exportedServiceURLs == null) {
             exportedServiceURLs = new ConcurrentSkipListMap<>();
@@ -115,7 +124,7 @@ public class MetadataInfo implements Serializable {
      * Reported status and metadata modification must be synchronized if used in multiple threads.
      */
     public synchronized String calAndGetRevision() {
-        if (revision != null && updated.get()) {
+        if (revision != null && !updated.get()) {
             return revision;
         }
 
@@ -156,16 +165,16 @@ public class MetadataInfo implements Serializable {
         return services;
     }
 
-    public void setServices(Map<String, ServiceInfo> services) {
-        this.services = services;
-    }
-
     public ServiceInfo getServiceInfo(String protocolServiceKey) {
         return services.get(protocolServiceKey);
     }
 
     public Map<String, String> getExtendParams() {
         return extendParams;
+    }
+
+    public Map<String, String> getInstanceParams() {
+        return instanceParams;
     }
 
     public String getParameter(String key, String serviceKey) {
@@ -254,8 +263,34 @@ public class MetadataInfo implements Serializable {
         MetadataInfo other = (MetadataInfo)obj;
 
         return Objects.equals(app, other.getApp())
-            && ((services == null && other.getServices() == null)
-                || (services != null && services.equals(other.getServices())));
+            && ((services == null && other.services == null)
+                || (services != null && services.equals(other.services)));
+    }
+
+    private void extractInstanceParams(URL url, List<MetadataParamsFilter> filters) {
+        if (CollectionUtils.isEmpty(filters)) {
+            return;
+        }
+
+        filters.forEach(filter -> {
+            String[] included = filter.instanceParamsIncluded();
+            if (ArrayUtils.isEmpty(included)) {
+                /*
+                 * Does not put any parameter in instance if not specified.
+                 * It will bring no functional suppression as long as all params will appear in service metadata.
+                 */
+            } else {
+                for (String p : included) {
+                    String value = url.getParameter(p);
+                    if (value != null) {
+                        String oldValue = instanceParams.put(p, value);
+                        if (oldValue != null && !oldValue.equals(value)) {
+                            throw new IllegalStateException(String.format("Inconsistent instance metadata found in different services: %s, %s", oldValue, value));
+                        }
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -306,19 +341,16 @@ public class MetadataInfo implements Serializable {
         private transient String matchKey;
 
         private transient URL url;
-        private transient ExtensionLoader<MetadataParamsFilter> loader;
 
         private final static String[] KEYS_TO_REMOVE = {MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
             QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
 
         public ServiceInfo() {}
 
-        public ServiceInfo(URL url) {
+        public ServiceInfo(URL url, List<MetadataParamsFilter> filters) {
             this(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getProtocol(), url.getPath(), null);
-            this.loader = url.getOrDefaultApplicationModel().getExtensionLoader(MetadataParamsFilter.class);
             this.url = url;
             Map<String, String> params = new HashMap<>();
-            List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
             if (filters.size() == 0) {
                 params.putAll(url.getParameters());
                 for (String key : KEYS_TO_REMOVE) {

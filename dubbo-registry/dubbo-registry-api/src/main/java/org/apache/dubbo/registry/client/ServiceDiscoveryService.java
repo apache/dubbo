@@ -14,25 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
+public interface ServiceDiscoveryService {
+    void register() throws RuntimeException;
 
-/**
- * FIXME, this class is not needed anymore.
- */
-@SPI(value = "default", scope = ExtensionScope.APPLICATION)
-public interface WritableMetadataService extends MetadataService {
+    void update() throws RuntimeException;
 
-    default URL getMetadataServiceURL() {
-        return null;
-    }
-
-    static WritableMetadataService getDefaultExtension(ScopeModel scopeModel) {
-        return ScopeModelUtil.getExtensionLoader(WritableMetadataService.class, scopeModel).getDefaultExtension();
-    }
+    void unregister() throws RuntimeException;
 }

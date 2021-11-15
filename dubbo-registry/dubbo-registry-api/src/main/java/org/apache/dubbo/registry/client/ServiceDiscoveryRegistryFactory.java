@@ -32,7 +32,7 @@ public class ServiceDiscoveryRegistryFactory extends AbstractRegistryFactory {
             String protocol = url.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
             url = url.setProtocol(protocol).removeParameter(REGISTRY_KEY);
         }
-        return new ServiceDiscoveryRegistry(url);
+        return new ServiceDiscoveryRegistry(url, applicationModel);
     }
 
 }

@@ -18,7 +18,6 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -29,7 +28,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -43,7 +41,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class MetadataServiceURLParamsMetadataCustomizerTest {
     private static final Gson gson = new Gson();
@@ -62,7 +59,6 @@ public class MetadataServiceURLParamsMetadataCustomizerTest {
     public void init() {
         instance = createInstance();
         metadataService = mock(MetadataServiceDelegation.class);
-        when(metadataService.getMetadataServiceURL()).thenReturn(metadataServiceURL);
     }
 
     @AfterEach
@@ -73,21 +69,18 @@ public class MetadataServiceURLParamsMetadataCustomizerTest {
     @Test
     public void test() {
         MetadataServiceURLParamsMetadataCustomizer customizer = new MetadataServiceURLParamsMetadataCustomizer();
-        try (MockedStatic<WritableMetadataService> mockMetadataService = Mockito.mockStatic(WritableMetadataService.class)) {
-            mockMetadataService.when(() -> WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel())).thenReturn(metadataService);
-            customizer.customize(instance);
+        customizer.customize(instance, ApplicationModel.defaultModel());
 
-            String val = instance.getMetadata().get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
-            Assertions.assertNotNull(val);
+        String val = instance.getMetadata().get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
+        Assertions.assertNotNull(val);
 
-            Map<String, String> map = gson.fromJson(val, new TypeToken<Map<String, String>>() {
-            }.getType());
-            Assertions.assertEquals(map.get(PORT_KEY), String.valueOf(metadataServiceURL.getPort()));
-            Assertions.assertEquals(map.get(PROTOCOL_KEY), metadataServiceURL.getProtocol());
-            Assertions.assertEquals(map.get(VERSION_KEY), metadataServiceURL.getVersion());
-            Assertions.assertFalse(map.containsKey(TIMESTAMP_KEY));
-            Assertions.assertFalse(map.containsKey(GROUP_KEY));
-            Assertions.assertFalse(map.containsKey(APPLICATION_KEY));
-        }
+        Map<String, String> map = gson.fromJson(val, new TypeToken<Map<String, String>>() {
+        }.getType());
+        Assertions.assertEquals(map.get(PORT_KEY), String.valueOf(metadataServiceURL.getPort()));
+        Assertions.assertEquals(map.get(PROTOCOL_KEY), metadataServiceURL.getProtocol());
+        Assertions.assertEquals(map.get(VERSION_KEY), metadataServiceURL.getVersion());
+        Assertions.assertFalse(map.containsKey(TIMESTAMP_KEY));
+        Assertions.assertFalse(map.containsKey(GROUP_KEY));
+        Assertions.assertFalse(map.containsKey(APPLICATION_KEY));
     }
 }

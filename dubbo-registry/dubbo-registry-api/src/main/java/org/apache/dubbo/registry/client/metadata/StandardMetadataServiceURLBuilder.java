@@ -135,8 +135,8 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .addParameter(GROUP_KEY, serviceName)
                 .addParameter(VERSION_KEY, MetadataService.VERSION);
 
-        // add ServiceInstance Metadata notify support
-        urlBuilder.addParameter("getAndListenInstanceMetadata.1.callback", true);
+//        // add ServiceInstance Metadata notify support
+//        urlBuilder.addParameter("getAndListenInstanceMetadata.1.callback", true);
 
         return urlBuilder.build();
     }

@@ -30,8 +30,6 @@ public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
 
     private ZookeeperTransporter zookeeperTransporter;
 
-    private ApplicationModel applicationModel;
-
     // for compatible usage
     public ZookeeperRegistryFactory() {
         this(ApplicationModel.defaultModel());

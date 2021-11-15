@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -106,11 +105,11 @@ class CuratorFrameworkUtilsTest {
         Assertions.assertEquals(payload.getName(), dubboServiceInstance.getServiceName());
 
         // convert {org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>} to {org.apache.dubbo.registry.client.ServiceInstance}
-        ServiceInstance serviceInstance = CuratorFrameworkUtils.build(registryUrl, curatorServiceInstance, new HashMap<>(), metadataReport);
+        ServiceInstance serviceInstance = CuratorFrameworkUtils.build(registryUrl, curatorServiceInstance);
         Assertions.assertEquals(serviceInstance, dubboServiceInstance);
 
         // convert {Collection<org.apache.curator.x.discovery.ServiceInstance<ZookeeperInstance>>} to {List<org.apache.dubbo.registry.client.ServiceInstance>}
-        List<ServiceInstance> serviceInstances = CuratorFrameworkUtils.build(registryUrl, Arrays.asList(curatorServiceInstance), new HashMap<>(), metadataReport);
+        List<ServiceInstance> serviceInstances = CuratorFrameworkUtils.build(registryUrl, Arrays.asList(curatorServiceInstance));
         Assertions.assertNotNull(serviceInstances);
         Assertions.assertEquals(serviceInstances.get(0), dubboServiceInstance);
     }

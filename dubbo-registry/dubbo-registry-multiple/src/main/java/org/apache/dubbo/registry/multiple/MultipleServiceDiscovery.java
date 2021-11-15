@@ -156,6 +156,11 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
+    public MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance) {
+        throw new UnsupportedOperationException("Multiple registry implementation does not support getMetadata() method.");
+    }
+
+    @Override
     public void register(URL url) {
         serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.register(url));
     }

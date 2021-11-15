@@ -154,6 +154,15 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
+    public void unPublishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
+        try {
+            configService.removeConfig(identifier.getApplication(), identifier.getRevision());
+        } catch (NacosException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         try {
             String content = configService.getConfig(identifier.getApplication(), identifier.getRevision(), 3000L);

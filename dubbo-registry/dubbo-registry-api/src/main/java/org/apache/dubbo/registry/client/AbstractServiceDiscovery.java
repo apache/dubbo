@@ -24,24 +24,22 @@ import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.customizeInstance;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 
 /**
  * Each service discovery is bond to one application.
  */
-public abstract class AbstractServiceDiscovery implements ServiceDiscovery, ScopeModelAware {
+public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     private Logger logger = LoggerFactory.getLogger(AbstractServiceDiscovery.class);
     private volatile boolean isDestroy;
 
@@ -49,21 +47,19 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery, Scop
     protected volatile ServiceInstance serviceInstance;
     protected volatile MetadataInfo metadataInfo;
     protected MetadataReport metadataReport;
+    protected MetaCacheManager metaCacheManager;
 
     private ApplicationModel applicationModel;
 
-    // fixme
-    protected Map<String, MetadataInfo> revisionToMetadata;
+    public AbstractServiceDiscovery(ApplicationModel applicationModel) {
+        this(applicationModel.getApplicationName());
+        this.applicationModel = applicationModel;
+    }
 
     public AbstractServiceDiscovery(String serviceName) {
         this.serviceName = serviceName;
         this.metadataInfo = new MetadataInfo(serviceName);
-        this.revisionToMetadata = new ConcurrentHashMap<>();
-    }
-
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+        this.metaCacheManager = new MetaCacheManager(AbstractServiceDiscovery.class.getSimpleName());
     }
 
     @Override
@@ -73,9 +69,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery, Scop
         metadataReport = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReport(registryCluster);
     }
 
-    public final void register() throws RuntimeException {
+    public synchronized final void register() throws RuntimeException {
         this.serviceInstance = createServiceInstance();
-        customizeInstance(this.serviceInstance);
         boolean revisionUpdated = calOrUpdateInstanceRevision();
         if (revisionUpdated) {
             reportMetadata();
@@ -84,7 +79,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery, Scop
     }
 
     @Override
-    public final void update() throws RuntimeException {
+    public synchronized final void update() throws RuntimeException {
         if (this.serviceInstance == null) {
             this.serviceInstance = createServiceInstance();
         }
@@ -95,7 +90,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery, Scop
     }
 
     @Override
-    public final void unregister() throws RuntimeException {
+    public synchronized final void unregister() throws RuntimeException {
+        unReportMetadata();
         doUnregister();
     }
 
@@ -107,6 +103,48 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery, Scop
     @Override
     public MetadataInfo getMetadata() {
         return metadataInfo;
+    }
+
+    @Override
+    public MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance) {
+        MetadataInfo metadata = metaCacheManager.get(revision);
+
+        if (metadata != null && metadata != MetadataInfo.EMPTY) {
+            // metadata loaded from cache
+            if (logger.isDebugEnabled()) {
+                logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
+                    + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
+            }
+            return metadata;
+        }
+
+        // try to load metadata from remote.
+        int triedTimes = 0;
+        while (triedTimes < 3) {
+            metadata = MetadataUtils.getRemoteMetadata(revision, instance, metadataReport);
+
+            if (metadata != MetadataInfo.EMPTY) {// succeeded
+                break;
+            } else {// failed
+                if (triedTimes > 0) {
+                    logger.info("Retry the " + triedTimes + " times to get metadata for instance " + instance.getAddress() + "?revision=" + revision
+                        + "&cluster=" + instance.getRegistryCluster());
+                }
+                triedTimes++;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+
+        if (metadata == MetadataInfo.EMPTY) {
+            logger.error("Failed to get metadata for instance after 3 retries, " + instance.getAddress() + "?revision=" + revision
+                + "&cluster=" + instance.getRegistryCluster());
+        } else {
+            metaCacheManager.put(revision, metadata);
+        }
+        return metadata;
     }
 
     @Override
@@ -149,7 +187,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery, Scop
         this.unregister();
 
         reportMetadata();
-        this.register();
+        this.doRegister(serviceInstance);
     }
 
     public abstract void doRegister(ServiceInstance serviceInstance) throws RuntimeException;
@@ -165,7 +203,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery, Scop
         instance.setServiceMetadata(metadataInfo);
         String metadataType = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getMetadataType();
         setMetadataStorageType(instance, metadataType);
-        ServiceInstanceMetadataUtils.customizeInstance(instance);
+        ServiceInstanceMetadataUtils.customizeInstance(instance, applicationModel);
         return instance;
     }
 
@@ -185,6 +223,11 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery, Scop
     protected void reportMetadata() {
         SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
         metadataReport.publishAppMetadata(identifier, metadataInfo);
+    }
+
+    protected void unReportMetadata() {
+        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
+        metadataReport.unPublishAppMetadata(identifier, metadataInfo);
     }
 
 }

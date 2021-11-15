@@ -31,12 +31,12 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.registry.support.RegistryManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,11 +82,12 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     private RegistryManager registryManager;
 
-    public ServiceDiscoveryRegistry(URL registryURL) {
+    public ServiceDiscoveryRegistry(URL registryURL, ApplicationModel applicationModel) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
-        this.registryManager = registryURL.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
+        this.registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
+        super.applicationModel = applicationModel;
     }
 
     // Currently, for test purpose
@@ -316,16 +317,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     /**
-     * Create an instance of {@link ServiceDiscoveryRegistry} if supported
-     *
-     * @param registryURL the {@link URL url} of registry
-     * @return <code>null</code> if not supported
-     */
-    public static ServiceDiscoveryRegistry create(URL registryURL) {
-        return supports(registryURL) ? new ServiceDiscoveryRegistry(registryURL) : null;
-    }
-
-    /**
      * Supports or not ?
      *
      * @param registryURL the {@link URL url} of registry
@@ -333,11 +324,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     public static boolean supports(URL registryURL) {
         return SERVICE_REGISTRY_TYPE.equalsIgnoreCase(registryURL.getParameter(REGISTRY_TYPE_KEY));
-    }
-
-    private static boolean isCompatibleProtocol(String protocol, URL targetURL) {
-        return protocol == null || Objects.equals(protocol, targetURL.getParameter(PROTOCOL_KEY))
-            || Objects.equals(protocol, targetURL.getProtocol());
     }
 
     public Map<String, ServiceInstancesChangedListener> getServiceListeners() {

@@ -19,11 +19,10 @@ package org.apache.dubbo.registry.client.metadata.store;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.MetadataServiceExporter;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -50,7 +49,7 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 /**
  * Implementation providing remote RPC service to facilitate the query of metadata information.
  */
-public class MetadataServiceDelegation implements WritableMetadataService, ScopeModelAware {
+public class MetadataServiceDelegation implements MetadataService, ScopeModelAware, Disposable {
     Logger logger = LoggerFactory.getLogger(getClass());
     private ApplicationModel applicationModel;
     private RegistryManager registryManager;
@@ -187,16 +186,6 @@ public class MetadataServiceDelegation implements WritableMetadataService, Scope
         return metadataInfos;
     }
 
-    @Override
-    public URL getMetadataServiceURL() {
-        MetadataServiceExporter metadataServiceExporter = applicationModel.getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
-        if (metadataServiceExporter.isExported()) {
-            List<URL> metadataURLs = metadataServiceExporter.getExportedURLs();
-            return metadataURLs.get(0);
-        }
-        return null;
-    }
-
     private SortedSet<String> getServiceURLs(Map<String, SortedSet<URL>> exportedServiceURLs, String serviceKey,
                                              String protocol) {
 
@@ -213,6 +202,11 @@ public class MetadataServiceDelegation implements WritableMetadataService, Scope
         return protocol == null
             || protocol.equals(url.getParameter(PROTOCOL_KEY))
             || protocol.equals(url.getProtocol());
+    }
+
+    @Override
+    public void destroy() {
+
     }
 
 

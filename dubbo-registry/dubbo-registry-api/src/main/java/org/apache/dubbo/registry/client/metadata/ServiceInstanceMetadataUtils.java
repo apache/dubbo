@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -152,10 +151,8 @@ public class ServiceInstanceMetadataUtils {
     }
 
     /**
-     * Get the metadata's storage type is used to which {@link WritableMetadataService} instance.
-     *
-     * @param serviceInstance the specified {@link ServiceInstance}
-     * @return if not found in {@link ServiceInstance#getMetadata() metadata} of {@link ServiceInstance}, return
+     * Get the metadata storage type specified by the peer instance.
+     * @return storage type, remote or local
      */
     public static String getMetadataStorageType(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
@@ -218,8 +215,8 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void registerMetadataAndInstance(ApplicationModel applicationModel) {
-            LOGGER.info("Start registering instance address to registry.");
-            RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
+        LOGGER.info("Start registering instance address to registry.");
+        RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
         // register service instance
         registryManager.getServiceDiscoveries().forEach(ServiceDiscovery::register);
     }
@@ -241,13 +238,13 @@ public class ServiceInstanceMetadataUtils {
         });
     }
 
-    public static void customizeInstance(ServiceInstance instance) {
+    public static void customizeInstance(ServiceInstance instance, ApplicationModel applicationModel) {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
                 instance.getOrDefaultApplicationModel().getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customize
-            customizer.customize(instance);
+            customizer.customize(instance, applicationModel);
         });
     }
 

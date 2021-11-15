@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
@@ -30,27 +30,24 @@ import java.util.Set;
 
 /**
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
- *
- * @since 2.7.5
  */
 public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomizer {
     private static final Logger logger = LoggerFactory.getLogger(ServiceInstanceHostPortCustomizer.class);
     
 
     @Override
-    public void customize(ServiceInstance serviceInstance) {
+    public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
 
         if (serviceInstance.getPort() > 0) {
             return;
         }
 
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
+        MetadataService metadataService = applicationModel.getBeanFactory().getBean(MetadataService.class);
 
         String host = null;
         int port = -1;
-        Set<URL> urls = writableMetadataService.getExportedServiceURLs();
+        Set<URL> urls = metadataService.getExportedServiceURLs();
         if (CollectionUtils.isNotEmpty(urls)) {
-            ApplicationModel applicationModel = serviceInstance.getApplicationModel();
             String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();
             if (preferredProtocol != null) {
                 for (URL exportedURL : urls) {

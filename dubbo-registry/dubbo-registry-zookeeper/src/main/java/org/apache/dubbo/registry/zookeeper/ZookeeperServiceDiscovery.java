@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
@@ -70,6 +71,10 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
      * The Key is watched Zookeeper path, the value is an instance of {@link CuratorWatcher}
      */
     private final Map<String, ZookeeperServiceDiscoveryChangeWatcher> watcherCaches = new ConcurrentHashMap<>();
+
+    public ZookeeperServiceDiscovery(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     public ZookeeperServiceDiscovery(String serviceName) {
         super(serviceName);
@@ -118,7 +123,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
-        return doInServiceDiscovery(s -> build(registryURL, s.queryForInstances(serviceName), revisionToMetadata, metadataReport));
+        return doInServiceDiscovery(s -> build(registryURL, s.queryForInstances(serviceName)));
     }
 
     @Override
@@ -147,7 +152,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
                 for (int i = 0; i < pageSize; i++) {
                     if (iterator.hasNext()) {
                         String serviceId = iterator.next();
-                        ServiceInstance serviceInstance = build(registryURL, serviceDiscovery.queryForInstance(serviceName, serviceId), revisionToMetadata, metadataReport);
+                        ServiceInstance serviceInstance = build(registryURL, serviceDiscovery.queryForInstance(serviceName, serviceId));
                         serviceInstances.add(serviceInstance);
                     }
                 }

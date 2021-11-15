@@ -21,7 +21,6 @@ import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.List;
 import java.util.Map;
@@ -33,22 +32,15 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 /**
  * Used to interact with non-dubbo systems, also see {@link SpringCloudMetadataServiceURLBuilder}
  */
-public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer, ScopeModelAware {
-
-    private ApplicationModel applicationModel;
+public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer {
 
     @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-    }
-
-    @Override
-    public void customize(ServiceInstance serviceInstance) {
+    public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
 
         Map<String, String> metadata = serviceInstance.getMetadata();
 
         String propertyName = resolveMetadataPropertyName(serviceInstance);
-        String propertyValue = resolveMetadataPropertyValue(serviceInstance);
+        String propertyValue = resolveMetadataPropertyValue(applicationModel);
 
         if (!isBlank(propertyName) && !isBlank(propertyValue)) {
             metadata.put(propertyName, propertyValue);
@@ -59,7 +51,7 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
         return METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
     }
 
-    private String resolveMetadataPropertyValue(ServiceInstance serviceInstance) {
+    private String resolveMetadataPropertyValue(ApplicationModel applicationModel) {
         MetadataServiceExporter metadataServiceExporter = applicationModel.getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
         if (metadataServiceExporter.isExported()) {
             List<URL> metadataURLs = metadataServiceExporter.getExportedURLs();

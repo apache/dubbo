@@ -46,7 +46,6 @@ import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
@@ -494,15 +493,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     /**
-     * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
+     * Initialize {@link MetadataService}
      */
     private void initMetadataService() {
-//        startMetadataCenter();
-        this.metadataService = getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
-        // support injection by super type MetadataService
-        applicationModel.getBeanFactory().registerBean(this.metadataService);
-
-        //this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
         this.metadataServiceExporter = getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
     }
 
@@ -742,7 +735,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
-            asyncMetadataFuture = executorRepository.getSharedScheduledExecutor().scheduleAtFixedRate(() -> {
+            asyncMetadataFuture = executorRepository.getSharedScheduledExecutor().scheduleWithFixedDelay(() -> {
 
                 // ignore refresh metadata on stopping
                 if (applicationModel.isDestroyed()) {

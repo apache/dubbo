@@ -347,15 +347,6 @@ public class DubboBootstrapTest {
         serviceConfig.setGroup(ApplicationModel.defaultModel().getCurrentConfig().getName());
         serviceConfig.setVersion(MetadataService.VERSION);
         assertThat(exporters, hasEntry(is(serviceConfig.getUniqueServiceName() + ":" + availablePort), anything()));
-
-//        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel());
-//        MetadataInfo metadataInfo = metadataService.getDefaultMetadataInfo();
-//        Assertions.assertNotNull(metadataInfo);
-//        if (shouldReport) {
-//            Assertions.assertTrue(metadataInfo.hasReported());
-//        } else {
-//            Assertions.assertFalse(metadataInfo.hasReported());
-//        }
     }
 
 

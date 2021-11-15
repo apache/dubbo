@@ -29,17 +29,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
 /**
  * Repository of MetadataReport instances that can talk to remote metadata server.
  *
- * MetadataReport instances are initiated during the beginning of deployer.start() and used by components that need to interact with metadata server.
+ * MetadataReport instances are initiated during the beginning of deployer.start() and used by components that
+ * need to interact with metadata server.
+ *
+ * If multiple metadata reports and registries need to be declared, it is recommended to group each two metadata report and registry together by giving them the same id:
+ * <dubbo:registry id=demo1 address="registry://"/>
+ * <dubbo:metadata id=demo1 address="metadata://"/>
+ *
+ * <dubbo:registry id=demo2 address="registry://"/>
+ * <dubbo:metadata id=demo2 address="metadata://"/>
  */
 public class MetadataReportInstance implements Disposable {
 
     private AtomicBoolean init = new AtomicBoolean(false);
 
+    // mapping of registry id to metadata report instance, registry instances will use this mapping to find related metadata reports
     private final Map<String, MetadataReport> metadataReports = new HashMap<>();
 
     public void init(MetadataReportConfig config) {
@@ -59,7 +69,7 @@ public class MetadataReportInstance implements Disposable {
                     .build();
         }
         url = url.addParameterIfAbsent(APPLICATION_KEY, applicationModel.getCurrentConfig().getName());
-        String relatedRegistryId = config.getRegistry() == null ? DEFAULT_KEY : config.getRegistry();
+        String relatedRegistryId = isEmpty(config.getRegistry()) ? (isEmpty(config.getId()) ? DEFAULT_KEY : config.getId()) : config.getRegistry();
 //        RegistryConfig registryConfig = applicationModel.getConfigManager().getRegistry(relatedRegistryId)
 //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not exist."));
         MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);

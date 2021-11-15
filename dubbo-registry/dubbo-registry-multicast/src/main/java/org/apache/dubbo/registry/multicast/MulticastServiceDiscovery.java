@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.multicast;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.Set;
@@ -28,6 +29,10 @@ import java.util.Set;
  */
 public class MulticastServiceDiscovery extends AbstractServiceDiscovery {
     private URL registryURL;
+
+    public MulticastServiceDiscovery(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     public MulticastServiceDiscovery(String serviceName) {
         super(serviceName);

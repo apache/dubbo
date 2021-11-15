@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -33,14 +32,11 @@ import java.util.Set;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
-import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
 /**
- * The common operations of Service Discovery
+ * Defines the common operations of Service Discovery, extended and loaded by ServiceDiscoveryFactory
  *
- * @since 2.7.5
  */
-@SPI(value = "zookeeper", scope = APPLICATION)
 public interface ServiceDiscovery extends RegistryService, Prioritized {
     /**
      * Initializes the {@link ServiceDiscovery}
@@ -58,7 +54,6 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
     void destroy() throws Exception;
 
     boolean isDestroy();
-
 
     void register() throws RuntimeException;
 
@@ -187,6 +182,8 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
     ServiceInstance getLocalInstance();
 
     MetadataInfo getMetadata();
+
+    MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance);
 
     default URL getUrl() {
         return null;

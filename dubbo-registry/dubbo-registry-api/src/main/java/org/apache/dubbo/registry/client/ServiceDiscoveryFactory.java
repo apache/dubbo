@@ -35,6 +35,7 @@ public interface ServiceDiscoveryFactory {
      * Get the instance of {@link ServiceDiscovery}
      *
      * @param registryURL the {@link URL} to connect the registry
+     * @param model, the application model context
      * @return non-null
      */
     ServiceDiscovery getServiceDiscovery(URL registryURL);

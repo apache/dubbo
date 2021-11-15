@@ -19,12 +19,17 @@ package org.apache.dubbo.config.spring.registry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class MockServiceDiscovery extends AbstractServiceDiscovery {
     private URL registryURL;
+
+    public MockServiceDiscovery(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     public MockServiceDiscovery(String serviceName) {
         super(serviceName);

@@ -29,7 +29,7 @@ import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.ListenerRegistryWrapper;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
@@ -238,7 +238,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         Assertions.assertTrue(services.contains(PROVIDER_APPLICATION_NAME));
 
         // obtain InMemoryWritableMetadataService instance
-        MetadataServiceDelegation inMemoryWritableMetadataService = (MetadataServiceDelegation) WritableMetadataService.getDefaultExtension(serviceConfig.getScopeModel());
+        MetadataServiceDelegation inMemoryWritableMetadataService = (MetadataServiceDelegation) serviceConfig.getScopeModel().getBeanFactory().getBean(MetadataService.class);
         // Exported url is right or not in InMemoryWritableMetadataService
         Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);
         // MetadataInfo exists or not in InMemoryWritableMetadataService

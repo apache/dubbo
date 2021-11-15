@@ -21,8 +21,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ArgumentConfig;
-import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -32,7 +30,6 @@ import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -64,14 +61,14 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     private ApplicationModel applicationModel;
     private AtomicBoolean exported = new AtomicBoolean(false);
 
-    public ConfigurableMetadataServiceExporter() {
-    }
+    public ConfigurableMetadataServiceExporter() {}
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
     }
 
+    // will be automatically injected from ScopeBeanFactory by ScopeBeanExtensionInjector
     public void setMetadataService(MetadataService metadataService) {
         this.metadataService = metadataService;
     }
@@ -92,7 +89,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             serviceConfig.setRef(metadataService);
             serviceConfig.setGroup(applicationConfig.getName());
             serviceConfig.setVersion(metadataService.version());
-            serviceConfig.setMethods(generateMethodConfig());
+//            serviceConfig.setMethods(generateMethodConfig());
 
             // add to internal module, do export later
             applicationModel.getInternalModule().getConfigManager().addService(serviceConfig);
@@ -112,27 +109,27 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         return this;
     }
 
-    /**
-     * Generate Method Config for Service Discovery Metadata <p/>
-     * <p>
-     * Make {@link MetadataService} support argument callback,
-     * used to notify {@link org.apache.dubbo.registry.client.ServiceInstance}'s
-     * metadata change event
-     *
-     * @since 3.0
-     */
-    private List<MethodConfig> generateMethodConfig() {
-        MethodConfig methodConfig = new MethodConfig();
-        methodConfig.setName("getAndListenInstanceMetadata");
-
-        ArgumentConfig argumentConfig = new ArgumentConfig();
-        argumentConfig.setIndex(1);
-        argumentConfig.setCallback(true);
-
-        methodConfig.setArguments(Collections.singletonList(argumentConfig));
-
-        return Collections.singletonList(methodConfig);
-    }
+//    /**
+//     * Generate Method Config for Service Discovery Metadata <p/>
+//     * <p>
+//     * Make {@link MetadataService} support argument callback,
+//     * used to notify {@link org.apache.dubbo.registry.client.ServiceInstance}'s
+//     * metadata change event
+//     *
+//     * @since 3.0
+//     */
+//    private List<MethodConfig> generateMethodConfig() {
+//        MethodConfig methodConfig = new MethodConfig();
+//        methodConfig.setName("getAndListenInstanceMetadata");
+//
+//        ArgumentConfig argumentConfig = new ArgumentConfig();
+//        argumentConfig.setIndex(1);
+//        argumentConfig.setCallback(true);
+//
+//        methodConfig.setArguments(Collections.singletonList(argumentConfig));
+//
+//        return Collections.singletonList(methodConfig);
+//    }
 
     @Override
     public ConfigurableMetadataServiceExporter unexport() {

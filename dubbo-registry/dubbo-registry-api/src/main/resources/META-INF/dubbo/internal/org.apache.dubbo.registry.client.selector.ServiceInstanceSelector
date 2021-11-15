@@ -1,1 +1,0 @@
-random=org.apache.dubbo.registry.client.selector.RandomServiceInstanceSelector

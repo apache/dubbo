@@ -278,7 +278,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     private void initServiceAppsMapping(Map<String, String> referenceParameters) {
         ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(getScopeModel());
-        serviceNameMapping.getServices(new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceName, referenceParameters));
+        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceName, referenceParameters);
+        serviceNameMapping.getServices(url);
     }
 
     /**

@@ -17,8 +17,9 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -31,7 +32,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -45,14 +45,15 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ProtocolPortsMetadataCustomizerTest {
     private static final Gson gson = new Gson();
 
     public DefaultServiceInstance instance;
-    private MetadataServiceDelegation metadataService;
+    private static MetadataServiceDelegation mockedMetadataService;
+    private static ApplicationModel mockedApplicationModel;
+    private static ScopeBeanFactory mockedBeanFactory;
 
     public static DefaultServiceInstance createInstance() {
         return new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
@@ -62,6 +63,13 @@ public class ProtocolPortsMetadataCustomizerTest {
     public static void setUp() {
         ApplicationConfig applicationConfig = new ApplicationConfig("test");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
+
+        mockedMetadataService = Mockito.mock(MetadataServiceDelegation.class);
+
+        mockedApplicationModel = Mockito.mock(ApplicationModel.class);
+        Mockito.when(mockedApplicationModel.getBeanFactory()).thenReturn(mockedBeanFactory);
+        mockedBeanFactory = Mockito.mock(ScopeBeanFactory.class);
+        Mockito.when(mockedBeanFactory.getBean(MetadataService.class)).thenReturn(mockedMetadataService);
     }
 
     @AfterAll
@@ -72,7 +80,6 @@ public class ProtocolPortsMetadataCustomizerTest {
     @BeforeEach
     public void init() {
         instance = createInstance();
-        metadataService = mock(MetadataServiceDelegation.class);
 
         URL dubboUrl = URL.valueOf("dubbo://30.10.104.63:20880/org.apache.dubbo.demo.GreetingService?" +
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
@@ -81,7 +88,7 @@ public class ProtocolPortsMetadataCustomizerTest {
         Set<URL> urls = new HashSet<>();
         urls.add(dubboUrl);
         urls.add(triURL);
-        when(metadataService.getExportedServiceURLs()).thenReturn(urls);
+        when(mockedMetadataService.getExportedServiceURLs()).thenReturn(urls);
     }
 
     @AfterEach
@@ -92,17 +99,14 @@ public class ProtocolPortsMetadataCustomizerTest {
     @Test
     public void test() {
         ProtocolPortsMetadataCustomizer customizer = new ProtocolPortsMetadataCustomizer();
-        try (MockedStatic<WritableMetadataService> mockMetadataService = Mockito.mockStatic(WritableMetadataService.class)) {
-            mockMetadataService.when(() -> WritableMetadataService.getDefaultExtension(ApplicationModel.defaultModel())).thenReturn(metadataService);
-            customizer.customize(instance);
-            String endpoints = instance.getMetadata().get(ENDPOINTS);
-            assertNotNull(endpoints);
-            List<DefaultServiceInstance.Endpoint> endpointList = gson.fromJson(endpoints, new TypeToken<List<DefaultServiceInstance.Endpoint>>(){}.getType());
-            assertEquals(2, endpointList.size());
-            MatcherAssert.assertThat(endpointList, hasItem(hasProperty("protocol", equalTo("dubbo"))));
-            MatcherAssert.assertThat(endpointList, hasItem(hasProperty("port", equalTo(20880))));
-            MatcherAssert.assertThat(endpointList, hasItem(hasProperty("protocol", equalTo("tri"))));
-            MatcherAssert.assertThat(endpointList, hasItem(hasProperty("port", equalTo(50332))));
-        }
+        customizer.customize(instance, ApplicationModel.defaultModel());
+        String endpoints = instance.getMetadata().get(ENDPOINTS);
+        assertNotNull(endpoints);
+        List<DefaultServiceInstance.Endpoint> endpointList = gson.fromJson(endpoints, new TypeToken<List<DefaultServiceInstance.Endpoint>>(){}.getType());
+        assertEquals(2, endpointList.size());
+        MatcherAssert.assertThat(endpointList, hasItem(hasProperty("protocol", equalTo("dubbo"))));
+        MatcherAssert.assertThat(endpointList, hasItem(hasProperty("port", equalTo(20880))));
+        MatcherAssert.assertThat(endpointList, hasItem(hasProperty("protocol", equalTo("tri"))));
+        MatcherAssert.assertThat(endpointList, hasItem(hasProperty("port", equalTo(50332))));
     }
 }

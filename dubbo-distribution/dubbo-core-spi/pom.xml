@@ -379,12 +379,6 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.metadata.WritableMetadataService
-                                    </resource>
-                                </transformer>
-                                <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.metadata.annotation.processing.builder.TypeBuilder
                                     </resource>
                                 </transformer>
@@ -524,12 +518,6 @@
                                     implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.registry.client.migration.PreMigratingConditionChecker
-                                    </resource>
-                                </transformer>
-                                <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.registry.client.selector.ServiceInstanceSelector
                                     </resource>
                                 </transformer>
                                 <transformer

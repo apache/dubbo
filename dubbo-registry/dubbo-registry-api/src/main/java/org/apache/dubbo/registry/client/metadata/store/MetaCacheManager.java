@@ -41,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 public class MetaCacheManager implements ScopeModelAware, Disposable {
     private static final Logger logger = LoggerFactory.getLogger(MetaCacheManager.class);
     private static final String DEFAULT_FILE_NAME = ".metadata";
-    private static final String SUFFIX = ".dubbo.cache";
     private static final int DEFAULT_ENTRY_SIZE = 1000;
 
     private static final long INTERVAL = 60L;
@@ -55,10 +54,18 @@ public class MetaCacheManager implements ScopeModelAware, Disposable {
     }
 
     public MetaCacheManager() {
+        this("");
+    }
+
+    public MetaCacheManager(String registryName) {
         String filePath = System.getProperty("dubbo.meta.cache.filePath");
         String fileName = System.getProperty("dubbo.meta.cache.fileName");
         if (StringUtils.isEmpty(fileName)) {
             fileName = DEFAULT_FILE_NAME;
+        }
+
+        if (StringUtils.isNotEmpty(registryName)) {
+            fileName = fileName + "." + registryName;
         }
 
         String rawEntrySize = System.getProperty("dubbo.meta.cache.entrySize");

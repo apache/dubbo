@@ -59,7 +59,7 @@ public class NacosNamingServiceUtilsTest {
         map.put("version", "2.0");
         instance.setMetadata(map);
 
-        ServiceInstance serviceInstance = NacosNamingServiceUtils.toServiceInstance(registryUrl, instance, new HashMap<>(), metadataReport);
+        ServiceInstance serviceInstance = NacosNamingServiceUtils.toServiceInstance(registryUrl, instance);
         Assertions.assertNotNull(serviceInstance);
         Assertions.assertEquals(serviceInstance.isEnabled(), Boolean.TRUE);
         Assertions.assertEquals(serviceInstance.getServiceName(), "serviceName");

@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,11 +36,11 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomizer {
 
     @Override
-    public void customize(ServiceInstance serviceInstance) {
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
+    public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
+        MetadataService metadataService = applicationModel.getBeanFactory().getBean(MetadataService.class);
 
         Map<String, Integer> protocols = new HashMap<>();
-        writableMetadataService.getExportedServiceURLs()
+        metadataService.getExportedServiceURLs()
                 .forEach(url -> {
                     // TODO, same protocol listen on different ports will override with each other.
                     protocols.put(url.getProtocol(), url.getPort());

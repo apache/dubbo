@@ -27,6 +27,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -95,6 +96,7 @@ public abstract class AbstractRegistry implements Registry {
     private File file;
     private boolean localCacheEnabled;
     private RegistryManager registryManager;
+    protected ApplicationModel applicationModel;
 
     public AbstractRegistry(URL url) {
         setUrl(url);

@@ -26,6 +26,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -55,6 +56,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     private NacosNamingServiceWrapper namingService;
 
     private URL registryURL;
+
+    public NacosServiceDiscovery(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
 
     public NacosServiceDiscovery(String serviceName) {
         super(serviceName);
@@ -108,7 +113,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
             service.selectInstances(serviceName, Constants.DEFAULT_GROUP, true)
-                .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i, revisionToMetadata, metadataReport))
+                .stream().map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
                 .collect(Collectors.toList())
         );
     }
@@ -139,7 +144,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         String serviceName = event.getServiceName();
         List<ServiceInstance> serviceInstances = event.getInstances()
             .stream()
-            .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i, revisionToMetadata, metadataReport))
+            .map((i) -> NacosNamingServiceUtils.toServiceInstance(registryURL, i))
             .collect(Collectors.toList());
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }

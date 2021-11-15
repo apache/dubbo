@@ -135,41 +135,7 @@ public class MetadataUtils {
         return metadataServiceProxies;
     }
 
-    public static MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance, Map<String, MetadataInfo> revisionToMetadata, MetadataReport metadataReport) {
-        MetadataInfo metadata = revisionToMetadata.get(revision);
-
-        if (metadata != null && metadata != MetadataInfo.EMPTY) {
-            // metadata loaded from cache
-            if (logger.isDebugEnabled()) {
-                logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                    + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
-            }
-            return metadata;
-        }
-
-        // try to load metadata from remote.
-        int triedTimes = 0;
-        while (triedTimes < 3) {
-            metadata = doGetMetadataInfo(instance, metadataReport);
-
-            if (metadata != MetadataInfo.EMPTY) {// succeeded
-                break;
-            } else {// failed
-                logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                    + "&cluster=" + instance.getRegistryCluster() + ", wait for retry.");
-                triedTimes++;
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
-            }
-        }
-
-        revisionToMetadata.putIfAbsent(revision, metadata);
-        return metadata;
-    }
-
-    protected static MetadataInfo doGetMetadataInfo(ServiceInstance instance, MetadataReport metadataReport) {
+    public static MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance, MetadataReport metadataReport) {
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
         MetadataInfo metadataInfo = null;
         try {
@@ -177,7 +143,7 @@ public class MetadataUtils {
                 logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
             }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                getMetadata(instance, metadataReport);
+                MetadataUtils.getMetadata(instance, metadataReport);
             } else {
                 // change the instance used to communicate to avoid all requests route to the same instance
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);

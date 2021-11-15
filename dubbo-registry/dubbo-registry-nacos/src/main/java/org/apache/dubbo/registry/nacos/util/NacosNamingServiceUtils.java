@@ -20,12 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.metadata.MetadataUtils;
-import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -80,7 +76,7 @@ public class NacosNamingServiceUtils {
      * @return non-null
      * @since 2.7.5
      */
-    public static ServiceInstance toServiceInstance(URL registryUrl, Instance instance, Map<String, MetadataInfo> revisionToMetadata, MetadataReport metadataReport) {
+    public static ServiceInstance toServiceInstance(URL registryUrl, Instance instance) {
         DefaultServiceInstance serviceInstance =
             new DefaultServiceInstance(
                 NamingUtils.getServiceName(instance.getServiceName()),
@@ -89,8 +85,6 @@ public class NacosNamingServiceUtils {
         serviceInstance.setMetadata(instance.getMetadata());
         serviceInstance.setEnabled(instance.isEnabled());
         serviceInstance.setHealthy(instance.isHealthy());
-        String revision = ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
-        serviceInstance.setServiceMetadata(MetadataUtils.getRemoteMetadata(revision, serviceInstance, revisionToMetadata, metadataReport));
         return serviceInstance;
     }
 

@@ -19,7 +19,6 @@ package org.apache.dubbo.config.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -50,15 +49,13 @@ class ServiceInstanceHostPortCustomizerTest {
     void customizePreferredProtocol() {
         ApplicationModel applicationModel= new ApplicationModel(new FrameworkModel());
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("service-preferredProtocol"));
-        
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(applicationModel);
-        
+
         // Trigger the fallback strategy
         DefaultServiceInstance serviceInstance1 = new DefaultServiceInstance("without-preferredProtocol", applicationModel);
         MetadataInfo metadataInfo = new MetadataInfo();
         metadataInfo.addService(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService"));
         serviceInstance1.setServiceMetadata(metadataInfo);
-        serviceInstanceHostPortCustomizer.customize(serviceInstance1);
+        serviceInstanceHostPortCustomizer.customize(serviceInstance1, applicationModel);
         Assertions.assertEquals("127.1.1.1", serviceInstance1.getHost());
         Assertions.assertEquals(50052, serviceInstance1.getPort());
         
@@ -69,7 +66,7 @@ class ServiceInstanceHostPortCustomizerTest {
         
         // pick the preferredProtocol
         ServiceInstance serviceInstance2 = new DefaultServiceInstance("with-preferredProtocol", applicationModel);
-        serviceInstanceHostPortCustomizer.customize(serviceInstance2);
+        serviceInstanceHostPortCustomizer.customize(serviceInstance2, applicationModel);
         Assertions.assertEquals("127.1.2.3", serviceInstance2.getHost());
         Assertions.assertEquals(20889, serviceInstance2.getPort());
     }
