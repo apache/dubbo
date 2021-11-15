@@ -561,7 +561,7 @@
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <forkMode>once</forkMode>
-                    <argLine>${argline} ${jacocoArgLine} --add-opens java.base/java.lang=ALL-UNNAMED</argLine>
+                    <argLine>${argline} ${jacocoArgLine} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
                     <systemProperties>
                         <!-- common shared -->
                     </systemProperties>
