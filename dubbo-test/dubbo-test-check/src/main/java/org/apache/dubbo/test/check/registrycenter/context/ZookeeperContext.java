@@ -37,6 +37,11 @@ public class ZookeeperContext implements Context {
     private Path sourceFile;
 
     /**
+     * The directory after unpacked zookeeper archive binary file.
+     */
+    private String unpackedDirectory;
+
+    /**
      * Sets the source file path of downloaded zookeeper binary archive.
      */
     public void setSourceFile(Path sourceFile) {
@@ -48,6 +53,20 @@ public class ZookeeperContext implements Context {
      */
     public Path getSourceFile() {
         return this.sourceFile;
+    }
+
+    /**
+     * Returns the directory after unpacked zookeeper archive binary file.
+     */
+    public String getUnpackedDirectory() {
+        return unpackedDirectory;
+    }
+
+    /**
+     * Sets the directory after unpacked zookeeper archive binary file.
+     */
+    public void setUnpackedDirectory(String unpackedDirectory) {
+        this.unpackedDirectory = unpackedDirectory;
     }
 
     /**

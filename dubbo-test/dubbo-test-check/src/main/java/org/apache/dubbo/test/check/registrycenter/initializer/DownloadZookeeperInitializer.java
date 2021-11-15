@@ -47,6 +47,11 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
     private static final String ZOOKEEPER_BINARY_URL_FORMAT = "https://archive.apache.org/dist/zookeeper/zookeeper-%s/" + ZOOKEEPER_FILE_NAME_FORMAT;
 
     /**
+     * The temporary directory.
+     */
+    private static final String TEMPORARY_DIRECTORY = "zookeeper";
+
+    /**
      * Returns {@code true} if the file exists with the given file path, otherwise {@code false}.
      *
      * @param filePath the file path to check.
@@ -65,10 +70,10 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
         Path temporaryFilePath;
         try {
             temporaryFilePath = Paths.get(Files.createTempDirectory("").getParent().toString(),
-                "zookeeper",
+                TEMPORARY_DIRECTORY,
                 zookeeperFileName);
         } catch (IOException e) {
-            throw new RuntimeException("Cannot create the temporary directory", e);
+            throw new RuntimeException(String.format("Cannot create the temporary directory, file path: %s", TEMPORARY_DIRECTORY), e);
         }
 
         // create the temporary directory path.
@@ -95,12 +100,12 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
             throw new IllegalArgumentException(String.format("There are some unknown problem occurred when downloaded the zookeeper binary archive file, file path:%s", temporaryFilePath));
         }
 
-        // create target file if necessary
-        if(!Files.exists(context.getSourceFile())){
+        // create target directory if necessary
+        if (!Files.exists(context.getSourceFile())) {
             try {
-                Files.createFile(context.getSourceFile());
+                Files.createDirectories(context.getSourceFile().getParent());
             } catch (IOException e) {
-                throw new IllegalArgumentException(String.format("Failed to create file, the file path: %s", context.getSourceFile()), e);
+                throw new IllegalArgumentException(String.format("Failed to create target directory, the directory path: %s", context.getSourceFile().getParent()), e);
             }
         }
 

@@ -47,7 +47,7 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
     private void updateConfig(ZookeeperContext context, int clientPort, int adminServerPort) throws DubboTestException {
         Path zookeeperConf = Paths.get(context.getSourceFile().getParent().toString(),
             String.valueOf(clientPort),
-            "apache-zookeeper-bin",
+            context.getUnpackedDirectory(),
             "conf");
         File zooSample = Paths.get(zookeeperConf.toString(), "zoo_sample.cfg").toFile();
 

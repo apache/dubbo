@@ -94,7 +94,7 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
             }
             // rename directory
             File sourceFile = parentPath.toFile().listFiles()[0];
-            File targetFile = Paths.get(parentPath.toString(),"apache-zookeeper-bin").toFile();
+            File targetFile = Paths.get(parentPath.toString(), context.getUnpackedDirectory()).toFile();
             sourceFile.renameTo(targetFile);
             if (!Files.exists(targetFile.toPath()) || !targetFile.isDirectory()) {
                 throw new IllegalStateException(String.format("Failed to rename the directory. source directory: %s, target directory: %s",

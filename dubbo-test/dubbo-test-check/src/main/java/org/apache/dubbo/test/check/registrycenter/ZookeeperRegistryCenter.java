@@ -71,7 +71,8 @@ class ZookeeperRegistryCenter implements RegistryCenter {
             this.context = new ZookeeperWindowsContext();
         }
 
-        // set target file path
+        // initialize the context
+        this.context.setUnpackedDirectory(UNPACKED_DIRECTORY);
         this.context.setSourceFile(TARGET_FILE_PATH);
     }
 
@@ -98,9 +99,14 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     private Map<OS, Map<Command, Processor>> processors = new HashMap<>();
 
     /**
+     * The default unpacked directory.
+     */
+    private static final String UNPACKED_DIRECTORY = "apache-zookeeper-bin";
+
+    /**
      * The target name of zookeeper binary file.
      */
-    private static final String TARGET_ZOOKEEPER_FILE_NAME = "apache-zookeeper-bin.tar.gz";
+    private static final String TARGET_ZOOKEEPER_FILE_NAME = UNPACKED_DIRECTORY + ".tar.gz";
 
     /**
      * The target directory.
