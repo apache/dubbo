@@ -65,10 +65,10 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
         Path temporaryFilePath;
         try {
             temporaryFilePath = Paths.get(Files.createTempDirectory("").getParent().toString(),
+                "zookeeper",
                 zookeeperFileName);
         } catch (IOException e) {
-            throw new RuntimeException(String.format("Cannot create the temporary directory, related directory:%s",
-                zookeeperFileName), e);
+            throw new RuntimeException("Cannot create the temporary directory", e);
         }
 
         // create the temporary directory path.
@@ -99,7 +99,7 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
         try {
             Files.copy(temporaryFilePath, context.getSourceFile(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Failed to copy file, the source file path: %s, the target file path: %s", temporaryFilePath, context.getSourceFile()));
+            throw new IllegalArgumentException(String.format("Failed to copy file, the source file path: %s, the target file path: %s", temporaryFilePath, context.getSourceFile()), e);
         }
 
         // checks the zookeeper binary file exists or not again
