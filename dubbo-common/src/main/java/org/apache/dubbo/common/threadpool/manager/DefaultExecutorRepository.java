@@ -34,8 +34,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -58,41 +60,31 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
  */
 public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware, ScopeModelAware {
     private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
-
-    private int DEFAULT_SCHEDULER_SIZE = Runtime.getRuntime().availableProcessors();
-
     private final ExecutorService sharedExecutor;
     private final ScheduledExecutorService sharedScheduledExecutor;
-
-    private Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
-
-    private volatile ScheduledExecutorService serviceExportExecutor;
-
-    private volatile ExecutorService serviceReferExecutor;
-
-    private ScheduledExecutorService connectivityScheduledExecutor;
-
-    public Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
-
-    private Ring<ScheduledExecutorService> serviceDiscoveryAddressNotificationExecutorRing = new Ring<>();
-
-    private ScheduledExecutorService metadataRetryExecutor;
-
-    private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
-
-    private ExecutorService poolRouterExecutor;
-
-    private Ring<ExecutorService> executorServiceRing = new Ring<ExecutorService>();
-
     private final Object LOCK = new Object();
+    private final Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
+    private final ScheduledExecutorService connectivityScheduledExecutor;
+    private final Ring<ScheduledExecutorService> serviceDiscoveryAddressNotificationExecutorRing = new Ring<>();
+    private final ScheduledExecutorService metadataRetryExecutor;
+    private final ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
+    private final ExecutorService poolRouterExecutor;
+    private final Ring<ExecutorService> executorServiceRing = new Ring<>();
+    /**
+     * store url for destroy executor service
+     */
+    private final Set<URL> urlStore = new HashSet<>();
+    public Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
+    private volatile ScheduledExecutorService serviceExportExecutor;
+    private volatile ExecutorService serviceReferExecutor;
     private ExtensionAccessor extensionAccessor;
-
     private ApplicationModel applicationModel;
 
     public DefaultExecutorRepository() {
         sharedExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-shared-handler", true));
         sharedScheduledExecutor = Executors.newScheduledThreadPool(8, new NamedThreadFactory("Dubbo-shared-scheduler", true));
 
+        int DEFAULT_SCHEDULER_SIZE = Runtime.getRuntime().availableProcessors();
         for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
                 new NamedThreadFactory("Dubbo-framework-scheduler-" + i, true));
@@ -132,7 +124,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
         Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
         if (url.getParameter(THREAD_NAME_KEY) == null) {
-            url = url.putAttribute(THREAD_NAME_KEY, "Dubbo-protocol-"+portKey);
+            url = url.putAttribute(THREAD_NAME_KEY, "Dubbo-protocol-" + portKey);
         }
         URL finalUrl = url;
         ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(finalUrl));
@@ -218,7 +210,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             if (serviceExportExecutor == null) {
                 int coreSize = getExportThreadNum();
                 serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
-                        new NamedThreadFactory("Dubbo-service-export", true));
+                    new NamedThreadFactory("Dubbo-service-export", true));
             }
         }
         return serviceExportExecutor;
@@ -245,7 +237,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             if (serviceReferExecutor == null) {
                 int coreSize = getReferThreadNum();
                 serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
-                        new NamedThreadFactory("Dubbo-service-refer", true));
+                    new NamedThreadFactory("Dubbo-service-refer", true));
             }
         }
         return serviceReferExecutor;
@@ -354,10 +346,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     private ExecutorService createExecutor(URL url) {
-        ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        ExecutorService executorService = (ExecutorService) extensionAccessor.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
 
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         dataStore.put(EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()), executorService);
+        urlStore.add(url);
         return executorService;
     }
 
@@ -417,6 +410,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         shutdownExecutorServices(registryNotificationExecutorRing.listItems(),
             "registryNotificationExecutorRing");
 
+        // destroy executor service
+        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        for (URL url : urlStore) {
+            dataStore.remove(EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()));
+        }
     }
 
     private void shutdownExecutorServices(List<? extends ExecutorService> executorServices, String msg) {
