@@ -95,11 +95,20 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
             throw new IllegalArgumentException(String.format("There are some unknown problem occurred when downloaded the zookeeper binary archive file, file path:%s", temporaryFilePath));
         }
 
-        // copy the downloaded zookeeper binary file into the target file path
+        // create target file if necessary
+        if(!Files.exists(context.getSourceFile())){
+            try {
+                Files.createFile(context.getSourceFile());
+            } catch (IOException e) {
+                throw new IllegalArgumentException(String.format("Failed to create file, the file path: %s", context.getSourceFile()), e);
+            }
+        }
+
+        // move the downloaded zookeeper binary file into the target file path
         try {
-            Files.copy(temporaryFilePath, context.getSourceFile(), StandardCopyOption.REPLACE_EXISTING);
+            Files.move(temporaryFilePath, context.getSourceFile(), StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException e) {
-            throw new IllegalArgumentException(String.format("Failed to copy file, the source file path: %s, the target file path: %s", temporaryFilePath, context.getSourceFile()), e);
+            throw new IllegalArgumentException(String.format("Failed to move file, the source file path: %s, the target file path: %s", temporaryFilePath, context.getSourceFile()), e);
         }
 
         // checks the zookeeper binary file exists or not again

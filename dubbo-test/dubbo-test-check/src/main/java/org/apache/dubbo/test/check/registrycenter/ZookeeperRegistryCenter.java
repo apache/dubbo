@@ -189,6 +189,8 @@ class ZookeeperRegistryCenter implements RegistryCenter {
                     for (Initializer initializer : this.initializers) {
                         initializer.initialize(this.context);
                     }
+                    // add shutdown hook
+                    Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown()));
                     INITIALIZED.set(true);
                 }
             }
