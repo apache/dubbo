@@ -113,8 +113,8 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public int getPerson(Person person1, Person perso2) {
-        return person1.getAge() + perso2.getAge();
+    public int getPerson(Person person1, Person person2) {
+        return person1.getAge() + person2.getAge();
     }
 
     @Override

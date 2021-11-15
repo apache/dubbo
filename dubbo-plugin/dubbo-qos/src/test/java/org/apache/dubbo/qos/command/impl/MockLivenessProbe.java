@@ -16,29 +16,19 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.qos.probe.LivenessProbe;
 
-import java.util.Arrays;
+@Activate
+public class MockLivenessProbe implements LivenessProbe {
+    private static boolean checkReturnValue = false;
 
-@Cmd(name = "pwd", summary = "Print working default service.", example = {
-    "pwd"
-})
-public class PwdTelnet implements BaseCommand {
     @Override
-    public String execute(CommandContext commandContext, String[] args) {
-        if (args.length > 0) {
-            return "Unsupported parameter " + Arrays.toString(args) + " for pwd.";
-        }
-        String service = commandContext.getRemote().attr(ChangeTelnet.SERVICE_KEY).get();
-        StringBuilder buf = new StringBuilder();
-        if (StringUtils.isEmpty(service)) {
-            buf.append('/');
-        } else {
-            buf.append(service);
-        }
-        return buf.toString();
+    public boolean check() {
+        return checkReturnValue;
+    }
+
+    public static void setCheckReturnValue(boolean checkReturnValue) {
+        MockLivenessProbe.checkReturnValue = checkReturnValue;
     }
 }

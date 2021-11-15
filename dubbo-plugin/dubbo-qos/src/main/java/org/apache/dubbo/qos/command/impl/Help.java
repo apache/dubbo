@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
@@ -26,6 +27,8 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 @Cmd(name = "help", summary = "help command", example = {
         "help",
@@ -35,18 +38,21 @@ public class Help implements BaseCommand {
 
     private CommandHelper commandHelper;
 
+    private static final String MAIN_HELP = "mainHelp";
+
+    private static Map<String, String> processedTable = new WeakHashMap<>();
+
     public Help(FrameworkModel frameworkModel) {
         this.commandHelper = new CommandHelper(frameworkModel);
     }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        if (args != null && args.length > 0) {
-            return commandHelp(args[0]);
+        if (ArrayUtils.isNotEmpty(args)) {
+            return processedTable.computeIfAbsent(args[0], commandName -> commandHelp(commandName));
         } else {
-            return mainHelp();
+            return processedTable.computeIfAbsent(MAIN_HELP, commandName -> mainHelp());
         }
-
     }
 
 

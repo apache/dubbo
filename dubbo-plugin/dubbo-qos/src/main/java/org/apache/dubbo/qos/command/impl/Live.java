@@ -48,18 +48,16 @@ public class Live implements BaseCommand {
             .map(ApplicationConfig::getLivenessProbe)
             .filter(Objects::nonNull)
             .collect(Collectors.joining(","));
-        if(StringUtils.isNotEmpty(config)) {
-            URL url = URL.valueOf("application://")
-                .addParameter(CommonConstants.QOS_LIVE_PROBE_EXTENSION, config);
-            List<LivenessProbe> livenessProbes = frameworkModel.getExtensionLoader(LivenessProbe.class)
-                .getActivateExtension(url, CommonConstants.QOS_LIVE_PROBE_EXTENSION);
-            if (!livenessProbes.isEmpty()) {
-                for (LivenessProbe livenessProbe : livenessProbes) {
-                    if (!livenessProbe.check()) {
-                        // 503 Service Unavailable
-                        commandContext.setHttpCode(503);
-                        return "false";
-                    }
+        URL url = URL.valueOf("application://")
+            .addParameter(CommonConstants.QOS_LIVE_PROBE_EXTENSION, config);
+        List<LivenessProbe> livenessProbes = frameworkModel.getExtensionLoader(LivenessProbe.class)
+            .getActivateExtension(url, CommonConstants.QOS_LIVE_PROBE_EXTENSION);
+        if (!livenessProbes.isEmpty()) {
+            for (LivenessProbe livenessProbe : livenessProbes) {
+                if (!livenessProbe.check()) {
+                    // 503 Service Unavailable
+                    commandContext.setHttpCode(503);
+                    return "false";
                 }
             }
         }

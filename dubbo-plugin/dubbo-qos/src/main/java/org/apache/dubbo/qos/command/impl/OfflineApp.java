@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.model.ProviderModel;
         "offlineApp xx.xx.xxx.service"
 })
 public class OfflineApp extends BaseOffline {
-    private static final Logger logger = LoggerFactory.getLogger(OfflineApp.class);
 
     public OfflineApp(FrameworkModel frameworkModel) {
         super(frameworkModel);
