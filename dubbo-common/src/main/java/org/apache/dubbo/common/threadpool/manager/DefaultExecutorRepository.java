@@ -346,7 +346,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     private ExecutorService createExecutor(URL url) {
-        ExecutorService executorService = (ExecutorService) extensionAccessor.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
 
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         dataStore.put(EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()), executorService);
