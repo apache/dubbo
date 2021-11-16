@@ -30,6 +30,8 @@
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
         <spring_version>4.2.4.RELEASE</spring_version>
+        <zookeeper_version>3.6.0</zookeeper_version>
+        <curator5_version>5.1.0</curator5_version>
     </properties>
 
     <dependencyManagement>
@@ -51,7 +53,31 @@
             <artifactId>dubbo-test-spring</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
+        </dependency>        <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-framework</artifactId>
+        <version>${curator5_version}</version>
+        <!--            <scope>test</scope>-->
+    </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>${curator5_version}</version>
+            <!--            <scope>test</scope>-->
         </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>${zookeeper_version}</version>
+            <!--            <scope>test</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+            <version>${curator5_version}</version>
+            <!--            <scope>test</scope>-->
+        </dependency>
+
     </dependencies>
 
     <build>
