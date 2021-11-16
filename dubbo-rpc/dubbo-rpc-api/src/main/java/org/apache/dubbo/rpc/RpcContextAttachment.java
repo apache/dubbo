@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RpcContextAttachment extends RpcContext{
-    protected final Map<String, Object> attachments = new HashMap<>();
+    protected volatile Map<String, Object> attachments = new HashMap<>();
 
     protected RpcContextAttachment() {
     }
@@ -143,7 +143,7 @@ public class RpcContextAttachment extends RpcContext{
     public RpcContextAttachment setObjectAttachments(Map<String, Object> attachment) {
         this.attachments.clear();
         if (CollectionUtils.isNotEmptyMap(attachment)) {
-            this.attachments.putAll(attachment);
+            this.attachments = attachment;
         }
         return this;
     }
