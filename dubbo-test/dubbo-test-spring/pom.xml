@@ -31,8 +31,8 @@
         <skip_maven_deploy>true</skip_maven_deploy>
         <slf4j-log4j12.version>1.7.25</slf4j-log4j12.version>
         <spring_version>3.2.18.RELEASE</spring_version>
-        <zookeeper.version>3.6.0</zookeeper.version>
-        <curator5.version>5.1.0</curator5.version>
+        <zookeeper_version>3.6.0</zookeeper_version>
+        <curator5_version>5.1.0</curator5_version>
         <!--<spring_version>4.0.9.RELEASE</spring_version>-->
         <!--<spring_version>4.1.9.RELEASE</spring_version>-->
         <!--<spring_version>4.2.4.RELEASE</spring_version>-->
