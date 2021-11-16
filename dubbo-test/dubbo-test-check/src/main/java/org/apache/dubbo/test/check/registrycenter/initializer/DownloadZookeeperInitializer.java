@@ -20,15 +20,21 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
+import org.asynchttpclient.Response;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.AsyncCompletionHandler;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.DefaultAsyncHttpClient;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Download zookeeper binary archive.
@@ -55,12 +61,12 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
     /**
      * The timeout when download zookeeper binary archive file.
      */
-    private static final int CONNECT_TIMEOUT = 30 * 1000;
+    private static final int REQUEST_TIMEOUT = 30 * 1000;
 
     /**
-     * The timeout when read the input stream to save in target path.
+     * The timeout when connect the download url.
      */
-    private static final int READ_TIMEOUT = 10 * 1000;
+    private static final int CONNECT_TIMEOUT = 10 * 1000;
 
     /**
      * Returns {@code true} if the file exists with the given file path, otherwise {@code false}.
@@ -100,28 +106,15 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
             logger.info("It is beginning to download the zookeeper binary archive, it will take several minutes..." +
                 "\nThe zookeeper binary archive file will be download from " + zookeeperBinaryUrl + "," +
                 "\nwhich will be saved in " + temporaryFilePath.toString() + "," +
-                "\nalso it will be renamed to 'apache-zookeeper-bin.tar.gz' and moved into {project.dir}.tmp/zookeeper directory.\n");
-            URL url = new URL(zookeeperBinaryUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            // set timeout when download the zookeeper binary archive file.
-            connection.setConnectTimeout(CONNECT_TIMEOUT);
-            // set timeout when read downloaded input stream to save in temporary file path.
-            connection.setReadTimeout(READ_TIMEOUT);
-            connection.setRequestMethod("GET");
-            // use cache first
-            connection.setUseCaches(true);
-            // only read input stream from HttpURLConnection
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream inputStream = connection.getInputStream();
-            Files.copy(inputStream, temporaryFilePath, StandardCopyOption.REPLACE_EXISTING);
+                "\nalso it will be renamed to 'apache-zookeeper-bin.tar.gz' and moved into " + context.getSourceFile() + ".\n");
+            this.download(zookeeperBinaryUrl, temporaryFilePath);
         } catch (Exception e) {
             throw new RuntimeException(String.format("Download zookeeper binary archive failed, download url:%s, file path:%s." +
                     "\nOr you can do something to avoid this problem as below:" +
                     "\n1. Download zookeeper binary archive manually regardless of the version" +
                     "\n2. Rename the downloaded file named 'apache-zookeeper-{version}-bin.tar.gz' to 'apache-zookeeper-bin.tar.gz'" +
-                    "\n3. Put the renamed file in {project.dir}.tmp/zookeeper directory, you maybe need to create the directory if necessary.\n",
-                zookeeperBinaryUrl, temporaryFilePath), e);
+                    "\n3. Put the renamed file in %s, you maybe need to create the directory if necessary.\n",
+                zookeeperBinaryUrl, temporaryFilePath, context.getSourceFile()), e);
         }
 
         // check downloaded zookeeper binary file in temporary directory.
@@ -149,5 +142,36 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
         if (!checkFile(context.getSourceFile())) {
             throw new IllegalArgumentException(String.format("The zookeeper binary archive file doesn't exist, file path:%s", context.getSourceFile()));
         }
+    }
+
+    /**
+     * Download the file with the given url.
+     *
+     * @param url        the url to download.
+     * @param targetPath the target path to save the downloaded file.
+     */
+    private void download(String url, Path targetPath) throws ExecutionException, InterruptedException, IOException, TimeoutException {
+        AsyncHttpClient asyncHttpClient = new DefaultAsyncHttpClient(
+            new DefaultAsyncHttpClientConfig.Builder()
+                .setConnectTimeout(CONNECT_TIMEOUT)
+                .setRequestTimeout(REQUEST_TIMEOUT)
+                .setMaxRequestRetry(1)
+                .build());
+        Future<Response> responseFuture = asyncHttpClient.prepareGet(url).execute(new AsyncCompletionHandler<Response>() {
+            @Override
+            public Response onCompleted(Response response) {
+                logger.info("Download zookeeper binary archive file successfully! download url: " + url);
+                return response;
+            }
+
+            @Override
+            public void onThrowable(Throwable t) {
+                logger.warn("Failed to download the file, download url: " + url);
+                super.onThrowable(t);
+            }
+        });
+        // Future timeout should 2 times as equal as REQUEST_TIMEOUT, because it will retry 1 time.
+        Response response = responseFuture.get(REQUEST_TIMEOUT * 2, TimeUnit.MILLISECONDS);
+        Files.copy(response.getResponseBodyAsStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
     }
 }
