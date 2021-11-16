@@ -47,7 +47,7 @@ public class InternalRunnable implements Runnable{
     /**
      * Wrap ordinary Runnable into {@link InternalThreadLocal}.
      */
-     static Runnable Wrap(Runnable runnable){
+     public static Runnable Wrap(Runnable runnable){
         return runnable instanceof InternalRunnable?runnable:new InternalRunnable(runnable);
     }
 }
