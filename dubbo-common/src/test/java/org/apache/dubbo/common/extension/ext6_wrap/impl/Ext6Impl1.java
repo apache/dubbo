@@ -19,8 +19,8 @@ package org.apache.dubbo.common.extension.ext6_wrap.impl;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 
-public class Ext5Impl1 implements WrappedExt {
+public class Ext6Impl1 implements WrappedExt {
     public String echo(URL url, String s) {
-        return "Ext5Impl1-echo";
+        return "Ext6Impl1-echo";
     }
 }
