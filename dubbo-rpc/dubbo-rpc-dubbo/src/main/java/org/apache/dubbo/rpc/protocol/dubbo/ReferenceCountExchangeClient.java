@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
+import org.apache.dubbo.rpc.RpcContext;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
@@ -206,8 +207,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
         /**
          * the order of judgment in the if statement cannot be changed.
+         * the consumerUrl of rpc service context is null while scope model is destroying.
          */
-        if (!(client instanceof LazyConnectExchangeClient)) {
+        if (RpcContext.getServiceContext().getConsumerUrl() != null && !(client instanceof LazyConnectExchangeClient)) {
             // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
             URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
                     //.addParameter(RECONNECT_KEY, Boolean.FALSE)
