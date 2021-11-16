@@ -23,6 +23,7 @@ import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,6 +51,16 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
      * The temporary directory.
      */
     private static final String TEMPORARY_DIRECTORY = "zookeeper";
+
+    /**
+     * The timeout when download zookeeper binary archive file.
+     */
+    private static final int CONNECT_TIMEOUT = 30 * 1000;
+
+    /**
+     * The timeout when read the input stream to save in target path.
+     */
+    private static final int READ_TIMEOUT = 10 * 1000;
 
     /**
      * Returns {@code true} if the file exists with the given file path, otherwise {@code false}.
@@ -86,12 +97,30 @@ public class DownloadZookeeperInitializer extends ZookeeperInitializer {
         // download zookeeper binary file in temporary directory.
         String zookeeperBinaryUrl = String.format(ZOOKEEPER_BINARY_URL_FORMAT, context.getVersion(), context.getVersion());
         try {
-            logger.info("It is beginning to download the zookeeper binary archive, it will take several minutes...");
-            URL zookeeperBinaryURL = new URL(zookeeperBinaryUrl);
-            InputStream inputStream = zookeeperBinaryURL.openStream();
+            logger.info("It is beginning to download the zookeeper binary archive, it will take several minutes..." +
+                "\nThe zookeeper binary archive file will be download from " + zookeeperBinaryUrl + "," +
+                "\nwhich will be saved in " + temporaryFilePath.toString() + "," +
+                "\nalso it will be renamed to 'apache-zookeeper-bin.tar.gz' and moved into {project.dir}.tmp/zookeeper directory.\n");
+            URL url = new URL(zookeeperBinaryUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            // set timeout when download the zookeeper binary archive file.
+            connection.setConnectTimeout(CONNECT_TIMEOUT);
+            // set timeout when read downloaded input stream to save in temporary file path.
+            connection.setReadTimeout(READ_TIMEOUT);
+            connection.setRequestMethod("GET");
+            // use cache first
+            connection.setUseCaches(true);
+            // only read input stream from HttpURLConnection
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream inputStream = connection.getInputStream();
             Files.copy(inputStream, temporaryFilePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Download zookeeper binary archive failed, download url:%s, file path:%s",
+            throw new RuntimeException(String.format("Download zookeeper binary archive failed, download url:%s, file path:%s." +
+                    "\nOr you can do something to avoid this problem as below:" +
+                    "\n1. Download zookeeper binary archive manually regardless of the version" +
+                    "\n2. Rename the downloaded file named 'apache-zookeeper-{version}-bin.tar.gz' to 'apache-zookeeper-bin.tar.gz'" +
+                    "\n3. Put the renamed file in {project.dir}.tmp/zookeeper directory, you maybe need to create the directory if necessary.\n",
                 zookeeperBinaryUrl, temporaryFilePath), e);
         }
 
