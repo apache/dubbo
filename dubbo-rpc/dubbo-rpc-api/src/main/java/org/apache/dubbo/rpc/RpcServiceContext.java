@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -74,7 +75,15 @@ public class RpcServiceContext extends RpcContext {
     private Object response;
     private AsyncContext asyncContext;
 
-    private Set<Consumer<URL>> consumerUrlNotifySet = new HashSet<>();
+    /**
+     * use internal thread local to be consistent with RpcContext's SERVICE_CONTEXT.
+     */
+    private InternalThreadLocal<Set<Consumer<URL>>> consumerUrlNotifySet = new InternalThreadLocal<Set<Consumer<URL>>>() {
+        @Override
+        protected Set<Consumer<URL>> initialValue() {
+            return new HashSet<>();
+        }
+    };
 
     /**
      * Get the request object of the underlying RPC protocol, e.g. HttpServletRequest
@@ -647,14 +656,21 @@ public class RpcServiceContext extends RpcContext {
     }
 
     public URL getConsumerUrl(Consumer<URL> consumerUrlNotify) {
-        this.consumerUrlNotifySet.add(consumerUrlNotify);
+        this.consumerUrlNotifySet.get().add(consumerUrlNotify);
         return consumerUrl;
+    }
+
+    /**
+     * remove internal thread local of RpcServiceContext.
+     */
+    public void remove() {
+        this.consumerUrlNotifySet.remove();
     }
 
     @Override
     public void setConsumerUrl(URL consumerUrl) {
         this.consumerUrl = consumerUrl;
-        for (Consumer<URL> consumerUrlNotify : this.consumerUrlNotifySet) {
+        for (Consumer<URL> consumerUrlNotify : this.consumerUrlNotifySet.get()) {
             consumerUrlNotify.accept(consumerUrl);
         }
     }

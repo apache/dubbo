@@ -174,6 +174,7 @@ public class RpcContext {
     }
 
     public static void removeServiceContext() {
+        SERVICE_CONTEXT.get().remove();
         SERVICE_CONTEXT.remove();
     }
 
@@ -224,7 +225,7 @@ public class RpcContext {
             SERVER_ATTACHMENT.remove();
         }
         SERVER_LOCAL.remove();
-        SERVICE_CONTEXT.remove();
+        removeServiceContext();
         CANCELLATION_CONTEXT.remove();
     }
 
