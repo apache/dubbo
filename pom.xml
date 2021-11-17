@@ -494,6 +494,33 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>jdk15ge</id>
+            <activation>
+                <jdk>[15,</jdk>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-surefire-plugin</artifactId>
+                            <configuration>
+                                <useSystemClassLoader>true</useSystemClassLoader>
+                                <forkMode>once</forkMode>
+                                <argLine>${argline} ${jacocoArgLine}
+                                    --add-opens java.base/java.lang=ALL-UNNAMED
+                                    --add-opens java.base/java.util=ALL-UNNAMED
+                                </argLine>
+                                <systemProperties>
+                                    <!-- common shared -->
+                                </systemProperties>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
     </profiles>
 
     <build>
@@ -561,7 +588,6 @@
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <forkMode>once</forkMode>
-<!--                    <argLine>${argline} ${jacocoArgLine} &#45;&#45;add-opens java.base/java.lang=ALL-UNNAMED &#45;&#45;add-opens java.base/java.util=ALL-UNNAMED</argLine>-->
                     <argLine>${argline} ${jacocoArgLine}</argLine>
                     <systemProperties>
                         <!-- common shared -->
