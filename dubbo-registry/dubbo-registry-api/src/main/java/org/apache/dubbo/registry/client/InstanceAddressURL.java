@@ -45,12 +45,6 @@ public class InstanceAddressURL extends URL {
 
     private ServiceInstance instance;
     private MetadataInfo metadataInfo;
-    /**
-     * save consumerUrl at initialization to avoid NPE:
-     * consumerUrl will be removed from service context by ScopeModel#destroy(),
-     * getConsumerUrl() will return null after scope model is destroyed.
-     */
-    private URL consumerUrl;
 
     // cached numbers
     private volatile transient Map<String, Number> numbers;
@@ -66,11 +60,6 @@ public class InstanceAddressURL extends URL {
     ) {
         this.instance = instance;
         this.metadataInfo = metadataInfo;
-        this.consumerUrl = RpcContext.getServiceContext().getConsumerUrl(newConsumerUrl -> {
-            if (newConsumerUrl.getOrDefaultApplicationModel() == this.instance.getApplicationModel()) {
-                this.consumerUrl = newConsumerUrl;
-            }
-        });
     }
 
     public ServiceInstance getInstance() {
@@ -164,7 +153,7 @@ public class InstanceAddressURL extends URL {
             return getSide();
         }
 
-        if (consumerParamFirst(key)) {            
+        if (consumerParamFirst(key)) {
             if (consumerUrl != null) {
                 String v = consumerUrl.getParameter(key);
                 if (StringUtils.isNotEmpty(v)) {
@@ -182,7 +171,7 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getServiceParameter(String service, String key) {
-        if (consumerParamFirst(key)) {            
+        if (consumerParamFirst(key)) {
             if (consumerUrl != null) {
                 String v = consumerUrl.getServiceParameter(service, key);
                 if (StringUtils.isNotEmpty(v)) {
@@ -210,7 +199,7 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public String getServiceMethodParameter(String protocolServiceKey, String method, String key) {
-        if (consumerParamFirst(key)) {            
+        if (consumerParamFirst(key)) {
             if (consumerUrl != null) {
                 String v = consumerUrl.getServiceMethodParameter(protocolServiceKey, method, key);
                 if (StringUtils.isNotEmpty(v)) {
@@ -229,7 +218,7 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getMethodParameter(String method, String key) {
-        if (consumerParamFirst(key)) {            
+        if (consumerParamFirst(key)) {
             if (consumerUrl != null) {
                 String v = consumerUrl.getMethodParameter(method, key);
                 if (StringUtils.isNotEmpty(v)) {
@@ -254,7 +243,7 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public boolean hasServiceMethodParameter(String protocolServiceKey, String method, String key) {
-        if (consumerParamFirst(key)) {            
+        if (consumerParamFirst(key)) {
             if (consumerUrl != null) {
                 if (consumerUrl.hasServiceMethodParameter(protocolServiceKey, method, key)) {
                     return true;
@@ -288,7 +277,7 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public boolean hasMethodParameter(String method, String key) {
-        if (consumerParamFirst(key)) {            
+        if (consumerParamFirst(key)) {
             if (consumerUrl != null) {
                 if (consumerUrl.hasMethodParameter(method, key)) {
                     return true;
@@ -310,7 +299,7 @@ public class InstanceAddressURL extends URL {
      * @return
      */
     @Override
-    public boolean hasServiceMethodParameter(String protocolServiceKey, String method) {        
+    public boolean hasServiceMethodParameter(String protocolServiceKey, String method) {
         if (consumerUrl != null) {
             if (consumerUrl.hasServiceMethodParameter(protocolServiceKey, method)) {
                 return true;
@@ -322,7 +311,7 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public boolean hasMethodParameter(String method) {        
+    public boolean hasMethodParameter(String method) {
         if (consumerUrl != null) {
             if (consumerUrl.hasMethodParameter(method)) {
                 return true;

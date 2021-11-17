@@ -135,6 +135,11 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         // Set the context of the address notification thread.
         RpcServiceContext.setRpcContext(getConsumerUrl());
 
+        // set consumerUrl of each instance URL.
+        for (URL instanceUrl : instanceUrls) {
+            instanceUrl.setConsumerURL(getConsumerUrl());
+        }
+
         //  3.x added for extend URL address
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = getUrl().getOrDefaultModuleModel().getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);

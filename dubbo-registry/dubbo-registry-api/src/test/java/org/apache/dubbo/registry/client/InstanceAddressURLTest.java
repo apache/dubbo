@@ -115,6 +115,7 @@ public class InstanceAddressURLTest {
         assertEquals("value1", instanceURL.getParameter("key1"));//return instance key
         assertNull(instanceURL.getParameter("delay"));// no service key specified
         RpcServiceContext.setRpcContext(consumerURL);
+        instanceURL.setConsumerURL(consumerURL); // set consumerUrl of instanceURL
         assertEquals("1000", instanceURL.getParameter("delay"));
         assertEquals("1000", instanceURL.getServiceParameter(consumerURL.getProtocolServiceKey(), "delay"));
         assertEquals("9000", instanceURL.getMethodParameter("sayHello", "timeout"));

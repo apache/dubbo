@@ -21,14 +21,10 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
-
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -73,8 +69,6 @@ public class RpcServiceContext extends RpcContext {
     private Object request;
     private Object response;
     private AsyncContext asyncContext;
-
-    private Set<Consumer<URL>> consumerUrlNotifySet = new HashSet<>();
 
     /**
      * Get the request object of the underlying RPC protocol, e.g. HttpServletRequest
@@ -646,17 +640,9 @@ public class RpcServiceContext extends RpcContext {
         return consumerUrl;
     }
 
-    public URL getConsumerUrl(Consumer<URL> consumerUrlNotify) {
-        this.consumerUrlNotifySet.add(consumerUrlNotify);
-        return consumerUrl;
-    }
-
     @Override
     public void setConsumerUrl(URL consumerUrl) {
         this.consumerUrl = consumerUrl;
-        for (Consumer<URL> consumerUrlNotify : this.consumerUrlNotifySet) {
-            consumerUrlNotify.accept(consumerUrl);
-        }
     }
 
     public static void setRpcContext(URL url) {

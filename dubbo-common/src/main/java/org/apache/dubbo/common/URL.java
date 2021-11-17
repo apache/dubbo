@@ -130,6 +130,7 @@ class URL implements Serializable {
     private transient String serviceKey;
     private transient String protocolServiceKey;
     protected volatile Map<String, Object> attributes;
+    protected volatile URL consumerUrl;
 
     protected URL() {
         this.urlAddress = null;
@@ -1942,5 +1943,9 @@ class URL implements Serializable {
 
     public URL toSerializableURL() {
         return returnURL(URLPlainParam.toURLPlainParam(urlParam));
+    }
+
+    public void setConsumerURL(URL consumerUrl) {
+        this.consumerUrl = consumerUrl;
     }
 }
