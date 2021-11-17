@@ -16,10 +16,8 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
-import org.apache.curator.test.TestingServer;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.status.Status;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
@@ -32,6 +30,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.util.List;
 import java.util.Map;
@@ -47,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 public class ZookeeperRegistryTest {
-    private TestingServer zkServer;
+    private static String zookeeperConnectionAddress1;
     private ZookeeperRegistry zookeeperRegistry;
     private String service = "org.apache.dubbo.test.injvmServie";
     private URL serviceUrl = URL.valueOf("zookeeper://zookeeper/" + service + "?notify=false&methods=test1,test2");
@@ -56,13 +55,14 @@ public class ZookeeperRegistryTest {
     private ZookeeperRegistryFactory zookeeperRegistryFactory;
     private NotifyListener listener;
 
+    @BeforeAll
+    public static void beforeAll() {
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+    }
+
     @BeforeEach
     public void setUp() throws Exception {
-        int zkServerPort = NetUtils.getAvailablePort();
-        this.zkServer = new TestingServer(zkServerPort, true);
-        this.zkServer.start();
-
-        this.registryUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
+        this.registryUrl = URL.valueOf(zookeeperConnectionAddress1);
         zookeeperRegistryFactory = new ZookeeperRegistryFactory(FrameworkModel.defaultModel());
         this.zookeeperRegistry = (ZookeeperRegistry) zookeeperRegistryFactory.createRegistry(registryUrl);
     }
@@ -71,7 +71,6 @@ public class ZookeeperRegistryTest {
     public void tearDown() throws Exception {
         // close zk client
         ZookeeperTransporter.getExtension(FrameworkModel.defaultModel()).close("");
-        zkServer.stop();
     }
 
     @Test
