@@ -17,8 +17,6 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.ArrayList;
