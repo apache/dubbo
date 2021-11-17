@@ -66,7 +66,11 @@ public class InstanceAddressURL extends URL {
     ) {
         this.instance = instance;
         this.metadataInfo = metadataInfo;
-        this.consumerUrl = RpcContext.getServiceContext().getConsumerUrl(consumerUrl -> this.consumerUrl = consumerUrl);
+        this.consumerUrl = RpcContext.getServiceContext().getConsumerUrl(newConsumerUrl -> {
+            if (newConsumerUrl.getOrDefaultApplicationModel() == this.instance.getApplicationModel()) {
+                this.consumerUrl = newConsumerUrl;
+            }
+        });
     }
 
     public ServiceInstance getInstance() {
