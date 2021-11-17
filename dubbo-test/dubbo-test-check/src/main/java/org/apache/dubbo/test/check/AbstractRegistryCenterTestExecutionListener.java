@@ -51,6 +51,13 @@ public abstract class AbstractRegistryCenterTestExecutionListener implements Tes
         PACKAGE_NAME.add("org.apache.dubbo.config");
         // dubbo-test module
         PACKAGE_NAME.add("org.apache.dubbo.test");
+        // dubbo-registry
+        PACKAGE_NAME.add("org.apache.dubbo.registry");
+        // dubbo-remoting-zookeeper
+        PACKAGE_NAME.add("org.apache.dubbo.remoting.zookeeper");
+        // dubbo-metadata-report-zookeeper
+        PACKAGE_NAME.add("org.apache.dubbo.metadata.store.zookeeper");
+
         enableEmbeddedZookeeper = Boolean.valueOf(System.getProperty(CONFIG_ENABLE_EMBEDDED_ZOOKEEPER, "true"));
     }
 

@@ -17,25 +17,19 @@
 package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
-
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.WatchedEvent;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,17 +37,18 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 public class Curator5ZookeeperClientTest {
-    private static TestingServer zkServer;
     private static Curator5ZookeeperClient curatorClient;
     private static CuratorFramework client = null;
 
+    private static int zookeeperServerPort1;
+    private static String zookeeperConnectionAddress1;
+
     @BeforeAll
     public static void setUp() throws Exception {
-        int zkServerPort = NetUtils.getAvailablePort();
-        zkServer = new TestingServer(zkServerPort, true);
-        curatorClient = new Curator5ZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:" +
-                zkServerPort + "/org.apache.dubbo.registry.RegistryService"));
-        client = CuratorFrameworkFactory.newClient(zkServer.getConnectString(), new ExponentialBackoffRetry(1000, 3));
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+        zookeeperServerPort1 = Integer.parseInt(zookeeperConnectionAddress1.substring(zookeeperConnectionAddress1.lastIndexOf(":") + 1));
+        curatorClient = new Curator5ZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService"));
+        client = CuratorFrameworkFactory.newClient("127.0.0.1:"+zookeeperServerPort1, new ExponentialBackoffRetry(1000, 3));
         client.start();
     }
 
@@ -181,13 +176,7 @@ public class Curator5ZookeeperClientTest {
 
 
     @AfterAll
-    public static void testWithStoppedServer() throws IOException {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            curatorClient.create("/testPath", true);
-            zkServer.stop();
-            curatorClient.delete("/testPath");
-        });
-        
+    public static void testWithStoppedServer() {
         curatorClient.close();
     }
 }
