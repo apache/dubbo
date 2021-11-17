@@ -111,7 +111,7 @@ public class MetadataInfo implements Serializable {
             return;
         }
         this.services.remove(url.getProtocolServiceKey());
-        this.exportedServiceURLs.remove(url);
+        removeURL(exportedServiceURLs, url);
 
         updated.compareAndSet(false, true);
     }

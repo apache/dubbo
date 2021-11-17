@@ -21,8 +21,6 @@ import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.DefaultPage;
-import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -35,9 +33,7 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.KeeperException;
 
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,8 +55,6 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private URL registryURL;
-
     private CuratorFramework curatorFramework;
 
     private String rootPath;
@@ -72,26 +66,16 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
      */
     private final Map<String, ZookeeperServiceDiscoveryChangeWatcher> watcherCaches = new ConcurrentHashMap<>();
 
-    public ZookeeperServiceDiscovery(ApplicationModel applicationModel) {
-        super(applicationModel);
-    }
-
-    public ZookeeperServiceDiscovery(String serviceName) {
-        super(serviceName);
-    }
-
-    @Override
-    public void doInitialize(URL registryURL) throws Exception {
-        this.registryURL = registryURL;
-        this.curatorFramework = buildCuratorFramework(registryURL);
-        this.rootPath = ROOT_PATH.getParameterValue(registryURL);
-        this.serviceDiscovery = buildServiceDiscovery(curatorFramework, rootPath);
-        this.serviceDiscovery.start();
-    }
-
-    @Override
-    public URL getUrl() {
-        return registryURL;
+    public ZookeeperServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
+        super(applicationModel, registryURL);
+        try {
+            this.curatorFramework = buildCuratorFramework(registryURL);
+            this.rootPath = ROOT_PATH.getParameterValue(registryURL);
+            this.serviceDiscovery = buildServiceDiscovery(curatorFramework, rootPath);
+            this.serviceDiscovery.start();
+        } catch (Exception e) {
+            throw new IllegalStateException("Create zookeeper service discovery failed.", e);
+        }
     }
 
     @Override
@@ -124,48 +108,6 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return doInServiceDiscovery(s -> build(registryURL, s.queryForInstances(serviceName)));
-    }
-
-    @Override
-    public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly) {
-        String path = buildServicePath(serviceName);
-
-        return execute(path, p -> {
-
-            List<ServiceInstance> serviceInstances = new LinkedList<>();
-
-            int totalSize = 0;
-            try {
-                List<String> serviceIds = new LinkedList<>(curatorFramework.getChildren().forPath(p));
-
-                totalSize = serviceIds.size();
-
-                Iterator<String> iterator = serviceIds.iterator();
-
-                for (int i = 0; i < offset; i++) {
-                    if (iterator.hasNext()) { // remove the elements from 0 to offset
-                        iterator.next();
-                        iterator.remove();
-                    }
-                }
-
-                for (int i = 0; i < pageSize; i++) {
-                    if (iterator.hasNext()) {
-                        String serviceId = iterator.next();
-                        ServiceInstance serviceInstance = build(registryURL, serviceDiscovery.queryForInstance(serviceName, serviceId));
-                        serviceInstances.add(serviceInstance);
-                    }
-                }
-
-                if (healthyOnly) {
-                    serviceInstances.removeIf(instance -> !instance.isHealthy());
-                }
-            } catch (KeeperException.NoNodeException e) {
-                logger.warn(p + " path not exist.", e);
-            }
-
-            return new DefaultPage<>(offset, pageSize, serviceInstances, totalSize);
-        });
     }
 
     @Override

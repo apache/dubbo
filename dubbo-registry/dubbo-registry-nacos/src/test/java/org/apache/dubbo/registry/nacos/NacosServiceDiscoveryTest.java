@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
@@ -71,10 +72,14 @@ public class NacosServiceDiscoveryTest {
 
     @BeforeEach
     public void init() throws Exception {
-        this.registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort());
-        registryUrl.setScopeModel(ApplicationModel.defaultModel());
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(SERVICE_NAME));
 
-        this.nacosServiceDiscovery = new NacosServiceDiscovery(SERVICE_NAME);
+        this.registryUrl = URL.valueOf("nacos://127.0.0.1:" + NetUtils.getAvailablePort());
+        registryUrl.setScopeModel(applicationModel);
+
+//        this.nacosServiceDiscovery = new NacosServiceDiscovery(SERVICE_NAME, registryUrl);
+        this.nacosServiceDiscovery = new NacosServiceDiscovery(applicationModel, registryUrl);
         Field namingService = nacosServiceDiscovery.getClass().getDeclaredField("namingService");
         namingService.setAccessible(true);
         namingServiceWrapper = mock(NacosNamingServiceWrapper.class);

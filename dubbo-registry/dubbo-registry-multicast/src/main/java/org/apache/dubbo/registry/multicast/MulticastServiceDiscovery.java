@@ -22,25 +22,19 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
  * TODO: make multicast protocol support Service Discovery
  */
 public class MulticastServiceDiscovery extends AbstractServiceDiscovery {
-    private URL registryURL;
-
-    public MulticastServiceDiscovery(ApplicationModel applicationModel) {
-        super(applicationModel);
+    public MulticastServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
+        super(applicationModel, registryURL);
     }
 
-    public MulticastServiceDiscovery(String serviceName) {
-        super(serviceName);
-    }
-
-    @Override
-    public void doInitialize(URL registryURL) throws Exception {
-        this.registryURL = registryURL;
+    public MulticastServiceDiscovery(String serviceName, URL registryURL) {
+        super(serviceName, registryURL);
     }
 
     @Override
@@ -64,6 +58,11 @@ public class MulticastServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public Set<String> getServices() {
         return Collections.singleton("Unsupported Operation");
+    }
+
+    @Override
+    public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
+        return null;
     }
 
     @Override

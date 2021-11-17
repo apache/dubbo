@@ -55,20 +55,9 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private NacosNamingServiceWrapper namingService;
 
-    private URL registryURL;
-
-    public NacosServiceDiscovery(ApplicationModel applicationModel) {
-        super(applicationModel);
-    }
-
-    public NacosServiceDiscovery(String serviceName) {
-        super(serviceName);
-    }
-
-    @Override
-    public void doInitialize(URL registryURL) throws Exception {
+    public NacosServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
+        super(applicationModel, registryURL);
         this.namingService = createNamingService(registryURL);
-        this.registryURL = registryURL;
     }
 
     @Override

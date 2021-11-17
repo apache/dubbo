@@ -65,7 +65,10 @@ public class MetadataUtils {
     }
 
     public static void publishServiceDefinition(ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
-        checkRemoteConfigured(applicationModel);
+        if (getMetadataReports(applicationModel).size() == 0) {
+            String msg = "Remote Metadata Report Server not hasn't been configured or unavailable . Unable to get Metadata from remote!";
+            logger.warn(msg);
+        }
 
         String serviceName = serviceDescriptor.getServiceName();
         FullServiceDefinition serviceDefinition = serviceDescriptor.getServiceDefinition(serviceName);
@@ -151,7 +154,6 @@ public class MetadataUtils {
                 MetadataUtils.destroyMetadataServiceProxy(instance);
             }
         } catch (Exception e) {
-            logger.error("Failed to load service metadata, meta type is " + metadataType, e);
             metadataInfo = null;
         }
 
@@ -176,14 +178,6 @@ public class MetadataUtils {
         }
 
         return metadataReport.getAppMetadata(identifier, params);
-    }
-
-    private static void checkRemoteConfigured(ApplicationModel applicationModel) {
-        if (getMetadataReports(applicationModel).size() == 0) {
-            String msg = "Remote Metadata Report Server not hasn't been configured or unavailable . Unable to get Metadata from remote!";
-            logger.error(msg);
-            throw new IllegalStateException(msg);
-        }
     }
 
     private static Map<String, MetadataReport> getMetadataReports(ApplicationModel applicationModel) {

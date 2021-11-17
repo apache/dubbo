@@ -109,15 +109,21 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         String serviceInterface = url.getServiceInterface();
         String registryCluster = getRegistryCluster(url);
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
+        if (metadataReport == null) {
+            return Collections.emptySet();
+        }
         return metadataReport.getServiceAppMapping(serviceInterface, url);
     }
 
     @Override
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
-        // randomly pick one metadata report is ok for it's guaranteed each metadata report will have the same mapping content.
+        // randomly pick one metadata report is ok for it's guaranteed all metadata report will have the same mapping data.
         String registryCluster = getRegistryCluster(url);
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
+        if (metadataReport == null) {
+            return Collections.emptySet();
+        }
         return metadataReport.getServiceAppMapping(serviceInterface, mappingListener, url);
     }
 
@@ -127,6 +133,9 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         // randomly pick one metadata report is ok for it's guaranteed each metadata report will have the same mapping content.
         String registryCluster = getRegistryCluster(url);
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryCluster);
+        if (metadataReport == null) {
+            return;
+        }
         metadataReport.removeServiceAppMappingListener(serviceInterface, mappingListener);
     }
 

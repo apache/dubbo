@@ -18,7 +18,6 @@ package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.function.ThrowableAction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -108,11 +107,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @return non-null
      */
     protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
-        ServiceDiscovery serviceDiscovery = getServiceDiscovery(registryURL);
-        final ThrowableAction throwableAction = () -> serviceDiscovery.initialize(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
+        return getServiceDiscovery(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
             .removeParameter(REGISTRY_TYPE_KEY));
-        execute(throwableAction);
-        return serviceDiscovery;
     }
 
     private List<SubscribedURLsSynthesizer> initSubscribedURLsSynthesizers() {

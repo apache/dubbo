@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -62,8 +61,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
     public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler) {
         // lazy connect, need set send.reconnect = true, to avoid channel bad status.
-        this.url = new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), url.getParameters())
-            .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
+        this.url = url.addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
         this.requestHandler = requestHandler;
         this.initialState = url.getParameter(LAZY_CONNECT_INITIAL_STATE_KEY, DEFAULT_LAZY_CONNECT_INITIAL_STATE);
         this.requestWithWarning = url.getParameter(LAZY_REQUEST_WITH_WARNING_KEY, DEFAULT_LAZY_REQUEST_WITH_WARNING);

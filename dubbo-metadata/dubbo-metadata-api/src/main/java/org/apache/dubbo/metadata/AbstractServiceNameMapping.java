@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
@@ -34,6 +35,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
@@ -74,8 +76,10 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
             subscribedServices.addAll(parseServices(serviceNames));
         }
 
+        String key = ServiceNameMapping.buildMappingKey(subscribedURL);
+
         if (isEmpty(subscribedServices)) {
-            Set<String> cachedServices = this.getCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL));
+            Set<String> cachedServices = this.getCachedMapping(key);
             if(!isEmpty(cachedServices)) {
                 subscribedServices.addAll(cachedServices);
             }
@@ -87,25 +91,50 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
             subscribedServices.addAll(mappedServices);
         }
 
-        this.putCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL), subscribedServices);
+        this.putCachedMapping(key, subscribedServices);
 
         return subscribedServices;
     }
 
+    /**
+     * Register callback to listen to mapping changes.
+     *
+     * @return cached or remote mapping data
+     */
     @Override
     public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
+        String key = ServiceNameMapping.buildMappingKey(subscribedURL);
         // use previously cached services.
-        Set<String> cachedServices = this.getCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL));
+        Set<String> cachedServices = this.getCachedMapping(key);
+
+       Runnable runnable = () -> {
+            synchronized (mappingListeners) {
+                if (listener != null) {
+                    Set<String> mappedServices = getAndListen(subscribedURL, listener);
+                    this.putCachedMapping(key, mappedServices);
+                    mappingListeners.put(subscribedURL.getProtocolServiceKey(), listener);
+                } else {
+                    Set<String> mappedServices = get(subscribedURL);
+                    this.putCachedMapping(key, mappedServices);
+                }
+            }
+        };
 
         // Asynchronously register listener in case previous cache does not exist or cache updating in the future.
-        ExecutorService executorService = applicationModel.getApplicationExecutorRepository().nextExecutorExecutor();
-        executorService.submit(() -> {
-            synchronized (mappingListeners) {
-                Set<String> mappedServices = getAndListen(subscribedURL, listener);
-                this.putCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL), mappedServices);
-                mappingListeners.put(subscribedURL.getProtocolServiceKey(), listener);
+        if (CollectionUtils.isEmpty(cachedServices)) {
+            runnable.run();
+            cachedServices = this.getCachedMapping(key);
+            if (CollectionUtils.isEmpty(cachedServices)) {
+                String registryServices = registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
+                if (StringUtils.isNotEmpty(registryServices)) {
+                    logger.info(subscribedURL.getServiceInterface() + " mapping to " + registryServices + " instructed by registry subscribed-services.");
+                    cachedServices = parseServices(registryServices);
+                }
             }
-        });
+        } else {
+            ExecutorService executorService = applicationModel.getApplicationExecutorRepository().nextExecutorExecutor();
+            executorService.submit(runnable);
+        }
 
         return cachedServices;
     }

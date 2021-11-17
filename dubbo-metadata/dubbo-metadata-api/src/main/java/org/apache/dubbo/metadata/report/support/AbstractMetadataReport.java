@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.report.support;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,6 +29,9 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,9 +76,6 @@ import static org.apache.dubbo.metadata.report.support.Constants.RETRY_TIMES_KEY
 import static org.apache.dubbo.metadata.report.support.Constants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.USER_HOME;
 
-/**
- *
- */
 public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected final static String DEFAULT_ROOT = "dubbo";

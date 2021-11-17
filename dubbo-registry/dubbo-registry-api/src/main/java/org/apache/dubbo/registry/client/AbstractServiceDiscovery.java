@@ -48,25 +48,24 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected volatile MetadataInfo metadataInfo;
     protected MetadataReport metadataReport;
     protected MetaCacheManager metaCacheManager;
+    protected URL registryURL;
 
     private ApplicationModel applicationModel;
 
-    public AbstractServiceDiscovery(ApplicationModel applicationModel) {
-        this(applicationModel.getApplicationName());
+    public AbstractServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
+        this(applicationModel.getApplicationName(), registryURL);
         this.applicationModel = applicationModel;
+
+        metadataReport = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class)
+            .getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
     }
 
-    public AbstractServiceDiscovery(String serviceName) {
+    public AbstractServiceDiscovery(String serviceName, URL registryURL) {
+        this.applicationModel = ApplicationModel.defaultModel();
+        this.registryURL = registryURL;
         this.serviceName = serviceName;
         this.metadataInfo = new MetadataInfo(serviceName);
-        this.metaCacheManager = new MetaCacheManager(AbstractServiceDiscovery.class.getSimpleName());
-    }
-
-    @Override
-    public final void initialize(URL registryURL) throws Exception {
-        doInitialize(registryURL);
-        String registryCluster = registryURL.getParameter(REGISTRY_CLUSTER_KEY);
-        metadataReport = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class).getMetadataReport(registryCluster);
+        this.metaCacheManager = new MetaCacheManager(getCacheNameSuffix());
     }
 
     public synchronized final void register() throws RuntimeException {
@@ -190,11 +189,14 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.doRegister(serviceInstance);
     }
 
+    @Override
+    public URL getUrl() {
+        return registryURL;
+    }
+
     public abstract void doRegister(ServiceInstance serviceInstance) throws RuntimeException;
 
     public abstract void doUnregister();
-
-    public abstract void doInitialize(URL registryURL) throws Exception;
 
     public abstract void doDestroy() throws Exception;
 
@@ -221,13 +223,29 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     protected void reportMetadata() {
-        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
-        metadataReport.publishAppMetadata(identifier, metadataInfo);
+        if (metadataReport != null) {
+            SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
+            metadataReport.publishAppMetadata(identifier, metadataInfo);
+        }
     }
 
     protected void unReportMetadata() {
-        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
-        metadataReport.unPublishAppMetadata(identifier, metadataInfo);
+        if (metadataReport != null) {
+            SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
+            metadataReport.unPublishAppMetadata(identifier, metadataInfo);
+        }
     }
 
+    private String getCacheNameSuffix() {
+        String name = this.getClass().getSimpleName();
+        int i = name.indexOf("ServiceDiscovery");
+        if (i != -1) {
+            name = name.substring(0, i);
+        }
+        URL url = this.getUrl();
+        if (url != null) {
+           return name.toLowerCase() + url.getBackupAddress();
+        }
+        return name.toLowerCase();
+    }
 }

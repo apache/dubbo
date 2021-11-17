@@ -18,8 +18,6 @@ package org.apache.dubbo.registry.multiple;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.utils.DefaultPage;
-import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -42,12 +40,10 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     private static final String SERVICE = "service";
     private final Map<String, ServiceDiscovery> serviceDiscoveries = new ConcurrentHashMap<>();
     private URL registryURL;
-    private ServiceInstance serviceInstance;
     private String applicationName;
     private volatile boolean isDestroy;
 
-    @Override
-    public void initialize(URL registryURL) throws Exception {
+    public MultipleServiceDiscovery(URL registryURL) {
         this.registryURL = registryURL;
         this.applicationName = registryURL.getApplication();
 
@@ -57,7 +53,6 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
                 URL url = URL.valueOf(registryURL.getParameter(key)).addParameter(CommonConstants.APPLICATION_KEY, applicationName)
                     .addParameter(REGISTRY_TYPE, SERVICE);
                 ServiceDiscovery serviceDiscovery = ServiceDiscoveryFactory.getExtension(url).getServiceDiscovery(url);
-                serviceDiscovery.initialize(url);
                 serviceDiscoveries.put(key, serviceDiscovery);
             }
         }
@@ -124,19 +119,6 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly)
-        throws NullPointerException, IllegalArgumentException, UnsupportedOperationException {
-
-        List<ServiceInstance> serviceInstanceList = new ArrayList<>();
-        for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
-            Page<ServiceInstance> serviceInstancePage = serviceDiscovery.getInstances(serviceName, offset, pageSize, healthyOnly);
-            serviceInstanceList.addAll(serviceInstancePage.getData());
-        }
-
-        return new DefaultPage<>(offset, pageSize, serviceInstanceList, serviceInstanceList.size());
-    }
-
-    @Override
     public Set<String> getServices() {
         Set<String> services = new HashSet<>();
         for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
@@ -147,7 +129,7 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public ServiceInstance getLocalInstance() {
-        return serviceInstance;
+        return null;
     }
 
     @Override

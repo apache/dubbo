@@ -23,6 +23,6 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 public class MockServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
-        return new MockServiceDiscovery(applicationModel.getApplicationName());
+        return new MockServiceDiscovery(applicationModel, registryURL);
     }
 }

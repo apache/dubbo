@@ -30,27 +30,17 @@ import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
 
 /**
- *
+ * This service is used to expose the metadata information inside a Dubbo process.
+ * Typical uses include:
+ * 1. The Consumer queries the metadata information of the Provider to list the interfaces and each interface's configuration
+ * 2. The Console (dubbo-admin) queries for the metadata of a specific process, or aggregate data of all processes.
  */
 public interface MetadataService {
-
-    //FIXME the value is default, it was used by testing temporarily
-    static final String DEFAULT_EXTENSION = "default";
-
-    /**
-     * The value of all service names
-     */
-    String ALL_SERVICE_NAMES = "*";
 
     /**
      * The value of All service instances
      */
     String ALL_SERVICE_INTERFACES = "*";
-
-    /**
-     * The service interface name of {@link MetadataService}
-     */
-    String SERVICE_INTERFACE_NAME = MetadataService.class.getName();
 
     /**
      * The contract version of {@link MetadataService}, the future update must make sure compatible.
@@ -164,14 +154,11 @@ public interface MetadataService {
         return getServiceDefinition(buildKey(interfaceName, group, version));
     }
 
-    /**
-     * Interface definition.
-     *
-     * @return
-     */
     String getServiceDefinition(String serviceKey);
 
     MetadataInfo getMetadataInfo(String revision);
+
+    List<MetadataInfo> getMetadataInfos();
 
     /**
      * Convert the specified {@link Iterable} of {@link URL URLs} to be the {@link URL#toFullString() strings} presenting
@@ -196,7 +183,5 @@ public interface MetadataService {
     static SortedSet<String> toSortedStrings(Stream<URL> stream) {
         return unmodifiableSortedSet(stream.map(URL::toFullString).collect(TreeSet::new, Set::add, Set::addAll));
     }
-
-    List<MetadataInfo> getMetadataInfos();
 
 }

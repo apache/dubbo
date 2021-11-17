@@ -79,14 +79,10 @@ public class MetadataReportInstance implements Disposable {
     }
 
     public Map<String, MetadataReport> getMetadataReports(boolean checked) {
-        if (checked) {
-            checkInit();
-        }
         return metadataReports;
     }
 
     public MetadataReport getMetadataReport(String registryKey) {
-        checkInit();
         MetadataReport metadataReport = metadataReports.get(registryKey);
         if (metadataReport == null) {
             metadataReport = metadataReports.values().iterator().next();
@@ -94,17 +90,14 @@ public class MetadataReportInstance implements Disposable {
         return metadataReport;
     }
 
-
-    private void checkInit() {
-        if (!init.get()) {
-            throw new IllegalStateException("the metadata report was not initialized.");
-        }
+    public boolean inited() {
+        return init.get();
     }
 
     @Override
     public void destroy() {
         metadataReports.forEach((_k, reporter) -> {
-//            reporter.destroy();
+            reporter.destroy();
         });
         metadataReports.clear();
     }

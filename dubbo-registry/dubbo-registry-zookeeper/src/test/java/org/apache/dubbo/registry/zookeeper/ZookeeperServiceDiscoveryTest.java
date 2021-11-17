@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
@@ -64,9 +65,10 @@ public class ZookeeperServiceDiscoveryTest {
         zkServer.start();
 
         this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
-        registryUrl.setScopeModel(ApplicationModel.defaultModel());
-        this.discovery = new ZookeeperServiceDiscovery(SERVICE_NAME);
-        this.discovery.initialize(registryUrl);
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(SERVICE_NAME));
+        registryUrl.setScopeModel(applicationModel);
+        this.discovery = new ZookeeperServiceDiscovery(applicationModel, registryUrl);
     }
 
     @AfterEach

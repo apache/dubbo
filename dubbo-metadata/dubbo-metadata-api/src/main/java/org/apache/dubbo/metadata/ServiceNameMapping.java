@@ -33,9 +33,9 @@ import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 
 /**
- * The interface for Dubbo service name Mapping
+ * This will interact with remote metadata center to find the interface-app mapping and will cache the data locally.
  *
- * @since 2.7.5
+ * Call variants of getCachedMapping() methods whenever need to use the mapping data.
  */
 @SPI(value = "metadata", scope = APPLICATION)
 public interface ServiceNameMapping {
@@ -88,15 +88,20 @@ public interface ServiceNameMapping {
     }
 
     /**
-     * 1.developer explicitly specifies the application name this interface belongs to
-     * 2.check Interface-App mapping
+     * Get the mapping data from remote metadata center and cache in local storage.
+     *
+     * @return app list current interface mapping to, in sequence determined by:
+     * 1.check PROVIDED_BY
+     * 2.check remote metadata center
+     *
      */
     Set<String> getServices(URL subscribedURL);
 
     /**
-     * 1.developer explicitly specifies the application name this interface belongs to
-     * 2.check Interface-App mapping
-     * 3.use the services specified in registry url.
+     * Register listener to get notified once mapping data changes.
+     *
+     * @param listener
+     * @return
      */
     Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener);
 

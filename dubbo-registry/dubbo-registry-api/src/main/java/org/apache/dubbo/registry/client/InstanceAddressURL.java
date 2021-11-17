@@ -495,7 +495,11 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public ScopeModel getScopeModel() {
-        return RpcContext.getServiceContext().getConsumerUrl().getScopeModel();
+        URL consumerURL = RpcContext.getServiceContext().getConsumerUrl();
+        if (consumerURL == null) {
+            return null;
+        }
+        return consumerURL.getScopeModel();
     }
 
     @Override
