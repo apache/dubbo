@@ -41,6 +41,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class InstanceAddressURL extends URL {
+    private static final long serialVersionUID = -7381697669844007849L;
+
     private ServiceInstance instance;
     private MetadataInfo metadataInfo;
     /**
@@ -485,10 +487,6 @@ public class InstanceAddressURL extends URL {
             return value;
         }
         return this.instance.getExtendParams().get(key);
-    }
-
-    private Map<String, String> getInstanceMetadata() {
-        return this.instance.getMetadata();
     }
 
     @Override

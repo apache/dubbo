@@ -25,7 +25,6 @@ import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
-import org.apache.dubbo.rpc.RpcContext;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
