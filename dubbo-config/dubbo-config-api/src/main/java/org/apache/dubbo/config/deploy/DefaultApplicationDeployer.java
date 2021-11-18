@@ -960,7 +960,9 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         int pending = 0, starting = 0, started = 0, stopping = 0, stopped = 0, failed = 0;
         for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
             ModuleDeployer deployer = moduleModel.getDeployer();
-            if (deployer.isPending()) {
+            if (deployer == null) {
+                pending++;
+            } else if (deployer.isPending()) {
                 pending++;
             } else if (deployer.isStarting()) {
                 starting++;
