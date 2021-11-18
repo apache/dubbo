@@ -589,7 +589,11 @@ public class InstanceAddressURL extends URL {
 
     private RpcServiceContext getServiceContext() {
         if (savedRpcServiceContext != null) {
-            return savedRpcServiceContext;
+            RpcServiceContext rpcServiceContext = RpcContext.getServiceContext(rpcServiceContextRemoveNotify);
+            if (rpcServiceContext.getConsumerUrl() == null) {
+                return savedRpcServiceContext;
+            }
+            return rpcServiceContext;
         }
         return RpcContext.getServiceContext(rpcServiceContextRemoveNotify);
     }
