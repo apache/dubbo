@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.integration;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
@@ -29,7 +28,6 @@ import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -80,16 +78,9 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
             configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(rawConfig))
                     .orElse(configurators);
         } catch (Exception e) {
-            // support single ip (issue: #8821 #9239)
-            URL url = URL.valueOf(rawConfig);
-            if (url == null) {
-                logger.warn("Failed to parse raw dynamic config and it will not take effect, the raw config is: "
-                        + rawConfig + ", cause: " + e.getMessage());
-                return false;
-            }
-            List<URL> urls = new ArrayList<>();
-            urls.add(url);
-            configurators = Configurator.toConfigurators(urls).orElse(configurators);
+            logger.warn("Failed to parse raw dynamic config and it will not take effect, the raw config is: "
+                    + rawConfig + ", cause: " + e.getMessage());
+            return false;
         }
         return true;
     }
