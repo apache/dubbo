@@ -584,8 +584,8 @@ public class ExtensionLoader<T> {
 
     public Set<String> getSupportedExtensions() {
         checkDestroyed();
-        Map<String, Class<?>> clazzes = getExtensionClasses();
-        return Collections.unmodifiableSet(new TreeSet<>(clazzes.keySet()));
+        Map<String, Class<?>> classes = getExtensionClasses();
+        return Collections.unmodifiableSet(new TreeSet<>(classes.keySet()));
     }
 
     public Set<T> getSupportedExtensionInstances() {
@@ -1023,7 +1023,7 @@ public class ExtensionLoader<T> {
         try {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
                 String line;
-                String clazz = null;
+                String clazz;
                 while ((line = reader.readLine()) != null) {
                     final int ci = line.indexOf('#');
                     if (ci >= 0) {

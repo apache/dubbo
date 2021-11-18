@@ -24,9 +24,9 @@
     <dubbo:application name="demo-consumer">
     </dubbo:application>
 
-    <dubbo:metadata-report address="${zookeeper.connection.address}"/>
+    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
 
-    <dubbo:registry address="${zookeeper.connection.address}"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
     <dubbo:protocol name="dubbo" port="-1"/>
     <dubbo:protocol name="rest" port="-1"/>

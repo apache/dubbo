@@ -17,45 +17,45 @@
 package org.apache.dubbo.remoting.zookeeper.curator;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.WatchedEvent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
-@DisabledForJreRange(min = JRE.JAVA_16)
 public class CuratorZookeeperClientTest {
-    private TestingServer zkServer;
     private CuratorZookeeperClient curatorClient;
     CuratorFramework client = null;
 
+    private static int zookeeperServerPort1;
+    private static String zookeeperConnectionAddress1;
+
+    @BeforeAll
+    public static void beforeAll() {
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+        zookeeperServerPort1 = Integer.parseInt(zookeeperConnectionAddress1.substring(zookeeperConnectionAddress1.lastIndexOf(":") + 1));
+    }
+
     @BeforeEach
     public void setUp() throws Exception {
-        int zkServerPort = NetUtils.getAvailablePort();
-        zkServer = new TestingServer(zkServerPort, true);
-        curatorClient = new CuratorZookeeperClient(URL.valueOf("zookeeper://127.0.0.1:" +
-                zkServerPort + "/org.apache.dubbo.registry.RegistryService"));
-        client = CuratorFrameworkFactory.newClient(zkServer.getConnectString(), new ExponentialBackoffRetry(1000, 3));
+        curatorClient = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress1 + "/org.apache.dubbo.registry.RegistryService"));
+        client = CuratorFrameworkFactory.newClient("127.0.0.1:" + zookeeperServerPort1, new ExponentialBackoffRetry(1000, 3));
         client.start();
     }
 
@@ -79,6 +79,7 @@ public class CuratorZookeeperClientTest {
     }
 
     @Test
+    @Disabled("Global registry center")
     public void testChildrenListener() throws InterruptedException {
         String path = "/dubbo/org.apache.dubbo.demo.DemoService/providers";
         curatorClient.create(path, false);
@@ -104,10 +105,10 @@ public class CuratorZookeeperClientTest {
     }
 
     @Test
+    @Disabled("Global registry center cannot stop")
     public void testWithStoppedServer() throws IOException {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             curatorClient.create("/testPath", true);
-            zkServer.stop();
             curatorClient.delete("/testPath");
         });
     }
@@ -161,7 +162,6 @@ public class CuratorZookeeperClientTest {
     @AfterEach
     public void tearDown() throws Exception {
         curatorClient.close();
-        zkServer.stop();
     }
 
     @Test

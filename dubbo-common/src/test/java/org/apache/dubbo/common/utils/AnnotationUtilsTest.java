@@ -29,6 +29,7 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -173,31 +174,40 @@ public class AnnotationUtilsTest {
         assertEquals(Inherited.class, metaAnnotations.get(0).annotationType());
 
         metaAnnotations = getMetaAnnotations(Service.class);
+        HashSet<Object> set1 = new HashSet<>();
+        metaAnnotations.forEach(t -> set1.add(t.annotationType()));
+        HashSet<Object> set2 = new HashSet<>();
+        set2.add(Inherited.class);
+        set2.add(Deprecated.class);
         assertEquals(2, metaAnnotations.size());
-        assertEquals(Inherited.class, metaAnnotations.get(0).annotationType());
-        assertEquals(Deprecated.class, metaAnnotations.get(1).annotationType());
+        assertEquals(set1, set2);
     }
 
     @Test
     public void testGetAllMetaAnnotations() {
         List<Annotation> metaAnnotations = getAllMetaAnnotations(Service5.class);
         int offset = 0;
+
+        HashSet<Object> set1 = new HashSet<>();
+        metaAnnotations.forEach(t -> set1.add(t.annotationType()));
+        HashSet<Object> set2 = new HashSet<>();
+        set2.add(Inherited.class);
+        set2.add(DubboService.class);
+        set2.add(Service4.class);
+        set2.add(Service3.class);
+        set2.add(Service2.class);
         assertEquals(9, metaAnnotations.size());
-        assertEquals(Inherited.class, metaAnnotations.get(offset++).annotationType());
-        assertEquals(Service4.class, metaAnnotations.get(offset++).annotationType());
-        assertEquals(Inherited.class, metaAnnotations.get(offset++).annotationType());
-        assertEquals(Service3.class, metaAnnotations.get(offset++).annotationType());
-        assertEquals(Inherited.class, metaAnnotations.get(offset++).annotationType());
-        assertEquals(Service2.class, metaAnnotations.get(offset++).annotationType());
-        assertEquals(Inherited.class, metaAnnotations.get(offset++).annotationType());
-        assertEquals(DubboService.class, metaAnnotations.get(offset++).annotationType());
-        assertEquals(Inherited.class, metaAnnotations.get(offset++).annotationType());
+        assertEquals(set1, set2);
 
         metaAnnotations = getAllMetaAnnotations(MyAdaptive.class);
-        offset = 0;
+        HashSet<Object> set3 = new HashSet<>();
+        metaAnnotations.forEach(t -> set3.add(t.annotationType()));
+        HashSet<Object> set4 = new HashSet<>();
+        metaAnnotations.forEach(t -> set3.add(t.annotationType()));
+        set4.add(Inherited.class);
+        set4.add(Adaptive.class);
         assertEquals(2, metaAnnotations.size());
-        assertEquals(Inherited.class, metaAnnotations.get(offset++).annotationType());
-        assertEquals(Adaptive.class, metaAnnotations.get(offset++).annotationType());
+        assertEquals(set3, set4);
     }
 
 

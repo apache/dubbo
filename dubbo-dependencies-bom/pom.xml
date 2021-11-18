@@ -633,18 +633,6 @@
 
             <!-- Test lib -->
             <dependency>
-                <groupId>org.apache.curator</groupId>
-                <artifactId>curator-test</artifactId>
-                <version>${curator_test_version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.zookeeper</groupId>
-                        <artifactId>zookeeper</artifactId>
-                    </exclusion>
-                </exclusions>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>com.github.codemonstur</groupId>
                 <artifactId>embedded-redis</artifactId>
                 <version>${embedded_redis_version}</version>

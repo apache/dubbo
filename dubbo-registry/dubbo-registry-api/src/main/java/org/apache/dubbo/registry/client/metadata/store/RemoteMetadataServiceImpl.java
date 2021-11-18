@@ -152,7 +152,7 @@ public class RemoteMetadataServiceImpl implements ScopeModelAware {
                 return;
             }
             logger.error("publishProvider interfaceName is empty. providerUrl: " + providerUrl.toFullString());
-        } catch (ClassNotFoundException e) {
+        } catch (Throwable e) {
             //ignore error
             logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
         }

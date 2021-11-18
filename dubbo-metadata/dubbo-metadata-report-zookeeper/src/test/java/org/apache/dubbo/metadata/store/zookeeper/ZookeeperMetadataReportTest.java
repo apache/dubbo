@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.store.zookeeper;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -28,11 +29,9 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
-
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -55,10 +54,16 @@ public class ZookeeperMetadataReportTest {
     private ZookeeperMetadataReport zookeeperMetadataReport;
     private URL registryUrl;
     private ZookeeperMetadataReportFactory zookeeperMetadataReportFactory;
+    private static String zookeeperConnectionAddress1;
+
+    @BeforeAll
+    public static void beforeAll() {
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+    }
 
     @BeforeEach
     public void setUp() throws Exception {
-        this.registryUrl = URL.valueOf(ZookeeperRegistryCenterConfig.getConnectionAddress());
+        this.registryUrl = URL.valueOf(zookeeperConnectionAddress1);
 
         zookeeperMetadataReportFactory = new ZookeeperMetadataReportFactory(ApplicationModel.defaultModel());
         this.zookeeperMetadataReport = (ZookeeperMetadataReport) zookeeperMetadataReportFactory.getMetadataReport(registryUrl);
@@ -132,7 +137,7 @@ public class ZookeeperMetadataReportTest {
         String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         ServiceMetadataIdentifier serviceMetadataIdentifier = new ServiceMetadataIdentifier(interfaceName, version,
-                group, "provider", revision, protocol);
+            group, "provider", revision, protocol);
         zookeeperMetadataReport.doSaveMetadata(serviceMetadataIdentifier, url);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(serviceMetadataIdentifier));
@@ -151,7 +156,7 @@ public class ZookeeperMetadataReportTest {
         String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         ServiceMetadataIdentifier serviceMetadataIdentifier = new ServiceMetadataIdentifier(interfaceName, version,
-                group, "provider", revision, protocol);
+            group, "provider", revision, protocol);
         zookeeperMetadataReport.doSaveMetadata(serviceMetadataIdentifier, url);
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(serviceMetadataIdentifier));
 
@@ -174,7 +179,7 @@ public class ZookeeperMetadataReportTest {
         String protocol = "xxx";
         URL url = generateURL(interfaceName, version, group, application);
         ServiceMetadataIdentifier serviceMetadataIdentifier = new ServiceMetadataIdentifier(interfaceName, version,
-                group, "provider", revision, protocol);
+            group, "provider", revision, protocol);
         zookeeperMetadataReport.doSaveMetadata(serviceMetadataIdentifier, url);
 
         List<String> r = zookeeperMetadataReport.doGetExportedURLs(serviceMetadataIdentifier);
@@ -231,7 +236,7 @@ public class ZookeeperMetadataReportTest {
 
     private MetadataIdentifier storePrivider(MetadataReport zookeeperMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException, InterruptedException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?paramTest=zkTest&version=" + version + "&application="
-                + application + (group == null ? "" : "&group=" + group));
+            + application + (group == null ? "" : "&group=" + group));
 
         MetadataIdentifier providerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, PROVIDER_SIDE, application);
         Class interfaceClass = Class.forName(interfaceName);
@@ -244,7 +249,7 @@ public class ZookeeperMetadataReportTest {
 
     private MetadataIdentifier storeConsumer(MetadataReport zookeeperMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException, InterruptedException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
-                + application + (group == null ? "" : "&group=" + group));
+            + application + (group == null ? "" : "&group=" + group));
 
         MetadataIdentifier consumerMetadataIdentifier = new MetadataIdentifier(interfaceName, version, group, CONSUMER_SIDE, application);
         Class interfaceClass = Class.forName(interfaceName);
@@ -267,8 +272,8 @@ public class ZookeeperMetadataReportTest {
 
     private URL generateURL(String interfaceName, String version, String group, String application) {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":8989/" + interfaceName +
-                "?paramTest=etcdTest&version=" + version + "&application="
-                + application + (group == null ? "" : "&group=" + group));
+            "?paramTest=etcdTest&version=" + version + "&application="
+            + application + (group == null ? "" : "&group=" + group));
         return url;
     }
 

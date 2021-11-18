@@ -48,11 +48,6 @@
             <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-test</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -77,6 +72,5 @@
             <artifactId>zookeeper</artifactId>
             <version>${zookeeper_version}</version>
         </dependency>
-
     </dependencies>
 </project>

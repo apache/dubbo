@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -82,11 +83,27 @@ public class UnpackZookeeperInitializer extends ZookeeperInitializer {
     protected void doInitialize(ZookeeperContext context) throws DubboTestException {
         for (int clientPort : context.getClientPorts()) {
             this.unpack(context, clientPort);
+            // get the file name, just like apache-zookeeper-{version}-bin
+            // the version we maybe unknown if the zookeeper archive binary file is copied by user self.
+            Path parentPath = Paths.get(context.getSourceFile().getParent().toString(),
+                String.valueOf(clientPort));
+            if (!Files.exists(parentPath) ||
+                !parentPath.toFile().isDirectory() ||
+                parentPath.toFile().listFiles().length != 1) {
+                throw new IllegalStateException("There is something wrong in unpacked file!");
+            }
+            // rename directory
+            File sourceFile = parentPath.toFile().listFiles()[0];
+            File targetFile = Paths.get(parentPath.toString(), context.getUnpackedDirectory()).toFile();
+            sourceFile.renameTo(targetFile);
+            if (!Files.exists(targetFile.toPath()) || !targetFile.isDirectory()) {
+                throw new IllegalStateException(String.format("Failed to rename the directory. source directory: %s, target directory: %s",
+                    sourceFile.toPath().toString(),
+                    targetFile.toPath().toString()));
+            }
+            // get the bin path
+            Path zookeeperBin = Paths.get(targetFile.toString(), "bin");
             // update file permission
-            Path zookeeperBin = Paths.get(context.getSourceFile().getParent().toString(),
-                String.valueOf(clientPort),
-                String.format("apache-zookeeper-%s-bin", context.getVersion()),
-                "bin");
             for (File file : zookeeperBin.toFile().listFiles()) {
                 file.setExecutable(true, false);
                 file.setReadable(true, false);

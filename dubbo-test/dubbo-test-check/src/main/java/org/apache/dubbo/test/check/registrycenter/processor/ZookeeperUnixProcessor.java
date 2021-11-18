@@ -43,6 +43,12 @@ public abstract class ZookeeperUnixProcessor implements Processor {
             Process process = this.doProcess(zookeeperContext, clientPort);
             this.logErrorStream(process.getErrorStream());
             this.awaitProcessReady(process.getInputStream());
+            // kill the process
+            try {
+                process.destroy();
+            } catch (Throwable cause) {
+                logger.warn(String.format("Failed to kill the process, with client port %s !", clientPort), cause);
+            }
         }
     }
 

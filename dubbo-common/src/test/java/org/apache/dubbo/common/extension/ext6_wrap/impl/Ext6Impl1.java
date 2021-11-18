@@ -18,24 +18,9 @@ package org.apache.dubbo.common.extension.ext6_wrap.impl;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
-import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-public class Ext5Wrapper2 implements WrappedExt, WrappedExtWrapper {
-    public static AtomicInteger echoCount = new AtomicInteger();
-    WrappedExt origin;
-
-    public Ext5Wrapper2(WrappedExt origin) {
-        this.origin = origin;
-    }
-
+public class Ext6Impl1 implements WrappedExt {
     public String echo(URL url, String s) {
-        echoCount.incrementAndGet();
-        return origin.echo(url, s);
-    }
-
-    public WrappedExt getOrigin() {
-        return origin;
+        return "Ext6Impl1-echo";
     }
 }
