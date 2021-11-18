@@ -21,10 +21,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
+
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -94,6 +98,12 @@ public class RpcContext {
         }
     };
 
+    private static final InternalThreadLocal<Set<Consumer<RpcServiceContext>>> REMOVENOTIFY_CONTEXT = new InternalThreadLocal<Set<Consumer<RpcServiceContext>>>() {
+        @Override
+        protected Set<Consumer<RpcServiceContext>> initialValue() {
+            return new HashSet<>();
+        }
+    };
 
     public static CancellationContext getCancellationContext() {
         return CANCELLATION_CONTEXT.get();
@@ -173,7 +183,16 @@ public class RpcContext {
         return SERVICE_CONTEXT.get();
     }
 
+    public static RpcServiceContext getServiceContext(Consumer<RpcServiceContext> removeRpcServiceContextNotify) {
+        REMOVENOTIFY_CONTEXT.get().add(removeRpcServiceContextNotify);
+        return SERVICE_CONTEXT.get();
+    }
+
     public static void removeServiceContext() {
+        for (Consumer<RpcServiceContext> removeRpcServiceContextNotify : REMOVENOTIFY_CONTEXT.get()) {
+            removeRpcServiceContextNotify.accept(SERVICE_CONTEXT.get());
+        }
+        REMOVENOTIFY_CONTEXT.remove();
         SERVICE_CONTEXT.remove();
     }
 
@@ -224,7 +243,7 @@ public class RpcContext {
             SERVER_ATTACHMENT.remove();
         }
         SERVER_LOCAL.remove();
-        SERVICE_CONTEXT.remove();
+        removeServiceContext();
         CANCELLATION_CONTEXT.remove();
     }
 
