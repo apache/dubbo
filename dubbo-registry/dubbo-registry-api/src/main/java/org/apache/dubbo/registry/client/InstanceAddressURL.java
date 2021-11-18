@@ -56,16 +56,12 @@ public class InstanceAddressURL extends URL {
     private volatile transient Map<String, Map<String, Number>> methodNumbers;
     private volatile transient Set<String> providerFirstParams;
 
-    // save RpcServiceContext while the thread local SERVICE_CONTEXT is removed from RpcContext.
+    // retain weak reference of the rpcServiceContext that is being removed from RpcContext.
     private volatile RpcServiceContext savedRpcServiceContext;
-    private Consumer<RpcServiceContext> rpcServiceContextRemoveNotify = new Consumer<RpcServiceContext>() {
+    private Consumer<RpcServiceContext> rpcServiceContextRemovedNotify = new Consumer<RpcServiceContext>() {
         @Override
-        public void accept(RpcServiceContext rpcServiceContext) {
-            try {
-                InstanceAddressURL.this.savedRpcServiceContext = (RpcServiceContext) rpcServiceContext.clone();
-            } catch (CloneNotSupportedException e) {
-                logger.warn("Failed to clone RpcServiceContext: " + rpcServiceContext + ", cause: " + e.getMessage());
-            }
+        public void accept(RpcServiceContext removedRpcServiceContext) {
+            InstanceAddressURL.this.savedRpcServiceContext = removedRpcServiceContext;
         }
     };
 
@@ -589,12 +585,14 @@ public class InstanceAddressURL extends URL {
 
     private RpcServiceContext getServiceContext() {
         if (savedRpcServiceContext != null) {
-            RpcServiceContext rpcServiceContext = RpcContext.getServiceContext(rpcServiceContextRemoveNotify);
+            RpcServiceContext rpcServiceContext = RpcContext.getServiceContext(rpcServiceContextRemovedNotify);
             if (rpcServiceContext.getConsumerUrl() == null) {
+                // remove rpcServiceContext thread local if not use it.
+                RpcContext.removeServiceContext();
                 return savedRpcServiceContext;
             }
             return rpcServiceContext;
         }
-        return RpcContext.getServiceContext(rpcServiceContextRemoveNotify);
+        return RpcContext.getServiceContext(rpcServiceContextRemovedNotify);
     }
 }

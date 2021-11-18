@@ -36,7 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
-public class RpcServiceContext extends RpcContext implements Cloneable {
+public class RpcServiceContext extends RpcContext {
 
     protected RpcServiceContext() {
     }
@@ -648,10 +648,5 @@ public class RpcServiceContext extends RpcContext implements Cloneable {
     public static void setRpcContext(URL url) {
         RpcServiceContext rpcContext = RpcContext.getServiceContext();
         rpcContext.setConsumerUrl(url);
-    }
-
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
     }
 }
