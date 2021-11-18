@@ -14,28 +14,50 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri.support;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 
-public interface IGreeter {
+/**
+ * Usually use it to simulate a outboundMessageSubscriber
+ */
+public class MockStreamObserver implements StreamObserver<String> {
+    private String onNextData;
+    private Throwable onErrorThrowable;
+    private boolean onCompleted;
+    private CountDownLatch latch = new CountDownLatch(1);
 
-    String SERVER_MSG = "HELLO WORLD";
-
-    /**
-     * Use request to respond
-     */
-    String echo(String request);
-
-    default CompletableFuture<String> echoAsync(String request) {
-        return CompletableFuture.supplyAsync(() -> echo(request));
+    @Override
+    public void onNext(String data) {
+        onNextData = data;
     }
 
-    void serverStream(String str, StreamObserver<String> observer);
+    @Override
+    public void onError(Throwable throwable) {
+        onErrorThrowable = throwable;
+    }
 
-    StreamObserver<String> bidirectionalStream(StreamObserver<String> observer);
+    @Override
+    public void onCompleted() {
+        onCompleted = true;
+        latch.countDown();
+    }
 
+    public String getOnNextData() {
+        return onNextData;
+    }
+
+    public Throwable getOnErrorThrowable() {
+        return onErrorThrowable;
+    }
+
+    public boolean isOnCompleted() {
+        return onCompleted;
+    }
+
+    public CountDownLatch getLatch() {
+        return latch;
+    }
 }
