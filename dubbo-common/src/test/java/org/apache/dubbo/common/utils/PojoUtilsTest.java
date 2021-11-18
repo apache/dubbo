@@ -28,8 +28,6 @@ import org.apache.dubbo.common.model.person.Phone;
 import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -326,7 +324,6 @@ public class PojoUtilsTest {
     }
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_16)
     public void testException() throws Exception {
         Map map = new HashMap();
         map.put("message", "dubbo exception");

@@ -18,8 +18,6 @@ package org.apache.dubbo.common.json;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -39,7 +37,6 @@ public class JSONTest {
     static int DEFAULT_$$ = 152;
 
     @Test
-    @DisabledForJreRange(min = JRE.JAVA_16)
     public void testException() throws Exception {
         MyException e = new MyException("001", "AAAAAAAA");
 
