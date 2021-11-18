@@ -32,7 +32,7 @@ import java.lang.reflect.Type;
 /**
  * Spring Compatibility Utils for spring 3.x/4.x/5.x
  */
-public class SpringCompatUtils {
+public abstract class SpringCompatUtils {
 
     private static volatile Boolean factoryMethodMetadataEnabled = null;
 

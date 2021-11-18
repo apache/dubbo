@@ -40,7 +40,7 @@ import static org.springframework.util.StringUtils.hasText;
  * @see org.springframework.core.annotation.AnnotationUtils
  * @since 2.5.11
  */
-public class DubboAnnotationUtils {
+public abstract class DubboAnnotationUtils {
 
 
     @Deprecated
