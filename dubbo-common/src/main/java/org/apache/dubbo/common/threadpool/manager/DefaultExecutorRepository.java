@@ -70,10 +70,6 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     private final ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
     private final ExecutorService poolRouterExecutor;
     private final Ring<ExecutorService> executorServiceRing = new Ring<>();
-    /**
-     * store url for destroy executor service
-     */
-    private final Set<URL> urlStore = new HashSet<>();
     public Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
     private volatile ScheduledExecutorService serviceExportExecutor;
     private volatile ExecutorService serviceReferExecutor;
@@ -350,7 +346,6 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
         DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
         dataStore.put(EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()), executorService);
-        urlStore.add(url);
         return executorService;
     }
 
@@ -409,12 +404,6 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         // registryNotificationExecutorRing
         shutdownExecutorServices(registryNotificationExecutorRing.listItems(),
             "registryNotificationExecutorRing");
-
-        // destroy executor service
-        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        for (URL url : urlStore) {
-            dataStore.remove(EXECUTOR_SERVICE_COMPONENT_KEY, Integer.toString(url.getPort()));
-        }
     }
 
     private void shutdownExecutorServices(List<? extends ExecutorService> executorServices, String msg) {
