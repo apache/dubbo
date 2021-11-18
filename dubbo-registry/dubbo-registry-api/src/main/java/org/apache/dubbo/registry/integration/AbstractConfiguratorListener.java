@@ -29,7 +29,6 @@ import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -108,15 +107,9 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
             // parseConfigurators will recognize app/service config automatically.
             urls = ConfigParser.parseConfigurators(rawConfig);
         } catch (Exception e) {
-            // support single ip (issue: #8821 #9239)
-            URL url = URL.valueOf(rawConfig);
-            if (url == null) {
-                logger.warn("Failed to parse raw dynamic config and it will not take effect, the raw config is: "
-                        + rawConfig + ", cause: " + e.getMessage());
-                return false;
-            }
-            urls = new ArrayList<>();
-            urls.add(url);
+            logger.warn("Failed to parse raw dynamic config and it will not take effect, the raw config is: "
+                    + rawConfig + ", cause: " + e.getMessage());
+            return false;
         }
         List<URL> safeUrls = urls.stream()
             .map(url -> url.removeParameters(securityKey))
