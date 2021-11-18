@@ -21,8 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import io.netty.util.internal.shaded.org.jctools.queues.MessagePassingQueue.Consumer;
-
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 
 /**
