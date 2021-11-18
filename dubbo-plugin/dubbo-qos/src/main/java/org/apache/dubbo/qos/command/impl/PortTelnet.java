@@ -55,7 +55,7 @@ public class PortTelnet implements BaseCommand {
                 }
             }
         }
-        if (port == null || port.length() == 0) {
+        if (StringUtils.isEmpty(port)) {
             for (ProtocolServer server : dubboProtocol.getServers()) {
                 if (buf.length() > 0) {
                     buf.append("\r\n");

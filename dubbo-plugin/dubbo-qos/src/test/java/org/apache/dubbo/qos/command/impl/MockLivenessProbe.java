@@ -16,25 +16,19 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.qos.probe.LivenessProbe;
 
-@Cmd(name = "offlineApp", summary = "offline app addresses", example = {
-        "offlineApp",
-        "offlineApp xx.xx.xxx.service"
-})
-public class OfflineApp extends BaseOffline {
-
-    public OfflineApp(FrameworkModel frameworkModel) {
-        super(frameworkModel);
-    }
+@Activate
+public class MockLivenessProbe implements LivenessProbe {
+    private static boolean checkReturnValue = false;
 
     @Override
-    protected void doUnexport(ProviderModel.RegisterStatedURL statedURL) {
-        if (UrlUtils.isServiceDiscoveryURL(statedURL.getRegistryUrl())) {
-            super.doUnexport(statedURL);
-        }
+    public boolean check() {
+        return checkReturnValue;
+    }
+
+    public static void setCheckReturnValue(boolean checkReturnValue) {
+        MockLivenessProbe.checkReturnValue = checkReturnValue;
     }
 }
