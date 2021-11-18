@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Notice, this class currently has no usage inside Dubbo.
  *
  * data related to service level such as name, version, classloader of business service,
- * security info, etc. Also with a AttributeMap for extension.
+ * security info, etc. Also, with a AttributeMap for extension.
  */
 public class ServiceMetadata extends BaseServiceMetadata {
 
