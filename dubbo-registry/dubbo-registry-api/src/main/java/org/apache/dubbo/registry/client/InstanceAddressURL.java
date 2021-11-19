@@ -17,8 +17,6 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -46,7 +44,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class InstanceAddressURL extends URL {
     private static final long serialVersionUID = -7381697669844007849L;
-    private final static Logger logger = LoggerFactory.getLogger(InstanceAddressURL.class);
 
     private ServiceInstance instance;
     private MetadataInfo metadataInfo;
