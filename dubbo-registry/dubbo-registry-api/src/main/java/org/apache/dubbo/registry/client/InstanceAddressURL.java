@@ -587,8 +587,7 @@ public class InstanceAddressURL extends URL {
         if (savedRpcServiceContext != null) {
             RpcServiceContext rpcServiceContext = RpcContext.getServiceContext(rpcServiceContextRemovedNotify);
             if (rpcServiceContext.getConsumerUrl() == null) {
-                // remove rpcServiceContext thread local if not use it.
-                RpcContext.removeServiceContext();
+                // use savedRpcServiceContext if rpcServiceContext's consumerUrl is null.
                 return savedRpcServiceContext;
             }
             return rpcServiceContext;
