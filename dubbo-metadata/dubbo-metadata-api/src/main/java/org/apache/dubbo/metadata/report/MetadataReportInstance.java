@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.metadata.report.support.NopMetadataReport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
@@ -48,15 +50,27 @@ import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT
 public class MetadataReportInstance implements Disposable {
 
     private AtomicBoolean init = new AtomicBoolean(false);
+    private String metadataType;
 
     // mapping of registry id to metadata report instance, registry instances will use this mapping to find related metadata reports
     private final Map<String, MetadataReport> metadataReports = new HashMap<>();
+    private ApplicationModel applicationModel;
+    private final NopMetadataReport nopMetadataReport;
+
+    public MetadataReportInstance(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        this.nopMetadataReport = new NopMetadataReport();
+    }
 
     public void init(MetadataReportConfig config) {
         if (!init.compareAndSet(false, true)) {
             return;
         }
-        ApplicationModel applicationModel = config.getApplicationModel();
+
+        this.metadataType = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getMetadataType();
+        if (metadataType == null) {
+            this.metadataType = DEFAULT_METADATA_STORAGE_TYPE;
+        }
 
         MetadataReportFactory metadataReportFactory = applicationModel.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
         URL url = config.toUrl();
@@ -88,6 +102,14 @@ public class MetadataReportInstance implements Disposable {
             metadataReport = metadataReports.values().iterator().next();
         }
         return metadataReport;
+    }
+
+    public MetadataReport getNopMetadataReport() {
+        return nopMetadataReport;
+    }
+
+    public String getMetadataType() {
+        return metadataType;
     }
 
     public boolean inited() {

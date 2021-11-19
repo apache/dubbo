@@ -16,12 +16,11 @@
  */
 package org.apache.dubbo.integration.multiple.servicediscoveryregistry;
 
+import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
-import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 
 /**
  * The instance to wrap {@link org.apache.dubbo.registry.client.ServiceDiscoveryRegistry}
- * and {@link MetadataServiceDelegation}
  */
 public class ServiceDiscoveryRegistryInfoWrapper {
 

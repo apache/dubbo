@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,9 +42,9 @@ class MetadataReportInstanceTest {
 
     @BeforeEach
     public void setUp() {
-        metadataReportInstance = new MetadataReportInstance();
         configManager = mock(ConfigManager.class);
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
+        metadataReportInstance = new MetadataReportInstance(applicationModel);
 
 
         URL url = URL.valueOf("metadata://127.0.0.1:20880/TestService?version=1.0.0&metadata=JTest");

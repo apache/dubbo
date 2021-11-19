@@ -18,11 +18,11 @@ package org.apache.dubbo.integration.multiple.servicediscoveryregistry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryServiceListener;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
-import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 
 import static org.apache.dubbo.integration.Constants.MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY;
 

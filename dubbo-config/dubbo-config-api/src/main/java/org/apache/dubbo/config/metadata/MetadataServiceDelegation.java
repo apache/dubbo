@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata.store;
+package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -26,7 +26,6 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -49,13 +48,17 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 /**
  * Implementation providing remote RPC service to facilitate the query of metadata information.
  */
-public class MetadataServiceDelegation implements MetadataService, ScopeModelAware, Disposable {
+public class MetadataServiceDelegation implements MetadataService, Disposable {
     Logger logger = LoggerFactory.getLogger(getClass());
-    private ApplicationModel applicationModel;
-    private RegistryManager registryManager;
-    private ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private final ApplicationModel applicationModel;
+    private final RegistryManager registryManager;
+    private final ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private URL url;
 
-    public MetadataServiceDelegation() {}
+    public MetadataServiceDelegation(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        registryManager = RegistryManager.getInstance(applicationModel);
+    }
 
     /**
      * Gets the current Dubbo Service name
@@ -68,9 +71,12 @@ public class MetadataServiceDelegation implements MetadataService, ScopeModelAwa
     }
 
     @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-        registryManager = RegistryManager.getInstance(applicationModel);
+    public URL getMetadataURL() {
+        return url;
+    }
+
+    public void setMetadataURL(URL url) {
+        this.url = url;
     }
 
     @Override
@@ -79,7 +85,7 @@ public class MetadataServiceDelegation implements MetadataService, ScopeModelAwa
     }
 
     private SortedSet<String> getAllUnmodifiableServiceURLs() {
-        SortedSet<URL> bizURLs = new TreeSet<>(MetadataServiceDelegation.URLComparator.INSTANCE);
+        SortedSet<URL> bizURLs = new TreeSet<>(URLComparator.INSTANCE);
         List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
         for (ServiceDiscovery sd : serviceDiscoveries) {
             MetadataInfo metadataInfo = sd.getMetadata();
@@ -99,7 +105,7 @@ public class MetadataServiceDelegation implements MetadataService, ScopeModelAwa
     }
 
     private SortedSet<String> getAllUnmodifiableSubscribedURLs() {
-        SortedSet<URL> bizURLs = new TreeSet<>(MetadataServiceDelegation.URLComparator.INSTANCE);
+        SortedSet<URL> bizURLs = new TreeSet<>(URLComparator.INSTANCE);
         List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
         for (ServiceDiscovery sd : serviceDiscoveries) {
             MetadataInfo metadataInfo = sd.getMetadata();

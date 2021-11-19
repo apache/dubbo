@@ -42,10 +42,11 @@ import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
+import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
@@ -97,20 +98,18 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private final ExecutorRepository executorRepository;
 
-    private AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
-    private AtomicBoolean hasPreparedInternalModule = new AtomicBoolean(false);
+    private final AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
+    private final AtomicBoolean hasPreparedInternalModule = new AtomicBoolean(false);
 
-    private volatile MetadataService metadataService;
-
-    private volatile MetadataServiceExporter metadataServiceExporter;
+    private volatile ConfigurableMetadataServiceExporter metadataServiceExporter;
 
     private ScheduledFuture<?> asyncMetadataFuture;
-    private volatile CompletableFuture startFuture;
-    private DubboShutdownHook dubboShutdownHook;
-    private Object stateLock = new Object();
-    private Object startLock = new Object();
-    private Object destroyLock = new Object();
-    private Object internalModuleLock = new Object();
+    private volatile CompletableFuture<Boolean> startFuture;
+    private final DubboShutdownHook dubboShutdownHook;
+    private final Object stateLock = new Object();
+    private final Object startLock = new Object();
+    private final Object destroyLock = new Object();
+    private final Object internalModuleLock = new Object();
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -499,7 +498,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      * Initialize {@link MetadataService}
      */
     private void initMetadataService() {
-        this.metadataServiceExporter = getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
+        MetadataServiceDelegation metadataService = applicationModel.getBeanFactory().getOrRegisterBean(MetadataServiceDelegation.class);
+        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(applicationModel, metadataService);
     }
 
     /**

@@ -14,13 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata;
+package org.apache.dubbo.config.metadata;
 
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.MetadataServiceExporter;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.registry.client.metadata.SpringCloudMetadataServiceURLBuilder;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleServiceRepository;
+import org.apache.dubbo.rpc.model.ProviderModel;
 
 import java.util.List;
 import java.util.Map;
@@ -52,11 +57,16 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
     }
 
     private String resolveMetadataPropertyValue(ApplicationModel applicationModel) {
-        MetadataServiceExporter metadataServiceExporter = applicationModel.getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
-        if (metadataServiceExporter.isExported()) {
-            List<URL> metadataURLs = metadataServiceExporter.getExportedURLs();
-            return getMetadataServiceParameter(metadataURLs.get(0));
+        ModuleServiceRepository serviceRepository = applicationModel.getInternalModule().getServiceRepository();
+        String key = BaseServiceMetadata.buildServiceKey(MetadataService.class.getName(), applicationModel.getApplicationName(), MetadataService.VERSION);
+        ProviderModel providerModel = serviceRepository.lookupExportedService(key);
+        String metadataValue = "";
+        if (providerModel != null) {
+            List<URL> metadataURLs = providerModel.getServiceConfig().getExportedUrls();
+            if (CollectionUtils.isNotEmpty(metadataURLs)) {
+                metadataValue = getMetadataServiceParameter(metadataURLs.get(0));
+            }
         }
-        return "";
+        return metadataValue;
     }
 }

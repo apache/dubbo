@@ -25,13 +25,10 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
-import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Iterator;
 import java.util.List;
@@ -43,70 +40,32 @@ import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 
 /**
- * {@link MetadataServiceExporter} implementation based on {@link ConfigManager Dubbo configurations}, the clients
- * should make sure the {@link ApplicationConfig}, {@link RegistryConfig} and {@link ProtocolConfig} are ready before
- * {@link #export()}.
- * <p>
- * Typically, do not worry about their ready status, because they are initialized before
- * any {@link ServiceConfig} exports, or The Dubbo export will be failed.
- * <p>
- * Being aware of it's not a thread-safe implementation.
- *
- * @see MetadataServiceExporter
- * @see ServiceConfig
- * @see ConfigManager
- * @since 2.7.5
+ * Export metadata service
  */
-public class ConfigurableMetadataServiceExporter implements MetadataServiceExporter, ScopeModelAware {
+public class ConfigurableMetadataServiceExporter {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private MetadataService metadataService;
+    private MetadataServiceDelegation metadataService;
 
-    private volatile ServiceConfig<MetadataService> serviceConfig;
-    private ApplicationModel applicationModel;
+    private final ServiceConfig<MetadataService> serviceConfig;
+    private final ApplicationModel applicationModel;
 
-    public ConfigurableMetadataServiceExporter() {
-    }
-
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
+    public ConfigurableMetadataServiceExporter(ApplicationModel applicationModel, MetadataServiceDelegation metadataService) {
         this.applicationModel = applicationModel;
-    }
-
-    public void setMetadataService(MetadataService metadataService) {
         this.metadataService = metadataService;
+        this.serviceConfig = buildServiceConfig();
     }
 
-    @Override
     public ConfigurableMetadataServiceExporter export() {
 
         if (!isExported()) {
-
-            ApplicationConfig applicationConfig = getApplicationConfig();
-            ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
-            serviceConfig.setScopeModel(applicationModel.getInternalModule());
-            serviceConfig.setApplication(applicationConfig);
-            serviceConfig.setRegistry(new RegistryConfig("N/A"));
-            serviceConfig.setProtocol(generateMetadataProtocol());
-            serviceConfig.setInterface(MetadataService.class);
-            serviceConfig.setDelay(0);
-            serviceConfig.setRef(metadataService);
-            serviceConfig.setGroup(applicationConfig.getName());
-            serviceConfig.setVersion(metadataService.version());
-//            serviceConfig.setMethods(generateMethodConfig());
-            serviceConfig.setConnections(1);
-            serviceConfig.setExecutes(100);
-
             // export
             serviceConfig.export();
-
+            metadataService.setMetadataURL(serviceConfig.getExportedUrls().get(0));
             if (logger.isInfoEnabled()) {
                 logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
             }
-
-            this.serviceConfig = serviceConfig;
-
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn("The MetadataService has been exported : " + serviceConfig.getExportedUrls());
@@ -116,39 +75,12 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         return this;
     }
 
-//    /**
-//     * Generate Method Config for Service Discovery Metadata <p/>
-//     * <p>
-//     * Make {@link MetadataService} support argument callback,
-//     * used to notify {@link org.apache.dubbo.registry.client.ServiceInstance}'s
-//     * metadata change event
-//     *
-//     * @since 3.0
-//     */
-//    private List<MethodConfig> generateMethodConfig() {
-//        MethodConfig methodConfig = new MethodConfig();
-//        methodConfig.setName("getAndListenInstanceMetadata");
-//
-//        ArgumentConfig argumentConfig = new ArgumentConfig();
-//        argumentConfig.setIndex(1);
-//        argumentConfig.setCallback(true);
-//
-//        methodConfig.setArguments(Collections.singletonList(argumentConfig));
-//
-//        return Collections.singletonList(methodConfig);
-//    }
-
-    @Override
     public ConfigurableMetadataServiceExporter unexport() {
         if (isExported()) {
             serviceConfig.unexport();
+            metadataService.setMetadataURL(null);
         }
         return this;
-    }
-
-    @Override
-    public List<URL> getExportedURLs() {
-        return serviceConfig != null ? serviceConfig.getExportedUrls() : emptyList();
     }
 
     public boolean isExported() {
@@ -225,4 +157,35 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
         return StringUtils.isNotEmpty(protocol) ? protocol : DUBBO_PROTOCOL;
     }
+
+
+    private ServiceConfig<MetadataService> buildServiceConfig() {
+        ApplicationConfig applicationConfig = getApplicationConfig();
+        ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setScopeModel(applicationModel.getInternalModule());
+        serviceConfig.setApplication(applicationConfig);
+        serviceConfig.setRegistry(new RegistryConfig("N/A"));
+        serviceConfig.setProtocol(generateMetadataProtocol());
+        serviceConfig.setInterface(MetadataService.class);
+        serviceConfig.setDelay(0);
+        serviceConfig.setRef(metadataService);
+        serviceConfig.setGroup(applicationConfig.getName());
+        serviceConfig.setVersion(MetadataService.VERSION);
+//            serviceConfig.setMethods(generateMethodConfig());
+        serviceConfig.setConnections(1);
+        serviceConfig.setExecutes(100);
+
+        return serviceConfig;
+    }
+
+    // for unit test
+    public void setMetadataService(MetadataServiceDelegation metadataService) {
+        this.metadataService = metadataService;
+    }
+
+    // for unit test
+    public List<URL> getExportedURLs() {
+        return serviceConfig != null ? serviceConfig.getExportedUrls() : emptyList();
+    }
+
 }

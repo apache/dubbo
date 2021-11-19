@@ -18,13 +18,16 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
+import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
@@ -38,21 +41,14 @@ import org.mockito.Mockito;
 
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.CommonConstants.COMPOSITE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * {@link MetadataServiceExporter} Test-Cases
- *
- * @since 2.7.8
- */
 public class MetadataServiceExporterTest {
 
     @BeforeEach
@@ -68,33 +64,26 @@ public class MetadataServiceExporterTest {
 
     @Test
     public void test() {
-        MetadataService metadataService = Mockito.mock(MetadataService.class);
-        ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
+        MetadataServiceDelegation metadataService = Mockito.mock(MetadataServiceDelegation.class);
+        ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter(ApplicationModel.defaultModel(), metadataService);
         exporter.setMetadataService(metadataService);
-        exporter.setApplicationModel(ApplicationModel.defaultModel());
 
         exporter.export();
         assertTrue(exporter.isExported());
         exporter.unexport();
 
-        assertTrue(exporter.supports(DEFAULT_METADATA_STORAGE_TYPE));
-        assertTrue(exporter.supports(REMOTE_METADATA_STORAGE_TYPE));
-        assertTrue(exporter.supports(COMPOSITE_METADATA_STORAGE_TYPE));
     }
 
     @Test
     public void test2() throws Exception {
 
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) applicationModel.getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
-        MetadataService metadataService = Mockito.mock(MetadataService.class);
-        exporter.setMetadataService(metadataService);
 
         applicationModel.getDeployer().start().get();
+        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(applicationModel);
+        ConfigurableMetadataServiceExporter exporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
+
         assertTrue(exporter.isExported());
-        assertTrue(exporter.supports(DEFAULT_METADATA_STORAGE_TYPE));
-        assertTrue(exporter.supports(REMOTE_METADATA_STORAGE_TYPE));
-        assertTrue(exporter.supports(COMPOSITE_METADATA_STORAGE_TYPE));
 
         applicationModel.getDeployer().stop();
         assertFalse(exporter.isExported());
@@ -121,7 +110,8 @@ public class MetadataServiceExporterTest {
 
         // will start exporter
         providerBootstrap.start();
-        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) providerBootstrap.getApplicationModel().getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
+        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(providerBootstrap.getApplicationModel());
+        ConfigurableMetadataServiceExporter exporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
 
         try {
             assertTrue(exporter.isExported());
@@ -159,7 +149,8 @@ public class MetadataServiceExporterTest {
 
         // will start exporter.export()
         providerBootstrap.start();
-        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) providerBootstrap.getApplicationModel().getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
+        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(providerBootstrap.getApplicationModel());
+        ConfigurableMetadataServiceExporter exporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
 
         try {
             assertTrue(exporter.isExported());
@@ -171,6 +162,10 @@ public class MetadataServiceExporterTest {
             providerBootstrap.stop();
         }
         assertFalse(exporter.isExported());
+    }
+
+    private DefaultApplicationDeployer getApplicationDeployer(ApplicationModel applicationModel) {
+        return (DefaultApplicationDeployer) DefaultApplicationDeployer.get(applicationModel);
     }
 
     @Test
@@ -194,8 +189,8 @@ public class MetadataServiceExporterTest {
 
         // will start exporter.export()
         providerBootstrap.start();
-        ConfigurableMetadataServiceExporter exporter = (ConfigurableMetadataServiceExporter) providerBootstrap.getApplicationModel().getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
-
+        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(providerBootstrap.getApplicationModel());
+        ConfigurableMetadataServiceExporter exporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
         try {
             assertTrue(exporter.isExported());
             List<URL> urls = exporter.getExportedURLs();

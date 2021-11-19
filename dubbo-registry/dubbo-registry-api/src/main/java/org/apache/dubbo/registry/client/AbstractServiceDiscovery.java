@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
@@ -47,6 +48,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected volatile ServiceInstance serviceInstance;
     protected volatile MetadataInfo metadataInfo;
     protected MetadataReport metadataReport;
+    protected String metadataType;
     protected MetaCacheManager metaCacheManager;
     protected URL registryURL;
 
@@ -55,9 +57,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     public AbstractServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
         this(applicationModel.getApplicationName(), registryURL);
         this.applicationModel = applicationModel;
-
-        metadataReport = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class)
-            .getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
+        MetadataReportInstance metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
+        metadataType = metadataReportInstance.getMetadataType();
+        if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataReportInstance.getMetadataType())) {
+            this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
+        } else {
+            this.metadataReport = metadataReportInstance.getNopMetadataReport();
+        }
     }
 
     public AbstractServiceDiscovery(String serviceName, URL registryURL) {
@@ -203,7 +209,6 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     private ServiceInstance createServiceInstance() {
         DefaultServiceInstance instance = new DefaultServiceInstance(serviceName, applicationModel);
         instance.setServiceMetadata(metadataInfo);
-        String metadataType = applicationModel.getApplicationConfigManager().getApplicationOrElseThrow().getMetadataType();
         setMetadataStorageType(instance, metadataType);
         ServiceInstanceMetadataUtils.customizeInstance(instance, applicationModel);
         return instance;

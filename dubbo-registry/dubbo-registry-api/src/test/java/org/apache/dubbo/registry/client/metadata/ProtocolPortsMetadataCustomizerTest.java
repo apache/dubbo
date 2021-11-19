@@ -21,7 +21,6 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.google.gson.Gson;
@@ -51,7 +50,7 @@ public class ProtocolPortsMetadataCustomizerTest {
     private static final Gson gson = new Gson();
 
     public DefaultServiceInstance instance;
-    private static MetadataServiceDelegation mockedMetadataService;
+    private static MetadataService mockedMetadataService;
     private static ApplicationModel mockedApplicationModel;
     private static ScopeBeanFactory mockedBeanFactory;
 
@@ -64,7 +63,7 @@ public class ProtocolPortsMetadataCustomizerTest {
         ApplicationConfig applicationConfig = new ApplicationConfig("test");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
 
-        mockedMetadataService = Mockito.mock(MetadataServiceDelegation.class);
+        mockedMetadataService = Mockito.mock(MetadataService.class);
 
         mockedApplicationModel = Mockito.mock(ApplicationModel.class);
         Mockito.when(mockedApplicationModel.getBeanFactory()).thenReturn(mockedBeanFactory);

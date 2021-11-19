@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.metadata;
+package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.google.gson.Gson;
@@ -46,7 +45,7 @@ public class MetadataServiceURLParamsMetadataCustomizerTest {
     private static final Gson gson = new Gson();
 
     public DefaultServiceInstance instance;
-    private MetadataServiceDelegation metadataService;
+    private MetadataService metadataService;
     private URL metadataServiceURL = URL.valueOf("metadata://127.0.0.1:21881/" + MetadataService.class.getName() +
         "?application=demo&group=g1&version=1.0.0&timestamp=1632662388960");
 
@@ -58,7 +57,7 @@ public class MetadataServiceURLParamsMetadataCustomizerTest {
     @BeforeEach
     public void init() {
         instance = createInstance();
-        metadataService = mock(MetadataServiceDelegation.class);
+        metadataService = mock(MetadataService.class);
     }
 
     @AfterEach

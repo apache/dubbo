@@ -24,9 +24,9 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.registry.RegistryServiceListener;
-import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
 
@@ -179,15 +179,15 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
             Assertions.assertTrue(serviceDiscoveryRegistryInfoWrapper.isRegistered());
             // check if it's subscribed
             Assertions.assertFalse(serviceDiscoveryRegistryInfoWrapper.isSubscribed());
-            MetadataServiceDelegation inMemoryWritableMetadataService = serviceDiscoveryRegistryInfoWrapper.getInMemoryWritableMetadataService();
+            MetadataServiceDelegation metadataService = serviceDiscoveryRegistryInfoWrapper.getInMemoryWritableMetadataService();
             // check if the count of exported urls is right or not
-            Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);
+            Assertions.assertEquals(metadataService.getExportedURLs().size(), 1);
             // check the exported url is right or not.
-            Assertions.assertTrue(inMemoryWritableMetadataService.getExportedURLs()
+            Assertions.assertTrue(metadataService.getExportedURLs()
                 .first()
                 .contains(MultipleRegistryCenterServiceDiscoveryRegistryService.class.getName()));
             // check the count of metadatainfo is right or not.
-            Assertions.assertEquals(inMemoryWritableMetadataService.getMetadataInfos().size(), 1);
+            Assertions.assertEquals(metadataService.getMetadataInfos().size(), 1);
         }
     }
 

@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.registry.client.metadata.store.MetadataServiceDelegation;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -34,7 +33,6 @@ public class RegistryScopeModelInitializer implements ScopeModelInitializer {
     public void initializeApplicationModel(ApplicationModel applicationModel) {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
         beanFactory.registerBean(RegistryManager.class);
-        beanFactory.registerBean(MetadataServiceDelegation.class);
     }
 
     @Override

@@ -64,6 +64,8 @@ public interface MetadataService {
         return VERSION;
     }
 
+    URL getMetadataURL();
+
     /**
      * the list of String that presents all Dubbo subscribed {@link URL urls}
      *
