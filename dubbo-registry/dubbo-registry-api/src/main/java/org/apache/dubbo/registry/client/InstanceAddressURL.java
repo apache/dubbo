@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -57,11 +58,11 @@ public class InstanceAddressURL extends URL {
     private volatile transient Set<String> providerFirstParams;
 
     // retain weak reference of the rpcServiceContext that is being removed from RpcContext.
-    private volatile RpcServiceContext savedRpcServiceContext;
+    private volatile WeakReference<RpcServiceContext> savedRpcServiceContext;
     private Consumer<RpcServiceContext> rpcServiceContextRemovedNotify = new Consumer<RpcServiceContext>() {
         @Override
         public void accept(RpcServiceContext removedRpcServiceContext) {
-            InstanceAddressURL.this.savedRpcServiceContext = removedRpcServiceContext;
+            InstanceAddressURL.this.savedRpcServiceContext = new WeakReference<>(removedRpcServiceContext);
         }
     };
 
@@ -589,7 +590,7 @@ public class InstanceAddressURL extends URL {
             if (rpcServiceContext.getConsumerUrl() == null) {
                 // remove rpcServiceContext thread local if not use it.
                 RpcContext.removeServiceContext();
-                return savedRpcServiceContext;
+                return savedRpcServiceContext.get();
             }
             return rpcServiceContext;
         }
