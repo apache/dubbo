@@ -56,7 +56,7 @@ public class StartZookeeperWindowsProcessor extends ZookeeperWindowsProcessor {
             logger.info(String.format("The zookeeper-%d is starting...", clientPort));
             Path zookeeperBin = Paths.get(context.getSourceFile().getParent().toString(),
                 String.valueOf(clientPort),
-                String.format("apache-zookeeper-%s-bin", context.getVersion()),
+                context.getUnpackedDirectory(),
                 "bin");
             Executor executor = new DefaultExecutor();
             executor.setExitValues(null);

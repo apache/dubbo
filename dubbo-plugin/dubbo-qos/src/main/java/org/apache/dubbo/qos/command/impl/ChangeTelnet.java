@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.command.impl;
 
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
@@ -42,7 +43,7 @@ public class ChangeTelnet implements BaseCommand {
     public String execute(CommandContext commandContext, String[] args) {
         Channel channel = commandContext.getRemote();
 
-        if (args == null || args.length < 1) {
+        if (ArrayUtils.isEmpty(args)) {
             return "Please input service name, eg: \r\ncd XxxService\r\ncd com.xxx.XxxService";
         }
         String message = args[0];

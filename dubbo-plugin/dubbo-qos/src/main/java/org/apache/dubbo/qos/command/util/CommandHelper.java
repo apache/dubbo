@@ -33,7 +33,7 @@ public class CommandHelper {
 
     public boolean hasCommand(String commandName) {
 
-        BaseCommand command = null;
+        BaseCommand command;
         try {
             command = frameworkModel.getExtensionLoader(BaseCommand.class).getExtension(commandName);
         } catch (Throwable throwable) {

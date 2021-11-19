@@ -75,7 +75,7 @@ public class ClassLoaderResourceLoader {
         Map<String, Set<java.net.URL>> urlCache = classLoaderCache.get(currentClassLoader);
         if (!urlCache.containsKey(fileName)) {
             Set<java.net.URL> set = new LinkedHashSet<>();
-            Enumeration<URL> urls = null;
+            Enumeration<URL> urls;
             try {
                 urls = currentClassLoader.getResources(fileName);
                 boolean isNative = NativeUtils.isNative();

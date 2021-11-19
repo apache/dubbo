@@ -14,13 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.ext6_wrap.impl;
+package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.qos.probe.LivenessProbe;
 
-public class Ext5Impl1 implements WrappedExt {
-    public String echo(URL url, String s) {
-        return "Ext5Impl1-echo";
+@Activate
+public class MockLivenessProbe implements LivenessProbe {
+    private static boolean checkReturnValue = false;
+
+    @Override
+    public boolean check() {
+        return checkReturnValue;
+    }
+
+    public static void setCheckReturnValue(boolean checkReturnValue) {
+        MockLivenessProbe.checkReturnValue = checkReturnValue;
     }
 }
