@@ -183,9 +183,8 @@ public class RpcContext {
     }
 
     public static RpcServiceContext getServiceContext(Consumer<RpcServiceContext> rpcServiceContextRemovedNotify) {
-        RpcServiceContext rpcServiceContext = SERVICE_CONTEXT.get();
         REMOVENOTIFY_CONTEXT.get().add(rpcServiceContextRemovedNotify);
-        return rpcServiceContext;
+        return SERVICE_CONTEXT.get();
     }
 
     public static void removeServiceContext() {
