@@ -17,6 +17,13 @@
 package org.apache.dubbo.test.spring;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
+import org.apache.dubbo.registry.client.migration.ServiceDiscoveryMigrationInvoker;
+import org.apache.dubbo.remoting.exchange.ExchangeClient;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboInvoker;
+import org.apache.dubbo.rpc.proxy.InvokerInvocationHandler;
 import org.apache.dubbo.test.common.SysProps;
 import org.apache.dubbo.test.common.api.DemoService;
 import org.apache.dubbo.test.common.api.GreetingService;
@@ -26,9 +33,13 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.target.AbstractLazyCreationTargetSource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public class SpringXmlConfigTest {
 
@@ -53,6 +64,23 @@ public class SpringXmlConfigTest {
             String greeting = greetingService.hello();
             Assertions.assertEquals(greeting, "Greetings!");
 
+            // get greetingService's ReferenceCountExchangeClient.
+            ExchangeClient client = getDubboClient(greetingService);
+            // replace ReferenceCountExchangeClient with LazyConnectExchangeClient by close().
+            client.close();
+
+            // wait close done.
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Assertions.fail();
+            }
+            Assertions.assertFalse(client.isClosed(), "client status close");
+
+            // revive ReferenceCountExchangeClient
+            greeting = greetingService.hello();
+            Assertions.assertEquals(greeting, "Greetings!");
+
             DemoService demoService = applicationContext.getBean("demoService", DemoService.class);
             String sayHelloResult = demoService.sayHello("dubbo");
             Assertions.assertTrue(sayHelloResult.startsWith("Hello dubbo"), sayHelloResult);
@@ -70,5 +98,37 @@ public class SpringXmlConfigTest {
             }
         }
 
+    }
+
+    private ExchangeClient getDubboClient(Object dubboService) {
+        return getDubboClients(dubboService)[0];
+    }
+
+    private ExchangeClient[] getDubboClients(Object dubboService) {
+        try {
+
+            Method getTargetSourceMethod = dubboService.getClass().getDeclaredMethod("getTargetSource");
+            getTargetSourceMethod.setAccessible(true);
+            AbstractLazyCreationTargetSource targetSource = (AbstractLazyCreationTargetSource) getTargetSourceMethod.invoke(dubboService);
+            Object lazyTarget = targetSource.getTarget();
+            Field handlerField = lazyTarget.getClass().getDeclaredField("handler");
+            handlerField.setAccessible(true);
+            InvokerInvocationHandler handler = (InvokerInvocationHandler) handlerField.get(lazyTarget);
+            Field invokerField = handler.getClass().getDeclaredField("invoker");
+            invokerField.setAccessible(true);
+            ServiceDiscoveryMigrationInvoker invoker = (ServiceDiscoveryMigrationInvoker) invokerField.get(handler);
+            ClusterInvoker clusterInvoker = invoker.getServiceDiscoveryInvoker();
+            ServiceDiscoveryRegistryDirectory directory = (ServiceDiscoveryRegistryDirectory) clusterInvoker.getDirectory();
+            ListenerInvokerWrapper wrapper = (ListenerInvokerWrapper) directory.getInvokers().get(0);            
+            DubboInvoker dubboInvoker = (DubboInvoker) wrapper.getInvoker();
+            Field clientsField = DubboInvoker.class.getDeclaredField("clients");
+            clientsField.setAccessible(true);
+            ExchangeClient[] clients = (ExchangeClient[]) clientsField.get(dubboInvoker);
+            return clients;
+        }  catch (Exception e) {
+            e.printStackTrace();
+            Assertions.fail(e.getMessage());
+            throw new RuntimeException(e);
+        }        
     }
 }

@@ -585,9 +585,18 @@ public class InstanceAddressURL extends URL {
     }
 
     private RpcServiceContext getServiceContext() {
-        if (savedRpcServiceContext != null && savedRpcServiceContext.getConsumerUrl().getScopeModel().isDestroyed()) {
-            RpcContext.removeNotifyContext();
-            return savedRpcServiceContext;
+        if (savedRpcServiceContext != null) {
+            if (savedRpcServiceContext.getConsumerUrl().getScopeModel().isDestroyed()) {
+                // scope model is destroyed.
+                RpcContext.removeNotifyContext();
+                return savedRpcServiceContext;
+            }
+            RpcServiceContext rpcServiceContext = RpcContext.getServiceContext();
+            if (rpcServiceContext.getConsumerUrl() == null) {
+                // support ReferenceCountExchangeClient#replaceWithLazyClient() while scope model is not destroyed.
+                return savedRpcServiceContext;
+            }
+            return rpcServiceContext;
         }
         return RpcContext.getServiceContext();
     }
