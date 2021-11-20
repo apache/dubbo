@@ -104,6 +104,7 @@ public class SpringXmlConfigTest {
         return getDubboClients(dubboService)[0];
     }
 
+    @SuppressWarnings("rawtypes")
     private ExchangeClient[] getDubboClients(Object dubboService) {
         try {
 
@@ -117,11 +118,11 @@ public class SpringXmlConfigTest {
             Field invokerField = handler.getClass().getDeclaredField("invoker");
             invokerField.setAccessible(true);
             ServiceDiscoveryMigrationInvoker invoker = (ServiceDiscoveryMigrationInvoker) invokerField.get(handler);
-            ClusterInvoker clusterInvoker = invoker.getServiceDiscoveryInvoker();
+            ClusterInvoker clusterInvoker = invoker.getCurrentAvailableInvoker();
             ServiceDiscoveryRegistryDirectory directory = (ServiceDiscoveryRegistryDirectory) clusterInvoker.getDirectory();
             ListenerInvokerWrapper wrapper = (ListenerInvokerWrapper) directory.getInvokers().get(0);            
             DubboInvoker dubboInvoker = (DubboInvoker) wrapper.getInvoker();
-            Field clientsField = DubboInvoker.class.getDeclaredField("clients");
+            Field clientsField = dubboInvoker.getClass().getDeclaredField("clients");
             clientsField.setAccessible(true);
             ExchangeClient[] clients = (ExchangeClient[]) clientsField.get(dubboInvoker);
             return clients;
