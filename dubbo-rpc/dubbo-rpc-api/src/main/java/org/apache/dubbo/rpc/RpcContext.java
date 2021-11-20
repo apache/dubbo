@@ -182,19 +182,10 @@ public class RpcContext {
         return SERVICE_CONTEXT.get();
     }
 
-    public static RpcServiceContext getServiceContext(Consumer<RpcServiceContext> rpcServiceContextRemovedNotify) {
-        REMOVENOTIFY_CONTEXT.get().add(rpcServiceContextRemovedNotify);
-        return SERVICE_CONTEXT.get();
-    }
-
     public static void removeServiceContext() {
-        // send rpcServiceContext removal notification if rpcServiceContext's consumerUrl is not null.
-        if (SERVICE_CONTEXT.get().getConsumerUrl() != null) {
-            for (Consumer<RpcServiceContext> rpcServiceContextRemovedNotify : REMOVENOTIFY_CONTEXT.get()) {
-                rpcServiceContextRemovedNotify.accept(SERVICE_CONTEXT.get());
-            }
+        for (Consumer<RpcServiceContext> rpcServiceContextRemovedNotify : REMOVENOTIFY_CONTEXT.get()) {
+            rpcServiceContextRemovedNotify.accept(SERVICE_CONTEXT.get());
         }
-        REMOVENOTIFY_CONTEXT.remove();
         SERVICE_CONTEXT.remove();
     }
 
@@ -830,5 +821,13 @@ public class RpcContext {
 
     public static void setRpcContext(URL url) {
         RpcServiceContext.setRpcContext(url);
+    }
+
+    public static void RegisterRpcServiceContextRemovedNotify(Consumer<RpcServiceContext> rpcServiceContextRemovedNotify) {
+        REMOVENOTIFY_CONTEXT.get().add(rpcServiceContextRemovedNotify);
+    }
+
+    public static void removeNotifyContext() {
+        REMOVENOTIFY_CONTEXT.remove();
     }
 }
