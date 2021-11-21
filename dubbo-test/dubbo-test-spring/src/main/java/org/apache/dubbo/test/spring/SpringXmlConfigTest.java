@@ -93,6 +93,10 @@ public class SpringXmlConfigTest {
 
             // check initialization customizer
             MockSpringInitCustomizer.checkCustomizer(applicationContext);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assertions.fail(e.getMessage());
+            throw new RuntimeException(e);
         } finally {
             SysProps.clear();
             if (applicationContext != null) {
