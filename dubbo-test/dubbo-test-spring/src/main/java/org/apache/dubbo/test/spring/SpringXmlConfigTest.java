@@ -20,6 +20,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
 import org.apache.dubbo.registry.client.migration.ServiceDiscoveryMigrationInvoker;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboInvoker;
@@ -40,6 +41,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KE
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SpringXmlConfigTest {
 
@@ -101,11 +104,11 @@ public class SpringXmlConfigTest {
     }
 
     private ExchangeClient getDubboClient(Object dubboService) {
-        return getDubboClients(dubboService)[0];
+        return getDubboClients(dubboService).get(0);
     }
 
-    @SuppressWarnings("rawtypes")
-    private ExchangeClient[] getDubboClients(Object dubboService) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private List<ExchangeClient> getDubboClients(Object dubboService) {
         try {
 
             Method getTargetSourceMethod = dubboService.getClass().getDeclaredMethod("getTargetSource");
@@ -120,12 +123,23 @@ public class SpringXmlConfigTest {
             ServiceDiscoveryMigrationInvoker invoker = (ServiceDiscoveryMigrationInvoker) invokerField.get(handler);
             ClusterInvoker clusterInvoker = invoker.getCurrentAvailableInvoker();
             ServiceDiscoveryRegistryDirectory directory = (ServiceDiscoveryRegistryDirectory) clusterInvoker.getDirectory();
-            ListenerInvokerWrapper wrapper = (ListenerInvokerWrapper) directory.getInvokers().get(0);            
-            DubboInvoker dubboInvoker = (DubboInvoker) wrapper.getInvoker();
-            Field clientsField = dubboInvoker.getClass().getDeclaredField("clients");
-            clientsField.setAccessible(true);
-            ExchangeClient[] clients = (ExchangeClient[]) clientsField.get(dubboInvoker);
-            return clients;
+            List<ExchangeClient> clientList = new ArrayList<>();
+            List<ListenerInvokerWrapper<?>> invokerList = directory.getAllInvokers();
+            System.out.println("ListenerInvokerWrapper count: " + invokerList.size());
+            for (ListenerInvokerWrapper wrapper : invokerList) {
+                DubboInvoker dubboInvoker = (DubboInvoker) wrapper.getInvoker();
+                Field clientsField = dubboInvoker.getClass().getDeclaredField("clients");
+                clientsField.setAccessible(true);
+                ExchangeClient[] clients = (ExchangeClient[]) clientsField.get(dubboInvoker);
+                System.out.println("---> ListenerInvokerWrapper: " + wrapper + " client count: " + clients.length);
+                for (ExchangeClient client : clients) {
+                    System.out.println("------> client :" + client);
+                    if (client != null) {
+                        clientList.add(client);
+                    }
+                }
+            }
+            return clientList;
         }  catch (Exception e) {
             e.printStackTrace();
             Assertions.fail(e.getMessage());
