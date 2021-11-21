@@ -167,6 +167,10 @@ public abstract class ScopeModel implements ExtensionAccessor {
         return parent;
     }
 
+    public ExtensionScope getScope() {
+        return scope;
+    }
+
     public void addClassLoader(ClassLoader classLoader) {
         this.classLoaders.add(classLoader);
         if (parent != null) {
