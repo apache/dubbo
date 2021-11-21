@@ -17,6 +17,8 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -44,6 +46,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class InstanceAddressURL extends URL {
     private static final long serialVersionUID = -7381697669844007849L;
+    private final static Logger logger = LoggerFactory.getLogger(InstanceAddressURL.class);
 
     private ServiceInstance instance;
     private MetadataInfo metadataInfo;
@@ -54,7 +57,7 @@ public class InstanceAddressURL extends URL {
     private volatile transient Set<String> providerFirstParams;
 
     // retain strong reference of the rpcServiceContext when it is being removed from RpcContext.
-    private volatile RpcServiceContext savedRpcServiceContext;
+    private volatile RpcServiceContext savedRpcServiceContext = null;
     private Consumer<RpcServiceContext> rpcServiceContextRemovedNotify = new Consumer<RpcServiceContext>() {
         @Override
         public void accept(RpcServiceContext removedRpcServiceContext) {
@@ -588,12 +591,14 @@ public class InstanceAddressURL extends URL {
         if (savedRpcServiceContext != null) {
             if (savedRpcServiceContext.getConsumerUrl().getScopeModel().isDestroyed()) {
                 // scope model is destroyed.
+                logger.info("use savedRpcServiceContext as scope model is destroyed.");
                 RpcContext.removeNotifyContext();
                 return savedRpcServiceContext;
             }
             RpcServiceContext rpcServiceContext = RpcContext.getServiceContext();
             if (rpcServiceContext.getConsumerUrl() == null) {
                 // support ReferenceCountExchangeClient#replaceWithLazyClient() while scope model is not destroyed.
+                logger.info("use savedRpcServiceContext as rpcServiceContext consumerUrl is null.");
                 return savedRpcServiceContext;
             }
             return rpcServiceContext;

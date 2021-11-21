@@ -69,7 +69,9 @@ public class SpringXmlConfigTest {
             // get greetingService's ReferenceCountExchangeClient.
             ExchangeClient client = getDubboClient(greetingService);
             // replace ReferenceCountExchangeClient with LazyConnectExchangeClient by close().
+            System.out.println("begin close client: " + client);
             client.close();
+            System.out.println("end close client: " + client);
 
             // wait close done.
             try {
