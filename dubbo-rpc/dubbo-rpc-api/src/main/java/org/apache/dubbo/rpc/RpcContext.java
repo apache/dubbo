@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -54,6 +56,7 @@ import java.util.function.Consumer;
  */
 public class RpcContext {
 
+    private final static Logger logger = LoggerFactory.getLogger(RpcContext.class);
     private static final RpcContext AGENT = new RpcContext();
 
     /**
@@ -183,6 +186,7 @@ public class RpcContext {
     }
 
     public static void removeServiceContext() {
+        logger.info("removeServiceContext which consumerUrl is: " + SERVICE_CONTEXT.get().getConsumerUrl());
         for (Consumer<RpcServiceContext> rpcServiceContextRemovedNotify : REMOVENOTIFY_CONTEXT.get()) {
             rpcServiceContextRemovedNotify.accept(SERVICE_CONTEXT.get());
         }
