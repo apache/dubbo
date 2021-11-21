@@ -1,0 +1,1 @@
+script=org.apache.dubbo.rpc.cluster.router.script.ScriptStateRouterFactory

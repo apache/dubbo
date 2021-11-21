@@ -249,7 +249,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     public void buildRouterChain(URL url) {
-        this.setRouterChain(RouterChain.buildChain(url));
+        this.setRouterChain(RouterChain.buildChain(getInterface(), url));
     }
 
     @Override

@@ -89,9 +89,8 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     public void buildRouterChain() {
-        RouterChain<T> routerChain = RouterChain.buildChain(getUrl());
+        RouterChain<T> routerChain = RouterChain.buildChain(getInterface(), getUrl());
         routerChain.setInvokers(getInvokers());
-        routerChain.loop(true);
         this.setRouterChain(routerChain);
     }
 

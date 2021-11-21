@@ -14,24 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag;
+package org.apache.dubbo.rpc.cluster.router.condition;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.CacheableStateRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 /**
- * Tag router factory
+ * ConditionRouterFactory
+ * Load when "override://" is configured {@link ConditionStateRouter}
  */
-@Activate(order = 100)
-public class TagStaticStateRouterFactory extends CacheableStateRouterFactory {
+public class ConditionStateRouterFactory extends CacheableStateRouterFactory {
 
-    public static final String NAME = "tag-static";
+    public static final String NAME = "condition";
 
     @Override
-    protected StateRouter createRouter(URL url, RouterChain chain) {
-        return new TagStaticStateRouter(url, chain);
+    protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
+        return new ConditionStateRouter<T>(url);
     }
 }

@@ -14,22 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
+package org.apache.dubbo.rpc.cluster.router.tag;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.state.CacheableStateRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 /**
- * Application level router, "application.condition-router"
+ * Tag router factory
  */
-public class AppRouter extends ListenableRouter {
-    public static final String NAME = "APP_ROUTER";
-    /**
-     * AppRouter should after ServiceRouter
-     */
-    private static final int APP_ROUTER_DEFAULT_PRIORITY = 150;
+@Activate(order = 100)
+public class TagStateRouterFactory extends CacheableStateRouterFactory {
 
-    public AppRouter(URL url) {
-        super(url, url.getApplication());
-        this.setPriority(APP_ROUTER_DEFAULT_PRIORITY);
+    public static final String NAME = "tag";
+
+    @Override
+    protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
+        return new TagStateRouter<T>(url);
     }
 }

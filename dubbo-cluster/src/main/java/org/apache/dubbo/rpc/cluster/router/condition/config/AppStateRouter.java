@@ -14,32 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.script;
+package org.apache.dubbo.rpc.cluster.router.condition.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
 
 /**
- * ScriptRouterFactory
- * <p>
- * Example URLS used by Script Router Factory：
- * <ol>
- * <li> script://registryAddress?type=js&rule=xxxx
- * <li> script:///path/to/routerfile.js?type=js&rule=xxxx
- * <li> script://D:\path\to\routerfile.js?type=js&rule=xxxx
- * <li> script://C:/path/to/routerfile.js?type=js&rule=xxxx
- * </ol>
- * The host value in URL points out the address of the source content of the Script Router，Registry、File etc
- *
+ * Application level router, "application.condition-router"
  */
-public class ScriptRouterFactory implements RouterFactory {
+public class AppStateRouter<T> extends ListenableStateRouter<T> {
+    public static final String NAME = "APP_ROUTER";
+    /**
+     * AppRouter should after ServiceRouter
+     */
+    private static final int APP_ROUTER_DEFAULT_PRIORITY = 150;
 
-    public static final String NAME = "script";
-
-    @Override
-    public Router getRouter(URL url) {
-        return new ScriptRouter(url);
+    public AppStateRouter(URL url) {
+        super(url, url.getApplication());
+        this.setPriority(APP_ROUTER_DEFAULT_PRIORITY);
     }
-
 }

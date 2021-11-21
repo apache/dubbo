@@ -14,38 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.state;
+package org.apache.dubbo.rpc.cluster.router.mock;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
-import org.apache.dubbo.rpc.Invoker;
-
-/***
- * Address cache,
- * used to cache the results of the StaterRouter's asynchronous address list calculations.
- * @param <T>
- * @since 3.0
+/**
+ *
  */
-public class AddrCache<T> {
+@Activate
+public class MockStateRouterFactory implements StateRouterFactory {
+    public static final String NAME = "mock";
 
-    private List<Invoker<T>> invokers;
-    private Map<String, RouterCache<T>> cache = Collections.emptyMap();
-
-    public List<Invoker<T>> getInvokers() {
-        return invokers;
+    @Override
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        return new MockInvokersSelector<T>(url);
     }
 
-    public void setInvokers(List<Invoker<T>> invokers) {
-        this.invokers = invokers;
-    }
-
-    public Map<String, RouterCache<T>> getCache() {
-        return cache;
-    }
-
-    public void setCache(Map<String, RouterCache<T>> cache) {
-        this.cache = cache;
-    }
 }
