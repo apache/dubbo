@@ -34,6 +34,7 @@
     <properties>
         <revision>3.0.5-SNAPSHOT</revision>
         <maven_flatten_version>1.1.0</maven_flatten_version>
+        <zookeeper_version>3.7.0</zookeeper_version>
     </properties>
 
     <dependencyManagement>
@@ -42,6 +43,13 @@
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-dependencies-bom</artifactId>
                 <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>parent</artifactId>
+                <version>${zookeeper_version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -56,6 +64,52 @@
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>jline</groupId>
+            <artifactId>jline</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
         </dependency>
     </dependencies>
 
