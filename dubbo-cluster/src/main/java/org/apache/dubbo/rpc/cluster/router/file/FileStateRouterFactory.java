@@ -19,9 +19,9 @@ package org.apache.dubbo.rpc.cluster.router.file;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.utils.IOUtils;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
-import org.apache.dubbo.rpc.cluster.router.script.ScriptRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.script.ScriptStateRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 import java.io.File;
 import java.io.FileReader;
@@ -32,22 +32,22 @@ import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 
-public class FileRouterFactory implements RouterFactory {
+public class FileStateRouterFactory implements StateRouterFactory {
 
     public static final String NAME = "file";
 
-    private RouterFactory routerFactory;
+    private StateRouterFactory routerFactory;
 
-    public void setRouterFactory(RouterFactory routerFactory) {
+    public void setRouterFactory(StateRouterFactory routerFactory) {
         this.routerFactory = routerFactory;
     }
 
     @Override
-    public Router getRouter(URL url) {
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
         try {
             // Transform File URL into Script Route URL, and Load
             // file:///d:/path/to/route.js?router=script ==> script:///d:/path/to/route.js?type=js&rule=<file-content>
-            String protocol = url.getParameter(ROUTER_KEY, ScriptRouterFactory.NAME); // Replace original protocol (maybe 'file') with 'script'
+            String protocol = url.getParameter(ROUTER_KEY, ScriptStateRouterFactory.NAME); // Replace original protocol (maybe 'file') with 'script'
             String type = null; // Use file suffix to config script type, e.g., js, groovy ...
             String path = url.getPath();
             if (path != null) {
@@ -67,7 +67,7 @@ public class FileRouterFactory implements RouterFactory {
                     .addParameterAndEncoded(RULE_KEY, rule)
                     .build();
 
-            return routerFactory.getRouter(script);
+            return routerFactory.getRouter(interfaceClass, script);
         } catch (IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

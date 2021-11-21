@@ -14,23 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag;
+package org.apache.dubbo.rpc.cluster.router.script;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.CacheableRouterFactory;
-import org.apache.dubbo.rpc.cluster.Router;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 /**
- * Tag router factory
+ * ScriptRouterFactory
+ * <p>
+ * Example URLS used by Script Router Factory：
+ * <ol>
+ * <li> script://registryAddress?type=js&rule=xxxx
+ * <li> script:///path/to/routerfile.js?type=js&rule=xxxx
+ * <li> script://D:\path\to\routerfile.js?type=js&rule=xxxx
+ * <li> script://C:/path/to/routerfile.js?type=js&rule=xxxx
+ * </ol>
+ * The host value in URL points out the address of the source content of the Script Router，Registry、File etc
+ *
  */
-@Activate(order = 100)
-public class TagRouterFactory extends CacheableRouterFactory {
+public class ScriptStateRouterFactory implements StateRouterFactory {
 
-    public static final String NAME = "tag";
+    public static final String NAME = "script";
 
     @Override
-    protected Router createRouter(URL url) {
-        return new TagRouter(url);
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        return new ScriptStateRouter<>(url);
     }
+
 }

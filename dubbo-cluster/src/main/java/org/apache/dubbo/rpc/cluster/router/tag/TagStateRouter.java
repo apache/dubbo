@@ -29,14 +29,14 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
-import org.apache.dubbo.rpc.cluster.router.RouterResult;
+import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
@@ -45,16 +45,16 @@ import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 /**
  * TagRouter, "application.tag-router"
  */
-public class TagRouter extends AbstractRouter implements ConfigurationListener {
+public class TagStateRouter<T> extends AbstractStateRouter<T> implements ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
     private static final int TAG_ROUTER_DEFAULT_PRIORITY = 100;
-    private static final Logger logger = LoggerFactory.getLogger(TagRouter.class);
+    private static final Logger logger = LoggerFactory.getLogger(TagStateRouter.class);
     private static final String RULE_SUFFIX = ".tag-router";
 
     private TagRouterRule tagRouterRule;
     private String application;
 
-    public TagRouter(URL url) {
+    public TagStateRouter(URL url) {
         super(url);
         this.setPriority(TAG_ROUTER_DEFAULT_PRIORITY);
     }
@@ -79,20 +79,21 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     @Override
-    public <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url,
-                                              Invocation invocation, boolean needToPrintMessage) throws RpcException {
-
+    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
+                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
         if (CollectionUtils.isEmpty(invokers)) {
-            return new RouterResult<>(invokers);
+            return new StateRouterResult<>(invokers,
+                needToPrintMessage ? "Directly Return. Reason: Invokers from previous router is empty." : null);
         }
 
         // since the rule can be changed by config center, we should copy one to use.
         final TagRouterRule tagRouterRuleCopy = tagRouterRule;
         if (tagRouterRuleCopy == null || !tagRouterRuleCopy.isValid() || !tagRouterRuleCopy.isEnabled()) {
-            return new RouterResult<>(filterUsingStaticTag(invokers, url, invocation));
+            return new StateRouterResult<>(filterUsingStaticTag(invokers, url, invocation),
+                needToPrintMessage ? "Disable Tag Router. Reason: tagRouterRule is invalid or disabled" : null);
         }
 
-        List<Invoker<T>> result = invokers;
+        BitList<Invoker<T>> result = invokers;
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
             invocation.getAttachment(TAG_KEY);
 
@@ -104,7 +105,8 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 result = filterInvoker(invokers, invoker -> addressMatches(invoker.getUrl(), addresses));
                 // if result is not null OR it's null but force=true, return result directly
                 if (CollectionUtils.isNotEmpty(result) || tagRouterRuleCopy.isForce()) {
-                    return new RouterResult<>(result);
+                    return new StateRouterResult<>(result,
+                        needToPrintMessage ? "Use tag " + tag + " to route. Reason: result is not null OR it's null but force=true" : null);
                 }
             } else {
                 // dynamic tag group doesn't have any item about the requested app OR it's null after filtered by
@@ -114,13 +116,15 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
             // If there's no tagged providers that can match the current tagged request. force.tag is set by default
             // to false, which means it will invoke any providers without a tag unless it's explicitly disallowed.
             if (CollectionUtils.isNotEmpty(result) || isForceUseTag(invocation)) {
-                return new RouterResult<>(result);
+                return new StateRouterResult<>(result,
+                    needToPrintMessage ? "Use tag " + tag + " to route. Reason: result is not empty or ForceUseTag key is true in invocation" : null);
             }
             // FAILOVER: return all Providers without any tags.
             else {
-                List<Invoker<T>> tmp = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(),
+                BitList<Invoker<T>> tmp = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(),
                     tagRouterRuleCopy.getAddresses()));
-                return new RouterResult<>(filterInvoker(tmp, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY))));
+                return new StateRouterResult<>(filterInvoker(tmp, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY))),
+                    needToPrintMessage ? "FAILOVER: return all Providers without any tags" : null);
             }
         } else {
             // List<String> addresses = tagRouterRule.filter(providerApp);
@@ -130,15 +134,16 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 result = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(), addresses));
                 // 1. all addresses are in dynamic tag group, return empty list.
                 if (CollectionUtils.isEmpty(result)) {
-                    return new RouterResult<>(result);
+                    return new StateRouterResult<>(result,
+                        needToPrintMessage ? "all addresses are in dynamic tag group, return empty list" : null);
                 }
                 // 2. if there are some addresses that are not in any dynamic tag group, continue to filter using the
                 // static tag group.
             }
-            return new RouterResult<>(filterInvoker(result, invoker -> {
+            return new StateRouterResult<>(filterInvoker(result, invoker -> {
                 String localTag = invoker.getUrl().getParameter(TAG_KEY);
                 return StringUtils.isEmpty(localTag) || !tagRouterRuleCopy.getTagNames().contains(localTag);
-            }));
+            }), needToPrintMessage ? "filter using the static tag group" : null);
         }
     }
 
@@ -156,8 +161,8 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
      * @param <T>
      * @return
      */
-    private <T> List<Invoker<T>> filterUsingStaticTag(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        List<Invoker<T>> result;
+    private <T> BitList<Invoker<T>> filterUsingStaticTag(BitList<Invoker<T>> invokers, URL url, Invocation invocation) {
+        BitList<Invoker<T>> result;
         // Dynamic param
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
             invocation.getAttachment(TAG_KEY);
@@ -188,14 +193,15 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         return Boolean.parseBoolean(invocation.getAttachment(FORCE_USE_TAG, this.getUrl().getParameter(FORCE_USE_TAG, "false")));
     }
 
-    private <T> List<Invoker<T>> filterInvoker(List<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
+    private <T> BitList<Invoker<T>> filterInvoker(BitList<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
         if (invokers.stream().allMatch(predicate)) {
             return invokers;
         }
 
-        return invokers.stream()
-            .filter(predicate)
-            .collect(Collectors.toList());
+        BitList<Invoker<T>> newInvokers = invokers.clone();
+        newInvokers.removeIf(invoker -> !predicate.test(invoker));
+
+        return newInvokers;
     }
 
     private boolean addressMatches(URL url, List<String> addresses) {
@@ -227,7 +233,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     @Override
-    public <T> void notify(List<Invoker<T>> invokers) {
+    public void notify(BitList<Invoker<T>> invokers) {
         if (CollectionUtils.isEmpty(invokers)) {
             return;
         }

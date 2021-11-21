@@ -51,7 +51,7 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
     void testNormalWhenRouterEnabled() {
         ConsistentHashLoadBalance lb = (ConsistentHashLoadBalance) getLoadBalance(ConsistentHashLoadBalance.NAME);
         URL url = invokers.get(0).getUrl();
-        RouterChain<LoadBalanceBaseTest> routerChain = RouterChain.buildChain(url);
+        RouterChain<LoadBalanceBaseTest> routerChain = RouterChain.buildChain(LoadBalanceBaseTest.class, url);
         Invoker<LoadBalanceBaseTest> result = lb.select(invokers, url, invocation);
         int originalHashCode = lb.getCorrespondingHashCode(invokers);
 

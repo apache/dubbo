@@ -14,23 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition;
+package org.apache.dubbo.rpc.cluster.router.condition.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.state.CacheableStateRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 /**
- * ConditionRouterFactory
- * Load when "override://" is configured {@link ConditionRouter}
+ * Service level router factory
  */
-public class ConditionRouterFactory implements RouterFactory {
+@Activate(order = 300)
+public class ServiceStateRouterFactory extends CacheableStateRouterFactory {
 
-    public static final String NAME = "condition";
+    public static final String NAME = "service";
 
     @Override
-    public Router getRouter(URL url) {
-        return new ConditionRouter(url);
+    protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
+        return new ServiceRouter<T>(url);
     }
 
 }
