@@ -188,6 +188,7 @@ public class RpcContext {
     public static void removeServiceContext() {
         logger.info("removeServiceContext which consumerUrl is: " + SERVICE_CONTEXT.get().getConsumerUrl());
         for (Consumer<RpcServiceContext> rpcServiceContextRemovedNotify : REMOVENOTIFY_CONTEXT.get()) {
+            logger.info("send notify: " + rpcServiceContextRemovedNotify);
             rpcServiceContextRemovedNotify.accept(SERVICE_CONTEXT.get());
         }
         SERVICE_CONTEXT.remove();
@@ -827,11 +828,15 @@ public class RpcContext {
         RpcServiceContext.setRpcContext(url);
     }
 
-    public static void RegisterRpcServiceContextRemovedNotify(Consumer<RpcServiceContext> rpcServiceContextRemovedNotify) {
+    public synchronized static void registerRpcServiceContextRemovedNotify(Consumer<RpcServiceContext> rpcServiceContextRemovedNotify) {
         REMOVENOTIFY_CONTEXT.get().add(rpcServiceContextRemovedNotify);
     }
 
-    public static void removeNotifyContext() {
-        REMOVENOTIFY_CONTEXT.remove();
+    public synchronized static void removeNotifyContext(Consumer<RpcServiceContext> rpcServiceContextRemovedNotify) {
+        REMOVENOTIFY_CONTEXT.get().remove(rpcServiceContextRemovedNotify);
+        if (REMOVENOTIFY_CONTEXT.get().isEmpty()) {
+            logger.info("removeNotifyContext is empty.");
+            REMOVENOTIFY_CONTEXT.remove();
+        }
     }
 }

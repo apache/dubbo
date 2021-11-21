@@ -57,7 +57,7 @@ public class InstanceAddressURL extends URL {
     private volatile transient Set<String> providerFirstParams;
 
     // retain strong reference of the rpcServiceContext when it is being removed from RpcContext.
-    private volatile RpcServiceContext savedRpcServiceContext = null;
+    private volatile RpcServiceContext savedRpcServiceContext;
     private Consumer<RpcServiceContext> rpcServiceContextRemovedNotify = new Consumer<RpcServiceContext>() {
         @Override
         public void accept(RpcServiceContext removedRpcServiceContext) {
@@ -77,7 +77,8 @@ public class InstanceAddressURL extends URL {
     ) {
         this.instance = instance;
         this.metadataInfo = metadataInfo;
-        RpcContext.RegisterRpcServiceContextRemovedNotify(rpcServiceContextRemovedNotify);
+        logger.info("InstanceAddressURL: " + this + " register notify: " + rpcServiceContextRemovedNotify);
+        RpcContext.registerRpcServiceContextRemovedNotify(rpcServiceContextRemovedNotify);
     }
 
     public ServiceInstance getInstance() {
@@ -511,7 +512,12 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public ScopeModel getScopeModel() {
-        return getServiceContext().getConsumerUrl().getScopeModel();
+        try {
+            return getServiceContext().getConsumerUrl().getScopeModel();
+        } catch (Exception e) {
+            logger.info("getScopeModel() of " + this + " exception", e);
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -591,8 +597,8 @@ public class InstanceAddressURL extends URL {
         if (savedRpcServiceContext != null) {
             if (savedRpcServiceContext.getConsumerUrl().getScopeModel().isDestroyed()) {
                 // scope model is destroyed.
-                logger.info("use savedRpcServiceContext as scope model is destroyed.");
-                RpcContext.removeNotifyContext();
+                logger.info("InstanceAddressURL: " + this + " remove notify: " + rpcServiceContextRemovedNotify);
+                RpcContext.removeNotifyContext(rpcServiceContextRemovedNotify);
                 return savedRpcServiceContext;
             }
             RpcServiceContext rpcServiceContext = RpcContext.getServiceContext();
