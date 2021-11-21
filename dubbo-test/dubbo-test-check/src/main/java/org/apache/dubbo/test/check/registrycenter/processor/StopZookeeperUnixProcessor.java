@@ -35,6 +35,11 @@ public class StopZookeeperUnixProcessor extends ZookeeperUnixProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(StopZookeeperUnixProcessor.class);
 
+    /**
+     * The pattern for checking if the zookeeper instance stopped.
+     */
+    private static final Pattern PATTERN_STOPPED = Pattern.compile(".*STOPPED.*");
+
     @Override
     protected Process doProcess(ZookeeperContext context, int clientPort) throws DubboTestException {
         logger.info(String.format("The zookeeper-%d is stopping...", clientPort));
@@ -56,6 +61,6 @@ public class StopZookeeperUnixProcessor extends ZookeeperUnixProcessor {
 
     @Override
     protected Pattern getPattern() {
-        return Pattern.compile(".*STOPPED.*");
+        return PATTERN_STOPPED;
     }
 }
