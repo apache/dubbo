@@ -18,21 +18,16 @@ package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.function.Consumer;
 
 
 /**
@@ -56,7 +51,6 @@ import java.util.function.Consumer;
  */
 public class RpcContext {
 
-    private final static Logger logger = LoggerFactory.getLogger(RpcContext.class);
     private static final RpcContext AGENT = new RpcContext();
 
     /**
@@ -100,12 +94,6 @@ public class RpcContext {
         }
     };
 
-    private static final InternalThreadLocal<Set<Consumer<RpcServiceContext>>> REMOVENOTIFY_CONTEXT = new InternalThreadLocal<Set<Consumer<RpcServiceContext>>>() {
-        @Override
-        protected Set<Consumer<RpcServiceContext>> initialValue() {
-            return new HashSet<>();
-        }
-    };
 
     public static CancellationContext getCancellationContext() {
         return CANCELLATION_CONTEXT.get();
@@ -186,11 +174,6 @@ public class RpcContext {
     }
 
     public static void removeServiceContext() {
-        logger.info("removeServiceContext which consumerUrl is: " + SERVICE_CONTEXT.get().getConsumerUrl());
-        for (Consumer<RpcServiceContext> rpcServiceContextRemovedNotify : REMOVENOTIFY_CONTEXT.get()) {
-            logger.info("send notify: " + rpcServiceContextRemovedNotify);
-            rpcServiceContextRemovedNotify.accept(SERVICE_CONTEXT.get());
-        }
         SERVICE_CONTEXT.remove();
     }
 
@@ -241,7 +224,7 @@ public class RpcContext {
             SERVER_ATTACHMENT.remove();
         }
         SERVER_LOCAL.remove();
-        removeServiceContext();
+        SERVICE_CONTEXT.remove();
         CANCELLATION_CONTEXT.remove();
     }
 
@@ -826,17 +809,5 @@ public class RpcContext {
 
     public static void setRpcContext(URL url) {
         RpcServiceContext.setRpcContext(url);
-    }
-
-    public synchronized static void registerRpcServiceContextRemovedNotify(Consumer<RpcServiceContext> rpcServiceContextRemovedNotify) {
-        REMOVENOTIFY_CONTEXT.get().add(rpcServiceContextRemovedNotify);
-    }
-
-    public synchronized static void removeNotifyContext(Consumer<RpcServiceContext> rpcServiceContextRemovedNotify) {
-        REMOVENOTIFY_CONTEXT.get().remove(rpcServiceContextRemovedNotify);
-        if (REMOVENOTIFY_CONTEXT.get().isEmpty()) {
-            logger.info("removeNotifyContext is empty.");
-            REMOVENOTIFY_CONTEXT.remove();
-        }
     }
 }

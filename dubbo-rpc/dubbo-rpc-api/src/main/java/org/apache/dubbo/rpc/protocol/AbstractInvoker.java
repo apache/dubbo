@@ -194,6 +194,9 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         if (serializationId != null) {
             inv.put(SERIALIZATION_ID_KEY, serializationId);
         }
+
+        // save service context
+        url.saveRpcServiceContext(RpcContext.getServiceContext());
     }
 
     private void addInvocationAttachments(RpcInvocation invocation) {

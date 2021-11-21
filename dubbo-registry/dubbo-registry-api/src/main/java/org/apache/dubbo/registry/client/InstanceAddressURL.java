@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -56,17 +55,8 @@ public class InstanceAddressURL extends URL {
     private volatile transient Map<String, Map<String, Number>> methodNumbers;
     private volatile transient Set<String> providerFirstParams;
 
-    // retain strong reference of the rpcServiceContext when it is being removed from RpcContext.
+    // retain rpcServiceContext by AbstractInvoker#prepareInvocation calling InstanceAddressURL#saveRpcServiceContext.
     private volatile RpcServiceContext savedRpcServiceContext;
-    private Consumer<RpcServiceContext> rpcServiceContextRemovedNotify = new Consumer<RpcServiceContext>() {
-        @Override
-        public void accept(RpcServiceContext removedRpcServiceContext) {
-            // only retain the reference of rpcServiceContext which consumerUrl is not null.
-            if (removedRpcServiceContext.getConsumerUrl() != null) {
-                InstanceAddressURL.this.savedRpcServiceContext = removedRpcServiceContext;
-            }
-        }
-    };
 
     public InstanceAddressURL() {
     }
@@ -77,8 +67,6 @@ public class InstanceAddressURL extends URL {
     ) {
         this.instance = instance;
         this.metadataInfo = metadataInfo;
-        logger.info("InstanceAddressURL: " + this + " register notify: " + rpcServiceContextRemovedNotify);
-        RpcContext.registerRpcServiceContextRemovedNotify(rpcServiceContextRemovedNotify);
     }
 
     public ServiceInstance getInstance() {
@@ -512,12 +500,7 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public ScopeModel getScopeModel() {
-        try {
-            return getServiceContext().getConsumerUrl().getScopeModel();
-        } catch (Exception e) {
-            logger.info("getScopeModel() of " + this + " exception", e);
-            throw new RuntimeException(e);
-        }
+        return getServiceContext().getConsumerUrl().getScopeModel();
     }
 
     @Override
@@ -540,6 +523,11 @@ public class InstanceAddressURL extends URL {
         return getServiceContext().getConsumerUrl().getServiceModel();
     }
 
+    @Override
+    public void saveRpcServiceContext(Object rpcServiceContext) {
+        this.savedRpcServiceContext = (RpcServiceContext) rpcServiceContext;
+    }
+
     public Set<String> getProviderFirstParams() {
         return providerFirstParams;
     }
@@ -554,6 +542,24 @@ public class InstanceAddressURL extends URL {
         } else {
             return true;
         }
+    }
+
+    private RpcServiceContext getServiceContext() {
+        if (savedRpcServiceContext != null) {
+            if (savedRpcServiceContext.getConsumerUrl().getScopeModel().isDestroyed()) {
+                // scope model is destroyed.
+                logger.info("use savedRpcServiceContext while scope model is destroyed.");
+                return savedRpcServiceContext;
+            }
+            RpcServiceContext rpcServiceContext = RpcContext.getServiceContext();
+            if (rpcServiceContext.getConsumerUrl() == null) {
+                // support ReferenceCountExchangeClient#replaceWithLazyClient() while scope model is not destroyed.
+                logger.info("use savedRpcServiceContext as rpcServiceContext consumerUrl is null.");
+                return savedRpcServiceContext;
+            }
+            return rpcServiceContext;
+        }
+        return RpcContext.getServiceContext();
     }
 
     @Override
@@ -591,25 +597,5 @@ public class InstanceAddressURL extends URL {
         }
 
         return instance.toString();
-    }
-
-    private RpcServiceContext getServiceContext() {
-        if (savedRpcServiceContext != null) {
-            if (savedRpcServiceContext.getConsumerUrl().getScopeModel().isDestroyed()) {
-                // scope model is destroyed.
-                logger.info("InstanceAddressURL: " + this + " remove notify: " + rpcServiceContextRemovedNotify);
-                RpcContext.removeNotifyContext(rpcServiceContextRemovedNotify);
-                return savedRpcServiceContext;
-            }
-            RpcServiceContext rpcServiceContext = RpcContext.getServiceContext();
-            if (rpcServiceContext.getConsumerUrl() == null) {
-                // support ReferenceCountExchangeClient#replaceWithLazyClient() while scope model is not destroyed.
-                logger.info("use savedRpcServiceContext as rpcServiceContext consumerUrl is null.");
-                return savedRpcServiceContext;
-            }
-            logger.info("use rpcServiceContext as it's consumerUrl is not null.");
-            return rpcServiceContext;
-        }
-        return RpcContext.getServiceContext();
     }
 }
