@@ -312,11 +312,12 @@ public class ConfigManagerTest {
 
     @Test
     public void testGetConfigByIdOrName() {
-        ApplicationConfig applicationConfig = new ApplicationConfig();
-        applicationConfig.setId("appID_1");
-        configManager.setApplication(applicationConfig);
-        Optional<ApplicationConfig> applicationConfigOptional = configManager.getConfig(ApplicationConfig.class, applicationConfig.getId());
-        Assertions.assertEquals(applicationConfigOptional.get(), applicationConfig);
+        RegistryConfig registryConfig = new RegistryConfig();
+        registryConfig.setId("registryID_1");
+        configManager.addRegistry(registryConfig);
+        Optional<RegistryConfig> registryConfigOptional = configManager.getConfig(RegistryConfig.class, registryConfig.getId());
+        Assertions.assertEquals(registryConfigOptional.get(), registryConfig);
+
 
         ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
         configManager.addProtocol(protocolConfig);
@@ -329,8 +330,8 @@ public class ConfigManagerTest {
         Optional<ModuleConfig> moduleConfigOptional = moduleConfigManager.getConfig(ModuleConfig.class, moduleConfig.getId());
         Assertions.assertEquals(moduleConfigOptional.get(), moduleConfig);
 
-        Optional<ApplicationConfig> config = moduleConfigManager.getConfig(ApplicationConfig.class, applicationConfig.getId());
-        Assertions.assertEquals(config.get(), applicationConfig);
+        Optional<RegistryConfig> config = moduleConfigManager.getConfig(RegistryConfig.class, registryConfig.getId());
+        Assertions.assertEquals(config.get(), registryConfig);
     }
 
     @Test
