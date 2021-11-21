@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.test.spring;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
 import org.apache.dubbo.registry.client.migration.ServiceDiscoveryMigrationInvoker;
@@ -44,7 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpringXmlConfigTest {
-
+    private final static Logger logger = LoggerFactory.getLogger(SpringXmlConfigTest.class);
+    
     @BeforeAll
     public static void beforeAll() {
         DubboBootstrap.reset();
@@ -69,9 +72,9 @@ public class SpringXmlConfigTest {
             // get greetingService's ReferenceCountExchangeClient.
             ExchangeClient client = getDubboClient(greetingService);
             // replace ReferenceCountExchangeClient with LazyConnectExchangeClient by close().
-            System.out.println("begin close client: " + client);
+            logger.info("begin close client: " + client);
             client.close();
-            System.out.println("end close client: " + client);
+            logger.info("end close client: " + client);
 
             // wait close done.
             try {
@@ -96,7 +99,7 @@ public class SpringXmlConfigTest {
             // check initialization customizer
             MockSpringInitCustomizer.checkCustomizer(applicationContext);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info(e);
             Assertions.fail(e.getMessage());
             throw new RuntimeException(e);
         } finally {
@@ -130,15 +133,15 @@ public class SpringXmlConfigTest {
             ServiceDiscoveryRegistryDirectory directory = (ServiceDiscoveryRegistryDirectory) clusterInvoker.getDirectory();
             List<ExchangeClient> clientList = new ArrayList<>();
             List<ListenerInvokerWrapper<?>> invokerList = directory.getAllInvokers();
-            System.out.println("ListenerInvokerWrapper count: " + invokerList.size());
+            logger.info("ListenerInvokerWrapper count: " + invokerList.size());
             for (ListenerInvokerWrapper wrapper : invokerList) {
                 DubboInvoker dubboInvoker = (DubboInvoker) wrapper.getInvoker();
                 Field clientsField = dubboInvoker.getClass().getDeclaredField("clients");
                 clientsField.setAccessible(true);
                 ExchangeClient[] clients = (ExchangeClient[]) clientsField.get(dubboInvoker);
-                System.out.println("---> ListenerInvokerWrapper: " + wrapper + " client count: " + clients.length);
+                logger.info("---> ListenerInvokerWrapper: " + wrapper + " client count: " + clients.length);
                 for (ExchangeClient client : clients) {
-                    System.out.println("------> client :" + client);
+                    logger.info("------> client :" + client);
                     if (client != null) {
                         clientList.add(client);
                     }

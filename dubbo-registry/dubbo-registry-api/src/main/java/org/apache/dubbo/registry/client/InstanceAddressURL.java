@@ -601,6 +601,7 @@ public class InstanceAddressURL extends URL {
                 logger.info("use savedRpcServiceContext as rpcServiceContext consumerUrl is null.");
                 return savedRpcServiceContext;
             }
+            logger.info("use rpcServiceContext as it's consumerUrl is not null.");
             return rpcServiceContext;
         }
         return RpcContext.getServiceContext();
