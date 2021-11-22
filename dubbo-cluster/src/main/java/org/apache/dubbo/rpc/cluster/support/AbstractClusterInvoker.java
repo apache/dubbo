@@ -359,7 +359,6 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     protected Result invokeWithContext(Invoker<T> invoker, Invocation invocation, List<Invoker<T>> invokers) {
         URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
-        clearContext(invoker);
         setContext(invoker, invokers, consumerUrl);
         return invoker.invoke(invocation);
     }
@@ -371,7 +370,6 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
      * @return
      */
     protected Result invokeWithContextAsync(Invoker<T> invoker, Invocation invocation, List<Invoker<T>> invokers, URL consumerUrl) {
-        clearContext(invoker);
         setContext(invoker, invokers, consumerUrl);
         return invoker.invoke(invocation);
     }
@@ -412,11 +410,5 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         RpcContext context = RpcContext.getServiceContext();
         context.setInvoker(invoker).setInvokers((List) invokers)
             .setConsumerUrl(null != consumerUrl ? consumerUrl : RpcContext.getServiceContext().getConsumerUrl());
-    }
-
-    private void clearContext(Invoker<T> invoker) {
-        // do nothing
-        RpcContext context = RpcContext.getServiceContext();
-        context.setInvoker(null);
     }
 }
