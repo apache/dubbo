@@ -103,7 +103,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             invoker = select(loadbalance, invocation, invokers, null);
             // Asynchronous call method must be used here, because failback will retry in the background.
             // Then the serviceContext will be cleared after the call is completed.
-            return invokeWithContextAsync(invoker, invocation, consumerUrl);
+            return invokeWithContextAsync(invoker, invocation, invokers, consumerUrl);
         } catch (Throwable e) {
             logger.error("Failback to invoke method " + invocation.getMethodName() + ", wait for retry in background. Ignored exception: "
                 + e.getMessage() + ", ", e);
@@ -151,7 +151,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 Invoker<T> retryInvoker = select(loadbalance, invocation, invokers, Collections.singletonList(lastInvoker));
                 lastInvoker = retryInvoker;
-                invokeWithContextAsync(retryInvoker, invocation, consumerUrl);
+                invokeWithContextAsync(retryInvoker, invocation, invokers, consumerUrl);
             } catch (Throwable e) {
                 logger.error("Failed retry to invoke method " + invocation.getMethodName() + ", waiting again.", e);
                 if ((++retryTimes) >= retries) {
