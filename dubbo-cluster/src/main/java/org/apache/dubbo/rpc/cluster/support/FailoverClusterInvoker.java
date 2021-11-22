@@ -74,9 +74,8 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
             Invoker<T> invoker = select(loadbalance, invocation, copyInvokers, invoked);
             invoked.add(invoker);
-            RpcContext.getServiceContext().setInvokers((List) invoked);
             try {
-                Result result = invokeWithContext(invoker, invocation);
+                Result result = invokeWithContext(invoker, invocation, invoked);
                 if (le != null && logger.isWarnEnabled()) {
                     logger.warn("Although retry the method " + methodName
                             + " in the service " + getInterface().getName()

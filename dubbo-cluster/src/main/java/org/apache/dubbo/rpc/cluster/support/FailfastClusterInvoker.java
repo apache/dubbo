@@ -44,7 +44,7 @@ public class FailfastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         checkInvokers(invokers, invocation);
         Invoker<T> invoker = select(loadbalance, invocation, invokers, null);
         try {
-            return invokeWithContext(invoker, invocation);
+            return invokeWithContext(invoker, invocation, invokers);
         } catch (Throwable e) {
             if (e instanceof RpcException && ((RpcException) e).isBiz()) { // biz exception.
                 throw (RpcException) e;

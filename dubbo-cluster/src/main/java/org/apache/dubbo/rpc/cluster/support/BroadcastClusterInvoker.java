@@ -47,7 +47,6 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         checkInvokers(invokers, invocation);
-        RpcContext.getServiceContext().setInvokers((List) invokers);
         RpcException exception = null;
         Result result = null;
         URL url = getUrl();
@@ -66,7 +65,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         int failIndex = 0;
         for (Invoker<T> invoker : invokers) {
             try {
-                result = invokeWithContext(invoker, invocation);
+                result = invokeWithContext(invoker, invocation, invokers);
                 if (null != result && result.hasException()) {
                     Throwable resultException = result.getException();
                     if (null != resultException) {
