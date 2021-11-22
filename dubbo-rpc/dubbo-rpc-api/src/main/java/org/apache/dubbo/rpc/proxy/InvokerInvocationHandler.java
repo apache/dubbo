@@ -82,7 +82,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
         String serviceKey = url.getServiceKey();
         rpcInvocation.setTargetServiceUniqueName(serviceKey);
 
-        // remove last rpc service context before rpc nvocation.
+        // remove last rpc service context before next rpc invocation.
         RpcContext.removeServiceContext();
 
         // invoker.getUrl() returns consumer url.
