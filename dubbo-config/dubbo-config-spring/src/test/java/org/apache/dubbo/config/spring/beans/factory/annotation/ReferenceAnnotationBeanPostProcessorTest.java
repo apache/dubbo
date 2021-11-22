@@ -154,20 +154,27 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         String defaultHelloServiceResult = "Greeting, Mercy";
         Assertions.assertEquals(defaultHelloServiceResult + directInvokeSuffix, defaultHelloService.sayHello("Mercy"));
         Assertions.assertEquals(defaultHelloServiceResult + localCallSuffix, helloService.sayHello("Mercy"));
+        RpcContext.getContext().removeServiceContext();
 
         String helloServiceImplResult = "Hello, Mercy";
         Assertions.assertEquals(helloServiceImplResult + directInvokeSuffix, helloServiceImpl.sayHello("Mercy"));
         Assertions.assertEquals(helloServiceImplResult + callSuffix, helloService2.sayHello("Mercy"));
+        RpcContext.getContext().removeServiceContext();
 
         String demoServiceResult = "Hello,Mercy";
         Assertions.assertEquals(demoServiceResult + directInvokeSuffix, demoServiceImpl.sayName("Mercy"));
         Assertions.assertEquals(demoServiceResult + callSuffix, testBean.getDemoServiceFromAncestor().sayName("Mercy"));
+        RpcContext.getContext().removeServiceContext();
         Assertions.assertEquals(demoServiceResult + callSuffix, testBean.myDemoService.sayName("Mercy"));
+        RpcContext.getContext().removeServiceContext();
         Assertions.assertEquals(demoServiceResult + callSuffix, testBean.getDemoService().sayName("Mercy"));
+        RpcContext.getContext().removeServiceContext();
         Assertions.assertEquals(demoServiceResult + callSuffix, testBean.getDemoServiceFromParent().sayName("Mercy"));
+        RpcContext.getContext().removeServiceContext();
 
         DemoService myDemoService = context.getBean("myDemoService", DemoService.class);
         Assertions.assertEquals(demoServiceResult + callSuffix, myDemoService.sayName("Mercy"));
+        RpcContext.getContext().removeServiceContext();
 
     }
 
