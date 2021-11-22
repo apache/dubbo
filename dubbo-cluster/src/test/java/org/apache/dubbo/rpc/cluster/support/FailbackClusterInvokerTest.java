@@ -109,7 +109,7 @@ public class FailbackClusterInvokerTest {
         given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         invoker.invoke(invocation);
-        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
+        Assertions.assertNotNull(RpcContext.getServiceContext().getInvoker());
         DubboAppender.clear();
     }
 
@@ -122,7 +122,7 @@ public class FailbackClusterInvokerTest {
         given(dic.getInterface()).willReturn(FailbackClusterInvokerTest.class);
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         invoker.invoke(invocation);
-        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
+        Assertions.assertNotNull(RpcContext.getServiceContext().getInvoker());
         DubboAppender.clear();
     }
 
@@ -132,7 +132,7 @@ public class FailbackClusterInvokerTest {
         resetInvokerToException();
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<>(dic);
         invoker.invoke(invocation);
-        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
+        Assertions.assertNotNull(RpcContext.getServiceContext().getInvoker());
         DubboAppender.clear();
     }
 
