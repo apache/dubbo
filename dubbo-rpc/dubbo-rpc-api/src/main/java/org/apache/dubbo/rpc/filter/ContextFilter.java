@@ -132,7 +132,6 @@ public class ContextFilter implements Filter, Filter.Listener {
         } finally {
             context.clearAfterEachInvoke(true);
             RpcContext.removeServerAttachment();
-            RpcContext.removeServiceContext();
             // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
             RpcContext.getClientAttachment().removeAttachment(TIME_COUNTDOWN_KEY);
             RpcContext.removeServerContext();

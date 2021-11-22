@@ -17,15 +17,12 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -44,9 +41,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class InstanceAddressURL extends URL {
-    private static final long serialVersionUID = -7381697669844007849L;
-    private final static Logger logger = LoggerFactory.getLogger(InstanceAddressURL.class);
-
     private ServiceInstance instance;
     private MetadataInfo metadataInfo;
 
@@ -54,9 +48,6 @@ public class InstanceAddressURL extends URL {
     private volatile transient Map<String, Number> numbers;
     private volatile transient Map<String, Map<String, Number>> methodNumbers;
     private volatile transient Set<String> providerFirstParams;
-
-    // retain rpcServiceContext by AbstractInvoker#prepareInvocation calling InstanceAddressURL#saveRpcServiceContext.
-    private volatile RpcServiceContext savedRpcServiceContext;
 
     public InstanceAddressURL() {
     }
@@ -79,32 +70,32 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getServiceInterface() {
-        return getServiceContext().getInterfaceName();
+        return RpcContext.getServiceContext().getInterfaceName();
     }
 
     @Override
     public String getGroup() {
-        return getServiceContext().getGroup();
+        return RpcContext.getServiceContext().getGroup();
     }
 
     @Override
     public String getVersion() {
-        return getServiceContext().getVersion();
+        return RpcContext.getServiceContext().getVersion();
     }
 
     @Override
     public String getProtocol() {
-        return getServiceContext().getProtocol();
+        return RpcContext.getServiceContext().getProtocol();
     }
 
     @Override
     public String getProtocolServiceKey() {
-        return getServiceContext().getProtocolServiceKey();
+        return RpcContext.getServiceContext().getProtocolServiceKey();
     }
 
     @Override
     public String getServiceKey() {
-        return getServiceContext().getServiceKey();
+        return RpcContext.getServiceContext().getServiceKey();
     }
 
     @Override
@@ -161,7 +152,7 @@ public class InstanceAddressURL extends URL {
         }
 
         if (consumerParamFirst(key)) {
-            URL consumerUrl = getServiceContext().getConsumerUrl();
+            URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
             if (consumerUrl != null) {
                 String v = consumerUrl.getParameter(key);
                 if (StringUtils.isNotEmpty(v)) {
@@ -180,7 +171,7 @@ public class InstanceAddressURL extends URL {
     @Override
     public String getServiceParameter(String service, String key) {
         if (consumerParamFirst(key)) {
-            URL consumerUrl = getServiceContext().getConsumerUrl();
+            URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
             if (consumerUrl != null) {
                 String v = consumerUrl.getServiceParameter(service, key);
                 if (StringUtils.isNotEmpty(v)) {
@@ -209,7 +200,7 @@ public class InstanceAddressURL extends URL {
     @Override
     public String getServiceMethodParameter(String protocolServiceKey, String method, String key) {
         if (consumerParamFirst(key)) {
-            URL consumerUrl = getServiceContext().getConsumerUrl();
+            URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
             if (consumerUrl != null) {
                 String v = consumerUrl.getServiceMethodParameter(protocolServiceKey, method, key);
                 if (StringUtils.isNotEmpty(v)) {
@@ -229,7 +220,7 @@ public class InstanceAddressURL extends URL {
     @Override
     public String getMethodParameter(String method, String key) {
         if (consumerParamFirst(key)) {
-            URL consumerUrl = getServiceContext().getConsumerUrl();
+            URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
             if (consumerUrl != null) {
                 String v = consumerUrl.getMethodParameter(method, key);
                 if (StringUtils.isNotEmpty(v)) {
@@ -255,7 +246,7 @@ public class InstanceAddressURL extends URL {
     @Override
     public boolean hasServiceMethodParameter(String protocolServiceKey, String method, String key) {
         if (consumerParamFirst(key)) {
-            URL consumerUrl = getServiceContext().getConsumerUrl();
+            URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
             if (consumerUrl != null) {
                 if (consumerUrl.hasServiceMethodParameter(protocolServiceKey, method, key)) {
                     return true;
@@ -290,7 +281,7 @@ public class InstanceAddressURL extends URL {
     @Override
     public boolean hasMethodParameter(String method, String key) {
         if (consumerParamFirst(key)) {
-            URL consumerUrl = getServiceContext().getConsumerUrl();
+            URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
             if (consumerUrl != null) {
                 if (consumerUrl.hasMethodParameter(method, key)) {
                     return true;
@@ -313,7 +304,7 @@ public class InstanceAddressURL extends URL {
      */
     @Override
     public boolean hasServiceMethodParameter(String protocolServiceKey, String method) {
-        URL consumerUrl = getServiceContext().getConsumerUrl();
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
         if (consumerUrl != null) {
             if (consumerUrl.hasServiceMethodParameter(protocolServiceKey, method)) {
                 return true;
@@ -326,7 +317,7 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public boolean hasMethodParameter(String method) {
-        URL consumerUrl = getServiceContext().getConsumerUrl();
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
         if (consumerUrl != null) {
             if (consumerUrl.hasMethodParameter(method)) {
                 return true;
@@ -359,7 +350,7 @@ public class InstanceAddressURL extends URL {
             params.putAll(metadataParams);
         }
 
-        URL consumerUrl = getServiceContext().getConsumerUrl();
+        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
         if (consumerUrl != null) {
             Map<String, String> consumerParams = new HashMap<>(consumerUrl.getParameters());
             if (CollectionUtils.isNotEmpty(providerFirstParams)) {
@@ -498,9 +489,13 @@ public class InstanceAddressURL extends URL {
         return this.instance.getExtendParams().get(key);
     }
 
+    private Map<String, String> getInstanceMetadata() {
+        return this.instance.getMetadata();
+    }
+
     @Override
     public ScopeModel getScopeModel() {
-        return getServiceContext().getConsumerUrl().getScopeModel();
+        return RpcContext.getServiceContext().getConsumerUrl().getScopeModel();
     }
 
     @Override
@@ -520,12 +515,7 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public ServiceModel getServiceModel() {
-        return getServiceContext().getConsumerUrl().getServiceModel();
-    }
-
-    @Override
-    public void saveRpcServiceContext(Object rpcServiceContext) {
-        this.savedRpcServiceContext = (RpcServiceContext) rpcServiceContext;
+        return RpcContext.getServiceContext().getConsumerUrl().getServiceModel();
     }
 
     public Set<String> getProviderFirstParams() {
@@ -542,24 +532,6 @@ public class InstanceAddressURL extends URL {
         } else {
             return true;
         }
-    }
-
-    private RpcServiceContext getServiceContext() {
-        if (savedRpcServiceContext != null) {
-            if (savedRpcServiceContext.getConsumerUrl().getScopeModel().isDestroyed()) {
-                // scope model is destroyed.
-                logger.info("use savedRpcServiceContext while scope model is destroyed.");
-                return savedRpcServiceContext;
-            }
-            RpcServiceContext rpcServiceContext = RpcContext.getServiceContext();
-            if (rpcServiceContext.getConsumerUrl() == null) {
-                // support ReferenceCountExchangeClient#replaceWithLazyClient() while scope model is not destroyed.
-                logger.info("use savedRpcServiceContext as rpcServiceContext consumerUrl is null.");
-                return savedRpcServiceContext;
-            }
-            return rpcServiceContext;
-        }
-        return RpcContext.getServiceContext();
     }
 
     @Override
@@ -591,7 +563,7 @@ public class InstanceAddressURL extends URL {
             return instance.toString();
         }
 
-        String protocolServiceKey = getServiceContext().getProtocolServiceKey();
+        String protocolServiceKey = RpcContext.getServiceContext().getProtocolServiceKey();
         if (StringUtils.isNotEmpty(protocolServiceKey)) {
             return instance.toString() + ", " + metadataInfo.getServiceString(protocolServiceKey);
         }

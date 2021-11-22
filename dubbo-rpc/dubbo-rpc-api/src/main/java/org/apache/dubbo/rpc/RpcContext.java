@@ -224,7 +224,6 @@ public class RpcContext {
             SERVER_ATTACHMENT.remove();
         }
         SERVER_LOCAL.remove();
-        SERVICE_CONTEXT.remove();
         CANCELLATION_CONTEXT.remove();
     }
 
