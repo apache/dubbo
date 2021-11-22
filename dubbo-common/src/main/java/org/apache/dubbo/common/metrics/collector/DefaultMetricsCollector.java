@@ -55,6 +55,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
     private final Map<MethodMetric, AtomicLong> maxRT = new HashMap<>();
     private final Map<MethodMetric, AtomicLong> avgRT = new HashMap<>();
     private final Map<MethodMetric, AtomicLong> totalRT = new HashMap<>();
+    private final Map<MethodMetric, AtomicLong> rtCount = new HashMap<>();
 
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -119,7 +120,7 @@ public class DefaultMetricsCollector implements MetricsCollector {
         }
     }
 
-    public void setRT(String interfaceName, String methodName, String parameterTypesDesc, String group, String version, Long responseTime) {
+    public void addRT(String interfaceName, String methodName, String parameterTypesDesc, String group, String version, Long responseTime) {
         if (isCollectEnabled()) {
             MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, parameterTypesDesc, group, version);
 
@@ -139,8 +140,9 @@ public class DefaultMetricsCollector implements MetricsCollector {
             AtomicLong total = totalRT.computeIfAbsent(metric, k -> new AtomicLong());
             long newTotal = total.addAndGet(responseTime);
 
+            AtomicLong count = rtCount.computeIfAbsent(metric, k -> new AtomicLong());
             AtomicLong avg = avgRT.computeIfAbsent(metric, k -> new AtomicLong());
-            long newAvg = newTotal / totalRequests.getOrDefault(metric, new AtomicLong(1L)).longValue();
+            long newAvg = newTotal / count.addAndGet(1);
             avg.set(newAvg);
 
             publishEvent(new NewRTEvent(metric, responseTime));

@@ -24,6 +24,16 @@ public class InterfaceMetric {
     private String group;
     private String version;
 
+    public InterfaceMetric() {
+
+    }
+
+    public InterfaceMetric(String interfaceName, String group, String version) {
+        this.interfaceName = interfaceName;
+        this.group = group;
+        this.version = version;
+    }
+
     public String getInterfaceName() {
         return interfaceName;
     }

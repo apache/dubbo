@@ -80,7 +80,7 @@ public class MetricsFilter implements Filter, ScopeModelAware {
         } finally {
             Long endTime = System.currentTimeMillis();
             Long rt = endTime - startTime;
-            collector.setRT(interfaceName, methodName, parameterTypesDesc, group, version, rt);
+            collector.addRT(interfaceName, methodName, parameterTypesDesc, group, version, rt);
             collector.decreaseProcessingRequests(interfaceName, methodName, parameterTypesDesc, group, version);
         }
     }

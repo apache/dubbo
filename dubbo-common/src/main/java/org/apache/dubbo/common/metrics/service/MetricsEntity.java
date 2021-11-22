@@ -32,6 +32,17 @@ public class MetricsEntity {
     private MetricsCategory category;
     private Object value;
 
+    public MetricsEntity() {
+
+    }
+
+    public MetricsEntity(String name, Map<String, String> tags, MetricsCategory category, Object value) {
+        this.name = name;
+        this.tags = tags;
+        this.category = category;
+        this.value = value;
+    }
+
     public String getName() {
         return name;
     }

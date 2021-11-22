@@ -60,7 +60,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     protected final CompositeMeterRegistry compositeRegistry = new CompositeMeterRegistry();
 
     private final ApplicationModel applicationModel;
-    ScheduledExecutorService collectorSyncJobExecutor = null;
+    private ScheduledExecutorService collectorSyncJobExecutor = null;
 
     private static final int DEFAULT_SCHEDULE_INITIAL_DELAY = 5;
     private static final int DEFAULT_SCHEDULE_PERIOD = 30;
@@ -151,7 +151,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
         applicationModel.getBeanFactory().getBean(ShutdownHookCallbacks.class).addCallback(this::destroy);
     }
 
-    private void destroy() {
+    public void destroy() {
         if (collectorSyncJobExecutor != null) {
             collectorSyncJobExecutor.shutdownNow();
         }

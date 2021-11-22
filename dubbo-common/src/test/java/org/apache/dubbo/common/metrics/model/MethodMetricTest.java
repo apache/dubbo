@@ -1,0 +1,72 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.dubbo.common.metrics.model;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOST;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_PARAMETER_TYPES_DESC;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
+import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
+
+public class MethodMetricTest {
+
+    private static final String applicationName = null;
+    private static String interfaceName;
+    private static String methodName;
+    private static String parameterTypesDesc;
+    private static String group;
+    private static String version;
+
+    @BeforeAll
+    public static void setup() {
+        interfaceName = "org.apache.dubbo.MockInterface";
+        methodName = "mockMethod";
+        parameterTypesDesc = "Ljava/lang/String;";
+        group = "mockGroup";
+        version = "1.0.0";
+    }
+
+    @Test
+    public void test() {
+        MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, parameterTypesDesc, group, version);
+        Assertions.assertEquals(metric.getInterfaceName(), interfaceName);
+        Assertions.assertEquals(metric.getMethodName(), methodName);
+        Assertions.assertEquals(metric.getParameterTypesDesc(), parameterTypesDesc);
+        Assertions.assertEquals(metric.getGroup(), group);
+        Assertions.assertEquals(metric.getVersion(), version);
+
+        Map<String, String> tags = metric.getTags();
+        Assertions.assertEquals(tags.get(TAG_HOST), getLocalHost());
+        Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationName);
+
+        Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
+        Assertions.assertEquals(tags.get(TAG_METHOD_KEY), methodName);
+        Assertions.assertEquals(tags.get(TAG_PARAMETER_TYPES_DESC), parameterTypesDesc);
+        Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
+        Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
+    }
+}

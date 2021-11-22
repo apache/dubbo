@@ -70,11 +70,11 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
     @Override
     public void doInit() {
         addMeterRegistry(prometheusRegistry);
-        exportHttpServerIfEnabled();
-        schedulePushJobIfEnabled();
+        exportHttpServer();
+        schedulePushJob();
     }
 
-    private void exportHttpServerIfEnabled() {
+    private void exportHttpServer() {
         boolean exporterEnabled = url.getParameter(PROMETHEUS_EXPORTER_ENABLED_KEY, false);
         if (exporterEnabled) {
             int port = url.getParameter(PROMETHEUS_EXPORTER_METRICS_PORT_KEY, PROMETHEUS_DEFAULT_METRICS_PORT);
@@ -100,7 +100,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
         }
     }
 
-    private void schedulePushJobIfEnabled() {
+    private void schedulePushJob() {
         boolean pushEnabled = url.getParameter(PROMETHEUS_PUSHGATEWAY_ENABLED_KEY, false);
         if (pushEnabled) {
             String baseUrl = url.getParameter(PROMETHEUS_PUSHGATEWAY_BASE_URL_KEY);
@@ -120,7 +120,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
         }
     }
 
-    private void push(PushGateway pushGateway, String job) {
+    protected void push(PushGateway pushGateway, String job) {
         try {
             pushGateway.pushAdd(prometheusRegistry.getPrometheusRegistry(), job);
         } catch (IOException e) {
@@ -137,5 +137,21 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
         if (pushJobExecutor != null) {
             pushJobExecutor.shutdownNow();
         }
+    }
+
+    /**
+     * ut only
+     */
+    @Deprecated
+    public ScheduledExecutorService getPushJobExecutor() {
+        return pushJobExecutor;
+    }
+
+    /**
+     * ut only
+     */
+    @Deprecated
+    public PrometheusMeterRegistry getPrometheusRegistry() {
+        return prometheusRegistry;
     }
 }
