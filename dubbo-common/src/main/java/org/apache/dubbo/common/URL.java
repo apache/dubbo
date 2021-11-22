@@ -1943,7 +1943,4 @@ class URL implements Serializable {
     public URL toSerializableURL() {
         return returnURL(URLPlainParam.toURLPlainParam(urlParam));
     }
-
-    public void saveRpcServiceContext(Object rpcServiceContext) {
-    }
 }
