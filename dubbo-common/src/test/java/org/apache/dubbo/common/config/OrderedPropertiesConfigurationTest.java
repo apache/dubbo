@@ -14,29 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.beans;
+package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.common.extension.ExtensionInjector;
-import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
+
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- * Inject scope bean to SPI extension instance
+ * {@link OrderedPropertiesConfiguration}
  */
-public class ScopeBeanExtensionInjector implements ExtensionInjector, ScopeModelAware {
-    public static final String NAME = "scopeBean";
-    private ScopeModel scopeModel;
-    private ScopeBeanFactory beanFactory;
+public class OrderedPropertiesConfigurationTest {
 
-    @Override
-    public void setScopeModel(ScopeModel scopeModel) {
-        this.scopeModel = scopeModel;
-        this.beanFactory = scopeModel.getBeanFactory();
+    @Test
+    public void testOrderPropertiesProviders() {
+        OrderedPropertiesConfiguration configuration = new OrderedPropertiesConfiguration(ApplicationModel.defaultModel().getDefaultModule());
+        Assertions.assertEquals("999", configuration.getInternalProperty("testKey"));
     }
 
-    @Override
-    public <T> T getInstance(Class<T> type, String name) {
-        return beanFactory.getBean(name, type);
-    }
 }
