@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
@@ -59,12 +60,13 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @Override
     protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         checkInvokers(invokers, invocation);
+        RpcContext.getServiceContext().setInvokers((List) invokers);
         String merger = getUrl().getMethodParameter(invocation.getMethodName(), MERGER_KEY);
         if (ConfigUtils.isEmpty(merger)) { // If a method doesn't have a merger, only invoke one Group
             for (final Invoker<T> invoker : invokers) {
                 if (invoker.isAvailable()) {
                     try {
-                        return invokeWithContext(invoker, invocation, invokers);
+                        return invokeWithContext(invoker, invocation, null);
                     } catch (RpcException e) {
                         if (e.isNoInvokerAvailableAfterFilter()) {
                             log.debug("No available provider for service" + getUrl().getServiceKey() + " on group "
@@ -75,7 +77,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     }
                 }
             }
-            return invokeWithContext(invokers.iterator().next(), invocation, invokers);
+            return invokeWithContext(invokers.iterator().next(), invocation, null);
         }
 
         Class<?> returnType;
@@ -89,7 +91,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (final Invoker<T> invoker : invokers) {
             RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
             subInvocation.setAttachment(ASYNC_KEY, "true");
-            results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation, invokers));
+            results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation, null));
         }
 
         Object result;
