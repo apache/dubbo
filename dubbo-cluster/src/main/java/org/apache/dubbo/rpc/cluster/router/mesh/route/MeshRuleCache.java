@@ -107,7 +107,7 @@ public class MeshRuleCache<T> {
                 }
             }
 
-            return new MeshRuleCache<T>(new LinkedList<>(vsDestinationGroupMap.keySet()),
+            return new MeshRuleCache<>(new LinkedList<>(vsDestinationGroupMap.keySet()),
                 Collections.unmodifiableMap(vsDestinationGroupMap),
                 Collections.unmodifiableMap(totalSubsetMap),
                 unmatchedInvokers);
@@ -117,7 +117,7 @@ public class MeshRuleCache<T> {
     }
 
     public static <T> MeshRuleCache<T> emptyCache() {
-        return new MeshRuleCache<T>(Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap(), BitList.emptyList());
+        return new MeshRuleCache<>(Collections.emptyList(), Collections.emptyMap(), Collections.emptyMap(), BitList.emptyList());
     }
 
     protected static boolean containMapKeyValue(Map<String, String> originMap, Map<String, String> inputMap) {

@@ -35,7 +35,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.METADATA_KEY;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.NAME_KEY;
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.STANDARD_ROUTER_KEY;
 
 
 public class MeshAppRuleListener implements ConfigurationListener {
@@ -93,13 +95,12 @@ public class MeshAppRuleListener implements ConfigurationListener {
 
     @SuppressWarnings("unchecked")
     private String computeRuleType(Map<String, Object> rule) {
-        Object obj = rule.get("metadata");
+        Object obj = rule.get(METADATA_KEY);
         if (obj instanceof Map && CollectionUtils.isNotEmptyMap((Map<String, String>) obj)) {
             Map<String, String> metadata = (Map<String, String>) obj;
             String name = metadata.get(NAME_KEY);
-            // TODO exact constant
             if (name.equals(appName)) {
-                return "standard";
+                return STANDARD_ROUTER_KEY;
             } else if (name.startsWith(appName + ".")) {
                 return name.substring(appName.length() + 1);
             }
@@ -107,7 +108,7 @@ public class MeshAppRuleListener implements ConfigurationListener {
         return null;
     }
 
-    public void register(MeshRuleRouter subscriber) {
+    public <T> void register(MeshRuleRouter<T> subscriber) {
         if (ruleMapHolder != null) {
             List<Map<String, Object>> rule = ruleMapHolder.get(subscriber.ruleSuffix());
             if (rule != null) {
@@ -118,7 +119,7 @@ public class MeshAppRuleListener implements ConfigurationListener {
     }
 
 
-    public void unregister(MeshRuleRouter sub) {
+    public <T> void unregister(MeshRuleRouter<T> sub) {
         meshRuleDispatcher.unregister(sub);
     }
 
@@ -129,5 +130,9 @@ public class MeshAppRuleListener implements ConfigurationListener {
             return;
         }
         receiveConfigInfo(event.getContent());
+    }
+
+    public boolean isEmpty() {
+        return meshRuleDispatcher.isEmpty();
     }
 }

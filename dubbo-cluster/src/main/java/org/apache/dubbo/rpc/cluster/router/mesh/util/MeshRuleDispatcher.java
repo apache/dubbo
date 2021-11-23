@@ -30,7 +30,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class MeshRuleDispatcher {
     public static final Logger logger = LoggerFactory.getLogger(MeshRuleDispatcher.class);
 
-    private String appName;
+    private final String appName;
     private final Map<String, List<VsDestinationGroupRuleListener>> listenerMap = new ConcurrentHashMap<>();
 
     public MeshRuleDispatcher(String appName) {
@@ -69,5 +69,9 @@ public class MeshRuleDispatcher {
         if (CollectionUtils.isNotEmpty(listeners)) {
             listeners.remove(listener);
         }
+    }
+
+    public boolean isEmpty() {
+        return listenerMap.isEmpty();
     }
 }

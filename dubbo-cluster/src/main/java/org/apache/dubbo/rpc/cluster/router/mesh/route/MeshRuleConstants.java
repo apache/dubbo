@@ -28,4 +28,8 @@ public class MeshRuleConstants {
     public static final String MESH_RULE_DATA_ID_SUFFIX = ".MESHAPPRULE";
 
     public static final String NAME_KEY = "name";
+
+    public static final String METADATA_KEY = "metadata";
+
+    public static final String STANDARD_ROUTER_KEY = "standard";
 }

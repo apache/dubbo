@@ -23,7 +23,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,7 +49,7 @@ public class MeshRuleManager {
             .collect(Collectors.toSet());
     }
 
-    public synchronized void subscribeAppRule(String app) {
+    private synchronized MeshAppRuleListener subscribeAppRule(String app) {
 
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener(app);
         // demo-app.MESHAPPRULE
@@ -76,9 +75,10 @@ public class MeshRuleManager {
         }
 
         APP_RULE_LISTENERS.put(app, meshAppRuleListener);
+        return meshAppRuleListener;
     }
 
-    public void unsubscribeAppRule(String app) {
+    private synchronized void unsubscribeAppRule(String app) {
         // demo-app.MESHAPPRULE
         String appRuleDataId = app + MESH_RULE_DATA_ID_SUFFIX;
 
@@ -99,19 +99,19 @@ public class MeshRuleManager {
 
     }
 
-    public void register(String app, MeshRuleRouter subscriber) {
+    public synchronized <T> void register(String app, MeshRuleRouter<T> subscriber) {
         MeshAppRuleListener meshAppRuleListener = APP_RULE_LISTENERS.get(app);
         if (meshAppRuleListener == null) {
-            logger.warn("appRuleListener can't find when Router register");
-            return;
+            meshAppRuleListener = subscribeAppRule(app);
         }
         meshAppRuleListener.register(subscriber);
     }
 
-    public void unregister(MeshRuleRouter subscriber) {
-        Collection<MeshAppRuleListener> listeners = APP_RULE_LISTENERS.values();
-        for (MeshAppRuleListener listener : listeners) {
-            listener.unregister(subscriber);
+    public synchronized <T> void unregister(String app, MeshRuleRouter<T> subscriber) {
+        MeshAppRuleListener meshAppRuleListener = APP_RULE_LISTENERS.get(app);
+        meshAppRuleListener.unregister(subscriber);
+        if (meshAppRuleListener.isEmpty()) {
+            unsubscribeAppRule(app);
         }
     }
 
