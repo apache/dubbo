@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.metadata;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-@SPI
+@SPI(scope = ExtensionScope.MODULE)
 public interface MetadataParamsFilter {
 
    /**

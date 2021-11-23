@@ -21,8 +21,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,8 +36,8 @@ public class GlobalResourcesRepository {
 
     private volatile static GlobalResourcesRepository instance;
     private volatile ExecutorService executorService;
-    private final List<Disposable> oneoffDisposables = Collections.synchronizedList(new ArrayList<>());
-    private static final List<Disposable> globalReusedDisposables = Collections.synchronizedList(new ArrayList<>());
+    private final List<Disposable> oneoffDisposables = new CopyOnWriteArrayList<>();
+    private static final List<Disposable> globalReusedDisposables = new CopyOnWriteArrayList<>();
 
     private GlobalResourcesRepository() {
     }

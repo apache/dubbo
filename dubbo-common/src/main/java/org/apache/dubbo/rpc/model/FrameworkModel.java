@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -51,11 +52,11 @@ public class FrameworkModel extends ScopeModel {
 
     private volatile ApplicationModel defaultAppModel;
 
-    private static List<FrameworkModel> allInstances = Collections.synchronizedList(new ArrayList<>());
+    private static List<FrameworkModel> allInstances = new CopyOnWriteArrayList<>();
 
-    private List<ApplicationModel> applicationModels = Collections.synchronizedList(new ArrayList<>());
+    private List<ApplicationModel> applicationModels = new CopyOnWriteArrayList<>();
 
-    private List<ApplicationModel> pubApplicationModels = Collections.synchronizedList(new ArrayList<>());
+    private List<ApplicationModel> pubApplicationModels = new CopyOnWriteArrayList<>();
 
     private FrameworkServiceRepository serviceRepository;
 
