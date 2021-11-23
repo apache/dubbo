@@ -2,7 +2,7 @@ package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
 
-public class StandardMeshRuleRouter extends MeshRuleRouter {
+public class StandardMeshRuleRouter<T> extends MeshRuleRouter<T> {
 
     public StandardMeshRuleRouter(URL url) {
         super(url);

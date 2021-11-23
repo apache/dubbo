@@ -29,11 +29,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.MESH_RULE_DATA_ID_SUFFIX;
+
 public class MeshRuleManager {
 
     public static final Logger logger = LoggerFactory.getLogger(MeshRuleManager.class);
-
-    private static final String MESH_RULE_DATA_ID_SUFFIX = ".MESHAPPRULE";
 
     private final ConcurrentHashMap<String, MeshAppRuleListener> APP_RULE_LISTENERS = new ConcurrentHashMap<>();
 

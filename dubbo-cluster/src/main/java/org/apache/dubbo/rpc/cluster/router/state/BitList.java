@@ -67,6 +67,15 @@ public class BitList<E> extends AbstractList<E> {
         }
     }
 
+    public BitList(List<E> originList, boolean empty, List<E> tailList) {
+        this.originList = originList;
+        this.rootSet = new BitSet();
+        if (!empty) {
+            this.rootSet.set(0, originList.size());
+        }
+        this.tailList = tailList;
+    }
+
     public BitList(List<E> originList, BitSet rootSet, List<E> tailList) {
         this.originList = originList;
         this.rootSet = rootSet;
@@ -92,6 +101,12 @@ public class BitList<E> extends AbstractList<E> {
     public BitList<E> and(BitList<E> target) {
         BitSet resultSet = (BitSet) rootSet.clone();
         resultSet.and(target.rootSet);
+        return new BitList<>(originList, resultSet, tailList);
+    }
+
+    public BitList<E> or(BitList<E> target) {
+        BitSet resultSet = (BitSet) rootSet.clone();
+        resultSet.or(target.rootSet);
         return new BitList<>(originList, resultSet, tailList);
     }
 

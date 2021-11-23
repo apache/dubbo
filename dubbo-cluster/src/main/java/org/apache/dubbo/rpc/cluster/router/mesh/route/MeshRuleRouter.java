@@ -26,7 +26,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboMatchRequest;
@@ -39,8 +38,10 @@ import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.VsDestinationGroupRuleListener;
+import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,30 +49,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-public abstract class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.DESTINATION_RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.INVALID_APP_NAME;
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.KIND_KEY;
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.VIRTUAL_SERVICE_KEY;
+
+public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implements VsDestinationGroupRuleListener {
 
     public static final Logger logger = LoggerFactory.getLogger(MeshRuleRouter.class);
 
     private final URL url;
 
-
-    private Map<String, String> sourcesLabels = new HashMap<>();
-    private volatile List<Invoker<?>> invokerList = new ArrayList<>();
+    private final Map<String, String> sourcesLabels;
+    private volatile BitList<Invoker<T>> invokerList = BitList.emptyList();
     private volatile String remoteAppName;
-
-    private static final String INVALID_APP_NAME = "unknown";
-    public static final String DESTINATION_RULE_KEY = "DestinationRule";
-    public static final String VIRTUAL_SERVICE_KEY = "VirtualService";
-    public static final String KIND_KEY = "kind";
 
     protected MeshRuleManager meshRuleManager;
     protected Set<TracingContextProvider> tracingContextProviders;
 
-    protected volatile MeshRuleCache meshRuleCache = MeshRuleCache.emptyCache();
+    protected volatile MeshRuleCache<T> meshRuleCache = MeshRuleCache.emptyCache();
 
     public MeshRuleRouter(URL url) {
+        super(url);
         this.url = url;
-        sourcesLabels.putAll(url.getParameters());
+        sourcesLabels = Collections.unmodifiableMap(new HashMap<>(url.getParameters()));
         this.meshRuleManager = url.getScopeModel().getBeanFactory().getBean(MeshRuleManager.class);
         this.tracingContextProviders = url.getOrDefaultApplicationModel().getExtensionLoader(TracingContextProvider.class).getSupportedExtensionInstances();
     }
@@ -82,25 +83,24 @@ public abstract class MeshRuleRouter implements Router, VsDestinationGroupRuleLi
     }
 
     @Override
-    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        MeshRuleCache ruleCache = this.meshRuleCache;
+    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage) throws RpcException {
+        MeshRuleCache<T> ruleCache = this.meshRuleCache;
         if (!ruleCache.containsRule()) {
-            return invokers;
+            return new StateRouterResult<>(invokers);
         }
+
+        BitList<Invoker<T>> result = new BitList<>(invokers.getOriginList(), true, invokers.getTailList());
 
         for (String appName : meshRuleCache.getAppList()) {
             List<DubboRouteDestination> routeDestination = getDubboRouteDestination(meshRuleCache.getVsDestinationGroup(appName), invocation);
-            if (routeDestination == null) {
-                return invokers;
-            } else {
-                // TODO aggregation
-                return randomSelectDestination(invokers, meshRuleCache, appName, routeDestination);
+            if (routeDestination != null) {
+                result.or(randomSelectDestination(invokers, meshRuleCache, appName, routeDestination));
             }
         }
-        return invokers;
+        return new StateRouterResult<>(invokers.and(result));
     }
 
-    protected <T> List<Invoker<T>> randomSelectDestination(List<Invoker<T>> invokers, MeshRuleCache meshRuleCache, String appName, List<DubboRouteDestination> routeDestination) throws RpcException {
+    protected BitList<Invoker<T>> randomSelectDestination(BitList<Invoker<T>> invokers, MeshRuleCache<T> meshRuleCache, String appName, List<DubboRouteDestination> routeDestination) throws RpcException {
         int totalWeight = 0;
         for (DubboRouteDestination dubboRouteDestination : routeDestination) {
             totalWeight += Math.max(dubboRouteDestination.getWeight(), 1);
@@ -109,14 +109,14 @@ public abstract class MeshRuleRouter implements Router, VsDestinationGroupRuleLi
         for (DubboRouteDestination destination : routeDestination) {
             target -= Math.max(destination.getWeight(), 1);
             if (target <= 0) {
-                List<Invoker<T>> result = computeDestination(invokers, meshRuleCache, appName, destination.getDestination());
+                BitList<Invoker<T>> result = computeDestination(invokers, meshRuleCache, appName, destination.getDestination());
                 if (CollectionUtils.isNotEmpty(result)) {
                     return result;
                 }
             }
         }
         for (DubboRouteDestination destination : routeDestination) {
-            List<Invoker<T>> result = computeDestination(invokers, meshRuleCache, appName, destination.getDestination());
+            BitList<Invoker<T>> result = computeDestination(invokers, meshRuleCache, appName, destination.getDestination());
             if (CollectionUtils.isNotEmpty(result)) {
                 return result;
             }
@@ -124,17 +124,17 @@ public abstract class MeshRuleRouter implements Router, VsDestinationGroupRuleLi
         return null;
     }
 
-    protected <T> List<Invoker<T>> computeDestination(List<Invoker<T>> invokers, MeshRuleCache meshRuleCache, String appName, DubboDestination dubboDestination) throws RpcException {
+    protected BitList<Invoker<T>> computeDestination(BitList<Invoker<T>> invokers, MeshRuleCache meshRuleCache, String appName, DubboDestination dubboDestination) throws RpcException {
         String subset = dubboDestination.getSubset();
 
-        List<Invoker<?>> result;
+        BitList<Invoker<T>> result;
 
         // TODO make intersection with invokers
         do {
             result = meshRuleCache.getSubsetInvokers(appName, subset);
 
             if (CollectionUtils.isNotEmpty(result)) {
-                return (List) result;
+                return result;
             }
 
             DubboRouteDestination dubboRouteDestination = dubboDestination.getFallback();
@@ -150,18 +150,18 @@ public abstract class MeshRuleRouter implements Router, VsDestinationGroupRuleLi
     }
 
     @Override
-    public <T> void notify(List<Invoker<T>> invokers) {
-        List invokerList = invokers == null ? Collections.emptyList() : invokers;
+    public void notify(BitList<Invoker<T>> invokers) {
+        BitList<Invoker<T>> invokerList = invokers == null ? BitList.emptyList() : invokers;
         this.invokerList = invokerList;
         registerAppRule(invokerList);
         computeSubset(this.meshRuleCache != null ? this.meshRuleCache.getAppToVDGroup() : null);
     }
 
-    private void registerAppRule(List<Invoker<?>> invokers) {
+    private void registerAppRule(BitList<Invoker<T>> invokers) {
         if (StringUtils.isEmpty(remoteAppName)) {
             synchronized (this) {
                 if (StringUtils.isEmpty(remoteAppName) && CollectionUtils.isNotEmpty(invokers)) {
-                    for (Invoker invoker : invokers) {
+                    for (Invoker<T> invoker : invokers) {
                         String applicationName = invoker.getUrl().getRemoteApplication();
                         if (StringUtils.isNotEmpty(applicationName) && !INVALID_APP_NAME.equals(applicationName)) {
                             remoteAppName = applicationName;

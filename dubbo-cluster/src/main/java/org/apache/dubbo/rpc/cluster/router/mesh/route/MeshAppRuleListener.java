@@ -35,12 +35,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.NAME_KEY;
+
 
 public class MeshAppRuleListener implements ConfigurationListener {
 
     public static final Logger logger = LoggerFactory.getLogger(MeshAppRuleListener.class);
-
-    public static final String NAME_KEY = "name";
 
     private final MeshRuleDispatcher meshRuleDispatcher;
 

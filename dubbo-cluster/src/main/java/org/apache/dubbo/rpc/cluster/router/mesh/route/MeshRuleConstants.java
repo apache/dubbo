@@ -14,19 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
+public class MeshRuleConstants {
+    public static final String INVALID_APP_NAME = "unknown";
 
+    public static final String DESTINATION_RULE_KEY = "DestinationRule";
 
-@Activate(order = -50)
-public class StandardMeshRuleRouterFactory implements StateRouterFactory {
-    @Override
-    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
-        return new StandardMeshRuleRouter<>(url);
-    }
+    public static final String VIRTUAL_SERVICE_KEY = "VirtualService";
+
+    public static final String KIND_KEY = "kind";
+
+    public static final String MESH_RULE_DATA_ID_SUFFIX = ".MESHAPPRULE";
+
+    public static final String NAME_KEY = "name";
 }
