@@ -79,14 +79,14 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     }
                 }
             }
-            RpcContext.getServiceContext().setInvokers((List) selected);
             final AtomicInteger count = new AtomicInteger();
             final BlockingQueue<Object> ref = new LinkedBlockingQueue<>();
-            for (final Invoker<T> invoker : selected) {
-                URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
+            for (final Invoker<T> invoker : selected) {                
+                final URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
                 executor.execute(() -> {
                     try {
-                        Result result = invokeWithContextAsync(invoker, invocation, null, consumerUrl);
+                        // must transfer all parameters as it might be executed in a new thread.
+                        Result result = invokeWithContextAsync(invoker, invocation, selected, consumerUrl);
                         ref.offer(result);
                     } catch (Throwable e) {
                         int value = count.incrementAndGet();
