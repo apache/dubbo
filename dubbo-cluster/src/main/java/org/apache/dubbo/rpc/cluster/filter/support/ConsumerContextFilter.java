@@ -107,6 +107,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             RpcContext.removeServerContext();
             return invoker.invoke(invocation);
         } finally {
+            RpcContext.removeServiceContext();
             RpcContext.removeClientAttachment();
         }
     }

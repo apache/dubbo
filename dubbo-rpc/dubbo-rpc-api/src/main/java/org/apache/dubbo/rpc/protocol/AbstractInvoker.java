@@ -182,6 +182,9 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     }
 
     private void prepareInvocation(RpcInvocation inv) {
+        // fix #9283: set service context of InstanceAddressURL before other preparation.
+        url.setContext(RpcContext.getServiceContext());
+
         inv.setInvoker(this);
 
         addInvocationAttachments(inv);
