@@ -358,8 +358,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     }
 
     protected Result invokeWithContext(Invoker<T> invoker, Invocation invocation, List<Invoker<T>> invokers) {
-        URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
-        setContext(invoker, invokers, consumerUrl);
+        setContext(invoker, invokers, null);
         Result result;
         try {
             result = invoker.invoke(invocation);
