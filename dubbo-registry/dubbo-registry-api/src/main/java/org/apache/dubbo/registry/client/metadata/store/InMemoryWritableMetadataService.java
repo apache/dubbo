@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata.store;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
@@ -36,6 +35,8 @@ import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
+
+import com.google.gson.Gson;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -209,7 +210,6 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
     @Override
     public boolean unexportURL(URL url) {
         if (MetadataService.class.getName().equals(url.getServiceInterface())) {
-            // TODO, metadata service need to be unexported.
             this.metadataServiceURL = null;
             return true;
         }

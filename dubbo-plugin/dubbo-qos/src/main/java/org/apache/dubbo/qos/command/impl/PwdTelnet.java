@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
@@ -33,7 +34,7 @@ public class PwdTelnet implements BaseCommand {
         }
         String service = commandContext.getRemote().attr(ChangeTelnet.SERVICE_KEY).get();
         StringBuilder buf = new StringBuilder();
-        if (service == null || service.length() == 0) {
+        if (StringUtils.isEmpty(service)) {
             buf.append('/');
         } else {
             buf.append(service);

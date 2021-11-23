@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -454,7 +455,8 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     public abstract void loadConfigs();
 
-    public <T extends AbstractConfig> void loadConfigsOfTypeFromProps(Class<T> cls) {
+    public <T extends AbstractConfig> List<T> loadConfigsOfTypeFromProps(Class<T> cls) {
+        List<T> tmpConfigs = new ArrayList<>();
         PropertiesConfiguration properties = environment.getPropertiesConfiguration();
 
         // load multiple configs with id
@@ -481,6 +483,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
                     config.refresh();
                     this.addConfig(config);
+                    tmpConfigs.add(config);
                 } catch (Exception e) {
                     logger.error("load config failed, id: " + id + ", type:" + cls.getSimpleName(), e);
                     throw new IllegalStateException("load config failed, id: " + id + ", type:" + cls.getSimpleName());
@@ -506,9 +509,11 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                 }
 
                 this.addConfig(config);
+                tmpConfigs.add(config);
             }
         }
 
+        return tmpConfigs;
     }
 
     private <T extends AbstractConfig> T createConfig(Class<T> cls, ScopeModel scopeModel) throws ReflectiveOperationException {

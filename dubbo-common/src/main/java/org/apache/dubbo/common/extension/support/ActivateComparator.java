@@ -24,6 +24,8 @@ import org.apache.dubbo.common.utils.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * OrderComparator
@@ -31,6 +33,7 @@ import java.util.Comparator;
 public class ActivateComparator implements Comparator<Class<?>> {
 
     private ExtensionDirector extensionDirector;
+    private final Map<Class<?>, ActivateInfo> activateInfoMap = new ConcurrentHashMap<>();
 
     public ActivateComparator(ExtensionDirector extensionDirector) {
         this.extensionDirector = extensionDirector;
@@ -115,7 +118,11 @@ public class ActivateComparator implements Comparator<Class<?>> {
     }
 
     private ActivateInfo parseActivate(Class<?> clazz) {
-        ActivateInfo info = new ActivateInfo();
+        ActivateInfo info = activateInfoMap.get(clazz);
+        if (info != null) {
+            return info;
+        }
+        info = new ActivateInfo();
         if (clazz.isAnnotationPresent(Activate.class)) {
             Activate activate = clazz.getAnnotation(Activate.class);
             info.before = activate.before();
@@ -130,6 +137,7 @@ public class ActivateComparator implements Comparator<Class<?>> {
         } else {
             info.order = 0;
         }
+        activateInfoMap.put(clazz, info);
         return info;
     }
 

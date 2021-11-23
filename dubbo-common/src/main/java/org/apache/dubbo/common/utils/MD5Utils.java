@@ -36,9 +36,9 @@ public class MD5Utils {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
 
-    private static MessageDigest mdInst;
+    private MessageDigest mdInst;
 
-    static {
+    public MD5Utils() {
         try {
             mdInst = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
@@ -46,9 +46,17 @@ public class MD5Utils {
         }
     }
 
-    public static String getMd5(String value) {
-        mdInst.update(value.getBytes(UTF_8));
-        byte[] md5 = mdInst.digest();
+    /**
+     * Calculation md5 value of specify string
+     * @param input
+     */
+    public String getMd5(String input) {
+        byte[] md5;
+        // MessageDigest instance is NOT thread-safe
+        synchronized (mdInst) {
+            mdInst.update(input.getBytes(UTF_8));
+            md5 = mdInst.digest();
+        }
 
         int j = md5.length;
         char str[] = new char[j * 2];
@@ -60,6 +68,5 @@ public class MD5Utils {
         }
         return new String(str);
     }
-
 
 }

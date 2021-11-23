@@ -27,8 +27,6 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterAll;
@@ -52,23 +50,6 @@ import java.util.List;
 import java.util.Map;
 
 public class JavaConfigReferenceBeanTest {
-
-    private static RegistryCenter multipleRegistryCenter;
-
-    @BeforeAll
-    public static void beforeAll() {
-        multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
-        multipleRegistryCenter.startup();
-    }
-
-    @AfterAll
-    public static void afterAll() throws Exception {
-        multipleRegistryCenter.shutdown();
-        multipleRegistryCenter = null;
-
-        //Thread.sleep(10000);
-        //dumpHeap("/Users/gongdewei/work/dump/dubbo/", true);
-    }
 
     public static void dumpHeap(String dirpath, boolean live) throws Exception {
 

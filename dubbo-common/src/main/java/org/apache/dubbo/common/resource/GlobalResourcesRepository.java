@@ -21,8 +21,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,8 +36,8 @@ public class GlobalResourcesRepository {
 
     private volatile static GlobalResourcesRepository instance;
     private volatile ExecutorService executorService;
-    private final List<Disposable> oneoffDisposables = Collections.synchronizedList(new ArrayList<>());
-    private final List<Disposable> reusedDisposables = Collections.synchronizedList(new ArrayList<>());
+    private final List<Disposable> oneoffDisposables = new CopyOnWriteArrayList<>();
+    private static final List<Disposable> globalReusedDisposables = new CopyOnWriteArrayList<>();
 
     private GlobalResourcesRepository() {
     }
@@ -51,6 +51,25 @@ public class GlobalResourcesRepository {
             }
         }
         return instance;
+    }
+
+    /**
+     * Register a global reused disposable. The disposable will be executed when all dubbo FrameworkModels are destroyed.
+     * Note: the global disposable should be registered in static code, it's reusable and will not be removed when dubbo shutdown.
+     * @param disposable
+     */
+    public static void registerGlobalDisposable(Disposable disposable) {
+        synchronized (GlobalResourcesRepository.class) {
+            if (!globalReusedDisposables.contains(disposable)) {
+                globalReusedDisposables.add(disposable);
+            }
+        }
+    }
+
+    public void removeGlobalDisposable(Disposable disposable) {
+        synchronized (GlobalResourcesRepository.class) {
+            this.globalReusedDisposables.remove(disposable);
+        }
     }
 
     public static ExecutorService getGlobalExecutorService() {
@@ -68,7 +87,7 @@ public class GlobalResourcesRepository {
         return executorService;
     }
 
-    public void destroy() {
+    synchronized public void destroy() {
         if (logger.isInfoEnabled()) {
             logger.info("Destroying global resources ...");
         }
@@ -77,16 +96,7 @@ public class GlobalResourcesRepository {
             executorService = null;
         }
 
-        // notify disposables
-        // NOTE: don't clear reused disposables for reuse purpose
-        for (Disposable disposable : new ArrayList<>(reusedDisposables)) {
-            try {
-                disposable.destroy();
-            } catch (Exception e) {
-                logger.warn("destroy resources failed: " + e.getMessage(), e);
-            }
-        }
-
+        // call one-off disposables
         for (Disposable disposable : new ArrayList<>(oneoffDisposables)) {
             try {
                 disposable.destroy();
@@ -97,6 +107,15 @@ public class GlobalResourcesRepository {
         // clear one-off disposable
         oneoffDisposables.clear();
 
+        // call global disposable, don't clear globalReusedDisposables for reuse purpose
+        for (Disposable disposable : new ArrayList<>(globalReusedDisposables)) {
+            try {
+                disposable.destroy();
+            } catch (Exception e) {
+                logger.warn("destroy resources failed: " + e.getMessage(), e);
+            }
+        }
+
         if (logger.isInfoEnabled()) {
             logger.info("Dubbo is completely destroyed");
         }
@@ -106,24 +125,13 @@ public class GlobalResourcesRepository {
      * Register a one-off disposable, the disposable is removed automatically on first shutdown.
      * @param disposable
      */
-    public void registerDisposable(Disposable disposable) {
-        this.registerDisposable(disposable, false);
-    }
-
-    /**
-     * Register a disposable
-     * @param disposable
-     * @param reused true - the disposable is keep and reused. false - the disposable is removed automatically on first shutdown
-     */
-    public void registerDisposable(Disposable disposable, boolean reused) {
-        List<Disposable> disposables = reused ? reusedDisposables : oneoffDisposables;
-        if (!disposables.contains(disposable)) {
-            disposables.add(disposable);
+    synchronized public void registerDisposable(Disposable disposable) {
+        if (!oneoffDisposables.contains(disposable)) {
+            oneoffDisposables.add(disposable);
         }
     }
 
-    public void removeDisposable(Disposable disposable) {
-        this.reusedDisposables.remove(disposable);
+    synchronized public void removeDisposable(Disposable disposable) {
         this.oneoffDisposables.remove(disposable);
     }
 

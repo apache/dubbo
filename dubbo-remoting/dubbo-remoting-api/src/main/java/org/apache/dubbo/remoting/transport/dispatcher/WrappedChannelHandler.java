@@ -132,17 +132,19 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
      * @return
      */
     public ExecutorService getSharedExecutorService() {
+        // Application may be destroyed before channel disconnected, avoid create new application model
+        // see https://github.com/apache/dubbo/issues/9127
+        if (url.getApplicationModel() == null || url.getApplicationModel().isDestroyed()) {
+            return GlobalResourcesRepository.getGlobalExecutorService();
+        }
+
+        // note: url.getOrDefaultApplicationModel() may create new application model
         ApplicationModel applicationModel = url.getOrDefaultApplicationModel();
         ExecutorRepository executorRepository =
                 applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         ExecutorService executor = executorRepository.getExecutor(url);
         if (executor == null) {
-            // if application is destroyed, use global executor service
-            if (applicationModel.isDestroyed()) {
-                executor = GlobalResourcesRepository.getGlobalExecutorService();
-            }else {
-                executor = executorRepository.createExecutorIfAbsent(url);
-            }
+            executor = executorRepository.createExecutorIfAbsent(url);
         }
         return executor;
     }

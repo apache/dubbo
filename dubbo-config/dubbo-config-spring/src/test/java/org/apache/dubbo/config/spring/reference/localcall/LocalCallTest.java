@@ -18,15 +18,12 @@ package org.apache.dubbo.config.spring.reference.localcall;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
-import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -39,19 +36,14 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 public class LocalCallTest {
 
-    private static RegistryCenter singleRegistryCenter;
-
     @BeforeAll
     public static void beforeAll() {
-        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
-        singleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll() {
         DubboBootstrap.reset();
-        singleRegistryCenter.shutdown();
     }
 
     @Autowired

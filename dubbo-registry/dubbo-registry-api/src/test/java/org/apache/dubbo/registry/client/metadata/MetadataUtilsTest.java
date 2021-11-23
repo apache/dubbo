@@ -26,12 +26,10 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -41,7 +39,6 @@ import java.util.Map;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -81,7 +78,7 @@ public class MetadataUtilsTest {
         when(serviceInstance.getServiceName()).thenReturn(DemoService.class.getName());
         when(serviceInstance.getMetadata()).thenReturn(metadata);
         when(serviceInstance.getAddress()).thenReturn("127.0.0.1");
-        when(serviceInstance.getApplicationModel()).thenReturn(ApplicationModel.defaultModel());
+        when(serviceInstance.getHost()).thenReturn("127.0.0.1");
 
         String key = "org.apache.dubbo.registry.integration.DemoService##127.0.0.1##1";
         Assertions.assertFalse(MetadataUtils.metadataServiceProxies.containsKey(key));
@@ -101,7 +98,7 @@ public class MetadataUtilsTest {
         Invoker<Object> invoker = mock(Invoker.class);
         MetadataService metadataService = mock(MetadataService.class);
 
-        when(serviceInstance.getOrDefaultApplicationModel()).thenReturn(applicationModel);
+        when(serviceInstance.getApplicationModel()).thenReturn(applicationModel);
 
         ExtensionLoader<Protocol> protocolExtensionLoader = mock(ExtensionLoader.class);
         when(protocolExtensionLoader.getAdaptiveExtension()).thenReturn(protocol);
@@ -115,16 +112,11 @@ public class MetadataUtilsTest {
         when(protocol.refer(any(), any())).thenReturn(invoker);
         when(proxyFactory.getProxy(invoker)).thenReturn(metadataService);
 
-        try (MockedStatic<ScopeModelUtil> scopeModelUtilMockedStatic = mockStatic(ScopeModelUtil.class)) {
-            scopeModelUtilMockedStatic
-                .when(() -> ScopeModelUtil.getOrDefaultApplicationModel(serviceInstance.getApplicationModel()))
-                .thenReturn(applicationModel);
-            MetadataUtils.getMetadataServiceProxy(serviceInstance);
+        MetadataUtils.getMetadataServiceProxy(serviceInstance);
 
-            Assertions.assertEquals(1, MetadataUtils.getMetadataServiceProxies().size());
-            Assertions.assertEquals(1, MetadataUtils.getMetadataServiceInvokers().size());
-            Assertions.assertEquals(metadataService, MetadataUtils.getMetadataServiceProxy(serviceInstance));
-        }
+        Assertions.assertEquals(1, MetadataUtils.getMetadataServiceProxies().size());
+        Assertions.assertEquals(1, MetadataUtils.getMetadataServiceInvokers().size());
+        Assertions.assertEquals(metadataService, MetadataUtils.getMetadataServiceProxy(serviceInstance));
 
         MetadataUtils.destroyMetadataServiceProxy(serviceInstance);
         ApplicationModel.defaultModel().destroy();
@@ -139,7 +131,7 @@ public class MetadataUtilsTest {
         when(serviceInstance.getServiceName()).thenReturn(DemoService.class.getName());
         when(serviceInstance.getMetadata()).thenReturn(metadata);
         when(serviceInstance.getAddress()).thenReturn("127.0.0.1");
-        when(serviceInstance.getApplicationModel()).thenReturn(ApplicationModel.defaultModel());
+        when(serviceInstance.getHost()).thenReturn("127.0.0.1");
 
         String key = "org.apache.dubbo.registry.integration.DemoService##127.0.0.1##1";
         Assertions.assertFalse(MetadataUtils.metadataServiceProxies.containsKey(key));
@@ -153,7 +145,7 @@ public class MetadataUtilsTest {
 
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         applicationModel.getApplicationConfigManager().setApplication(applicationConfig);
-        when(serviceInstance.getOrDefaultApplicationModel()).thenReturn(applicationModel);
+        when(serviceInstance.getApplicationModel()).thenReturn(applicationModel);
 
         Protocol protocol = mock(Protocol.class);
         ProxyFactory proxyFactory = mock(ProxyFactory.class);
@@ -172,12 +164,7 @@ public class MetadataUtilsTest {
         when(protocol.refer(any(), any())).thenReturn(invoker);
         when(proxyFactory.getProxy(invoker)).thenReturn(metadataService);
 
-        try (MockedStatic<ScopeModelUtil> scopeModelUtilMockedStatic = mockStatic(ScopeModelUtil.class)) {
-            scopeModelUtilMockedStatic
-                .when(() -> ScopeModelUtil.getOrDefaultApplicationModel(serviceInstance.getApplicationModel()))
-                .thenReturn(applicationModel);
-            MetadataUtils.getMetadataServiceProxy(serviceInstance);
-        }
+        MetadataUtils.getMetadataServiceProxy(serviceInstance);
 
         MetadataUtils.destroyMetadataServiceProxy(serviceInstance);
 

@@ -17,9 +17,16 @@
 package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.monitor.MonitorService;
 
 import java.io.Serializable;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
  * Statistics. (SPI, Prototype, ThreadSafe)
@@ -46,13 +53,13 @@ public class Statistics implements Serializable {
 
     public Statistics(URL url) {
         this.url = url;
-        this.application = url.getParameter(MonitorService.APPLICATION);
-        this.service = url.getParameter(MonitorService.INTERFACE);
-        this.method = url.getParameter(MonitorService.METHOD);
-        this.group = url.getParameter(MonitorService.GROUP);
-        this.version = url.getParameter(MonitorService.VERSION);
-        this.client = url.getParameter(MonitorService.CONSUMER, url.getAddress());
-        this.server = url.getParameter(MonitorService.PROVIDER, url.getAddress());
+        this.application = url.getParameter(APPLICATION_KEY);
+        this.service = url.getParameter(INTERFACE_KEY);
+        this.method = url.getParameter(METHOD_KEY);
+        this.group = url.getParameter(GROUP_KEY);
+        this.version = url.getParameter(VERSION_KEY);
+        this.client = url.getParameter(CONSUMER, url.getAddress());
+        this.server = url.getParameter(PROVIDER, url.getAddress());
     }
 
     public URL getUrl() {

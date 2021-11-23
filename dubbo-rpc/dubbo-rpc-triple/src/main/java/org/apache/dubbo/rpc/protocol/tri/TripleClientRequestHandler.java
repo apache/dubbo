@@ -37,23 +37,28 @@ public class TripleClientRequestHandler extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (msg instanceof Request) {
-            writeRequest(ctx, (Request) msg, promise);
-        } else {
+        if (!(msg instanceof Request)) {
             super.write(ctx, msg, promise);
+            return;
         }
-    }
-
-    private void writeRequest(ChannelHandlerContext ctx, final Request req, final ChannelPromise promise) {
+        final Request req = (Request) msg;
         Connection connection = Connection.getConnectionFromChannel(ctx.channel());
         final AbstractClientStream stream = AbstractClientStream.newClientStream(req, connection);
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
         streamChannelBootstrap.open()
             .addListener(future -> {
                 if (future.isSuccess()) {
-                    final Http2StreamChannel curChannel = (Http2StreamChannel) future.get();
+                    final Http2StreamChannel channel = (Http2StreamChannel) future.get();
+                    channel.pipeline()
+                        .addLast(new TripleCommandOutBoundHandler())
+                        .addLast(new TripleHttp2ClientResponseHandler())
+                        .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
+                        .addLast(new TripleClientInboundHandler());
+                    channel.attr(TripleConstant.CLIENT_STREAM_KEY).set(stream);
+                    DefaultFuture2.addTimeoutListener(req.getId(), channel::close);
+                    WriteQueue writeQueue = new WriteQueue(channel);
                     // Start call only when the channel creation is successful
-                    stream.startCall(curChannel, promise);
+                    stream.startCall(writeQueue, promise);
                 } else {
                     promise.tryFailure(future.cause());
                     DefaultFuture2.getFuture(req.getId()).cancel();

@@ -470,11 +470,11 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             addPropertyReference(builder, "monitor", monitorConfigId);
         }
 
-        // application reference
-        String applicationConfigId = (String) serviceAnnotationAttributes.get("application");
-        if (StringUtils.hasText(applicationConfigId)) {
-            addPropertyReference(builder, "application", applicationConfigId);
-        }
+        // deprecate application reference
+//        String applicationConfigId = (String) serviceAnnotationAttributes.get("application");
+//        if (StringUtils.hasText(applicationConfigId)) {
+//            addPropertyReference(builder, "application", applicationConfigId);
+//        }
 
         // module reference
         String moduleConfigId = (String) serviceAnnotationAttributes.get("module");

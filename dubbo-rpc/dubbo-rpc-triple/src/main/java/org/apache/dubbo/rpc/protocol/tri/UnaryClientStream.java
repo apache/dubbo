@@ -69,7 +69,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
         return map;
     }
 
-    private class ClientUnaryInboundTransportObserver extends UnaryInboundTransportObserver implements TransportObserver {
+    private class ClientUnaryInboundTransportObserver extends ServerUnaryInboundTransportObserver {
 
         @Override
         public void onComplete() {

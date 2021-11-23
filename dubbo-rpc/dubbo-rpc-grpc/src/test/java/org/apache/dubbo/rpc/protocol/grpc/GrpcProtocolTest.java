@@ -40,6 +40,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class GrpcProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -85,7 +87,7 @@ public class GrpcProtocolTest {
 
         ListenableFuture<HelloReply> future = serviceImpl.sayHelloAsync(HelloRequest.newBuilder().setName("World").build());
         Assertions.assertEquals("Hello World", future.get().getMessage());
-
+        CountDownLatch latch = new CountDownLatch(1);
         serviceImpl.sayHello(HelloRequest.newBuilder().setName("World").build(), new StreamObserver<HelloReply>() {
 
             @Override
@@ -100,11 +102,15 @@ public class GrpcProtocolTest {
 
             @Override
             public void onCompleted() {
+                latch.countDown();
                 System.out.println("onCompleted");
             }
         });
+        // release CPU to run StreamObserver methods.
+        latch.await(1000, TimeUnit.MILLISECONDS);
         // resource recycle.
         serviceRepository.destroy();
+        System.out.println("serviceRepository destroyed");
     }
 
     class MockReferenceConfig extends ReferenceConfigBase {
