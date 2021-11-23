@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.support.MyInvoker;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -62,7 +62,7 @@ public class ContextFilterTest {
         given(invoker.getUrl()).willReturn(url);
 
         contextFilter.invoke(invoker, invocation);
-        assertNotNull(RpcContext.getServiceContext().getInvoker());
+        assertNull(RpcContext.getServiceContext().getInvoker());
     }
 
     @Test
@@ -71,6 +71,6 @@ public class ContextFilterTest {
         Invoker<DemoService> invoker = new MyInvoker<DemoService>(url);
         Invocation invocation = new MockInvocation();
         Result result = contextFilter.invoke(invoker, invocation);
-        assertNotNull(RpcContext.getServiceContext().getInvoker());
+        assertNull(RpcContext.getServiceContext().getInvoker());
     }
 }
