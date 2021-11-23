@@ -164,8 +164,10 @@ public class MigrationRule {
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
-                    if (rule.getStep() != null) {
-                        return rule.getStep();
+                    if (rule != null) {
+                        if (rule.getStep() != null) {
+                            return rule.getStep();
+                        }
                     }
                 }
             }
