@@ -18,7 +18,6 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -28,7 +27,6 @@ import com.google.gson.reflect.TypeToken;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -50,25 +48,12 @@ public class ProtocolPortsMetadataCustomizerTest {
     private static final Gson gson = new Gson();
 
     public DefaultServiceInstance instance;
-    private static MetadataService mockedMetadataService;
-    private static ApplicationModel mockedApplicationModel;
-    private static ScopeBeanFactory mockedBeanFactory;
+    private MetadataService mockedMetadataService;
+    private ApplicationModel mockedApplicationModel;
+    private ScopeBeanFactory mockedBeanFactory;
 
     public static DefaultServiceInstance createInstance() {
         return new DefaultServiceInstance("A", "127.0.0.1", 20880, ApplicationModel.defaultModel());
-    }
-
-    @BeforeAll
-    public static void setUp() {
-        ApplicationConfig applicationConfig = new ApplicationConfig("test");
-        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
-
-        mockedMetadataService = Mockito.mock(MetadataService.class);
-
-        mockedApplicationModel = Mockito.mock(ApplicationModel.class);
-        Mockito.when(mockedApplicationModel.getBeanFactory()).thenReturn(mockedBeanFactory);
-        mockedBeanFactory = Mockito.mock(ScopeBeanFactory.class);
-        Mockito.when(mockedBeanFactory.getBean(MetadataService.class)).thenReturn(mockedMetadataService);
     }
 
     @AfterAll
@@ -87,6 +72,13 @@ public class ProtocolPortsMetadataCustomizerTest {
         Set<URL> urls = new HashSet<>();
         urls.add(dubboUrl);
         urls.add(triURL);
+
+        mockedMetadataService = Mockito.mock(MetadataService.class);
+
+        mockedApplicationModel = Mockito.mock(ApplicationModel.class);
+        mockedBeanFactory = Mockito.mock(ScopeBeanFactory.class);
+        Mockito.when(mockedApplicationModel.getBeanFactory()).thenReturn(mockedBeanFactory);
+        Mockito.when(mockedBeanFactory.getBean(MetadataService.class)).thenReturn(mockedMetadataService);
         when(mockedMetadataService.getExportedServiceURLs()).thenReturn(urls);
     }
 
@@ -98,7 +90,7 @@ public class ProtocolPortsMetadataCustomizerTest {
     @Test
     public void test() {
         ProtocolPortsMetadataCustomizer customizer = new ProtocolPortsMetadataCustomizer();
-        customizer.customize(instance, ApplicationModel.defaultModel());
+        customizer.customize(instance, mockedApplicationModel);
         String endpoints = instance.getMetadata().get(ENDPOINTS);
         assertNotNull(endpoints);
         List<DefaultServiceInstance.Endpoint> endpointList = gson.fromJson(endpoints, new TypeToken<List<DefaultServiceInstance.Endpoint>>(){}.getType());

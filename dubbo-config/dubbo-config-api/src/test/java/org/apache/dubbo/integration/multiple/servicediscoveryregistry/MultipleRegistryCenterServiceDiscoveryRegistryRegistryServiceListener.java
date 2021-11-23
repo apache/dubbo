@@ -18,8 +18,6 @@ package org.apache.dubbo.integration.multiple.servicediscoveryregistry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryServiceListener;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
@@ -43,7 +41,6 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
         serviceDiscoveryRegistryInfoWrapper.setHost(host);
         serviceDiscoveryRegistryInfoWrapper.setPort(port);
         serviceDiscoveryRegistryInfoWrapper.setServiceDiscoveryRegistry(serviceDiscoveryRegistry);
-        serviceDiscoveryRegistryInfoWrapper.setInMemoryWritableMetadataService((MetadataServiceDelegation) url.getScopeModel().getBeanFactory().getBean(MetadataService.class));
         serviceDiscoveryRegistryInfoWrapper.setRegistered(true);
         return serviceDiscoveryRegistryInfoWrapper;
     }

@@ -17,17 +17,25 @@
 package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * Test for https://github.com/apache/dubbo/issues/8698
@@ -46,28 +54,30 @@ class ServiceInstanceHostPortCustomizerTest {
     }
     
     @Test
-    void customizePreferredProtocol() {
-        ApplicationModel applicationModel= new ApplicationModel(new FrameworkModel());
-        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("service-preferredProtocol"));
+    void customizePreferredProtocol() throws ExecutionException, InterruptedException {
+        ScopeBeanFactory beanFactory = mock(ScopeBeanFactory.class);
+        MetadataService metadataService = mock(MetadataService.class);
+        when(beanFactory.getBean(MetadataService.class)).thenReturn(metadataService);
+        ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
+        when(applicationModel.getBeanFactory()).thenReturn(beanFactory);
 
-        // Trigger the fallback strategy
+        // test protocol set
+        ApplicationConfig applicationConfig = new ApplicationConfig("aa");
+        // when(applicationModel.getCurrentConfig()).thenReturn(applicationConfig);
+        doReturn(applicationConfig).when(applicationModel).getCurrentConfig();
         DefaultServiceInstance serviceInstance1 = new DefaultServiceInstance("without-preferredProtocol", applicationModel);
-        MetadataInfo metadataInfo = new MetadataInfo();
-        metadataInfo.addService(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService"));
-        serviceInstance1.setServiceMetadata(metadataInfo);
+        Set<URL> urls = new HashSet<>();
+        urls.add(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService"));
+        when(metadataService.getExportedServiceURLs()).thenReturn(urls);
         serviceInstanceHostPortCustomizer.customize(serviceInstance1, applicationModel);
         Assertions.assertEquals("127.1.1.1", serviceInstance1.getHost());
         Assertions.assertEquals(50052, serviceInstance1.getPort());
-        
-        
-        // Add the default protocol
-        metadataInfo.addService(URL.valueOf("dubbo://127.1.2.3:20889/org.apache.dubbo.demo.HelloService"));
-        serviceInstance1.setServiceMetadata(metadataInfo);
-        
+
         // pick the preferredProtocol
-        ServiceInstance serviceInstance2 = new DefaultServiceInstance("with-preferredProtocol", applicationModel);
-        serviceInstanceHostPortCustomizer.customize(serviceInstance2, applicationModel);
-        Assertions.assertEquals("127.1.2.3", serviceInstance2.getHost());
-        Assertions.assertEquals(20889, serviceInstance2.getPort());
+        applicationConfig.setProtocol("tri");
+        urls.add(URL.valueOf("dubbo://127.1.2.3:20889/org.apache.dubbo.demo.HelloService"));
+        serviceInstanceHostPortCustomizer.customize(serviceInstance1, applicationModel);
+        Assertions.assertEquals("127.1.1.1", serviceInstance1.getHost());
+        Assertions.assertEquals(50052, serviceInstance1.getPort());
     }
 }

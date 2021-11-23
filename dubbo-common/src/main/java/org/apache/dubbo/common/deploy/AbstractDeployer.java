@@ -39,7 +39,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     protected AtomicBoolean initialized = new AtomicBoolean(false);
 
-    private List<DeployListener<E>> listeners = new ArrayList<>();
+    protected List<DeployListener<E>> listeners = new ArrayList<>();
 
     private E scopeModel;
 

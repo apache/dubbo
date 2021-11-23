@@ -26,6 +26,7 @@ import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfi
 import org.apache.dubbo.common.deploy.AbstractDeployer;
 import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.deploy.ApplicationDeployer;
+import org.apache.dubbo.common.deploy.DeployListener;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -42,11 +43,8 @@ import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
-import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.config.utils.CompositeReferenceCache;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
@@ -72,7 +70,6 @@ import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
@@ -100,8 +97,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     private final AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
     private final AtomicBoolean hasPreparedInternalModule = new AtomicBoolean(false);
-
-    private volatile ConfigurableMetadataServiceExporter metadataServiceExporter;
 
     private ScheduledFuture<?> asyncMetadataFuture;
     private volatile CompletableFuture<Boolean> startFuture;
@@ -156,14 +151,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return Boolean.TRUE.equals(registerConsumer);
     }
 
-    private String getMetadataType() {
-        String type = getApplication().getMetadataType();
-        if (StringUtils.isEmpty(type)) {
-            type = DEFAULT_METADATA_STORAGE_TYPE;
-        }
-        return type;
-    }
-
     @Override
     public ReferenceCache getReferenceCache() {
         return referenceCache;
@@ -193,8 +180,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
             // @since 2.7.8
             startMetadataCenter();
-
-            initMetadataService();
 
             initialized.set(true);
 
@@ -495,14 +480,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     /**
-     * Initialize {@link MetadataService}
-     */
-    private void initMetadataService() {
-        MetadataServiceDelegation metadataService = applicationModel.getBeanFactory().getOrRegisterBean(MetadataServiceDelegation.class);
-        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(applicationModel, metadataService);
-    }
-
-    /**
      * Start the bootstrap
      *
      * @return
@@ -564,7 +541,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         startModules();
 
         // prepare application instance
-        prepareApplicationInstance();
+//        prepareApplicationInstance();
 
         executorRepository.getSharedExecutor().submit(() -> {
             try {
@@ -604,13 +581,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         // ensure init and start internal module first
         prepareInternalModule();
 
-        // always start metadata service on application model start, so it's ready whenever a new module is started
-        // export MetadataService
-        exportMetadataService();
-
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
+
+        exportMetadataService();
+
         // if register consumer instance or has exported services
         if (isRegisterConsumerInstance() || hasExportedServices()) {
             if (hasPreparedApplicationInstance.compareAndSet(false, true)) {
@@ -713,26 +689,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         return factory.getDynamicConfiguration(connectionURL);
     }
 
-    /**
-     * export {@link MetadataService}
-     */
-    private void exportMetadataService() {
-        // fixme, let's disable local metadata service export at this moment
-        if (!REMOTE_METADATA_STORAGE_TYPE.equals(getMetadataType())) {
-            metadataServiceExporter.export();
-        }
-    }
-
-    private void unexportMetadataService() {
-        if (metadataServiceExporter != null && metadataServiceExporter.isExported()) {
-            try {
-                metadataServiceExporter.unexport();
-            } catch (Exception ignored) {
-                // ignored
-            }
-        }
-    }
-
     private volatile boolean registered;
 
     private void registerServiceInstance() {
@@ -751,7 +707,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                     return;
                 }
                 try {
-                    if (!applicationModel.isDestroyed()) {
+                    if (!applicationModel.isDestroyed() && registered) {
                         ServiceInstanceMetadataUtils.refreshMetadataAndInstance(applicationModel);
                     }
                 } catch (Exception e) {
@@ -787,7 +743,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 asyncMetadataFuture.cancel(true);
             }
             unregisterServiceInstance();
-            unexportMetadataService();
         }
     }
 
@@ -828,7 +783,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void notifyModuleChanged(ModuleModel moduleModel, DeployState state) {
-        checkState();
+        checkState(moduleModel, state);
 
         // notify module state changed or module changed
         synchronized (stateLock) {
@@ -837,8 +792,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     @Override
-    public void checkState() {
+    public void checkState(ModuleModel moduleModel, DeployState moduleState) {
         synchronized (stateLock) {
+            if (!moduleModel.isInternal() && moduleState == DeployState.STARTED) {
+                prepareApplicationInstance();
+            }
             DeployState newState = calculateState();
             switch (newState) {
                 case STARTED:
@@ -908,6 +866,21 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             newState = DeployState.STOPPED;
         }
         return newState;
+    }
+
+    private void exportMetadataService() {
+        if (!isStarting()) {
+            return;
+        }
+        for (DeployListener<ApplicationModel> listener : listeners) {
+            try {
+                if (listener instanceof ApplicationDeployListener) {
+                    ((ApplicationDeployListener) listener).onModuleStarted(applicationModel);
+                }
+            } catch (Throwable e) {
+                logger.error(getIdentifier() + " an exception occurred when handle starting event", e);
+            }
+        }
     }
 
     private void onStarting() {

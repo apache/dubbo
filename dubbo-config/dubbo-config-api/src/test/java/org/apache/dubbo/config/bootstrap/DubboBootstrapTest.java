@@ -18,6 +18,7 @@ package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -32,6 +33,7 @@ import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
+import org.apache.dubbo.config.metadata.ExporterDeployListener;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.MetadataService;
@@ -261,7 +263,6 @@ public class DubboBootstrapTest {
 
         ApplicationModel applicationModel = bootstrap.getApplicationModel();
         DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(applicationModel);
-        Assertions.assertNotNull(ReflectUtils.getFieldValue(applicationDeployer, "serviceInstance"));
         Assertions.assertNotNull(ReflectUtils.getFieldValue(applicationDeployer, "asyncMetadataFuture"));
         Assertions.assertTrue(applicationModel.getDefaultModule().getServiceRepository().getExportedServices().size() > 0);
     }
@@ -287,7 +288,7 @@ public class DubboBootstrapTest {
             .service(service)
             .start();
 
-        assertMetadataService(bootstrap, availablePort, false);
+        assertMetadataService(bootstrap, availablePort, true);
     }
 
     @Test
@@ -329,24 +330,32 @@ public class DubboBootstrapTest {
             .metadataReport(new MetadataReportConfig(zkServerAddress))
             .start();
 
-        assertMetadataService(DubboBootstrap.getInstance(), availablePort, true);
+        assertMetadataService(DubboBootstrap.getInstance(), availablePort, false);
 
     }
 
-    private void assertMetadataService(DubboBootstrap bootstrap, int availablePort, boolean shouldReport) {
-        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(bootstrap.getApplicationModel());
-        ConfigurableMetadataServiceExporter metadataServiceExporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
-        Assertions.assertTrue(metadataServiceExporter.isExported());
+    private ExporterDeployListener getListener(ApplicationModel model) {
+        return (ExporterDeployListener)model.getExtensionLoader(ApplicationDeployListener.class).getExtension("exporter");
+    }
+
+    private void assertMetadataService(DubboBootstrap bootstrap, int availablePort, boolean metadataExported) {
+        ExporterDeployListener listener = getListener(bootstrap.getApplicationModel());
+        ConfigurableMetadataServiceExporter metadataServiceExporter = listener.getMetadataServiceExporter();
+        Assertions.assertEquals(metadataExported, metadataServiceExporter.isExported());
         DubboProtocol protocol = DubboProtocol.getDubboProtocol(bootstrap.getApplicationModel());
         Map<String, Exporter<?>> exporters = protocol.getExporterMap();
-        Assertions.assertEquals(2, exporters.size());
+        if (metadataExported) {
+            Assertions.assertEquals(2, exporters.size());
 
-        ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
-        serviceConfig.setRegistry(new RegistryConfig("N/A"));
-        serviceConfig.setInterface(MetadataService.class);
-        serviceConfig.setGroup(ApplicationModel.defaultModel().getCurrentConfig().getName());
-        serviceConfig.setVersion(MetadataService.VERSION);
-        assertThat(exporters, hasEntry(is(serviceConfig.getUniqueServiceName() + ":" + availablePort), anything()));
+            ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
+            serviceConfig.setRegistry(new RegistryConfig("N/A"));
+            serviceConfig.setInterface(MetadataService.class);
+            serviceConfig.setGroup(ApplicationModel.defaultModel().getCurrentConfig().getName());
+            serviceConfig.setVersion(MetadataService.VERSION);
+            assertThat(exporters, hasEntry(is(serviceConfig.getUniqueServiceName() + ":" + availablePort), anything()));
+        } else {
+            Assertions.assertEquals(1, exporters.size());
+        }
     }
 
 

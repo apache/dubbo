@@ -22,6 +22,7 @@ import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -62,14 +64,9 @@ class MetadataReportInstanceTest {
 
     @Test
     public void test() {
-        Assertions.assertThrows(IllegalStateException.class,
-            () -> metadataReportInstance.getMetadataReport(registryId),
+        Assertions.assertNull(metadataReportInstance.getMetadataReport(registryId),
             "the metadata report was not initialized.");
-
-        Assertions.assertThrows(IllegalStateException.class,
-            () -> metadataReportInstance.getMetadataReports(true),
-            "the metadata report was not initialized.");
-
+        assertThat(metadataReportInstance.getMetadataReports(true), Matchers.anEmptyMap());
 
         metadataReportInstance.init(metadataReportConfig);
         MetadataReport metadataReport = metadataReportInstance.getMetadataReport(registryId);

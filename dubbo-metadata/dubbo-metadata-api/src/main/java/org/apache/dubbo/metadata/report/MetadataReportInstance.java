@@ -98,7 +98,7 @@ public class MetadataReportInstance implements Disposable {
 
     public MetadataReport getMetadataReport(String registryKey) {
         MetadataReport metadataReport = metadataReports.get(registryKey);
-        if (metadataReport == null) {
+        if (metadataReport == null && metadataReports.size() > 0) {
             metadataReport = metadataReports.values().iterator().next();
         }
         return metadataReport;

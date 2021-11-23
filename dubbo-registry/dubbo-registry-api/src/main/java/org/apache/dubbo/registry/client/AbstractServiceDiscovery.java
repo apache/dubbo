@@ -155,6 +155,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     @Override
     public final void destroy() throws Exception {
         isDestroy = true;
+        metaCacheManager.destroy();
+
         doDestroy();
     }
 

@@ -17,16 +17,16 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.deploy.ApplicationDeployListener;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
+import org.apache.dubbo.config.metadata.ExporterDeployListener;
 import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registrycenter.RegistryCenter;
@@ -80,8 +80,8 @@ public class MetadataServiceExporterTest {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
 
         applicationModel.getDeployer().start().get();
-        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(applicationModel);
-        ConfigurableMetadataServiceExporter exporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
+        ExporterDeployListener listener = getListener(applicationModel);
+        ConfigurableMetadataServiceExporter exporter = listener.getMetadataServiceExporter();
 
         assertTrue(exporter.isExported());
 
@@ -110,8 +110,8 @@ public class MetadataServiceExporterTest {
 
         // will start exporter
         providerBootstrap.start();
-        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(providerBootstrap.getApplicationModel());
-        ConfigurableMetadataServiceExporter exporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
+        ExporterDeployListener listener = getListener(providerBootstrap.getApplicationModel());
+        ConfigurableMetadataServiceExporter exporter = listener.getMetadataServiceExporter();
 
         try {
             assertTrue(exporter.isExported());
@@ -149,8 +149,8 @@ public class MetadataServiceExporterTest {
 
         // will start exporter.export()
         providerBootstrap.start();
-        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(providerBootstrap.getApplicationModel());
-        ConfigurableMetadataServiceExporter exporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
+        ExporterDeployListener listener = getListener(providerBootstrap.getApplicationModel());
+        ConfigurableMetadataServiceExporter exporter = listener.getMetadataServiceExporter();
 
         try {
             assertTrue(exporter.isExported());
@@ -162,10 +162,6 @@ public class MetadataServiceExporterTest {
             providerBootstrap.stop();
         }
         assertFalse(exporter.isExported());
-    }
-
-    private DefaultApplicationDeployer getApplicationDeployer(ApplicationModel applicationModel) {
-        return (DefaultApplicationDeployer) DefaultApplicationDeployer.get(applicationModel);
     }
 
     @Test
@@ -189,8 +185,8 @@ public class MetadataServiceExporterTest {
 
         // will start exporter.export()
         providerBootstrap.start();
-        DefaultApplicationDeployer applicationDeployer = getApplicationDeployer(providerBootstrap.getApplicationModel());
-        ConfigurableMetadataServiceExporter exporter = ReflectUtils.getFieldValue(applicationDeployer, "metadataServiceExporter");
+        ExporterDeployListener listener = getListener(providerBootstrap.getApplicationModel());
+        ConfigurableMetadataServiceExporter exporter = listener.getMetadataServiceExporter();
         try {
             assertTrue(exporter.isExported());
             List<URL> urls = exporter.getExportedURLs();
@@ -252,6 +248,10 @@ public class MetadataServiceExporterTest {
 
         // pre-check threads
         //precheckUnclosedThreads();
+    }
+
+    private ExporterDeployListener getListener(ApplicationModel model) {
+        return (ExporterDeployListener)model.getExtensionLoader(ApplicationDeployListener.class).getExtension("exporter");
     }
 
 }

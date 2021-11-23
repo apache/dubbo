@@ -99,6 +99,7 @@ public class ServiceDiscoveryRegistryTest {
         doNothing().when(instanceListener).onEvent(any());
         when(serviceDiscovery.createListener(any())).thenReturn(instanceListener);
         when(serviceDiscovery.getInstances(any())).thenReturn(Collections.emptyList());
+        when(serviceDiscovery.getUrl()).thenReturn(url);
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         when(applicationModel.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
         registryURL = registryURL.setScopeModel(applicationModel);
@@ -109,15 +110,15 @@ public class ServiceDiscoveryRegistryTest {
     /**
      * Test subscribe
      * - Normal case
-     * - Exception case
-     * - check=true
-     * - check=false
+     * - Exceptional case
+     *   - check=true
+     *   - check=false
      */
     @Test
     public void testDoSubscribe() {
         ApplicationModel applicationModel = spy(ApplicationModel.defaultModel());
         when(applicationModel.getDefaultExtension(ServiceNameMapping.class)).thenReturn(mapping);
-        // Exception case, no interface-app mapping found
+        // Exceptional case, no interface-app mapping found
         when(mapping.getAndListen(any(), any(), any())).thenReturn(Collections.emptySet());
         // when check = false
         try {

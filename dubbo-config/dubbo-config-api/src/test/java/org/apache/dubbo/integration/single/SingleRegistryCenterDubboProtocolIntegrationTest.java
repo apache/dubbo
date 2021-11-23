@@ -186,8 +186,6 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      *     <li>Protocol port is right or not</li>
      *     <li>ServiceDiscoveryRegistry's protocol is right or not</li>
      *     <li>Registered service in registry center is right or not</li>
-     *     <li>Exported url is right or not in InMemoryWritableMetadataService</li>
-     *     <li>MetadataInfo exists or not in InMemoryWritableMetadataService</li>
      *     <li>MetadataInfo has reported or not</li>
      *     <li>MetadataInfo has reported or not has service or not</li>
      *     <li>MetadataInfo's application name is right or not</li>

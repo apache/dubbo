@@ -131,7 +131,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
     private final List<ServiceListener> serviceListeners = new ArrayList<>();
-    ModuleServiceRepository repository = getScopeModel().getServiceRepository();
 
     public ServiceConfig() {
     }
@@ -356,6 +355,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
+        ModuleServiceRepository repository = getScopeModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(getInterfaceClass());
         providerModel = new ProviderModel(getUniqueServiceName(),
             ref,
@@ -559,7 +559,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 url = exportRemote(url, registryURLs);
-                MetadataUtils.publishServiceDefinition(repository.getService(interfaceName), getApplicationModel());
+                MetadataUtils.publishServiceDefinition(getScopeModel().getServiceRepository().getService(interfaceName), getApplicationModel());
             }
 
         }

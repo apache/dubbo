@@ -77,7 +77,7 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
     /**
      * check all module state and update application state
      */
-    void checkState();
+    void checkState(ModuleModel moduleModel, DeployState moduleState);
 
     // module state changed callbacks
     void notifyModuleChanged(ModuleModel moduleModel, DeployState state);

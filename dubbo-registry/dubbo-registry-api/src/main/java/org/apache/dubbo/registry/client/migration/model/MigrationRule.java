@@ -160,7 +160,7 @@ public class MigrationRule {
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getCachedMapping(consumerURL);
+            Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
@@ -201,7 +201,7 @@ public class MigrationRule {
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getCachedMapping(consumerURL);
+            Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
@@ -241,7 +241,7 @@ public class MigrationRule {
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getCachedMapping(consumerURL);
+            Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
@@ -277,7 +277,7 @@ public class MigrationRule {
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getCachedMapping(consumerURL);
+            Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
@@ -317,7 +317,7 @@ public class MigrationRule {
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(consumerURL.getScopeModel());
-            Set<String> services = serviceNameMapping.getCachedMapping(consumerURL);
+            Set<String> services = serviceNameMapping.getServices(consumerURL);
             if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);

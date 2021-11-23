@@ -39,14 +39,6 @@ public class ServiceDiscoveryRegistryInfoWrapper {
         this.serviceDiscoveryRegistry = serviceDiscoveryRegistry;
     }
 
-    public MetadataServiceDelegation getInMemoryWritableMetadataService() {
-        return inMemoryWritableMetadataService;
-    }
-
-    public void setInMemoryWritableMetadataService(MetadataServiceDelegation inMemoryWritableMetadataService) {
-        this.inMemoryWritableMetadataService = inMemoryWritableMetadataService;
-    }
-
     public boolean isRegistered() {
         return registered;
     }

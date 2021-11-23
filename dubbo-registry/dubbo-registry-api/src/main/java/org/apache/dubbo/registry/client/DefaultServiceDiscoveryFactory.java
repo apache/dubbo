@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.deploy;
+package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.common.URL;
 
 /**
- * Listen for Dubbo application deployment events
+ * This class is designed for compatibility purpose. When a specific registry type does not have counterpart service discovery provided,
+ * the nop instance will be returned.
  */
-@SPI(scope = ExtensionScope.APPLICATION)
-public interface ApplicationDeployListener extends DeployListener<ApplicationModel> {
-    default void onModuleStarted(ApplicationModel applicationModel) {
-
+public class DefaultServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
+    @Override
+    protected ServiceDiscovery createDiscovery(URL registryURL) {
+        return new NopServiceDiscovery(registryURL.getApplicationModel(), registryURL);
     }
 }

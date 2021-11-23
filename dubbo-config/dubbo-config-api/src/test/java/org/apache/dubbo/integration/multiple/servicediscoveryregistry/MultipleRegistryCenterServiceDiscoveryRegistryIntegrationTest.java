@@ -179,7 +179,7 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
             Assertions.assertTrue(serviceDiscoveryRegistryInfoWrapper.isRegistered());
             // check if it's subscribed
             Assertions.assertFalse(serviceDiscoveryRegistryInfoWrapper.isSubscribed());
-            MetadataServiceDelegation metadataService = serviceDiscoveryRegistryInfoWrapper.getInMemoryWritableMetadataService();
+            MetadataServiceDelegation metadataService = DubboBootstrap.getInstance().getApplicationModel().getBeanFactory().getBean(MetadataServiceDelegation.class);
             // check if the count of exported urls is right or not
             Assertions.assertEquals(metadataService.getExportedURLs().size(), 1);
             // check the exported url is right or not.
@@ -187,7 +187,7 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
                 .first()
                 .contains(MultipleRegistryCenterServiceDiscoveryRegistryService.class.getName()));
             // check the count of metadatainfo is right or not.
-            Assertions.assertEquals(metadataService.getMetadataInfos().size(), 1);
+            Assertions.assertEquals(2, metadataService.getMetadataInfos().size());
         }
     }
 
