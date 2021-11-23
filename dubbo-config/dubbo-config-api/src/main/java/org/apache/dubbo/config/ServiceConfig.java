@@ -44,7 +44,6 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.GenericService;
-import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -91,6 +90,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.apache.dubbo.rpc.support.ProtocolUtils.isGeneric;
 
 public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
@@ -417,7 +417,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             getMethods().forEach(method -> appendParametersWithMethod(method, map));
         }
 
-        if (ProtocolUtils.isGeneric(generic)) {
+        if (isGeneric(generic)) {
             map.put(GENERIC_KEY, generic);
             map.put(METHODS_KEY, ANY_VALUE);
         } else {
@@ -559,9 +559,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 url = exportRemote(url, registryURLs);
-                MetadataUtils.publishServiceDefinition(getScopeModel().getServiceRepository().getService(interfaceName), getApplicationModel());
+                if (!isGeneric(generic)) {
+                    ServiceDescriptor descriptor = getScopeModel().getServiceRepository().getService(interfaceName);
+                    if (descriptor != null) {
+                        MetadataUtils.publishServiceDefinition(getScopeModel().getServiceRepository().getService(interfaceName), getApplicationModel());
+                    }
+                }
             }
-
         }
         this.urls.add(url);
     }
