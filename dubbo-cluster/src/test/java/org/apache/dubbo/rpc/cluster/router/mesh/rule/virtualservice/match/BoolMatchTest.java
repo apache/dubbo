@@ -31,12 +31,12 @@ public class BoolMatchTest {
         boolMatch.setExact(true);
 
 
-        assertTrue(BoolMatch.isMatch(boolMatch,true));
-        assertFalse(BoolMatch.isMatch(boolMatch,false));
+        assertTrue(boolMatch.isMatch(true));
+        assertFalse(boolMatch.isMatch(false));
 
         boolMatch.setExact(false);
-        assertFalse(BoolMatch.isMatch(boolMatch,true));
-        assertTrue(BoolMatch.isMatch(boolMatch,false));
+        assertFalse(boolMatch.isMatch(true));
+        assertTrue(boolMatch.isMatch(false));
 
     }
 }

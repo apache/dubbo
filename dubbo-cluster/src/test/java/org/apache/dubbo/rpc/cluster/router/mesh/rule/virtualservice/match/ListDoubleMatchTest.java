@@ -45,8 +45,8 @@ public class ListDoubleMatchTest {
 
         listDoubleMatch.setOneof(oneof);
 
-        assertTrue(ListDoubleMatch.isMatch(listDoubleMatch, 10.0));
-        assertTrue(ListDoubleMatch.isMatch(listDoubleMatch, 11.0));
-        assertFalse(ListDoubleMatch.isMatch(listDoubleMatch, 12.0));
+        assertTrue(listDoubleMatch.isMatch(10.0));
+        assertTrue(listDoubleMatch.isMatch(11.0));
+        assertFalse(listDoubleMatch.isMatch(12.0));
     }
 }
