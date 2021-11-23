@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
@@ -46,6 +47,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(final Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
         checkInvokers(invokers, invocation);
+        RpcContext.getServiceContext().setInvokers((List) invokers);
         RpcException exception = null;
         Result result = null;
         URL url = getUrl();
@@ -64,7 +66,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         int failIndex = 0;
         for (Invoker<T> invoker : invokers) {
             try {
-                result = invokeWithContext(invoker, invocation, invokers);
+                result = invokeWithContext(invoker, invocation, null);
                 if (null != result && result.hasException()) {
                     Throwable resultException = result.getException();
                     if (null != resultException) {
