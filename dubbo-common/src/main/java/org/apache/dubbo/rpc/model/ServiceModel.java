@@ -110,7 +110,7 @@ public class ServiceModel {
         if (config instanceof ReferenceConfigBase) {
             return (ReferenceConfigBase<?>) config;
         } else {
-            throw new IllegalArgumentException("Current ServiceModel is not a ConsumerModel");
+            return null;
         }
     }
 
@@ -121,7 +121,7 @@ public class ServiceModel {
         if (config instanceof ServiceConfigBase) {
             return (ServiceConfigBase<?>) config;
         } else {
-            throw new IllegalArgumentException("Current ServiceModel is not a ProviderModel");
+            return null;
         }
     }
 
