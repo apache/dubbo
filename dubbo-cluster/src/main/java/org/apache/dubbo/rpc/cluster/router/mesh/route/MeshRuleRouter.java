@@ -73,7 +73,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
         super(url);
         this.url = url;
         sourcesLabels = Collections.unmodifiableMap(new HashMap<>(url.getParameters()));
-        this.meshRuleManager = url.getScopeModel().getBeanFactory().getBean(MeshRuleManager.class);
+        this.meshRuleManager = url.getOrDefaultModuleModel().getBeanFactory().getBean(MeshRuleManager.class);
         this.tracingContextProviders = url.getOrDefaultApplicationModel().getExtensionLoader(TracingContextProvider.class).getSupportedExtensionInstances();
     }
 

@@ -20,44 +20,43 @@ package org.apache.dubbo.rpc.cluster.router.mesh.util;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class MeshRuleDispatcher {
     public static final Logger logger = LoggerFactory.getLogger(MeshRuleDispatcher.class);
 
     private final String appName;
-    private final Map<String, List<VsDestinationGroupRuleListener>> listenerMap = new ConcurrentHashMap<>();
+    private final Map<String, Set<VsDestinationGroupRuleListener>> listenerMap = new ConcurrentHashMap<>();
 
     public MeshRuleDispatcher(String appName) {
         this.appName = appName;
     }
 
-
     public synchronized void post(Map<String, List<Map<String, Object>>> ruleMap) {
         for (Map.Entry<String, List<Map<String, Object>>> entry : ruleMap.entrySet()) {
             String ruleType = entry.getKey();
-            List<VsDestinationGroupRuleListener> listeners = listenerMap.get(ruleType);
+            Set<VsDestinationGroupRuleListener> listeners = listenerMap.get(ruleType);
             if (CollectionUtils.isNotEmpty(listeners)) {
                 for (VsDestinationGroupRuleListener listener : listeners) {
                     listener.onRuleChange(appName, entry.getValue());
                 }
             } else {
-                logger.warn("");
+                logger.warn("Receive rule but none of listener has been registered. Maybe type not matched. Rule Type: " + ruleType);
             }
         }
     }
 
-    public synchronized boolean register(VsDestinationGroupRuleListener listener) {
+    public synchronized void register(VsDestinationGroupRuleListener listener) {
         if (listener == null) {
-            return false;
+            return;
         }
-        return listenerMap.computeIfAbsent(listener.ruleSuffix(),
-                (k) -> new CopyOnWriteArrayList<>())
+        listenerMap.computeIfAbsent(listener.ruleSuffix(), (k) -> new ConcurrentHashSet<>())
             .add(listener);
     }
 
@@ -65,13 +64,24 @@ public class MeshRuleDispatcher {
         if (listener == null) {
             return;
         }
-        List<VsDestinationGroupRuleListener> listeners = listenerMap.get(listener.ruleSuffix());
+        Set<VsDestinationGroupRuleListener> listeners = listenerMap.get(listener.ruleSuffix());
         if (CollectionUtils.isNotEmpty(listeners)) {
             listeners.remove(listener);
+        }
+        if (CollectionUtils.isEmpty(listeners)) {
+            listenerMap.remove(listener.ruleSuffix());
         }
     }
 
     public boolean isEmpty() {
         return listenerMap.isEmpty();
+    }
+
+    /**
+     * For ut only
+     */
+    @Deprecated
+    public Map<String, Set<VsDestinationGroupRuleListener>> getListenerMap() {
+        return listenerMap;
     }
 }

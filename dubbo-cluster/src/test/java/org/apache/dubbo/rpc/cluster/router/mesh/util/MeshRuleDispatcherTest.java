@@ -1,75 +1,206 @@
-///*
-// * Licensed to the Apache Software Foundation (ASF) under one or more
-// * contributor license agreements.  See the NOTICE file distributed with
-// * this work for additional information regarding copyright ownership.
-// * The ASF licenses this file to You under the Apache License, Version 2.0
-// * (the "License"); you may not use this file except in compliance with
-// * the License.  You may obtain a copy of the License at
-// *
-// *     http://www.apache.org/licenses/LICENSE-2.0
-// *
-// * Unless required by applicable law or agreed to in writing, software
-// * distributed under the License is distributed on an "AS IS" BASIS,
-// * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// * See the License for the specific language governing permissions and
-// * limitations under the License.
-// */
-//
-//package org.apache.dubbo.rpc.cluster.router.mesh.util;
-//
-//import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
-//
-//import org.junit.jupiter.api.Test;
-//
-//import static org.junit.jupiter.api.Assertions.assertFalse;
-//import static org.junit.jupiter.api.Assertions.assertTrue;
-//import static org.mockito.Matchers.anyObject;
-//import static org.mockito.Mockito.mock;
-//import static org.mockito.Mockito.times;
-//import static org.mockito.Mockito.verify;
-//
-//
-//class MeshRuleDispatcherTest {
-//
-//    @Test
-//    public void post() {
-//        MeshRuleDispatcher vsDestinationGroupRuleDispatcher = new MeshRuleDispatcher();
-//
-//        VsDestinationGroupRuleListener vsDestinationGroupRuleListener = mock(VsDestinationGroupRuleListener.class);
-//
-//        vsDestinationGroupRuleDispatcher.register(vsDestinationGroupRuleListener);
-//
-//        vsDestinationGroupRuleDispatcher.post(new VsDestinationGroup());
-//        vsDestinationGroupRuleDispatcher.post(new VsDestinationGroup());
-//
-//        verify(vsDestinationGroupRuleListener, times(2)).onRuleChange(anyObject());
-//
-//    }
-//
-//    @Test
-//    public void register() {
-//        MeshRuleDispatcher vsDestinationGroupRuleDispatcher = new MeshRuleDispatcher();
-//
-//        VsDestinationGroupRuleListener vsDestinationGroupRuleListener = mock(VsDestinationGroupRuleListener.class);
-//
-//        assertFalse(vsDestinationGroupRuleDispatcher.register(null));
-//        assertTrue(vsDestinationGroupRuleDispatcher.register(vsDestinationGroupRuleListener));
-//        assertFalse(vsDestinationGroupRuleDispatcher.register(vsDestinationGroupRuleListener));
-//    }
-//
-//    @Test
-//    public void unregister() {
-//
-//        MeshRuleDispatcher vsDestinationGroupRuleDispatcher = new MeshRuleDispatcher();
-//
-//        VsDestinationGroupRuleListener vsDestinationGroupRuleListener = mock(VsDestinationGroupRuleListener.class);
-//        vsDestinationGroupRuleDispatcher.register(vsDestinationGroupRuleListener);
-//
-//        vsDestinationGroupRuleDispatcher.post(new VsDestinationGroup());
-//
-//        vsDestinationGroupRuleDispatcher.unregister(vsDestinationGroupRuleListener);
-//        vsDestinationGroupRuleDispatcher.post(new VsDestinationGroup());
-//
-//        verify(vsDestinationGroupRuleListener, times(1)).onRuleChange(anyObject());
-//    }
-//}
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.dubbo.rpc.cluster.router.mesh.util;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+class MeshRuleDispatcherTest {
+
+    @Test
+    public void post() {
+        MeshRuleDispatcher meshRuleDispatcher = new MeshRuleDispatcher("TestApp");
+
+        Map<String, List<Map<String, Object>>> ruleMap = new HashMap<>();
+        List<Map<String, Object>> type1 = new LinkedList<>();
+        List<Map<String, Object>> type2 = new LinkedList<>();
+        List<Map<String, Object>> type3 = new LinkedList<>();
+        ruleMap.put("Type1", type1);
+        ruleMap.put("Type2", type2);
+        ruleMap.put("Type3", type3);
+
+        VsDestinationGroupRuleListener listener1 = new VsDestinationGroupRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+                Assertions.assertEquals("TestApp", appName);
+                Assertions.assertEquals(System.identityHashCode(type1), System.identityHashCode(rules));
+            }
+
+            @Override
+            public void clearRule(String appName) {
+
+            }
+
+            @Override
+            public String ruleSuffix() {
+                return "Type1";
+            }
+        };
+
+        VsDestinationGroupRuleListener listener2 = new VsDestinationGroupRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+                Assertions.assertEquals("TestApp", appName);
+                Assertions.assertEquals(System.identityHashCode(type2), System.identityHashCode(rules));
+            }
+
+            @Override
+            public void clearRule(String appName) {
+
+            }
+
+            @Override
+            public String ruleSuffix() {
+                return "Type2";
+            }
+        };
+
+        VsDestinationGroupRuleListener listener4 = new VsDestinationGroupRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+                Assertions.fail();
+            }
+
+            @Override
+            public void clearRule(String appName) {
+
+            }
+
+            @Override
+            public String ruleSuffix() {
+                return "Type4";
+            }
+        };
+
+        meshRuleDispatcher.register(listener1);
+        meshRuleDispatcher.register(listener2);
+        meshRuleDispatcher.register(listener4);
+
+        meshRuleDispatcher.post(ruleMap);
+    }
+
+    @Test
+    public void register() {
+        MeshRuleDispatcher meshRuleDispatcher = new MeshRuleDispatcher("TestApp");
+
+        VsDestinationGroupRuleListener listener1 = new VsDestinationGroupRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+            }
+
+            @Override
+            public void clearRule(String appName) {
+
+            }
+
+            @Override
+            public String ruleSuffix() {
+                return "Type1";
+            }
+        };
+
+        meshRuleDispatcher.register(listener1);
+        meshRuleDispatcher.register(listener1);
+
+        Assertions.assertEquals(1, meshRuleDispatcher.getListenerMap().get("Type1").size());
+        Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type1").contains(listener1));
+    }
+
+    @Test
+    public void unregister() {
+        MeshRuleDispatcher meshRuleDispatcher = new MeshRuleDispatcher("TestApp");
+
+        VsDestinationGroupRuleListener listener1 = new VsDestinationGroupRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+            }
+
+            @Override
+            public void clearRule(String appName) {
+
+            }
+
+            @Override
+            public String ruleSuffix() {
+                return "Type1";
+            }
+        };
+
+        VsDestinationGroupRuleListener listener2 = new VsDestinationGroupRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+            }
+
+            @Override
+            public void clearRule(String appName) {
+
+            }
+
+            @Override
+            public String ruleSuffix() {
+                return "Type1";
+            }
+        };
+
+        VsDestinationGroupRuleListener listener3 = new VsDestinationGroupRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+            }
+
+            @Override
+            public void clearRule(String appName) {
+
+            }
+
+            @Override
+            public String ruleSuffix() {
+                return "Type2";
+            }
+        };
+
+        meshRuleDispatcher.register(listener1);
+        meshRuleDispatcher.register(listener2);
+        meshRuleDispatcher.register(listener3);
+
+        Assertions.assertEquals(2, meshRuleDispatcher.getListenerMap().get("Type1").size());
+        Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type1").contains(listener1));
+        Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type1").contains(listener2));
+        Assertions.assertEquals(1, meshRuleDispatcher.getListenerMap().get("Type2").size());
+        Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type2").contains(listener3));
+
+        meshRuleDispatcher.unregister(listener1);
+        Assertions.assertEquals(1, meshRuleDispatcher.getListenerMap().get("Type1").size());
+        Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type1").contains(listener2));
+        Assertions.assertEquals(1, meshRuleDispatcher.getListenerMap().get("Type2").size());
+        Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type2").contains(listener3));
+
+        meshRuleDispatcher.unregister(listener2);
+        Assertions.assertNull(meshRuleDispatcher.getListenerMap().get("Type1"));
+        Assertions.assertEquals(1, meshRuleDispatcher.getListenerMap().get("Type2").size());
+        Assertions.assertTrue(meshRuleDispatcher.getListenerMap().get("Type2").contains(listener3));
+
+        meshRuleDispatcher.unregister(listener3);
+        Assertions.assertNull(meshRuleDispatcher.getListenerMap().get("Type1"));
+        Assertions.assertNull(meshRuleDispatcher.getListenerMap().get("Type2"));
+    }
+}
