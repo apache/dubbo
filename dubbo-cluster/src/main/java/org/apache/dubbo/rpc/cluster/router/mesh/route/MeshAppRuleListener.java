@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleDispatcher;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.VsDestinationGroupRuleListener;
 
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -77,10 +78,11 @@ public class MeshAppRuleListener implements ConfigurationListener {
                     if (ruleType != null) {
                         groupMap.computeIfAbsent(ruleType, (k)-> new LinkedList<>()).add(resultMap);
                     } else {
-                        logger.error("");
+                        logger.error("Unable to get rule type from raw rule. " +
+                            "Probably the metadata.name is absent. App Name: " + appName + " RawRule: " + configInfo);
                     }
                 } else {
-                    logger.error("");
+                    logger.error("Rule format is unacceptable. App Name: " + appName + " RawRule: " + configInfo);
                 }
             }
 
@@ -99,16 +101,16 @@ public class MeshAppRuleListener implements ConfigurationListener {
         if (obj instanceof Map && CollectionUtils.isNotEmptyMap((Map<String, String>) obj)) {
             Map<String, String> metadata = (Map<String, String>) obj;
             String name = metadata.get(NAME_KEY);
-            if (name.equals(appName)) {
+            if (!name.contains(".")) {
                 return STANDARD_ROUTER_KEY;
-            } else if (name.startsWith(appName + ".")) {
-                return name.substring(appName.length() + 1);
+            } else {
+                return name.substring(name.indexOf(".") + 1);
             }
         }
         return null;
     }
 
-    public <T> void register(MeshRuleRouter<T> subscriber) {
+    public <T> void register(VsDestinationGroupRuleListener subscriber) {
         if (ruleMapHolder != null) {
             List<Map<String, Object>> rule = ruleMapHolder.get(subscriber.ruleSuffix());
             if (rule != null) {
@@ -134,5 +136,13 @@ public class MeshAppRuleListener implements ConfigurationListener {
 
     public boolean isEmpty() {
         return meshRuleDispatcher.isEmpty();
+    }
+
+    /**
+     * For ut only
+     */
+    @Deprecated
+    public MeshRuleDispatcher getMeshRuleDispatcher() {
+        return meshRuleDispatcher;
     }
 }

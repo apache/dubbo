@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.DESTINATION_RULE_KEY;
@@ -267,8 +268,11 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     }
 
     @Override
-    public void onRuleChange(String appName, List<Map<String, Object>> rules) {
-        Map<String, VsDestinationGroup> appToVDGroup = new HashMap<>();
+    public synchronized void onRuleChange(String appName, List<Map<String, Object>> rules) {
+        Map<String, VsDestinationGroup> appToVDGroup = new ConcurrentHashMap<>();
+        if (this.meshRuleCache != null) {
+            appToVDGroup.putAll(this.meshRuleCache.getAppToVDGroup());
+        }
         try {
             VsDestinationGroup vsDestinationGroup = new VsDestinationGroup();
             vsDestinationGroup.setAppName(appName);
@@ -282,18 +286,24 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
                     vsDestinationGroup.getVirtualServiceRuleList().add(virtualServiceRule);
                 }
             }
-            appToVDGroup.put(appName, vsDestinationGroup);
+            if (vsDestinationGroup.isValid()) {
+                appToVDGroup.put(appName, vsDestinationGroup);
+            }
         } catch (Throwable t) {
-            logger.error("");
-            appToVDGroup = this.meshRuleCache != null ? this.meshRuleCache.getAppToVDGroup() : null;
+            logger.error("Error occurred when parsing rule component.", t);
         }
 
         computeSubset(appToVDGroup);
     }
 
     @Override
-    public void clearRule(String appName) {
-        computeSubset(null);
+    public synchronized void clearRule(String appName) {
+        Map<String, VsDestinationGroup> appToVDGroup = new ConcurrentHashMap<>();
+        if (this.meshRuleCache != null) {
+            appToVDGroup.putAll(this.meshRuleCache.getAppToVDGroup());
+        }
+        appToVDGroup.remove(appName);
+        computeSubset(appToVDGroup);
     }
 
     protected void computeSubset(Map<String, VsDestinationGroup> vsDestinationGroupMap) {

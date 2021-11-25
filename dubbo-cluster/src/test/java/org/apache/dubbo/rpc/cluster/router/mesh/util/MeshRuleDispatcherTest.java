@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class MeshRuleDispatcherTest {
 
@@ -39,11 +40,13 @@ class MeshRuleDispatcherTest {
         ruleMap.put("Type2", type2);
         ruleMap.put("Type3", type3);
 
+        AtomicInteger count = new AtomicInteger(0);
         VsDestinationGroupRuleListener listener1 = new VsDestinationGroupRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 Assertions.assertEquals("TestApp", appName);
                 Assertions.assertEquals(System.identityHashCode(type1), System.identityHashCode(rules));
+                count.incrementAndGet();
             }
 
             @Override
@@ -62,6 +65,7 @@ class MeshRuleDispatcherTest {
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 Assertions.assertEquals("TestApp", appName);
                 Assertions.assertEquals(System.identityHashCode(type2), System.identityHashCode(rules));
+                count.incrementAndGet();
             }
 
             @Override
@@ -83,7 +87,8 @@ class MeshRuleDispatcherTest {
 
             @Override
             public void clearRule(String appName) {
-
+                Assertions.assertEquals("TestApp", appName);
+                count.incrementAndGet();
             }
 
             @Override
@@ -97,6 +102,8 @@ class MeshRuleDispatcherTest {
         meshRuleDispatcher.register(listener4);
 
         meshRuleDispatcher.post(ruleMap);
+
+        Assertions.assertEquals(3, count.get());
     }
 
     @Test

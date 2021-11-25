@@ -39,15 +39,32 @@ public class MeshRuleDispatcher {
     }
 
     public synchronized void post(Map<String, List<Map<String, Object>>> ruleMap) {
-        for (Map.Entry<String, List<Map<String, Object>>> entry : ruleMap.entrySet()) {
-            String ruleType = entry.getKey();
-            Set<VsDestinationGroupRuleListener> listeners = listenerMap.get(ruleType);
-            if (CollectionUtils.isNotEmpty(listeners)) {
-                for (VsDestinationGroupRuleListener listener : listeners) {
-                    listener.onRuleChange(appName, entry.getValue());
+        if (ruleMap.isEmpty()) {
+            // clear rule
+            for (Map.Entry<String, Set<VsDestinationGroupRuleListener>> entry : listenerMap.entrySet()) {
+                for (VsDestinationGroupRuleListener listener : entry.getValue()) {
+                    listener.clearRule(appName);
                 }
-            } else {
-                logger.warn("Receive rule but none of listener has been registered. Maybe type not matched. Rule Type: " + ruleType);
+            }
+        } else {
+            for (Map.Entry<String, List<Map<String, Object>>> entry : ruleMap.entrySet()) {
+                String ruleType = entry.getKey();
+                Set<VsDestinationGroupRuleListener> listeners = listenerMap.get(ruleType);
+                if (CollectionUtils.isNotEmpty(listeners)) {
+                    for (VsDestinationGroupRuleListener listener : listeners) {
+                        listener.onRuleChange(appName, entry.getValue());
+                    }
+                } else {
+                    logger.warn("Receive rule but none of listener has been registered. Maybe type not matched. Rule Type: " + ruleType);
+                }
+            }
+            // clear rule listener not being notified in this time
+            for (Map.Entry<String, Set<VsDestinationGroupRuleListener>> entry : listenerMap.entrySet()) {
+                if (!ruleMap.containsKey(entry.getKey())) {
+                    for (VsDestinationGroupRuleListener listener : entry.getValue()) {
+                        listener.clearRule(appName);
+                    }
+                }
             }
         }
     }
