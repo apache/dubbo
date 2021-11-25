@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 
@@ -202,11 +203,26 @@ public class ProtocolConfig extends AbstractConfig {
     public ProtocolConfig() {
     }
 
+    public ProtocolConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
     public ProtocolConfig(String name) {
         setName(name);
     }
 
+    public ProtocolConfig(ApplicationModel applicationModel, String name) {
+        super(applicationModel);
+        setName(name);
+    }
+
     public ProtocolConfig(String name, int port) {
+        setName(name);
+        setPort(port);
+    }
+
+    public ProtocolConfig(ApplicationModel applicationModel, String name, int port) {
+        super(applicationModel);
         setName(name);
         setPort(port);
     }

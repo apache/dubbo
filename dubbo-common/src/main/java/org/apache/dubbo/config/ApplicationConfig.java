@@ -198,6 +198,10 @@ public class ApplicationConfig extends AbstractConfig {
     public ApplicationConfig() {
     }
 
+    public ApplicationConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
     public ApplicationConfig(String name) {
         setName(name);
     }

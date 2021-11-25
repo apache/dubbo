@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -169,6 +170,13 @@ public class ProviderConfig extends AbstractServiceConfig {
      * @see ModuleConfig#setBackground(Boolean)
      */
     private Boolean exportBackground;
+
+    public ProviderConfig() {
+    }
+
+    public ProviderConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
 
     @Deprecated
     public void setProtocol(String protocol) {

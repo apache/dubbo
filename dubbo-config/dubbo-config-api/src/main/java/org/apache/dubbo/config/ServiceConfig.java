@@ -41,6 +41,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -138,8 +139,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     public ServiceConfig() {
     }
 
+    public ServiceConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
     public ServiceConfig(Service service) {
         super(service);
+    }
+
+    public ServiceConfig(ModuleModel moduleModel, Service service) {
+        super(moduleModel, service);
     }
 
     @Override
