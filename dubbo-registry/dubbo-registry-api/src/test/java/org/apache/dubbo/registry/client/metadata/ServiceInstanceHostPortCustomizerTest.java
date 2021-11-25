@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.metadata;
+package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -28,8 +29,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static org.mockito.Mockito.doReturn;
@@ -66,16 +65,16 @@ class ServiceInstanceHostPortCustomizerTest {
         // when(applicationModel.getCurrentConfig()).thenReturn(applicationConfig);
         doReturn(applicationConfig).when(applicationModel).getCurrentConfig();
         DefaultServiceInstance serviceInstance1 = new DefaultServiceInstance("without-preferredProtocol", applicationModel);
-        Set<URL> urls = new HashSet<>();
-        urls.add(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService"));
-        when(metadataService.getExportedServiceURLs()).thenReturn(urls);
+        MetadataInfo metadataInfo = new MetadataInfo();
+        metadataInfo.addService(URL.valueOf("tri://127.1.1.1:50052/org.apache.dubbo.demo.GreetingService"));
+        serviceInstance1.setServiceMetadata(metadataInfo);
         serviceInstanceHostPortCustomizer.customize(serviceInstance1, applicationModel);
         Assertions.assertEquals("127.1.1.1", serviceInstance1.getHost());
         Assertions.assertEquals(50052, serviceInstance1.getPort());
 
         // pick the preferredProtocol
         applicationConfig.setProtocol("tri");
-        urls.add(URL.valueOf("dubbo://127.1.2.3:20889/org.apache.dubbo.demo.HelloService"));
+        metadataInfo.addService(URL.valueOf("dubbo://127.1.2.3:20889/org.apache.dubbo.demo.HelloService"));
         serviceInstanceHostPortCustomizer.customize(serviceInstance1, applicationModel);
         Assertions.assertEquals("127.1.1.1", serviceInstance1.getHost());
         Assertions.assertEquals(50052, serviceInstance1.getPort());

@@ -115,9 +115,9 @@ public class NacosServiceDiscoveryTest {
 
     @Test
     public void testDoUnRegister() throws NacosException {
-        DefaultServiceInstance serviceInstance = createServiceInstance(SERVICE_NAME, LOCALHOST, NetUtils.getAvailablePort());
         // register
-        nacosServiceDiscovery.doRegister(serviceInstance);
+        nacosServiceDiscovery.register(URL.valueOf("dubbo://10.0.2.3:20880/DemoService?interface=DemoService"));
+        nacosServiceDiscovery.register();
 
         List<Instance> instances = new ArrayList<>();
         Instance instance1 = new Instance();

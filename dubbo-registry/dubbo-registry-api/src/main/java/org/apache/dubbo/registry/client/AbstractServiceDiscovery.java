@@ -221,6 +221,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         String newRevision = metadataInfo.calAndGetRevision();
         if (!newRevision.equals(existingInstanceRevision)) {
             if (EMPTY_REVISION.equals(newRevision)) {
+                logger.warn("No interface in metadata, will not register/update instance.");
                 return false;
             }
             serviceInstance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());

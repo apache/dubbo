@@ -37,7 +37,6 @@ import java.util.concurrent.CountDownLatch;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.INSTANCE_REVISION_UPDATED_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -92,10 +91,13 @@ public class ZookeeperServiceDiscoveryTest {
         });
 
         discovery.register();
-
         latch.await();
-        
         List<ServiceInstance> serviceInstances = discovery.getInstances(SERVICE_NAME);
+        assertEquals(0, serviceInstances.size());
+
+        discovery.register(URL.valueOf("dubbo://1.1.2.3:20880/DemoService"));
+        discovery.register();
+        serviceInstances = discovery.getInstances(SERVICE_NAME);
 
         DefaultServiceInstance serviceInstance = (DefaultServiceInstance)discovery.getLocalInstance();
         assertTrue(serviceInstances.contains(serviceInstance));
@@ -104,8 +106,8 @@ public class ZookeeperServiceDiscoveryTest {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("message", "Hello,World");
         serviceInstance.setMetadata(metadata);
-        serviceInstance.getExtendParams().put(INSTANCE_REVISION_UPDATED_KEY, "true");
 
+        discovery.register(URL.valueOf("dubbo://1.1.2.3:20880/DemoService1"));
         discovery.update();
 
         serviceInstances = discovery.getInstances(SERVICE_NAME);

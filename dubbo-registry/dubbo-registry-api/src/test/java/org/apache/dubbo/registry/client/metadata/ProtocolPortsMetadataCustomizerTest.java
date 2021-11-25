@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -32,9 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.ENDPOINTS;
 import static org.hamcrest.Matchers.equalTo;
@@ -42,7 +41,6 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.when;
 
 public class ProtocolPortsMetadataCustomizerTest {
     private static final Gson gson = new Gson();
@@ -69,17 +67,13 @@ public class ProtocolPortsMetadataCustomizerTest {
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
         URL triURL = URL.valueOf("tri://30.10.104.63:50332/org.apache.dubbo.demo.GreetingService?" +
             "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=55805&release=&revision=1.0.0&service-name-mapping=true&side=provider&timeout=5000&timestamp=1630229110058&version=1.0.0");
-        Set<URL> urls = new HashSet<>();
-        urls.add(dubboUrl);
-        urls.add(triURL);
+
+        MetadataInfo metadataInfo = new MetadataInfo();
+        metadataInfo.addService(dubboUrl);
+        metadataInfo.addService(triURL);
+        instance.setServiceMetadata(metadataInfo);
 
         mockedMetadataService = Mockito.mock(MetadataService.class);
-
-        mockedApplicationModel = Mockito.mock(ApplicationModel.class);
-        mockedBeanFactory = Mockito.mock(ScopeBeanFactory.class);
-        Mockito.when(mockedApplicationModel.getBeanFactory()).thenReturn(mockedBeanFactory);
-        Mockito.when(mockedBeanFactory.getBean(MetadataService.class)).thenReturn(mockedMetadataService);
-        when(mockedMetadataService.getExportedServiceURLs()).thenReturn(urls);
     }
 
     @AfterEach
@@ -90,7 +84,7 @@ public class ProtocolPortsMetadataCustomizerTest {
     @Test
     public void test() {
         ProtocolPortsMetadataCustomizer customizer = new ProtocolPortsMetadataCustomizer();
-        customizer.customize(instance, mockedApplicationModel);
+        customizer.customize(instance, ApplicationModel.defaultModel());
         String endpoints = instance.getMetadata().get(ENDPOINTS);
         assertNotNull(endpoints);
         List<DefaultServiceInstance.Endpoint> endpointList = gson.fromJson(endpoints, new TypeToken<List<DefaultServiceInstance.Endpoint>>(){}.getType());

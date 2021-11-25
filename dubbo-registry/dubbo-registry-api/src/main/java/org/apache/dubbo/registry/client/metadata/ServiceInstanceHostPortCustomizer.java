@@ -14,19 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.metadata;
+package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 /**
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
@@ -37,16 +40,25 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
 
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
-
         if (serviceInstance.getPort() > 0) {
             return;
         }
 
-        MetadataService metadataService = applicationModel.getBeanFactory().getBean(MetadataService.class);
+        MetadataInfo metadataInfo = ((DefaultServiceInstance)serviceInstance).getServiceMetadata();
+        if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getExportedServiceURLs())) {
+            return;
+        }
 
         String host = null;
         int port = -1;
-        Set<URL> urls = metadataService.getExportedServiceURLs();
+        Set<URL> urls = new HashSet<>();
+        Map<String, SortedSet<URL>> exportedURLS = metadataInfo.getExportedServiceURLs();
+        for (Map.Entry<String, SortedSet<URL>> entry : exportedURLS.entrySet()) {
+            if (entry.getValue() != null) {
+                urls.addAll(entry.getValue());
+            }
+        }
+
         if (CollectionUtils.isNotEmpty(urls)) {
             String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();
             if (preferredProtocol != null) {

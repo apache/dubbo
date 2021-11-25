@@ -68,9 +68,8 @@ public class MetadataInfo implements Serializable {
     private transient final Map<String, String> extendParams;
     private transient final Map<String, String> instanceParams;
     protected transient AtomicBoolean updated = new AtomicBoolean(false);
-    private transient ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
+    private transient ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs;
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs;
-    private transient ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
     private transient ExtensionLoader<MetadataParamsFilter> loader;
 
     public MetadataInfo() {
@@ -111,7 +110,9 @@ public class MetadataInfo implements Serializable {
             return;
         }
         this.services.remove(url.getProtocolServiceKey());
-        removeURL(exportedServiceURLs, url);
+        if (exportedServiceURLs != null) {
+            removeURL(exportedServiceURLs, url);
+        }
 
         updated.compareAndSet(false, true);
     }
@@ -205,11 +206,17 @@ public class MetadataInfo implements Serializable {
         return serviceInfo.toFullString();
     }
 
-    public void addSubscribedURL(URL url) {
+    public synchronized void addSubscribedURL(URL url) {
+        if (subscribedServiceURLs == null) {
+            subscribedServiceURLs = new ConcurrentSkipListMap<>();
+        }
         addURL(subscribedServiceURLs, url);
     }
 
     public boolean removeSubscribedURL(URL url) {
+        if (subscribedServiceURLs == null) {
+            return true;
+        }
         return removeURL(subscribedServiceURLs, url);
     }
 
