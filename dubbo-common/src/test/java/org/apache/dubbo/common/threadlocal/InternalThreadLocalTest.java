@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.common.threadlocal;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
@@ -34,7 +34,7 @@ public class InternalThreadLocalTest {
 
     private static final int GET_COUNT = 1000000;
 
-    @BeforeEach
+    @AfterEach
     public void setup() {
         InternalThreadLocalMap.remove();
     }
