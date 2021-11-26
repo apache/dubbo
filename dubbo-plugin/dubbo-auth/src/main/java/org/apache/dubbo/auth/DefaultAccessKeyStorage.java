@@ -23,13 +23,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 
 /**
- *  The default implemention of {@link AccessKeyStorage}
+ *  The default implementation of {@link AccessKeyStorage}
  */
 public class DefaultAccessKeyStorage implements AccessKeyStorage {
     @Override
     public AccessKeyPair getAccessKey(URL url, Invocation invocation) {
         AccessKeyPair accessKeyPair = new AccessKeyPair();
-        String accessKeyId = url.getParameter(Constants.ACCESS_KEY_ID_KEY);
+        String accessKeyId = url.getParameter(Constants.ACCESS_KEY_ID_KEY, Constants.DEFAULT_ACCESS_KEY_ID);
         String secretAccessKey = url.getParameter(Constants.SECRET_ACCESS_KEY_KEY);
         accessKeyPair.setAccessKey(accessKeyId);
         accessKeyPair.setSecretKey(secretAccessKey);

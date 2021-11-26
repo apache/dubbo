@@ -16,40 +16,41 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstanceMetadataCustomizer;
+import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 
+import java.util.Map;
 import java.util.SortedSet;
 
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.MetadataService.toURLs;
-import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
+import static org.apache.dubbo.metadata.WritableMetadataService.getDefaultExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceParameter;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
 
-/**
- * An {@link ServiceInstanceMetadataCustomizer} to customize the {@link URL urls} of {@link MetadataService}
- * into {@link ServiceInstance#getMetadata() the service instances' metadata}
- *
- * @see ServiceInstanceMetadataCustomizer
- * @since 2.7.5
- */
-public class MetadataServiceURLParamsMetadataCustomizer extends ServiceInstanceMetadataCustomizer {
+public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer {
 
     @Override
-    public String resolveMetadataPropertyName(ServiceInstance serviceInstance) {
+    public void customize(ServiceInstance serviceInstance) {
+
+        Map<String, String> metadata = serviceInstance.getMetadata();
+
+        String propertyName = resolveMetadataPropertyName(serviceInstance);
+        String propertyValue = resolveMetadataPropertyValue(serviceInstance);
+
+        if (!isBlank(propertyName) && !isBlank(propertyValue)) {
+            metadata.put(propertyName, propertyValue);
+        }
+    }
+
+    private String resolveMetadataPropertyName(ServiceInstance serviceInstance) {
         return METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
     }
 
-    @Override
-    public String resolveMetadataPropertyValue(ServiceInstance serviceInstance) {
-
-        String metadataStorageType = getMetadataStorageType(serviceInstance);
-
-        WritableMetadataService writableMetadataService = getExtension(metadataStorageType);
+    private String resolveMetadataPropertyValue(ServiceInstance serviceInstance) {
+        WritableMetadataService writableMetadataService = getDefaultExtension();
 
         String serviceInterface = MetadataService.class.getName();
 

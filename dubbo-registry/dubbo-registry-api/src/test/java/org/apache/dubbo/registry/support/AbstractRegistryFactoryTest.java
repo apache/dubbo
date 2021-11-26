@@ -30,7 +30,6 @@ import java.util.List;
 
 /**
  * AbstractRegistryFactoryTest
- *
  */
 public class AbstractRegistryFactoryTest {
 
@@ -107,10 +106,20 @@ public class AbstractRegistryFactoryTest {
     public void testDestroyAllRegistries() {
         Registry registry1 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":8888?group=xxx"));
         Registry registry2 = registryFactory.getRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":9999?group=yyy"));
+        Registry registry3 = new AbstractRegistry(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":2020?group=yyy")) {
+            @Override
+            public boolean isAvailable() {
+                return true;
+            }
+        };
         Collection<Registry> registries = AbstractRegistryFactory.getRegistries();
         Assertions.assertTrue(registries.contains(registry1));
         Assertions.assertTrue(registries.contains(registry2));
+        registry3.destroy();
+        registries = AbstractRegistryFactory.getRegistries();
+        Assertions.assertFalse(registries.contains(registry3));
         AbstractRegistryFactory.destroyAll();
+        registries = AbstractRegistryFactory.getRegistries();
         Assertions.assertFalse(registries.contains(registry1));
         Assertions.assertFalse(registries.contains(registry2));
     }

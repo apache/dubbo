@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>21</version>
+        <version>23</version>
     </parent>
 
     <groupId>org.apache.dubbo</groupId>
@@ -88,14 +88,14 @@
 
     <properties>
         <!-- Test libs -->
-        <junit_jupiter_version>5.4.0</junit_jupiter_version>
+        <junit_jupiter_version>5.7.1</junit_jupiter_version>
         <hazelcast_version>3.11.1</hazelcast_version>
-        <hamcrest_version>1.3</hamcrest_version>
+        <hamcrest_version>2.2</hamcrest_version>
         <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
         <el_api_version>2.2.4</el_api_version>
         <jaxb_api_version>2.2.7</jaxb_api_version>
         <cglib_version>2.2</cglib_version>
-        <mockito_version>2.23.4</mockito_version>
+        <mockito_version>3.8.0</mockito_version>
         <!-- Build args -->
         <argline>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8
             -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m
@@ -103,6 +103,7 @@
         <skip_maven_deploy>false</skip_maven_deploy>
         <updateReleaseInfo>true</updateReleaseInfo>
         <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
+        <project.build.outputTimestamp>2020-04-01T08:04:00Z</project.build.outputTimestamp>
 
         <profile.name>oss</profile.name>
         <!-- for maven compiler plugin -->
@@ -110,22 +111,23 @@
         <java_target_version>1.8</java_target_version>
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
-        <maven_jar_version>3.0.2</maven_jar_version>
-        <maven_surefire_version>2.22.1</maven_surefire_version>
+        <maven_jar_version>3.2.0</maven_jar_version>
+        <maven_surefire_version>3.0.0-M5</maven_surefire_version>
+        <maven_failsafe_version>3.0.0-M5</maven_failsafe_version>
         <maven_deploy_version>2.8.2</maven_deploy_version>
-        <maven_compiler_version>3.6.0</maven_compiler_version>
-        <maven_source_version>3.0.1</maven_source_version>
-        <maven_javadoc_version>3.0.1</maven_javadoc_version>
-        <maven_jetty_version>9.4.11.v20180605</maven_jetty_version>
-        <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
-        <maven_jacoco_version>0.8.2</maven_jacoco_version>
-        <maven_flatten_version>1.1.0</maven_flatten_version>
-        <maven_enforce_version>3.0.0-M2</maven_enforce_version>
-        <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
+        <maven_compiler_version>3.8.1</maven_compiler_version>
+        <maven_source_version>3.2.1</maven_source_version>
+        <maven_javadoc_version>3.2.0</maven_javadoc_version>
+        <maven_jetty_version>9.4.38.v20210224</maven_jetty_version>
+        <maven_checkstyle_version>3.1.2</maven_checkstyle_version>
+        <maven_jacoco_version>0.8.6</maven_jacoco_version>
+        <maven_flatten_version>1.2.5</maven_flatten_version>
+        <maven_enforce_version>3.0.0-M3</maven_enforce_version>
+        <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.6-SNAPSHOT</revision>
+        <revision>2.7.14-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -149,6 +151,8 @@
         <module>dubbo-configcenter</module>
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
+        <module>dubbo-build-tools</module>
+        <module>dubbo-spring-boot</module>
     </modules>
 
     <dependencyManagement>
@@ -178,13 +182,19 @@
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
+            <artifactId>hamcrest</artifactId>
             <version>${hamcrest_version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <version>${mockito_version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
             <version>${mockito_version}</version>
             <scope>test</scope>
         </dependency>
@@ -250,7 +260,12 @@
                             <dependency>
                                 <groupId>com.puppycrawl.tools</groupId>
                                 <artifactId>checkstyle</artifactId>
-                                <version>8.9</version>
+                                <version>8.41</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.dubbo</groupId>
+                                <artifactId>dubbo-build-tools</artifactId>
+                                <version>1.0.0</version>
                             </dependency>
                         </dependencies>
                         <executions>
@@ -263,7 +278,19 @@
                                     <encoding>UTF-8</encoding>
                                     <consoleOutput>true</consoleOutput>
                                     <failOnViolation>true</failOnViolation>
-                                    <excludes>**/JSONWriter.java</excludes>
+                                    <excludes>
+                                        **/JSONWriter.java,
+                                        **/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java,
+                                        **/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java,
+                                        **/org/apache/dubbo/common/timer/TimerTask.java,
+                                        **/org/apache/dubbo/common/timer/Timer.java,
+                                        **/org/apache/dubbo/common/timer/Timeout.java,
+                                        **/org/apache/dubbo/common/timer/HashedWheelTimer.java,
+                                        **/org/apache/dubbo/common/utils/CIDRUtils.java,
+                                        **/org/apache/dubbo/common/utils/Utf8Utils.java,
+                                        **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
+                                        **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
+                                    </excludes>
                                 </configuration>
                                 <goals>
                                     <goal>check</goal>
@@ -376,7 +403,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>license-maven-plugin</artifactId>
-                        <version>1.20</version>
+                        <version>2.0.0</version>
                         <executions>
                             <execution>
                                 <id>license-check</id>
@@ -467,7 +494,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven_compiler_version}</version>
                 <configuration>
-                    <compilerArgument>-proc:none</compilerArgument>
+                    <compilerArgs>
+                        <compilerArg>-proc:none</compilerArg>
+                        <compilerArg>-parameters</compilerArg>
+                    </compilerArgs>
                     <fork>true</fork>
                     <source>${java_source_version}</source>
                     <target>${java_target_version}</target>
@@ -512,17 +542,16 @@
                             <excludes>
                                 <exclude>**/*.versionsBackup</exclude>
                                 <exclude>**/.idea/</exclude>
+                                <exclude>**/.mvn/</exclude>
                                 <exclude>**/*.iml</exclude>
                                 <exclude>**/*.txt</exclude>
                                 <exclude>**/*.load</exclude>
                                 <exclude>**/*.flex</exclude>
                                 <exclude>**/*.fc</exclude>
-                                <exclude>**/*.javascript</exclude>
-                                <exclude>**/*.properties</exclude>
-                                <exclude>**/*.thrift</exclude>
                                 <exclude>**/*.sh</exclude>
                                 <exclude>**/*.bat</exclude>
                                 <exclude>**/*.md</exclude>
+                                <exclude>**/*.properties</exclude>
                                 <exclude>.git/</exclude>
                                 <exclude>.gitignore</exclude>
                                 <!-- ASF jenkins box puts the Maven repo in our root directory. -->
@@ -556,8 +585,13 @@
                                 <exclude>
                                     **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java
                                 </exclude>
+                                <exclude>
+                                    **/org/apache/dubbo/common/utils/Utf8Utils.java
+                                </exclude>
                                 <exclude>.github/**</exclude>
                                 <exclude>compiler/**</exclude>
+                                <!-- exclude mockito extensions spi files -->
+                                <exclude>**/mockito-extensions/*</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -566,7 +600,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
+                <version>3.0.0-M1</version>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <useReleaseProfile>false</useReleaseProfile>
@@ -608,15 +642,19 @@
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven_surefire_version}</version>
+                    <configuration>
+                        <!-- Activate the use of TCP to transmit events to the plugin to fix Corrupted STDOUT issue -->
+                        <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
+                    </configuration>
                 </plugin>
                 <!-- keep surefire and failsafe in sync -->
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.22.1</version>
+                    <version>${maven_failsafe_version}</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.1.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.ops4j.pax.exam</groupId>
@@ -625,7 +663,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.10</version>
+                    <version>3.1.2</version>
                 </plugin>
                 <plugin>
                     <!-- Do NOT upgrade -->
@@ -635,12 +673,12 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.10</version>
+                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.fusesource.hawtjni</groupId>
                     <artifactId>maven-hawtjni-plugin</artifactId>
-                    <version>1.14</version>
+                    <version>1.15</version>
                 </plugin>
                 <plugin>
                     <groupId>kr.motd.maven</groupId>
@@ -650,7 +688,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>2.4.3</version>
+                    <version>3.2.4</version>
                     <configuration>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                     </configuration>

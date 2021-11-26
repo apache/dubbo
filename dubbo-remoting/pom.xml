@@ -38,7 +38,9 @@
         <module>dubbo-remoting-p2p</module>
         <module>dubbo-remoting-http</module>
         <module>dubbo-remoting-zookeeper</module>
+        <module>dubbo-remoting-zookeeper-curator5</module>
         <module>dubbo-remoting-netty4</module>
         <module>dubbo-remoting-etcd3</module>
+        <module>dubbo-remoting-redis</module>
     </modules>
 </project>

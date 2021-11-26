@@ -1,1 +1,1 @@
-org.apache.dubbo.rpc.protocol.webservice.WebServiceProtocol
+webservice=org.apache.dubbo.rpc.protocol.webservice.WebServiceProtocol

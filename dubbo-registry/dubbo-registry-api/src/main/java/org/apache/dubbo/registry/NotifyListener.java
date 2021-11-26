@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import java.util.List;
 
@@ -40,5 +41,8 @@ public interface NotifyListener {
      * @param urls The list of registered information , is always not empty. The meaning is the same as the return value of {@link org.apache.dubbo.registry.RegistryService#lookup(URL)}.
      */
     void notify(List<URL> urls);
+
+    default void addServiceListener(ServiceInstancesChangedListener instanceListener) {
+    }
 
 }

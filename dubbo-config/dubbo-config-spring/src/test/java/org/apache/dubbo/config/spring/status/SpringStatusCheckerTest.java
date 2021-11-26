@@ -20,14 +20,15 @@ import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -36,6 +37,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class SpringStatusCheckerTest {
     private SpringStatusChecker springStatusChecker;
 
@@ -99,6 +101,6 @@ public class SpringStatusCheckerTest {
         SpringExtensionFactory.addApplicationContext(context);
         SpringStatusChecker checker = new SpringStatusChecker();
         Status status = checker.check();
-        Assert.assertEquals(Status.Level.UNKNOWN, status.getLevel());
+        Assertions.assertEquals(Status.Level.UNKNOWN, status.getLevel());
     }
 }

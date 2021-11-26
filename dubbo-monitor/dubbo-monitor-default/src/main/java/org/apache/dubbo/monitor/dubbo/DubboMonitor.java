@@ -63,17 +63,13 @@ public class DubboMonitor implements Monitor {
 
     private final MonitorService monitorService;
 
-    /**
-     * The time interval for timer <b>scheduledExecutorService</b> to send data
-     */
-    private final long monitorInterval;
-
     private final ConcurrentMap<Statistics, AtomicReference<long[]>> statisticsMap = new ConcurrentHashMap<Statistics, AtomicReference<long[]>>();
 
     public DubboMonitor(Invoker<MonitorService> monitorInvoker, MonitorService monitorService) {
         this.monitorInvoker = monitorInvoker;
         this.monitorService = monitorService;
-        this.monitorInterval = monitorInvoker.getUrl().getPositiveParameter("interval", 60000);
+        // The time interval for timer <b>scheduledExecutorService</b> to send data
+        final long monitorInterval = monitorInvoker.getUrl().getPositiveParameter("interval", 60000);
         // collect timer for collecting statistics data
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {

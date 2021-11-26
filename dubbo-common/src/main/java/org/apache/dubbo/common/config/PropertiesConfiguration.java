@@ -27,11 +27,9 @@ import java.util.Set;
 /**
  * Configuration from system properties and dubbo.properties
  */
-public class PropertiesConfiguration extends AbstractPrefixConfiguration {
+public class PropertiesConfiguration implements Configuration {
 
-    public PropertiesConfiguration(String prefix, String id) {
-        super(prefix, id);
-
+    public PropertiesConfiguration() {
         ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = ExtensionLoader.getExtensionLoader(OrderedPropertiesProvider.class);
         Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
         if (propertiesProviderNames == null || propertiesProviderNames.isEmpty()) {
@@ -57,10 +55,6 @@ public class PropertiesConfiguration extends AbstractPrefixConfiguration {
         }
 
         ConfigUtils.setProperties(properties);
-    }
-
-    public PropertiesConfiguration() {
-        this(null, null);
     }
 
     @Override

@@ -20,6 +20,8 @@ package org.apache.dubbo.rpc;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+
 public class AppResponseTest {
     @Test
     public void testAppResponseWithNormalException() {
@@ -100,4 +102,26 @@ public class AppResponseTest {
 
         return throwable;
     }
+
+    @Test
+    public void testObjectAttachment() {
+        AppResponse response = new AppResponse();
+
+        response.setAttachment("objectKey1", "value1");
+        response.setAttachment("objectKey2", "value2");
+        response.setAttachment("objectKey3", 1); // object
+
+        Assertions.assertEquals("value1", response.getObjectAttachment("objectKey1"));
+        Assertions.assertEquals("value2", response.getAttachment("objectKey2"));
+        Assertions.assertNull(response.getAttachment("objectKey3"));
+        Assertions.assertEquals(1, response.getObjectAttachment("objectKey3"));
+        Assertions.assertEquals(3, response.getObjectAttachments().size());
+
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("mapKey1", 1);
+        map.put("mapKey2", "mapValue2");
+        response.setObjectAttachments(map);
+        Assertions.assertEquals(map, response.getObjectAttachments());
+    }
+
 }

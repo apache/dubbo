@@ -44,7 +44,7 @@ import java.lang.reflect.Method;
  * </ol>
  */
 @Activate(group = CommonConstants.PROVIDER)
-public class ExceptionFilter implements Filter, Filter.Listener2 {
+public class ExceptionFilter implements Filter, Filter.Listener {
     private Logger logger = LoggerFactory.getLogger(ExceptionFilter.class);
 
     @Override
@@ -53,7 +53,7 @@ public class ExceptionFilter implements Filter, Filter.Listener2 {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         if (appResponse.hasException() && GenericService.class != invoker.getInterface()) {
             try {
                 Throwable exception = appResponse.getException();
@@ -65,8 +65,8 @@ public class ExceptionFilter implements Filter, Filter.Listener2 {
                 // directly throw if the exception appears in the signature
                 try {
                     Method method = invoker.getInterface().getMethod(invocation.getMethodName(), invocation.getParameterTypes());
-                    Class<?>[] exceptionClassses = method.getExceptionTypes();
-                    for (Class<?> exceptionClass : exceptionClassses) {
+                    Class<?>[] exceptionClasses = method.getExceptionTypes();
+                    for (Class<?> exceptionClass : exceptionClasses) {
                         if (exception.getClass().equals(exceptionClass)) {
                             return;
                         }

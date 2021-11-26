@@ -24,7 +24,10 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.regex.Pattern;
+import java.net.NetworkInterface;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -35,10 +38,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class NetUtilsTest {
+
     @Test
     public void testGetRandomPort() throws Exception {
         assertThat(NetUtils.getRandomPort(), greaterThanOrEqualTo(30000));
@@ -48,9 +53,9 @@ public class NetUtilsTest {
 
     @Test
     public void testGetAvailablePort() throws Exception {
-        assertThat(NetUtils.getAvailablePort(), greaterThan(0));
+        assertThat(NetUtils.getAvailablePort(), greaterThanOrEqualTo(0));
         assertThat(NetUtils.getAvailablePort(12345), greaterThanOrEqualTo(12345));
-        assertThat(NetUtils.getAvailablePort(-1), greaterThanOrEqualTo(30000));
+        assertThat(NetUtils.getAvailablePort(-1), greaterThanOrEqualTo(0));
     }
 
     @Test
@@ -87,11 +92,14 @@ public class NetUtilsTest {
         assertTrue(NetUtils.isInvalidLocalHost("localhost"));
         assertTrue(NetUtils.isInvalidLocalHost("0.0.0.0"));
         assertTrue(NetUtils.isInvalidLocalHost("127.1.2.3"));
+        assertTrue(NetUtils.isInvalidLocalHost("127.0.0.1"));
+        assertFalse(NetUtils.isInvalidLocalHost("128.0.0.1"));
     }
 
     @Test
     public void testIsValidLocalHost() throws Exception {
         assertTrue(NetUtils.isValidLocalHost("1.2.3.4"));
+        assertTrue(NetUtils.isValidLocalHost("128.0.0.1"));
     }
 
     @Test
@@ -158,7 +166,7 @@ public class NetUtilsTest {
     @Test
     public void testGetIpByHost() throws Exception {
         assertThat(NetUtils.getIpByHost("localhost"), equalTo("127.0.0.1"));
-        assertThat(NetUtils.getIpByHost("dubbo"), equalTo("dubbo"));
+        assertThat(NetUtils.getIpByHost("dubbo.local"), equalTo("dubbo.local"));
     }
 
     @Test
@@ -189,11 +197,15 @@ public class NetUtilsTest {
     public void testIsValidV6Address() {
         String saved = System.getProperty("java.net.preferIPv6Addresses", "false");
         System.setProperty("java.net.preferIPv6Addresses", "true");
+
         InetAddress address = NetUtils.getLocalAddress();
-        if (address instanceof Inet6Address) {
-            assertThat(NetUtils.isPreferIPV6Address(), equalTo(true));
-        }
+        boolean isPreferIPV6Address = NetUtils.isPreferIPV6Address();
+
+        // Restore system property to previous value before executing test
         System.setProperty("java.net.preferIPv6Addresses", saved);
+
+        assumeTrue(address instanceof Inet6Address);
+        assertThat(isPreferIPV6Address, equalTo(true));
     }
 
     /**
@@ -243,7 +255,7 @@ public class NetUtilsTest {
         assertTrue(thrown.getMessage().contains("If you config ip expression that contains '*'"));
 
         thrown = assertThrows(IllegalArgumentException.class, () ->
-                        NetUtils.matchIpRange("234e:0:4567:3d", "234e:0:4567::3d:ff", 90));
+                NetUtils.matchIpRange("234e:0:4567:3d", "234e:0:4567::3d:ff", 90));
         assertTrue(thrown.getMessage().contains("The host is ipv6, but the pattern is not ipv6 pattern"));
 
         thrown =
@@ -282,7 +294,7 @@ public class NetUtilsTest {
     @Test
     public void testMatchIpv4WithIpPort() throws UnknownHostException {
         NumberFormatException thrown =
-                assertThrows(NumberFormatException.class, () ->NetUtils.matchIpExpression("192.168.1.192/26:90", "192.168.1.199", 90));
+                assertThrows(NumberFormatException.class, () -> NetUtils.matchIpExpression("192.168.1.192/26:90", "192.168.1.199", 90));
         assertTrue(thrown instanceof NumberFormatException);
 
         assertTrue(NetUtils.matchIpRange("*.*.*.*:90", "192.168.1.63", 90));
@@ -307,4 +319,84 @@ public class NetUtilsTest {
         assertTrue(NetUtils.isValidLocalHost(NetUtils.getLocalHost()));
         assertFalse(NetUtils.isInvalidLocalHost(NetUtils.getLocalHost()));
     }
+
+    @Test
+    public void testIsMulticastAddress() {
+        assertTrue(NetUtils.isMulticastAddress("224.0.0.1"));
+        assertFalse(NetUtils.isMulticastAddress("127.0.0.1"));
+    }
+
+    @Test
+    public void testFindNetworkInterface(){
+        assertNotNull(NetUtils.findNetworkInterface());
+    }
+
+    @Test
+    public void testIgnoreAllInterfaces(){
+        // store the origin ignored interfaces
+        String originIgnoredInterfaces = this.getIgnoredInterfaces();
+        try{
+            // ignore all interfaces
+            this.setIgnoredInterfaces(".*");
+            assertNull(NetUtils.findNetworkInterface());
+        }finally {
+            // recover the origin ignored interfaces
+            this.setIgnoredInterfaces(originIgnoredInterfaces);
+        }
+    }
+
+    @Test
+    public void testIgnoreGivenInterface(){
+        // store the origin ignored interfaces
+        String originIgnoredInterfaces = this.getIgnoredInterfaces();
+        try{
+            NetworkInterface networkInterface = NetUtils.findNetworkInterface();
+            assertNotNull(networkInterface);
+            // ignore the given network interface's display name
+            this.setIgnoredInterfaces(Pattern.quote(networkInterface.getDisplayName()));
+            NetworkInterface newNetworkInterface = NetUtils.findNetworkInterface();
+            if(newNetworkInterface!=null){
+                assertTrue(!networkInterface.getDisplayName().equals(newNetworkInterface.getDisplayName()));
+            }
+        }finally {
+            // recover the origin ignored interfaces
+            this.setIgnoredInterfaces(originIgnoredInterfaces);
+        }
+    }
+
+    @Test
+    public void testIgnoreGivenPrefixInterfaceName(){
+        // store the origin ignored interfaces
+        String originIgnoredInterfaces = this.getIgnoredInterfaces();
+        try{
+            NetworkInterface networkInterface = NetUtils.findNetworkInterface();
+            assertNotNull(networkInterface);
+            // ignore the given prefix network interface's display name
+            String displayName = networkInterface.getDisplayName();
+            if(StringUtils.isNotEmpty(displayName)&&displayName.length()>2){
+                String ignoredInterfaces = Pattern.quote(displayName.substring(0,1)) + ".*";
+                this.setIgnoredInterfaces(ignoredInterfaces);
+                NetworkInterface newNetworkInterface = NetUtils.findNetworkInterface();
+                if(newNetworkInterface!=null){
+                    assertTrue(!newNetworkInterface.getDisplayName().startsWith(displayName.substring(0,1)));
+                }
+            }
+        }finally {
+            // recover the origin ignored interfaces
+            this.setIgnoredInterfaces(originIgnoredInterfaces);
+        }
+    }
+
+    private String getIgnoredInterfaces(){
+        return System.getProperty(DUBBO_NETWORK_IGNORED_INTERFACE);
+    }
+
+    private void setIgnoredInterfaces(String ignoredInterfaces){
+        if(ignoredInterfaces!=null){
+            System.setProperty(DUBBO_NETWORK_IGNORED_INTERFACE,ignoredInterfaces);
+        }else{
+            System.setProperty(DUBBO_NETWORK_IGNORED_INTERFACE,"");
+        }
+    }
+
 }

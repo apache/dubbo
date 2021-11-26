@@ -18,67 +18,55 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
-import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
+import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
+import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.Collections.emptySortedSet;
-import static java.util.Collections.unmodifiableSortedSet;
-import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMESPACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
-import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
 
 /**
  *
  */
-public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
-
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperDynamicConfiguration.class);
+public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration {
 
     private Executor executor;
     // The final root path would be: /configRootPath/"config"
     private String rootPath;
     private final ZookeeperClient zkClient;
-    private CountDownLatch initializedLatch;
 
     private CacheListener cacheListener;
     private URL url;
-
+    private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
+    private static final int DEFAULT_QUEUE = 10000;
+    private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
+        super(url);
         this.url = url;
-        rootPath = PATH_SEPARATOR + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + "/config";
+        rootPath = getRootPath(url);
 
-        initializedLatch = new CountDownLatch(1);
-        this.cacheListener = new CacheListener(rootPath, initializedLatch);
-        this.executor = Executors.newFixedThreadPool(1, new NamedThreadFactory(this.getClass().getSimpleName(), true));
+        this.cacheListener = new CacheListener(rootPath);
+
+        final String threadName = this.getClass().getSimpleName();
+        this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
+                THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(DEFAULT_QUEUE),
+                new NamedThreadFactory(threadName, true),
+                new AbortPolicyWithReport(threadName, url));
 
         zkClient = zookeeperTransporter.connect(url);
-        zkClient.addDataListener(rootPath, cacheListener, executor);
-        try {
-            // Wait for connection
-            long timeout = url.getParameter("init.timeout", 5000);
-            boolean isCountDown = this.initializedLatch.await(timeout, TimeUnit.MILLISECONDS);
-            if (!isCountDown) {
-                throw new IllegalStateException("Failed to receive INITIALIZED event from zookeeper, pls. check if url "
-                        + url + " is correct");
-            }
-        } catch (InterruptedException e) {
-            logger.warn("Failed to build local cache for config center (zookeeper)." + url);
+        boolean isConnected = zkClient.isConnected();
+        if (!isConnected) {
+            throw new IllegalStateException("Failed to connect with zookeeper, pls check if url " + url + " is correct.");
         }
     }
 
@@ -87,52 +75,56 @@ public class ZookeeperDynamicConfiguration implements DynamicConfiguration {
      * @return
      */
     @Override
-    public Object getInternalProperty(String key) {
-        return zkClient.getContent(key);
-    }
-
-    /**
-     * For service governance, multi group is not supported by this implementation. So group is not used at present.
-     */
-    @Override
-    public void addListener(String key, String group, ConfigurationListener listener) {
-        cacheListener.addListener(getPathKey(group, key), listener);
+    public String getInternalProperty(String key) {
+        return zkClient.getContent(buildPathKey("", key));
     }
 
     @Override
-    public void removeListener(String key, String group, ConfigurationListener listener) {
-        cacheListener.removeListener(getPathKey(group, key), listener);
+    protected void doClose() throws Exception {
+        zkClient.close();
+        if (executor instanceof ExecutorService) {
+            ExecutorService executorService = (ExecutorService) executor;
+            if (!executorService.isShutdown()) {
+                executorService.shutdown();
+            }
+        }
+        cacheListener.removeAllListeners();
     }
 
     @Override
-    public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        return (String) getInternalProperty(getPathKey(group, key));
-    }
-
-    @Override
-    public boolean publishConfig(String key, String group, String content) {
-        String path = getPathKey(group, key);
-        zkClient.create(path, content, false);
+    protected boolean doPublishConfig(String pathKey, String content) throws Exception {
+        zkClient.create(pathKey, content, false);
         return true;
     }
 
     @Override
-    public SortedSet<String> getConfigKeys(String group) {
-        String path = getPathKey(group, EMPTY_STRING);
-        List<String> nodes = zkClient.getChildren(path);
-        return isEmpty(nodes) ? emptySortedSet() : unmodifiableSortedSet(new TreeSet<>(nodes));
+    protected String doGetConfig(String pathKey) throws Exception {
+        return zkClient.getContent(pathKey);
     }
 
-    private String buildPath(String group) {
-        String actualGroup = StringUtils.isEmpty(group) ? DEFAULT_GROUP : group;
-        return rootPath + PATH_SEPARATOR + actualGroup;
+    @Override
+    protected boolean doRemoveConfig(String pathKey) throws Exception {
+        zkClient.delete(pathKey);
+        return true;
     }
 
-    private String getPathKey(String group, String key) {
-        if (StringUtils.isEmpty(key)) {
-            return buildPath(group);
+    @Override
+    protected Collection<String> doGetConfigKeys(String groupPath) {
+        return zkClient.getChildren(groupPath);
+    }
+
+    @Override
+    protected void doAddListener(String pathKey, ConfigurationListener listener) {
+        cacheListener.addListener(pathKey, listener);
+        zkClient.addDataListener(pathKey, cacheListener, executor);
+    }
+
+    @Override
+    protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
+        Set<ConfigurationListener> configurationListeners = cacheListener.getConfigurationListeners(pathKey);
+        if (CollectionUtils.isNotEmpty(configurationListeners)) {
+            zkClient.removeDataListener(pathKey, cacheListener);
         }
-        return buildPath(group) + PATH_SEPARATOR + key;
+        cacheListener.removeListener(pathKey, listener);
     }
-
 }

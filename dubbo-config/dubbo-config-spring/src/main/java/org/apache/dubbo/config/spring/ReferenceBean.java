@@ -83,17 +83,20 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
      * Initializes there Dubbo's Config Beans before @Reference bean autowiring
      */
     private void prepareDubboConfigBeans() {
-        beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class);
-        beansOfTypeIncludingAncestors(applicationContext, ModuleConfig.class);
-        beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class);
-        beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class);
-        beansOfTypeIncludingAncestors(applicationContext, MonitorConfig.class);
-        beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class);
-        beansOfTypeIncludingAncestors(applicationContext, ConsumerConfig.class);
-        beansOfTypeIncludingAncestors(applicationContext, ConfigCenterBean.class);
-        beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class);
-        beansOfTypeIncludingAncestors(applicationContext, MetricsConfig.class);
-        beansOfTypeIncludingAncestors(applicationContext, SslConfig.class);
+        // Refactor 2.7.9
+        final boolean includeNonSingletons = true;
+        final boolean allowEagerInit = false;
+        beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class, includeNonSingletons, allowEagerInit);
+        beansOfTypeIncludingAncestors(applicationContext, ModuleConfig.class, includeNonSingletons, allowEagerInit);
+        beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, includeNonSingletons, allowEagerInit);
+        beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, includeNonSingletons, allowEagerInit);
+        beansOfTypeIncludingAncestors(applicationContext, MonitorConfig.class, includeNonSingletons, allowEagerInit);
+        beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, includeNonSingletons, allowEagerInit);
+        beansOfTypeIncludingAncestors(applicationContext, ConsumerConfig.class, includeNonSingletons, allowEagerInit);
+        beansOfTypeIncludingAncestors(applicationContext, ConfigCenterBean.class, includeNonSingletons, allowEagerInit);
+        beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class, includeNonSingletons, allowEagerInit);
+        beansOfTypeIncludingAncestors(applicationContext, MetricsConfig.class, includeNonSingletons, allowEagerInit);
+        beansOfTypeIncludingAncestors(applicationContext, SslConfig.class, includeNonSingletons, allowEagerInit);
     }
 
     @Override

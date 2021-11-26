@@ -17,6 +17,9 @@
 package org.apache.dubbo.config.annotation;
 
 
+import org.apache.dubbo.common.constants.ClusterRules;
+import org.apache.dubbo.common.constants.LoadbalanceRules;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -24,18 +27,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
 
 /**
  * Service annotation
  *
- * @export
+ * @see DubboService
+ * @since 2.7.0
+ * @deprecated Recommend {@link DubboService} as the substitute
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Inherited
+@Deprecated
 public @interface Service {
 
     /**
@@ -125,9 +130,9 @@ public @interface Service {
     String stub() default "";
 
     /**
-     * Cluster strategy, legal values include: failover, failfast, failsafe, failback, forking
+     * Cluster strategy, you can use {@link org.apache.dubbo.common.constants.ClusterRules#FAIL_FAST} ……
      */
-    String cluster() default "";
+    String cluster() default ClusterRules.EMPTY;
 
     /**
      * How the proxy is generated, legal values include: jdk, javassist
@@ -141,7 +146,7 @@ public @interface Service {
 
     /**
      * The callback instance limit peer connection
-     *
+     * <p>
      * see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
     int callbacks() default org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CALLBACK_INSTANCES;
@@ -174,11 +179,9 @@ public @interface Service {
     int retries() default DEFAULT_RETRIES;
 
     /**
-     * Load balance strategy, legal values include: random, roundrobin, leastactive
-     *
-     * @see org.apache.dubbo.common.constants.CommonConstants#DEFAULT_LOADBALANCE
+     * Load balance strategy, you can use {@link org.apache.dubbo.common.constants.LoadbalanceRules#RANDOM} ……
      */
-    String loadbalance() default DEFAULT_LOADBALANCE;
+    String loadbalance() default LoadbalanceRules.RANDOM;
 
     /**
      * Whether to enable async invocation, default value is false
@@ -271,6 +274,7 @@ public @interface Service {
 
     /**
      * methods support
+     *
      * @return
      */
     Method[] methods() default {};

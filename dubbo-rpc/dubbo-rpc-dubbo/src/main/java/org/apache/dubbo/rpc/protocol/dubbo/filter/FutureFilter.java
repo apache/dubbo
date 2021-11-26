@@ -20,6 +20,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -39,7 +40,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ASYNC_METHOD_INFO;
  * EventFilter
  */
 @Activate(group = CommonConstants.CONSUMER)
-public class FutureFilter implements Filter, Filter.Listener2 {
+public class FutureFilter implements Filter, Filter.Listener {
 
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
 
@@ -52,7 +53,7 @@ public class FutureFilter implements Filter, Filter.Listener2 {
     }
 
     @Override
-    public void onMessage(Result result, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (result.hasException()) {
             fireThrowCallback(invoker, invocation, result.getException());
         } else {
@@ -62,7 +63,7 @@ public class FutureFilter implements Filter, Filter.Listener2 {
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
+        fireThrowCallback(invoker, invocation, t);
     }
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {
@@ -79,10 +80,8 @@ public class FutureFilter implements Filter, Filter.Listener2 {
         if (onInvokeMethod == null || onInvokeInst == null) {
             throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a oninvoke callback config , but no such " + (onInvokeMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
-        if (!onInvokeMethod.isAccessible()) {
-            onInvokeMethod.setAccessible(true);
-        }
 
+        ReflectUtils.makeAccessible(onInvokeMethod);
         Object[] params = invocation.getArguments();
         try {
             onInvokeMethod.invoke(onInvokeInst, params);
@@ -110,9 +109,7 @@ public class FutureFilter implements Filter, Filter.Listener2 {
         if (onReturnMethod == null || onReturnInst == null) {
             throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a onreturn callback config , but no such " + (onReturnMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
-        if (!onReturnMethod.isAccessible()) {
-            onReturnMethod.setAccessible(true);
-        }
+        ReflectUtils.makeAccessible(onReturnMethod);
 
         Object[] args = invocation.getArguments();
         Object[] params;
@@ -155,9 +152,7 @@ public class FutureFilter implements Filter, Filter.Listener2 {
         if (onthrowMethod == null || onthrowInst == null) {
             throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a onthrow callback config , but no such " + (onthrowMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
-        if (!onthrowMethod.isAccessible()) {
-            onthrowMethod.setAccessible(true);
-        }
+        ReflectUtils.makeAccessible(onthrowMethod);
         Class<?>[] rParaTypes = onthrowMethod.getParameterTypes();
         if (rParaTypes[0].isAssignableFrom(exception.getClass())) {
             try {

@@ -38,15 +38,19 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     private static final Logger logger = LoggerFactory.getLogger(AbstractConfiguratorListener.class);
 
     protected List<Configurator> configurators = Collections.emptyList();
-
+    protected GovernanceRuleRepository ruleRepository = ExtensionLoader.getExtensionLoader(
+            GovernanceRuleRepository.class).getDefaultExtension();
 
     protected final void initWith(String key) {
-        GovernanceRuleRepository ruleRepository = ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         ruleRepository.addListener(key, this);
         String rawConfig = ruleRepository.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
         if (!StringUtils.isEmpty(rawConfig)) {
             genConfiguratorsFromRawRule(rawConfig);
         }
+    }
+
+    protected final void stopListen(String key) {
+        ruleRepository.removeListener(key, this);
     }
 
     @Override
@@ -59,6 +63,7 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         if (event.getChangeType().equals(ConfigChangeType.DELETED)) {
             configurators.clear();
         } else {
+            // ADDED or MODIFIED
             if (!genConfiguratorsFromRawRule(event.getContent())) {
                 return;
             }
@@ -68,17 +73,16 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     }
 
     private boolean genConfiguratorsFromRawRule(String rawConfig) {
-        boolean parseSuccess = true;
         try {
             // parseConfigurators will recognize app/service config automatically.
             configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(rawConfig))
                     .orElse(configurators);
         } catch (Exception e) {
-            logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " +
-                    rawConfig, e);
-            parseSuccess = false;
+            logger.warn("Failed to parse raw dynamic config and it will not take effect, the raw config is: "
+                    + rawConfig + ", cause: " + e.getMessage());
+            return false;
         }
-        return parseSuccess;
+        return true;
     }
 
     protected abstract void notifyOverrides();

@@ -58,6 +58,7 @@ public class LoadBalanceBaseTest {
     RpcStatus weightTestRpcStatus1;
     RpcStatus weightTestRpcStatus2;
     RpcStatus weightTestRpcStatus3;
+    RpcStatus weightTestRpcStatus5;
 
     RpcInvocation weightTestInvocation;
 
@@ -140,15 +141,22 @@ public class LoadBalanceBaseTest {
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(0));
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(13));
         Assertions.assertEquals(1, calculateDefaultWarmupWeight(6 * 1000));
-        Assertions.assertEquals(2, calculateDefaultWarmupWeight(12 * 1000));
-        Assertions.assertEquals(10, calculateDefaultWarmupWeight(60 * 1000));
-        Assertions.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000));
-        Assertions.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 23));
-        Assertions.assertEquals(50, calculateDefaultWarmupWeight(5 * 60 * 1000 + 5999));
-        Assertions.assertEquals(51, calculateDefaultWarmupWeight(5 * 60 * 1000 + 6000));
-        Assertions.assertEquals(90, calculateDefaultWarmupWeight(9 * 60 * 1000));
-        Assertions.assertEquals(98, calculateDefaultWarmupWeight(10 * 60 * 1000 - 12 * 1000));
-        Assertions.assertEquals(99, calculateDefaultWarmupWeight(10 * 60 * 1000 - 6 * 1000));
+        Assertions.assertEquals(1, calculateDefaultWarmupWeight(12 * 1000));
+        Assertions.assertEquals(1, calculateDefaultWarmupWeight(60 * 1000));
+        Assertions.assertEquals(4, calculateDefaultWarmupWeight(2* 60 * 1000));
+        Assertions.assertEquals(9, calculateDefaultWarmupWeight(3 * 60 * 1000));
+        Assertions.assertEquals(16, calculateDefaultWarmupWeight(4 * 60 * 1000));
+        Assertions.assertEquals(25, calculateDefaultWarmupWeight(5 * 60 * 1000));
+        Assertions.assertEquals(25, calculateDefaultWarmupWeight(5 * 60 * 1000 + 23));
+        Assertions.assertEquals(26, calculateDefaultWarmupWeight(5 * 60 * 1000 + 5999));
+        Assertions.assertEquals(26, calculateDefaultWarmupWeight(5 * 60 * 1000 + 6000));
+        Assertions.assertEquals(36, calculateDefaultWarmupWeight(6 * 60 * 1000));
+        Assertions.assertEquals(49, calculateDefaultWarmupWeight(7 * 60 * 1000));
+        Assertions.assertEquals(64, calculateDefaultWarmupWeight(8 * 60 * 1000));
+        Assertions.assertEquals(81, calculateDefaultWarmupWeight(9 * 60 * 1000));
+        Assertions.assertEquals(90, calculateDefaultWarmupWeight(10 * 60 * 1000 - 30 * 1000));
+        Assertions.assertEquals(93, calculateDefaultWarmupWeight(10 * 60 * 1000 - 20 * 1000));
+        Assertions.assertEquals(97, calculateDefaultWarmupWeight(10 * 60 * 1000 - 10 * 1000));
         Assertions.assertEquals(100, calculateDefaultWarmupWeight(10 * 60 * 1000));
         Assertions.assertEquals(100, calculateDefaultWarmupWeight(20 * 60 * 1000));
     }
@@ -205,10 +213,13 @@ public class LoadBalanceBaseTest {
     }
 
     protected List<Invoker<LoadBalanceBaseTest>> weightInvokers = new ArrayList<Invoker<LoadBalanceBaseTest>>();
+    protected List<Invoker<LoadBalanceBaseTest>> weightInvokersSR= new ArrayList<Invoker<LoadBalanceBaseTest>>();
+
     protected Invoker<LoadBalanceBaseTest> weightInvoker1;
     protected Invoker<LoadBalanceBaseTest> weightInvoker2;
     protected Invoker<LoadBalanceBaseTest> weightInvoker3;
     protected Invoker<LoadBalanceBaseTest> weightInvokerTmp;
+    protected Invoker<LoadBalanceBaseTest> weightInvoker5;
 
     @BeforeEach
     public void before() throws Exception {
@@ -216,6 +227,7 @@ public class LoadBalanceBaseTest {
         weightInvoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
         weightInvoker3 = mock(Invoker.class, Mockito.withSettings().stubOnly());
         weightInvokerTmp = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        weightInvoker5 = mock(Invoker.class, Mockito.withSettings().stubOnly());
 
         weightTestInvocation = new RpcInvocation();
         weightTestInvocation.setMethodName("test");
@@ -224,6 +236,7 @@ public class LoadBalanceBaseTest {
         URL url2 = URL.valueOf("test2://127.0.0.1:12/DemoService?weight=9&active=0");
         URL url3 = URL.valueOf("test3://127.0.0.1:13/DemoService?weight=6&active=1");
         URL urlTmp = URL.valueOf("test4://127.0.0.1:9999/DemoService?weight=11&active=0");
+        URL url5 = URL.valueOf("test5://127.0.0.1:15/DemoService?weight=15&active=0");
 
         given(weightInvoker1.isAvailable()).willReturn(true);
         given(weightInvoker1.getInterface()).willReturn(LoadBalanceBaseTest.class);
@@ -241,16 +254,32 @@ public class LoadBalanceBaseTest {
         given(weightInvokerTmp.getInterface()).willReturn(LoadBalanceBaseTest.class);
         given(weightInvokerTmp.getUrl()).willReturn(urlTmp);
 
+        given(weightInvoker5.isAvailable()).willReturn(true);
+        given(weightInvoker5.getInterface()).willReturn(LoadBalanceBaseTest.class);
+        given(weightInvoker5.getUrl()).willReturn(url5);
+
         weightInvokers.add(weightInvoker1);
         weightInvokers.add(weightInvoker2);
         weightInvokers.add(weightInvoker3);
 
+        weightInvokersSR.add(weightInvoker1);
+        weightInvokersSR.add(weightInvoker2);
+        weightInvokersSR.add(weightInvoker5);
+
         weightTestRpcStatus1 = RpcStatus.getStatus(weightInvoker1.getUrl(), weightTestInvocation.getMethodName());
         weightTestRpcStatus2 = RpcStatus.getStatus(weightInvoker2.getUrl(), weightTestInvocation.getMethodName());
         weightTestRpcStatus3 = RpcStatus.getStatus(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
+        weightTestRpcStatus5 = RpcStatus.getStatus(weightInvoker5.getUrl(), weightTestInvocation.getMethodName());
+
 
         // weightTestRpcStatus3 active is 1
         RpcStatus.beginCount(weightInvoker3.getUrl(), weightTestInvocation.getMethodName());
+
+        // weightTestRpcStatus5 shortest response time of success calls is bigger than 0
+        // weightTestRpcStatus5 active is 1
+        RpcStatus.beginCount(weightInvoker5.getUrl(), weightTestInvocation.getMethodName());
+        RpcStatus.endCount(weightInvoker5.getUrl(), weightTestInvocation.getMethodName(), 5000L, true);
+        RpcStatus.beginCount(weightInvoker5.getUrl(), weightTestInvocation.getMethodName());
     }
 
     protected Map<Invoker, InvokeResult> getWeightedInvokeResult(int runs, String loadbalanceName) {

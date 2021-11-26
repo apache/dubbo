@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.support.Parameter;
@@ -31,6 +32,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_CONFIGFIL
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_ENABLE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 import static org.apache.dubbo.config.Constants.CONFIG_APP_CONFIGFILE_KEY;
 import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
 
@@ -42,6 +45,7 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     private String protocol;
     private String address;
+    private Integer port;
 
     /* The config center cluster, it's real meaning may very on different Config Center products. */
     private String cluster;
@@ -71,7 +75,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String configFile = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
 
     /* the .properties file under 'configFile' is global shared while .properties under this one is limited only to this application
-    */
+     */
     private String appConfigFile;
 
     /* If the Config Center product you use have some special parameters that is not covered by this class, you can add it to here.
@@ -87,6 +91,10 @@ public class ConfigCenterConfig extends AbstractConfig {
     private Map<String, String> appExternalConfiguration;
 
     public ConfigCenterConfig() {
+    }
+
+    public ConfigCenterConfig(String address) {
+        setAddress(address);
     }
 
     public URL toUrl() {
@@ -138,6 +146,32 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public void setAddress(String address) {
         this.address = address;
+        if (address != null) {
+            try {
+                URL url = URL.valueOf(address);
+
+                // Refactor since 2.7.8
+                updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());
+                updatePropertyIfAbsent(this::getPassword, this::setPassword, url.getPassword());
+                updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
+                updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
+
+                Map<String, String> params = url.getParameters();
+                if (CollectionUtils.isNotEmptyMap(params)) {
+                    params.remove(BACKUP_KEY);
+                }
+                updateParameters(params);
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 
     public String getCluster() {
@@ -240,4 +274,28 @@ public class ConfigCenterConfig extends AbstractConfig {
 
         return address.contains("://") || StringUtils.isNotEmpty(protocol);
     }
+
+    protected void updatePortIfAbsent(Integer value) {
+        if (value != null && value > 0 && port == null) {
+            this.port = value;
+        }
+    }
+
+    protected void updateProtocolIfAbsent(String value) {
+        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(protocol)) {
+            this.protocol = value;
+        }
+    }
+
+    public void updateParameters(Map<String, String> parameters) {
+        if (CollectionUtils.isEmptyMap(parameters)) {
+            return;
+        }
+        if (this.parameters == null) {
+            this.parameters = parameters;
+        } else {
+            this.parameters.putAll(parameters);
+        }
+    }
+
 }

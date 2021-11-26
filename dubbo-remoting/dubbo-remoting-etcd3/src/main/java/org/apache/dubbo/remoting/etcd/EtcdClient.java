@@ -53,7 +53,7 @@ public interface EtcdClient {
     /**
      * save the specified path to the etcd registry.
      * if node disconnect from etcd, it will be deleted
-     * automatically by etcd when sessian timeout.
+     * automatically by etcd when session timeout.
      *
      * @param path the path to be saved
      * @return the lease of current path.
@@ -81,7 +81,7 @@ public interface EtcdClient {
      * register children listener for specified path.
      *
      * @param path     the path to be watched when children is added, delete or update.
-     * @param listener when children is changed , listener will be trigged.
+     * @param listener when children is changed , listener will be triggered.
      * @return direct children directory, contains zero element
      * list if children directory not exists.
      */
@@ -91,7 +91,7 @@ public interface EtcdClient {
      * find watcher of the children listener for specified path.
      *
      * @param path     the path to be watched when children is added, delete or update.
-     * @param listener when children is changed , listener will be trigged.
+     * @param listener when children is changed , listener will be triggered.
      * @return watcher if find else null
      */
     <T> T getChildListener(String path, ChildListener listener);
@@ -100,7 +100,7 @@ public interface EtcdClient {
      * unregister children lister for specified path.
      *
      * @param path     the path to be unwatched .
-     * @param listener when children is changed , lister will be trigged.
+     * @param listener when children is changed , lister will be triggered.
      */
     void removeChildListener(String path, ChildListener listener);
 

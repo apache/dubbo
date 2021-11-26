@@ -25,6 +25,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -55,13 +56,14 @@ public class DubboBootstrapTest {
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
+        ApplicationModel.reset();
         dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
         System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterEach
     public void tearDown() throws IOException {
-
+        ApplicationModel.reset();
     }
 
     @Test
@@ -99,21 +101,25 @@ public class DubboBootstrapTest {
 
     @Test
     public void testLoadRegistries() {
-        System.setProperty("dubbo.registry.address", "addr1");
-        AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
-        // FIXME: now we need to check first, then load
-        interfaceConfig.setApplication(new ApplicationConfig("testLoadRegistries"));
-        interfaceConfig.checkRegistry();
-        List<URL> urls = ConfigValidationUtils.loadRegistries(interfaceConfig, true);
-        Assertions.assertEquals(1, urls.size());
-        URL url = urls.get(0);
-        Assertions.assertEquals("registry", url.getProtocol());
-        Assertions.assertEquals("addr1:9090", url.getAddress());
-        Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
-        Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
-        Assertions.assertTrue(url.getParameters().containsKey("pid"));
-        Assertions.assertTrue(url.getParameters().containsKey("registry"));
-        Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
+        try {
+            System.setProperty("dubbo.registry.address", "addr1");
+            AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
+            // FIXME: now we need to check first, then load
+            interfaceConfig.setApplication(new ApplicationConfig("testLoadRegistries"));
+            interfaceConfig.checkRegistry();
+            List<URL> urls = ConfigValidationUtils.loadRegistries(interfaceConfig, true);
+            Assertions.assertEquals(1, urls.size());
+            URL url = urls.get(0);
+            Assertions.assertEquals("registry", url.getProtocol());
+            Assertions.assertEquals("addr1:9090", url.getAddress());
+            Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
+            Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
+            Assertions.assertTrue(url.getParameters().containsKey("pid"));
+            Assertions.assertTrue(url.getParameters().containsKey("registry"));
+            Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
+        } finally {
+            System.clearProperty("dubbo.registry.address");
+        }
     }
 
 

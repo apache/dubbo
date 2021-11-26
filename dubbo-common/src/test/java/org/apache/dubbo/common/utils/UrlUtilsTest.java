@@ -43,7 +43,12 @@ public class UrlUtilsTest {
 
     @Test
     public void testAddressNull() {
-        assertNull(UrlUtils.parseURL(null, null));
+        String exceptionMessage = "Address is not allowed to be empty.";
+        try {
+            UrlUtils.parseURL(null, null);
+        } catch (IllegalArgumentException illegalArgumentException) {
+            assertEquals(exceptionMessage, illegalArgumentException.getMessage());
+        }
     }
 
     @Test
@@ -133,7 +138,12 @@ public class UrlUtilsTest {
 
     @Test
     public void testParseUrlsAddressNull() {
-        assertNull(UrlUtils.parseURLs(null, null));
+        String exceptionMessage = "Address is not allowed to be empty.";
+        try {
+            UrlUtils.parseURLs(null, null);
+        } catch (IllegalArgumentException illegalArgumentException) {
+            assertEquals(exceptionMessage, illegalArgumentException.getMessage());
+        }
     }
 
     @Test
@@ -334,8 +344,8 @@ public class UrlUtilsTest {
     public void testIsServiceKeyMatch() throws Exception {
         URL url = URL.valueOf("test://127.0.0.1");
         URL pattern = url.addParameter(GROUP_KEY, "test")
-                .addParameter(INTERFACE_KEY, "test")
-                .addParameter(VERSION_KEY, "test");
+            .addParameter(INTERFACE_KEY, "test")
+            .addParameter(VERSION_KEY, "test");
         URL value = pattern;
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
 
@@ -362,5 +372,18 @@ public class UrlUtilsTest {
         assertTrue(UrlUtils.isMatchGlobPattern("*e", "value"));
         assertTrue(UrlUtils.isMatchGlobPattern("v*e", "value"));
         assertTrue(UrlUtils.isMatchGlobPattern("$key", "value", URL.valueOf("dubbo://localhost:8080/Foo?key=v*e")));
+    }
+
+    @Test
+    public void testIsMatchUrlWithDefaultPrefix() {
+        URL url = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?default.version=1.0.0&default.group=test");
+        assertEquals("1.0.0", url.getParameter("version"));
+        assertEquals("1.0.0", url.getParameter("default.version"));
+
+        URL consumerUrl = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?version=1.0.0&group=test");
+        assertTrue(UrlUtils.isMatch(consumerUrl, url));
+
+        URL consumerUrl1 = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?default.version=1.0.0&default.group=test");
+        assertTrue(UrlUtils.isMatch(consumerUrl, url));
     }
 }

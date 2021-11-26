@@ -135,14 +135,28 @@ public class MethodConfig extends AbstractMethodConfig {
 
         this.setReturn(method.isReturn());
 
-        if(!"".equals(method.oninvoke())){
-            this.setOninvoke(method.oninvoke());
+        String split = ".";
+
+        if (!"".equals(method.oninvoke()) && method.oninvoke().lastIndexOf(split) > 0) {
+            int index = method.oninvoke().lastIndexOf(split);
+            String ref = method.oninvoke().substring(0, index);
+            String methodName = method.oninvoke().substring(index + 1);
+            this.setOninvoke(ref);
+            this.setOninvokeMethod(methodName);
         }
-        if(!"".equals(method.onreturn())){
-            this.setOnreturn(method.onreturn());
+        if (!"".equals(method.onreturn()) && method.onreturn().lastIndexOf(split) > 0) {
+            int index = method.onreturn().lastIndexOf(split);
+            String ref = method.onreturn().substring(0, index);
+            String methodName = method.onreturn().substring(index + 1);
+            this.setOnreturn(ref);
+            this.setOnreturnMethod(methodName);
         }
-        if(!"".equals(method.onthrow())){
-            this.setOnthrow(method.onthrow());
+        if (!"".equals(method.onthrow()) && method.onthrow().lastIndexOf(split) > 0) {
+            int index = method.onthrow().lastIndexOf(split);
+            String ref = method.onthrow().substring(0, index);
+            String methodName = method.onthrow().substring(index + 1);
+            this.setOnthrow(ref);
+            this.setOnthrowMethod(methodName);
         }
 
         if (method.arguments() != null && method.arguments().length != 0) {
@@ -169,9 +183,10 @@ public class MethodConfig extends AbstractMethodConfig {
 
     public void setName(String name) {
         this.name = name;
-        if (StringUtils.isEmpty(id)) {
-            id = name;
-        }
+        // FIXME, add id strategy in ConfigManager
+//        if (StringUtils.isEmpty(id)) {
+//            id = name;
+//        }
     }
 
     public Integer getStat() {

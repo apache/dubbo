@@ -120,4 +120,9 @@ public class DemoServiceImpl implements DemoService {
     public CompletableFuture<Map<String, String>> testReturnType5(String str) {
         return null;
     }
+
+    @Override
+    public void $invoke(String s1, String s2) {
+
+    }
 }

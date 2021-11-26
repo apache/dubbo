@@ -79,7 +79,7 @@ public class BaseServiceMetadataIdentifier {
                 + joinParams(PATH_SEPARATOR, params);
     }
 
-    private String toServicePath() {
+    public String toServicePath() {
         if (ANY_VALUE.equals(serviceInterface)) {
             return "";
         }

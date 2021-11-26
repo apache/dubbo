@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
@@ -24,7 +25,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPERATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPARATOR;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 
 /**
  * MetadataReportConfig
@@ -38,18 +42,25 @@ public class MetadataReportConfig extends AbstractConfig {
      * the value is : metadata-report
      */
     private static final String PREFIX_TAG = StringUtils.camelToSplitName(
-            MetadataReportConfig.class.getSimpleName().substring(0, MetadataReportConfig.class.getSimpleName().length() - 6), PROPERTIES_CHAR_SEPERATOR);
+            MetadataReportConfig.class.getSimpleName().substring(0, MetadataReportConfig.class.getSimpleName().length() - 6), PROPERTIES_CHAR_SEPARATOR);
 
-    // Register center address
+    private String protocol;
+
+    // metadata center address
     private String address;
 
-    // Username to login register center
+    /**
+     * Default port for metadata center
+     */
+    private Integer port;
+
+    // Username to login metadata center
     private String username;
 
-    // Password to login register center
+    // Password to login metadata center
     private String password;
 
-    // Request timeout in milliseconds for register center
+    // Request timeout in milliseconds for metadata center
     private Integer timeout;
 
     /**
@@ -64,7 +75,7 @@ public class MetadataReportConfig extends AbstractConfig {
 
     private Integer retryPeriod;
     /**
-     * By default the metadatastore will store full metadata repeatly every day .
+     * By default the metadatastore will store full metadata repeatedly every day .
      */
     private Boolean cycleReport;
 
@@ -78,6 +89,17 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Boolean cluster;
 
+    /**
+     * registry id
+     */
+    private String registry;
+
+    /**
+     * File for saving metadata center dynamic list
+     */
+    private String file;
+
+
     public MetadataReportConfig() {
     }
 
@@ -85,20 +107,33 @@ public class MetadataReportConfig extends AbstractConfig {
         setAddress(address);
     }
 
-    public URL toUrl() {
+    public URL toUrl() throws IllegalArgumentException {
         String address = this.getAddress();
-        if (StringUtils.isEmpty(address)) {
-            return null;
+        if (isEmpty(address)) {
+            throw new IllegalArgumentException("The address of metadata report is invalid.");
         }
         Map<String, String> map = new HashMap<String, String>();
+        URL url = URL.valueOf(address);
+        // Issue : https://github.com/apache/dubbo/issues/6491
+        // Append the parameters from address
+        map.putAll(url.getParameters());
+        // Append or overrides the properties as parameters
         appendParameters(map, this);
-        if (!StringUtils.isEmpty(address)) {
-            URL url = URL.valueOf(address);
-            map.put("metadata", url.getProtocol());
-            return new URL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
-                    url.getPort(), url.getPath(), map);
-        }
-        throw new IllegalArgumentException("The address of metadata report is invalid.");
+        // Normalize the parameters
+        map.putAll(convert(map, null));
+        // put the protocol of URL as the "metadata"
+        map.put("metadata", url.getProtocol());
+        return new URL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
+                url.getPort(), url.getPath(), map);
+
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
     @Parameter(excluded = true)
@@ -108,6 +143,32 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setAddress(String address) {
         this.address = address;
+        if (address != null) {
+            try {
+                URL url = URL.valueOf(address);
+
+                // Refactor since 2.7.8
+                updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());
+                updatePropertyIfAbsent(this::getPassword, this::setPassword, url.getPassword());
+                updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
+                updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
+
+                Map<String, String> params = url.getParameters();
+                if (CollectionUtils.isNotEmptyMap(params)) {
+                    params.remove(BACKUP_KEY);
+                }
+                updateParameters(params);
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 
     public String getUsername() {
@@ -204,5 +265,32 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setCluster(Boolean cluster) {
         this.cluster = cluster;
+    }
+
+    public String getRegistry() {
+        return registry;
+    }
+
+    public void setRegistry(String registry) {
+        this.registry = registry;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
+    }
+
+    public void updateParameters(Map<String, String> parameters) {
+        if (CollectionUtils.isEmptyMap(parameters)) {
+            return;
+        }
+        if (this.parameters == null) {
+            this.parameters = parameters;
+        } else {
+            this.parameters.putAll(parameters);
+        }
     }
 }

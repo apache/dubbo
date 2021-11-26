@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.serialize.hessian;
 
-import com.caucho.hessian.io.Hessian2Output;
 import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.serialize.hessian.dubbo.Hessian2FactoryInitializer;
+
+import com.caucho.hessian.io.Hessian2Output;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,7 +32,7 @@ public class Hessian2ObjectOutput implements ObjectOutput {
 
     public Hessian2ObjectOutput(OutputStream os) {
         output = new Hessian2Output(os);
-        output.setSerializerFactory(Hessian2SerializerFactory.INSTANCE);
+        output.setSerializerFactory(Hessian2FactoryInitializer.getInstance().getSerializerFactory());
     }
 
     @Override

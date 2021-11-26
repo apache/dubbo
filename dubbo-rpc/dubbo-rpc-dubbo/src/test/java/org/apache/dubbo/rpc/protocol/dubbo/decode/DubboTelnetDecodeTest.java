@@ -31,6 +31,7 @@ import org.apache.dubbo.remoting.transport.netty4.NettyBackedChannelBuffer;
 import org.apache.dubbo.remoting.transport.netty4.NettyCodecAdapter;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DecodeableRpcInvocation;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboCodec;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
@@ -38,7 +39,10 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -61,6 +65,17 @@ public class DubboTelnetDecodeTest {
     private static AtomicInteger dubboTelnet = new AtomicInteger(0);
 
     private static AtomicInteger telnetTelnet = new AtomicInteger(0);
+
+    @BeforeAll
+    public static void setup() {
+        ApplicationModel.getServiceRepository().destroy();
+        ApplicationModel.getServiceRepository().registerService(DemoService.class);
+    }
+
+    @AfterAll
+    public static void teardown() {
+        ApplicationModel.getServiceRepository().destroy();
+    }
 
     /**
      * just dubbo request
@@ -247,7 +262,8 @@ public class DubboTelnetDecodeTest {
      *
      * @throws InterruptedException
      */
-    // @Test
+    @Disabled
+    @Test
     public void testTelnetTelnetDecoded() throws InterruptedException {
         ByteBuf firstByteBuf = Unpooled.wrappedBuffer("ls\r".getBytes());
         ByteBuf secondByteBuf = Unpooled.wrappedBuffer("\nls\r\n".getBytes());

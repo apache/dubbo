@@ -35,7 +35,7 @@ public interface GovernanceRuleRepository {
     }
 
 
-    /*
+    /**
      * {@link #removeListener(String, String, ConfigurationListener)}
      *
      * @param key      the key to represent a configuration

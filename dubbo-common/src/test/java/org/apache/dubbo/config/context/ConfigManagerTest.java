@@ -49,7 +49,12 @@ public class ConfigManagerTest {
 
     @BeforeEach
     public void init() {
-        configManager.clear();
+        configManager.destroy();
+    }
+
+    @Test
+    public void testDestroy() {
+        assertTrue(configManager.configsCache.isEmpty());
     }
 
     @Test
@@ -108,7 +113,7 @@ public class ConfigManagerTest {
 
     // Test MonitorConfig correlative methods
     @Test
-    public void tesModuleConfig() {
+    public void testModuleConfig() {
         ModuleConfig config = new ModuleConfig();
         configManager.setModule(config);
         assertTrue(configManager.getModule().isPresent());
@@ -117,7 +122,7 @@ public class ConfigManagerTest {
 
     // Test MetricsConfig correlative methods
     @Test
-    public void tesMetricsConfig() {
+    public void testMetricsConfig() {
         MetricsConfig config = new MetricsConfig();
         configManager.setMetrics(config);
         assertTrue(configManager.getMetrics().isPresent());
@@ -204,5 +209,23 @@ public class ConfigManagerTest {
     @Test
     public void testRefreshAll() {
         configManager.refreshAll();
+    }
+
+    @Test
+    public void testDefaultConfig() {
+        ProviderConfig providerConfig = new ProviderConfig();
+        providerConfig.setDefault(false);
+        assertFalse(ConfigManager.isDefaultConfig(providerConfig));
+
+        ProviderConfig providerConfig1 = new ProviderConfig();
+        assertTrue(ConfigManager.isDefaultConfig(providerConfig1));
+
+        ProviderConfig providerConfig3 = new ProviderConfig();
+        providerConfig.setDefault(true);
+        assertTrue(ConfigManager.isDefaultConfig(providerConfig3));
+
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setDefault(false);
+        assertFalse(ConfigManager.isDefaultConfig(protocolConfig));
     }
 }

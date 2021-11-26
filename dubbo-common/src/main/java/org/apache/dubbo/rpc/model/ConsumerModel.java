@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
@@ -27,14 +28,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * This model is bound to your reference's configuration, for example, group, version or method level configuration.
  */
 public class ConsumerModel {
-    private final String serviceKey;
+    private String serviceKey;
     private final ServiceDescriptor serviceModel;
     private final ReferenceConfigBase<?> referenceConfig;
+    private final Set<String> apps = new TreeSet<>();
 
     private Object proxyObject;
 
@@ -109,6 +112,10 @@ public class ConsumerModel {
         return referenceConfig;
     }
 
+    public Set<String> getApps() {
+        return apps;
+    }
+
     public AsyncMethodInfo getAsyncInfo(String methodName) {
         return methodConfigs.get(methodName);
     }
@@ -128,8 +135,21 @@ public class ConsumerModel {
         this.serviceMetadata = metadata;
     }
 
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+        if (serviceMetadata != null) {
+            serviceMetadata.setServiceKey(serviceKey);
+            serviceMetadata.setGroup(BaseServiceMetadata.groupFromServiceKey(serviceKey));
+        }
+    }
+
     public void initMethodModels() {
-        Class[] interfaceList = serviceMetadata.getTarget().getClass().getInterfaces();
+        Class[] interfaceList = null;
+        if (proxyObject == null) {
+            interfaceList = new Class[]{referenceConfig.getActualInterface()};
+        } else {
+            interfaceList = proxyObject.getClass().getInterfaces();
+        }
         for (Class interfaceClass : interfaceList) {
             for (Method method : interfaceClass.getMethods()) {
                 methodModels.put(method, new ConsumerMethodModel(method));

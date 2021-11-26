@@ -70,7 +70,7 @@ import static org.apache.dubbo.remoting.etcd.Constants.RETRY_PERIOD_KEY;
 import static org.apache.dubbo.remoting.etcd.jetcd.JEtcdClientWrapper.UTF_8;
 
 /**
- * etct3 client.
+ * etcd3 client.
  */
 public class JEtcdClient extends AbstractEtcdClient<JEtcdClient.EtcdWatcher> {
 

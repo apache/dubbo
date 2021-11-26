@@ -18,11 +18,13 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.StringUtils;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
+
 /**
  * 2019-10-10
  */
 public class BaseServiceMetadata {
-    public static final char COLON_SEPERATOR = ':';
+    public static final char COLON_SEPARATOR = ':';
 
     protected String serviceKey;
     protected String serviceInterfaceName;
@@ -31,14 +33,38 @@ public class BaseServiceMetadata {
 
     public static String buildServiceKey(String path, String group, String version) {
         StringBuilder buf = new StringBuilder();
-        if (group != null && group.length() > 0) {
+        if (StringUtils.isNotEmpty(group)) {
             buf.append(group).append("/");
         }
         buf.append(path);
-        if (version != null && version.length() > 0) {
+        if (StringUtils.isNotEmpty(version)) {
             buf.append(":").append(version);
         }
         return buf.toString();
+    }
+
+    public static String versionFromServiceKey(String serviceKey) {
+        int index = serviceKey.indexOf(":");
+        if (index == -1) {
+            return DEFAULT_VERSION;
+        }
+        return serviceKey.substring(index + 1);
+    }
+
+    public static String groupFromServiceKey(String serviceKey) {
+        int index = serviceKey.indexOf("/");
+        if (index == -1) {
+            return null;
+        }
+        return serviceKey.substring(0, index);
+    }
+
+    public static String interfaceFromServiceKey(String serviceKey) {
+        int groupIndex = serviceKey.indexOf("/");
+        int versionIndex = serviceKey.indexOf(":");
+        groupIndex = (groupIndex == -1) ? 0 : groupIndex + 1;
+        versionIndex = (versionIndex == -1) ? serviceKey.length() : versionIndex;
+        return serviceKey.substring(groupIndex, versionIndex);
     }
 
     /**
@@ -48,8 +74,13 @@ public class BaseServiceMetadata {
      */
     public String getDisplayServiceKey() {
         StringBuilder serviceNameBuilder = new StringBuilder();
-        serviceNameBuilder.append(serviceInterfaceName);
-        serviceNameBuilder.append(COLON_SEPERATOR).append(version);
+        if(StringUtils.isNotEmpty(serviceInterfaceName)){
+            serviceNameBuilder.append(serviceInterfaceName);
+        }
+
+        if(StringUtils.isNotEmpty(version)){
+            serviceNameBuilder.append(COLON_SEPARATOR).append(version);
+        }
         return serviceNameBuilder.toString();
     }
 
@@ -60,7 +91,7 @@ public class BaseServiceMetadata {
      * @return
      */
     public static BaseServiceMetadata revertDisplayServiceKey(String displayKey) {
-        String[] eles = StringUtils.split(displayKey, COLON_SEPERATOR);
+        String[] eles = StringUtils.split(displayKey, COLON_SEPARATOR);
         if (eles == null || eles.length < 1 || eles.length > 2) {
             return new BaseServiceMetadata();
         }

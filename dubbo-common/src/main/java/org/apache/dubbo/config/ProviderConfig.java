@@ -55,6 +55,11 @@ public class ProviderConfig extends AbstractServiceConfig {
     private String threadpool;
 
     /**
+     * Thread pool name
+     */
+    private String threadname;
+
+    /**
      * Thread pool size (fixed size)
      */
     private Integer threads;
@@ -63,6 +68,11 @@ public class ProviderConfig extends AbstractServiceConfig {
      * IO thread pool size (fixed size)
      */
     private Integer iothreads;
+
+    /**
+     * Thread pool keepAliveTime, default unit TimeUnit.MILLISECONDS
+     */
+    private Integer alive;
 
     /**
      * Thread pool queue length
@@ -144,24 +154,15 @@ public class ProviderConfig extends AbstractServiceConfig {
      */
     private Integer wait;
 
-    /**
-     * Whether to use the default protocol
-     */
-    private Boolean isDefault;
-
     @Deprecated
     public void setProtocol(String protocol) {
         this.protocols = new ArrayList<>(Arrays.asList(new ProtocolConfig(protocol)));
     }
 
+    @Override
     @Parameter(excluded = true)
     public Boolean isDefault() {
         return isDefault;
-    }
-
-    @Deprecated
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
     }
 
     @Parameter(excluded = true)
@@ -211,6 +212,14 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.threadpool = threadpool;
     }
 
+    public String getThreadname() {
+        return threadname;
+    }
+
+    public void setThreadname(String threadname) {
+        this.threadname = threadname;
+    }
+
     public Integer getThreads() {
         return threads;
     }
@@ -225,6 +234,14 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     public void setIothreads(Integer iothreads) {
         this.iothreads = iothreads;
+    }
+
+    public Integer getAlive() {
+        return alive;
+    }
+
+    public void setAlive(Integer alive) {
+        this.alive = alive;
     }
 
     public Integer getQueues() {
@@ -412,4 +429,35 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.wait = wait;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ProviderConfig{");
+        sb.append("host='").append(host).append('\'');
+        sb.append(", port=").append(port);
+        sb.append(", contextpath='").append(contextpath).append('\'');
+        sb.append(", threadpool='").append(threadpool).append('\'');
+        sb.append(", threadname='").append(threadname).append('\'');
+        sb.append(", threads=").append(threads);
+        sb.append(", iothreads=").append(iothreads);
+        sb.append(", alive=").append(alive);
+        sb.append(", queues=").append(queues);
+        sb.append(", accepts=").append(accepts);
+        sb.append(", codec='").append(codec).append('\'');
+        sb.append(", charset='").append(charset).append('\'');
+        sb.append(", payload=").append(payload);
+        sb.append(", buffer=").append(buffer);
+        sb.append(", transporter='").append(transporter).append('\'');
+        sb.append(", exchanger='").append(exchanger).append('\'');
+        sb.append(", dispatcher='").append(dispatcher).append('\'');
+        sb.append(", networker='").append(networker).append('\'');
+        sb.append(", server='").append(server).append('\'');
+        sb.append(", client='").append(client).append('\'');
+        sb.append(", telnet='").append(telnet).append('\'');
+        sb.append(", prompt='").append(prompt).append('\'');
+        sb.append(", status='").append(status).append('\'');
+        sb.append(", wait=").append(wait).append('\'');
+        sb.append(", isDefault=").append(isDefault);
+        sb.append('}');
+        return sb.toString();
+    }
 }

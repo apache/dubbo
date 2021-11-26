@@ -19,18 +19,11 @@ package org.apache.dubbo.common.config;
 
 /**
  * FIXME: is this really necessary? PropertiesConfiguration should have already covered this:
- * @see PropertiesConfiguration
+ *
  * @See ConfigUtils#getProperty(String)
+ * @see PropertiesConfiguration
  */
-public class SystemConfiguration extends AbstractPrefixConfiguration {
-
-    public SystemConfiguration(String prefix, String id) {
-        super(prefix, id);
-    }
-
-    public SystemConfiguration() {
-        this(null, null);
-    }
+public class SystemConfiguration implements Configuration {
 
     @Override
     public Object getInternalProperty(String key) {

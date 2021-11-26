@@ -43,17 +43,17 @@ public class CtClassBuilder {
 
     private String superClassName = "java.lang.Object";
 
-    private List<String> imports = new ArrayList<>();
+    private final List<String> imports = new ArrayList<>();
 
-    private Map<String, String> fullNames = new HashMap<>();
+    private final Map<String, String> fullNames = new HashMap<>();
 
-    private List<String> ifaces = new ArrayList<>();
+    private final List<String> ifaces = new ArrayList<>();
 
-    private List<String> constructors = new ArrayList<>();
+    private final List<String> constructors = new ArrayList<>();
 
-    private List<String> fields = new ArrayList<>();
+    private final List<String> fields = new ArrayList<>();
 
-    private List<String> methods = new ArrayList<>();
+    private final List<String> methods = new ArrayList<>();
 
     public String getClassName() {
         return className;
@@ -146,7 +146,7 @@ public class CtClassBuilder {
         CtClass ctClass = pool.makeClass(className, pool.get(superClassName));
 
         // add imported packages
-        imports.stream().forEach(pool::importPackage);
+        imports.forEach(pool::importPackage);
 
         // add implemented interfaces
         for (String iface : ifaces) {

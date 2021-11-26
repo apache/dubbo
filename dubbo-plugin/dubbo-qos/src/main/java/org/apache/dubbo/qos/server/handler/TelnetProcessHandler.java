@@ -42,7 +42,7 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
 
         if (StringUtils.isBlank(msg)) {
-            ctx.writeAndFlush(QosProcessHandler.prompt);
+            ctx.writeAndFlush(QosProcessHandler.PROMPT);
         } else {
             CommandContext commandContext = TelnetCommandDecoder.decode(msg);
             commandContext.setRemote(ctx.channel());
@@ -52,15 +52,15 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
                 if (StringUtils.isEquals(QosConstants.CLOSE, result)) {
                     ctx.writeAndFlush(getByeLabel()).addListener(ChannelFutureListener.CLOSE);
                 } else {
-                    ctx.writeAndFlush(result + QosConstants.BR_STR + QosProcessHandler.prompt);
+                    ctx.writeAndFlush(result + QosConstants.BR_STR + QosProcessHandler.PROMPT);
                 }
             } catch (NoSuchCommandException ex) {
                 ctx.writeAndFlush(msg + " :no such command");
-                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.prompt);
+                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);
                 log.error("can not found command " + commandContext, ex);
             } catch (Exception ex) {
                 ctx.writeAndFlush(msg + " :fail to execute commandContext by " + ex.getMessage());
-                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.prompt);
+                ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);
                 log.error("execute commandContext got exception " + commandContext, ex);
             }
         }

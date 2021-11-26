@@ -24,9 +24,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>dubbo-metadata-report-redis</artifactId>
-    <properties>
-        <jedis.version>2.9.0</jedis.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -37,7 +34,6 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>${jedis.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
@@ -45,8 +41,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.kstyrc</groupId>
+            <groupId>com.github.codemonstur</groupId>
             <artifactId>embedded-redis</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

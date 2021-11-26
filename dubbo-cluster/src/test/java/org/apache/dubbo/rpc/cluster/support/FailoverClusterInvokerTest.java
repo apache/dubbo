@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
@@ -68,6 +69,7 @@ public class FailoverClusterInvokerTest {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(FailoverClusterInvokerTest.class);
         invocation.setMethodName("method1");
@@ -142,10 +144,38 @@ public class FailoverClusterInvokerTest {
     }
 
     @Test()
+    public void testInvoke_retryTimes2() {
+        int finalRetries = 1;
+        given(invoker1.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
+        given(invoker1.isAvailable()).willReturn(false);
+        given(invoker1.getUrl()).willReturn(url);
+        given(invoker1.getInterface()).willReturn(FailoverClusterInvokerTest.class);
+
+        given(invoker2.invoke(invocation)).willThrow(new RpcException());
+        given(invoker2.isAvailable()).willReturn(false);
+        given(invoker2.getUrl()).willReturn(url);
+        given(invoker2.getInterface()).willReturn(FailoverClusterInvokerTest.class);
+
+        RpcContext rpcContext = RpcContext.getContext();
+        rpcContext.setAttachment("retries", finalRetries);
+
+        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<FailoverClusterInvokerTest>(dic);
+        try {
+            Result ret = invoker.invoke(invocation);
+            assertSame(result, ret);
+            fail();
+        } catch (RpcException expected) {
+            assertTrue((expected.isTimeout() || expected.getCode() == 0));
+            assertTrue(expected.getMessage().indexOf((finalRetries+1) + " times") > 0);
+        }
+    }
+
+    @Test()
     public void testNoInvoke() {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(null);
         given(dic.getInterface()).willReturn(FailoverClusterInvokerTest.class);
         invocation.setMethodName("method1");

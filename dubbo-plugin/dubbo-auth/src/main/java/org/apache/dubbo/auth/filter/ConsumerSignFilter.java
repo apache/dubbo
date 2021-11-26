@@ -17,7 +17,7 @@
 package org.apache.dubbo.auth.filter;
 
 import org.apache.dubbo.auth.Constants;
-import org.apache.dubbo.auth.spi.AuthenticationHelper;
+import org.apache.dubbo.auth.spi.Authenticator;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
@@ -39,11 +39,11 @@ public class ConsumerSignFilter implements Filter {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         URL url = invoker.getUrl();
-        boolean shouldAuth = url.getParameter(Constants.REFERENCE_AUTH, false);
+        boolean shouldAuth = url.getParameter(Constants.SERVICE_AUTH, false);
         if (shouldAuth) {
-            AuthenticationHelper authenticationHelper = ExtensionLoader.getExtensionLoader(AuthenticationHelper.class)
-                    .getExtension(url.getParameter(Constants.AUTH_HELPER, Constants.DEFAULT_AUTH_HELPER));
-            authenticationHelper.signForRequest(invocation, url);
+            Authenticator authenticator = ExtensionLoader.getExtensionLoader(Authenticator.class)
+                    .getExtension(url.getParameter(Constants.AUTHENTICATOR, Constants.DEFAULT_AUTHENTICATOR));
+            authenticator.sign(invocation, url);
         }
         return invoker.invoke(invocation);
     }

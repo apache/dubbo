@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster.interceptor;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -27,11 +26,10 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 @Activate
 public class ConsumerContextClusterInterceptor implements ClusterInterceptor, ClusterInterceptor.Listener {
 
+    public static final String NAME = "context";
+
     @Override
     public void before(AbstractClusterInvoker<?> invoker, Invocation invocation) {
-        RpcContext.getContext()
-                .setInvocation(invocation)
-                .setLocalAddress(NetUtils.getLocalHost(), 0);
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
@@ -40,12 +38,12 @@ public class ConsumerContextClusterInterceptor implements ClusterInterceptor, Cl
 
     @Override
     public void after(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
-        RpcContext.removeContext();
+        RpcContext.removeContext(true);
     }
 
     @Override
     public void onMessage(Result appResponse, AbstractClusterInvoker<?> invoker, Invocation invocation) {
-        RpcContext.getServerContext().setAttachments(appResponse.getAttachments());
+        RpcContext.getServerContext().setObjectAttachments(appResponse.getObjectAttachments());
     }
 
     @Override

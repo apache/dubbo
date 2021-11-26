@@ -50,6 +50,10 @@ public class ConditionalEventListenerTest {
         eventDispatcher.dispatch(new EchoEvent("Hello,World"));
 
         assertEquals("Hello,World", listener.getSource());
+
+        // fix EventDispatcherTest.testDefaultMethods may contain OnlyHelloWorldEventListener
+        // ( ConditionalEventListenerTest and EventDispatcherTest are running together in one suite case )
+        eventDispatcher.removeAllEventListeners();
     }
 
     static class OnlyHelloWorldEventListener implements ConditionalEventListener<EchoEvent> {

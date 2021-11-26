@@ -61,4 +61,6 @@ public interface DemoService {
 
     CompletableFuture<Map<String, String>> testReturnType5(String str);
 
+    void $invoke(String s1, String s2);
+
 }

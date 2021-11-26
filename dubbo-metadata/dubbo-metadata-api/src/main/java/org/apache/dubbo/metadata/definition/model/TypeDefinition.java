@@ -19,11 +19,14 @@ package org.apache.dubbo.metadata.definition.model;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.apache.dubbo.common.utils.StringUtils.replace;
 
 /**
  * 2015/1/27.
@@ -44,7 +47,52 @@ public class TypeDefinition implements Serializable {
     }
 
     public TypeDefinition(String type) {
-        this.type = type;
+        this.setType(type);
+    }
+
+    /**
+     * Format the {@link String} array presenting Java types
+     *
+     * @param types the strings presenting Java types
+     * @return new String array of Java types after be formatted
+     * @since 2.7.9
+     */
+    public static String[] formatTypes(String[] types) {
+        String[] newTypes = new String[types.length];
+        for (int i = 0; i < types.length; i++) {
+            newTypes[i] = formatType(types[i]);
+        }
+        return newTypes;
+    }
+
+    /**
+     * Format the {@link String} presenting Java type
+     *
+     * @param type the String presenting type
+     * @return new String presenting Java type after be formatted
+     * @since 2.7.9
+     */
+    public static String formatType(String type) {
+        if (isGenericType(type)) {
+            return formatGenericType(type);
+        }
+        return type;
+    }
+
+    /**
+     * Replacing <code>", "</code> to <code>","</code> will not change the semantic of
+     * {@link ParameterizedType#toString()}
+     *
+     * @param type
+     * @return formatted type
+     * @see sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
+     */
+    private static String formatGenericType(String type) {
+        return replace(type, ", ", ",");
+    }
+
+    private static boolean isGenericType(String type) {
+        return type.contains("<") && type.contains(">");
     }
 
     public String get$ref() {
@@ -105,7 +153,7 @@ public class TypeDefinition implements Serializable {
     }
 
     public void setType(String type) {
-        this.type = type;
+        this.type = formatType(type);
     }
 
     public void setTypeBuilderName(String typeBuilderName) {

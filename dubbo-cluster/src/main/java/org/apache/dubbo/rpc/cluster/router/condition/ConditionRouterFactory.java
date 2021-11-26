@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 
 /**
  * ConditionRouterFactory
- *
+ * Load when "override://" is configured {@link ConditionRouter}
  */
 public class ConditionRouterFactory implements RouterFactory {
 

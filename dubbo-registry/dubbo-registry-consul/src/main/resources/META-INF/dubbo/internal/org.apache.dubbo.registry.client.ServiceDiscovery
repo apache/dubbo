@@ -1,1 +1,0 @@
-consul=org.apache.dubbo.registry.consul.ConsulServiceDiscovery

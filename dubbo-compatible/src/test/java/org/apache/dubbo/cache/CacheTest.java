@@ -54,6 +54,11 @@ public class CacheTest {
         }
 
         @Override
+        public String getProtocolServiceKey() {
+            return null;
+        }
+
+        @Override
         public String getMethodName() {
             return null;
         }
@@ -69,17 +74,17 @@ public class CacheTest {
         }
 
         @Override
-        public Map<String, Object> getAttachments() {
+        public Map<String, String> getAttachments() {
             return null;
         }
 
         @Override
-        public Object getAttachment(String key) {
+        public String getAttachment(String key) {
             return null;
         }
 
         @Override
-        public Object getAttachment(String key, Object defaultValue) {
+        public String getAttachment(String key, String defaultValue) {
             return null;
         }
 

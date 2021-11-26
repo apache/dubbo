@@ -64,4 +64,8 @@ public interface ExecutorRepository {
      */
     ExecutorService getSharedExecutor();
 
+    /**
+     * Destroy all executors that are not in shutdown state
+     */
+    void destroyAll();
 }

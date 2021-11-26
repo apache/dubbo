@@ -24,6 +24,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -239,7 +241,7 @@ public class AdaptiveClassCodeGenerator {
     }
 
     /**
-     * generate extName assigment code
+     * generate extName assignment code
      */
     private String generateExtNameAssignment(String[] value, boolean hasInvocation) {
         // TODO: refactor it
@@ -344,6 +346,7 @@ public class AdaptiveClassCodeGenerator {
     private String generateUrlAssignmentIndirectly(Method method) {
         Class<?>[] pts = method.getParameterTypes();
 
+        Map<String, Integer> getterReturnUrl = new HashMap<>();
         // find URL getter method
         for (int i = 0; i < pts.length; ++i) {
             for (Method m : pts[i].getMethods()) {
@@ -353,15 +356,24 @@ public class AdaptiveClassCodeGenerator {
                         && !Modifier.isStatic(m.getModifiers())
                         && m.getParameterTypes().length == 0
                         && m.getReturnType() == URL.class) {
-                    return generateGetUrlNullCheck(i, pts[i], name);
+                    getterReturnUrl.put(name, i);
                 }
             }
         }
 
-        // getter method not found, throw
-        throw new IllegalStateException("Failed to create adaptive class for interface " + type.getName()
-                        + ": not found url parameter or url attribute in parameters of method " + method.getName());
+        if (getterReturnUrl.size() <= 0) {
+            // getter method not found, throw
+            throw new IllegalStateException("Failed to create adaptive class for interface " + type.getName()
+                    + ": not found url parameter or url attribute in parameters of method " + method.getName());
+        }
 
+        Integer index = getterReturnUrl.get("getUrl");
+        if (index != null) {
+            return generateGetUrlNullCheck(index, pts[index], "getUrl");
+        } else {
+            Map.Entry<String, Integer> entry = getterReturnUrl.entrySet().iterator().next();
+            return generateGetUrlNullCheck(entry.getValue(), pts[entry.getValue()], entry.getKey());
+        }
     }
 
     /**

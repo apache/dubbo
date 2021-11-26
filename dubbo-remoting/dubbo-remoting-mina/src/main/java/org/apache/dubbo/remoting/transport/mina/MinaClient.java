@@ -159,7 +159,7 @@ public class MinaClient extends AbstractClient {
 
     @Override
     protected void doClose() throws Throwable {
-        //release mina resouces.
+        //release mina resources.
     }
 
     @Override

@@ -125,9 +125,6 @@ public final class URLBuilder {
     }
 
     public URL build() {
-        if (StringUtils.isEmpty(username) && StringUtils.isNotEmpty(password)) {
-            throw new IllegalArgumentException("Invalid url, password without username!");
-        }
         port = port < 0 ? 0 : port;
         // trim the leading "/"
         int firstNonSlash = 0;
@@ -329,7 +326,9 @@ public final class URLBuilder {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
         }
-        this.parameters.putAll(parameters);
+        for(Map.Entry<String, String> entry : parameters.entrySet()) {
+            addParameterIfAbsent(entry.getKey(), entry.getValue());
+        }
         return this;
     }
 

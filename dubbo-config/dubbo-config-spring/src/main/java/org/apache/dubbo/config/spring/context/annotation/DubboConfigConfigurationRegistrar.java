@@ -17,18 +17,19 @@
 package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
-import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
-import org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.AnnotationMetadata;
 
 import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.registerBeans;
-import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
-import static org.apache.dubbo.config.spring.context.config.NamePropertyDefaultValueDubboConfigBeanCustomizer.BEAN_NAME;
+import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
 
 /**
  * Dubbo {@link AbstractConfig Config} {@link ImportBeanDefinitionRegistrar register}, which order can be configured
@@ -38,7 +39,9 @@ import static org.apache.dubbo.config.spring.context.config.NamePropertyDefaultV
  * @see Ordered
  * @since 2.5.8
  */
-public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRegistrar {
+public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRegistrar, ApplicationContextAware {
+
+    private ConfigurableApplicationContext applicationContext;
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
@@ -55,26 +58,15 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
             registerBeans(registry, DubboConfigConfiguration.Multiple.class);
         }
 
-        // Register DubboConfigAliasPostProcessor
-        registerDubboConfigAliasPostProcessor(registry);
-
-        // Register NamePropertyDefaultValueDubboConfigBeanCustomizer
-        registerDubboConfigBeanCustomizers(registry);
-
+        // Since 2.7.6
+        registerCommonBeans(registry);
     }
 
-    private void registerDubboConfigBeanCustomizers(BeanDefinitionRegistry registry) {
-        registerInfrastructureBean(registry, BEAN_NAME, NamePropertyDefaultValueDubboConfigBeanCustomizer.class);
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        if (!(applicationContext instanceof ConfigurableApplicationContext)) {
+            throw new IllegalArgumentException("The argument of ApplicationContext must be ConfigurableApplicationContext");
+        }
+        this.applicationContext = (ConfigurableApplicationContext) applicationContext;
     }
-
-    /**
-     * Register {@link DubboConfigAliasPostProcessor}
-     *
-     * @param registry {@link BeanDefinitionRegistry}
-     * @since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
-     */
-    private void registerDubboConfigAliasPostProcessor(BeanDefinitionRegistry registry) {
-        registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME, DubboConfigAliasPostProcessor.class);
-    }
-
 }

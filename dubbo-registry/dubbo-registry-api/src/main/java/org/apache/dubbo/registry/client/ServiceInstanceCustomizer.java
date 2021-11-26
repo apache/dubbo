@@ -19,13 +19,10 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.registry.client.event.ServiceInstancePreRegisteredEvent;
-import org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstanceListener;
 
 /**
  * The interface to customize {@link ServiceInstance the service instance} on {@link ServiceInstancePreRegisteredEvent}
  *
- * @see CustomizableServiceInstanceListener
- * @see ServiceInstancePreRegisteredEvent
  * @see ServiceInstance#getMetadata()
  * @since 2.7.5
  */

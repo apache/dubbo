@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -41,13 +42,14 @@ public class PortTelnetHandlerTest {
 
     private static TelnetHandler port = new PortTelnetHandler();
     private static Invoker<DemoService> mockInvoker;
+    private static int availablePort = NetUtils.getAvailablePort();
 
     @SuppressWarnings("unchecked")
     @BeforeAll
     public static void before() {
         mockInvoker = mock(Invoker.class);
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
-        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20887/demo"));
+        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:" + availablePort + "/demo"));
 
         DubboProtocol.getDubboProtocol().export(mockInvoker);
     }
@@ -63,10 +65,10 @@ public class PortTelnetHandlerTest {
      */
     @Test
     public void testListClient() throws Exception {
-        ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
-        ExchangeClient client2 = Exchangers.connect("dubbo://127.0.0.1:20887/demo");
+        ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:" + availablePort + "/demo");
+        ExchangeClient client2 = Exchangers.connect("dubbo://127.0.0.1:" + availablePort + "/demo");
         Thread.sleep(5000);
-        String result = port.telnet(null, "-l 20887");
+        String result = port.telnet(null, "-l " + availablePort + "");
         String client1Addr = client1.getLocalAddress().toString();
         String client2Addr = client2.getLocalAddress().toString();
         System.out.printf("Result: %s %n", result);
@@ -79,13 +81,13 @@ public class PortTelnetHandlerTest {
     @Test
     public void testListDetail() throws RemotingException {
         String result = port.telnet(null, "-l");
-        assertEquals("dubbo://127.0.0.1:20887", result);
+        assertEquals("dubbo://127.0.0.1:" + availablePort + "", result);
     }
 
     @Test
     public void testListAllPort() throws RemotingException {
         String result = port.telnet(null, "");
-        assertEquals("20887", result);
+        assertEquals("" + availablePort + "", result);
     }
 
     @Test

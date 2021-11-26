@@ -30,13 +30,13 @@ import java.io.OutputStream;
  */
 public class FstFactory {
 
-    private static final FstFactory factory = new FstFactory();
+    private static final FstFactory FACTORY = new FstFactory();
 
     private final FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
 
 
     public static FstFactory getDefaultFactory() {
-        return factory;
+        return FACTORY;
     }
 
     public FstFactory() {

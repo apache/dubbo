@@ -75,7 +75,7 @@ public class ApplicationModel {
         return getServiceRepository().lookupReferredService(serviceKey);
     }
 
-    private static final ExtensionLoader<FrameworkExt> loader = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
+    private static final ExtensionLoader<FrameworkExt> LOADER = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
 
     public static void initFrameworkExts() {
         Set<FrameworkExt> exts = ExtensionLoader.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
@@ -85,15 +85,15 @@ public class ApplicationModel {
     }
 
     public static Environment getEnvironment() {
-        return (Environment) loader.getExtension(Environment.NAME);
+        return (Environment) LOADER.getExtension(Environment.NAME);
     }
 
     public static ConfigManager getConfigManager() {
-        return (ConfigManager) loader.getExtension(ConfigManager.NAME);
+        return (ConfigManager) LOADER.getExtension(ConfigManager.NAME);
     }
 
     public static ServiceRepository getServiceRepository() {
-        return (ServiceRepository) loader.getExtension(ServiceRepository.NAME);
+        return (ServiceRepository) LOADER.getExtension(ServiceRepository.NAME);
     }
 
     public static ApplicationConfig getApplicationConfig() {
@@ -112,6 +112,15 @@ public class ApplicationModel {
         return application == null ? getName() : application;
     }
 
+    @Deprecated
+    public static String tryGetApplication() {
+        if (application != null) {
+            return application;
+        }
+        return getConfigManager().getApplication()
+                .map(ApplicationConfig::getName).orElse(null);
+    }
+
     // Currently used by UT.
     @Deprecated
     public static void setApplication(String application) {
@@ -119,6 +128,7 @@ public class ApplicationModel {
     }
 
     // only for unit test
+    @Deprecated
     public static void reset() {
         getServiceRepository().destroy();
         getConfigManager().destroy();

@@ -16,17 +16,7 @@
  */
 package org.apache.dubbo.registry.client.event.listener;
 
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-
 import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-import static java.util.Collections.emptyList;
-import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * {@link ServiceInstancesChangedListener} Test
@@ -38,22 +28,5 @@ public class ServiceInstancesChangedListenerTest {
     @Test
     public void testOnEvent() {
 
-        EventDispatcher eventDispatcher = getDefaultExtension();
-
-        Event event = new ServiceInstancesChangedEvent("test", emptyList());
-
-        AtomicReference<Event> eventRef = new AtomicReference<>();
-
-        eventDispatcher.addEventListener(new ServiceInstancesChangedListener("test") {
-            @Override
-            public void onEvent(ServiceInstancesChangedEvent event) {
-                eventRef.set(event);
-            }
-        });
-
-        // Dispatch a ServiceInstancesChangedEvent
-        eventDispatcher.dispatch(event);
-
-        assertEquals(eventRef.get(), event);
     }
 }

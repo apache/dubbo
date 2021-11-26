@@ -20,12 +20,16 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * The abstract implementation of {@link DynamicConfiguration}
@@ -47,6 +51,20 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
      */
     public static final String THREAD_POOL_KEEP_ALIVE_TIME_PARAM_NAME = PARAM_NAME_PREFIX + "thread-pool.keep-alive-time";
 
+    /**
+     * The parameter name of group for config-center
+     *
+     * @since 2.7.8
+     */
+    public static final String GROUP_PARAM_NAME = PARAM_NAME_PREFIX + GROUP_KEY;
+
+    /**
+     * The parameter name of timeout for config-center
+     *
+     * @since 2.7.8
+     */
+    public static final String TIMEOUT_PARAM_NAME = PARAM_NAME_PREFIX + TIMEOUT_KEY;
+
     public static final int DEFAULT_THREAD_POOL_SIZE = 1;
 
     /**
@@ -64,28 +82,31 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
      */
     private final ThreadPoolExecutor workersThreadPool;
 
-    public AbstractDynamicConfiguration() {
-        this(DEFAULT_THREAD_POOL_PREFIX, DEFAULT_THREAD_POOL_SIZE, DEFAULT_THREAD_POOL_KEEP_ALIVE_TIME);
-    }
+    private final String group;
+
+    private final long timeout;
 
     public AbstractDynamicConfiguration(URL url) {
-        this(getThreadPoolPrefixName(url), getThreadPoolSize(url), getThreadPoolKeepAliveTime(url));
+        this(getThreadPoolPrefixName(url), getThreadPoolSize(url), getThreadPoolKeepAliveTime(url), getGroup(url),
+                getTimeout(url));
     }
 
     public AbstractDynamicConfiguration(String threadPoolPrefixName,
                                         int threadPoolSize,
-                                        long keepAliveTime) {
+                                        long keepAliveTime,
+                                        String group,
+                                        long timeout) {
         this.workersThreadPool = initWorkersThreadPool(threadPoolPrefixName, threadPoolSize, keepAliveTime);
+        this.group = group;
+        this.timeout = timeout;
     }
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-
     }
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
-
     }
 
     @Override
@@ -107,6 +128,29 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
         }
     }
 
+    @Override
+    public boolean removeConfig(String key, String group) {
+        return Boolean.TRUE.equals(execute(() -> doRemoveConfig(key, group), -1L));
+    }
+
+    /**
+     * @return the default group
+     * @since 2.7.8
+     */
+    @Override
+    public String getDefaultGroup() {
+        return getGroup();
+    }
+
+    /**
+     * @return the default timeout
+     * @since 2.7.8
+     */
+    @Override
+    public long getDefaultTimeout() {
+        return getTimeout();
+    }
+
     /**
      * Get the content of configuration in the specified key and group
      *
@@ -123,6 +167,17 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
      * @throws Exception If met with some problems
      */
     protected abstract void doClose() throws Exception;
+
+    /**
+     * Remove the config in the specified key and group
+     *
+     * @param key   the key
+     * @param group the group
+     * @return If successful, return <code>true</code>, or <code>false</code>
+     * @throws Exception
+     * @since 2.7.8
+     */
+    protected abstract boolean doRemoveConfig(String key, String group) throws Exception;
 
     /**
      * Executes the {@link Runnable} with the specified timeout
@@ -181,7 +236,7 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
                                                        int threadPoolSize,
                                                        long keepAliveTime) {
         return new ThreadPoolExecutor(threadPoolSize, threadPoolSize, keepAliveTime,
-                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), new NamedThreadFactory(threadPoolPrefixName));
+                TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), new NamedThreadFactory(threadPoolPrefixName, true));
     }
 
     protected static String getThreadPoolPrefixName(URL url) {
@@ -215,5 +270,37 @@ public abstract class AbstractDynamicConfiguration implements DynamicConfigurati
             return url.getParameter(name, defaultValue);
         }
         return defaultValue;
+    }
+
+
+    protected String getGroup() {
+        return group;
+    }
+
+    protected long getTimeout() {
+        return timeout;
+    }
+
+    /**
+     * Get the group from {@link URL the specified connection URL}
+     *
+     * @param url {@link URL the specified connection URL}
+     * @return non-null
+     * @since 2.7.8
+     */
+    protected static String getGroup(URL url) {
+        String group = getParameter(url, GROUP_PARAM_NAME, null);
+        return StringUtils.isBlank(group) ? getParameter(url, GROUP_KEY, DEFAULT_GROUP) : group;
+    }
+
+    /**
+     * Get the timeout from {@link URL the specified connection URL}
+     *
+     * @param url {@link URL the specified connection URL}
+     * @return non-null
+     * @since 2.7.8
+     */
+    protected static long getTimeout(URL url) {
+        return getParameter(url, TIMEOUT_PARAM_NAME, -1L);
     }
 }
