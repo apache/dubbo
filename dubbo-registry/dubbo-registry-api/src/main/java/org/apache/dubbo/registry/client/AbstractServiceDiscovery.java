@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
@@ -59,11 +58,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.applicationModel = applicationModel;
         MetadataReportInstance metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
         metadataType = metadataReportInstance.getMetadataType();
-        if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataReportInstance.getMetadataType())) {
-            this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
-        } else {
-            this.metadataReport = metadataReportInstance.getNopMetadataReport();
-        }
+//        if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataReportInstance.getMetadataType())) {
+//            this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
+//        } else {
+//            this.metadataReport = metadataReportInstance.getNopMetadataReport();
+//        }
+        this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
+
     }
 
     public AbstractServiceDiscovery(String serviceName, URL registryURL) {

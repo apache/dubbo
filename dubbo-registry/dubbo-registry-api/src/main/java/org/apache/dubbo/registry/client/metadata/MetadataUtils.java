@@ -146,7 +146,7 @@ public class MetadataUtils {
                 logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
             }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                MetadataUtils.getMetadata(instance, metadataReport);
+                metadataInfo = MetadataUtils.getMetadata(instance, metadataReport);
             } else {
                 // change the instance used to communicate to avoid all requests route to the same instance
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);

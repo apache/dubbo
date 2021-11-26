@@ -85,7 +85,7 @@ public class MetaCacheManager implements ScopeModelAware, Disposable {
                 MetadataInfo metadataInfo = JsonUtils.getGson().fromJson(value, MetadataInfo.class);
                 cache.put(key, metadataInfo);
             }
-
+            // executorService can be empty if FileCacheStore fails
             executorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-cache-refresh", true));
             executorService.scheduleWithFixedDelay(new CacheRefreshTask(cacheStore, cache), 10, INTERVAL, TimeUnit.MINUTES);
         } catch (Exception e) {
@@ -125,7 +125,12 @@ public class MetaCacheManager implements ScopeModelAware, Disposable {
     }
 
     public void destroy() {
-        executorService.shutdownNow();
+        if (executorService != null) {
+            executorService.shutdownNow();
+        }
+        if (cacheStore != null) {
+            cacheStore.destroy();
+        }
     }
 
     protected static class CacheRefreshTask implements Runnable {

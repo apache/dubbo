@@ -80,6 +80,7 @@ import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
+import static org.apache.dubbo.metadata.MetadataService.isMetadataService;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -559,7 +560,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 url = exportRemote(url, registryURLs);
-                if (!isGeneric(generic)) {
+                if (!isGeneric(generic) && !isMetadataService(interfaceName)) {
                     ServiceDescriptor descriptor = getScopeModel().getServiceRepository().getService(interfaceName);
                     if (descriptor != null) {
                         MetadataUtils.publishServiceDefinition(getScopeModel().getServiceRepository().getService(interfaceName), getApplicationModel());

@@ -186,4 +186,8 @@ public interface MetadataService {
         return unmodifiableSortedSet(stream.map(URL::toFullString).collect(TreeSet::new, Set::add, Set::addAll));
     }
 
+    static boolean isMetadataService(String interfaceName) {
+        return interfaceName != null && interfaceName.equals(MetadataService.class.getName());
+    }
+
 }

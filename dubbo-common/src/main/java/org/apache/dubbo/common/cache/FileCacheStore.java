@@ -57,7 +57,7 @@ public class FileCacheStore {
     private FileLock directoryLock;
     private File lockFile;
 
-    public FileCacheStore(String basePath, String fileName) throws IOException {
+    public FileCacheStore(String basePath, String fileName) throws IOException, PathNotExclusiveException {
         if (basePath == null) {
             basePath = System.getProperty("user.home") + "/.dubbo/";
         }
@@ -65,7 +65,7 @@ public class FileCacheStore {
         this.fileName = fileName;
 
         this.cacheFile = getFile(fileName, SUFFIX);
-        if (!cacheFile.exists()) {
+        if (cacheFile != null && !cacheFile.exists()) {
             cacheFile.createNewFile();
         }
     }
@@ -95,7 +95,7 @@ public class FileCacheStore {
         return properties;
     }
 
-    public File getFile(String cacheName, String suffix) {
+    public File getFile(String cacheName, String suffix) throws PathNotExclusiveException {
         cacheName = safeName(cacheName);
         if (!cacheName.endsWith(suffix)) {
             cacheName = cacheName + suffix;
@@ -109,7 +109,7 @@ public class FileCacheStore {
      * @param name the file name
      * @return a file object
      */
-    public File getFile(String name) {
+    public File getFile(String name) throws PathNotExclusiveException {
         synchronized (this) {
             File candidate = basePath;
             // ensure cache store path exists
@@ -123,6 +123,7 @@ public class FileCacheStore {
                 logger.warn("Path '" + basePath
                     + "' is already used by an existing Dubbo process.\n"
                     + "Please specify another one explicitly.");
+                throw e;
             }
         }
 
