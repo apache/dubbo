@@ -343,41 +343,6 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.status = status;
     }
 
-    @Override
-    public String getCluster() {
-        return super.getCluster();
-    }
-
-    @Override
-    public Integer getConnections() {
-        return super.getConnections();
-    }
-
-    @Override
-    public Integer getTimeout() {
-        return super.getTimeout();
-    }
-
-    @Override
-    public Integer getRetries() {
-        return super.getRetries();
-    }
-
-    @Override
-    public String getLoadbalance() {
-        return super.getLoadbalance();
-    }
-
-    @Override
-    public Boolean isAsync() {
-        return super.isAsync();
-    }
-
-    @Override
-    public Integer getActives() {
-        return super.getActives();
-    }
-
     public String getTransporter() {
         return transporter;
     }
