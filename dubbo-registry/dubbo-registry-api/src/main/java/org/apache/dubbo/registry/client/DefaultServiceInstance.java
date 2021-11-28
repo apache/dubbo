@@ -24,6 +24,7 @@ import com.alibaba.fastjson.JSON;
 import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -71,6 +72,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     private transient Map<String, String> extendParams;
     private transient List<Endpoint> endpoints;
     private transient Map<String, Object> attributes = new HashMap<>();
+    private transient InstanceAddressURL instanceAddressURL = null;
 
     public DefaultServiceInstance() {
     }
@@ -196,10 +198,10 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     public List<Endpoint> getEndpoints() {
-        if (endpoints != null) {
-            return endpoints;
+        if (endpoints == null) {
+            endpoints = new LinkedList<>(JSON.parseArray(metadata.get(ENDPOINTS), Endpoint.class));
         }
-        return JSON.parseArray(metadata.get(ENDPOINTS), Endpoint.class);
+        return endpoints;
     }
 
     public DefaultServiceInstance copyFrom(Endpoint endpoint) {
@@ -247,11 +249,15 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public void setServiceMetadata(MetadataInfo serviceMetadata) {
         this.serviceMetadata = serviceMetadata;
+        this.instanceAddressURL = null;
     }
 
     @Override
     public InstanceAddressURL toURL() {
-        return new InstanceAddressURL(this, serviceMetadata);
+        if (instanceAddressURL == null) {
+            instanceAddressURL = new InstanceAddressURL(this, serviceMetadata);
+        }
+        return instanceAddressURL;
     }
 
     @Override
