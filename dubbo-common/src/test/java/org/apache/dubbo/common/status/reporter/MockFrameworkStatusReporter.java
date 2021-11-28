@@ -14,29 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.beans;
+package org.apache.dubbo.common.status.reporter;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.common.extension.ExtensionInjector;
-import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Inject scope bean to SPI extension instance
- */
-public class ScopeBeanExtensionInjector implements ExtensionInjector, ScopeModelAware {
-    public static final String NAME = "scopeBean";
-    private ScopeModel scopeModel;
-    private ScopeBeanFactory beanFactory;
+public class MockFrameworkStatusReporter implements FrameworkStatusReporter {
+    Map<String, Object> reportContent = new HashMap<>();
 
     @Override
-    public void setScopeModel(ScopeModel scopeModel) {
-        this.scopeModel = scopeModel;
-        this.beanFactory = scopeModel.getBeanFactory();
+    public void report(String type, Object obj) {
+        reportContent.put(type, obj);
     }
 
-    @Override
-    public <T> T getInstance(Class<T> type, String name) {
-        return beanFactory.getBean(name, type);
+    public Map<String, Object> getReportContent() {
+        return reportContent;
     }
 }
