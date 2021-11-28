@@ -87,7 +87,7 @@ public class GlobalResourcesRepository {
         return executorService;
     }
 
-    synchronized public void destroy() {
+    public synchronized void destroy() {
         if (logger.isInfoEnabled()) {
             logger.info("Destroying global resources ...");
         }
@@ -125,14 +125,24 @@ public class GlobalResourcesRepository {
      * Register a one-off disposable, the disposable is removed automatically on first shutdown.
      * @param disposable
      */
-    synchronized public void registerDisposable(Disposable disposable) {
+    public synchronized void registerDisposable(Disposable disposable) {
         if (!oneoffDisposables.contains(disposable)) {
             oneoffDisposables.add(disposable);
         }
     }
 
-    synchronized public void removeDisposable(Disposable disposable) {
+    public synchronized void removeDisposable(Disposable disposable) {
         this.oneoffDisposables.remove(disposable);
     }
 
+
+    // for test
+    public static List<Disposable> getGlobalReusedDisposables() {
+        return globalReusedDisposables;
+    }
+
+    // for test
+    public List<Disposable> getOneoffDisposables() {
+        return oneoffDisposables;
+    }
 }

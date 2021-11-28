@@ -327,7 +327,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         if (configsMap.isEmpty()) {
             return null;
         }
-        // try find config by name
+        // try to find config by name
         if (ReflectUtils.hasMethod(cls, CONFIG_NAME_READ_METHOD)) {
             List<C> list = configsMap.values().stream()
                 .filter(cfg -> name.equals(getConfigName(cfg)))
@@ -344,7 +344,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     private <C extends AbstractConfig> String getConfigName(C config) {
         try {
-            return (String) ReflectUtils.getProperty(config, CONFIG_NAME_READ_METHOD);
+            return ReflectUtils.getProperty(config, CONFIG_NAME_READ_METHOD);
         } catch (Exception e) {
             return null;
         }
@@ -463,7 +463,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         Set<String> configIds = this.getConfigIdsFromProps(cls);
         configIds.forEach(id -> {
             if (!this.getConfig(cls, id).isPresent()) {
-                T config = null;
+                T config;
                 try {
                     config = createConfig(cls, scopeModel);
                     config.setId(id);
@@ -500,7 +500,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             // load single config
             List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
             if (ConfigurationUtils.hasSubProperties(configurationMaps, AbstractConfig.getTypePrefix(cls))) {
-                T config = null;
+                T config;
                 try {
                     config = createConfig(cls, scopeModel);
                     config.refresh();
@@ -560,7 +560,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             throw new IllegalStateException("Add default config failed: " + configType.getSimpleName(), e);
         }
 
-        //validate configs
+        // validate configs
         Collection<T> configs = this.getConfigs(configType);
         if (getConfigValidator() != null) {
             for (T config : configs) {
