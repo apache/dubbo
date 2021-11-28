@@ -25,7 +25,10 @@ import org.eclipse.jetty.util.log.Logger;
  */
 public class JettyLoggerAdapter extends AbstractLogger {
     protected String name;
+
     private final org.apache.dubbo.common.logger.Logger logger;
+
+    private static boolean debugEnabled = false;
 
     public JettyLoggerAdapter(){
         this("org.apache.dubbo.remoting.http.jetty");
@@ -94,52 +97,48 @@ public class JettyLoggerAdapter extends AbstractLogger {
 
     @Override
     public boolean isDebugEnabled() {
-        return logger.isDebugEnabled();
+        return debugEnabled;
     }
 
     @Override
     public void setDebugEnabled(boolean enabled) {
-        logger.warn("setDebugEnabled not implemented");
+        debugEnabled = enabled;
     }
 
     @Override
     public void debug(String msg, Object... objects) {
-        if (logger.isDebugEnabled()){
+        if (debugEnabled && logger.isDebugEnabled()){
             logger.debug(this.format(msg, objects));
         }
     }
 
     @Override
     public void debug(Throwable throwable) {
-        if (logger.isDebugEnabled()){
+        if (debugEnabled && logger.isDebugEnabled()){
             logger.debug(throwable);
         }
     }
 
     @Override
     public void debug(String msg, Throwable throwable) {
-        if (logger.isDebugEnabled()){
+        if (debugEnabled && logger.isDebugEnabled()){
             logger.debug(msg, throwable);
         }
     }
 
     @Override
     public void ignore(Throwable throwable) {
-        if (logger.isDebugEnabled()){
-            logger.debug("IGNORED EXCEPTION ", throwable);
+        if (logger.isWarnEnabled()){
+            logger.warn("IGNORED EXCEPTION ", throwable);
         }
     }
 
     private String format(String msg, Object... args) {
-        msg = String.valueOf(msg);
+        msg = String.valueOf(msg); // Avoids NPE
         String braces = "{}";
         StringBuilder builder = new StringBuilder();
         int start = 0;
-        Object[] var6 = args;
-        int var7 = args.length;
-
-        for(int var8 = 0; var8 < var7; ++var8) {
-            Object arg = var6[var8];
+        for (Object arg : args) {
             int bracesIndex = msg.indexOf(braces, start);
             if (bracesIndex < 0) {
                 builder.append(msg.substring(start));
@@ -152,7 +151,6 @@ public class JettyLoggerAdapter extends AbstractLogger {
                 start = bracesIndex + braces.length();
             }
         }
-
         builder.append(msg.substring(start));
         return builder.toString();
     }
