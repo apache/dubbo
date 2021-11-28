@@ -143,7 +143,10 @@ public class ServiceInstancesChangedListener {
             MetadataInfo metadata = getRemoteMetadata(revision, localServiceToRevisions, instance);
             // update metadata into each instance, in case new instance created.
             for (ServiceInstance tmpInstance : subInstances) {
-                ((DefaultServiceInstance) tmpInstance).setServiceMetadata(metadata);
+                MetadataInfo originMetadata = ((DefaultServiceInstance) tmpInstance).getServiceMetadata();
+                if (originMetadata == null || !Objects.equals(originMetadata.getRevision(), metadata.getRevision())) {
+                    ((DefaultServiceInstance) tmpInstance).setServiceMetadata(metadata);
+                }
             }
 //            ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
             newRevisionToMetadata.putIfAbsent(revision, metadata);
