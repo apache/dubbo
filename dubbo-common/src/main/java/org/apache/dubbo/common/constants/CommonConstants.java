@@ -436,6 +436,8 @@ public interface CommonConstants {
 
     String DEFAULT_VERSION = "0.0.0";
 
+    String ROUTER_KEY = "router";
+
     String EXPORT_ASYNC_KEY = "export-async";
 
     String REFER_ASYNC_KEY = "refer-async";

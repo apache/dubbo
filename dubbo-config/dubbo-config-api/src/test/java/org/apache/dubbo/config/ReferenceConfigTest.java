@@ -724,8 +724,6 @@ public class ReferenceConfigTest {
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress(zkUrl1);
-        ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("injvm");
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
         rc.setRegistry(registry);
@@ -830,8 +828,8 @@ public class ReferenceConfigTest {
 
         metaData = config.getMetaData();
         Assertions.assertEquals(2, metaData.size());
-        Assertions.assertEquals("" + consumerConfig.getActives(), metaData.get("actives"));
-        Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
+        Assertions.assertEquals(String.valueOf(consumerConfig.getActives()), metaData.get("actives"));
+        Assertions.assertEquals(String.valueOf(config.isAsync()), metaData.get("async"));
 
     }
 
