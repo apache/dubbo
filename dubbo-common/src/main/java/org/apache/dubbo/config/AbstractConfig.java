@@ -60,6 +60,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
+import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
 import static org.apache.dubbo.config.Constants.PARAMETERS;
 
 /**
@@ -266,7 +267,7 @@ public abstract class AbstractConfig implements Serializable {
 
     private static void invokeSetParameters(Class c, Object o, Map map) {
         try {
-            Method method = MethodUtils.findMethod(c, "setParameters", new Class[]{Map.class});
+            Method method = findMethodByMethodSignature(c, "setParameters", new String[]{Map.class.getName()});
             if (method != null && isParametersSetter(method)) {
                 method.invoke(o, map);
             }
@@ -278,7 +279,7 @@ public abstract class AbstractConfig implements Serializable {
     private static Map<String, String> invokeGetParameters(Class c, Object o) {
         try {
 
-            Method method = MethodUtils.findMethod(c, "getParameters", null);
+            Method method = findMethodByMethodSignature(c, "getParameters", null);
             if (method != null && isParametersGetter(method)) {
                 return (Map<String, String>) method.invoke(o);
             }
