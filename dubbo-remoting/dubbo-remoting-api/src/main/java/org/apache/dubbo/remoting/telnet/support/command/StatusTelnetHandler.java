@@ -23,7 +23,6 @@ import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.status.support.StatusUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
