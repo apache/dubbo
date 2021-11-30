@@ -33,22 +33,22 @@ import org.junit.jupiter.api.Test;
  */
 class ServiceInstanceHostPortCustomizerTest {
     private static ServiceInstanceHostPortCustomizer serviceInstanceHostPortCustomizer;
-    
+    private static ApplicationModel applicationModel;
+
     @BeforeAll
     public static void setUp() {
+        applicationModel = new ApplicationModel(new FrameworkModel());
+        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("service-preferredProtocol"));
         serviceInstanceHostPortCustomizer = new ServiceInstanceHostPortCustomizer();
     }
 
     @AfterAll
     public static void clearUp() {
-        ApplicationModel.reset();
+        applicationModel.destroy();
     }
     
     @Test
     void customizePreferredProtocol() {
-        ApplicationModel applicationModel= new ApplicationModel(new FrameworkModel());
-        applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("service-preferredProtocol"));
-        
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(applicationModel);
         
         // Only have tri protocol
@@ -68,10 +68,20 @@ class ServiceInstanceHostPortCustomizerTest {
             URL.valueOf("dubbo://127.1.2.3:20889/org.apache.dubbo.demo.HelloService")
         );
         
-        // pick the preferredProtocol
+        // pick the preferredProtocol, but not found, so trigger the fallback strategy
+        ApplicationConfig applicationConfig = applicationModel.getApplicationConfigManager().getApplication().get();
+        applicationConfig.setProtocol("not-exist-protocol");
         ServiceInstance serviceInstance2 = new DefaultServiceInstance("with-preferredProtocol", applicationModel);
         serviceInstanceHostPortCustomizer.customize(serviceInstance2);
         Assertions.assertEquals("127.1.2.3", serviceInstance2.getHost());
         Assertions.assertEquals(20889, serviceInstance2.getPort());
+
+        // pick the preferredProtocol(tri)
+        applicationConfig = applicationModel.getApplicationConfigManager().getApplication().get();
+        applicationConfig.setProtocol("tri");
+        ServiceInstance serviceInstance3 = new DefaultServiceInstance("with-preferredProtocol", applicationModel);
+        serviceInstanceHostPortCustomizer.customize(serviceInstance3);
+        Assertions.assertEquals("127.1.1.1", serviceInstance3.getHost());
+        Assertions.assertEquals(50052, serviceInstance3.getPort());
     }
 }
