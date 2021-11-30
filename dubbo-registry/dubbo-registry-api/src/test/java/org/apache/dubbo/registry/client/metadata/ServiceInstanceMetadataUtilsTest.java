@@ -185,7 +185,7 @@ public class ServiceInstanceMetadataUtilsTest {
         writableMetadataService.getMetadataInfos().get(DEFAULT_KEY).addService(new MetadataInfo.ServiceInfo(url2));
         ServiceInstanceMetadataUtils.calInstanceRevision(serviceDiscovery, serviceInstance);
         Assertions.assertEquals(metadataInfo.calAndGetRevision(), serviceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME));
-        Assertions.assertEquals(serviceInstance.getMetadata(INSTANCE_REVISION_UPDATED_KEY), "true");
+        Assertions.assertEquals(serviceInstance.getExtendParam(INSTANCE_REVISION_UPDATED_KEY), "true");
     }
 
     @Test
