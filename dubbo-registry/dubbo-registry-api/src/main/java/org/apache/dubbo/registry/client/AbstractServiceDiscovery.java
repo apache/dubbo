@@ -84,6 +84,11 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         }
     }
 
+    /**
+     * Update assumes that DefaultServiceInstance and its attributes will never get updated once created.
+     * Checking hasExportedServices() before registration guarantees that at least one service is ready for creating the
+     * instance.
+     */
     @Override
     public synchronized final void update() throws RuntimeException {
         if (this.serviceInstance == null) {

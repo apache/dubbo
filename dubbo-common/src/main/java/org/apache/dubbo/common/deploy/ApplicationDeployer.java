@@ -51,6 +51,11 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
     void prepareApplicationInstance();
 
     /**
+     * Register application instance and start internal services
+     */
+    void prepareInternalModule();
+
+    /**
      * Pre-processing before destroy model
      */
     void preDestroy();

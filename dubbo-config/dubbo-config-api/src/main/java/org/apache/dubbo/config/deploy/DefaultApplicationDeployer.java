@@ -578,9 +578,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
 
     @Override
     public void prepareApplicationInstance() {
-        // ensure init and start internal module first
-        prepareInternalModule();
-
         if (hasPreparedApplicationInstance.get()) {
             return;
         }
@@ -596,7 +593,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
     }
 
-    private void prepareInternalModule() {
+    public void prepareInternalModule() {
         synchronized (internalModuleLock) {
             if (!hasPreparedInternalModule.compareAndSet(false, true)) {
                 return;
