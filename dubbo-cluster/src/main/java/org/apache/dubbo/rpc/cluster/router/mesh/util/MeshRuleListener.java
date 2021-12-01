@@ -21,7 +21,7 @@ package org.apache.dubbo.rpc.cluster.router.mesh.util;
 import java.util.List;
 import java.util.Map;
 
-public interface VsDestinationGroupRuleListener {
+public interface MeshRuleListener {
     void onRuleChange(String appName, List<Map<String, Object>> rules);
 
     void clearRule(String appName);

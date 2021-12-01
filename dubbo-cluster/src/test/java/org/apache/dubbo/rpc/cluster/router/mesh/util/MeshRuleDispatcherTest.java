@@ -41,7 +41,7 @@ class MeshRuleDispatcherTest {
         ruleMap.put("Type3", type3);
 
         AtomicInteger count = new AtomicInteger(0);
-        VsDestinationGroupRuleListener listener1 = new VsDestinationGroupRuleListener() {
+        MeshRuleListener listener1 = new MeshRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 Assertions.assertEquals("TestApp", appName);
@@ -60,7 +60,7 @@ class MeshRuleDispatcherTest {
             }
         };
 
-        VsDestinationGroupRuleListener listener2 = new VsDestinationGroupRuleListener() {
+        MeshRuleListener listener2 = new MeshRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 Assertions.assertEquals("TestApp", appName);
@@ -79,7 +79,7 @@ class MeshRuleDispatcherTest {
             }
         };
 
-        VsDestinationGroupRuleListener listener4 = new VsDestinationGroupRuleListener() {
+        MeshRuleListener listener4 = new MeshRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 Assertions.fail();
@@ -110,7 +110,7 @@ class MeshRuleDispatcherTest {
     public void register() {
         MeshRuleDispatcher meshRuleDispatcher = new MeshRuleDispatcher("TestApp");
 
-        VsDestinationGroupRuleListener listener1 = new VsDestinationGroupRuleListener() {
+        MeshRuleListener listener1 = new MeshRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
             }
@@ -137,7 +137,7 @@ class MeshRuleDispatcherTest {
     public void unregister() {
         MeshRuleDispatcher meshRuleDispatcher = new MeshRuleDispatcher("TestApp");
 
-        VsDestinationGroupRuleListener listener1 = new VsDestinationGroupRuleListener() {
+        MeshRuleListener listener1 = new MeshRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
             }
@@ -153,7 +153,7 @@ class MeshRuleDispatcherTest {
             }
         };
 
-        VsDestinationGroupRuleListener listener2 = new VsDestinationGroupRuleListener() {
+        MeshRuleListener listener2 = new MeshRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
             }
@@ -169,7 +169,7 @@ class MeshRuleDispatcherTest {
             }
         };
 
-        VsDestinationGroupRuleListener listener3 = new VsDestinationGroupRuleListener() {
+        MeshRuleListener listener3 = new MeshRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
             }

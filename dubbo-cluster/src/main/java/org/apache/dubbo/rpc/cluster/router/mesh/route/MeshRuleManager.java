@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleListener;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Objects;
@@ -41,7 +42,7 @@ public class MeshRuleManager {
     private final Set<MeshEnvListener> envListeners;
 
     public MeshRuleManager(ModuleModel moduleModel) {
-        this.ruleRepository = moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        this.ruleRepository = moduleModel.getDefaultExtension(GovernanceRuleRepository.class);
         Set<MeshEnvListenerFactory> envListenerFactories = moduleModel.getExtensionLoader(MeshEnvListenerFactory.class).getSupportedExtensionInstances();
         this.envListeners = envListenerFactories.stream()
             .map(MeshEnvListenerFactory::getListener)
@@ -78,14 +79,9 @@ public class MeshRuleManager {
         return meshAppRuleListener;
     }
 
-    private synchronized void unsubscribeAppRule(String app) {
+    private synchronized void unsubscribeAppRule(String app, MeshAppRuleListener meshAppRuleListener) {
         // demo-app.MESHAPPRULE
         String appRuleDataId = app + MESH_RULE_DATA_ID_SUFFIX;
-
-        MeshAppRuleListener meshAppRuleListener = APP_RULE_LISTENERS.get(app);
-        if (meshAppRuleListener == null) {
-            return;
-        }
 
         // Remove listener from rule repository ( dynamic configuration )
         ruleRepository.removeListener(appRuleDataId, DynamicConfiguration.DEFAULT_GROUP, meshAppRuleListener);
@@ -99,7 +95,7 @@ public class MeshRuleManager {
 
     }
 
-    public synchronized <T> void register(String app, MeshRuleRouter<T> subscriber) {
+    public synchronized <T> void register(String app, MeshRuleListener subscriber) {
         MeshAppRuleListener meshAppRuleListener = APP_RULE_LISTENERS.get(app);
         if (meshAppRuleListener == null) {
             meshAppRuleListener = subscribeAppRule(app);
@@ -107,12 +103,20 @@ public class MeshRuleManager {
         meshAppRuleListener.register(subscriber);
     }
 
-    public synchronized <T> void unregister(String app, MeshRuleRouter<T> subscriber) {
+    public synchronized <T> void unregister(String app, MeshRuleListener subscriber) {
         MeshAppRuleListener meshAppRuleListener = APP_RULE_LISTENERS.get(app);
         meshAppRuleListener.unregister(subscriber);
         if (meshAppRuleListener.isEmpty()) {
-            unsubscribeAppRule(app);
+            unsubscribeAppRule(app, meshAppRuleListener);
+            APP_RULE_LISTENERS.remove(app);
         }
     }
 
+    /**
+     * for ut only
+     */
+    @Deprecated
+    public ConcurrentHashMap<String, MeshAppRuleListener> getAppRuleListeners() {
+        return APP_RULE_LISTENERS;
+    }
 }

@@ -32,7 +32,7 @@ public class MeshRuleDispatcher {
     public static final Logger logger = LoggerFactory.getLogger(MeshRuleDispatcher.class);
 
     private final String appName;
-    private final Map<String, Set<VsDestinationGroupRuleListener>> listenerMap = new ConcurrentHashMap<>();
+    private final Map<String, Set<MeshRuleListener>> listenerMap = new ConcurrentHashMap<>();
 
     public MeshRuleDispatcher(String appName) {
         this.appName = appName;
@@ -41,17 +41,17 @@ public class MeshRuleDispatcher {
     public synchronized void post(Map<String, List<Map<String, Object>>> ruleMap) {
         if (ruleMap.isEmpty()) {
             // clear rule
-            for (Map.Entry<String, Set<VsDestinationGroupRuleListener>> entry : listenerMap.entrySet()) {
-                for (VsDestinationGroupRuleListener listener : entry.getValue()) {
+            for (Map.Entry<String, Set<MeshRuleListener>> entry : listenerMap.entrySet()) {
+                for (MeshRuleListener listener : entry.getValue()) {
                     listener.clearRule(appName);
                 }
             }
         } else {
             for (Map.Entry<String, List<Map<String, Object>>> entry : ruleMap.entrySet()) {
                 String ruleType = entry.getKey();
-                Set<VsDestinationGroupRuleListener> listeners = listenerMap.get(ruleType);
+                Set<MeshRuleListener> listeners = listenerMap.get(ruleType);
                 if (CollectionUtils.isNotEmpty(listeners)) {
-                    for (VsDestinationGroupRuleListener listener : listeners) {
+                    for (MeshRuleListener listener : listeners) {
                         listener.onRuleChange(appName, entry.getValue());
                     }
                 } else {
@@ -59,9 +59,9 @@ public class MeshRuleDispatcher {
                 }
             }
             // clear rule listener not being notified in this time
-            for (Map.Entry<String, Set<VsDestinationGroupRuleListener>> entry : listenerMap.entrySet()) {
+            for (Map.Entry<String, Set<MeshRuleListener>> entry : listenerMap.entrySet()) {
                 if (!ruleMap.containsKey(entry.getKey())) {
-                    for (VsDestinationGroupRuleListener listener : entry.getValue()) {
+                    for (MeshRuleListener listener : entry.getValue()) {
                         listener.clearRule(appName);
                     }
                 }
@@ -69,7 +69,7 @@ public class MeshRuleDispatcher {
         }
     }
 
-    public synchronized void register(VsDestinationGroupRuleListener listener) {
+    public synchronized void register(MeshRuleListener listener) {
         if (listener == null) {
             return;
         }
@@ -77,11 +77,11 @@ public class MeshRuleDispatcher {
             .add(listener);
     }
 
-    public synchronized void unregister(VsDestinationGroupRuleListener listener) {
+    public synchronized void unregister(MeshRuleListener listener) {
         if (listener == null) {
             return;
         }
-        Set<VsDestinationGroupRuleListener> listeners = listenerMap.get(listener.ruleSuffix());
+        Set<MeshRuleListener> listeners = listenerMap.get(listener.ruleSuffix());
         if (CollectionUtils.isNotEmpty(listeners)) {
             listeners.remove(listener);
         }
@@ -98,7 +98,7 @@ public class MeshRuleDispatcher {
      * For ut only
      */
     @Deprecated
-    public Map<String, Set<VsDestinationGroupRuleListener>> getListenerMap() {
+    public Map<String, Set<MeshRuleListener>> getListenerMap() {
         return listenerMap;
     }
 }

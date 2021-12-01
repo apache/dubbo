@@ -35,8 +35,8 @@ import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServi
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.DubboDestination;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.DubboRouteDestination;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleListener;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
-import org.apache.dubbo.rpc.cluster.router.mesh.util.VsDestinationGroupRuleListener;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
@@ -55,11 +55,9 @@ import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.I
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.KIND_KEY;
 import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.VIRTUAL_SERVICE_KEY;
 
-public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implements VsDestinationGroupRuleListener {
+public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implements MeshRuleListener {
 
     public static final Logger logger = LoggerFactory.getLogger(MeshRuleRouter.class);
-
-    private final URL url;
 
     private final Map<String, String> sourcesLabels;
     private volatile BitList<Invoker<T>> invokerList = BitList.emptyList();
@@ -72,15 +70,9 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
 
     public MeshRuleRouter(URL url) {
         super(url);
-        this.url = url;
         sourcesLabels = Collections.unmodifiableMap(new HashMap<>(url.getParameters()));
         this.meshRuleManager = url.getOrDefaultModuleModel().getBeanFactory().getBean(MeshRuleManager.class);
-        this.tracingContextProviders = url.getOrDefaultApplicationModel().getExtensionLoader(TracingContextProvider.class).getSupportedExtensionInstances();
-    }
-
-    @Override
-    public URL getUrl() {
-        return url;
+        this.tracingContextProviders = url.getOrDefaultModuleModel().getExtensionLoader(TracingContextProvider.class).getSupportedExtensionInstances();
     }
 
     @Override
@@ -155,7 +147,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
      */
     protected List<DubboRouteDestination> getDubboRouteDestination(DubboRoute dubboRoute, Invocation invocation) {
         List<DubboRouteDetail> dubboRouteDetailList = dubboRoute.getRoutedetail();
-        if (dubboRouteDetailList.size() > 0) {
+        if (CollectionUtils.isNotEmpty(dubboRouteDetailList)) {
             for (DubboRouteDetail dubboRouteDetail : dubboRouteDetailList) {
                 List<DubboMatchRequest> matchRequestList = dubboRouteDetail.getMatch();
                 if (CollectionUtils.isEmpty(matchRequestList)) {
@@ -236,7 +228,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
         BitList<Invoker<T>> invokerList = invokers == null ? BitList.emptyList() : invokers;
         this.invokerList = invokerList;
         registerAppRule(invokerList);
-        computeSubset(this.meshRuleCache != null ? this.meshRuleCache.getAppToVDGroup() : null);
+        computeSubset(this.meshRuleCache.getAppToVDGroup());
     }
 
     private void registerAppRule(BitList<Invoker<T>> invokers) {
@@ -269,10 +261,8 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
 
     @Override
     public synchronized void onRuleChange(String appName, List<Map<String, Object>> rules) {
-        Map<String, VsDestinationGroup> appToVDGroup = new ConcurrentHashMap<>();
-        if (this.meshRuleCache != null) {
-            appToVDGroup.putAll(this.meshRuleCache.getAppToVDGroup());
-        }
+        // only update specified app's rule
+        Map<String, VsDestinationGroup> appToVDGroup = new ConcurrentHashMap<>(this.meshRuleCache.getAppToVDGroup());
         try {
             VsDestinationGroup vsDestinationGroup = new VsDestinationGroup();
             vsDestinationGroup.setAppName(appName);
@@ -298,16 +288,13 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
 
     @Override
     public synchronized void clearRule(String appName) {
-        Map<String, VsDestinationGroup> appToVDGroup = new ConcurrentHashMap<>();
-        if (this.meshRuleCache != null) {
-            appToVDGroup.putAll(this.meshRuleCache.getAppToVDGroup());
-        }
+        Map<String, VsDestinationGroup> appToVDGroup = new ConcurrentHashMap<>(this.meshRuleCache.getAppToVDGroup());
         appToVDGroup.remove(appName);
         computeSubset(appToVDGroup);
     }
 
     protected void computeSubset(Map<String, VsDestinationGroup> vsDestinationGroupMap) {
-        this.meshRuleCache = MeshRuleCache.build(url.getProtocolServiceKey(), this.invokerList, vsDestinationGroupMap);
+        this.meshRuleCache = MeshRuleCache.build(getUrl().getProtocolServiceKey(), this.invokerList, vsDestinationGroupMap);
     }
 
     @Override
@@ -315,5 +302,29 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
         for (String app : remoteAppName) {
             meshRuleManager.unregister(app, this);
         }
+    }
+
+    /**
+     * for ut only
+     */
+    @Deprecated
+    public Set<String> getRemoteAppName() {
+        return remoteAppName;
+    }
+
+    /**
+     * for ut only
+     */
+    @Deprecated
+    public BitList<Invoker<T>> getInvokerList() {
+        return invokerList;
+    }
+
+    /**
+     * for ut only
+     */
+    @Deprecated
+    public MeshRuleCache<T> getMeshRuleCache() {
+        return meshRuleCache;
     }
 }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
@@ -29,6 +30,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.INVALID_APP_NAME;
 
 public class MeshRuleCache<T> {
     private final List<String> appList;
@@ -85,6 +89,10 @@ public class MeshRuleCache<T> {
 
             for (Invoker<T> invoker : invokers) {
                 String remoteApplication = invoker.getUrl().getRemoteApplication();
+                if (StringUtils.isEmpty(remoteApplication) || INVALID_APP_NAME.equals(remoteApplication)) {
+                    unmatchedInvokers.add(invoker);
+                    continue;
+                }
                 VsDestinationGroup vsDestinationGroup = vsDestinationGroupMap.get(remoteApplication);
                 if (vsDestinationGroup == null) {
                     unmatchedInvokers.add(invoker);
@@ -102,6 +110,8 @@ public class MeshRuleCache<T> {
                         Map<String, String> labels = subset.getLabels();
                         if (containMapKeyValue(invoker.getUrl().getServiceParameters(protocolServiceKey), labels)) {
                             subsetInvokers.add(invoker);
+                        } else {
+                            unmatchedInvokers.add(invoker);
                         }
                     }
                 }
@@ -138,4 +148,20 @@ public class MeshRuleCache<T> {
         return true;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        MeshRuleCache<?> ruleCache = (MeshRuleCache<?>) o;
+        return Objects.equals(appList, ruleCache.appList) && Objects.equals(appToVDGroup, ruleCache.appToVDGroup) && Objects.equals(totalSubsetMap, ruleCache.totalSubsetMap) && Objects.equals(unmatchedInvokers, ruleCache.unmatchedInvokers);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(appList, appToVDGroup, totalSubsetMap, unmatchedInvokers);
+    }
 }

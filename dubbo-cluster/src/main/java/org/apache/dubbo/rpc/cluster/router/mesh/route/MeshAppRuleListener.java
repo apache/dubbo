@@ -24,7 +24,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleDispatcher;
-import org.apache.dubbo.rpc.cluster.router.mesh.util.VsDestinationGroupRuleListener;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleListener;
 
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -110,7 +110,7 @@ public class MeshAppRuleListener implements ConfigurationListener {
         return null;
     }
 
-    public <T> void register(VsDestinationGroupRuleListener subscriber) {
+    public <T> void register(MeshRuleListener subscriber) {
         if (ruleMapHolder != null) {
             List<Map<String, Object>> rule = ruleMapHolder.get(subscriber.ruleSuffix());
             if (rule != null) {
@@ -121,8 +121,8 @@ public class MeshAppRuleListener implements ConfigurationListener {
     }
 
 
-    public <T> void unregister(MeshRuleRouter<T> sub) {
-        meshRuleDispatcher.unregister(sub);
+    public <T> void unregister(MeshRuleListener subscriber) {
+        meshRuleDispatcher.unregister(subscriber);
     }
 
     @Override

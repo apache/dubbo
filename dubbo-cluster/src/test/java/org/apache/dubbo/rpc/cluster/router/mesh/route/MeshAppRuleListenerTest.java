@@ -21,7 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.rpc.cluster.router.mesh.util.VsDestinationGroupRuleListener;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleListener;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -278,7 +278,7 @@ public class MeshAppRuleListenerTest {
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener("demo-route");
 
         AtomicInteger count = new AtomicInteger(0);
-        VsDestinationGroupRuleListener listener1 = new VsDestinationGroupRuleListener() {
+        MeshRuleListener listener1 = new MeshRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 Assertions.assertEquals("demo-route", appName);
@@ -299,7 +299,7 @@ public class MeshAppRuleListenerTest {
             }
         };
 
-        VsDestinationGroupRuleListener listener2 = new VsDestinationGroupRuleListener() {
+        MeshRuleListener listener2 = new MeshRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 Assertions.assertEquals("demo-route", appName);
@@ -320,7 +320,7 @@ public class MeshAppRuleListenerTest {
             }
         };
 
-        VsDestinationGroupRuleListener listener4 = new VsDestinationGroupRuleListener() {
+        MeshRuleListener listener4 = new MeshRuleListener() {
             @Override
             public void onRuleChange(String appName, List<Map<String, Object>> rules) {
                 Assertions.fail();
