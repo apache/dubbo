@@ -90,10 +90,12 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
             List<DubboRouteDestination> routeDestination = getDubboRouteDestination(ruleCache.getVsDestinationGroup(appName), invocation);
             if (routeDestination != null) {
                 // aggregate target invokers
-                result.or(randomSelectDestination(ruleCache, appName, routeDestination));
+                result = result.or(randomSelectDestination(ruleCache, appName, routeDestination));
             }
         }
-        result.or(ruleCache.getUnmatchedInvokers());
+        result = result.or(ruleCache.getUnmatchedInvokers());
+
+        // empty protection
 
         return new StateRouterResult<>(invokers.and(result));
     }
@@ -104,7 +106,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     protected List<DubboRouteDestination> getDubboRouteDestination(VsDestinationGroup vsDestinationGroup, Invocation invocation) {
         if (vsDestinationGroup != null) {
             List<VirtualServiceRule> virtualServiceRuleList = vsDestinationGroup.getVirtualServiceRuleList();
-            if (virtualServiceRuleList.size() > 0) {
+            if (CollectionUtils.isNotEmpty(virtualServiceRuleList)) {
                 for (VirtualServiceRule virtualServiceRule : virtualServiceRuleList) {
                     // match virtual service (by serviceName)
                     DubboRoute dubboRoute = getDubboRoute(virtualServiceRule, invocation);
@@ -126,7 +128,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
 
         VirtualServiceSpec spec = virtualServiceRule.getSpec();
         List<DubboRoute> dubboRouteList = spec.getDubbo();
-        if (dubboRouteList.size() > 0) {
+        if (CollectionUtils.isNotEmpty(dubboRouteList)) {
             for (DubboRoute dubboRoute : dubboRouteList) {
                 List<StringMatch> stringMatchList = dubboRoute.getServices();
                 if (CollectionUtils.isEmpty(stringMatchList)) {

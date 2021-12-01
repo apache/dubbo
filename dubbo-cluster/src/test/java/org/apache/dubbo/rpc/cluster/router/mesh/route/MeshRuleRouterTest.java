@@ -22,6 +22,7 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -73,12 +74,14 @@ public class MeshRuleRouterTest {
         "  dubbo:\n" +
         "    - routedetail:\n" +
         "        - match:\n" +
-        "            - sourceLabels: {trafficLabel: xxx}\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
         "          name: xxx-project\n" +
         "          route:\n" +
         "            - destination: {host: demo, subset: isolation}\n" +
         "        - match:\n" +
-        "            - sourceLabels: {trafficLabel: testing-trunk}\n" +
+        "            - sourceLabels: \n" +
+        "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
         "          name: testing-trunk\n" +
         "          route:\n" +
         "            - destination:\n" +
@@ -218,5 +221,14 @@ public class MeshRuleRouterTest {
 
         BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(isolation, testingTrunk, testing));
         meshRuleRouter.notify(invokers);
+
+        RpcInvocation rpcInvocation = new RpcInvocation();
+
+        rpcInvocation.setServiceName("ccc");
+        rpcInvocation.setAttachment("trafficLabel", "xxx");
+        assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
+        assertEquals(isolation, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
+
+
     }
 }
