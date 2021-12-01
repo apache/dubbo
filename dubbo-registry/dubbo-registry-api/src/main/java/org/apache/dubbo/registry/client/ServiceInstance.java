@@ -90,9 +90,15 @@ public interface ServiceInstance extends Serializable {
 
     Map<String, String> getExtendParams();
 
-    Map<String, String> getAllParams();
+    String getExtendParam(String key);
 
-    Map<String, Object> getAttributes();
+    String putExtendParam(String key, String value);
+
+    String putExtendParamIfAbsent(String key, String value);
+
+    String removeExtendParam(String key);
+
+    Map<String, String> getAllParams();
 
     void setApplicationModel(ApplicationModel applicationModel);
 

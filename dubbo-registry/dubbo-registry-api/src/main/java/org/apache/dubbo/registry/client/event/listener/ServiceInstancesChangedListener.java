@@ -413,7 +413,7 @@ public class ServiceInstancesChangedListener {
                 // different protocols may have ports specified in meta
                 if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
                     DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
-                    if (endpoint != null && !endpoint.getPort().equals(i.getPort())) {
+                    if (endpoint != null && endpoint.getPort() != i.getPort()) {
                         urls.add(((DefaultServiceInstance) i).copyFrom(endpoint).toURL());
                         continue;
                     }
