@@ -35,6 +35,8 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -131,7 +133,7 @@ public class MeshRuleRouterTest {
     }
 
     private Invoker<Object> createInvoker(Map<String, String> parameters) {
-        URL url = URL.valueOf("dubbo://localhost/DemoInterface").addParameters(parameters);
+        URL url = URL.valueOf("dubbo://localhost/DemoInterface?remote.application=app1").addParameters(parameters);
         Invoker invoker = Mockito.mock(Invoker.class);
         when(invoker.getUrl()).thenReturn(url);
         return invoker;
@@ -201,16 +203,20 @@ public class MeshRuleRouterTest {
     public void testRoute2() {
         StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
 
-
         Yaml yaml = new Yaml(new SafeConstructor());
         List<Map<String, Object>> rules = new LinkedList<>();
         rules.add(yaml.load(rule1));
         rules.add(yaml.load(rule2));
         meshRuleRouter.onRuleChange("app1", rules);
 
+        Invoker<Object> isolation = createInvoker(new HashMap<String, String>() {{
+            put("env-sign", "xxx");
+            put("tag1", "hello");
+        }});
+        Invoker<Object> testingTrunk = createInvoker(Collections.singletonMap("env-sign", "yyy"));
+        Invoker<Object> testing = createInvoker(Collections.singletonMap("env-sign", "zzz"));
 
-
-        BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
-        assertEquals(invokers, meshRuleRouter.route(invokers, null, null, false).getResult());
+        BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(isolation, testingTrunk, testing));
+        meshRuleRouter.notify(invokers);
     }
 }

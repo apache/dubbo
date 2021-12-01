@@ -100,6 +100,7 @@ public class MeshRuleCache<T> {
                 }
                 Map<String, BitList<Invoker<T>>> subsetMap = totalSubsetMap.computeIfAbsent(remoteApplication, (k) -> new HashMap<>());
 
+                boolean matched = false;
                 for (DestinationRule destinationRule : vsDestinationGroup.getDestinationRuleList()) {
                     DestinationRuleSpec destinationRuleSpec = destinationRule.getSpec();
                     List<Subset> subsetList = destinationRuleSpec.getSubsets();
@@ -110,10 +111,12 @@ public class MeshRuleCache<T> {
                         Map<String, String> labels = subset.getLabels();
                         if (containMapKeyValue(invoker.getUrl().getServiceParameters(protocolServiceKey), labels)) {
                             subsetInvokers.add(invoker);
-                        } else {
-                            unmatchedInvokers.add(invoker);
+                            matched = true;
                         }
                     }
+                }
+                if (!matched) {
+                    unmatchedInvokers.add(invoker);
                 }
             }
 
