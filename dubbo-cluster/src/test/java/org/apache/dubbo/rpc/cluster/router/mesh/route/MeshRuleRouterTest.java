@@ -96,6 +96,71 @@ public class MeshRuleRouterTest {
         "      services:\n" +
         "        - {regex: ccc}\n" +
         "  hosts: [demo]\n";
+    private final static String rule3 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+        "kind: VirtualService\n" +
+        "metadata: { name: demo-route }\n" +
+        "spec:\n" +
+        "  dubbo:\n" +
+        "    - routedetail:\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
+        "          name: xxx-project\n" +
+        "          route:\n" +
+        "            - destination: {host: demo, subset: isolation}\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
+        "          name: testing-trunk\n" +
+        "          route:\n" +
+        "            - destination:\n" +
+        "                host: demo\n" +
+        "                subset: testing-trunk\n" +
+        "                fallback:\n" +
+        "                  host: demo\n" +
+        "                  subset: testing\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: testing}}\n" +
+        "          name: testing\n" +
+        "          route:\n" +
+        "            - destination: {host: demo, subset: testing}\n" +
+        "  hosts: [demo]\n";
+    private final static String rule4 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+        "kind: VirtualService\n" +
+        "metadata: { name: demo-route }\n" +
+        "spec:\n" +
+        "  dubbo:\n" +
+        "    - routedetail:\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: xxx}}\n" +
+        "          name: xxx-project\n" +
+        "          route:\n" +
+        "            - destination: {host: demo, subset: isolation}\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
+        "          name: testing-trunk\n" +
+        "          route:\n" +
+        "            - destination:\n" +
+        "                host: demo\n" +
+        "                subset: testing-trunk\n" +
+        "                fallback:\n" +
+        "                  destination:\n" +
+        "                    host: demo\n" +
+        "                    subset: testing\n" +
+        "            - weight: 10\n" +
+        "              destination:\n" +
+        "                host: demo\n" +
+        "                subset: isolation\n" +
+        "        - match:\n" +
+        "            - attachments: \n" +
+        "                dubboContext: {trafficLabel: {regex: testing}}\n" +
+        "          name: testing\n" +
+        "          route:\n" +
+        "            - destination: {host: demo, subset: testing}\n" +
+        "  hosts: [demo]\n";
 
     private ModuleModel originModel;
     private ModuleModel moduleModel;
@@ -236,5 +301,74 @@ public class MeshRuleRouterTest {
         rpcInvocation.setAttachment("trafficLabel", null);
         assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
         assertEquals(testing, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
+
+        rpcInvocation.setServiceName("aaa");
+        assertEquals(invokers, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult());
+
+        rules = new LinkedList<>();
+        rules.add(yaml.load(rule1));
+        rules.add(yaml.load(rule3));
+        meshRuleRouter.onRuleChange("app1", rules);
+
+        rpcInvocation.setServiceName("ccc");
+        rpcInvocation.setAttachment("trafficLabel", "xxx");
+        assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
+        assertEquals(isolation, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
+
+        rpcInvocation.setAttachment("trafficLabel", "testing-trunk");
+        assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
+        assertEquals(testingTrunk, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
+
+        rpcInvocation.setAttachment("trafficLabel", "testing");
+        assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
+        assertEquals(testing, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
+
+        rpcInvocation.setServiceName("aaa");
+        assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
+        assertEquals(testing, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
+
+        rpcInvocation.setAttachment("trafficLabel",null);
+        assertEquals(invokers, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult());
+
+        rules = new LinkedList<>();
+        rules.add(yaml.load(rule1));
+        rules.add(yaml.load(rule4));
+        meshRuleRouter.onRuleChange("app1", rules);
+
+        rpcInvocation.setAttachment("trafficLabel", "testing-trunk");
+
+        int testingCount = 0;
+        int isolationCount = 0;
+        for (int i = 0; i < 1000; i++) {
+            BitList<Invoker<Object>> result = meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult();
+            assertEquals(1, result.size());
+            if (result.contains(testing)) {
+                testingCount++;
+            } else {
+                isolationCount++;
+            }
+        }
+        assertTrue(isolationCount > testingCount * 10);
+
+        invokers.removeAll(Arrays.asList(isolation, testingTrunk));
+        for (int i = 0; i < 1000; i++) {
+            assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
+            assertEquals(testing, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
+        }
+
+        meshRuleRouter.notify(invokers);
+
+        for (int i = 0; i < 1000; i++) {
+            assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
+            assertEquals(testing, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
+        }
+
+        Invoker<Object> mock = createInvoker(Collections.singletonMap("env-sign", "mock"));
+        invokers = new BitList<>(Arrays.asList(isolation, testingTrunk, testing, mock));
+
+        meshRuleRouter.notify(invokers);
+        invokers.removeAll(Arrays.asList(isolation, testingTrunk, testing));
+        assertEquals(invokers, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult());
+
     }
 }
