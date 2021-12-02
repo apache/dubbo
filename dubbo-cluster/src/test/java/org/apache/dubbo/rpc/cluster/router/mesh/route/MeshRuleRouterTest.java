@@ -80,7 +80,7 @@ public class MeshRuleRouterTest {
         "          route:\n" +
         "            - destination: {host: demo, subset: isolation}\n" +
         "        - match:\n" +
-        "            - sourceLabels: \n" +
+        "            - attachments: \n" +
         "                dubboContext: {trafficLabel: {regex: testing-trunk}}\n" +
         "          name: testing-trunk\n" +
         "          route:\n" +
@@ -229,6 +229,12 @@ public class MeshRuleRouterTest {
         assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
         assertEquals(isolation, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
 
+        rpcInvocation.setAttachment("trafficLabel", "testing-trunk");
+        assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
+        assertEquals(testingTrunk, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
 
+        rpcInvocation.setAttachment("trafficLabel", null);
+        assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
+        assertEquals(testing, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
     }
 }
