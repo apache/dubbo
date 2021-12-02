@@ -110,6 +110,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
         throws NullPointerException, IllegalArgumentException {
+        // check if listener has already been added through another interface/service
+        if (!instanceListeners.add(listener)) {
+            return;
+        }
         execute(namingService, service -> listener.getServiceNames().forEach(serviceName -> {
             try {
                 service.subscribe(serviceName, Constants.DEFAULT_GROUP, e -> { // Register Nacos EventListener

@@ -113,6 +113,10 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
         throws NullPointerException, IllegalArgumentException {
+        // check if listener has already been added through another interface/service
+        if (!instanceListeners.add(listener)) {
+            return;
+        }
         listener.getServiceNames().forEach(serviceName -> registerServiceWatcher(serviceName, listener));
     }
 

@@ -286,7 +286,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
 
         // register ServiceInstancesChangedListener
-        boolean serviceListenerRegistered = true;
         ServiceInstancesChangedListener serviceInstancesChangedListener;
         synchronized (this) {
             serviceInstancesChangedListener = serviceListeners.get(serviceNamesKey);
@@ -299,7 +298,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                         serviceInstancesChangedListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
                     }
                 }
-                serviceListenerRegistered = false;
                 serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
             }
         }
@@ -307,9 +305,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         serviceInstancesChangedListener.setUrl(url);
         listener.addServiceListener(serviceInstancesChangedListener);
         serviceInstancesChangedListener.addListenerAndNotify(protocolServiceKey, listener);
-        if (!serviceListenerRegistered) {
-            serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
-        }
+        serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
     }
 
     /**

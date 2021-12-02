@@ -19,17 +19,20 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -51,6 +54,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected String metadataType;
     protected MetaCacheManager metaCacheManager;
     protected URL registryURL;
+
+    protected Set<ServiceInstancesChangedListener> instanceListeners = new ConcurrentHashSet<>();
 
     protected ApplicationModel applicationModel;
 
