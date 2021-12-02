@@ -28,6 +28,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -134,8 +136,6 @@ public class ScriptStateRouterTest {
 
         String script = "/";
         StateRouter router = new ScriptStateRouterFactory().getRouter(String.class, getRouteUrl(script));
-import org.junit.jupiter.api.condition.DisabledForJreRange;
-import org.junit.jupiter.api.condition.JRE;
         List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
         Assertions.assertEquals(3, routeResult.size());
     }
