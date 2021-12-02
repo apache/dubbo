@@ -37,10 +37,7 @@ public enum TripleHeaderEnum {
     APPLICATION_GRPC("application/grpc"),
     GRPC_ENCODING("grpc-encoding"),
     GRPC_ACCEPT_ENCODING("grpc-accept-encoding"),
-    TRICE_ID_KEY("tri-trace-traceid"),
-    RPC_ID_KEY("tri-trace-rpcid"),
     CONSUMER_APP_NAME_KEY("tri-consumer-appname"),
-    UNIT_INFO_KEY("tri-unit-info"),
     SERVICE_VERSION("tri-service-version"),
     SERVICE_GROUP("tri-service-group");
 
