@@ -79,10 +79,12 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage) throws RpcException {
         MeshRuleCache<T> ruleCache = this.meshRuleCache;
         if (!ruleCache.containsRule()) {
-            return new StateRouterResult<>(invokers);
+            return new StateRouterResult<>(invokers, needToPrintMessage ? "MeshRuleCache has not been built. Skip route." : null);
         }
 
         BitList<Invoker<T>> result = new BitList<>(invokers.getOriginList(), true, invokers.getTailList());
+
+        StringBuilder stringBuilder = needToPrintMessage ? new StringBuilder() : null;
 
         // loop each application
         for (String appName : ruleCache.getAppList()) {
@@ -90,9 +92,13 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
             List<DubboRouteDestination> routeDestination = getDubboRouteDestination(ruleCache.getVsDestinationGroup(appName), invocation);
             if (routeDestination != null) {
                 // aggregate target invokers
-                BitList<Invoker<T>> destination = randomSelectDestination(ruleCache, appName, routeDestination, invokers);
-                if (destination != null) {
+                String subset = randomSelectDestination(ruleCache, appName, routeDestination, invokers);
+                if (subset != null) {
+                    BitList<Invoker<T>> destination = meshRuleCache.getSubsetInvokers(appName, subset);
                     result = result.or(destination);
+                    if (stringBuilder != null) {
+                        stringBuilder.append("Match App: ").append(appName).append(" Subset: ").append(subset).append(" ");
+                    }
                 }
             }
         }
@@ -100,10 +106,10 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
 
         // empty protection
         if (result.isEmpty()) {
-            return new StateRouterResult<>(invokers);
+            return new StateRouterResult<>(invokers, needToPrintMessage ? "Empty protection after routed." : null);
         }
 
-        return new StateRouterResult<>(invokers.and(result));
+        return new StateRouterResult<>(invokers.and(result), needToPrintMessage ? stringBuilder.toString() : null);
     }
 
     /**
@@ -175,7 +181,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     /**
      * Find out target invokers from RouteDestination
      */
-    protected BitList<Invoker<T>> randomSelectDestination(MeshRuleCache<T> meshRuleCache, String appName, List<DubboRouteDestination> routeDestination, BitList<Invoker<T>> availableInvokers) throws RpcException {
+    protected String randomSelectDestination(MeshRuleCache<T> meshRuleCache, String appName, List<DubboRouteDestination> routeDestination, BitList<Invoker<T>> availableInvokers) throws RpcException {
         // randomly select one DubboRouteDestination from list by weight
         int totalWeight = 0;
         for (DubboRouteDestination dubboRouteDestination : routeDestination) {
@@ -186,8 +192,8 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
             target -= Math.max(destination.getWeight(), 1);
             if (target <= 0) {
                 // match weight
-                BitList<Invoker<T>> result = computeDestination(meshRuleCache, appName, destination.getDestination(), availableInvokers);
-                if (CollectionUtils.isNotEmpty(result) && !availableInvokers.and(result).isEmpty()) {
+                String result = computeDestination(meshRuleCache, appName, destination.getDestination(), availableInvokers);
+                if (result != null) {
                     return result;
                 }
             }
@@ -195,8 +201,8 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
 
         // fall back
         for (DubboRouteDestination destination : routeDestination) {
-            BitList<Invoker<T>> result = computeDestination(meshRuleCache, appName, destination.getDestination(), availableInvokers);
-            if (CollectionUtils.isNotEmpty(result)) {
+            String result = computeDestination(meshRuleCache, appName, destination.getDestination(), availableInvokers);
+            if (result != null) {
                 return result;
             }
         }
@@ -206,16 +212,14 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     /**
      * Compute Destination Subset
      */
-    protected BitList<Invoker<T>> computeDestination(MeshRuleCache<T> meshRuleCache, String appName, DubboDestination dubboDestination, BitList<Invoker<T>> availableInvokers) throws RpcException {
+    protected String computeDestination(MeshRuleCache<T> meshRuleCache, String appName, DubboDestination dubboDestination, BitList<Invoker<T>> availableInvokers) throws RpcException {
         String subset = dubboDestination.getSubset();
 
-        BitList<Invoker<T>> result;
-
         do {
-            result = meshRuleCache.getSubsetInvokers(appName, subset);
+            BitList<Invoker<T>> result = meshRuleCache.getSubsetInvokers(appName, subset);
 
             if (CollectionUtils.isNotEmpty(result) && !availableInvokers.and(result).isEmpty()) {
-                return result;
+                return subset;
             }
 
             // fall back

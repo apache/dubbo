@@ -265,6 +265,7 @@ public class MeshRuleRouterTest {
         StandardMeshRuleRouter<Object> meshRuleRouter = new StandardMeshRuleRouter<>(url);
         BitList<Invoker<Object>> invokers = new BitList<>(Arrays.asList(createInvoker(""), createInvoker("unknown"), createInvoker("app1")));
         assertEquals(invokers, meshRuleRouter.route(invokers, null, null, false).getResult());
+        assertEquals("MeshRuleCache has not been built. Skip route.", meshRuleRouter.route(invokers, null, null, true).getMessage());
     }
 
     @Test
@@ -293,6 +294,7 @@ public class MeshRuleRouterTest {
         rpcInvocation.setAttachment("trafficLabel", "xxx");
         assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
         assertEquals(isolation, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().get(0));
+        assertEquals("Match App: app1 Subset: isolation ", meshRuleRouter.route(invokers, null, rpcInvocation, true).getMessage());
 
         rpcInvocation.setAttachment("trafficLabel", "testing-trunk");
         assertEquals(1, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult().size());
@@ -304,6 +306,7 @@ public class MeshRuleRouterTest {
 
         rpcInvocation.setServiceName("aaa");
         assertEquals(invokers, meshRuleRouter.route(invokers, null, rpcInvocation, false).getResult());
+        assertEquals("Empty protection after routed.", meshRuleRouter.route(invokers, null, rpcInvocation, true).getMessage());
 
         rules = new LinkedList<>();
         rules.add(yaml.load(rule1));
