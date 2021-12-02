@@ -14,32 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.script;
+package org.apache.dubbo.rpc.cluster.router.mock;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 /**
- * ScriptRouterFactory
- * <p>
- * Example URLS used by Script Router Factory：
- * <ol>
- * <li> script://registryAddress?type=js&rule=xxxx
- * <li> script:///path/to/routerfile.js?type=js&rule=xxxx
- * <li> script://D:\path\to\routerfile.js?type=js&rule=xxxx
- * <li> script://C:/path/to/routerfile.js?type=js&rule=xxxx
- * </ol>
- * The host value in URL points out the address of the source content of the Script Router，Registry、File etc
  *
  */
-public class ScriptRouterFactory implements RouterFactory {
-
-    public static final String NAME = "script";
+@Activate
+public class MockStateRouterFactory implements StateRouterFactory {
+    public static final String NAME = "mock";
 
     @Override
-    public Router getRouter(URL url) {
-        return new ScriptRouter(url);
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        return new MockInvokersSelector<T>(url);
     }
 
 }

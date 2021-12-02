@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition;
+package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- * ConditionRouterFactory
- * Load when "override://" is configured {@link ConditionRouter}
+ * {@link OrderedPropertiesConfiguration}
  */
-public class ConditionRouterFactory implements RouterFactory {
+public class OrderedPropertiesConfigurationTest {
 
-    public static final String NAME = "condition";
-
-    @Override
-    public Router getRouter(URL url) {
-        return new ConditionRouter(url);
+    @Test
+    public void testOrderPropertiesProviders() {
+        OrderedPropertiesConfiguration configuration = new OrderedPropertiesConfiguration(ApplicationModel.defaultModel().getDefaultModule());
+        Assertions.assertEquals("999", configuration.getInternalProperty("testKey"));
     }
 
 }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -169,6 +170,13 @@ public class ProviderConfig extends AbstractServiceConfig {
      * @see ModuleConfig#setBackground(Boolean)
      */
     private Boolean exportBackground;
+
+    public ProviderConfig() {
+    }
+
+    public ProviderConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
 
     @Deprecated
     public void setProtocol(String protocol) {
@@ -341,41 +349,6 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    @Override
-    public String getCluster() {
-        return super.getCluster();
-    }
-
-    @Override
-    public Integer getConnections() {
-        return super.getConnections();
-    }
-
-    @Override
-    public Integer getTimeout() {
-        return super.getTimeout();
-    }
-
-    @Override
-    public Integer getRetries() {
-        return super.getRetries();
-    }
-
-    @Override
-    public String getLoadbalance() {
-        return super.getLoadbalance();
-    }
-
-    @Override
-    public Boolean isAsync() {
-        return super.isAsync();
-    }
-
-    @Override
-    public Integer getActives() {
-        return super.getActives();
     }
 
     public String getTransporter() {

@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.mock;
+package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
- *
+ * {@link ConfigurationCache}
  */
-@Activate
-public class MockRouterFactory implements RouterFactory {
-    public static final String NAME = "mock";
+public class ConfigurationCacheTest {
 
-    @Override
-    public Router getRouter(URL url) {
-        return new MockInvokersSelector();
+    @Test
+    public void test() {
+        ConfigurationCache configurationCache = new ConfigurationCache();
+        String value = configurationCache.computeIfAbsent("k1", k -> "v1");
+        Assertions.assertEquals(value, "v1");
+        value = configurationCache.computeIfAbsent("k1", k -> "v2");
+        Assertions.assertEquals(value, "v1");
     }
-
 }

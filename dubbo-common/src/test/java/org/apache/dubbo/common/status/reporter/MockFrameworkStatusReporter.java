@@ -14,38 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.state;
+package org.apache.dubbo.common.status.reporter;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.dubbo.rpc.Invoker;
+public class MockFrameworkStatusReporter implements FrameworkStatusReporter {
+    Map<String, Object> reportContent = new HashMap<>();
 
-/***
- * Address cache,
- * used to cache the results of the StaterRouter's asynchronous address list calculations.
- * @param <T>
- * @since 3.0
- */
-public class AddrCache<T> {
-
-    private List<Invoker<T>> invokers;
-    private Map<String, RouterCache<T>> cache = Collections.emptyMap();
-
-    public List<Invoker<T>> getInvokers() {
-        return invokers;
+    @Override
+    public void report(String type, Object obj) {
+        reportContent.put(type, obj);
     }
 
-    public void setInvokers(List<Invoker<T>> invokers) {
-        this.invokers = invokers;
-    }
-
-    public Map<String, RouterCache<T>> getCache() {
-        return cache;
-    }
-
-    public void setCache(Map<String, RouterCache<T>> cache) {
-        this.cache = cache;
+    public Map<String, Object> getReportContent() {
+        return reportContent;
     }
 }

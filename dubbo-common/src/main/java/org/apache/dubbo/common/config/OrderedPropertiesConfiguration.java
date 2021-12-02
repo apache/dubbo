@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class OrderedPropertiesConfiguration implements Configuration{
         properties = new Properties();
         ExtensionLoader<OrderedPropertiesProvider> propertiesProviderExtensionLoader = moduleModel.getExtensionLoader(OrderedPropertiesProvider.class);
         Set<String> propertiesProviderNames = propertiesProviderExtensionLoader.getSupportedExtensions();
-        if (propertiesProviderNames == null || propertiesProviderNames.isEmpty()) {
+        if (CollectionUtils.isEmpty(propertiesProviderNames)) {
             return;
         }
         List<OrderedPropertiesProvider> orderedPropertiesProviders = new ArrayList<>();
@@ -47,14 +48,11 @@ public class OrderedPropertiesConfiguration implements Configuration{
         }
 
         //order the propertiesProvider according the priority descending
-        orderedPropertiesProviders.sort((OrderedPropertiesProvider a, OrderedPropertiesProvider b) -> {
-            return b.priority() - a.priority();
-        });
+        orderedPropertiesProviders.sort((a, b) -> b.priority() - a.priority());
 
 
         //override the properties.
-        for (OrderedPropertiesProvider orderedPropertiesProvider :
-            orderedPropertiesProviders) {
+        for (OrderedPropertiesProvider orderedPropertiesProvider : orderedPropertiesProviders) {
             properties.putAll(orderedPropertiesProvider.initProperties());
         }
 

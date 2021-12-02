@@ -14,24 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.tag;
+package org.apache.dubbo.rpc.cluster.router.condition.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.RouterChain;
-import org.apache.dubbo.rpc.cluster.router.state.CacheableStateRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 /**
- * Tag router factory
+ * Application level router factory
  */
-@Activate(order = 99)
-public class TagDynamicStateRouterFactory extends CacheableStateRouterFactory {
+@Activate(order = 200)
+public class AppStateRouterFactory implements StateRouterFactory {
+    public static final String NAME = "app";
 
-    public static final String NAME = "tag-dynamic";
+    private volatile StateRouter router;
 
     @Override
-    protected StateRouter createRouter(URL url, RouterChain chain) {
-        return new TagDynamicStateRouter(url, chain);
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        if (router != null) {
+            return router;
+        }
+        synchronized (this) {
+            if (router == null) {
+                router = createRouter(url);
+            }
+        }
+        return router;
+    }
+
+    private <T> StateRouter<T> createRouter(URL url) {
+        return new AppStateRouter<>(url);
     }
 }

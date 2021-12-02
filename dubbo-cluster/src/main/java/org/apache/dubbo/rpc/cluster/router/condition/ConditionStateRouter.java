@@ -27,14 +27,14 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Constants;
-import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
-import org.apache.dubbo.rpc.cluster.router.RouterResult;
+import org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -55,13 +55,13 @@ import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
  * It supports the conditional routing configured by "override://", in 2.6.x,
  * refer to https://dubbo.apache.org/en/docs/v2.7/user/examples/routing-rule/ .
  * For 2.7.x and later, please refer to {@link org.apache.dubbo.rpc.cluster.router.condition.config.ServiceRouter}
- * and {@link org.apache.dubbo.rpc.cluster.router.condition.config.AppRouter}
+ * and {@link AppStateRouter}
  * refer to https://dubbo.apache.org/zh/docs/v2.7/user/examples/routing-rule/ .
  */
-public class ConditionRouter extends AbstractRouter {
+public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
     public static final String NAME = "condition";
 
-    private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConditionStateRouter.class);
     protected static final Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
     protected static Pattern ARGUMENTS_PATTERN = Pattern.compile("arguments\\[([0-9]+)\\]");
     protected Map<String, MatchPair> whenCondition;
@@ -69,7 +69,8 @@ public class ConditionRouter extends AbstractRouter {
 
     private boolean enabled;
 
-    public ConditionRouter(String rule, boolean force, boolean enabled) {
+    public ConditionStateRouter(URL url, String rule, boolean force, boolean enabled) {
+        super(url);
         this.setForce(force);
         this.enabled = enabled;
         if (enabled) {
@@ -77,7 +78,8 @@ public class ConditionRouter extends AbstractRouter {
         }
     }
 
-    public ConditionRouter(URL url) {
+    public ConditionStateRouter(URL url) {
+        super(url);
         this.setUrl(url);
         this.setPriority(url.getParameter(PRIORITY_KEY, 0));
         this.setForce(url.getParameter(FORCE_KEY, false));
@@ -177,40 +179,44 @@ public class ConditionRouter extends AbstractRouter {
     }
 
     @Override
-    public <T> RouterResult<Invoker<T>> route(List<Invoker<T>> invokers, URL url,
-                                              Invocation invocation, boolean needToPrintMessage) throws RpcException {
+    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
+                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
 
         if (!enabled) {
-            return new RouterResult<>(invokers);
+            return new StateRouterResult<>(invokers,
+                needToPrintMessage ? "Directly return. Reason: ConditionRouter disabled." : null);
         }
 
         if (CollectionUtils.isEmpty(invokers)) {
-            return new RouterResult<>(invokers);
+            return new StateRouterResult<>(invokers,
+                needToPrintMessage ? "Directly return. Reason: Invokers from previous router is empty." : null);
         }
         try {
             if (!matchWhen(url, invocation)) {
-                return new RouterResult<>(invokers);
+                return new StateRouterResult<>(invokers,
+                    needToPrintMessage ? "Directly return. Reason: WhenCondition not match." : null);
             }
-            List<Invoker<T>> result = new ArrayList<Invoker<T>>();
             if (thenCondition == null) {
                 logger.warn("The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());
-                return new RouterResult<>(result);
+                return new StateRouterResult<>(BitList.emptyList(),
+                    needToPrintMessage ? "Empty return. Reason: ThenCondition is empty." : null);
             }
-            for (Invoker<T> invoker : invokers) {
-                if (matchThen(invoker.getUrl(), url)) {
-                    result.add(invoker);
-                }
-            }
+            BitList<Invoker<T>> result = invokers.clone();
+            result.removeIf(invoker -> !matchThen(invoker.getUrl(), url));
+
             if (!result.isEmpty()) {
-                return new RouterResult<>(result);
+                return new StateRouterResult<>(result,
+                    needToPrintMessage ? "Match return." : null);
             } else if (this.isForce()) {
                 logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
-                return new RouterResult<>(result);
+                return new StateRouterResult<>(result,
+                    needToPrintMessage ? "Empty return. Reason: Empty result from condition and condition is force." : null);
             }
         } catch (Throwable t) {
             logger.error("Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(), t);
         }
-        return new RouterResult<>(invokers);
+        return new StateRouterResult<>(invokers,
+            needToPrintMessage ? "Directly return. Reason: Error occurred ( or result is empty )." : null);
     }
 
     @Override
