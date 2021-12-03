@@ -20,6 +20,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,12 +28,12 @@ import java.util.List;
  * This is an abstraction specially customized for the sequence Dubbo retrieves properties.
  */
 public class CompositeConfiguration implements Configuration {
-    private Logger logger = LoggerFactory.getLogger(CompositeConfiguration.class);
+    private final Logger logger = LoggerFactory.getLogger(CompositeConfiguration.class);
 
     /**
      * List holding all the configuration
      */
-    private List<Configuration> configList = new LinkedList<Configuration>();
+    private final List<Configuration> configList = Collections.synchronizedList(new LinkedList<>());
 
     //FIXME, consider change configList to SortedMap to replace this boolean status.
     private boolean dynamicIncluded;
@@ -47,13 +48,13 @@ public class CompositeConfiguration implements Configuration {
         }
     }
 
-    public void setDynamicIncluded(boolean dynamicIncluded) {
-        this.dynamicIncluded = dynamicIncluded;
-    }
-
     //FIXME, consider change configList to SortedMap to replace this boolean status.
     public boolean isDynamicIncluded() {
         return dynamicIncluded;
+    }
+
+    public void setDynamicIncluded(boolean dynamicIncluded) {
+        this.dynamicIncluded = dynamicIncluded;
     }
 
     public void addConfiguration(Configuration configuration) {
