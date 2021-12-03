@@ -47,6 +47,9 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
                 List<Filter> tempFilters = ScopeModelUtil.getExtensionLoader(Filter.class, moduleModel).getActivateExtension(url, key, group);
                 filters.addAll(tempFilters);
             }
+        } else {
+            List<Filter> tempFilters = ScopeModelUtil.getExtensionLoader(Filter.class, null).getActivateExtension(url, key, group);
+            filters.addAll(tempFilters);
         }
 
         if (!CollectionUtils.isEmpty(filters)) {
@@ -74,6 +77,9 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
                 List<ClusterFilter> tempFilters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, moduleModel).getActivateExtension(url, key, group);
                 filters.addAll(tempFilters);
             }
+        } else {
+            List<ClusterFilter> tempFilters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, null).getActivateExtension(url, key, group);
+            filters.addAll(tempFilters);
         }
         if (!CollectionUtils.isEmpty(filters)) {
             for (int i = filters.size() - 1; i >= 0; i--) {
