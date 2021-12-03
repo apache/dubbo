@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -55,13 +56,12 @@ public class AbstractClusterTest {
             2181,
             "org.apache.dubbo.registry.RegistryService",
             parameters);
-
         URL consumerUrl = new ServiceConfigURL("dubbo",
             "127.0.0.1",
             20881,
             DemoService.class.getName(),
             parameters);
-
+        consumerUrl = consumerUrl.setScopeModel(ApplicationModel.defaultModel().getInternalModule());
         Directory<?> directory = mock(Directory.class);
         when(directory.getUrl()).thenReturn(url);
         when(directory.getConsumerUrl()).thenReturn(consumerUrl);
