@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 public class FrameworkModelTest {
     @Test
     public void testInitialize() {
+        FrameworkModel.destroyAll();
         FrameworkModel frameworkModel = new FrameworkModel();
 
         Assertions.assertNull(frameworkModel.getParent());
