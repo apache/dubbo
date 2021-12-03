@@ -14,29 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.beans;
+package org.apache.dubbo.rpc.support;
 
-import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
-import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
+import org.apache.dubbo.rpc.model.ScopeModelDestroyListener;
 
-/**
- * Inject scope bean to SPI extension instance
- */
-public class ScopeBeanExtensionInjector implements ExtensionInjector, ScopeModelAware {
-    public static final String NAME = "scopeBean";
+public class MockScopeModelDestroyListener implements ScopeModelDestroyListener {
+    private boolean destroyed = false;
     private ScopeModel scopeModel;
-    private ScopeBeanFactory beanFactory;
 
     @Override
-    public void setScopeModel(ScopeModel scopeModel) {
+    public void onDestroy(ScopeModel scopeModel) {
+        this.destroyed = true;
         this.scopeModel = scopeModel;
-        this.beanFactory = scopeModel.getBeanFactory();
     }
 
-    @Override
-    public <T> T getInstance(Class<T> type, String name) {
-        return beanFactory.getBean(name, type);
+    public boolean isDestroyed() {
+        return destroyed;
+    }
+
+    public ScopeModel getScopeModel() {
+        return scopeModel;
     }
 }

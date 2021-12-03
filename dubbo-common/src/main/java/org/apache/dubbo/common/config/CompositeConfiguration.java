@@ -18,6 +18,7 @@ package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,8 +43,7 @@ public class CompositeConfiguration implements Configuration {
     }
 
     public CompositeConfiguration(Configuration... configurations) {
-        this();
-        if (configurations != null && configurations.length > 0) {
+        if (ArrayUtils.isNotEmpty(configurations)) {
             Arrays.stream(configurations).filter(config -> !configList.contains(config)).forEach(configList::add);
         }
     }

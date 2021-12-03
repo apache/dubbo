@@ -27,8 +27,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.collections.Sets;
 
@@ -106,7 +106,7 @@ public class ZookeeperServiceDiscoveryTest {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("message", "Hello,World");
         serviceInstance.setMetadata(metadata);
-        serviceInstance.getExtendParams().put(INSTANCE_REVISION_UPDATED_KEY, "true");
+        serviceInstance.putExtendParam(INSTANCE_REVISION_UPDATED_KEY, "true");
 
         discovery.update(serviceInstance);
 

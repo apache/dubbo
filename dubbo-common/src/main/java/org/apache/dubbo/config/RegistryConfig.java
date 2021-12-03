@@ -95,7 +95,7 @@ public class RegistryConfig extends AbstractConfig {
     private String version;
 
     /**
-     * Request timeout in milliseconds for register center
+     * Connect timeout in milliseconds for register center
      */
     private Integer timeout;
 

@@ -42,8 +42,8 @@ public class ClassLoaderResourceLoader {
         GlobalResourcesRepository.registerGlobalDisposable(()-> destroy());
     }
 
-    public static Map<ClassLoader, Set<java.net.URL>> loadResources(String fileName, List<ClassLoader> classLoaders) {
-        Map<ClassLoader, Set<java.net.URL>> resources = new ConcurrentHashMap<>();
+    public static Map<ClassLoader, Set<URL>> loadResources(String fileName, List<ClassLoader> classLoaders) {
+        Map<ClassLoader, Set<URL>> resources = new ConcurrentHashMap<>();
         CountDownLatch countDownLatch = new CountDownLatch(classLoaders.size());
         for (ClassLoader classLoader : classLoaders) {
             GlobalResourcesRepository.getGlobalExecutorService().submit(() -> {
@@ -59,8 +59,8 @@ public class ClassLoaderResourceLoader {
         return Collections.unmodifiableMap(new LinkedHashMap<>(resources));
     }
 
-    public static Set<java.net.URL> loadResources(String fileName, ClassLoader currentClassLoader) {
-        Map<ClassLoader, Map<String, Set<java.net.URL>>> classLoaderCache;
+    public static Set<URL> loadResources(String fileName, ClassLoader currentClassLoader) {
+        Map<ClassLoader, Map<String, Set<URL>>> classLoaderCache;
         if (classLoaderResourcesCache == null || (classLoaderCache = classLoaderResourcesCache.get()) == null) {
             synchronized (ClassLoaderResourceLoader.class) {
                 if (classLoaderResourcesCache == null || (classLoaderCache = classLoaderResourcesCache.get()) == null) {
@@ -72,9 +72,9 @@ public class ClassLoaderResourceLoader {
         if (!classLoaderCache.containsKey(currentClassLoader)) {
             classLoaderCache.putIfAbsent(currentClassLoader, new ConcurrentHashMap<>());
         }
-        Map<String, Set<java.net.URL>> urlCache = classLoaderCache.get(currentClassLoader);
+        Map<String, Set<URL>> urlCache = classLoaderCache.get(currentClassLoader);
         if (!urlCache.containsKey(fileName)) {
-            Set<java.net.URL> set = new LinkedHashSet<>();
+            Set<URL> set = new LinkedHashSet<>();
             Enumeration<URL> urls;
             try {
                 urls = currentClassLoader.getResources(fileName);
@@ -113,4 +113,8 @@ public class ClassLoaderResourceLoader {
     }
 
 
+    // for test
+    protected static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> getClassLoaderResourcesCache() {
+        return classLoaderResourcesCache;
+    }
 }

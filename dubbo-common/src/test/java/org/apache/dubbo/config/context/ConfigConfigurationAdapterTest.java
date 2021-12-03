@@ -14,29 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.config;
+package org.apache.dubbo.config.context;
 
+import org.apache.dubbo.config.RegistryConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * {@link CompositeConfiguration}
+ * {@link ConfigConfigurationAdapter}
  */
-public class CompositeConfigurationTest {
+public class ConfigConfigurationAdapterTest {
 
     @Test
     public void test() {
-        InmemoryConfiguration inmemoryConfiguration1 = new InmemoryConfiguration();
-        InmemoryConfiguration inmemoryConfiguration2 = new InmemoryConfiguration();
-        InmemoryConfiguration inmemoryConfiguration3 = new InmemoryConfiguration();
-        CompositeConfiguration configuration = new CompositeConfiguration(new Configuration[]{inmemoryConfiguration1});
-        configuration.addConfiguration(inmemoryConfiguration2);
-        configuration.addConfigurationFirst(inmemoryConfiguration3);
+        RegistryConfig registryConfig = new RegistryConfig();
+        registryConfig.setAddress("127.0.0.1");
+        registryConfig.setPort(2181);
 
-        inmemoryConfiguration1.addProperty("k", "v1");
-        inmemoryConfiguration2.addProperty("k", "v2");
-        inmemoryConfiguration3.addProperty("k", "v3");
+        String prefix = "dubbo.registry";
+        ConfigConfigurationAdapter configConfigurationAdapter = new ConfigConfigurationAdapter(registryConfig, prefix);
 
-        Assertions.assertEquals(configuration.getInternalProperty("k"), "v3");
+        Assertions.assertEquals(configConfigurationAdapter.getInternalProperty(prefix + "." + "address"), "127.0.0.1");
+        Assertions.assertEquals(configConfigurationAdapter.getInternalProperty(prefix + "." + "port"), "2181");
     }
 }

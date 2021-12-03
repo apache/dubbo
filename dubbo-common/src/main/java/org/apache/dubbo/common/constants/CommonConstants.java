@@ -138,6 +138,8 @@ public interface CommonConstants {
 
     int DEFAULT_TIMEOUT = 1000;
 
+    String SESSION_KEY = "session";
+
     // used by invocation attachments to transfer timeout from Consumer to Provider.
     // works as a replacement of TIMEOUT_KEY on wire, which seems to be totally useless in previous releases).
     String TIMEOUT_ATTACHMENT_KEY = "_TO";
