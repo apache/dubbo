@@ -418,7 +418,7 @@ public class ServiceInstancesChangedListener {
                         continue;
                     }
                 }
-                urls.add(i.toURL().setScopeModel(i.getApplicationModel().getInternalModule()));
+                urls.add(i.toURL().setScopeModel(i.getApplicationModel()));
             }
         }
         return urls;
