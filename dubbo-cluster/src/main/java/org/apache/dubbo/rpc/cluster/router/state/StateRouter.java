@@ -22,18 +22,16 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 
-import java.util.List;
-
 /**
  * State Router. (SPI, Prototype, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
  *
- * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
+ * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory, boolean)
  * @see Directory#list(Invocation)
  * @since 3.0
  */
-public interface StateRouter extends Comparable<StateRouter> {
+public interface StateRouter<T> extends Comparable<StateRouter<T>> {
 
     int DEFAULT_PRIORITY = Integer.MAX_VALUE;
 
@@ -45,43 +43,18 @@ public interface StateRouter extends Comparable<StateRouter> {
     URL getUrl();
 
     /***
-     * Filter invokers with current routing rule and only return the invokers that comply with the rule.
-     * Caching address lists in BitMap mode improves routing performance.
-     * @param invokers  invoker bit list
-     * @param cache      router address cache
-     * @param url        refer url
-     * @param invocation invocation
-     * @param <T>
-     * @return routed invokers
-     * @throws RpcException
-     * @Since 3.0
-     */
-    @Deprecated
-    default <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation)
-        throws RpcException {
-        return null;
-    }
-
-    /***
      * ** This method can return the state of whether routerChain needed to continue route. **
      * Filter invokers with current routing rule and only return the invokers that comply with the rule.
      * Caching address lists in BitMap mode improves routing performance.
      * @param invokers  invoker bit list
-     * @param cache      router address cache
      * @param url        refer url
      * @param invocation invocation
      * @param needToPrintMessage whether to print router state. Such as `use router branch a`.
      * @return state with route result
      * @since 3.0
      */
-    default <T> StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation,
-                                                          boolean needToPrintMessage) throws RpcException {
-        return new StateRouterResult<>(route(invokers, cache, url, invocation));
-    }
-
-    default <T> void notify(List<Invoker<T>> invokers) {
-
-    }
+    StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                                            boolean needToPrintMessage) throws RpcException;
 
     /**
      * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or
@@ -91,11 +64,29 @@ public interface StateRouter extends Comparable<StateRouter> {
      */
     boolean isRuntime();
 
-    boolean isEnable();
-
+    /**
+     * To decide whether this router should take effect when none of the invoker can match the router rule, which
+     * means the {@link #route(BitList, URL, Invocation, boolean)} would be empty. Most of time, most router implementation would
+     * default this value to false.
+     *
+     * @return true to execute if none of invokers matches the current router
+     */
     boolean isForce();
 
+    /**
+     * Router's priority, used to sort routers.
+     *
+     * @return router's priority
+     */
     int getPriority();
+
+    /**
+     * Notify the router the invoker list. Invoker list may change from time to time. This method gives the router a
+     * chance to prepare before {@link StateRouter#route(BitList, URL, Invocation, boolean)} gets called.
+     *
+     * @param invokers invoker list
+     */
+    void notify(BitList<Invoker<T>> invokers);
 
     @Override
     default int compareTo(StateRouter o) {
@@ -104,14 +95,6 @@ public interface StateRouter extends Comparable<StateRouter> {
         }
         return Integer.compare(this.getPriority(), o.getPriority());
     }
-
-    String getName();
-
-    boolean shouldRePool();
-
-    <T> RouterCache<T> pool(List<Invoker<T>> invokers);
-
-    void pool();
 
     default void stop() {
         //do nothing by default

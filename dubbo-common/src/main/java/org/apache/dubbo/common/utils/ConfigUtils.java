@@ -136,7 +136,7 @@ public class ConfigUtils {
     }
 
     public static String replaceProperty(String expression, Configuration configuration) {
-        if (expression == null || expression.length() == 0 || expression.indexOf('$') < 0) {
+        if (StringUtils.isEmpty(expression)|| expression.indexOf('$') < 0) {
             return expression;
         }
         Matcher matcher = VARIABLE_PATTERN.matcher(expression);
@@ -160,15 +160,15 @@ public class ConfigUtils {
 
     /**
      * Get dubbo properties.
-     * It is not recommended to use this method to modify dubbo properties.
+     * It is not recommended using this method to modify dubbo properties.
      *
      * @return
      */
     public static Properties getProperties(Set<ClassLoader> classLoaders) {
         String path = System.getProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
-        if (path == null || path.length() == 0) {
+        if (StringUtils.isEmpty(path)) {
             path = System.getenv(CommonConstants.DUBBO_PROPERTIES_KEY);
-            if (path == null || path.length() == 0) {
+            if (StringUtils.isEmpty(path)) {
                 path = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
             }
         }
@@ -249,7 +249,7 @@ public class ConfigUtils {
         if (!allowMultiFile) {
             if (set.size() > 1) {
                 String errMsg = String.format("only 1 %s file is expected, but %d dubbo.properties files found on class path: %s",
-                    fileName, set.size(), set.toString());
+                    fileName, set.size(), set);
                 logger.warn(errMsg);
             }
 

@@ -143,7 +143,10 @@ public class ServiceInstancesChangedListener {
             MetadataInfo metadata = getRemoteMetadata(revision, localServiceToRevisions, instance);
             // update metadata into each instance, in case new instance created.
             for (ServiceInstance tmpInstance : subInstances) {
-                ((DefaultServiceInstance) tmpInstance).setServiceMetadata(metadata);
+                MetadataInfo originMetadata = ((DefaultServiceInstance) tmpInstance).getServiceMetadata();
+                if (originMetadata == null || !Objects.equals(originMetadata.getRevision(), metadata.getRevision())) {
+                    ((DefaultServiceInstance) tmpInstance).setServiceMetadata(metadata);
+                }
             }
 //            ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
             newRevisionToMetadata.putIfAbsent(revision, metadata);
@@ -410,7 +413,7 @@ public class ServiceInstancesChangedListener {
                 // different protocols may have ports specified in meta
                 if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
                     DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
-                    if (endpoint != null && !endpoint.getPort().equals(i.getPort())) {
+                    if (endpoint != null && endpoint.getPort() != i.getPort()) {
                         urls.add(((DefaultServiceInstance) i).copyFrom(endpoint).toURL());
                         continue;
                     }

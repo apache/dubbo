@@ -50,9 +50,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -127,6 +130,8 @@ public class NacosRegistry extends FailbackRegistry {
      * {@link ScheduledExecutorService} lookup Nacos service names(only for Dubbo-OPS)
      */
     private volatile ScheduledExecutorService scheduledExecutorService;
+
+    private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ConcurrentMap<String, EventListener>>> nacosListeners = new ConcurrentHashMap<>();
 
     public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
@@ -517,7 +522,15 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void subscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
         throws NacosException {
-        EventListener eventListener = new RegistryChildListenerImpl(serviceName, url, listener);
+        ConcurrentMap<NotifyListener, ConcurrentMap<String, EventListener>> listeners = nacosListeners.computeIfAbsent(url,
+            k -> new ConcurrentHashMap<>());
+
+        ConcurrentMap<String, EventListener> eventListeners = listeners.computeIfAbsent(listener,
+            k -> new ConcurrentHashMap<>());
+
+        EventListener eventListener = eventListeners.computeIfAbsent(serviceName,
+            k -> new RegistryChildListenerImpl(serviceName, url, listener));
+
         namingService.subscribe(serviceName,
             getUrl().getGroup(Constants.DEFAULT_GROUP),
             eventListener);
@@ -613,10 +626,19 @@ public class NacosRegistry extends FailbackRegistry {
     }
 
     private class RegistryChildListenerImpl implements EventListener {
-        private RegistryNotifier notifier;
+        private final RegistryNotifier notifier;
+
+        private final String serviceName;
+
+        private final URL consumerUrl;
+
+        private final NotifyListener listener;
 
         public RegistryChildListenerImpl(String serviceName, URL consumerUrl, NotifyListener listener) {
-            notifier = new RegistryNotifier(getUrl(), NacosRegistry.this.getDelay()) {
+            this.serviceName = serviceName;
+            this.consumerUrl = consumerUrl;
+            this.listener = listener;
+            this.notifier = new RegistryNotifier(getUrl(), NacosRegistry.this.getDelay()) {
                 @Override
                 protected void doNotify(Object rawAddresses) {
                     List<Instance> instances = (List<Instance>) rawAddresses;
@@ -639,6 +661,23 @@ public class NacosRegistry extends FailbackRegistry {
                 NamingEvent e = (NamingEvent) event;
                 notifier.notify(e.getInstances());
             }
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            RegistryChildListenerImpl that = (RegistryChildListenerImpl) o;
+            return Objects.equals(serviceName, that.serviceName) && Objects.equals(consumerUrl, that.consumerUrl) && Objects.equals(listener, that.listener);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(serviceName, consumerUrl, listener);
         }
     }
 

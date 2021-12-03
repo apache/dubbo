@@ -24,7 +24,6 @@ import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
-import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -37,13 +36,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.monitor.Constants.CONCURRENT_KEY;
 import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
+import static org.apache.dubbo.monitor.Constants.ELAPSED_KEY;
+import static org.apache.dubbo.monitor.Constants.FAILURE_KEY;
+import static org.apache.dubbo.monitor.Constants.SUCCESS_KEY;
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
 import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
 
@@ -133,10 +140,10 @@ public class MonitorFilter implements Filter, Filter.Listener {
      *
      * @param invoker
      * @param invocation
-     * @param result     the invoke result
+     * @param result     the invocation result
      * @param remoteHost the remote host address
-     * @param start      the timestamp the invoke begin
-     * @param error      if there is an error on the invoke
+     * @param start      the timestamp the invocation begin
+     * @param error      if there is an error on the invocation
      */
     private void collect(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         try {
@@ -185,12 +192,12 @@ public class MonitorFilter implements Filter, Filter.Listener {
         if (CONSUMER_SIDE.equals(invoker.getUrl().getSide())) {
             // ---- for service consumer ----
             localPort = 0;
-            remoteKey = MonitorService.PROVIDER;
+            remoteKey = PROVIDER;
             remoteValue = invoker.getUrl().getAddress();
         } else {
             // ---- for service provider ----
             localPort = invoker.getUrl().getPort();
-            remoteKey = MonitorService.CONSUMER;
+            remoteKey = CONSUMER;
             remoteValue = remoteHost;
         }
         String input = "", output = "";
@@ -203,19 +210,17 @@ public class MonitorFilter implements Filter, Filter.Listener {
 
         return new ServiceConfigURL(COUNT_PROTOCOL, NetUtils.getLocalHost(), localPort,
             service + PATH_SEPARATOR + method,
-            MonitorService.APPLICATION,
-            application,
-            MonitorService.INTERFACE,
-            service,
-            MonitorService.METHOD,
-            method, remoteKey,
-            remoteValue,
-            error ? MonitorService.FAILURE : MonitorService.SUCCESS, "1",
-            MonitorService.ELAPSED,
-            String.valueOf(elapsed),
-            MonitorService.CONCURRENT,
-            String.valueOf(concurrent),
-            INPUT_KEY, input, OUTPUT_KEY, output, GROUP_KEY, group, VERSION_KEY, version);
+            APPLICATION_KEY, application,
+            INTERFACE_KEY, service,
+            METHOD_KEY, method,
+            remoteKey, remoteValue,
+            error ? FAILURE_KEY : SUCCESS_KEY, "1",
+            ELAPSED_KEY, String.valueOf(elapsed),
+            CONCURRENT_KEY, String.valueOf(concurrent),
+            INPUT_KEY, input,
+            OUTPUT_KEY, output,
+            GROUP_KEY, group,
+            VERSION_KEY, version);
     }
 
 

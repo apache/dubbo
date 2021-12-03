@@ -375,7 +375,7 @@ public class InstanceAddressURL extends URL {
             return this;
         }
 
-        getInstance().getExtendParams().put(key, value);
+        getInstance().putExtendParam(key, value);
         return this;
     }
 
@@ -385,7 +385,7 @@ public class InstanceAddressURL extends URL {
             return this;
         }
 
-        getInstance().getExtendParams().putIfAbsent(key, value);
+        getInstance().putExtendParamIfAbsent(key, value);
         return this;
     }
 
@@ -485,7 +485,7 @@ public class InstanceAddressURL extends URL {
         if (StringUtils.isNotEmpty(value)) {
             return value;
         }
-        return this.instance.getExtendParams().get(key);
+        return this.instance.getExtendParam(key);
     }
 
     private Map<String, String> getInstanceMetadata() {

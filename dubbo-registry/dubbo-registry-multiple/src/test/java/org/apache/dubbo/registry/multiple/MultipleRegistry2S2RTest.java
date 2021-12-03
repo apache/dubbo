@@ -17,19 +17,14 @@
 package org.apache.dubbo.registry.multiple;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.zookeeper.ZookeeperRegistry;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperClient;
-
-import org.apache.curator.test.TestingServer;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,14 +36,6 @@ public class MultipleRegistry2S2RTest {
     private static final String SERVICE_NAME = "org.apache.dubbo.registry.MultipleService2S2R";
     private static final String SERVICE2_NAME = "org.apache.dubbo.registry.MultipleService2S2R2";
 
-    private static TestingServer zkServer;
-    private static TestingServer zkServer2;
-    static int zkServerPort;
-    static int zkServerPort2;
-
-    private static String zookeeperRegistryURLStr;
-    private static String zookeeperRegistryURLStr2;
-
     private static MultipleRegistry multipleRegistry;
     // for test content
     private static ZookeeperClient zookeeperClient;
@@ -58,56 +45,46 @@ public class MultipleRegistry2S2RTest {
     private static ZookeeperRegistry zookeeperRegistry2;
 
 
+    private static String zookeeperConnectionAddress1, zookeeperConnectionAddress2;
+
     @BeforeAll
-    public static void setUp() throws Exception {
-        zkServerPort = NetUtils.getAvailablePort();
-        zkServer = new TestingServer(zkServerPort, true);
-        zookeeperRegistryURLStr = "zookeeper://127.0.0.1:" + zkServerPort;
-
-        zkServerPort2 = NetUtils.getAvailablePort();
-        zkServer2 = new TestingServer(zkServerPort2, true);
-        zookeeperRegistryURLStr2 = "zookeeper://127.0.0.1:" + zkServerPort2;
-
+    public static void beforeAll() {
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+        zookeeperConnectionAddress2 = System.getProperty("zookeeper.connection.address.2");
 
         URL url = URL.valueOf("multiple://127.0.0.1?application=vic&" +
-                MultipleRegistry.REGISTRY_FOR_SERVICE + "=" + zookeeperRegistryURLStr + "," + zookeeperRegistryURLStr2 + "&"
-                + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + zookeeperRegistryURLStr + "," + zookeeperRegistryURLStr2);
+            MultipleRegistry.REGISTRY_FOR_SERVICE + "=" + zookeeperConnectionAddress1 + "," + zookeeperConnectionAddress2 + "&"
+            + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + zookeeperConnectionAddress1 + "," + zookeeperConnectionAddress2);
         multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(url);
 
         // for test validation
-        zookeeperClient = new CuratorZookeeperClient(URL.valueOf(zookeeperRegistryURLStr));
+        zookeeperClient = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress1));
         zookeeperRegistry = MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values());
-        zookeeperClient2 = new CuratorZookeeperClient(URL.valueOf(zookeeperRegistryURLStr2));
+        zookeeperClient2 = new CuratorZookeeperClient(URL.valueOf(zookeeperConnectionAddress2));
         zookeeperRegistry2 = MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values());
-    }
-
-    @AfterAll
-    public static void tearDown() throws Exception {
-        zkServer.stop();
-        zkServer2.stop();
     }
 
     @Test
     public void testParamConfig() {
 
         Assertions.assertEquals(2, multipleRegistry.origReferenceRegistryURLs.size());
-        Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperRegistryURLStr));
-        Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperRegistryURLStr2));
+        Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress1));
+        Assertions.assertTrue(multipleRegistry.origReferenceRegistryURLs.contains(zookeeperConnectionAddress2));
 
         Assertions.assertEquals(2, multipleRegistry.origServiceRegistryURLs.size());
-        Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(zookeeperRegistryURLStr));
-        Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(zookeeperRegistryURLStr2));
+        Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(zookeeperConnectionAddress1));
+        Assertions.assertTrue(multipleRegistry.origServiceRegistryURLs.contains(zookeeperConnectionAddress2));
 
         Assertions.assertEquals(2, multipleRegistry.effectReferenceRegistryURLs.size());
-        Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(zookeeperRegistryURLStr));
-        Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(zookeeperRegistryURLStr2));
+        Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(zookeeperConnectionAddress1));
+        Assertions.assertTrue(multipleRegistry.effectReferenceRegistryURLs.contains(zookeeperConnectionAddress2));
 
         Assertions.assertEquals(2, multipleRegistry.effectServiceRegistryURLs.size());
-        Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(zookeeperRegistryURLStr));
-        Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(zookeeperRegistryURLStr2));
+        Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(zookeeperConnectionAddress1));
+        Assertions.assertTrue(multipleRegistry.effectServiceRegistryURLs.contains(zookeeperConnectionAddress2));
 
-        Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(zookeeperRegistryURLStr));
-        Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(zookeeperRegistryURLStr2));
+        Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(zookeeperConnectionAddress1));
+        Assertions.assertTrue(multipleRegistry.getServiceRegistries().containsKey(zookeeperConnectionAddress2));
         Assertions.assertEquals(2, multipleRegistry.getServiceRegistries().values().size());
 //        java.util.Iterator<Registry> registryIterable = multipleRegistry.getServiceRegistries().values().iterator();
 //        Registry firstRegistry = registryIterable.next();

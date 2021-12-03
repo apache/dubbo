@@ -49,13 +49,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SESSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 
 public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.NodeCacheListenerImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
 
     protected static final Logger logger = LoggerFactory.getLogger(CuratorZookeeperClient.class);
-    private static final String ZK_SESSION_EXPIRE_KEY = "zk.session.expire";
 
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private final CuratorFramework client;
@@ -65,7 +65,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         super(url);
         try {
             int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
-            int sessionExpireMs = url.getParameter(ZK_SESSION_EXPIRE_KEY, DEFAULT_SESSION_TIMEOUT_MS);
+            int sessionExpireMs = url.getParameter(SESSION_KEY, DEFAULT_SESSION_TIMEOUT_MS);
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                     .connectString(url.getBackupAddress())
                     .retryPolicy(new RetryNTimes(1, 1000))
@@ -392,7 +392,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
         public CuratorConnectionStateListener(URL url) {
             this.timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
-            this.sessionExpireMs = url.getParameter(ZK_SESSION_EXPIRE_KEY, DEFAULT_SESSION_TIMEOUT_MS);
+            this.sessionExpireMs = url.getParameter(SESSION_KEY, DEFAULT_SESSION_TIMEOUT_MS);
         }
 
         @Override

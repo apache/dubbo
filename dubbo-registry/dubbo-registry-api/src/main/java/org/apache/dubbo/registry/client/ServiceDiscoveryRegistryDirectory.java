@@ -124,7 +124,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public void buildRouterChain(URL url) {
-        this.setRouterChain(RouterChain.buildChain(url.addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)));
+        this.setRouterChain(RouterChain.buildChain(getInterface(), url.addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)));
     }
 
     @Override

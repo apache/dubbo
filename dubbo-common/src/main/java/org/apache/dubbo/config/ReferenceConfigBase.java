@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -78,7 +79,21 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
     }
 
+    public ReferenceConfigBase(ModuleModel moduleModel) {
+        super(moduleModel);
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+    }
+
     public ReferenceConfigBase(Reference reference) {
+        serviceMetadata = new ServiceMetadata();
+        serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+        appendAnnotation(Reference.class, reference);
+        setMethods(MethodConfig.constructMethodConfig(reference.methods()));
+    }
+
+    public ReferenceConfigBase(ModuleModel moduleModel, Reference reference) {
+        super(moduleModel);
         serviceMetadata = new ServiceMetadata();
         serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
         appendAnnotation(Reference.class, reference);
