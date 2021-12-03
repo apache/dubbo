@@ -177,7 +177,7 @@ public class FileCacheStore {
         }
 
         if (dirLock == null) {
-            throw new PathNotExclusiveException(basePath.getAbsolutePath() + " is not exclusive.");
+            throw new PathNotExclusiveException(basePath.getAbsolutePath() + "/" + fileName + " is not exclusive.");
         }
 
         this.directoryLock = dirLock;

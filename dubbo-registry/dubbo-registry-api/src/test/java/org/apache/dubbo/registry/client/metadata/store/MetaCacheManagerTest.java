@@ -31,6 +31,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class MetaCacheManagerTest {
 
@@ -84,8 +85,14 @@ public class MetaCacheManagerTest {
         try {
             cacheManager.put("3", metadataInfo3);
 
-            MetaCacheManager.CacheRefreshTask task = new MetaCacheManager.CacheRefreshTask(cacheManager.cacheStore, cacheManager.cache);
-            task.run();
+            try {
+                MetaCacheManager.CacheRefreshTask task = new MetaCacheManager.CacheRefreshTask(cacheManager.cacheStore, cacheManager.cache);
+                task.run();
+            } catch (Exception e) {
+                fail();
+            } finally {
+                cacheManager.destroy();
+            }
 
             MetaCacheManager newCacheManager = null;
             try {
