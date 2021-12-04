@@ -70,7 +70,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String password;
 
     /**
-     * The default value is 3000L;
+     * The default value is 30000L;
      */
     private Long timeout;
 
@@ -130,7 +130,7 @@ public class ConfigCenterConfig extends AbstractConfig {
             group = CommonConstants.DUBBO;
         }
         if (timeout == null) {
-            timeout = 3000L;
+            timeout = 30000L;
         }
 //        if (highestPriority == null) {
 //            highestPriority = true;
