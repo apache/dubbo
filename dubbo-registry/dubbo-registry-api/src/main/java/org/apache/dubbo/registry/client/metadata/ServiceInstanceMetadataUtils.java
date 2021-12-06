@@ -213,10 +213,6 @@ public class ServiceInstanceMetadataUtils {
         return null;
     }
 
-    public static boolean isInstanceUpdated(ServiceInstance instance) {
-        return "true".equals(instance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
-    }
-
     public static void registerMetadataAndInstance(ApplicationModel applicationModel) {
         LOGGER.info("Start registering instance address to registry.");
         RegistryManager registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
@@ -249,6 +245,10 @@ public class ServiceInstanceMetadataUtils {
             // customize
             customizer.customize(instance, applicationModel);
         });
+    }
+
+    public static boolean isValidInstance(ServiceInstance instance) {
+        return instance != null && instance.getHost() != null && instance.getPort() != 0;
     }
 
     /**

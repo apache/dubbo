@@ -146,8 +146,15 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         dubboShutdownHook.unregister();
     }
 
+    /**
+     * Close registration of instance for pure Consumer process by setting registerConsumer to 'false'
+     * by default is true.
+     */
     private boolean isRegisterConsumerInstance() {
         Boolean registerConsumer = getApplication().getRegisterConsumer();
+        if (registerConsumer == null) {
+            return true;
+        }
         return Boolean.TRUE.equals(registerConsumer);
     }
 
@@ -582,10 +589,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             return;
         }
 
-        exportMetadataService();
-
-        // if register consumer instance or has exported services
-        if (isRegisterConsumerInstance() || hasExportedServices()) {
+        if (isRegisterConsumerInstance()) {
+            exportMetadataService();
             if (hasPreparedApplicationInstance.compareAndSet(false, true)) {
                 // register the local ServiceInstance if required
                 registerServiceInstance();

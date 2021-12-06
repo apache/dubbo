@@ -34,6 +34,7 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.isValidInstance;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 
 /**
@@ -77,6 +78,10 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     public synchronized final void register() throws RuntimeException {
         this.serviceInstance = createServiceInstance();
+        if (isValidInstance(serviceInstance)) {
+            return;
+        }
+
         boolean revisionUpdated = calOrUpdateInstanceRevision();
         if (revisionUpdated) {
             reportMetadata();
@@ -93,7 +98,14 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     public synchronized final void update() throws RuntimeException {
         if (this.serviceInstance == null) {
             this.serviceInstance = createServiceInstance();
+        } else if (!isValidInstance(serviceInstance)) {
+            ServiceInstanceMetadataUtils.customizeInstance(serviceInstance, applicationModel);
         }
+
+        if (!isValidInstance(serviceInstance)) {
+            return;
+        }
+
         boolean revisionUpdated = calOrUpdateInstanceRevision();
         if (revisionUpdated) {
             doUpdate();
