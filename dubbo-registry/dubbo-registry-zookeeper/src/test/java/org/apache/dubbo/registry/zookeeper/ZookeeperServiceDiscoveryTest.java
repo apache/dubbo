@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.collections.Sets;
@@ -51,18 +52,18 @@ public class ZookeeperServiceDiscoveryTest {
 
     private static final String LOCALHOST = "127.0.0.1";
 
-    private TestingServer zkServer;
-    private int zkServerPort;
     private URL registryUrl;
 
     private ZookeeperServiceDiscovery discovery;
+    private static String zookeeperConnectionAddress1;
+
+    @BeforeAll
+    public static void beforeAll() {
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+    }
 
     @BeforeEach
     public void init() throws Exception {
-        zkServerPort = getAvailablePort();
-        zkServer = new TestingServer(zkServerPort, true);
-        zkServer.start();
-
         this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(SERVICE_NAME));
@@ -73,7 +74,6 @@ public class ZookeeperServiceDiscoveryTest {
     @AfterEach
     public void close() throws Exception {
         discovery.destroy();
-        zkServer.stop();
     }
 
     @Test

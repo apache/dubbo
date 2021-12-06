@@ -115,7 +115,7 @@ public class ContextFilter implements Filter, Filter.Listener {
         // merged from dubbox
         // we may already add some attachments into RpcContext before this filter (e.g. in rest protocol)
         if (attachments != null) {
-            if (context.getObjectAttachments() != null) {
+            if (context.getObjectAttachments().size() > 0) {
                 context.getObjectAttachments().putAll(attachments);
             } else {
                 context.setObjectAttachments(attachments);

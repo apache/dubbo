@@ -76,7 +76,7 @@ class TransportStateTest {
     @Test
     void allowSendEndStream() {
         TransportState transportState = new TransportState();
-        Assertions.assertFalse(transportState.allowSendEndStream());
+        Assertions.assertTrue(transportState.allowSendEndStream());
 
         transportState = new TransportState();
         transportState.setResetSend();

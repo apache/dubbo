@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -52,11 +53,11 @@ public class FrameworkModel extends ScopeModel {
 
     private volatile ApplicationModel defaultAppModel;
 
-    private static List<FrameworkModel> allInstances = Collections.synchronizedList(new ArrayList<>());
+    private static List<FrameworkModel> allInstances = new CopyOnWriteArrayList<>();
 
-    private List<ApplicationModel> applicationModels = Collections.synchronizedList(new ArrayList<>());
+    private List<ApplicationModel> applicationModels = new CopyOnWriteArrayList<>();
 
-    private List<ApplicationModel> pubApplicationModels = Collections.synchronizedList(new ArrayList<>());
+    private List<ApplicationModel> pubApplicationModels = new CopyOnWriteArrayList<>();
 
     private FrameworkServiceRepository serviceRepository;
 
@@ -66,8 +67,7 @@ public class FrameworkModel extends ScopeModel {
 
     public FrameworkModel() {
         super(null, ExtensionScope.FRAMEWORK);
-
-        this.setInternalId(index.getAndIncrement()+"");
+        this.setInternalId(String.valueOf(index.getAndIncrement()));
         // register FrameworkModel instance early
         synchronized (globalLock) {
             allInstances.add(this);
@@ -108,27 +108,25 @@ public class FrameworkModel extends ScopeModel {
                 LOGGER.info("Destroying default framework model: " + getDesc());
             }
         }
-        synchronized (instLock) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(getDesc() + " is destroying ...");
-            }
 
-            // destroy all application model
-            for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
-                applicationModel.destroy();
-            }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is destroying ...");
+        }
 
-            // check whether all application models are destroyed
-            checkApplicationDestroy();
+        // destroy all application model
+        for (ApplicationModel applicationModel : new ArrayList<>(applicationModels)) {
+            applicationModel.destroy();
+        }
+        // check whether all application models are destroyed
+        checkApplicationDestroy();
 
-            // notify destroy and clean framework resources
-            // see org.apache.dubbo.config.deploy.FrameworkModelCleaner
-            notifyDestroy();
-            checkApplicationDestroy();
+        // notify destroy and clean framework resources
+        // see org.apache.dubbo.config.deploy.FrameworkModelCleaner
+        notifyDestroy();
+        checkApplicationDestroy();
 
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(getDesc() + " is destroyed");
-            }
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(getDesc() + " is destroyed");
         }
 
         // remove from allInstances and reset default FrameworkModel
@@ -174,9 +172,9 @@ public class FrameworkModel extends ScopeModel {
                     defaultInstance = new FrameworkModel();
                 }
                 instance = defaultInstance;
-                Assert.notNull(instance, "Default FrameworkModel is null");
             }
         }
+        Assert.notNull(instance, "Default FrameworkModel is null");
         return instance;
     }
 
@@ -208,15 +206,19 @@ public class FrameworkModel extends ScopeModel {
     public ApplicationModel defaultApplication() {
         ApplicationModel appModel = this.defaultAppModel;
         if (appModel == null) {
-            synchronized (instLock) {
-                resetDefaultAppModel();
-                if (this.defaultAppModel == null) {
-                    this.defaultAppModel = newApplication();
+            // check destroyed before acquire inst lock, avoid blocking during destroying
+            checkDestroyed();
+            resetDefaultAppModel();
+            if ((appModel = this.defaultAppModel) == null) {
+                synchronized (instLock) {
+                    if (this.defaultAppModel == null) {
+                        this.defaultAppModel = newApplication();
+                    }
+                    appModel = this.defaultAppModel;
                 }
-                appModel = this.defaultAppModel;
-                Assert.notNull(appModel, "Default ApplicationModel is null");
             }
         }
+        Assert.notNull(appModel, "Default ApplicationModel is null");
         return appModel;
     }
 
@@ -227,7 +229,7 @@ public class FrameworkModel extends ScopeModel {
     void addApplication(ApplicationModel applicationModel) {
         // can not add new application if it's destroying
         checkDestroyed();
-        synchronized (instLock){
+        synchronized (instLock) {
             if (!this.applicationModels.contains(applicationModel)) {
                 applicationModel.setInternalId(buildInternalId(getInternalId(), appIndex.getAndIncrement()));
                 this.applicationModels.add(applicationModel);

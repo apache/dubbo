@@ -269,7 +269,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (currentAvailableInvoker != null) {
             if (step == APPLICATION_FIRST) {
                 // call ratio calculation based on random value
-                if (ThreadLocalRandom.current().nextDouble(100) > promotion) {
+                if (promotion < 100 && ThreadLocalRandom.current().nextDouble(100) > promotion) {
                     return invoker.invoke(invocation);
                 }
             }

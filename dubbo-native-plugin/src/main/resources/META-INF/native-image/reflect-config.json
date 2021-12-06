@@ -2191,7 +2191,7 @@
     "name": "org.apache.dubbo.rpc.cluster.router.condition.ConditionRouterFactory"
   },
   {
-    "name": "org.apache.dubbo.rpc.cluster.router.condition.config.AppRouterFactory",
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouterFactory",
     "allPublicMethods": true,
     "methods": [
       {
@@ -2201,7 +2201,7 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.cluster.router.condition.config.ServiceRouterFactory",
+    "name": "org.apache.dubbo.rpc.cluster.router.condition.config.ServiceStateRouterFactory",
     "allPublicMethods": true,
     "methods": [
       {
@@ -2211,7 +2211,7 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.cluster.router.file.FileRouterFactory"
+    "name": "org.apache.dubbo.rpc.cluster.router.file.FileStateRouterFactory"
   },
   {
     "name": "org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleAddressListenerInterceptor",
@@ -2234,7 +2234,7 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.cluster.router.mock.MockRouterFactory",
+    "name": "org.apache.dubbo.rpc.cluster.router.mock.MockStateRouterFactory",
     "allPublicMethods": true,
     "methods": [
       {

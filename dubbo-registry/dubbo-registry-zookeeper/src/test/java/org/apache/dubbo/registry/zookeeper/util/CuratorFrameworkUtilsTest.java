@@ -35,8 +35,6 @@ import org.mockito.Mockito;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_STORAGE_TYPE_PROPERTY_NAME;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.ROOT_PATH;
@@ -45,27 +43,19 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.RO
  * {@link CuratorFrameworkUtils} Test
  */
 class CuratorFrameworkUtilsTest {
-    private static TestingServer zkServer;
     private static URL registryUrl;
+    private static String zookeeperConnectionAddress1;
     private static MetadataReport metadataReport;
 
     @BeforeAll
     public static void init() throws Exception {
-        int zkServerPort = getAvailablePort();
-        zkServer = new TestingServer(zkServerPort, true);
-        zkServer.start();
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
 
-        registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
+        registryUrl = URL.valueOf(zookeeperConnectionAddress1);
         registryUrl.setScopeModel(ApplicationModel.defaultModel());
 
         metadataReport = Mockito.mock(MetadataReport.class);
     }
-
-    @AfterAll
-    public static void tearDown() throws Exception {
-        zkServer.stop();
-    }
-
 
     @Test
     void testBuildCuratorFramework() throws Exception {

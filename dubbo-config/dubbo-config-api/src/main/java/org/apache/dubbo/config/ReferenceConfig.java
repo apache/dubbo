@@ -41,6 +41,7 @@ import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
@@ -144,8 +145,16 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         super();
     }
 
+    public ReferenceConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
     public ReferenceConfig(Reference reference) {
         super(reference);
+    }
+
+    public ReferenceConfig(ModuleModel moduleModel, Reference reference) {
+        super(moduleModel, reference);
     }
 
     @Override
@@ -518,8 +527,16 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private void checkInvokerAvailable() throws IllegalStateException {
         if (shouldCheck() && !invoker.isAvailable()) {
             invoker.destroy();
-            throw new IllegalStateException("Should has at least one way to know which services this interface belongs to," +
-                " subscription url: " + invoker.getUrl());
+            throw new IllegalStateException("Failed to check the status of the service "
+                + interfaceName
+                + ". No provider available for the service "
+                + (group == null ? "" : group + "/")
+                + interfaceName +
+                (version == null ? "" : ":" + version)
+                + " from the url "
+                + invoker.getUrl()
+                + " to the consumer "
+                + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
         }
     }
 

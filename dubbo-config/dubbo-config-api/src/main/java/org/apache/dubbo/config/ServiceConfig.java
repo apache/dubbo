@@ -39,6 +39,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.cluster.ConfiguratorFactory;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ModuleServiceRepository;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -136,8 +137,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     public ServiceConfig() {
     }
 
+    public ServiceConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
     public ServiceConfig(Service service) {
         super(service);
+    }
+
+    public ServiceConfig(ModuleModel moduleModel, Service service) {
+        super(moduleModel, service);
     }
 
     @Override
@@ -742,9 +751,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private static synchronized Integer findConfiguredPort(ProtocolConfig protocolConfig,
                                                            ProviderConfig provider,
                                                            ExtensionLoader<Protocol> extensionLoader,
-                                                           String name,
-                                                           Map<String, String> map) {
-        Integer portToBind = null;
+                                                           String name,Map<String, String> map) {
+        Integer portToBind;
 
         // parse bind port from environment
         String port = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_BIND);
@@ -769,17 +777,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
 
-        // registry port, not used as binding port by default
-        String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
-        Integer portToRegistry = parsePort(portToRegistryStr);
-        if (portToRegistry != null) {
-            portToBind = portToRegistry;
-        }
-
-        // save binding port, will be used as key in url later
+        // save bind port, used as url's key later
         map.put(BIND_PORT_KEY, String.valueOf(portToBind));
 
-        return portToBind;
+        // registry port, not used as bind port by default
+        String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
+        Integer portToRegistry = parsePort(portToRegistryStr);
+        if (portToRegistry == null) {
+            portToRegistry = portToBind;
+        }
+
+        return portToRegistry;
     }
 
     private static Integer parsePort(String configPort) {

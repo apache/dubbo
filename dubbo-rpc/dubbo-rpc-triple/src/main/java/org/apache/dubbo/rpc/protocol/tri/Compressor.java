@@ -42,6 +42,9 @@ public interface Compressor {
         if (null == compressorStr) {
             return null;
         }
+        if (compressorStr.equals(DEFAULT_COMPRESSOR)) {
+            return NONE;
+        }
         return frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
     }
 

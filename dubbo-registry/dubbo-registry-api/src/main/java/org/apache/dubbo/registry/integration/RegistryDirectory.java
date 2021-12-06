@@ -18,7 +18,6 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -33,13 +32,12 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -205,8 +203,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
                 && invokerUrls.get(0) != null
                 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
             this.forbidden = true; // Forbid to access
-            this.invokers = Collections.emptyList();
-            routerChain.setInvokers(this.invokers);
+            routerChain.setInvokers(BitList.emptyList());
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
@@ -214,22 +211,27 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
             }
-            if (invokerUrls.isEmpty() && this.cachedInvokerUrls != null) {
-                invokerUrls.addAll(this.cachedInvokerUrls);
+            // use local reference to avoid NPE as this.cachedInvokerUrls will be set null by destroyAllInvokers().
+            Set<URL> localCachedInvokerUrls = this.cachedInvokerUrls;
+            if (invokerUrls.isEmpty() && localCachedInvokerUrls != null) {
+                invokerUrls.addAll(localCachedInvokerUrls);
             } else {
-                this.cachedInvokerUrls = new HashSet<>();
-                this.cachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
+                localCachedInvokerUrls = new HashSet<>();
+                localCachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
+                this.cachedInvokerUrls = localCachedInvokerUrls;
             }
             if (invokerUrls.isEmpty()) {
                 return;
             }
-            
-            // can't use local reference because this.urlInvokerMap might be accessed at isAvailable() by main thread concurrently.
+
+            // use local reference to avoid NPE as this.urlInvokerMap will be set null concurrently at destroyAllInvokers().
+            Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap;
+            // can't use local reference as oldUrlInvokerMap's mappings might be removed directly at toInvokers().
             Map<URL, Invoker<T>> oldUrlInvokerMap = null;
-            if (this.urlInvokerMap != null) {
+            if (localUrlInvokerMap != null) {
                 // the initial capacity should be set greater than the maximum number of entries divided by the load factor to avoid resizing.
-                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + this.urlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
-                this.urlInvokerMap.forEach(oldUrlInvokerMap::put);
+                oldUrlInvokerMap = new LinkedHashMap<>(Math.round(1 + localUrlInvokerMap.size() / DEFAULT_HASHMAP_LOAD_FACTOR));
+                localUrlInvokerMap.forEach(oldUrlInvokerMap::put);
             }
             Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(oldUrlInvokerMap, invokerUrls);// Translate url list to Invoker map
 
@@ -248,10 +250,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
 
             List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-            // pre-route and build cache, notice that route cache should build on original Invoker list.
-            // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
-            routerChain.setInvokers(newInvokers);
-            this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
+            this.setInvokers(multiGroup ? new BitList<>(toMergeInvokerList(newInvokers)) : new BitList<>(newInvokers));
+            // pre-route and build cache
+            routerChain.setInvokers(this.getInvokers());
             this.urlInvokerMap = newUrlInvokerMap;
 
             try {
@@ -324,12 +325,12 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
      * Turn urls into invokers, and if url has been refer, will not re-reference.
      * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
-     * @param oldUrlInvokerMap     
+     * @param oldUrlInvokerMap it might be modified during the process.
      * @param urls
      * @return invokers
      */
     private Map<URL, Invoker<T>> toInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, List<URL> urls) {
-        Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>();
+        Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>(urls == null ? 1 : (int) (urls.size() / 0.75f + 1));
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
@@ -487,8 +488,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             }
             localUrlInvokerMap.clear();
         }
-        invokers = null;
-        cachedInvokerUrls = null;
+
+        this.urlInvokerMap = null;
+        this.cachedInvokerUrls = null;
+        destroyInvokers();
     }
 
     private void destroyUnusedInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, Map<URL, Invoker<T>> newUrlInvokerMap) {
@@ -519,38 +522,13 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     @Override
-    public List<Invoker<T>> doList(Invocation invocation) {
-        if (forbidden) {
-            // 1. No service provider 2. Service providers are disabled
-            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
-                    getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
-                    NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() +
-                    ", please check status of providers(disabled, not registered or in blacklist).");
-        }
-
-        if (multiGroup) {
-            return this.invokers == null ? Collections.emptyList() : this.invokers;
-        }
-
-        List<Invoker<T>> invokers = null;
-        try {
-            // Get invokers from cache, only runtime routers will be executed.
-            invokers = routerChain.route(getConsumerUrl(), invocation);
-        } catch (Throwable t) {
-            logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
-        }
-
-        return invokers == null ? Collections.emptyList() : invokers;
-    }
-
-    @Override
     public Class<T> getInterface() {
         return serviceType;
     }
 
     @Override
     public List<Invoker<T>> getAllInvokers() {
-        return this.invokers == null ? Collections.emptyList() : this.invokers;
+        return this.getInvokers();
     }
 
     @Override
@@ -574,26 +552,11 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
     }
 
-    @Override
-    public boolean isAvailable() {
-        if (isDestroyed() || this.forbidden) {
-            return false;
-        }
-        Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
-        return CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
-                && localUrlInvokerMap.values().stream().anyMatch(Invoker::isAvailable);
-    }
-
     /**
      * Haomin: added for test purpose
      */
     public Map<URL, Invoker<T>> getUrlInvokerMap() {
         return urlInvokerMap;
-    }
-
-    @Override
-    public List<Invoker<T>> getInvokers() {
-        return invokers;
     }
 
     private boolean isValidCategory(URL url) {

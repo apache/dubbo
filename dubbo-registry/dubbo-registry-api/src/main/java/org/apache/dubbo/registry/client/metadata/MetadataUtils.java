@@ -106,7 +106,7 @@ public class MetadataUtils {
 
     private static MetadataService referProxy(String key, ServiceInstance instance) {
         MetadataServiceURLBuilder builder;
-        ExtensionLoader<MetadataServiceURLBuilder> loader = instance.getOrDefaultApplicationModel()
+        ExtensionLoader<MetadataServiceURLBuilder> loader = instance.getApplicationModel()
             .getExtensionLoader(MetadataServiceURLBuilder.class);
 
         Map<String, String> metadata = instance.getMetadata();
@@ -125,7 +125,7 @@ public class MetadataUtils {
         }
 
         // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
-        ScopeModel scopeModel = ScopeModelUtil.getOrDefaultApplicationModel(instance.getApplicationModel());
+        ScopeModel scopeModel = instance.getApplicationModel();
         Protocol protocol = scopeModel.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, urls.get(0));
         metadataServiceInvokers.put(key, invoker);
