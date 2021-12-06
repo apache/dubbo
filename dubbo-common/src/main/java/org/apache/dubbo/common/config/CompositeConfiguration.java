@@ -74,14 +74,17 @@ public class CompositeConfiguration implements Configuration {
 
     @Override
     public Object getInternalProperty(String key) {
-        for (Configuration config : configList) {
-            try {
-                Object value = config.getProperty(key);
-                if (!ConfigurationUtils.isEmptyValue(value)) {
-                    return value;
+        synchronized (configList) {
+            for (Configuration config : configList) {
+                try {
+                    Object value = config.getProperty(key);
+                    if (!ConfigurationUtils.isEmptyValue(value)) {
+                        return value;
+                    }
+                } catch (Exception e) {
+                    logger.error("Error when trying to get value for key " + key + " from " + config + ", " +
+                            "will continue to try the next one.");
                 }
-            } catch (Exception e) {
-                logger.error("Error when trying to get value for key " + key + " from " + config + ", will continue to try the next one.");
             }
         }
         return null;
