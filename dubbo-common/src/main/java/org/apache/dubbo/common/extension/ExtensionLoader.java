@@ -444,7 +444,7 @@ public class ExtensionLoader<T> {
         }
         for (String[] keyPair : keyPairs) {
             // @Active(value="key1:value1, key2:value2")
-            String key = null;
+            String key;
             String keyValue = null;
             if (keyPair.length > 1) {
                 key = keyPair[0];
