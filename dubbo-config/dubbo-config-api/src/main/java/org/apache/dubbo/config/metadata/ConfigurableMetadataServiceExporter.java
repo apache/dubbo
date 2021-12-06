@@ -48,18 +48,17 @@ public class ConfigurableMetadataServiceExporter {
 
     private MetadataServiceDelegation metadataService;
 
-    private final ServiceConfig<MetadataService> serviceConfig;
+    private volatile ServiceConfig<MetadataService> serviceConfig;
     private final ApplicationModel applicationModel;
 
     public ConfigurableMetadataServiceExporter(ApplicationModel applicationModel, MetadataServiceDelegation metadataService) {
         this.applicationModel = applicationModel;
         this.metadataService = metadataService;
-        this.serviceConfig = buildServiceConfig();
     }
 
-    public ConfigurableMetadataServiceExporter export() {
-
-        if (!isExported()) {
+    public synchronized ConfigurableMetadataServiceExporter export() {
+        if (serviceConfig == null || !isExported()) {
+            this.serviceConfig = buildServiceConfig();
             // export
             serviceConfig.export();
             metadataService.setMetadataURL(serviceConfig.getExportedUrls().get(0));

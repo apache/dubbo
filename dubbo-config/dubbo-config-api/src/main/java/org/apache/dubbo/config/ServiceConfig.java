@@ -531,8 +531,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
 
         // export service
-        String host = findConfigedHosts(protocolConfig, registryURLs, params);
-        Integer port = findConfigedPorts(protocolConfig, name, params);
+        String host = findConfiguredHosts(protocolConfig, provider, registryURLs, params);
+        Integer port = findConfiguredPort(protocolConfig, provider, this.getExtensionLoader(Protocol.class), name, params);
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
         url.setScopeModel(getScopeModel());
 
@@ -655,6 +655,27 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 && LOCAL_PROTOCOL.equalsIgnoreCase(getProtocols().get(0).getName());
     }
 
+    private void postProcessConfig() {
+        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
+                .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
+        configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
+    }
+
+    public void addServiceListener(ServiceListener listener) {
+        this.serviceListeners.add(listener);
+    }
+
+    protected void onExported() {
+        for (ServiceListener serviceListener : this.serviceListeners) {
+            serviceListener.exported(this);
+        }
+    }
+
+    protected void onUnexpoted() {
+        for (ServiceListener serviceListener : this.serviceListeners) {
+            serviceListener.unexported(this);
+        }
+    }
 
     /**
      * Register & bind IP address for service provider, can be configured separately.
@@ -666,9 +687,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * @param map
      * @return
      */
-    private String findConfigedHosts(ProtocolConfig protocolConfig,
-                                     List<URL> registryURLs,
-                                     Map<String, String> map) {
+    private static String findConfiguredHosts(ProtocolConfig protocolConfig,
+                                              ProviderConfig provider,
+                                              List<URL> registryURLs,
+                                              Map<String, String> map) {
         boolean anyhost = false;
 
         String hostToBind = getValueFromConfig(protocolConfig, DUBBO_IP_TO_BIND);
@@ -717,9 +739,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * @param name
      * @return
      */
-    private Integer findConfigedPorts(ProtocolConfig protocolConfig,
-                                      String name,
-                                      Map<String, String> map) {
+    private static synchronized Integer findConfiguredPort(ProtocolConfig protocolConfig,
+                                                           ProviderConfig provider,
+                                                           ExtensionLoader<Protocol> extensionLoader,
+                                                           String name,
+                                                           Map<String, String> map) {
         Integer portToBind = null;
 
         // parse bind port from environment
@@ -732,7 +756,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             if (provider != null && (portToBind == null || portToBind == 0)) {
                 portToBind = provider.getPort();
             }
-            final int defaultPort = this.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
+            final int defaultPort = extensionLoader.getExtension(name).getDefaultPort();
             if (portToBind == null || portToBind == 0) {
                 portToBind = defaultPort;
             }
@@ -745,20 +769,20 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
 
-        // registry port, not used as bind port by default
+        // registry port, not used as binding port by default
         String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
         Integer portToRegistry = parsePort(portToRegistryStr);
         if (portToRegistry != null) {
             portToBind = portToRegistry;
         }
 
-        // save bind port, used as url's key later
+        // save binding port, will be used as key in url later
         map.put(BIND_PORT_KEY, String.valueOf(portToBind));
 
         return portToBind;
     }
 
-    private Integer parsePort(String configPort) {
+    private static Integer parsePort(String configPort) {
         Integer port = null;
         if (configPort != null && configPort.length() > 0) {
             try {
@@ -774,7 +798,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         return port;
     }
 
-    private String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
+    private static String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
         String protocolPrefix = protocolConfig.getName().toUpperCase() + "_";
         String value = ConfigUtils.getSystemProperty(protocolPrefix + key);
         if (StringUtils.isEmpty(value)) {
@@ -783,12 +807,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         return value;
     }
 
-    private Integer getRandomPort(String protocol) {
+    private static Integer getRandomPort(String protocol) {
         protocol = protocol.toLowerCase();
         return RANDOM_PORT_MAP.getOrDefault(protocol, Integer.MIN_VALUE);
     }
 
-    private void putRandomPort(String protocol, Integer port) {
+    private static void putRandomPort(String protocol, Integer port) {
         protocol = protocol.toLowerCase();
         if (!RANDOM_PORT_MAP.containsKey(protocol)) {
             RANDOM_PORT_MAP.put(protocol, port);
@@ -796,25 +820,4 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
-    private void postProcessConfig() {
-        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
-                .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
-        configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
-    }
-
-    public void addServiceListener(ServiceListener listener) {
-        this.serviceListeners.add(listener);
-    }
-
-    protected void onExported() {
-        for (ServiceListener serviceListener : this.serviceListeners) {
-            serviceListener.exported(this);
-        }
-    }
-
-    protected void onUnexpoted() {
-        for (ServiceListener serviceListener : this.serviceListeners) {
-            serviceListener.unexported(this);
-        }
-    }
 }
