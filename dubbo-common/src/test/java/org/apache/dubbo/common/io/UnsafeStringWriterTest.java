@@ -39,9 +39,7 @@ public class UnsafeStringWriterTest {
 
     @Test
     public void testNegativeSize() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new UnsafeStringWriter(-1);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new UnsafeStringWriter(-1));
     }
 
     @Test
