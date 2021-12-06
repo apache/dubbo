@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.cluster.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.ExtensionDirector;
+import org.apache.dubbo.common.extension.support.MultiInstanceActivateComparator;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
@@ -29,6 +31,8 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Activate
 public class DefaultFilterChainBuilder implements FilterChainBuilder {
@@ -41,16 +45,23 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
         Invoker<T> last = originalInvoker;
         URL url = originalInvoker.getUrl();
         List<ModuleModel> moduleModels = getModuleModelsFromUrl(url);
-        List<Filter> filters = new ArrayList<>();
-        if (moduleModels != null && moduleModels.size() != 0) {
+        List<Filter> filters;
+        if (moduleModels != null && moduleModels.size() == 1) {
+            filters = ScopeModelUtil.getExtensionLoader(Filter.class, moduleModels.get(0)).getActivateExtension(url, key, group);
+        } else if (moduleModels != null && moduleModels.size() > 1) {
+            filters = new ArrayList<>();
+            List<ExtensionDirector> directors = new ArrayList<>();
             for (ModuleModel moduleModel : moduleModels) {
                 List<Filter> tempFilters = ScopeModelUtil.getExtensionLoader(Filter.class, moduleModel).getActivateExtension(url, key, group);
                 filters.addAll(tempFilters);
+                directors.add(moduleModel.getExtensionDirector());
             }
+            filters = sortingAndDeduplication(filters, directors);
+
         } else {
-            List<Filter> tempFilters = ScopeModelUtil.getExtensionLoader(Filter.class, null).getActivateExtension(url, key, group);
-            filters.addAll(tempFilters);
+            filters = ScopeModelUtil.getExtensionLoader(Filter.class, null).getActivateExtension(url, key, group);
         }
+
 
         if (!CollectionUtils.isEmpty(filters)) {
             for (int i = filters.size() - 1; i >= 0; i--) {
@@ -71,16 +82,23 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
         ClusterInvoker<T> last = originalInvoker;
         URL url = originalInvoker.getUrl();
         List<ModuleModel> moduleModels = getModuleModelsFromUrl(url);
-        List<ClusterFilter> filters = new ArrayList<>();
-        if (moduleModels != null && moduleModels.size() != 0) {
+        List<ClusterFilter> filters;
+        if (moduleModels != null && moduleModels.size() == 1) {
+            filters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, moduleModels.get(0)).getActivateExtension(url, key, group);
+        } else if (moduleModels != null && moduleModels.size() > 1) {
+            filters = new ArrayList<>();
+            List<ExtensionDirector> directors = new ArrayList<>();
             for (ModuleModel moduleModel : moduleModels) {
                 List<ClusterFilter> tempFilters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, moduleModel).getActivateExtension(url, key, group);
                 filters.addAll(tempFilters);
+                directors.add(moduleModel.getExtensionDirector());
             }
+            filters = sortingAndDeduplication(filters, directors);
+
         } else {
-            List<ClusterFilter> tempFilters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, null).getActivateExtension(url, key, group);
-            filters.addAll(tempFilters);
+            filters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, null).getActivateExtension(url, key, group);
         }
+
         if (!CollectionUtils.isEmpty(filters)) {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final ClusterFilter filter = filters.get(i);
@@ -92,11 +110,19 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
         return last;
     }
 
+    private <T> List<T> sortingAndDeduplication(List<T> filters, List<ExtensionDirector> directors) {
+        Map<Class<?>, T> filtersSet = new TreeMap<>(new MultiInstanceActivateComparator(directors));
+        for (T filter : filters) {
+            filtersSet.putIfAbsent(filter.getClass(), filter);
+        }
+        return new ArrayList<>(filtersSet.values());
+    }
+
     private List<ModuleModel> getModuleModelsFromUrl(URL url) {
         List<ModuleModel> moduleModels = null;
         ScopeModel scopeModel = url.getScopeModel();
         if (scopeModel instanceof ApplicationModel) {
-            moduleModels = ((ApplicationModel) scopeModel).getModuleModels();
+            moduleModels = ((ApplicationModel) scopeModel).getPubModuleModels();
         } else if (scopeModel instanceof ModuleModel) {
             moduleModels = new ArrayList<>();
             moduleModels.add((ModuleModel) scopeModel);
