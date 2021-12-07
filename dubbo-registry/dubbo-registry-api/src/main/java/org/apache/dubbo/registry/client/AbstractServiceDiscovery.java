@@ -59,13 +59,12 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.applicationModel = applicationModel;
         MetadataReportInstance metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
         metadataType = metadataReportInstance.getMetadataType();
+        this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
 //        if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataReportInstance.getMetadataType())) {
 //            this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
 //        } else {
 //            this.metadataReport = metadataReportInstance.getNopMetadataReport();
 //        }
-        this.metadataReport = metadataReportInstance.getMetadataReport(registryURL.getParameter(REGISTRY_CLUSTER_KEY));
-
     }
 
     public AbstractServiceDiscovery(String serviceName, URL registryURL) {
@@ -78,7 +77,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     public synchronized void register() throws RuntimeException {
         this.serviceInstance = createServiceInstance(this.metadataInfo);
-        if (isValidInstance(this.serviceInstance)) {
+        if (!isValidInstance(this.serviceInstance)) {
+            logger.warn("No valid instance found, stop registering instance address to registry.");
             return;
         }
 
@@ -96,6 +96,10 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
      */
     @Override
     public synchronized void update() throws RuntimeException {
+        if (isDestroy) {
+            return;
+        }
+
         if (this.serviceInstance == null) {
             this.serviceInstance = createServiceInstance(this.metadataInfo);
         } else if (!isValidInstance(this.serviceInstance)) {
@@ -108,6 +112,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
         boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
+            logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", this.serviceInstance.getServiceMetadata().getRevision()));
             doUpdate(this.serviceInstance);
         }
     }
@@ -174,7 +179,6 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     public final void destroy() throws Exception {
         isDestroy = true;
         metaCacheManager.destroy();
-
         doDestroy();
     }
 
@@ -209,6 +213,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+
         this.unregister();
 
         reportMetadata(serviceInstance.getServiceMetadata());
@@ -240,7 +245,6 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         String newRevision = metadataInfo.calAndGetRevision();
         if (!newRevision.equals(existingInstanceRevision)) {
             if (EMPTY_REVISION.equals(newRevision)) {
-                logger.warn("No interface in metadata, will not register/update instance.");
                 return false;
             }
             instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
