@@ -23,6 +23,7 @@ import org.apache.dubbo.common.metrics.event.RequestEvent;
 import org.apache.dubbo.common.metrics.listener.MetricsListener;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
 import org.apache.dubbo.common.metrics.model.sample.MetricSample;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Assertions;
@@ -49,7 +50,12 @@ public class DefaultMetricsCollectorTest {
 
     @BeforeAll
     public static void setup() {
+        ApplicationConfig config = new ApplicationConfig();
+        config.setName("MockMetrics");
+
         applicationModel = ApplicationModel.defaultModel();
+        applicationModel.getApplicationConfigManager().setApplication(config);
+
         interfaceName = "org.apache.dubbo.MockInterface";
         methodName = "mockMethod";
         group = "mockGroup";
