@@ -133,7 +133,12 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public MetadataInfo getMetadata() {
+    public MetadataInfo getLocalMetadata() {
+        throw new UnsupportedOperationException("Multiple registry implementation does not support getMetadata() method.");
+    }
+
+    @Override
+    public MetadataInfo getRemoteMetadata(String revision) {
         throw new UnsupportedOperationException("Multiple registry implementation does not support getMetadata() method.");
     }
 

@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -181,4 +182,8 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
         return serviceToAppsMapping.remove(serviceKey);
     }
 
+    @Override
+    public Map<String, Set<String>> getCachedMapping() {
+        return Collections.unmodifiableMap(serviceToAppsMapping);
+    }
 }

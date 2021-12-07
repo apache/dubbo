@@ -67,7 +67,9 @@ public interface ServiceDiscovery extends RegistryService, Prioritized {
 
     ServiceInstance getLocalInstance();
 
-    MetadataInfo getMetadata();
+    MetadataInfo getLocalMetadata();
+
+    MetadataInfo getRemoteMetadata(String revision);
 
     MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance);
 

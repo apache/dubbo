@@ -129,7 +129,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public MetadataInfo getMetadata() {
+    public MetadataInfo getLocalMetadata() {
         return this.metadataInfo;
     }
 
@@ -173,6 +173,11 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             metaCacheManager.put(revision, metadata);
         }
         return metadata;
+    }
+
+    @Override
+    public MetadataInfo getRemoteMetadata(String revision) {
+       return metaCacheManager.get(revision);
     }
 
     @Override

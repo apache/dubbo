@@ -145,7 +145,7 @@ public class MetadataUtils {
                 logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
             }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                metadataInfo = MetadataUtils.getMetadata(instance, metadataReport);
+                metadataInfo = MetadataUtils.getMetadata(revision, instance, metadataReport);
             } else {
                 // change the instance used to communicate to avoid all requests route to the same instance
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
@@ -162,9 +162,8 @@ public class MetadataUtils {
         return metadataInfo;
     }
 
-    public static MetadataInfo getMetadata(ServiceInstance instance, MetadataReport metadataReport) {
-        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(),
-            ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+    public static MetadataInfo getMetadata(String revision, ServiceInstance instance, MetadataReport metadataReport) {
+        SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(), revision);
 
         if (metadataReport == null) {
             throw new IllegalStateException("No valid remote metadata report specified.");

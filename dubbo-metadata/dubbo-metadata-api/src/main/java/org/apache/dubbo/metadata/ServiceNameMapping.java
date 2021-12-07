@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -112,6 +113,8 @@ public interface ServiceNameMapping {
     Set<String> getCachedMapping(String mappingKey);
 
     Set<String> getCachedMapping(URL consumerURL);
+
+    Map<String, Set<String>> getCachedMapping();
 
     Set<String> removeCachedMapping(String serviceKey);
 }

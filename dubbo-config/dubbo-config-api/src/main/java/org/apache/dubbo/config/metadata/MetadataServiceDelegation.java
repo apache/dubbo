@@ -88,7 +88,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         SortedSet<URL> bizURLs = new TreeSet<>(URLComparator.INSTANCE);
         List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
         for (ServiceDiscovery sd : serviceDiscoveries) {
-            MetadataInfo metadataInfo = sd.getMetadata();
+            MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getExportedServiceURLs();
             for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
                 SortedSet<URL> urls = entry.getValue();
@@ -108,7 +108,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         SortedSet<URL> bizURLs = new TreeSet<>(URLComparator.INSTANCE);
         List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
         for (ServiceDiscovery sd : serviceDiscoveries) {
-            MetadataInfo metadataInfo = sd.getMetadata();
+            MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getSubscribedServiceURLs();
             for (Map.Entry<String, SortedSet<URL>> entry : serviceURLs.entrySet()) {
                 SortedSet<URL> urls = entry.getValue();
@@ -137,7 +137,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         List<ServiceDiscovery> serviceDiscoveries = registryManager.getServiceDiscoveries();
         Map<String, SortedSet<URL>> allServiceURLs = new HashMap<>();
         for (ServiceDiscovery sd : serviceDiscoveries) {
-            MetadataInfo metadataInfo = sd.getMetadata();
+            MetadataInfo metadataInfo = sd.getLocalMetadata();
             Map<String, SortedSet<URL>> serviceURLs = metadataInfo.getExportedServiceURLs();
             allServiceURLs.putAll(serviceURLs);
         }
@@ -171,7 +171,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
         }
 
         for (ServiceDiscovery sd : registryManager.getServiceDiscoveries()) {
-            MetadataInfo metadataInfo = sd.getMetadata();
+            MetadataInfo metadataInfo = sd.getLocalMetadata();
             if (revision.equals(metadataInfo.calAndGetRevision())) {
                 return metadataInfo;
             }
@@ -187,7 +187,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
     public List<MetadataInfo> getMetadataInfos() {
         List<MetadataInfo> metadataInfos = new ArrayList<>();
         for (ServiceDiscovery sd : registryManager.getServiceDiscoveries()) {
-            metadataInfos.add(sd.getMetadata());
+            metadataInfos.add(sd.getLocalMetadata());
         }
         return metadataInfos;
     }
