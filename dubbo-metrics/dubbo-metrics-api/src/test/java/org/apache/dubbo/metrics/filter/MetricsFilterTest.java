@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_PARAMETER_TYPES_DESC;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -53,7 +52,6 @@ public class MetricsFilterTest {
 
     private static final String INTERFACE_NAME = "org.apache.dubbo.MockInterface";
     private static final String METHOD_NAME = "mockMethod";
-    private static final String PARAMETER_TYPES_DESC = "Ljava/lang/String;";
     private static final String GROUP = "mockGroup";
     private static final String VERSION = "1.0.0";
 
@@ -102,7 +100,6 @@ public class MetricsFilterTest {
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
-        Assertions.assertEquals(tags.get(TAG_PARAMETER_TYPES_DESC), PARAMETER_TYPES_DESC);
         Assertions.assertEquals(tags.get(TAG_GROUP_KEY), GROUP);
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
     }
@@ -123,7 +120,6 @@ public class MetricsFilterTest {
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
-        Assertions.assertEquals(tags.get(TAG_PARAMETER_TYPES_DESC), PARAMETER_TYPES_DESC);
         Assertions.assertEquals(tags.get(TAG_GROUP_KEY), GROUP);
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
     }
@@ -144,7 +140,6 @@ public class MetricsFilterTest {
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
-        Assertions.assertEquals(tags.get(TAG_PARAMETER_TYPES_DESC), PARAMETER_TYPES_DESC);
         Assertions.assertNull(tags.get(TAG_GROUP_KEY));
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), VERSION);
     }
@@ -165,7 +160,6 @@ public class MetricsFilterTest {
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
-        Assertions.assertEquals(tags.get(TAG_PARAMETER_TYPES_DESC), PARAMETER_TYPES_DESC);
         Assertions.assertEquals(tags.get(TAG_GROUP_KEY), GROUP);
         Assertions.assertNull(tags.get(TAG_VERSION_KEY));
     }
@@ -186,7 +180,6 @@ public class MetricsFilterTest {
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), INTERFACE_NAME);
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), METHOD_NAME);
-        Assertions.assertEquals(tags.get(TAG_PARAMETER_TYPES_DESC), PARAMETER_TYPES_DESC);
         Assertions.assertNull(tags.get(TAG_GROUP_KEY));
         Assertions.assertNull(tags.get(TAG_VERSION_KEY));
     }

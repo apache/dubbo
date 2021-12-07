@@ -62,6 +62,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
     private final PrometheusMeterRegistry prometheusRegistry = new PrometheusMeterRegistry(PrometheusConfig.DEFAULT);
     private ScheduledExecutorService pushJobExecutor = null;
     private HttpServer prometheusExporterHttpServer = null;
+    private Thread httpServerThread = null;
 
     public PrometheusMetricsReporter(URL url, ApplicationModel applicationModel) {
         super(url, applicationModel);
@@ -93,7 +94,8 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
                     }
                 });
 
-                new Thread(prometheusExporterHttpServer::start).start();
+                httpServerThread = new Thread(prometheusExporterHttpServer::start);
+                httpServerThread.start();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -116,7 +118,7 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
                 pushGateway.setConnectionFactory(new BasicAuthHttpConnectionFactory(username, password));
             }
 
-            pushJobExecutor.scheduleAtFixedRate(() -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
+            pushJobExecutor.scheduleWithFixedDelay(() -> push(pushGateway, job), pushInterval, pushInterval, TimeUnit.SECONDS);
         }
     }
 
@@ -132,6 +134,10 @@ public class PrometheusMetricsReporter extends AbstractMetricsReporter {
     public void doDestroy() {
         if (prometheusExporterHttpServer != null) {
             prometheusExporterHttpServer.stop(1);
+        }
+
+        if (httpServerThread != null) {
+            httpServerThread.interrupt();
         }
 
         if (pushJobExecutor != null) {

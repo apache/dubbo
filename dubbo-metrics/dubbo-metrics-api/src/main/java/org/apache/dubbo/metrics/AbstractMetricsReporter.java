@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.ENABLE_JVM_METRICS_KEY;
 
@@ -54,6 +55,8 @@ import static org.apache.dubbo.common.constants.MetricsConstants.ENABLE_JVM_METR
 public abstract class AbstractMetricsReporter implements MetricsReporter {
 
     private final Logger logger = LoggerFactory.getLogger(AbstractMetricsReporter.class);
+
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
 
     protected final URL url;
     protected final List<MetricsCollector> collectors = new ArrayList<>();
@@ -72,13 +75,15 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
 
     @Override
     public void init() {
-        addJvmMetrics();
-        initCollectors();
-        scheduleMetricsCollectorSyncJob();
+        if (initialized.compareAndSet(false, true)) {
+            addJvmMetrics();
+            initCollectors();
+            scheduleMetricsCollectorSyncJob();
 
-        doInit();
+            doInit();
 
-        registerDubboShutdownHook();
+            registerDubboShutdownHook();
+        }
     }
 
     protected void addMeterRegistry(MeterRegistry registry) {
@@ -110,7 +115,7 @@ public abstract class AbstractMetricsReporter implements MetricsReporter {
     private void scheduleMetricsCollectorSyncJob() {
         NamedThreadFactory threadFactory = new NamedThreadFactory("metrics-collector-sync-job", true);
         collectorSyncJobExecutor = Executors.newScheduledThreadPool(1, threadFactory);
-        collectorSyncJobExecutor.scheduleAtFixedRate(() -> {
+        collectorSyncJobExecutor.scheduleWithFixedDelay(() -> {
             collectors.forEach(collector -> {
                 List<MetricSample> samples = collector.collect();
                 for (MetricSample sample : samples) {

@@ -17,9 +17,9 @@
 
 package org.apache.dubbo.common.metrics.collector;
 
-import org.apache.dubbo.common.metrics.event.BaseMetricsEvent;
-import org.apache.dubbo.common.metrics.event.NewRTEvent;
-import org.apache.dubbo.common.metrics.event.NewRequestEvent;
+import org.apache.dubbo.common.metrics.event.MetricsEvent;
+import org.apache.dubbo.common.metrics.event.RTEvent;
+import org.apache.dubbo.common.metrics.event.RequestEvent;
 import org.apache.dubbo.common.metrics.listener.MetricsListener;
 import org.apache.dubbo.common.metrics.model.MethodMetric;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
@@ -27,11 +27,21 @@ import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAccumulator;
 
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_FAILED;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_PROCESSING;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_SUCCEED;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_TOTAL;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_AVG;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_LAST;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_MAX;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_MIN;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_TOTAL;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
 
@@ -45,21 +55,21 @@ public class DefaultMetricsCollector implements MetricsCollector {
     private final ApplicationModel applicationModel;
     private final String applicationName;
 
-    private final Map<MethodMetric, AtomicLong> totalRequests = new HashMap<>();
-    private final Map<MethodMetric, AtomicLong> succeedRequests = new HashMap<>();
-    private final Map<MethodMetric, AtomicLong> failedRequests = new HashMap<>();
-    private final Map<MethodMetric, AtomicLong> processingRequests = new HashMap<>();
+    private final Map<MethodMetric, AtomicLong> totalRequests = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, AtomicLong> succeedRequests = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, AtomicLong> failedRequests = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, AtomicLong> processingRequests = new ConcurrentHashMap<>();
 
-    private final Map<MethodMetric, AtomicLong> lastRT = new HashMap<>();
-    private final Map<MethodMetric, AtomicLong> minRT = new HashMap<>();
-    private final Map<MethodMetric, AtomicLong> maxRT = new HashMap<>();
-    private final Map<MethodMetric, AtomicLong> avgRT = new HashMap<>();
-    private final Map<MethodMetric, AtomicLong> totalRT = new HashMap<>();
-    private final Map<MethodMetric, AtomicLong> rtCount = new HashMap<>();
+    private final Map<MethodMetric, AtomicLong> lastRT = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, LongAccumulator> minRT = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, LongAccumulator> maxRT = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, AtomicLong> avgRT = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, AtomicLong> totalRT = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, AtomicLong> rtCount = new ConcurrentHashMap<>();
 
     public DefaultMetricsCollector(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        this.applicationName = applicationModel.tryGetApplicationName();
+        this.applicationName = applicationModel.getApplicationName();
     }
 
     public void setCollectEnabled(Boolean collectEnabled) {
@@ -74,82 +84,78 @@ public class DefaultMetricsCollector implements MetricsCollector {
         listeners.add(listener);
     }
 
-    public void increaseTotalRequests(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
+    public void increaseTotalRequests(String interfaceName, String methodName, String group, String version) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, parameterTypesDesc, group, version);
+            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
             AtomicLong count = totalRequests.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
 
-            publishEvent(new NewRequestEvent(metric, NewRequestEvent.Type.TOTAL));
+            publishEvent(new RequestEvent(metric, RequestEvent.Type.TOTAL));
         }
     }
 
-    public void increaseSucceedRequests(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
+    public void increaseSucceedRequests(String interfaceName, String methodName, String group, String version) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, parameterTypesDesc, group, version);
+            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
             AtomicLong count = succeedRequests.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
 
-            publishEvent(new NewRequestEvent(metric, NewRequestEvent.Type.SUCCEED));
+            publishEvent(new RequestEvent(metric, RequestEvent.Type.SUCCEED));
         }
     }
 
-    public void increaseFailedRequests(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
+    public void increaseFailedRequests(String interfaceName, String methodName, String group, String version) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, parameterTypesDesc, group, version);
+            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
             AtomicLong count = failedRequests.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
 
-            publishEvent(new NewRequestEvent(metric, NewRequestEvent.Type.FAILED));
+            publishEvent(new RequestEvent(metric, RequestEvent.Type.FAILED));
         }
     }
 
-    public void increaseProcessingRequests(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
+    public void increaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, parameterTypesDesc, group, version);
+            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
             AtomicLong count = processingRequests.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.incrementAndGet();
         }
     }
 
-    public void decreaseProcessingRequests(String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
+    public void decreaseProcessingRequests(String interfaceName, String methodName, String group, String version) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, parameterTypesDesc, group, version);
+            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
             AtomicLong count = processingRequests.computeIfAbsent(metric, k -> new AtomicLong(0L));
             count.decrementAndGet();
         }
     }
 
-    public void addRT(String interfaceName, String methodName, String parameterTypesDesc, String group, String version, Long responseTime) {
+    public void addRT(String interfaceName, String methodName, String group, String version, Long responseTime) {
         if (isCollectEnabled()) {
-            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, parameterTypesDesc, group, version);
+            MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
 
             AtomicLong last = lastRT.computeIfAbsent(metric, k -> new AtomicLong());
             last.set(responseTime);
 
-            AtomicLong min = minRT.computeIfAbsent(metric, k -> new AtomicLong(Long.MAX_VALUE));
-            if (responseTime < min.longValue()) {
-                min.set(responseTime);
-            }
+            LongAccumulator min = minRT.computeIfAbsent(metric, k -> new LongAccumulator(Long::min, Long.MAX_VALUE));
+            min.accumulate(responseTime);
 
-            AtomicLong max = maxRT.computeIfAbsent(metric, k -> new AtomicLong(Long.MIN_VALUE));
-            if (responseTime > max.longValue()) {
-                max.set(responseTime);
-            }
+            LongAccumulator max = maxRT.computeIfAbsent(metric, k -> new LongAccumulator(Long::max, Long.MIN_VALUE));
+            max.accumulate(responseTime);
 
             AtomicLong total = totalRT.computeIfAbsent(metric, k -> new AtomicLong());
-            long newTotal = total.addAndGet(responseTime);
+            total.addAndGet(responseTime);
 
             AtomicLong count = rtCount.computeIfAbsent(metric, k -> new AtomicLong());
-            AtomicLong avg = avgRT.computeIfAbsent(metric, k -> new AtomicLong());
-            long newAvg = newTotal / count.addAndGet(1);
-            avg.set(newAvg);
+            count.incrementAndGet();
 
-            publishEvent(new NewRTEvent(metric, responseTime));
+            avgRT.computeIfAbsent(metric, k -> new AtomicLong());
+
+            publishEvent(new RTEvent(metric, responseTime));
         }
     }
 
-    private void publishEvent(BaseMetricsEvent event) {
+    private void publishEvent(MetricsEvent event) {
         for (MetricsListener listener : listeners) {
             listener.onEvent(event);
         }
@@ -165,17 +171,24 @@ public class DefaultMetricsCollector implements MetricsCollector {
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.total", "Total Requests", k.getTags(), REQUESTS, v::get)));
-        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.succeed", "Succeed Requests", k.getTags(), REQUESTS, v::get)));
-        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.failed", "Failed Requests", k.getTags(), REQUESTS, v::get)));
-        processingRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.processing", "Processing Requests", k.getTags(), REQUESTS, v::get)));
+        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_TOTAL, k.getTags(), REQUESTS, v::get)));
+        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_SUCCEED, k.getTags(), REQUESTS, v::get)));
+        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_FAILED, k.getTags(), REQUESTS, v::get)));
+        processingRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_PROCESSING, k.getTags(), REQUESTS, v::get)));
     }
 
     private void collectRT(List<MetricSample> list) {
-        lastRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.last", "Last Response Time", k.getTags(), RT, v::get)));
-        minRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.min", "Min Response Time", k.getTags(), RT, v::get)));
-        maxRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.max", "Max Response Time", k.getTags(), RT, v::get)));
-        avgRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.avg", "Avg Response Time", k.getTags(), RT, v::get)));
-        totalRT.forEach((k, v) -> list.add(new GaugeMetricSample("rt.total", "Total Response Time", k.getTags(), RT, v::get)));
+        lastRT.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_RT_LAST, k.getTags(), RT, v::get)));
+        minRT.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_RT_MIN, k.getTags(), RT, v::get)));
+        maxRT.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_RT_MAX, k.getTags(), RT, v::get)));
+
+        totalRT.forEach((k, v) -> {
+            list.add(new GaugeMetricSample(METRIC_RT_TOTAL, k.getTags(), RT, v::get));
+
+            AtomicLong avg = avgRT.get(k);
+            AtomicLong count = rtCount.get(k);
+            avg.set(v.get() / count.get());
+            list.add(new GaugeMetricSample(METRIC_RT_AVG, k.getTags(), RT, avg::get));
+        });
     }
 }

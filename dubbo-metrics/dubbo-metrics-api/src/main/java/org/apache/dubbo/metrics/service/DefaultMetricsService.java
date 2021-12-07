@@ -60,11 +60,13 @@ public class DefaultMetricsService implements MetricsService {
     @Override
     public Map<MetricsCategory, List<MetricsEntity>> getMetricsByCategories(String serviceUniqueName, String methodName, Class<?>[] parameterTypes, List<MetricsCategory> categories) {
         Map<MetricsCategory, List<MetricsEntity>> result = new HashMap<>();
-        List<MetricSample> samples = getMetrics();
-        for (MetricSample sample : samples) {
-            if (categories.contains(sample.getCategory())) {
-                List<MetricsEntity> entities = result.computeIfAbsent(sample.getCategory(), k -> new ArrayList<>());
-                entities.add(sampleToEntity(sample));
+        for (MetricsCollector collector : collectors) {
+            List<MetricSample> samples = collector.collect();
+            for (MetricSample sample : samples) {
+                if (categories.contains(sample.getCategory())) {
+                    List<MetricsEntity> entities = result.computeIfAbsent(sample.getCategory(), k -> new ArrayList<>());
+                    entities.add(sampleToEntity(sample));
+                }
             }
         }
 
@@ -91,14 +93,5 @@ public class DefaultMetricsService implements MetricsService {
         }
 
         return entity;
-    }
-
-    private List<MetricSample> getMetrics() {
-        List<MetricSample> samples = new ArrayList<>();
-        for (MetricsCollector collector : collectors) {
-            samples.addAll(collector.collect());
-        }
-
-        return samples;
     }
 }

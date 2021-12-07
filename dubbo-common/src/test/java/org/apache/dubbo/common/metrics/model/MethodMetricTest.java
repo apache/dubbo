@@ -25,19 +25,19 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOST;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_PARAMETER_TYPES_DESC;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
+import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
 public class MethodMetricTest {
 
     private static final String applicationName = null;
     private static String interfaceName;
     private static String methodName;
-    private static String parameterTypesDesc;
     private static String group;
     private static String version;
 
@@ -45,27 +45,25 @@ public class MethodMetricTest {
     public static void setup() {
         interfaceName = "org.apache.dubbo.MockInterface";
         methodName = "mockMethod";
-        parameterTypesDesc = "Ljava/lang/String;";
         group = "mockGroup";
         version = "1.0.0";
     }
 
     @Test
     public void test() {
-        MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, parameterTypesDesc, group, version);
+        MethodMetric metric = new MethodMetric(applicationName, interfaceName, methodName, group, version);
         Assertions.assertEquals(metric.getInterfaceName(), interfaceName);
         Assertions.assertEquals(metric.getMethodName(), methodName);
-        Assertions.assertEquals(metric.getParameterTypesDesc(), parameterTypesDesc);
         Assertions.assertEquals(metric.getGroup(), group);
         Assertions.assertEquals(metric.getVersion(), version);
 
         Map<String, String> tags = metric.getTags();
-        Assertions.assertEquals(tags.get(TAG_HOST), getLocalHost());
+        Assertions.assertEquals(tags.get(TAG_IP), getLocalHost());
+        Assertions.assertEquals(tags.get(TAG_HOSTNAME), getLocalHostName());
         Assertions.assertEquals(tags.get(TAG_APPLICATION_NAME), applicationName);
 
         Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
         Assertions.assertEquals(tags.get(TAG_METHOD_KEY), methodName);
-        Assertions.assertEquals(tags.get(TAG_PARAMETER_TYPES_DESC), parameterTypesDesc);
         Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
         Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
     }

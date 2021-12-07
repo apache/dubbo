@@ -29,6 +29,11 @@ public class GaugeMetricSample extends MetricSample {
 
     private Supplier<Number> supplier;
 
+    public GaugeMetricSample(String[] nameAndDesc, Map<String, String> tags, MetricsCategory category, Supplier<Number> supplier) {
+        super(nameAndDesc, tags, Type.GAUGE, category);
+        this.supplier = supplier;
+    }
+
     public GaugeMetricSample(String name, String description, Map<String, String> tags, MetricsCategory category, Supplier<Number> supplier) {
         super(name, description, tags, Type.GAUGE, category);
         this.supplier = supplier;

@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_PARAMETER_TYPES_DESC;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 
 public class AggregateMetricsCollectorTest {
@@ -45,7 +44,6 @@ public class AggregateMetricsCollectorTest {
 
     private static String interfaceName;
     private static String methodName;
-    private static String parameterTypesDesc;
     private static String group;
     private static String version;
 
@@ -65,7 +63,6 @@ public class AggregateMetricsCollectorTest {
 
         interfaceName = "org.apache.dubbo.MockInterface";
         methodName = "mockMethod";
-        parameterTypesDesc = "Ljava/lang/String;";
         group = "mockGroup";
         version = "1.0.0";
     }
@@ -73,9 +70,9 @@ public class AggregateMetricsCollectorTest {
     @Test
     public void testRequestsMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
-        defaultCollector.increaseTotalRequests(interfaceName, methodName, parameterTypesDesc, group, version);
-        defaultCollector.increaseSucceedRequests(interfaceName, methodName, parameterTypesDesc, group, version);
-        defaultCollector.increaseFailedRequests(interfaceName, methodName, parameterTypesDesc, group, version);
+        defaultCollector.increaseTotalRequests(interfaceName, methodName, group, version);
+        defaultCollector.increaseSucceedRequests(interfaceName, methodName, group, version);
+        defaultCollector.increaseFailedRequests(interfaceName, methodName, group, version);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -83,7 +80,6 @@ public class AggregateMetricsCollectorTest {
 
             Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
             Assertions.assertEquals(tags.get(TAG_METHOD_KEY), methodName);
-            Assertions.assertEquals(tags.get(TAG_PARAMETER_TYPES_DESC), parameterTypesDesc);
             Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
             Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
         }
@@ -103,7 +99,7 @@ public class AggregateMetricsCollectorTest {
     @Test
     public void testRTMetrics() {
         AggregateMetricsCollector collector = new AggregateMetricsCollector(applicationModel);
-        defaultCollector.addRT(interfaceName, methodName, parameterTypesDesc, group, version, 10L);
+        defaultCollector.addRT(interfaceName, methodName, group, version, 10L);
 
         List<MetricSample> samples = collector.collect();
         for (MetricSample sample : samples) {
@@ -111,7 +107,6 @@ public class AggregateMetricsCollectorTest {
 
             Assertions.assertEquals(tags.get(TAG_INTERFACE_KEY), interfaceName);
             Assertions.assertEquals(tags.get(TAG_METHOD_KEY), methodName);
-            Assertions.assertEquals(tags.get(TAG_PARAMETER_TYPES_DESC), parameterTypesDesc);
             Assertions.assertEquals(tags.get(TAG_GROUP_KEY), group);
             Assertions.assertEquals(tags.get(TAG_VERSION_KEY), version);
         }

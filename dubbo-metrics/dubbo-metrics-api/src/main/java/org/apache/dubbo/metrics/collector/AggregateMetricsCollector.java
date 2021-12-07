@@ -19,9 +19,9 @@ package org.apache.dubbo.metrics.collector;
 
 import org.apache.dubbo.common.metrics.collector.DefaultMetricsCollector;
 import org.apache.dubbo.common.metrics.collector.MetricsCollector;
-import org.apache.dubbo.common.metrics.event.BaseMetricsEvent;
-import org.apache.dubbo.common.metrics.event.NewRTEvent;
-import org.apache.dubbo.common.metrics.event.NewRequestEvent;
+import org.apache.dubbo.common.metrics.event.MetricsEvent;
+import org.apache.dubbo.common.metrics.event.RTEvent;
+import org.apache.dubbo.common.metrics.event.RequestEvent;
 import org.apache.dubbo.common.metrics.listener.MetricsListener;
 import org.apache.dubbo.common.metrics.model.MethodMetric;
 import org.apache.dubbo.common.metrics.model.sample.GaugeMetricSample;
@@ -34,10 +34,16 @@ import org.apache.dubbo.metrics.aggregate.TimeWindowQuantile;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_QPS;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_FAILED_AGG;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_SUCCEED_AGG;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_REQUESTS_TOTAL_AGG;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_P95;
+import static org.apache.dubbo.common.constants.MetricsConstants.METRIC_RT_P99;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.QPS;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.REQUESTS;
 import static org.apache.dubbo.common.metrics.model.MetricsCategory.RT;
@@ -50,11 +56,11 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     private int bucketNum;
     private int timeWindowSeconds;
 
-    private final Map<MethodMetric, TimeWindowCounter> totalRequests = new HashMap<>();
-    private final Map<MethodMetric, TimeWindowCounter> succeedRequests = new HashMap<>();
-    private final Map<MethodMetric, TimeWindowCounter> failedRequests = new HashMap<>();
-    private final Map<MethodMetric, TimeWindowCounter> qps = new HashMap<>();
-    private final Map<MethodMetric, TimeWindowQuantile> rt = new HashMap<>();
+    private final Map<MethodMetric, TimeWindowCounter> totalRequests = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, TimeWindowCounter> succeedRequests = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, TimeWindowCounter> failedRequests = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, TimeWindowCounter> qps = new ConcurrentHashMap<>();
+    private final Map<MethodMetric, TimeWindowQuantile> rt = new ConcurrentHashMap<>();
 
     private final ApplicationModel applicationModel;
 
@@ -81,24 +87,24 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     }
 
     @Override
-    public void onEvent(BaseMetricsEvent event) {
-        if (event instanceof NewRTEvent) {
-            onNewRTEvent((NewRTEvent) event);
-        } else if (event instanceof NewRequestEvent) {
-            onNewRequestEvent((NewRequestEvent) event);
+    public void onEvent(MetricsEvent event) {
+        if (event instanceof RTEvent) {
+            onRTEvent((RTEvent) event);
+        } else if (event instanceof RequestEvent) {
+            onRequestEvent((RequestEvent) event);
         }
     }
 
-    private void onNewRTEvent(NewRTEvent event) {
+    private void onRTEvent(RTEvent event) {
         MethodMetric metric = (MethodMetric) event.getSource();
         Long responseTime = event.getRt();
         TimeWindowQuantile quantile = rt.computeIfAbsent(metric, k -> new TimeWindowQuantile(DEFAULT_COMPRESSION, bucketNum, timeWindowSeconds));
         quantile.add(responseTime);
     }
 
-    private void onNewRequestEvent(NewRequestEvent event) {
+    private void onRequestEvent(RequestEvent event) {
         MethodMetric metric = (MethodMetric) event.getSource();
-        NewRequestEvent.Type type = event.getType();
+        RequestEvent.Type type = event.getType();
         TimeWindowCounter counter = null;
         switch (type) {
             case TOTAL:
@@ -132,19 +138,19 @@ public class AggregateMetricsCollector implements MetricsCollector, MetricsListe
     }
 
     private void collectRequests(List<MetricSample> list) {
-        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.total.aggregate", "Aggregated Total Requests", k.getTags(), REQUESTS, v::get)));
-        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.succeed.aggregate", "Aggregated Succeed Requests", k.getTags(), REQUESTS, v::get)));
-        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample("requests.failed.aggregate", "Aggregated Failed Requests", k.getTags(), REQUESTS, v::get)));
+        totalRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_TOTAL_AGG, k.getTags(), REQUESTS, v::get)));
+        succeedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_SUCCEED_AGG, k.getTags(), REQUESTS, v::get)));
+        failedRequests.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_REQUESTS_FAILED_AGG, k.getTags(), REQUESTS, v::get)));
     }
 
     private void collectQPS(List<MetricSample> list) {
-        qps.forEach((k, v) -> list.add(new GaugeMetricSample("qps", "Query Per Seconds", k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
+        qps.forEach((k, v) -> list.add(new GaugeMetricSample(METRIC_QPS, k.getTags(), QPS, () -> v.get() / v.bucketLivedSeconds())));
     }
 
     private void collectRT(List<MetricSample> list) {
         rt.forEach((k, v) -> {
-            list.add(new GaugeMetricSample("rt.p99", "Response Time P99", k.getTags(), RT, () -> v.quantile(0.99)));
-            list.add(new GaugeMetricSample("rt.p95", "Response Time P95", k.getTags(), RT, () -> v.quantile(0.95)));
+            list.add(new GaugeMetricSample(METRIC_RT_P99, k.getTags(), RT, () -> v.quantile(0.99)));
+            list.add(new GaugeMetricSample(METRIC_RT_P95, k.getTags(), RT, () -> v.quantile(0.95)));
         });
     }
 }

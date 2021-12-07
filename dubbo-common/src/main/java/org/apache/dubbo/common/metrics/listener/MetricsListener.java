@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.common.metrics.listener;
 
-import org.apache.dubbo.common.metrics.event.BaseMetricsEvent;
+import org.apache.dubbo.common.metrics.event.MetricsEvent;
 
 /**
  * Metrics Listener.
@@ -29,5 +29,5 @@ public interface MetricsListener {
      *
      * @param event BaseMetricsEvent
      */
-    void onEvent(BaseMetricsEvent event);
+    void onEvent(MetricsEvent event);
 }

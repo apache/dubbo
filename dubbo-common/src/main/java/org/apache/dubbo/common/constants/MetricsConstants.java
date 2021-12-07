@@ -24,15 +24,15 @@ public interface MetricsConstants {
 
     String PROTOCOL_PROMETHEUS = "prometheus";
 
-    String TAG_HOST = "host";
+    String TAG_IP = "ip";
+
+    String TAG_HOSTNAME = "hostname";
 
     String TAG_APPLICATION_NAME = "application.name";
 
     String TAG_INTERFACE_KEY = "interface";
 
     String TAG_METHOD_KEY = "method";
-
-    String TAG_PARAMETER_TYPES_DESC = "parameter.types";
 
     String TAG_GROUP_KEY = "group";
 
@@ -77,4 +77,34 @@ public interface MetricsConstants {
     int PROMETHEUS_DEFAULT_PUSH_INTERVAL = 30;
 
     String PROMETHEUS_DEFAULT_JOB_NAME = "default_dubbo_job";
+
+    String[] METRIC_REQUESTS_TOTAL = new String[]{ "requests.total", "Total Requests" };
+
+    String[] METRIC_REQUESTS_SUCCEED = new String[]{ "requests.succeed", "Succeed Requests" };
+
+    String[] METRIC_REQUESTS_FAILED = new String[]{ "requests.failed", "Failed Requests" };
+
+    String[] METRIC_REQUESTS_PROCESSING = new String[]{ "requests.processing", "Processing Requests" };
+
+    String[] METRIC_REQUESTS_TOTAL_AGG = new String[]{ "requests.total.aggregate", "Aggregated Total Requests" };
+
+    String[] METRIC_REQUESTS_SUCCEED_AGG = new String[]{ "requests.succeed.aggregate", "Aggregated Succeed Requests" };
+
+    String[] METRIC_REQUESTS_FAILED_AGG = new String[]{ "requests.failed.aggregate", "Aggregated Failed Requests" };
+
+    String[] METRIC_QPS = new String[]{ "qps", "Query Per Seconds" };
+
+    String[] METRIC_RT_LAST = new String[]{ "rt.last", "Last Response Time" };
+
+    String[] METRIC_RT_MIN = new String[]{ "rt.min", "Min Response Time" };
+
+    String[] METRIC_RT_MAX = new String[]{ "rt.max", "Max Response Time" };
+
+    String[] METRIC_RT_TOTAL = new String[]{ "rt.total", "Total Response Time" };
+
+    String[] METRIC_RT_AVG = new String[]{ "rt.avg", "Average Response Time" };
+
+    String[] METRIC_RT_P99 = new String[]{ "rt.p99", "Response Time P99" };
+
+    String[] METRIC_RT_P95 = new String[]{ "rt.p95", "Response Time P95" };
 }

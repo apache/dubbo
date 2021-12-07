@@ -17,20 +17,22 @@
 
 package org.apache.dubbo.common.metrics.event;
 
-import org.apache.dubbo.common.metrics.model.MethodMetric;
+/**
+ * RtEvent.
+ */
+public class RTEvent extends MetricsEvent {
+    private Long rt;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+    public RTEvent(Object source, Long rt) {
+        super(source);
+        this.rt = rt;
+    }
 
-public class NewRequestEventTest {
+    public Long getRt() {
+        return rt;
+    }
 
-    @Test
-    public void testNewEvent() {
-        MethodMetric metric = new MethodMetric();
-        NewRequestEvent.Type type = NewRequestEvent.Type.TOTAL;
-        NewRequestEvent event = new NewRequestEvent(metric, type);
-
-        Assertions.assertEquals(event.getSource(), metric);
-        Assertions.assertEquals(event.getType(), type);
+    public void setRt(Long rt) {
+        this.rt = rt;
     }
 }

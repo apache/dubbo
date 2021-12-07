@@ -23,18 +23,21 @@ import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_APPLICATION_NAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_GROUP_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOST;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_HOSTNAME;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.MetricsConstants.TAG_IP;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_METHOD_KEY;
-import static org.apache.dubbo.common.constants.MetricsConstants.TAG_PARAMETER_TYPES_DESC;
 import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
+import static org.apache.dubbo.common.utils.NetUtils.getLocalHostName;
 
+/**
+ * Metric class for method.
+ */
 public class MethodMetric {
     private String applicationName;
     private String interfaceName;
     private String methodName;
-    private String parameterTypesDesc;
     private String group;
     private String version;
 
@@ -42,11 +45,10 @@ public class MethodMetric {
 
     }
 
-    public MethodMetric(String applicationName, String interfaceName, String methodName, String parameterTypesDesc, String group, String version) {
+    public MethodMetric(String applicationName, String interfaceName, String methodName, String group, String version) {
         this.applicationName = applicationName;
         this.interfaceName = interfaceName;
         this.methodName = methodName;
-        this.parameterTypesDesc = parameterTypesDesc;
         this.group = group;
         this.version = version;
     }
@@ -67,14 +69,6 @@ public class MethodMetric {
         this.methodName = methodName;
     }
 
-    public String getParameterTypesDesc() {
-        return parameterTypesDesc;
-    }
-
-    public void setParameterTypesDesc(String parameterTypesDesc) {
-        this.parameterTypesDesc = parameterTypesDesc;
-    }
-
     public String getGroup() {
         return group;
     }
@@ -93,12 +87,12 @@ public class MethodMetric {
 
     public Map<String, String> getTags() {
         Map<String, String> tags = new HashMap<>();
-        tags.put(TAG_HOST, getLocalHost());
+        tags.put(TAG_IP, getLocalHost());
+        tags.put(TAG_HOSTNAME, getLocalHostName());
         tags.put(TAG_APPLICATION_NAME, applicationName);
 
         tags.put(TAG_INTERFACE_KEY, interfaceName);
         tags.put(TAG_METHOD_KEY, methodName);
-        tags.put(TAG_PARAMETER_TYPES_DESC, parameterTypesDesc);
         tags.put(TAG_GROUP_KEY, group);
         tags.put(TAG_VERSION_KEY, version);
         return tags;
@@ -110,12 +104,12 @@ public class MethodMetric {
         if (o == null || getClass() != o.getClass()) return false;
         MethodMetric that = (MethodMetric) o;
         return Objects.equals(interfaceName, that.interfaceName) && Objects.equals(methodName, that.methodName)
-            && Objects.equals(parameterTypesDesc, that.parameterTypesDesc) && Objects.equals(group, that.group) && Objects.equals(version, that.version);
+            && Objects.equals(group, that.group) && Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(interfaceName, methodName, parameterTypesDesc, group, version);
+        return Objects.hash(interfaceName, methodName, group, version);
     }
 
     @Override
@@ -123,7 +117,6 @@ public class MethodMetric {
         return "MethodMetric{" +
             "interfaceName='" + interfaceName + '\'' +
             ", methodName='" + methodName + '\'' +
-            ", parameterTypesDesc='" + parameterTypesDesc + '\'' +
             ", group='" + group + '\'' +
             ", version='" + version + '\'' +
             '}';

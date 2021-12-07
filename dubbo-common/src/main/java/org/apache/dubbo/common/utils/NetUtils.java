@@ -472,6 +472,14 @@ public class NetUtils {
         return address;
     }
 
+    public static String getLocalHostName() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            return getLocalAddress().getHostName();
+        }
+    }
+
     /**
      * @param hostName
      * @return ip address or hostName if UnknownHostException

@@ -15,30 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.metrics.model;
+package org.apache.dubbo.common.metrics.event;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+/**
+ * RequestEvent.
+ */
+public class RequestEvent extends MetricsEvent {
+    private Type type;
 
-public class InterfaceMetricTest {
-
-    private static String interfaceName;
-    private static String group;
-    private static String version;
-
-    @BeforeAll
-    public static void setup() {
-        interfaceName = "org.apache.dubbo.MockInterface";
-        group = "mockGroup";
-        version = "1.0.0";
+    public RequestEvent(Object source, Type type) {
+        super(source);
+        this.type = type;
     }
 
-    @Test
-    public void test() {
-        InterfaceMetric metric = new InterfaceMetric(interfaceName, group, version);
-        Assertions.assertEquals(metric.getInterfaceName(), interfaceName);
-        Assertions.assertEquals(metric.getGroup(), group);
-        Assertions.assertEquals(metric.getVersion(), version);
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public enum Type {
+        TOTAL,
+        SUCCEED,
+        FAILED,
+        PROCESSING
     }
 }
