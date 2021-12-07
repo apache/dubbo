@@ -81,4 +81,19 @@ public class DataQueueCommand extends QueuedCommand.AbstractQueuedCommand {
         }
         return 1;
     }
+
+    // for test
+    public byte[] getData() {
+        return data;
+    }
+
+    // for test
+    public boolean isEndStream() {
+        return endStream;
+    }
+
+    // for test
+    public boolean isClient() {
+        return client;
+    }
 }

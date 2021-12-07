@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.qos.server.handler.QosProcessHandler.PROMPT;
 
 @Cmd(name = "count", summary = "Count the service.", example = {
     "count [service] [method] [times]"
@@ -92,7 +93,6 @@ public class CountTelnet implements BaseCommand {
             if (t > 0) {
                 final String mtd = method;
                 final Invoker<?> inv = invoker;
-                final String prompt = "telnet";
                 Thread thread = new Thread(() -> {
                     for (int i = 0; i < t; i++) {
                         String result = count(inv, mtd);
@@ -109,7 +109,7 @@ public class CountTelnet implements BaseCommand {
                         }
                     }
                     try {
-                        send(channel, "\r\n" + prompt + "> ");
+                        send(channel, "\r\n" + PROMPT);
                     } catch (RemotingException ignored) {
                     }
                 }, "TelnetCount");

@@ -23,13 +23,10 @@ import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.NetUtils;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.curator.test.TestingServer;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -54,16 +51,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ZookeeperDynamicConfigurationTest {
     private static CuratorFramework client;
 
-    private static final int zkServerPort = NetUtils.getAvailablePort();
-    private static TestingServer zkServer;
+    private static URL configUrl;
     private static DynamicConfiguration configuration;
+    private static int zookeeperServerPort1;
+    private static String zookeeperConnectionAddress1;
 
     @BeforeAll
     public static void setUp() throws Exception {
-        zkServer = new TestingServer(zkServerPort, true);
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+        zookeeperServerPort1 = Integer.parseInt(zookeeperConnectionAddress1.substring(zookeeperConnectionAddress1.lastIndexOf(":") + 1));
 
-        client = CuratorFrameworkFactory.newClient("127.0.0.1:" + zkServerPort, 60 * 1000, 60 * 1000,
-            new ExponentialBackoffRetry(1000, 3));
+        client = CuratorFrameworkFactory.newClient("127.0.0.1:" + zookeeperServerPort1, 60 * 1000, 60 * 1000,
+                new ExponentialBackoffRetry(1000, 3));
         client.start();
 
         try {
@@ -76,15 +75,9 @@ public class ZookeeperDynamicConfigurationTest {
             e.printStackTrace();
         }
 
-        URL configUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
-
+        configUrl = URL.valueOf(zookeeperConnectionAddress1);
         configuration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(configUrl.getProtocol())
             .getDynamicConfiguration(configUrl);
-    }
-
-    @AfterAll
-    public static void tearDown() throws Exception {
-        zkServer.stop();
     }
 
     private static void setData(String path, String data) throws Exception {

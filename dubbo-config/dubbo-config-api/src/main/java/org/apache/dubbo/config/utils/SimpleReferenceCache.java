@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.utils;
 
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.config.ReferenceCache;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -55,15 +56,7 @@ public class SimpleReferenceCache implements ReferenceCache {
             throw new IllegalArgumentException("No interface info in ReferenceConfig" + referenceConfig);
         }
 
-        StringBuilder ret = new StringBuilder();
-        if (!StringUtils.isBlank(referenceConfig.getGroup())) {
-            ret.append(referenceConfig.getGroup()).append('/');
-        }
-        ret.append(iName);
-        if (!StringUtils.isBlank(referenceConfig.getVersion())) {
-            ret.append(':').append(referenceConfig.getVersion());
-        }
-        return ret.toString();
+        return BaseServiceMetadata.buildServiceKey(iName, referenceConfig.getGroup(), referenceConfig.getVersion());
     };
 
     private static final AtomicInteger nameIndex = new AtomicInteger();
@@ -141,7 +134,7 @@ public class SimpleReferenceCache implements ReferenceCache {
     @SuppressWarnings("unchecked")
     public <T> T get(String key, Class<T> type) {
         List<ReferenceConfigBase<?>> referenceConfigs = referenceKeyMap.get(key);
-        if (referenceConfigs != null && referenceConfigs.size() > 0) {
+        if (CollectionUtils.isNotEmpty(referenceConfigs)) {
             return (T) referenceConfigs.get(0).get();
         }
         return null;

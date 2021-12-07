@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
@@ -34,7 +35,7 @@ public class ChangeTelnetHandler implements TelnetHandler {
 
     @Override
     public String telnet(Channel channel, String message) {
-        if (message == null || message.length() == 0) {
+        if (StringUtils.isEmpty(message)) {
             return "Please input service name, eg: \r\ncd XxxService\r\ncd com.xxx.XxxService";
         }
         StringBuilder buf = new StringBuilder();

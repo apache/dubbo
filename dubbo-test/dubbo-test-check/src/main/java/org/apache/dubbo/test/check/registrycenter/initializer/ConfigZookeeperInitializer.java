@@ -18,6 +18,7 @@ package org.apache.dubbo.test.check.registrycenter.initializer;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 
@@ -46,16 +47,16 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
      */
     private void updateConfig(ZookeeperContext context, int clientPort, int adminServerPort) throws DubboTestException {
         Path zookeeperConf = Paths.get(context.getSourceFile().getParent().toString(),
-            String.valueOf(clientPort),
-            String.format("apache-zookeeper-%s-bin", context.getVersion()),
-            "conf");
+                String.valueOf(clientPort),
+                context.getUnpackedDirectory(),
+                "conf");
         File zooSample = Paths.get(zookeeperConf.toString(), "zoo_sample.cfg").toFile();
-
+        int availableAdminServerPort = NetUtils.getAvailablePort(adminServerPort);
         Properties properties = new Properties();
         try {
             properties.load(new FileInputStream(zooSample));
             properties.setProperty("clientPort", String.valueOf(clientPort));
-            properties.setProperty("admin.serverPort", String.valueOf(adminServerPort));
+            properties.setProperty("admin.serverPort", String.valueOf(availableAdminServerPort));
             Path dataDir = Paths.get(zookeeperConf.getParent().toString(), "data");
             if (!Files.exists(dataDir)) {
                 try {
@@ -77,8 +78,11 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
                     throw new DubboTestException("Failed to close file", e);
                 }
             }
+            logger.info("The configuration information of zoo.cfg are as below,\n" +
+                    "which located in " + zooSample.getAbsolutePath() + "\n" +
+                    propertiesToString(properties));
         } catch (IOException e) {
-            throw new DubboTestException(String.format("Failed to update %s file", zooSample.toString()), e);
+            throw new DubboTestException(String.format("Failed to update %s file", zooSample), e);
         }
 
         File log4j = Paths.get(zookeeperConf.toString(), "log4j.properties").toFile();
@@ -105,9 +109,29 @@ public class ConfigZookeeperInitializer extends ZookeeperInitializer {
                     throw new DubboTestException("Failed to close file", e);
                 }
             }
+            logger.info("The configuration information of log4j.properties are as below,\n" +
+                    "which located in " + log4j.getAbsolutePath() + "\n" +
+                    propertiesToString(properties));
         } catch (IOException e) {
-            throw new DubboTestException(String.format("Failed to update %s file", zooSample.toString()), e);
+            throw new DubboTestException(String.format("Failed to update %s file", zooSample), e);
         }
+    }
+
+    /**
+     * Convert the {@link Properties} instance to {@link String}.
+     *
+     * @param properties the properties to convert.
+     * @return the string converted from {@link Properties} instance.
+     */
+    private String propertiesToString(Properties properties) {
+        StringBuilder builder = new StringBuilder();
+        for (Object key : properties.keySet()) {
+            builder.append(key);
+            builder.append(": ");
+            builder.append(properties.get(key));
+            builder.append("\n");
+        }
+        return builder.toString();
     }
 
     @Override

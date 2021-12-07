@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_BACKGROUND_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_THREAD_NUM_KEY;
@@ -81,6 +82,14 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      * @see ModuleConfig#setBackground(Boolean)
      */
     private Boolean referBackground;
+
+
+    public ConsumerConfig() {
+    }
+
+    public ConsumerConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
 
     @Override
     public void setTimeout(Integer timeout) {

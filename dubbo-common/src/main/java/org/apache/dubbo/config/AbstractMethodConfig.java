@@ -103,6 +103,10 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
         super(ApplicationModel.defaultModel().getDefaultModule());
     }
 
+    public AbstractMethodConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
     @Override
     public ModuleModel getScopeModel() {
         return (ModuleModel) scopeModel;

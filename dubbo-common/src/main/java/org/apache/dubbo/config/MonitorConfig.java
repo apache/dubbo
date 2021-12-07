@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 
@@ -66,7 +67,16 @@ public class MonitorConfig extends AbstractConfig {
     public MonitorConfig() {
     }
 
+    public MonitorConfig(ApplicationModel applicationModel) {
+        super(applicationModel);
+    }
+
     public MonitorConfig(String address) {
+        this.address = address;
+    }
+
+    public MonitorConfig(ApplicationModel applicationModel, String address) {
+        super(applicationModel);
         this.address = address;
     }
 

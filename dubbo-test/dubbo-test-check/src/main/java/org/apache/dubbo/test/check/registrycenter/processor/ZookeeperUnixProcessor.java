@@ -43,6 +43,12 @@ public abstract class ZookeeperUnixProcessor implements Processor {
             Process process = this.doProcess(zookeeperContext, clientPort);
             this.logErrorStream(process.getErrorStream());
             this.awaitProcessReady(process.getInputStream());
+            // kill the process
+            try {
+                process.destroy();
+            } catch (Throwable cause) {
+                logger.warn(String.format("Failed to kill the process, with client port %s !", clientPort), cause);
+            }
         }
     }
 
@@ -73,8 +79,9 @@ public abstract class ZookeeperUnixProcessor implements Processor {
         try (final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                if (this.getPattern().matcher(line).matches())
+                if (this.getPattern().matcher(line).matches()) {
                     return;
+                }
                 log.append('\n').append(line);
             }
         } catch (IOException e) {
@@ -95,6 +102,8 @@ public abstract class ZookeeperUnixProcessor implements Processor {
 
     /**
      * Gets the pattern to check the server is ready or not.
+     *
+     * @return the pattern for checking.
      */
     protected abstract Pattern getPattern();
 }
