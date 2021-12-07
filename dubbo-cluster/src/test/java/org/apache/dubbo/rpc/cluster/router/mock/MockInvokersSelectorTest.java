@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.cluster.router.mock;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -34,7 +36,7 @@ public class MockInvokersSelectorTest {
     @Test
     public void test() {
 
-        MockInvokersSelector selector = new MockInvokersSelector();
+        MockInvokersSelector selector = new MockInvokersSelector(URL.valueOf(""));
 
         // Data preparation
         Invoker<DemoService> invoker1 = Mockito.mock(Invoker.class);
@@ -43,14 +45,15 @@ public class MockInvokersSelectorTest {
         Mockito.when(invoker1.getUrl()).thenReturn(URL.valueOf("mock://127.0.0.1/test"));
         Mockito.when(invoker2.getUrl()).thenReturn(URL.valueOf("mock://127.0.0.1/test"));
         Mockito.when(invoker3.getUrl()).thenReturn(URL.valueOf("dubbo://127.0.0.1/test"));
-        List<Invoker<DemoService>> providers = Arrays.asList(invoker1, invoker2, invoker3);
+        BitList<Invoker<DemoService>> providers = new BitList<>(Arrays.asList(invoker1, invoker2, invoker3));
 
         RpcInvocation rpcInvocation = Mockito.mock(RpcInvocation.class);
 
         URL consumerURL = URL.valueOf("test://127.0.0.1");
 
+        selector.notify(providers);
         // rpcInvocation does not have an attached "invocation.need.mock" parameter, so normal invokers will be filtered out
-        List<Invoker<DemoService>> invokers = selector.route(providers, consumerURL, rpcInvocation);
+        List<Invoker<DemoService>> invokers = selector.route(providers, consumerURL, rpcInvocation, false).getResult();
         Assertions.assertEquals(invokers.size(),1);
         Assertions.assertTrue(invokers.contains(invoker3));
 
@@ -58,7 +61,7 @@ public class MockInvokersSelectorTest {
         Map<String,Object> attachments = new HashMap<>();
         attachments.put(INVOCATION_NEED_MOCK,"true");
         Mockito.when(rpcInvocation.getObjectAttachments()).thenReturn(attachments);
-        invokers = selector.route(providers, consumerURL, rpcInvocation);
+        invokers = selector.route(providers, consumerURL, rpcInvocation, false).getResult();
         Assertions.assertEquals(invokers.size(),2);
         Assertions.assertTrue(invokers.contains(invoker1));
         Assertions.assertTrue(invokers.contains(invoker2));

@@ -22,11 +22,19 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.Arrays;
@@ -47,10 +55,12 @@ public class ModuleConfigManager extends AbstractConfigManager {
     private static final Logger logger = LoggerFactory.getLogger(ModuleConfigManager.class);
 
     private Map<String, AbstractInterfaceConfig> serviceConfigCache = new ConcurrentHashMap<>();
+    private final ConfigManager applicationConfigManager;
 
 
     public ModuleConfigManager(ModuleModel moduleModel) {
         super(moduleModel, Arrays.asList(ModuleConfig.class, ServiceConfigBase.class, ReferenceConfigBase.class, ProviderConfig.class, ConsumerConfig.class));
+        applicationConfigManager = moduleModel.getApplicationModel().getApplicationConfigManager();
     }
 
     // ModuleConfig correlative methods
@@ -158,18 +168,13 @@ public class ModuleConfigManager extends AbstractConfigManager {
 
     @Override
     public void refreshAll() {
-        // refresh all configs here,
+        // refresh all configs here
         getModule().ifPresent(ModuleConfig::refresh);
         getProviders().forEach(ProviderConfig::refresh);
         getConsumers().forEach(ConsumerConfig::refresh);
 
-        for (ReferenceConfigBase<?> reference : getReferences()) {
-            reference.refresh();
-        }
-
-        for (ServiceConfigBase sc : getServices()) {
-            sc.refresh();
-        }
+        getReferences().forEach(ReferenceConfigBase::refresh);
+        getServices().forEach(ServiceConfigBase::refresh);
     }
 
     @Override
@@ -259,4 +264,109 @@ public class ModuleConfigManager extends AbstractConfigManager {
         checkDefaultAndValidateConfigs(ModuleConfig.class);
     }
 
+
+    //
+    // Delegate read application configs
+    //
+
+    public ConfigManager getApplicationConfigManager() {
+        return applicationConfigManager;
+    }
+
+    @Override
+    public <C extends AbstractConfig> Map<String, C> getConfigsMap(Class<C> cls) {
+        if (isSupportConfigType(cls)) {
+            return super.getConfigsMap(cls);
+        } else {
+            // redirect to application ConfigManager
+            return applicationConfigManager.getConfigsMap(cls);
+        }
+    }
+
+    @Override
+    public <C extends AbstractConfig> Collection<C> getConfigs(Class<C> configType) {
+        if (isSupportConfigType(configType)) {
+            return super.getConfigs(configType);
+        } else {
+            return applicationConfigManager.getConfigs(configType);
+        }
+    }
+
+    @Override
+    public <T extends AbstractConfig> Optional<T> getConfig(Class<T> cls, String idOrName) {
+        if (isSupportConfigType(cls)) {
+            return super.getConfig(cls, idOrName);
+        } else {
+            return applicationConfigManager.getConfig(cls, idOrName);
+        }
+    }
+
+    @Override
+    public <C extends AbstractConfig> List<C> getDefaultConfigs(Class<C> cls) {
+        if (isSupportConfigType(cls)) {
+            return super.getDefaultConfigs(cls);
+        } else {
+            return applicationConfigManager.getDefaultConfigs(cls);
+        }
+    }
+
+    public Optional<ApplicationConfig> getApplication() {
+        return applicationConfigManager.getApplication();
+    }
+
+    public Optional<MonitorConfig> getMonitor() {
+        return applicationConfigManager.getMonitor();
+    }
+
+    public Optional<MetricsConfig> getMetrics() {
+        return applicationConfigManager.getMetrics();
+    }
+
+    public Optional<SslConfig> getSsl() {
+        return applicationConfigManager.getSsl();
+    }
+
+    public Optional<Collection<ConfigCenterConfig>> getDefaultConfigCenter() {
+        return applicationConfigManager.getDefaultConfigCenter();
+    }
+
+    public Optional<ConfigCenterConfig> getConfigCenter(String id) {
+        return applicationConfigManager.getConfigCenter(id);
+    }
+
+    public Collection<ConfigCenterConfig> getConfigCenters() {
+        return applicationConfigManager.getConfigCenters();
+    }
+
+    public Collection<MetadataReportConfig> getMetadataConfigs() {
+        return applicationConfigManager.getMetadataConfigs();
+    }
+
+    public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
+        return applicationConfigManager.getDefaultMetadataConfigs();
+    }
+
+    public Optional<ProtocolConfig> getProtocol(String idOrName) {
+        return applicationConfigManager.getProtocol(idOrName);
+    }
+
+    public List<ProtocolConfig> getDefaultProtocols() {
+        return applicationConfigManager.getDefaultProtocols();
+    }
+
+    public Collection<ProtocolConfig> getProtocols() {
+        return applicationConfigManager.getProtocols();
+    }
+
+    public Optional<RegistryConfig> getRegistry(String id) {
+        return applicationConfigManager.getRegistry(id);
+    }
+
+    public List<RegistryConfig> getDefaultRegistries() {
+        return applicationConfigManager.getDefaultRegistries();
+    }
+
+    public Collection<RegistryConfig> getRegistries() {
+        return applicationConfigManager.getRegistries();
+    }
 }

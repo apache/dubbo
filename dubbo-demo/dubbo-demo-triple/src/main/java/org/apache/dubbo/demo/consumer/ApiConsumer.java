@@ -18,6 +18,7 @@ package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
@@ -39,16 +40,17 @@ public class ApiConsumer {
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-triple-api-consumer"))
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .reference(referenceConfig)
-                .start();
+            .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+            .protocol(new ProtocolConfig(CommonConstants.TRIPLE, -1))
+            .reference(referenceConfig)
+            .start();
 
         GreeterService greeterService = referenceConfig.get();
         System.out.println("dubbo referenceConfig started");
         try {
             final HelloReply reply = greeterService.sayHello(HelloRequest.newBuilder()
-                    .setName("triple")
-                    .build());
+                .setName("triple")
+                .build());
             TimeUnit.SECONDS.sleep(1);
             System.out.println("Reply: " + reply.getMessage());
         } catch (Throwable t) {

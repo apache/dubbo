@@ -68,7 +68,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     private volatile ExecutorService serviceReferExecutor;
 
-    private ScheduledExecutorService reconnectScheduledExecutor;
+    private ScheduledExecutorService connectivityScheduledExecutor;
 
     public Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
 
@@ -102,7 +102,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
                 , new ThreadPoolExecutor.AbortPolicy()));
         }
 
-//        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
+        connectivityScheduledExecutor = Executors.newScheduledThreadPool(DEFAULT_SCHEDULER_SIZE, new NamedThreadFactory("Dubbo-connectivity-scheduler", true));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
 
@@ -212,13 +212,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     @Override
     public ScheduledExecutorService getServiceExportExecutor() {
-        if (serviceExportExecutor == null) {
-            synchronized (LOCK) {
-                if (serviceExportExecutor == null) {
-                    int coreSize = getExportThreadNum();
-                    serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
+        synchronized (LOCK) {
+            if (serviceExportExecutor == null) {
+                int coreSize = getExportThreadNum();
+                serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
                         new NamedThreadFactory("Dubbo-service-export", true));
-                }
             }
         }
         return serviceExportExecutor;
@@ -241,13 +239,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     @Override
     public ExecutorService getServiceReferExecutor() {
-        if (serviceReferExecutor == null) {
-            synchronized (LOCK) {
-                if (serviceReferExecutor == null) {
-                    int coreSize = getReferThreadNum();
-                    serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
+        synchronized (LOCK) {
+            if (serviceReferExecutor == null) {
+                int coreSize = getReferThreadNum();
+                serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
                         new NamedThreadFactory("Dubbo-service-refer", true));
-                }
             }
         }
         return serviceReferExecutor;
@@ -365,6 +361,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     @Override
+    public ScheduledExecutorService getConnectivityScheduledExecutor() {
+        return connectivityScheduledExecutor;
+    }
+
+    @Override
     public void destroyAll() {
         logger.info("destroying executor repository ..");
         shutdownExecutorService(poolRouterExecutor, "poolRouterExecutor");
@@ -394,6 +395,9 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
         // executorServiceRing
         shutdownExecutorServices(executorServiceRing.listItems(), "executorServiceRing");
+
+        // connectivityScheduledExecutor
+        shutdownExecutorService(connectivityScheduledExecutor, "connectivityScheduledExecutor");
 
         // shutdown share executor
         shutdownExecutorService(sharedExecutor, "sharedExecutor");

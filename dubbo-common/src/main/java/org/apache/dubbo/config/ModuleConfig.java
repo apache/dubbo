@@ -96,8 +96,17 @@ public class ModuleConfig extends AbstractConfig {
         super(ApplicationModel.defaultModel().getDefaultModule());
     }
 
+    public ModuleConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
+
     public ModuleConfig(String name) {
         this();
+        setName(name);
+    }
+
+    public ModuleConfig(ModuleModel moduleModel, String name) {
+        this(moduleModel);
         setName(name);
     }
 

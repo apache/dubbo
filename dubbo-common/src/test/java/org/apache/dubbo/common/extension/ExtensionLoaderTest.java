@@ -43,9 +43,9 @@ import org.apache.dubbo.common.extension.ext11_no_adaptive.NoAdaptiveExtImpl;
 import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
-import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Impl1;
-import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper1;
-import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper2;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Impl1;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper1;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper2;
 import org.apache.dubbo.common.extension.ext7.InitErrorExt;
 import org.apache.dubbo.common.extension.ext8_add.AddExt1;
 import org.apache.dubbo.common.extension.ext8_add.AddExt2;
@@ -157,7 +157,7 @@ public class ExtensionLoaderTest {
     @Test
     public void test_getExtension_WithWrapper() {
         WrappedExt impl1 = getExtensionLoader(WrappedExt.class).getExtension("impl1");
-        assertThat(impl1, anyOf(instanceOf(Ext5Wrapper1.class), instanceOf(Ext5Wrapper2.class)));
+        assertThat(impl1, anyOf(instanceOf(Ext6Wrapper1.class), instanceOf(Ext6Wrapper2.class)));
         assertThat(impl1, instanceOf(WrappedExtWrapper.class));
         // get origin instance from wrapper
         WrappedExt originImpl1 = impl1;
@@ -167,22 +167,22 @@ public class ExtensionLoaderTest {
 
         // test unwrapped instance
         WrappedExt unwrappedImpl1 = getExtensionLoader(WrappedExt.class).getExtension("impl1", false);
-        assertThat(unwrappedImpl1, instanceOf(Ext5Impl1.class));
+        assertThat(unwrappedImpl1, instanceOf(Ext6Impl1.class));
         assertNotSame(unwrappedImpl1, impl1);
         assertSame(unwrappedImpl1, originImpl1);
 
 
         WrappedExt impl2 = getExtensionLoader(WrappedExt.class).getExtension("impl2");
-        assertThat(impl2, anyOf(instanceOf(Ext5Wrapper1.class), instanceOf(Ext5Wrapper2.class)));
+        assertThat(impl2, anyOf(instanceOf(Ext6Wrapper1.class), instanceOf(Ext6Wrapper2.class)));
 
 
         URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1");
-        int echoCount1 = Ext5Wrapper1.echoCount.get();
-        int echoCount2 = Ext5Wrapper2.echoCount.get();
+        int echoCount1 = Ext6Wrapper1.echoCount.get();
+        int echoCount2 = Ext6Wrapper2.echoCount.get();
 
-        assertEquals("Ext5Impl1-echo", impl1.echo(url, "ha"));
-        assertEquals(echoCount1 + 1, Ext5Wrapper1.echoCount.get());
-        assertEquals(echoCount2 + 1, Ext5Wrapper2.echoCount.get());
+        assertEquals("Ext6Impl1-echo", impl1.echo(url, "ha"));
+        assertEquals(echoCount1 + 1, Ext6Wrapper1.echoCount.get());
+        assertEquals(echoCount2 + 1, Ext6Wrapper2.echoCount.get());
     }
 
     @Test

@@ -45,7 +45,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
         return new UnaryServerTransportObserver();
     }
 
-    private class UnaryServerTransportObserver extends ServerUnaryInboundTransportObserver implements TransportObserver {
+    private class UnaryServerTransportObserver extends ServerUnaryInboundTransportObserver {
         @Override
         public void onError(GrpcStatus status) {
             transportError(status);

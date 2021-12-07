@@ -20,11 +20,12 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
-import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouterFactory;
-import org.apache.dubbo.rpc.cluster.router.condition.config.AppRouterFactory;
-import org.apache.dubbo.rpc.cluster.router.tag.TagRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.condition.ConditionStateRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.tag.TagStateRouterFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -108,13 +109,13 @@ public class AbstractReferenceConfigTest {
         assertThat(parameters, hasValue("tag,condition"));
         URL url = mock(URL.class);
         when(url.getParameter(ROUTER_KEY)).thenReturn("condition");
-        List<RouterFactory> routerFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(url, ROUTER_KEY);
-        assertThat(routerFactories.stream().anyMatch(routerFactory -> routerFactory.getClass().equals(ConditionRouterFactory.class)), is(true));
+        List<StateRouterFactory> routerFactories = ExtensionLoader.getExtensionLoader(StateRouterFactory.class).getActivateExtension(url, ROUTER_KEY);
+        assertThat(routerFactories.stream().anyMatch(routerFactory -> routerFactory.getClass().equals(ConditionStateRouterFactory.class)), is(true));
         when(url.getParameter(ROUTER_KEY)).thenReturn("-tag,-app");
-        routerFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(url, ROUTER_KEY);
+        routerFactories = ExtensionLoader.getExtensionLoader(StateRouterFactory.class).getActivateExtension(url, ROUTER_KEY);
         assertThat(routerFactories.stream()
-                .allMatch(routerFactory -> !routerFactory.getClass().equals(TagRouterFactory.class)
-                        && !routerFactory.getClass().equals(AppRouterFactory.class)), is(true));
+            .allMatch(routerFactory -> !routerFactory.getClass().equals(TagStateRouterFactory.class)
+                && !routerFactory.getClass().equals(AppStateRouterFactory.class)), is(true));
     }
 
     @Test

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
@@ -36,8 +37,8 @@ import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -104,8 +105,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     protected volatile List<Configurator> configurators;
 
-    protected volatile List<Invoker<T>> invokers;
-
     protected ServiceInstancesChangedListener serviceListener;
 
     public DynamicDirectory(Class<T> serviceType, URL url) {
@@ -165,7 +164,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     @Override
-    public List<Invoker<T>> doList(Invocation invocation) {
+    public List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) {
         if (forbidden) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
@@ -175,18 +174,17 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         }
 
         if (multiGroup) {
-            return this.invokers == null ? Collections.emptyList() : this.invokers;
+            return this.getInvokers();
         }
 
-        List<Invoker<T>> invokers = null;
         try {
             // Get invokers from cache, only runtime routers will be executed.
-            invokers = routerChain.route(getConsumerUrl(), invocation);
+            List<Invoker<T>> result = routerChain.route(getConsumerUrl(), invokers, invocation);
+            return result == null ? BitList.emptyList() : result;
         } catch (Throwable t) {
             logger.error("Failed to execute router: " + getUrl() + ", cause: " + t.getMessage(), t);
+            return BitList.emptyList();
         }
-
-        return invokers == null ? Collections.emptyList() : invokers;
     }
 
     @Override
@@ -196,7 +194,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     @Override
     public List<Invoker<T>> getAllInvokers() {
-        return this.invokers == null ? Collections.emptyList() : this.invokers;
+        return this.getInvokers();
     }
 
     /**
@@ -251,11 +249,16 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     public void buildRouterChain(URL url) {
-        this.setRouterChain(RouterChain.buildChain(url));
+        this.setRouterChain(RouterChain.buildChain(getInterface(), url));
     }
 
-    public List<Invoker<T>> getInvokers() {
-        return invokers;
+    @Override
+    public boolean isAvailable() {
+        if (isDestroyed() || this.forbidden) {
+            return false;
+        }
+        return CollectionUtils.isNotEmpty(getValidInvokers())
+            && getValidInvokers().stream().anyMatch(Invoker::isAvailable);
     }
 
     @Override
@@ -323,6 +326,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     protected synchronized void invokersChanged() {
+        refreshInvoker();
         invokersChanged = true;
         if (invokersChangedListener != null) {
             invokersChangedListener.onChange();

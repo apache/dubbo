@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.cluster.loadbalance;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.RouterChain;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -49,13 +51,13 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
     void testNormalWhenRouterEnabled() {
         ConsistentHashLoadBalance lb = (ConsistentHashLoadBalance) getLoadBalance(ConsistentHashLoadBalance.NAME);
         URL url = invokers.get(0).getUrl();
-        RouterChain<LoadBalanceBaseTest> routerChain = RouterChain.buildChain(url);
+        RouterChain<LoadBalanceBaseTest> routerChain = RouterChain.buildChain(LoadBalanceBaseTest.class, url);
         Invoker<LoadBalanceBaseTest> result = lb.select(invokers, url, invocation);
         int originalHashCode = lb.getCorrespondingHashCode(invokers);
 
         for (int i = 0; i < 100; i++) {
-            routerChain.setInvokers(invokers);
-            List<Invoker<LoadBalanceBaseTest>> routeInvokers = routerChain.route(url, invocation);
+            routerChain.setInvokers(new BitList<>(invokers));
+            List<Invoker<LoadBalanceBaseTest>> routeInvokers = routerChain.route(url, new BitList<>(invokers), invocation);
 
             Assertions.assertEquals(originalHashCode, lb.getCorrespondingHashCode(routeInvokers));
         }

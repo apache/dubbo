@@ -138,6 +138,8 @@ public interface CommonConstants {
 
     int DEFAULT_TIMEOUT = 1000;
 
+    String SESSION_KEY = "session";
+
     // used by invocation attachments to transfer timeout from Consumer to Provider.
     // works as a replacement of TIMEOUT_KEY on wire, which seems to be totally useless in previous releases).
     String TIMEOUT_ATTACHMENT_KEY = "_TO";
@@ -482,6 +484,19 @@ public interface CommonConstants {
 
     String OS_WIN_PREFIX = "win";
 
-    String DUBBO_INTERNAL_APPLICATION = "DUBBO_INTERNAL_APPLICATION";
+    String RECONNECT_TASK_TRY_COUNT = "dubbo.reconnect.reconnectTaskTryCount";
 
+    int DEFAULT_RECONNECT_TASK_TRY_COUNT = 10;
+
+    String RECONNECT_TASK_PERIOD = "dubbo.reconnect.reconnectTaskPeriod";
+
+    int DEFAULT_RECONNECT_TASK_PERIOD = 1000;
+
+    String RESELECT_COUNT = "dubbo.reselect.count";
+
+    int DEFAULT_RESELECT_COUNT = 10;
+
+    String ENABLE_CONNECTIVITY_VALIDATION = "dubbo.connectivity.validation";
+
+    String DUBBO_INTERNAL_APPLICATION = "DUBBO_INTERNAL_APPLICATION";
 }

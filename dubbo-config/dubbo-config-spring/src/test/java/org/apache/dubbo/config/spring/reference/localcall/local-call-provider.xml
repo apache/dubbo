@@ -25,7 +25,7 @@
 
     <dubbo:application name="demo-provider"/>
 
-    <dubbo:registry address="zookeeper://${zookeeper.address:127.0.0.1}:2181"/>
+    <dubbo:registry address="${zookeeper.connection.address}"/>
 
     <dubbo:protocol name="dubbo" port="20880"/>
 

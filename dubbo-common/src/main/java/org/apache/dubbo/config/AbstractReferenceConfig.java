@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
@@ -88,6 +89,13 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
      */
     @Deprecated
     private Boolean referAsync;
+
+    public AbstractReferenceConfig() {
+    }
+
+    public AbstractReferenceConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
 
     @Override
     protected void checkDefault() {

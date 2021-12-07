@@ -135,7 +135,7 @@ public class NacosServiceDiscoveryTest {
         assertEquals(3, namingServiceWrapper.getAllInstances(anyString(), anyString()).size());
 
         // unRegister
-        nacosServiceDiscovery.doUnregister();
+        nacosServiceDiscovery.unregister();
     }
 
     @Test

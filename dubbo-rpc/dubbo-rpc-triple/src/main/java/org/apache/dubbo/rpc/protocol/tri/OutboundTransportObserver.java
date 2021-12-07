@@ -23,6 +23,11 @@ package org.apache.dubbo.rpc.protocol.tri;
 public abstract class OutboundTransportObserver implements TransportObserver {
 
     protected final TransportState state = new TransportState();
+    protected final WriteQueue writeQueue;
+
+    public OutboundTransportObserver(WriteQueue writeQueue) {
+        this.writeQueue = writeQueue;
+    }
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream) {
@@ -32,11 +37,14 @@ public abstract class OutboundTransportObserver implements TransportObserver {
 
     protected void checkSendMeta(Object metadata, boolean endStream) {
         if (endStream) {
+            // trailers-only or metadata + trailers
             if (!state.allowSendEndStream()) {
                 throw new IllegalStateException("Metadata endStream already sent to peer, send " + metadata + " failed!");
             }
+            state.setMetaSend();
             state.setEndStreamSend();
         } else {
+            // metadata
             if (!state.allowSendMeta()) {
                 throw new IllegalStateException("Metadata already sent to peer, send " + metadata + " failed!");
             }
@@ -86,14 +94,6 @@ public abstract class OutboundTransportObserver implements TransportObserver {
     protected abstract void doOnError(GrpcStatus status);
 
     protected abstract void doOnComplete();
-
-
-    protected int calcCompressFlag(Compressor compressor) {
-        if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
-            return 0;
-        }
-        return 1;
-    }
 
 }
 

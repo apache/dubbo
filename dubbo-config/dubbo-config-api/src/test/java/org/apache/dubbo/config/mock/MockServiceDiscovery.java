@@ -48,12 +48,12 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUpdate() throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = serviceInstance;
     }
 
     @Override
-    public void doUnregister() throws RuntimeException {
+    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = null;
     }
 

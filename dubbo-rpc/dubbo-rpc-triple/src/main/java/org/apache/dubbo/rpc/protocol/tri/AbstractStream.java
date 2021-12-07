@@ -374,9 +374,9 @@ public abstract class AbstractStream implements Stream {
             if (TripleHeaderEnum.containsExcludeAttachments(key)) {
                 continue;
             }
-            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > 4) {
+            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
                 try {
-                    attachments.put(key.substring(0, key.length() - 4), decodeASCIIByte(header.getValue()));
+                    attachments.put(key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length()), decodeASCIIByte(header.getValue()));
                 } catch (Exception e) {
                     LOGGER.error("Failed to parse response attachment key=" + key, e);
                 }
@@ -446,7 +446,6 @@ public abstract class AbstractStream implements Stream {
     protected <T> T unpack(InputStream is, Class<T> clz) {
         try {
             final T req = SingleProtobufUtils.deserialize(is, clz);
-            is.close();
             return req;
         } catch (IOException e) {
             throw new RuntimeException("Failed to unpack req", e);

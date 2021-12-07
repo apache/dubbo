@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -53,8 +54,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ApplicationModel extends ScopeModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
     public static final String NAME = "ApplicationModel";
-    private final List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
-    private final List<ModuleModel> pubModuleModels = Collections.synchronizedList(new ArrayList<>());
+    private final List<ModuleModel> moduleModels = new CopyOnWriteArrayList<>();
+    private final List<ModuleModel> pubModuleModels = new CopyOnWriteArrayList<>();
     private Environment environment;
     private ConfigManager configManager;
     private ServiceRepository serviceRepository;
