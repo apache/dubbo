@@ -118,8 +118,6 @@ public class ExchangeCodec extends TelnetCodec {
             return obj;
         }
 
-        checkPayload(channel, len);
-
         int tt = len + HEADER_LENGTH;
         if (readable < tt) {
             return DecodeResult.NEED_MORE_INPUT;

@@ -168,18 +168,13 @@ public class ModuleConfigManager extends AbstractConfigManager {
 
     @Override
     public void refreshAll() {
-        // refresh all configs here,
+        // refresh all configs here
         getModule().ifPresent(ModuleConfig::refresh);
         getProviders().forEach(ProviderConfig::refresh);
         getConsumers().forEach(ConsumerConfig::refresh);
 
-        for (ReferenceConfigBase<?> reference : getReferences()) {
-            reference.refresh();
-        }
-
-        for (ServiceConfigBase sc : getServices()) {
-            sc.refresh();
-        }
+        getReferences().forEach(ReferenceConfigBase::refresh);
+        getServices().forEach(ServiceConfigBase::refresh);
     }
 
     @Override
