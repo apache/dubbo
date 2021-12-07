@@ -24,7 +24,6 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +36,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -64,7 +62,7 @@ public class ZookeeperServiceDiscoveryTest {
 
     @BeforeEach
     public void init() throws Exception {
-        this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
+        this.registryUrl = URL.valueOf(zookeeperConnectionAddress1);
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig(SERVICE_NAME));
         registryUrl.setScopeModel(applicationModel);

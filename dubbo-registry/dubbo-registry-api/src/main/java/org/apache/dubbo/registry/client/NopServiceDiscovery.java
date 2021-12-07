@@ -37,7 +37,7 @@ public class NopServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUnregister() {
+    public void doUnregister(ServiceInstance serviceInstance) {
 
     }
 

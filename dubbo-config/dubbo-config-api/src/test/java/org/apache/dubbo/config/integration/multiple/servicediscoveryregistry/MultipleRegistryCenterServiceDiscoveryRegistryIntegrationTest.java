@@ -24,11 +24,11 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.integration.IntegrationTest;
 import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
-import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.registry.RegistryServiceListener;
-import org.apache.dubbo.registrycenter.RegistryCenter;
-import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperConfig;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

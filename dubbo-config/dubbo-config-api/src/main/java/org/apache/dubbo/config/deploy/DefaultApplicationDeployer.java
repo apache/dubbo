@@ -825,11 +825,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 case FAILED:
                     Throwable error = null;
                     ModuleModel errorModule = null;
-                    for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-                        ModuleDeployer deployer = moduleModel.getDeployer();
+                    for (ModuleModel module : applicationModel.getModuleModels()) {
+                        ModuleDeployer deployer = module.getDeployer();
                         if (deployer.isFailed() && deployer.getError() != null) {
                             error = deployer.getError();
-                            errorModule = moduleModel;
+                            errorModule = module;
                             break;
                         }
                     }

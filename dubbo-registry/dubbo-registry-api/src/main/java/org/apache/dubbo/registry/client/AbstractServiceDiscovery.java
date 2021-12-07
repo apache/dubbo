@@ -44,7 +44,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     private Logger logger = LoggerFactory.getLogger(AbstractServiceDiscovery.class);
     private volatile boolean isDestroy;
 
-    private final String serviceName;
+    protected final String serviceName;
     protected volatile ServiceInstance serviceInstance;
     protected volatile MetadataInfo metadataInfo;
     protected MetadataReport metadataReport;
@@ -52,7 +52,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     protected MetaCacheManager metaCacheManager;
     protected URL registryURL;
 
-    private ApplicationModel applicationModel;
+    protected ApplicationModel applicationModel;
 
     public AbstractServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
         this(applicationModel.getApplicationName(), registryURL);
@@ -76,16 +76,16 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         this.metaCacheManager = new MetaCacheManager(getCacheNameSuffix());
     }
 
-    public synchronized final void register() throws RuntimeException {
-        this.serviceInstance = createServiceInstance();
-        if (isValidInstance(serviceInstance)) {
+    public synchronized void register() throws RuntimeException {
+        this.serviceInstance = createServiceInstance(this.metadataInfo);
+        if (isValidInstance(this.serviceInstance)) {
             return;
         }
 
-        boolean revisionUpdated = calOrUpdateInstanceRevision();
+        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
-            reportMetadata();
-            doRegister(serviceInstance);
+            reportMetadata(this.metadataInfo);
+            doRegister(this.serviceInstance);
         }
     }
 
@@ -95,37 +95,37 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
      * instance.
      */
     @Override
-    public synchronized final void update() throws RuntimeException {
+    public synchronized void update() throws RuntimeException {
         if (this.serviceInstance == null) {
-            this.serviceInstance = createServiceInstance();
-        } else if (!isValidInstance(serviceInstance)) {
-            ServiceInstanceMetadataUtils.customizeInstance(serviceInstance, applicationModel);
+            this.serviceInstance = createServiceInstance(this.metadataInfo);
+        } else if (!isValidInstance(this.serviceInstance)) {
+            ServiceInstanceMetadataUtils.customizeInstance(this.serviceInstance, this.applicationModel);
         }
 
-        if (!isValidInstance(serviceInstance)) {
+        if (!isValidInstance(this.serviceInstance)) {
             return;
         }
 
-        boolean revisionUpdated = calOrUpdateInstanceRevision();
+        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
         if (revisionUpdated) {
-            doUpdate();
+            doUpdate(this.serviceInstance);
         }
     }
 
     @Override
-    public synchronized final void unregister() throws RuntimeException {
-        unReportMetadata();
-        doUnregister();
+    public synchronized void unregister() throws RuntimeException {
+        unReportMetadata(this.metadataInfo);
+        doUnregister(this.serviceInstance);
     }
 
     @Override
     public final ServiceInstance getLocalInstance() {
-        return serviceInstance;
+        return this.serviceInstance;
     }
 
     @Override
     public MetadataInfo getMetadata() {
-        return metadataInfo;
+        return this.metadataInfo;
     }
 
     @Override
@@ -208,10 +208,10 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
        throw new UnsupportedOperationException("Service discovery implementation does not support lookup of url list.");
     }
 
-    public void doUpdate() throws RuntimeException {
+    protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
         this.unregister();
 
-        reportMetadata();
+        reportMetadata(serviceInstance.getServiceMetadata());
         this.doRegister(serviceInstance);
     }
 
@@ -220,13 +220,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         return registryURL;
     }
 
-    public abstract void doRegister(ServiceInstance serviceInstance) throws RuntimeException;
+    protected abstract void doRegister(ServiceInstance serviceInstance) throws RuntimeException;
 
-    public abstract void doUnregister();
+    protected abstract void doUnregister(ServiceInstance serviceInstance);
 
-    public abstract void doDestroy() throws Exception;
+    protected abstract void doDestroy() throws Exception;
 
-    private ServiceInstance createServiceInstance() {
+    protected ServiceInstance createServiceInstance(MetadataInfo metadataInfo) {
         DefaultServiceInstance instance = new DefaultServiceInstance(serviceName, applicationModel);
         instance.setServiceMetadata(metadataInfo);
         setMetadataStorageType(instance, metadataType);
@@ -234,28 +234,29 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         return instance;
     }
 
-    protected boolean calOrUpdateInstanceRevision() {
-        String existingInstanceRevision = serviceInstance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
+    protected boolean calOrUpdateInstanceRevision(ServiceInstance instance) {
+        String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
+        MetadataInfo metadataInfo = instance.getServiceMetadata();
         String newRevision = metadataInfo.calAndGetRevision();
         if (!newRevision.equals(existingInstanceRevision)) {
             if (EMPTY_REVISION.equals(newRevision)) {
                 logger.warn("No interface in metadata, will not register/update instance.");
                 return false;
             }
-            serviceInstance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
+            instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
             return true;
         }
         return false;
     }
 
-    protected void reportMetadata() {
+    protected void reportMetadata(MetadataInfo metadataInfo) {
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
             metadataReport.publishAppMetadata(identifier, metadataInfo);
         }
     }
 
-    protected void unReportMetadata() {
+    protected void unReportMetadata(MetadataInfo metadataInfo) {
         if (metadataReport != null) {
             SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
             metadataReport.unPublishAppMetadata(identifier, metadataInfo);

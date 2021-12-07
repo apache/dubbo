@@ -121,10 +121,6 @@ public class MetadataInfo implements Serializable {
         return revision;
     }
 
-    public String getRevision() {
-        return revision;
-    }
-
     /**
      * Reported status and metadata modification must be synchronized if used in multiple threads.
      */
