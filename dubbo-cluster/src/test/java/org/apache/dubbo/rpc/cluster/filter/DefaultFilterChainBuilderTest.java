@@ -19,15 +19,16 @@ package org.apache.dubbo.rpc.cluster.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
 public class DefaultFilterChainBuilderTest {
 

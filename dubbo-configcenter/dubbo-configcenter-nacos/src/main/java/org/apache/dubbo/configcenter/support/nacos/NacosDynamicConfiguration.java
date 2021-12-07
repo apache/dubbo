@@ -17,16 +17,6 @@
 
 package org.apache.dubbo.configcenter.support.nacos;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.PropertyKeyConst;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
-import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.client.config.http.HttpAgent;
-import com.alibaba.nacos.common.http.HttpRestResult;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
@@ -37,6 +27,17 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.api.config.ConfigService;
+import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.client.config.http.HttpAgent;
+import com.alibaba.nacos.common.http.HttpRestResult;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

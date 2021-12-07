@@ -22,6 +22,7 @@ import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.director.FooFrameworkProvider;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

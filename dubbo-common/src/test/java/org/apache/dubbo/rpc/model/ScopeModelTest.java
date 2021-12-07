@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.utils.StringUtils;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

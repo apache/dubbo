@@ -38,8 +38,8 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
-import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.apache.dubbo.common.utils.CollectionUtils.flip;
+import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 
 public class ClassUtils {

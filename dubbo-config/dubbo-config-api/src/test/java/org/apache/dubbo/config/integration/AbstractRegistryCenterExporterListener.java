@@ -26,9 +26,9 @@ import org.apache.dubbo.rpc.listener.ListenerExporterWrapper;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
 
 /**
  * The abstraction of {@link ExporterListener} is to record exported exporters, which should be extended by different sub-classes.

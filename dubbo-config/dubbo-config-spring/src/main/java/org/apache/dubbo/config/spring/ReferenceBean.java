@@ -27,6 +27,7 @@ import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.schema.DubboBeanDefinitionParser;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.AbstractLazyCreationTargetSource;
 import org.springframework.beans.MutablePropertyValues;

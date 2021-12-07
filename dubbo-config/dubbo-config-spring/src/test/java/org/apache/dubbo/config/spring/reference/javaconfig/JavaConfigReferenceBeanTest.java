@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.reference.javaconfig;
 
-import com.sun.management.HotSpotDiagnosticMXBean;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Reference;
@@ -29,10 +28,10 @@ import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
-import org.junit.jupiter.api.AfterAll;
+
+import com.sun.management.HotSpotDiagnosticMXBean;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

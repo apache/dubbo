@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.cluster.router.mesh.route;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 

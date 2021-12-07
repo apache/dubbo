@@ -20,8 +20,8 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

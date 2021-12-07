@@ -39,6 +39,7 @@ import org.apache.dubbo.qos.command.impl.ShutdownTelnet;
 import org.apache.dubbo.qos.command.impl.Startup;
 import org.apache.dubbo.qos.command.impl.Version;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;

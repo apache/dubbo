@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.config.spring.reference;
 
-import com.alibaba.spring.util.AnnotationUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -33,6 +30,10 @@ import org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationPropert
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
+import com.alibaba.spring.util.AnnotationUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.support.DefaultConversionService;

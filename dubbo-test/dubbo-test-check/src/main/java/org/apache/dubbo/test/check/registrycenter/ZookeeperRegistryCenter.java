@@ -25,20 +25,20 @@ import org.apache.dubbo.test.check.registrycenter.initializer.ConfigZookeeperIni
 import org.apache.dubbo.test.check.registrycenter.initializer.DownloadZookeeperInitializer;
 import org.apache.dubbo.test.check.registrycenter.initializer.UnpackZookeeperInitializer;
 import org.apache.dubbo.test.check.registrycenter.initializer.ZookeeperInitializer;
+import org.apache.dubbo.test.check.registrycenter.processor.ResetZookeeperProcessor;
 import org.apache.dubbo.test.check.registrycenter.processor.StartZookeeperUnixProcessor;
 import org.apache.dubbo.test.check.registrycenter.processor.StartZookeeperWindowsProcessor;
-import org.apache.dubbo.test.check.registrycenter.processor.ResetZookeeperProcessor;
 import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperUnixProcessor;
 import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperWindowsProcessor;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**

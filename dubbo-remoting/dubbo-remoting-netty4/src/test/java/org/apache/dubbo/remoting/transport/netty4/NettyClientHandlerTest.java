@@ -16,16 +16,17 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.exchange.Request;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.concurrent.GenericFutureListener;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.exchange.Request;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;

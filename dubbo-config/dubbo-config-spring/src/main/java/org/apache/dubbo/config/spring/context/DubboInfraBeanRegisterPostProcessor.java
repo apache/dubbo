@@ -22,6 +22,7 @@ import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.config.spring.util.EnvironmentUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;

@@ -20,6 +20,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.telnet.support.TelnetHandlerAdapter;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 

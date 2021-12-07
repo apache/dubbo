@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.cluster.router.mesh.rule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.loadbalance.SimpleLB;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceRule;
+
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 

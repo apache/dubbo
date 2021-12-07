@@ -20,6 +20,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

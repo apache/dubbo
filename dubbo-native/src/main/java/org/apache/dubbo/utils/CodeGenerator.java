@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.utils;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.AdaptiveClassCodeGenerator;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;

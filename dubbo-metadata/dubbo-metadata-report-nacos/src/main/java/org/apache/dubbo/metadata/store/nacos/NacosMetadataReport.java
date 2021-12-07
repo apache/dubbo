@@ -17,11 +17,6 @@
 
 package org.apache.dubbo.metadata.store.nacos;
 
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.PropertyKeyConst;
-import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
-import com.alibaba.nacos.api.exception.NacosException;
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
@@ -39,6 +34,12 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
+
+import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.PropertyKeyConst;
+import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
+import com.alibaba.nacos.api.exception.NacosException;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;

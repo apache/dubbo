@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.util;
 
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.decode.MockChannel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;

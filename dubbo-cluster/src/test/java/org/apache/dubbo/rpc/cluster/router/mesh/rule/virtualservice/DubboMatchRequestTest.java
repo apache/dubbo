@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.DubboAttachmentMatch;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.DubboMethodMatch;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
