@@ -26,8 +26,9 @@ import org.apache.dubbo.common.metrics.model.sample.MetricSample;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -42,14 +43,14 @@ import static org.apache.dubbo.common.constants.MetricsConstants.TAG_VERSION_KEY
 
 public class DefaultMetricsCollectorTest {
 
-    private static ApplicationModel applicationModel;
-    private static String interfaceName;
-    private static String methodName;
-    private static String group;
-    private static String version;
+    private ApplicationModel applicationModel;
+    private String interfaceName;
+    private String methodName;
+    private String group;
+    private String version;
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         ApplicationConfig config = new ApplicationConfig();
         config.setName("MockMetrics");
 
@@ -60,6 +61,11 @@ public class DefaultMetricsCollectorTest {
         methodName = "mockMethod";
         group = "mockGroup";
         version = "1.0.0";
+    }
+
+    @AfterEach
+    public void teardown() {
+        applicationModel.destroy();
     }
 
     @Test
