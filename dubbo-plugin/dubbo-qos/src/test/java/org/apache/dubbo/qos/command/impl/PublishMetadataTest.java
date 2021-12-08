@@ -16,10 +16,8 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.config.deploy.DefaultApplicationDeployer;
+import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
@@ -29,8 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Field;
-
 public class PublishMetadataTest {
     private FrameworkModel frameworkModel;
 
@@ -39,11 +35,7 @@ public class PublishMetadataTest {
         frameworkModel = new FrameworkModel();
         for (int i = 0; i < 3; i++) {
             ApplicationModel applicationModel = frameworkModel.newApplication();
-            DefaultApplicationDeployer deployer = applicationModel.getBeanFactory().getBean(DefaultApplicationDeployer.class);
-            ServiceInstance serviceInstance = new DefaultServiceInstance("APP_" + i, applicationModel);
-            Field serviceInstanceField = deployer.getClass().getDeclaredField("serviceInstance");
-            serviceInstanceField.setAccessible(true);
-            serviceInstanceField.set(deployer, serviceInstance);
+            applicationModel.getApplicationConfigManager().setApplication(new ApplicationConfig("APP_" + i));
         }
 
     }
