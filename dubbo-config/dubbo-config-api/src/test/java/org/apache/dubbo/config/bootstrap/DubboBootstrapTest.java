@@ -274,7 +274,7 @@ public class DubboBootstrapTest {
             .service(service)
             .start();
 
-        assertMetadataService(bootstrap, availablePort, false);
+        assertMetadataService(bootstrap, availablePort, true);
     }
 
     @Test
