@@ -160,6 +160,12 @@ public final class URLBuilder extends ServiceConfigURL {
     }
 
     @Override
+    public URLBuilder removeAttribute(String key) {
+        attributes.remove(key);
+        return this;
+    }
+
+    @Override
     public URLBuilder setProtocol(String protocol) {
         this.protocol = protocol;
         return this;
