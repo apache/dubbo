@@ -37,7 +37,7 @@ public class Profiler {
     }
 
     public static ProfilerEntry release(ProfilerEntry entry) {
-        entry.setEndTime(System.currentTimeMillis());
+        entry.setEndTime(System.nanoTime());
         ProfilerEntry parent = entry.getParent();
         if (parent != null) {
             return parent;
@@ -67,13 +67,15 @@ public class Profiler {
 
     public static List<String> buildDetail(ProfilerEntry entry, long startTime, long totalUsageTime, int depth) {
         StringBuilder stringBuilder = new StringBuilder();
-        int percent = (int) (((entry.getEndTime() - entry.getStartTime()) * 100) / totalUsageTime);
+        long usage = entry.getEndTime() - entry.getStartTime();
+        int percent = (int) (((usage) * 100) / totalUsageTime);
 
+        long offset = entry.getStartTime() - startTime;
         List<String> lines = new LinkedList<>();
         stringBuilder.append("+-[ Offset: ")
-            .append(entry.getStartTime() - startTime)
+            .append(offset / 1000_000).append(".").append(String.format("%06d", offset % 1000_000))
             .append("ms; Usage: ")
-            .append(entry.getEndTime() - entry.getStartTime())
+            .append(usage / 1000_000).append(".").append(String.format("%06d", usage % 1000_000))
             .append("ms, ")
             .append(percent)
             .append("% ] ")

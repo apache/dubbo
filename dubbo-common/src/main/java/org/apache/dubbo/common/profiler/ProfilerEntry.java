@@ -31,14 +31,14 @@ public class ProfilerEntry {
         this.message = message;
         this.parent = null;
         this.first = this;
-        this.startTime = System.currentTimeMillis();
+        this.startTime = System.nanoTime();
     }
 
     public ProfilerEntry(String message, ProfilerEntry parentEntry, ProfilerEntry firstEntry) {
         this.message = message;
         this.parent = parentEntry;
         this.first = firstEntry;
-        this.startTime = System.currentTimeMillis();
+        this.startTime = System.nanoTime();
     }
 
     public List<ProfilerEntry> getSub() {

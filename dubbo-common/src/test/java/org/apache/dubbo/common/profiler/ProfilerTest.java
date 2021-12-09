@@ -57,16 +57,16 @@ public class ProfilerTest {
         Profiler.release(one);
 
         /*
-         * Start time: 1639066968261
-         * +-[ Offset: 0ms; Usage: 7ms, 100% ] 1
-         *   +-[ Offset: 0ms; Usage: 7ms, 100% ] 1-2
-         *   |  +-[ Offset: 0ms; Usage: 7ms, 100% ] 1-2-3
-         *   |  |  +-[ Offset: 0ms; Usage: 0ms, 0% ] 1-2-3-4
-         *   |  |  +-[ Offset: 7ms; Usage: 0ms, 0% ] 1-2-3-5
-         *   |  +-[ Offset: 7ms; Usage: 0ms, 0% ] 1-2-6
-         *   |     +-[ Offset: 7ms; Usage: 0ms, 0% ] 1-2-6-7
-         *   |     +-[ Offset: 7ms; Usage: 0ms, 0% ] 1-2-6-8
-         *   +-[ Offset: 7ms; Usage: 0ms, 0% ] 1-9
+         * Start time: 287395734500659
+         * +-[ Offset: 0.000000ms; Usage: 4.721583ms, 100% ] 1
+         *   +-[ Offset: 0.013136ms; Usage: 4.706288ms, 99% ] 1-2
+         *   |  +-[ Offset: 0.027903ms; Usage: 4.662918ms, 98% ] 1-2-3
+         *   |  |  +-[ Offset: 0.029742ms; Usage: 0.003785ms, 0% ] 1-2-3-4
+         *   |  |  +-[ Offset: 4.688477ms; Usage: 0.001398ms, 0% ] 1-2-3-5
+         *   |  +-[ Offset: 4.693346ms; Usage: 0.000316ms, 0% ] 1-2-6
+         *   |     +-[ Offset: 4.695191ms; Usage: 0.000212ms, 0% ] 1-2-6-7
+         *   |     +-[ Offset: 4.696655ms; Usage: 0.000195ms, 0% ] 1-2-6-8
+         *   +-[ Offset: 4.721044ms; Usage: 0.000270ms, 0% ] 1-9
          */
         Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(two));
         Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(three));

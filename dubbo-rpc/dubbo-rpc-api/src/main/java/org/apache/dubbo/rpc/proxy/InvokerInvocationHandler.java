@@ -119,16 +119,17 @@ public class InvokerInvocationHandler implements InvocationHandler {
                     } else {
                         timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
                     }
-                    if (bizProfiler.getEndTime() - bizProfiler.getStartTime() > (timeout * ProfilerSwitch.getWarnPercent())) {
+                    long usage = bizProfiler.getEndTime() - bizProfiler.getStartTime();
+                    if (usage > (timeout * 1000_000 * ProfilerSwitch.getWarnPercent())) {
                         StringBuilder attachment = new StringBuilder();
                         for (Map.Entry<String, Object> entry : rpcInvocation.getObjectAttachments().entrySet()) {
                             attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
                         }
 
-                        logger.warn(String.format("[Dubbo-Consumer] execute service %s#%s cost %d ms, this invocation almost (maybe already) timeout\n" +
+                        logger.warn(String.format("[Dubbo-Consumer] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout\n" +
                                 "invocation context:\n%s" +
                                 "thread info: \n%s",
-                            protocolServiceKey, methodName, bizProfiler.getEndTime() - bizProfiler.getStartTime(),
+                            protocolServiceKey, methodName, usage / 1000_000, usage % 1000_000,
                             attachment, Profiler.buildDetail(bizProfiler)));
                     }
                 }

@@ -73,18 +73,19 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
         } else {
             timeout = invoker.getUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         }
-        if (profiler.getEndTime() - profiler.getStartTime() > (timeout * ProfilerSwitch.getWarnPercent())) {
+        long usage = profiler.getEndTime() - profiler.getStartTime();
+        if (usage > (timeout * 1000_000 * ProfilerSwitch.getWarnPercent())) {
 
             StringBuilder attachment = new StringBuilder();
             for (Map.Entry<String, Object> entry : invocation.getObjectAttachments().entrySet()) {
                 attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
             }
 
-            logger.warn(String.format("[Dubbo-Provider] execute service %s#%s cost %d ms, this invocation almost (maybe already) timeout\n" +
+            logger.warn(String.format("[Dubbo-Provider] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout\n" +
                     "client: %s\n" +
                     "invocation context:\n%s" +
                     "thread info: \n%s",
-                invocation.getTargetServiceUniqueName(), invocation.getMethodName(), profiler.getEndTime() - profiler.getStartTime(),
+                invocation.getTargetServiceUniqueName(), invocation.getMethodName(), usage / 1000_000, usage % 1000_000,
                 invocation.get(CLIENT_IP_KEY), attachment, Profiler.buildDetail(profiler)));
         }
     }
