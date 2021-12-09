@@ -27,20 +27,55 @@ public class ProfilerTest {
         ProfilerEntry two = Profiler.enter(one, "1-2");
 
         ProfilerEntry three = Profiler.enter(two, "1-2-3");
+
+        ProfilerEntry four = Profiler.enter(three, "1-2-3-4");
+        Assertions.assertEquals(three, Profiler.release(four));
+
+        ProfilerEntry five = Profiler.enter(three, "1-2-3-5");
+        Assertions.assertEquals(three, Profiler.release(five));
+
         Assertions.assertEquals(two, Profiler.release(three));
 
-        ProfilerEntry four = Profiler.enter(two, "1-2-4");
-        Assertions.assertEquals(two, Profiler.release(four));
+        ProfilerEntry six = Profiler.enter(two, "1-2-6");
+        Assertions.assertEquals(two, Profiler.release(six));
+
+        ProfilerEntry seven = Profiler.enter(six, "1-2-6-7");
+        Assertions.assertEquals(six, Profiler.release(seven));
+
+        ProfilerEntry eight = Profiler.enter(six, "1-2-6-8");
+        Assertions.assertEquals(six, Profiler.release(eight));
 
         Assertions.assertEquals(2, two.getSub().size());
         Assertions.assertEquals(three, two.getSub().get(0));
-        Assertions.assertEquals(four, two.getSub().get(1));
+        Assertions.assertEquals(six, two.getSub().get(1));
 
         Profiler.release(two);
+
+        ProfilerEntry nine = Profiler.enter(one, "1-9");
+        Profiler.release(nine);
+
         Profiler.release(one);
+
+        /*
+         * Start time: 1639066968261
+         * +-[ Offset: 0ms; Usage: 7ms, 100% ] 1
+         *   +-[ Offset: 0ms; Usage: 7ms, 100% ] 1-2
+         *   |  +-[ Offset: 0ms; Usage: 7ms, 100% ] 1-2-3
+         *   |  |  +-[ Offset: 0ms; Usage: 0ms, 0% ] 1-2-3-4
+         *   |  |  +-[ Offset: 7ms; Usage: 0ms, 0% ] 1-2-3-5
+         *   |  +-[ Offset: 7ms; Usage: 0ms, 0% ] 1-2-6
+         *   |     +-[ Offset: 7ms; Usage: 0ms, 0% ] 1-2-6-7
+         *   |     +-[ Offset: 7ms; Usage: 0ms, 0% ] 1-2-6-8
+         *   +-[ Offset: 7ms; Usage: 0ms, 0% ] 1-9
+         */
         Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(two));
         Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(three));
         Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(four));
+        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(five));
+        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(six));
+        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(seven));
+        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(eight));
+        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(nine));
     }
 
     @Test

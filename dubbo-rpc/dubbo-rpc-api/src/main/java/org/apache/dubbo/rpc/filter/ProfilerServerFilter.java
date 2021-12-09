@@ -36,8 +36,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
-@Activate(group = PROVIDER, order = Integer.MAX_VALUE)
+@Activate(group = PROVIDER, order = Integer.MIN_VALUE)
 public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
+    private final static String CLIENT_IP_KEY = "client_ip";
     private final static Logger logger = LoggerFactory.getLogger(ProfilerServerFilter.class);
 
     @Override
@@ -45,6 +46,7 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
         if (ProfilerSwitch.isEnableProfiler()) {
             ProfilerEntry bizProfiler = Profiler.start("Receive request. Server invoke begin.");
             invocation.put(Profiler.PROFILER_KEY, bizProfiler);
+            invocation.put(CLIENT_IP_KEY, RpcContext.getServiceContext().getRemoteAddressString());
         }
 
         return invoker.invoke(invocation);
@@ -58,28 +60,32 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
                 ProfilerEntry profiler = Profiler.release((ProfilerEntry) fromInvocation);
                 invocation.put(Profiler.PROFILER_KEY, profiler);
 
-                int timeout;
-                Object timeoutKey = invocation.getObjectAttachment(TIMEOUT_KEY);
-                if (timeoutKey instanceof Integer) {
-                    timeout = (Integer) timeoutKey;
-                } else {
-                    timeout = invoker.getUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
-                }
-                if (profiler.getEndTime() - profiler.getStartTime() > (timeout * ProfilerSwitch.getWarnPercent())) {
-
-                    StringBuilder attachment = new StringBuilder();
-                    for (Map.Entry<String, Object> entry : invocation.getObjectAttachments().entrySet()) {
-                        attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";");
-                    }
-
-                    logger.warn(String.format("[Dubbo-Provider] execute service %s#%s cost %d ms, this invocation almost (maybe already) timeout\n" +
-                            "client: %s\n" +
-                            "invocation context:\n %s\n" +
-                            "thread info: \n%s",
-                        invocation.getProtocolServiceKey(), invocation.getMethodName(), profiler.getEndTime() - profiler.getStartTime(),
-                        RpcContext.getServiceContext().getRemoteHost(), attachment, Profiler.buildDetail(profiler)));
-                }
+                dumpIfNeed(invoker, invocation, profiler);
             }
+        }
+    }
+
+    private void dumpIfNeed(Invoker<?> invoker, Invocation invocation, ProfilerEntry profiler) {
+        int timeout;
+        Object timeoutKey = invocation.getObjectAttachment(TIMEOUT_KEY);
+        if (timeoutKey instanceof Integer) {
+            timeout = (Integer) timeoutKey;
+        } else {
+            timeout = invoker.getUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+        }
+        if (profiler.getEndTime() - profiler.getStartTime() > (timeout * ProfilerSwitch.getWarnPercent())) {
+
+            StringBuilder attachment = new StringBuilder();
+            for (Map.Entry<String, Object> entry : invocation.getObjectAttachments().entrySet()) {
+                attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
+            }
+
+            logger.warn(String.format("[Dubbo-Provider] execute service %s#%s cost %d ms, this invocation almost (maybe already) timeout\n" +
+                    "client: %s\n" +
+                    "invocation context:\n%s" +
+                    "thread info: \n%s",
+                invocation.getTargetServiceUniqueName(), invocation.getMethodName(), profiler.getEndTime() - profiler.getStartTime(),
+                invocation.get(CLIENT_IP_KEY), attachment, Profiler.buildDetail(profiler)));
         }
     }
 
@@ -88,8 +94,9 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
         if (ProfilerSwitch.isEnableProfiler()) {
             Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
             if (fromInvocation instanceof ProfilerEntry) {
-                invocation.put(Profiler.PROFILER_KEY, Profiler.release((ProfilerEntry) fromInvocation));
-                logger.info(Profiler.buildDetail((ProfilerEntry) fromInvocation));
+                ProfilerEntry profiler = Profiler.release((ProfilerEntry) fromInvocation);
+                invocation.put(Profiler.PROFILER_KEY, profiler);
+                dumpIfNeed(invoker, invocation, profiler);
             }
         }
     }

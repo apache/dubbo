@@ -97,15 +97,16 @@ public class InvokerInvocationHandler implements InvocationHandler {
         }
 
         if (ProfilerSwitch.isEnableProfiler()) {
-            ProfilerEntry bizProfiler = Profiler.getBizProfiler();
+            ProfilerEntry parentProfiler = Profiler.getBizProfiler();
+            ProfilerEntry bizProfiler;
             boolean containsBizProfiler = false;
-            if (bizProfiler != null) {
+            if (parentProfiler != null) {
                 containsBizProfiler = true;
-                ProfilerEntry currentNode = Profiler.enter(bizProfiler, "Receive request. Client invoke begin.");
-                rpcInvocation.put(Profiler.PROFILER_KEY, currentNode);
+                bizProfiler = Profiler.enter(parentProfiler, "Receive request. Client invoke begin.");
             } else {
                 bizProfiler = Profiler.start("Receive request. Client invoke begin.");
             }
+            rpcInvocation.put(Profiler.PROFILER_KEY, bizProfiler);
             try {
                 return invoker.invoke(rpcInvocation).recreate();
             } finally {
@@ -121,13 +122,13 @@ public class InvokerInvocationHandler implements InvocationHandler {
                     if (bizProfiler.getEndTime() - bizProfiler.getStartTime() > (timeout * ProfilerSwitch.getWarnPercent())) {
                         StringBuilder attachment = new StringBuilder();
                         for (Map.Entry<String, Object> entry : rpcInvocation.getObjectAttachments().entrySet()) {
-                            attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";");
+                            attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
                         }
 
                         logger.warn(String.format("[Dubbo-Consumer] execute service %s#%s cost %d ms, this invocation almost (maybe already) timeout\n" +
-                                "invocation context:\n %s\n" +
+                                "invocation context:\n%s" +
                                 "thread info: \n%s",
-                            protocolServiceKey, method, bizProfiler.getEndTime() - bizProfiler.getStartTime(),
+                            protocolServiceKey, methodName, bizProfiler.getEndTime() - bizProfiler.getStartTime(),
                             attachment, Profiler.buildDetail(bizProfiler)));
                     }
                 }

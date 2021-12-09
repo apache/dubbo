@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ProfilerSwitch {
-    private final static AtomicBoolean enableProfiler = new AtomicBoolean(false);
+    private final static AtomicBoolean enableProfiler = new AtomicBoolean(true);
 
     private final static AtomicReference<Double> warnPercent = new AtomicReference<>(0.75);
 

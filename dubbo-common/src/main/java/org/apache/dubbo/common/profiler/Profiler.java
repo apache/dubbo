@@ -18,6 +18,9 @@ package org.apache.dubbo.common.profiler;
 
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class Profiler {
     public static final String PROFILER_KEY = "DUBBO_INVOKE_PROFILER";
 
@@ -58,15 +61,15 @@ public class Profiler {
     public static String buildDetail(ProfilerEntry entry) {
         ProfilerEntry firstEntry = entry.getFirst();
         long totalUsageTime = firstEntry.getEndTime() - firstEntry.getStartTime();
-        return "Start time: " + firstEntry.getStartTime() + "\n" + buildDetail(firstEntry, firstEntry.getStartTime(), totalUsageTime, 0);
+        return "Start time: " + firstEntry.getStartTime() + "\n" +
+            String.join("\n", buildDetail(firstEntry, firstEntry.getStartTime(), totalUsageTime, 0));
     }
 
-    public static String buildDetail(ProfilerEntry entry, long startTime, long totalUsageTime, int depth) {
+    public static List<String> buildDetail(ProfilerEntry entry, long startTime, long totalUsageTime, int depth) {
         StringBuilder stringBuilder = new StringBuilder();
         int percent = (int) (((entry.getEndTime() - entry.getStartTime()) * 100) / totalUsageTime);
-        for (int i = 0; i < depth; i++) {
-            stringBuilder.append("  ");
-        }
+
+        List<String> lines = new LinkedList<>();
         stringBuilder.append("+-[ Offset: ")
             .append(entry.getStartTime() - startTime)
             .append("ms; Usage: ")
@@ -74,11 +77,26 @@ public class Profiler {
             .append("ms, ")
             .append(percent)
             .append("% ] ")
-            .append(entry.getMessage())
-            .append("\n");
-        for (ProfilerEntry sub : entry.getSub()) {
-            stringBuilder.append(buildDetail(sub, startTime, totalUsageTime, depth + 1));
+            .append(entry.getMessage());
+        lines.add(stringBuilder.toString());
+        List<ProfilerEntry> entrySub = entry.getSub();
+        for (int i = 0, entrySubSize = entrySub.size(); i < entrySubSize; i++) {
+            ProfilerEntry sub = entrySub.get(i);
+            List<String> subLines = buildDetail(sub, startTime, totalUsageTime, depth + 1);
+            if (i < entrySubSize - 1) {
+                lines.add("  " + subLines.get(0));
+                for (int j = 1, subLinesSize = subLines.size(); j < subLinesSize; j++) {
+                    String subLine = subLines.get(j);
+                    lines.add("  |" + subLine);
+                }
+            } else {
+                lines.add("  " + subLines.get(0));
+                for (int j = 1, subLinesSize = subLines.size(); j < subLinesSize; j++) {
+                    String subLine = subLines.get(j);
+                    lines.add("   " + subLine);
+                }
+            }
         }
-        return stringBuilder.toString();
+        return lines;
     }
 }
