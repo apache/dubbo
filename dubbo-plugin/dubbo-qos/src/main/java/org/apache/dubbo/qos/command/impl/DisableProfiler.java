@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
@@ -23,10 +25,12 @@ import org.apache.dubbo.qos.command.annotation.Cmd;
 
 @Cmd(name = "disableProfiler", summary = "Disable Dubbo Invocation Profiler.")
 public class DisableProfiler implements BaseCommand {
+    private final static Logger logger = LoggerFactory.getLogger(DisableProfiler.class);
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         ProfilerSwitch.disableProfiler();
+        logger.warn("Dubbo Invocation Profiler has been disabled.");
         return "OK";
     }
 }
