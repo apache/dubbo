@@ -19,6 +19,9 @@ package org.apache.dubbo.rpc.proxy;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.profiler.Profiler;
+import org.apache.dubbo.common.profiler.ProfilerEntry;
+import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncContextImpl;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -81,7 +84,27 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         try {
+            if (ProfilerSwitch.isEnableProfiler()) {
+                Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
+                if (fromInvocation instanceof ProfilerEntry) {
+                    ProfilerEntry profiler = Profiler.enter((ProfilerEntry) fromInvocation, "Receive request. Server biz impl invoke begin.");
+                    invocation.put(Profiler.PROFILER_KEY, profiler);
+                    // TODO clear after invoke
+                    Profiler.setToBizProfiler(profiler);
+                }
+            }
+
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
+
+            if (ProfilerSwitch.isEnableProfiler()) {
+                Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
+                if (fromInvocation instanceof ProfilerEntry) {
+                    ProfilerEntry profiler = Profiler.release((ProfilerEntry) fromInvocation);
+                    invocation.put(Profiler.PROFILER_KEY, profiler);
+                }
+            }
+            Profiler.removeBizProfiler();
+
             CompletableFuture<Object> future = wrapWithFuture(value);
             CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
                 AppResponse result = new AppResponse(invocation);

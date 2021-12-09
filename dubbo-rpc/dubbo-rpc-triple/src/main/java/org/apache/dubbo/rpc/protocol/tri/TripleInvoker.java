@@ -86,7 +86,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
         try {
             int timeout = calculateTimeout(invocation, methodName);
-            invocation.put(TIMEOUT_KEY, timeout);
+            invocation.setAttachment(TIMEOUT_KEY, timeout);
             ExecutorService executor = getCallbackExecutor(getUrl(), inv);
             // create request.
             Request req = new Request();

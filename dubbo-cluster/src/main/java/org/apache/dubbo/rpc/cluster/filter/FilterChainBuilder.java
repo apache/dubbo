@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationProfilerUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
@@ -44,10 +45,11 @@ public interface FilterChainBuilder {
 
     /**
      * Works on provider side
+     *
      * @param <T>
      * @param <TYPE>
      */
-    class FilterChainNode<T, TYPE extends Invoker<T>, FILTER extends BaseFilter> implements Invoker<T>{
+    class FilterChainNode<T, TYPE extends Invoker<T>, FILTER extends BaseFilter> implements Invoker<T> {
         TYPE originalInvoker;
         Invoker<T> nextNode;
         FILTER filter;
@@ -81,6 +83,7 @@ public interface FilterChainBuilder {
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult;
             try {
+                InvocationProfilerUtils.enterProfiler(invocation, () -> "Filter " + filter.getClass().getName() + " invoke.");
                 asyncResult = filter.invoke(nextNode, invocation);
             } catch (Exception e) {
                 if (filter instanceof ListenableFilter) {
@@ -102,6 +105,7 @@ public interface FilterChainBuilder {
 
             }
             return asyncResult.whenCompleteWithContext((r, t) -> {
+                InvocationProfilerUtils.releaseProfiler(invocation);
                 if (filter instanceof ListenableFilter) {
                     ListenableFilter listenableFilter = ((ListenableFilter) filter);
                     Filter.Listener listener = listenableFilter.listener(invocation);
@@ -140,11 +144,12 @@ public interface FilterChainBuilder {
 
     /**
      * Works on consumer side
+     *
      * @param <T>
      * @param <TYPE>
      */
     class ClusterFilterChainNode<T, TYPE extends ClusterInvoker<T>, FILTER extends BaseFilter>
-            extends FilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
+        extends FilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
         public ClusterFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
             super(originalInvoker, nextNode, filter);
         }

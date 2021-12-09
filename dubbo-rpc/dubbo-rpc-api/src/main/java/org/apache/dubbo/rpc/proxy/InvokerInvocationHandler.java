@@ -19,6 +19,9 @@ package org.apache.dubbo.rpc.proxy;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.profiler.Profiler;
+import org.apache.dubbo.common.profiler.ProfilerEntry;
+import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -29,6 +32,10 @@ import org.apache.dubbo.rpc.model.ServiceModel;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 /**
  * InvokerHandler
@@ -87,6 +94,44 @@ public class InvokerInvocationHandler implements InvocationHandler {
         if (serviceModel instanceof ConsumerModel) {
             rpcInvocation.put(Constants.CONSUMER_MODEL, serviceModel);
             rpcInvocation.put(Constants.METHOD_MODEL, ((ConsumerModel) serviceModel).getMethodModel(method));
+        }
+
+        if (ProfilerSwitch.isEnableProfiler()) {
+            ProfilerEntry bizProfiler = Profiler.getBizProfiler();
+            boolean containsBizProfiler = false;
+            if (bizProfiler != null) {
+                containsBizProfiler = true;
+                ProfilerEntry currentNode = Profiler.enter(bizProfiler, "Receive request. Client invoke begin.");
+                rpcInvocation.put(Profiler.PROFILER_KEY, currentNode);
+            } else {
+                bizProfiler = Profiler.start("Receive request. Client invoke begin.");
+            }
+            try {
+                return invoker.invoke(rpcInvocation).recreate();
+            } finally {
+                Profiler.release(bizProfiler);
+                if (!containsBizProfiler) {
+                    int timeout;
+                    Object timeoutKey = rpcInvocation.getObjectAttachment(TIMEOUT_KEY);
+                    if (timeoutKey instanceof Integer) {
+                        timeout = (Integer) timeoutKey;
+                    } else {
+                        timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+                    }
+                    if (bizProfiler.getEndTime() - bizProfiler.getStartTime() > (timeout * ProfilerSwitch.getWarnPercent())) {
+                        StringBuilder attachment = new StringBuilder();
+                        for (Map.Entry<String, Object> entry : rpcInvocation.getObjectAttachments().entrySet()) {
+                            attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";");
+                        }
+
+                        logger.warn(String.format("[Dubbo-Consumer] execute service %s#%s cost %d ms, this invocation almost (maybe already) timeout\n" +
+                                "invocation context:\n %s\n" +
+                                "thread info: \n%s",
+                            protocolServiceKey, method, bizProfiler.getEndTime() - bizProfiler.getStartTime(),
+                            attachment, Profiler.buildDetail(bizProfiler)));
+                    }
+                }
+            }
         }
 
         return invoker.invoke(rpcInvocation).recreate();

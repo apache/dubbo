@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationProfilerUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -326,10 +327,19 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 //            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(contextAttachments);
 //        }
 
+        InvocationProfilerUtils.enterProfiler(invocation, () -> "Router route.");
         List<Invoker<T>> invokers = list(invocation);
+        InvocationProfilerUtils.releaseProfiler(invocation);
+
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
-        return doInvoke(invocation, invokers, loadbalance);
+
+        InvocationProfilerUtils.enterProfiler(invocation, () -> "Cluster " + this.getClass().getName() + " invoke.");
+        try {
+            return doInvoke(invocation, invokers, loadbalance);
+        } finally {
+            InvocationProfilerUtils.releaseProfiler(invocation);
+        }
     }
 
     protected void checkWhetherDestroyed() {
@@ -361,9 +371,11 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         setContext(invoker);
         Result result;
         try {
+            InvocationProfilerUtils.enterProfiler(invocation, () -> "Invoker invoke.");
             result = invoker.invoke(invocation);
         } finally {
             clearContext(invoker);
+            InvocationProfilerUtils.releaseProfiler(invocation);
         }
         return result;
     }
