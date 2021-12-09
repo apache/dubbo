@@ -184,14 +184,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      */
     @Override
     public void initialize() {
-        if (initialized.get()) {
-            return;
-        }
         // Ensure that the initialization is completed when concurrent calls
-        synchronized (startLock) {
-            if (initialized.get()) {
-                return;
-            }
+        if (initialized.compareAndSet(false, true)) {
             // register shutdown hook
             registerShutdownHook();
 
@@ -205,8 +199,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             startMetadataCenter();
 
             initMetadataService();
-
-            initialized.set(true);
 
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " has been initialized!");

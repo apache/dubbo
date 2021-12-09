@@ -92,14 +92,8 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     @Override
     public void initialize() throws IllegalStateException {
-        if (initialized.get()) {
-            return;
-        }
         // Ensure that the initialization is completed when concurrent calls
-        synchronized (this) {
-            if (initialized.get()) {
-                return;
-            }
+        if (initialized.compareAndSet(false, true)) {
             loadConfigs();
 
             // read ModuleConfig
@@ -114,7 +108,6 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 background = isExportBackground() || isReferBackground();
             }
 
-            initialized.set(true);
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " has been initialized!");
             }
