@@ -19,6 +19,8 @@ package org.apache.dubbo.qos.command.util;
 import org.apache.dubbo.qos.command.GreetingCommand;
 import org.apache.dubbo.qos.command.impl.ChangeTelnet;
 import org.apache.dubbo.qos.command.impl.CountTelnet;
+import org.apache.dubbo.qos.command.impl.DisableProfiler;
+import org.apache.dubbo.qos.command.impl.EnableProfiler;
 import org.apache.dubbo.qos.command.impl.Help;
 import org.apache.dubbo.qos.command.impl.InvokeTelnet;
 import org.apache.dubbo.qos.command.impl.Live;
@@ -35,10 +37,12 @@ import org.apache.dubbo.qos.command.impl.PwdTelnet;
 import org.apache.dubbo.qos.command.impl.Quit;
 import org.apache.dubbo.qos.command.impl.Ready;
 import org.apache.dubbo.qos.command.impl.SelectTelnet;
+import org.apache.dubbo.qos.command.impl.SetProfilerWarnPercent;
 import org.apache.dubbo.qos.command.impl.ShutdownTelnet;
 import org.apache.dubbo.qos.command.impl.Startup;
 import org.apache.dubbo.qos.command.impl.Version;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;
@@ -88,6 +92,9 @@ public class CommandHelperTest {
         expectedClasses.add(PortTelnet.class);
         expectedClasses.add(PwdTelnet.class);
         expectedClasses.add(ShutdownTelnet.class);
+        expectedClasses.add(EnableProfiler.class);
+        expectedClasses.add(DisableProfiler.class);
+        expectedClasses.add(SetProfilerWarnPercent.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 

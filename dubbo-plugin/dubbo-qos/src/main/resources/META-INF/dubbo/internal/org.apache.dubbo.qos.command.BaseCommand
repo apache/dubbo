@@ -19,3 +19,6 @@ invoke=org.apache.dubbo.qos.command.impl.InvokeTelnet
 select=org.apache.dubbo.qos.command.impl.SelectTelnet
 ps=org.apache.dubbo.qos.command.impl.PortTelnet
 shutdown=org.apache.dubbo.qos.command.impl.ShutdownTelnet
+enableProfiler=org.apache.dubbo.qos.command.impl.EnableProfiler
+disableProfiler=org.apache.dubbo.qos.command.impl.DisableProfiler
+setProfilerWarnPercent=org.apache.dubbo.qos.command.impl.SetProfilerWarnPercent

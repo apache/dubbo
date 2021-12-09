@@ -14,33 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.profiler;
+package org.apache.dubbo.qos.command.impl;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import org.apache.dubbo.common.profiler.ProfilerSwitch;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.command.annotation.Cmd;
 
-public class ProfilerSwitch {
-    private final static AtomicBoolean enableProfiler = new AtomicBoolean(false);
+@Cmd(name = "disableProfiler", summary = "Disable Dubbo Invocation Profiler.")
+public class DisableProfiler implements BaseCommand {
 
-    private final static AtomicReference<Double> warnPercent = new AtomicReference<>(0.75);
-
-    public static void enableProfiler() {
-        enableProfiler.set(true);
-    }
-
-    public static void disableProfiler() {
-        enableProfiler.set(false);
-    }
-
-    public static boolean isEnableProfiler() {
-        return enableProfiler.get();
-    }
-
-    public static double getWarnPercent() {
-        return warnPercent.get();
-    }
-
-    public static void setWarnPercent(double percent) {
-        warnPercent.set(percent);
+    @Override
+    public String execute(CommandContext commandContext, String[] args) {
+        ProfilerSwitch.disableProfiler();
+        return "OK";
     }
 }
