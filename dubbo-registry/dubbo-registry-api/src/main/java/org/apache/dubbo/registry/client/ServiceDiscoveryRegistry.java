@@ -30,7 +30,6 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
 import org.apache.dubbo.registry.support.FailbackRegistry;
-import org.apache.dubbo.registry.support.RegistryManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
