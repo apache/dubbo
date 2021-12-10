@@ -333,11 +333,13 @@ public abstract class AbstractStream implements Stream {
 
     private Metadata getTrailers(GrpcStatus grpcStatus) {
         Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), getGrpcMessage(grpcStatus));
+        String grpcMessage = getGrpcMessage(grpcStatus);
+        grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
+        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
         metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
         Status.Builder builder = Status.newBuilder()
             .setCode(grpcStatus.code.code)
-            .setMessage(getGrpcMessage(grpcStatus));
+            .setMessage(grpcMessage);
         Throwable throwable = grpcStatus.cause;
         if (throwable == null) {
             Status status = builder.build();

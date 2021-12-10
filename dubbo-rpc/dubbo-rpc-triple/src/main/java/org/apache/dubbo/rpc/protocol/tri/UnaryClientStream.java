@@ -64,7 +64,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                 // support others type but now only support this
             }
         } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
+            LOGGER.error("tran from grpc-status-details error", e);
         }
         return map;
     }
