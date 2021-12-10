@@ -29,6 +29,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.DataListener;
@@ -72,7 +73,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                     .connectionTimeoutMs(timeout)
                     .sessionTimeoutMs(sessionExpireMs);
             String userInformation = url.getUserInformation();
-            if (userInformation != null && userInformation.length() > 0) {
+            if (StringUtils.isNotEmpty(userInformation)) {
                 builder = builder.authorization("digest", userInformation.getBytes());
             }
             client = builder.build();

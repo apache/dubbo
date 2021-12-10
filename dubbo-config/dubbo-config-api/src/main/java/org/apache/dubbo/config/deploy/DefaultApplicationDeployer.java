@@ -683,7 +683,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             } catch (Exception e) {
                 if (!configCenter.isCheck()) {
                     logger.warn("The configuration center failed to initialize", e);
-                    configCenter.checkOrUpdateInitialized(false);
+                    configCenter.setInitialized(false);
                     return null;
                 } else {
                     throw new IllegalStateException(e);

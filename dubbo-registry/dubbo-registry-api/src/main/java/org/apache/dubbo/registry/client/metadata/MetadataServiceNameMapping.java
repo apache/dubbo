@@ -69,7 +69,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
         }
 
         int currentRetryTimes = 1;
-        boolean succeeded = false;
+        boolean succeeded;
         String newConfigContent = appName;
         do {
             ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
