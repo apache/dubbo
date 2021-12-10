@@ -235,18 +235,18 @@ public class ServiceInstanceMetadataUtils {
             if (!metadataInfo.calAndGetRevision().equals(existingInstanceRevision)) {
                 instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
                 if (existingInstanceRevision != null) {// skip the first registration.
-                    instance.getExtendParams().put(INSTANCE_REVISION_UPDATED_KEY, "true");
+                    instance.putExtendParam(INSTANCE_REVISION_UPDATED_KEY, "true");
                 }
             }
         }
     }
 
     public static boolean isInstanceUpdated(ServiceInstance instance) {
-        return "true".equals(instance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
+        return "true".equals(instance.getExtendParam(INSTANCE_REVISION_UPDATED_KEY));
     }
 
     public static void resetInstanceUpdateKey(ServiceInstance instance) {
-        instance.getExtendParams().remove(INSTANCE_REVISION_UPDATED_KEY);
+        instance.removeExtendParam(INSTANCE_REVISION_UPDATED_KEY);
     }
 
     public static void registerMetadataAndInstance(ServiceInstance serviceInstance) {

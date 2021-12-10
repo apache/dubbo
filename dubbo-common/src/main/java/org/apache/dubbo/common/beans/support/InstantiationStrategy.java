@@ -46,7 +46,7 @@ public class InstantiationStrategy {
     public <T> T instantiate(Class<T> type) throws ReflectiveOperationException {
 
         // should not use default constructor directly, maybe also has another constructor matched scope model arguments
-        // 1. try get default constructor
+        // 1. try to get default constructor
         Constructor<T> defaultConstructor = null;
         try {
             defaultConstructor = type.getConstructor();

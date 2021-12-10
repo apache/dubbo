@@ -16,18 +16,32 @@
  */
 package org.apache.dubbo.common.config;
 
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
+
+/**
+ * {@link PropertiesConfiguration}
+ */
 public class PropertiesConfigurationTest {
 
     @Test
-    public void testOrderPropertiesProviders() {
-        OrderedPropertiesConfiguration configuration = new OrderedPropertiesConfiguration(ApplicationModel.defaultModel().getDefaultModule());
-        Assertions.assertEquals("999", configuration.getInternalProperty("testKey"));
-    }
+    public void test() {
+        PropertiesConfiguration propertiesConfiguration = new PropertiesConfiguration(ApplicationModel.defaultModel());
 
+        Map<String, String> properties = propertiesConfiguration.getProperties();
+        Assertions.assertEquals(properties.get("dubbo"), "properties");
+        Assertions.assertEquals(properties.get("dubbo.application.enable-file-cache"), "false");
+        Assertions.assertEquals(properties.get("dubbo.service.shutdown.wait"), "200");
+
+        Assertions.assertEquals(propertiesConfiguration.getProperty("dubbo"), "properties");
+        Assertions.assertEquals(propertiesConfiguration.getInternalProperty("dubbo"), "properties");
+
+        propertiesConfiguration.setProperty("k1", "v1");
+        Assertions.assertEquals(propertiesConfiguration.getProperty("k1"), "v1");
+        propertiesConfiguration.remove("k1");
+        Assertions.assertNull(propertiesConfiguration.getProperty("k1"));
+    }
 }

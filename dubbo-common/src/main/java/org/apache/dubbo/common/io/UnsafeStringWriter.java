@@ -23,7 +23,7 @@ import java.io.Writer;
  * Thread-unsafe StringWriter.
  */
 public class UnsafeStringWriter extends Writer {
-    private StringBuilder mBuffer;
+    private final StringBuilder mBuffer;
 
     public UnsafeStringWriter() {
         lock = mBuffer = new StringBuilder();
@@ -34,7 +34,7 @@ public class UnsafeStringWriter extends Writer {
             throw new IllegalArgumentException("Negative buffer size");
         }
 
-        lock = mBuffer = new StringBuilder();
+        lock = mBuffer = new StringBuilder(size);
     }
 
     @Override

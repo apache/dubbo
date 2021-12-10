@@ -60,7 +60,11 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     public BitList(List<E> originList, boolean empty) {
-        this.originList = originList;
+        if (originList instanceof BitList) {
+            this.originList = ((BitList<E>) originList).getOriginList();
+        } else {
+            this.originList = originList;
+        }
         this.rootSet = new BitSet();
         if (!empty) {
             this.rootSet.set(0, originList.size());
@@ -80,6 +84,18 @@ public class BitList<E> extends AbstractList<E> {
 
     public void addIndex(int index) {
         this.rootSet.set(index);
+    }
+
+    public int totalSetSize() {
+        return this.originList.size();
+    }
+
+    public boolean indexExist(int index) {
+        return this.rootSet.get(index);
+    }
+
+    public E getByIndex(int index) {
+        return this.originList.get(index);
     }
 
     /**

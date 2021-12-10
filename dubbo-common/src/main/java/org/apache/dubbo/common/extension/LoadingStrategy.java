@@ -31,11 +31,11 @@ public interface LoadingStrategy extends Prioritized {
     }
 
     /**
-     * To restrict some class that should loaded from Dubbo's ClassLoader.
+     * To restrict some class that should load from Dubbo's ClassLoader.
      * For example, we can restrict the class declaration in `org.apache.dubbo` package should
      * be loaded from Dubbo's ClassLoader and users cannot declare these classes.
      *
-     * @return class packages should loaded
+     * @return class packages should load
      * @since 3.0.4
      */
     default String[] onlyExtensionClassLoaderPackages() {

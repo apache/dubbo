@@ -19,12 +19,22 @@ package org.apache.dubbo.monitor.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
-import org.apache.dubbo.monitor.MonitorService;
 
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+import static org.apache.dubbo.monitor.Constants.CONCURRENT_KEY;
+import static org.apache.dubbo.monitor.Constants.ELAPSED_KEY;
+import static org.apache.dubbo.monitor.Constants.FAILURE_KEY;
+import static org.apache.dubbo.monitor.Constants.MAX_CONCURRENT_KEY;
+import static org.apache.dubbo.monitor.Constants.MAX_ELAPSED_KEY;
+import static org.apache.dubbo.monitor.Constants.SUCCESS_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -34,16 +44,16 @@ public class StatisticsTest {
     @Test
     public void testEquals() {
         URL statistics = new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
-                .addParameter(MonitorService.APPLICATION, "morgan")
-                .addParameter(MonitorService.INTERFACE, "MemberService")
-                .addParameter(MonitorService.METHOD, "findPerson")
-                .addParameter(MonitorService.CONSUMER, "10.20.153.11")
-                .addParameter(MonitorService.SUCCESS, 1)
-                .addParameter(MonitorService.FAILURE, 0)
-                .addParameter(MonitorService.ELAPSED, 3)
-                .addParameter(MonitorService.MAX_ELAPSED, 3)
-                .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1)
+                .addParameter(APPLICATION_KEY, "morgan")
+                .addParameter(INTERFACE_KEY, "MemberService")
+                .addParameter(METHOD_KEY, "findPerson")
+                .addParameter(CONSUMER, "10.20.153.11")
+                .addParameter(SUCCESS_KEY, 1)
+                .addParameter(FAILURE_KEY, 0)
+                .addParameter(ELAPSED_KEY, 3)
+                .addParameter(MAX_ELAPSED_KEY, 3)
+                .addParameter(CONCURRENT_KEY, 1)
+                .addParameter(MAX_CONCURRENT_KEY, 1)
                 .build();
 
         Statistics statistics1 = new Statistics(statistics);
@@ -76,17 +86,17 @@ public class StatisticsTest {
         assertThat(statistics.toString(), is("dubbo://10.20.153.10"));
 
         Statistics statisticsWithDetailInfo = new Statistics(new URLBuilder(DUBBO_PROTOCOL, "10.20.153.10", 0)
-                .addParameter(MonitorService.APPLICATION, "morgan")
-                .addParameter(MonitorService.INTERFACE, "MemberService")
-                .addParameter(MonitorService.METHOD, "findPerson")
-                .addParameter(MonitorService.CONSUMER, "10.20.153.11")
-                .addParameter(MonitorService.GROUP, "unit-test")
-                .addParameter(MonitorService.SUCCESS, 1)
-                .addParameter(MonitorService.FAILURE, 0)
-                .addParameter(MonitorService.ELAPSED, 3)
-                .addParameter(MonitorService.MAX_ELAPSED, 3)
-                .addParameter(MonitorService.CONCURRENT, 1)
-                .addParameter(MonitorService.MAX_CONCURRENT, 1)
+                .addParameter(APPLICATION_KEY, "morgan")
+                .addParameter(INTERFACE_KEY, "MemberService")
+                .addParameter(METHOD_KEY, "findPerson")
+                .addParameter(CONSUMER, "10.20.153.11")
+                .addParameter(GROUP_KEY, "unit-test")
+                .addParameter(SUCCESS_KEY, 1)
+                .addParameter(FAILURE_KEY, 0)
+                .addParameter(ELAPSED_KEY, 3)
+                .addParameter(MAX_ELAPSED_KEY, 3)
+                .addParameter(CONCURRENT_KEY, 1)
+                .addParameter(MAX_CONCURRENT_KEY, 1)
                 .build());
 
         MatcherAssert.assertThat(statisticsWithDetailInfo.getServer(), equalTo(statistics.getServer()));

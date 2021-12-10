@@ -609,8 +609,8 @@ public class HashedWheelTimer implements Timer {
                 return false;
             }
             // If a task should be canceled we put this to another queue which will be processed on each tick.
-            // So this means that we will have a GC latency of max. 1 tick duration which is good enough. This way
-            // we can make again use of our MpscLinkedQueue and so minimize the locking / overhead as much as possible.
+            // So this means that we will have a GC latency of max. 1 tick duration which is good enough. This way we
+            // can make again use of our LinkedBlockingQueue and so minimize the locking / overhead as much as possible.
             timer.cancelledTimeouts.add(this);
             return true;
         }

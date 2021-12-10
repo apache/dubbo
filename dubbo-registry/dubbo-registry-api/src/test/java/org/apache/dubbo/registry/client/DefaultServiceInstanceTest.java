@@ -87,7 +87,7 @@ public class DefaultServiceInstanceTest {
         Map<String, String> allParams = instance.getAllParams();
         assertEquals(instance.getMetadata().size(), allParams.size());
         assertEquals("dubbo", allParams.get("site"));
-        instance.getExtendParams().put("key", "value");
+        instance.putExtendParam("key", "value");
         Map<String, String> allParams2 = instance.getAllParams();
         assertNotSame(allParams, allParams2);
         assertEquals(instance.getMetadata().size() + instance.getExtendParams().size(), allParams2.size());
