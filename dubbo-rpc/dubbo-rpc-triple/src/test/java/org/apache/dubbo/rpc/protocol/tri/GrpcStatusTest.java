@@ -28,7 +28,7 @@ class GrpcStatusTest {
         final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withDescription(origin);
         Assertions.assertNotEquals(origin, status.toMessage());
-        final String decoded = GrpcStatus.fromMessage(status.toMessage());
+        final String decoded = GrpcStatus.decodeMessage(status.toMessage());
         Assertions.assertEquals(origin, decoded);
     }
 
