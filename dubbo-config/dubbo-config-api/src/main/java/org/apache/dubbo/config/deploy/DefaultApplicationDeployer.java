@@ -278,14 +278,16 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         }
 
         MetadataReportInstance metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
+        List<MetadataReportConfig> validMetadataReportConfigs = new ArrayList<>(metadataReportConfigs.size());
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
             ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
             if (!metadataReportConfig.isValid()) {
                 logger.info("Ignore invalid metadata-report config: " + metadataReportConfig);
                 continue;
             }
-            metadataReportInstance.init(metadataReportConfig);
+            validMetadataReportConfigs.add(metadataReportConfig);
         }
+        metadataReportInstance.init(validMetadataReportConfigs);
         if (!metadataReportInstance.inited()) {
             throw new IllegalStateException(String.format("%s MetadataConfigs found, but none of them is valid.", metadataReportConfigs.size()));
         }

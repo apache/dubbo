@@ -24,6 +24,7 @@ import org.apache.dubbo.metadata.report.support.NopMetadataReport;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -62,7 +63,7 @@ public class MetadataReportInstance implements Disposable {
         this.nopMetadataReport = new NopMetadataReport();
     }
 
-    public void init(MetadataReportConfig config) {
+    public void init(List<MetadataReportConfig> metadataReportConfigs) {
         if (!init.compareAndSet(false, true)) {
             return;
         }
@@ -73,6 +74,12 @@ public class MetadataReportInstance implements Disposable {
         }
 
         MetadataReportFactory metadataReportFactory = applicationModel.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+        for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
+            init(metadataReportConfig, metadataReportFactory);
+        }
+    }
+
+    private void init(MetadataReportConfig config, MetadataReportFactory metadataReportFactory) {
         URL url = config.toUrl();
         if (METADATA_REPORT_KEY.equals(url.getProtocol())) {
             String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
