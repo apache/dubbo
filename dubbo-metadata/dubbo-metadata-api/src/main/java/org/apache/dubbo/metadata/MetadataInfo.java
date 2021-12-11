@@ -48,8 +48,8 @@ public class MetadataInfo implements Serializable {
     private Map<String, ServiceInfo> services;
 
     // used at runtime
-    private transient Map<String, String> extendParams;
-    private transient AtomicBoolean reported = new AtomicBoolean(false);
+    private final transient Map<String, String> extendParams;
+    private final transient AtomicBoolean reported = new AtomicBoolean(false);
 
     public MetadataInfo(String app) {
         this(app, null, null);
@@ -79,7 +79,7 @@ public class MetadataInfo implements Serializable {
     }
 
     public void removeService(String key) {
-        if (key == null) {
+        if (StringUtils.isEmpty(key)) {
             return;
         }
         this.services.remove(key);
@@ -87,7 +87,7 @@ public class MetadataInfo implements Serializable {
     }
 
     public String calAndGetRevision() {
-        if (revision != null && hasReported()) {
+        if (StringUtils.isNotEmpty(revision) && hasReported()) {
             return revision;
         }
 
@@ -238,7 +238,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getMatchKey() {
-            if (matchKey != null) {
+            if (StringUtils.isNotEmpty(matchKey)) {
                 return matchKey;
             }
             buildMatchKey();
@@ -254,7 +254,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getServiceKey() {
-            if (serviceKey != null) {
+            if (StringUtils.isNotEmpty(serviceKey)) {
                 return serviceKey;
             }
             this.serviceKey = URL.buildKey(name, group, version);
@@ -294,7 +294,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public Map<String, String> getParams() {
-            if (params == null) {
+            if (CollectionUtils.isEmptyMap(params)) {
                 return Collections.emptyMap();
             }
             return params;
@@ -305,7 +305,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public Map<String, String> getAllParams() {
-            if (consumerParams != null) {
+            if (CollectionUtils.isNotEmptyMap(consumerParams)) {
                 Map<String, String> allParams = new HashMap<>((int) ((params.size() + consumerParams.size()) / 0.75f + 1));
                 allParams.putAll(params);
                 allParams.putAll(consumerParams);
@@ -315,9 +315,9 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getParameter(String key) {
-            if (consumerParams != null) {
+            if (CollectionUtils.isNotEmptyMap(consumerParams)) {
                 String value = consumerParams.get(key);
-                if (value != null) {
+                if (StringUtils.isNotEmpty(value)) {
                     return value;
                 }
             }
@@ -325,23 +325,26 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getMethodParameter(String method, String key, String defaultValue) {
-            if (methodParams == null) {
+            if (CollectionUtils.isEmptyMap(methodParams)) {
                 methodParams = URL.toMethodParameters(params);
                 consumerMethodParams = URL.toMethodParameters(consumerParams);
             }
 
             String value = getMethodParameter(method, key, consumerMethodParams);
-            if (value != null) {
+            if (StringUtils.isNotEmpty(value)) {
                 return value;
             }
             value = getMethodParameter(method, key, methodParams);
-            return value == null ? defaultValue : value;
+            return StringUtils.isEmpty(value) ? defaultValue : value;
         }
 
         private String getMethodParameter(String method, String key, Map<String, Map<String, String>> map) {
-            Map<String, String> keyMap = map.get(method);
+            Map<String, String> keyMap = null;
+            if (CollectionUtils.isNotEmptyMap(map)) {
+                keyMap = map.get(method);
+            }
             String value = null;
-            if (keyMap != null) {
+            if (CollectionUtils.isNotEmptyMap(keyMap)) {
                 value = keyMap.get(key);
             }
             if (StringUtils.isEmpty(value)) {
@@ -356,7 +359,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public boolean hasMethodParameter(String method) {
-            if (methodParams == null) {
+            if (CollectionUtils.isEmptyMap(methodParams)) {
                 methodParams = URL.toMethodParameters(params);
                 consumerMethodParams = URL.toMethodParameters(consumerParams);
             }
@@ -379,34 +382,34 @@ public class MetadataInfo implements Serializable {
         }
 
         public void addParameter(String key, String value) {
-            if (consumerParams != null) {
+            if (CollectionUtils.isNotEmptyMap(consumerParams)) {
                 this.consumerParams.put(key, value);
             }
         }
 
         public void addParameterIfAbsent(String key, String value) {
-            if (consumerParams != null) {
+            if (CollectionUtils.isNotEmptyMap(consumerParams)) {
                 this.consumerParams.putIfAbsent(key, value);
             }
         }
 
         public void addConsumerParams(Map<String, String> params) {
             // copy once for one service subscription
-            if (consumerParams == null) {
+            if (CollectionUtils.isEmptyMap(consumerParams)) {
                 consumerParams = new HashMap<>(params);
             }
         }
 
         public Map<String, Number> getNumbers() {
             // concurrent initialization is tolerant
-            if (numbers == null) {
+            if (CollectionUtils.isEmptyMap(numbers)) {
                 numbers = new ConcurrentHashMap<>();
             }
             return numbers;
         }
 
         public Map<String, Map<String, Number>> getMethodNumbers() {
-            if (methodNumbers == null) { // concurrent initialization is tolerant
+            if (CollectionUtils.isEmptyMap(methodNumbers)) { // concurrent initialization is tolerant
                 methodNumbers = new ConcurrentHashMap<>();
             }
             return methodNumbers;
