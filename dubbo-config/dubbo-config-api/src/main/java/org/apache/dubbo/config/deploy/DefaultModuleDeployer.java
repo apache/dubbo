@@ -161,7 +161,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 });
             }
         } catch (Throwable e) {
-            onModuleFailed(getIdentifier() + " start failed: " + e.toString(), e);
+            onModuleFailed(getIdentifier() + " start failed: " + e, e);
             throw e;
         }
         return startFuture;
