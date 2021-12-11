@@ -430,7 +430,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getMethodParameter(String method, String key, String defaultValue) {
-            if (CollectionUtils.isNotEmptyMap(methodParams)) {
+            if (CollectionUtils.isEmptyMap(methodParams)) {
                 methodParams = URLParam.initMethodParameters(params);
                 consumerMethodParams = URLParam.initMethodParameters(consumerParams);
             }
