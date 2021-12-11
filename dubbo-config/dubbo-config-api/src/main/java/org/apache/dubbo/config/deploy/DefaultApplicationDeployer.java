@@ -119,7 +119,6 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private Object stateLock = new Object();
     private Object startLock = new Object();
     private Object destroyLock = new Object();
-    private Object internalModuleLock = new Object();
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -633,11 +632,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void prepareInternalModule() {
-        synchronized (internalModuleLock) {
-            if (!hasPreparedInternalModule.compareAndSet(false, true)) {
-                return;
-            }
-
+        if (hasPreparedInternalModule.compareAndSet(false, true)) {
             // start internal module
             ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
             if (!internalModuleDeployer.isStarted()) {
