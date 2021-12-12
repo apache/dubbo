@@ -107,8 +107,9 @@ public class BitList<E> extends AbstractList<E> {
      * @return a new bitList only contains those elements contain in both two list and source bitList's tailList
      */
     public BitList<E> and(BitList<E> target) {
-        rootSet.and(target.rootSet);
-        return this;
+        BitSet resultSet = (BitSet) rootSet.clone();
+        resultSet.and(target.rootSet);
+        return new BitList<>(originList, resultSet, tailList);
     }
 
     public boolean hasMoreElementInTailList() {
