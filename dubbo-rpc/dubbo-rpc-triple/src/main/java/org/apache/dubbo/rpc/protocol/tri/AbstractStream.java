@@ -333,11 +333,13 @@ public abstract class AbstractStream implements Stream {
 
     private Metadata getTrailers(GrpcStatus grpcStatus) {
         Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), getGrpcMessage(grpcStatus));
+        String grpcMessage = getGrpcMessage(grpcStatus);
+        grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
+        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
         metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
         Status.Builder builder = Status.newBuilder()
             .setCode(grpcStatus.code.code)
-            .setMessage(getGrpcMessage(grpcStatus));
+            .setMessage(grpcMessage);
         Throwable throwable = grpcStatus.cause;
         if (throwable == null) {
             Status status = builder.build();
@@ -374,9 +376,9 @@ public abstract class AbstractStream implements Stream {
             if (TripleHeaderEnum.containsExcludeAttachments(key)) {
                 continue;
             }
-            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > 4) {
+            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
                 try {
-                    attachments.put(key.substring(0, key.length() - 4), decodeASCIIByte(header.getValue()));
+                    attachments.put(key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length()), decodeASCIIByte(header.getValue()));
                 } catch (Exception e) {
                     LOGGER.error("Failed to parse response attachment key=" + key, e);
                 }
@@ -446,7 +448,6 @@ public abstract class AbstractStream implements Stream {
     protected <T> T unpack(InputStream is, Class<T> clz) {
         try {
             final T req = SingleProtobufUtils.deserialize(is, clz);
-            is.close();
             return req;
         } catch (IOException e) {
             throw new RuntimeException("Failed to unpack req", e);

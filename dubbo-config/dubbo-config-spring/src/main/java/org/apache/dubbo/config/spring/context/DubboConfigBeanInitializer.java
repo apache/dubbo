@@ -43,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -99,7 +100,7 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         logger.info("loading dubbo config beans ...");
 
         //Make sure all these config beans are inited and registered to ConfigManager
-        // load application configs
+        // load application config beans
         loadConfigBeansOfType(ApplicationConfig.class, configManager);
         loadConfigBeansOfType(RegistryConfig.class, configManager);
         loadConfigBeansOfType(ProtocolConfig.class, configManager);
@@ -109,10 +110,17 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
         loadConfigBeansOfType(MetricsConfig.class, configManager);
         loadConfigBeansOfType(SslConfig.class, configManager);
 
-        // load module configs
+        // load module config beans
         loadConfigBeansOfType(ModuleConfig.class, moduleModel.getConfigManager());
         loadConfigBeansOfType(ProviderConfig.class, moduleModel.getConfigManager());
         loadConfigBeansOfType(ConsumerConfig.class, moduleModel.getConfigManager());
+
+        // load ConfigCenterBean from properties, fix https://github.com/apache/dubbo/issues/9207
+        List<ConfigCenterBean> configCenterBeans = configManager.loadConfigsOfTypeFromProps(ConfigCenterBean.class);
+        for (ConfigCenterBean configCenterBean : configCenterBeans) {
+            String beanName = configCenterBean.getId() != null ? configCenterBean.getId() : "configCenterBean";
+            beanFactory.initializeBean(configCenterBean, beanName);
+        }
 
         logger.info("dubbo config beans are loaded.");
     }

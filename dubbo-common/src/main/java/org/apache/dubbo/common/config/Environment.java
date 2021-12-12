@@ -24,6 +24,7 @@ import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -90,9 +91,9 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
 
     private void loadMigrationRule() {
         String path = System.getProperty(CommonConstants.DUBBO_MIGRATION_KEY);
-        if (path == null || path.length() == 0) {
+        if (StringUtils.isEmpty(path)) {
             path = System.getenv(CommonConstants.DUBBO_MIGRATION_KEY);
-            if (path == null || path.length() == 0) {
+            if (StringUtils.isEmpty(path)) {
                 path = CommonConstants.DEFAULT_DUBBO_MIGRATION_FILE;
             }
         }
@@ -169,7 +170,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
      */
     public Configuration getPrefixedConfiguration(AbstractConfig config, String prefix) {
 
-        // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
+        // The sequence would be: SystemConfiguration -> EnvironmentConfiguration -> AppExternalConfiguration -> ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
         Configuration instanceConfiguration = new ConfigConfigurationAdapter(config, prefix);
         CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
         compositeConfiguration.addConfiguration(systemConfiguration);
@@ -210,7 +211,7 @@ public class Environment extends LifecycleAdapter implements ApplicationExt {
      * @return
      */
     public List<Map<String, String>> getConfigurationMaps(AbstractConfig config, String prefix) {
-        // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
+        // The sequence would be: SystemConfiguration -> EnvironmentConfiguration -> AppExternalConfiguration -> ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
 
         List<Map<String, String>> maps = new ArrayList<>();
         maps.add(systemConfiguration.getProperties());

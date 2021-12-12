@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
@@ -31,6 +30,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
@@ -189,6 +189,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private  Boolean auth;
 
+    public AbstractInterfaceConfig() {
+    }
+
+    public AbstractInterfaceConfig(ModuleModel moduleModel) {
+        super(moduleModel);
+    }
 
     /**
      * The url of the reference service
@@ -287,7 +293,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (isNative) {
             return Arrays.stream(interfaceClass.getMethods()).map(Method::getName).toArray(String[]::new);
         } else {
-            return Wrapper.getWrapper(interfaceClass).getMethodNames();
+            return ClassUtils.getMethodNames(interfaceClass);
         }
     }
 

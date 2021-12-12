@@ -76,7 +76,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     private Semaphore semaphore = new Semaphore(1);
 
     private final Map<String, String> extraParameters;
-    protected final Map<URL, Map<String, ServiceAddressURL>> stringUrls = new HashMap<>();
+    protected final Map<URL, Map<String, ServiceAddressURL>> stringUrls = new ConcurrentHashMap<>();
 
     public CacheableFailbackRegistry(URL url) {
         super(url);

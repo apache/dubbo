@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.dubbo.common.URL;
@@ -35,6 +34,7 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
 
+import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -42,6 +42,7 @@ import org.junit.jupiter.api.Test;
 public class TripleProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private final String REQUEST_MSG = "hello world";
 
     @Test
     public void testDemoProtocol() throws Exception {
@@ -68,32 +69,35 @@ public class TripleProtocolTest {
         ConsumerModel consumerModel = new ConsumerModel(url.getServiceKey(), null, serviceDescriptor, null,
             new ServiceMetadata(), null);
         url = url.setServiceModel(consumerModel);
-        serviceImpl = proxy.getProxy(protocol.refer(IGreeter.class, url));
+        IGreeter greeterProxy = proxy.getProxy(protocol.refer(IGreeter.class, url));
         Thread.sleep(1000);
-        Assertions.assertEquals("hello world", serviceImpl.echo("hello world"));
-        // fixme will throw exception
-        // Assertions.assertEquals("hello world", serviceImpl.echoAsync("hello world").get());
-        CountDownLatch latch = new CountDownLatch(1);
-        serviceImpl.serverStream("hello world", new StreamObserver<String>() {
-            @Override
-            public void onNext(String data) {
-                Assertions.assertEquals("hello world",data);
-            }
 
-            @Override
-            public void onError(Throwable throwable) {
-                throwable.printStackTrace();
-            }
+        // 1. test unaryStream
+        Assertions.assertEquals(REQUEST_MSG, greeterProxy.echo(REQUEST_MSG));
+        Assertions.assertEquals(REQUEST_MSG, serviceImpl.echoAsync(REQUEST_MSG).get());
 
-            @Override
-            public void onCompleted() {
-                latch.countDown();
-                System.out.println("onCompleted");
-            }
-        });
+        // 2. test serverStream
+        MockStreamObserver outboundMessageSubscriber1 = new MockStreamObserver();
+        greeterProxy.serverStream(REQUEST_MSG, outboundMessageSubscriber1);
+        outboundMessageSubscriber1.getLatch().await(1000, TimeUnit.MILLISECONDS);
+        Assertions.assertEquals(outboundMessageSubscriber1.getOnNextData(), REQUEST_MSG);
+        Assertions.assertTrue(outboundMessageSubscriber1.isOnCompleted());
 
-        // release CPU to run StreamObserver methods.
-        latch.await(1000, TimeUnit.MILLISECONDS);
+        // 3. test bidirectionalStream
+        MockStreamObserver outboundMessageSubscriber2 = new MockStreamObserver();
+        StreamObserver<String> inboundMessageObserver = greeterProxy.bidirectionalStream(outboundMessageSubscriber2);
+        inboundMessageObserver.onNext(REQUEST_MSG);
+        inboundMessageObserver.onCompleted();
+        outboundMessageSubscriber2.getLatch().await(1000, TimeUnit.MILLISECONDS);
+        // verify client
+        Assertions.assertEquals(outboundMessageSubscriber2.getOnNextData(), IGreeter.SERVER_MSG);
+        Assertions.assertTrue(outboundMessageSubscriber2.isOnCompleted());
+        // verify server
+        MockStreamObserver serverOutboundMessageSubscriber = (MockStreamObserver) ((IGreeterImpl) serviceImpl).getMockStreamObserver();
+        serverOutboundMessageSubscriber.getLatch().await(1000, TimeUnit.MILLISECONDS);
+        Assertions.assertEquals(serverOutboundMessageSubscriber.getOnNextData(), REQUEST_MSG);
+        Assertions.assertTrue(serverOutboundMessageSubscriber.isOnCompleted());
+
         // resource recycle.
         serviceRepository.destroy();
         System.out.println("serviceRepository destroyed");

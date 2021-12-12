@@ -22,6 +22,9 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import java.util.concurrent.CompletableFuture;
 
 public interface IGreeter {
+
+    String SERVER_MSG = "HELLO WORLD";
+
     /**
      * Use request to respond
      */
@@ -33,5 +36,6 @@ public interface IGreeter {
 
     void serverStream(String str, StreamObserver<String> observer);
 
+    StreamObserver<String> bidirectionalStream(StreamObserver<String> observer);
 
 }

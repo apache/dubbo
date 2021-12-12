@@ -26,8 +26,8 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
-import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.util.collections.Sets;
@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.INSTANCE_REVISION_UPDATED_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -56,19 +55,19 @@ public class ZookeeperServiceDiscoveryTest {
 
     private static final String LOCALHOST = "127.0.0.1";
 
-    private TestingServer zkServer;
-    private int zkServerPort;
     private URL registryUrl;
 
     private ZookeeperServiceDiscovery discovery;
+    private static String zookeeperConnectionAddress1;
+
+    @BeforeAll
+    public static void beforeAll() {
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+    }
 
     @BeforeEach
     public void init() throws Exception {
-        zkServerPort = getAvailablePort();
-        zkServer = new TestingServer(zkServerPort, true);
-        zkServer.start();
-
-        this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
+        this.registryUrl = URL.valueOf(zookeeperConnectionAddress1);
         registryUrl.setScopeModel(ApplicationModel.defaultModel());
         this.discovery = new ZookeeperServiceDiscovery();
         this.discovery.initialize(registryUrl);
@@ -77,7 +76,6 @@ public class ZookeeperServiceDiscoveryTest {
     @AfterEach
     public void close() throws Exception {
         discovery.destroy();
-        zkServer.stop();
     }
 
     @Test
@@ -108,7 +106,7 @@ public class ZookeeperServiceDiscoveryTest {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("message", "Hello,World");
         serviceInstance.setMetadata(metadata);
-        serviceInstance.getExtendParams().put(INSTANCE_REVISION_UPDATED_KEY, "true");
+        serviceInstance.putExtendParam(INSTANCE_REVISION_UPDATED_KEY, "true");
 
         discovery.update(serviceInstance);
 

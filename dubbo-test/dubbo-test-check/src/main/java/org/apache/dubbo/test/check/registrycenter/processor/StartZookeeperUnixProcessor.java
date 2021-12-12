@@ -34,24 +34,28 @@ import java.util.regex.Pattern;
 public class StartZookeeperUnixProcessor extends ZookeeperUnixProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(StartZookeeperUnixProcessor.class);
+    /**
+     * The pattern for checking if zookeeper instances started.
+     */
+    private static final Pattern PATTERN_STARTED = Pattern.compile(".*STARTED.*");
 
     @Override
     protected Process doProcess(ZookeeperContext context, int clientPort) throws DubboTestException {
         logger.info(String.format("The zookeeper-%d is starting...", clientPort));
         List<String> commands = new ArrayList<>();
         Path zookeeperBin = Paths.get(context.getSourceFile().getParent().toString(),
-            String.valueOf(clientPort),
-            String.format("apache-zookeeper-%s-bin", context.getVersion()),
-            "bin");
+                String.valueOf(clientPort),
+                context.getUnpackedDirectory(),
+                "bin");
         commands.add(Paths.get(zookeeperBin.toString(), "zkServer.sh")
-            .toAbsolutePath().toString());
+                .toAbsolutePath().toString());
         commands.add("start");
         commands.add(Paths.get(zookeeperBin.getParent().toString(),
-            "conf",
-            "zoo.cfg").toAbsolutePath().toString());
+                "conf",
+                "zoo.cfg").toAbsolutePath().toString());
         try {
             return new ProcessBuilder().directory(zookeeperBin.getParent().toFile())
-                .command(commands).inheritIO().redirectOutput(ProcessBuilder.Redirect.PIPE).start();
+                    .command(commands).inheritIO().redirectOutput(ProcessBuilder.Redirect.PIPE).start();
         } catch (IOException e) {
             throw new DubboTestException(String.format("Failed to start zookeeper-%d", clientPort), e);
         }
@@ -59,6 +63,6 @@ public class StartZookeeperUnixProcessor extends ZookeeperUnixProcessor {
 
     @Override
     protected Pattern getPattern() {
-        return Pattern.compile(".*STARTED.*");
+        return PATTERN_STARTED;
     }
 }
