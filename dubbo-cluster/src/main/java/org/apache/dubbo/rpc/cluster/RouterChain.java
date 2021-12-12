@@ -200,6 +200,12 @@ public class RouterChain<T> {
                 return commonRouterResult;
             }
         }
+
+        if (commonRouterResult.isEmpty()) {
+            printRouterSnapshot(url, availableInvokers, invocation);
+            return BitList.emptyList();
+        }
+
         return commonRouterResult;
     }
 
