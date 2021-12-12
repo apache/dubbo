@@ -475,10 +475,7 @@ public class BitList<E> extends AbstractList<E> {
             return new ArrayList<>(originList);
         }
         ArrayList<E> arrayList = new ArrayList<>(size());
-        arrayList.addAll(originList);
-        if (tailList != null) {
-            arrayList.addAll(tailList);
-        }
+        arrayList.addAll(this);
         return arrayList;
     }
 
