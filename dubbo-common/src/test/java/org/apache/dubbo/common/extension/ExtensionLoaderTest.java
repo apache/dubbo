@@ -43,9 +43,7 @@ import org.apache.dubbo.common.extension.ext11_no_adaptive.NoAdaptiveExtImpl;
 import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
-import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Impl1;
-import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper1;
-import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext6Wrapper2;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.*;
 import org.apache.dubbo.common.extension.ext7.InitErrorExt;
 import org.apache.dubbo.common.extension.ext8_add.AddExt1;
 import org.apache.dubbo.common.extension.ext8_add.AddExt2;
@@ -183,6 +181,33 @@ public class ExtensionLoaderTest {
         assertEquals("Ext6Impl1-echo", impl1.echo(url, "ha"));
         assertEquals(echoCount1 + 1, Ext6Wrapper1.echoCount.get());
         assertEquals(echoCount2 + 1, Ext6Wrapper2.echoCount.get());
+    }
+
+    @Test
+    public void test_getExtension_withWrapperAnnotation() {
+        WrappedExt impl3 = getExtensionLoader(WrappedExt.class).getExtension("impl3");
+        assertThat(impl3, instanceOf(Ext6Wrapper3.class));
+        WrappedExt originImpl3 = impl3;
+        while (originImpl3 instanceof WrappedExtWrapper) {
+            originImpl3 = ((WrappedExtWrapper) originImpl3).getOrigin();
+        }
+
+        // test unwrapped instance
+        WrappedExt unwrappedImpl3 = getExtensionLoader(WrappedExt.class).getExtension("impl3", false);
+        assertThat(unwrappedImpl3, instanceOf(Ext6Impl3.class));
+        assertNotSame(unwrappedImpl3, impl3);
+        assertSame(unwrappedImpl3, originImpl3);
+
+        WrappedExt impl4 = getExtensionLoader(WrappedExt.class).getExtension("impl4");
+        assertThat(impl4, instanceOf(Ext6Wrapper4.class));
+
+        URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1");
+        int echoCount3 = Ext6Wrapper3.echoCount.get();
+        int echoCount4 = Ext6Wrapper4.echoCount.get();
+
+        assertEquals("Ext6Impl4-echo", impl4.echo(url, "haha"));
+        assertEquals(echoCount3, Ext6Wrapper3.echoCount.get());
+        assertEquals(echoCount4 + 1, Ext6Wrapper4.echoCount.get());
     }
 
     @Test

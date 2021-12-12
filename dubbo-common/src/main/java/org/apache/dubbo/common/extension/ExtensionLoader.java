@@ -27,55 +27,26 @@ import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ClassLoaderResourceLoader;
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.Holder;
-import org.apache.dubbo.common.utils.NativeUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModuleModel;
-import org.apache.dubbo.rpc.model.ScopeModel;
-import org.apache.dubbo.rpc.model.ScopeModelAccessor;
+import org.apache.dubbo.common.utils.*;
+import org.apache.dubbo.rpc.model.*;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.sort;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.StreamSupport.stream;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 
 /**
  * {@link org.apache.dubbo.rpc.model.ApplicationModel}, {@code DubboBootstrap} and this class are
@@ -771,13 +742,15 @@ public class ExtensionLoader<T> {
                 }
 
                 if (CollectionUtils.isNotEmpty(wrapperClassesList)) {
-                    for (Class<?> wrapperClass : wrapperClassesList) {
-                        Wrapper wrapper = wrapperClass.getAnnotation(Wrapper.class);
-                        if (wrapper == null
-                            || (ArrayUtils.contains(wrapper.matches(), name) && !ArrayUtils.contains(wrapper.mismatches(), name))) {
-                            instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
-                            instance = postProcessAfterInitialization(instance, name);
-                        }
+                    wrapperClassesList = wrapperClassesList.stream().filter(wrapperClz -> {
+                        Wrapper wrapper = wrapperClz.getAnnotation(Wrapper.class);
+                        return (wrapper == null) ||
+                            ((ArrayUtils.isEmpty(wrapper.matches()) || ArrayUtils.contains(wrapper.matches(), name)) &&
+                                !ArrayUtils.contains(wrapper.mismatches(), name));
+                    }).collect(Collectors.toList());
+                    for (Class<?> wrapperClz : wrapperClassesList) {
+                        instance = injectExtension((T) wrapperClz.getConstructor(type).newInstance(instance));
+                        instance = postProcessAfterInitialization(instance, name);
                     }
                 }
             }
