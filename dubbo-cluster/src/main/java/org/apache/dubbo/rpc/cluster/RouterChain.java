@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -30,6 +31,7 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,12 +65,19 @@ public class RouterChain<T> {
     private volatile List<StateRouter<T>> builtinStateRouters = Collections.emptyList();
     private volatile List<StateRouter<T>> stateRouters = Collections.emptyList();
 
+    /**
+     * Should continue route if current router's result is empty
+     */
+    private final boolean shouldFailFast;
+
     public static <T> RouterChain<T> buildChain(Class<T> interfaceClass, URL url) {
         return new RouterChain<>(interfaceClass, url);
     }
 
     private RouterChain(Class<T> interfaceClass, URL url) {
-        List<RouterFactory> extensionFactories = url.getOrDefaultApplicationModel().getExtensionLoader(RouterFactory.class)
+        ModuleModel moduleModel = url.getOrDefaultModuleModel();
+
+        List<RouterFactory> extensionFactories = moduleModel.getExtensionLoader(RouterFactory.class)
             .getActivateExtension(url, ROUTER_KEY);
 
         List<Router> routers = extensionFactories.stream()
@@ -78,7 +87,7 @@ public class RouterChain<T> {
 
         initWithRouters(routers);
 
-        List<StateRouterFactory> extensionStateRouterFactories = url.getOrDefaultApplicationModel()
+        List<StateRouterFactory> extensionStateRouterFactories = moduleModel
             .getExtensionLoader(StateRouterFactory.class)
             .getActivateExtension(url, ROUTER_KEY);
 
@@ -89,6 +98,8 @@ public class RouterChain<T> {
 
         // init state routers
         initWithStateRouters(stateRouters);
+
+        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
     }
 
     /**
@@ -158,7 +169,7 @@ public class RouterChain<T> {
         for (StateRouter<T> stateRouter : stateRouters) {
             StateRouterResult<Invoker<T>> routeResult = stateRouter.route(resultInvokers, url, invocation, false);
             resultInvokers = routeResult.getResult();
-            if (resultInvokers.isEmpty()) {
+            if (resultInvokers.isEmpty() && shouldFailFast) {
                 printRouterSnapshot(url, availableInvokers, invocation);
                 return BitList.emptyList();
             }
@@ -179,7 +190,7 @@ public class RouterChain<T> {
             // Copy resultInvokers to a arrayList. BitList not support
             RouterResult<Invoker<T>> routeResult = router.route(commonRouterResult, url, invocation, false);
             commonRouterResult = routeResult.getResult();
-            if (CollectionUtils.isEmpty(commonRouterResult)) {
+            if (CollectionUtils.isEmpty(commonRouterResult) && shouldFailFast) {
                 printRouterSnapshot(url, availableInvokers, invocation);
                 return BitList.emptyList();
             }
@@ -222,7 +233,7 @@ public class RouterChain<T> {
             currentNode.setRouterMessage(routerMessage);
 
             // result is empty, log out
-            if (resultInvokers.isEmpty()) {
+            if (resultInvokers.isEmpty() && shouldFailFast) {
                 return snapshotNode;
             }
 
@@ -248,7 +259,7 @@ public class RouterChain<T> {
             currentNode.setRouterMessage(routerMessage);
 
             // result is empty, log out
-            if (CollectionUtils.isEmpty(routeResult)) {
+            if (CollectionUtils.isEmpty(routeResult) && shouldFailFast) {
                 return snapshotNode;
             } else {
                 commonRouterResult = routeResult;
