@@ -68,6 +68,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.sort;
@@ -771,13 +772,15 @@ public class ExtensionLoader<T> {
                 }
 
                 if (CollectionUtils.isNotEmpty(wrapperClassesList)) {
-                    for (Class<?> wrapperClass : wrapperClassesList) {
-                        Wrapper wrapper = wrapperClass.getAnnotation(Wrapper.class);
-                        if (wrapper == null
-                            || (ArrayUtils.contains(wrapper.matches(), name) && !ArrayUtils.contains(wrapper.mismatches(), name))) {
-                            instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
-                            instance = postProcessAfterInitialization(instance, name);
-                        }
+                    wrapperClassesList = wrapperClassesList.stream().filter(wrapperClz -> {
+                        Wrapper wrapper = wrapperClz.getAnnotation(Wrapper.class);
+                        return (wrapper == null) ||
+                            ((ArrayUtils.isEmpty(wrapper.matches()) || ArrayUtils.contains(wrapper.matches(), name)) &&
+                                !ArrayUtils.contains(wrapper.mismatches(), name));
+                    }).collect(Collectors.toList());
+                    for (Class<?> wrapperClz : wrapperClassesList) {
+                        instance = injectExtension((T) wrapperClz.getConstructor(type).newInstance(instance));
+                        instance = postProcessAfterInitialization(instance, name);
                     }
                 }
             }
