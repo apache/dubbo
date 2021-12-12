@@ -53,7 +53,7 @@ public class MockInvokersSelectorTest {
 
         selector.notify(providers);
         // rpcInvocation does not have an attached "invocation.need.mock" parameter, so normal invokers will be filtered out
-        List<Invoker<DemoService>> invokers = selector.route(providers, consumerURL, rpcInvocation, false).getResult();
+        List<Invoker<DemoService>> invokers = selector.route(providers.clone(), consumerURL, rpcInvocation, false).getResult();
         Assertions.assertEquals(invokers.size(),1);
         Assertions.assertTrue(invokers.contains(invoker3));
 
@@ -61,7 +61,7 @@ public class MockInvokersSelectorTest {
         Map<String,Object> attachments = new HashMap<>();
         attachments.put(INVOCATION_NEED_MOCK,"true");
         Mockito.when(rpcInvocation.getObjectAttachments()).thenReturn(attachments);
-        invokers = selector.route(providers, consumerURL, rpcInvocation, false).getResult();
+        invokers = selector.route(providers.clone(), consumerURL, rpcInvocation, false).getResult();
         Assertions.assertEquals(invokers.size(),2);
         Assertions.assertTrue(invokers.contains(invoker1));
         Assertions.assertTrue(invokers.contains(invoker2));
