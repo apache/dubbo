@@ -20,26 +20,30 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.convert.Converter;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.function.Streams.filterAll;
 import static org.apache.dubbo.common.utils.ArrayUtils.isNotEmpty;
-import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.apache.dubbo.common.utils.CollectionUtils.flip;
+import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 
 public class ClassUtils {
@@ -497,5 +501,75 @@ public class ClassUtils {
      */
     public static boolean isGenericClass(Class<?> type) {
         return type != null && !void.class.equals(type) && !Void.class.equals(type);
+    }
+
+    public static boolean hasMethods(Method[] methods) {
+        if (methods == null || methods.length == 0) {
+            return false;
+        }
+        for (Method m : methods) {
+            if (m.getDeclaringClass() != Object.class) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final String[] OBJECT_METHODS = new String[]{"getClass", "hashCode", "toString", "equals"};
+
+    /**
+     * get method name array.
+     *
+     * @return method name array.
+     */
+    public static String[] getMethodNames(Class<?> tClass) {
+        if (tClass == Object.class) {
+            return OBJECT_METHODS;
+        }
+        Method[] methods = Arrays.stream(tClass.getMethods())
+            .collect(Collectors.toList())
+            .toArray(new Method[] {});
+        List<String> mns = new ArrayList<>(); // method names.
+        boolean hasMethod = hasMethods(methods);
+        if (hasMethod) {
+            for (Method m : methods) {
+                //ignore Object's method.
+                if (m.getDeclaringClass() == Object.class) {
+                    continue;
+                }
+                String mn = m.getName();
+                mns.add(mn);
+            }
+        }
+        return mns.toArray(new String[0]);
+    }
+
+    /**
+     * get method name array.
+     *
+     * @return method name array.
+     */
+    public static String[] getDeclaredMethodNames(Class<?> tClass) {
+        if (tClass == Object.class) {
+            return OBJECT_METHODS;
+        }
+        Method[] methods = Arrays.stream(tClass.getMethods())
+            .collect(Collectors.toList())
+            .toArray(new Method[] {});
+        List<String> dmns = new ArrayList<>(); // method names.
+        boolean hasMethod = hasMethods(methods);
+        if (hasMethod) {
+            for (Method m : methods) {
+                //ignore Object's method.
+                if (m.getDeclaringClass() == Object.class) {
+                    continue;
+                }
+                String mn = m.getName();
+                if (m.getDeclaringClass() == tClass) {
+                    dmns.add(mn);
+                }
+            }
+        }
+        return dmns.toArray(new String[0]);
     }
 }

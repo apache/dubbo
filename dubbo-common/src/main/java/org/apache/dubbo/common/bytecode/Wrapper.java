@@ -175,7 +175,7 @@ public abstract class Wrapper {
                                  .collect(Collectors.toList())
                                  .toArray(new Method[] {});
         // get all public method.
-        boolean hasMethod = hasMethods(methods);
+        boolean hasMethod = ClassUtils.hasMethods(methods);
         if (hasMethod) {
             Map<String, Integer> sameNameMethodCount = new HashMap<>((int) (methods.length / 0.75f) + 1);
             for (Method m : methods) {
@@ -347,18 +347,6 @@ public abstract class Wrapper {
 
     private static String propertyName(String pn) {
         return pn.length() == 1 || Character.isLowerCase(pn.charAt(1)) ? Character.toLowerCase(pn.charAt(0)) + pn.substring(1) : pn;
-    }
-
-    private static boolean hasMethods(Method[] methods) {
-        if (methods == null || methods.length == 0) {
-            return false;
-        }
-        for (Method m : methods) {
-            if (m.getDeclaringClass() != Object.class) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
