@@ -52,7 +52,7 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
                 logger.error("Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. " +
                     "Interfaces: " + Arrays.toString(interfaces) + " Javassist Error.", fromJavassist);
                 logger.error("Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. " +
-                    "Interfaces: " + Arrays.toString(interfaces) + " JDK Error.", fromJavassist);
+                    "Interfaces: " + Arrays.toString(interfaces) + " JDK Error.", fromJdk);
                 throw fromJavassist;
             }
         }
@@ -83,7 +83,7 @@ public class JavassistProxyFactory extends AbstractProxyFactory {
                 logger.error("Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. " +
                     "Interfaces: " + type + " Javassist Error.", fromJavassist);
                 logger.error("Failed to generate proxy by Javassist failed. Fallback to use JDK proxy is also failed. " +
-                    "Interfaces: " + type + " JDK Error.", fromJavassist);
+                    "Interfaces: " + type + " JDK Error.", fromJdk);
                 throw fromJavassist;
             }
         }
