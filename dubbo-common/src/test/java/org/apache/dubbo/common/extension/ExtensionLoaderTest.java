@@ -297,6 +297,8 @@ public class ExtensionLoaderTest {
         Set<String> expected = new HashSet<String>();
         expected.add("impl1");
         expected.add("impl2");
+        expected.add("impl3");
+        expected.add("impl4");
 
         assertEquals(expected, exts);
     }
