@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.router.state;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
@@ -106,9 +107,8 @@ public class BitList<E> extends AbstractList<E> {
      * @return a new bitList only contains those elements contain in both two list and source bitList's tailList
      */
     public BitList<E> and(BitList<E> target) {
-        BitSet resultSet = (BitSet) rootSet.clone();
-        resultSet.and(target.rootSet);
-        return new BitList<>(originList, resultSet, tailList);
+        rootSet.and(target.rootSet);
+        return this;
     }
 
     public boolean hasMoreElementInTailList() {
@@ -271,6 +271,11 @@ public class BitList<E> extends AbstractList<E> {
             }
         }
         return index;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.rootSet.isEmpty() && (tailList == null || tailList.isEmpty());
     }
 
     @Override
@@ -463,6 +468,15 @@ public class BitList<E> extends AbstractList<E> {
         public void add(E e) {
             throw new UnsupportedOperationException("Add method is not supported in BitListIterator!");
         }
+    }
+
+    public ArrayList<E> cloneToArrayList() {
+        if (rootSet.cardinality() == originList.size() && (tailList == null || tailList.isEmpty())) {
+            return new ArrayList<>(originList);
+        }
+        ArrayList<E> arrayList = new ArrayList<>(size());
+        arrayList.addAll(this);
+        return arrayList;
     }
 
     @Override
