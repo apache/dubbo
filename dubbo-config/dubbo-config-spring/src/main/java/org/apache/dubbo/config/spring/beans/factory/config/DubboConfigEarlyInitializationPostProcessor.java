@@ -24,12 +24,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
-import org.springframework.core.PriorityOrdered;
 
 import javax.annotation.PostConstruct;
 
@@ -45,27 +42,27 @@ import javax.annotation.PostConstruct;
  * @see GenericBeanPostProcessorAdapter
  * @since 2.7.9
  */
-public class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPostProcessorAdapter<AbstractConfig>
-        implements BeanDefinitionRegistryPostProcessor, PriorityOrdered {
+public class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPostProcessorAdapter<AbstractConfig> {
 
     private static final Log logger = LogFactory.getLog(DubboConfigEarlyInitializationPostProcessor.class.getName());
 
-    public static final String BEAN_NAME = "dubboConfigEarlyInitializationPostProcessor";
+    private static DubboConfigEarlyInitializationPostProcessor SINGLETON;
 
     private DefaultListableBeanFactory beanFactory;
 
-    @Override
-    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        this.beanFactory = unwrap(registry);
-        initBeanFactory();
+    private DubboConfigEarlyInitializationPostProcessor(DefaultListableBeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
     }
 
-    @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        if (beanFactory == null) { // try again if postProcessBeanDefinitionRegistry method does not effect.
-            this.beanFactory = unwrap(beanFactory);
-            initBeanFactory();
+    public static DubboConfigEarlyInitializationPostProcessor getSingleton(DefaultListableBeanFactory beanFactory) {
+        if (SINGLETON == null && beanFactory != null) {
+            synchronized (DubboConfigEarlyInitializationPostProcessor.class) {
+                if (SINGLETON == null && beanFactory != null) {
+                    SINGLETON = new DubboConfigEarlyInitializationPostProcessor(beanFactory);
+                }
+            }
         }
+        return SINGLETON;
     }
 
     protected void processBeforeInitialization(AbstractConfig config, String beanName) throws BeansException {
@@ -95,17 +92,6 @@ public class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPost
         return null;
     }
 
-    private void initBeanFactory() {
-        if (beanFactory != null) {
-            // Register itself
-            if (logger.isInfoEnabled()) {
-                logger.info("BeanFactory is about to be initialized, trying to resolve the Dubbo Config Beans early " +
-                        "initialization");
-            }
-            beanFactory.addBeanPostProcessor(this);
-        }
-    }
-
     /**
      * {@link DefaultListableBeanFactory} has registered {@link CommonAnnotationBeanPostProcessor} or not?
      *
@@ -120,8 +106,4 @@ public class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPost
         return false;
     }
 
-    @Override
-    public int getOrder() {
-        return HIGHEST_PRECEDENCE;
-    }
 }
