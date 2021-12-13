@@ -1,2 +1,1 @@
-identity=org.apache.dubbo.rpc.protocol.tri.IdentityCompressor
 gzip=org.apache.dubbo.rpc.protocol.tri.GzipCompressor
