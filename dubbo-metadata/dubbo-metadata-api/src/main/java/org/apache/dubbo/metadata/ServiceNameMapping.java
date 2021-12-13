@@ -28,6 +28,7 @@ import java.util.Set;
 
 import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_MAPPING_TYPE;
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 
@@ -36,7 +37,7 @@ import static org.apache.dubbo.common.utils.StringUtils.SLASH;
  *
  * @since 2.7.5
  */
-@SPI(value = "metadata", scope = APPLICATION)
+@SPI(value = METADATA_MAPPING_TYPE, scope = APPLICATION)
 public interface ServiceNameMapping {
 
     String DEFAULT_MAPPING_GROUP = "mapping";

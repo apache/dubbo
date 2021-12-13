@@ -32,7 +32,7 @@ import java.util.Set;
  *
  * @since 2.7.5
  */
-@SPI(value = "default", scope = ExtensionScope.APPLICATION)
+@SPI(value = MetadataService.DEFAULT_EXTENSION, scope = ExtensionScope.APPLICATION)
 public interface WritableMetadataService extends MetadataService {
 
     /**
