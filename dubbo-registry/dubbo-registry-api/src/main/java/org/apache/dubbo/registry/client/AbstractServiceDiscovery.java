@@ -266,14 +266,14 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     protected void reportMetadata(MetadataInfo metadataInfo) {
         if (metadataReport != null) {
-            SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
+            SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             metadataReport.publishAppMetadata(identifier, metadataInfo);
         }
     }
 
     protected void unReportMetadata(MetadataInfo metadataInfo) {
         if (metadataReport != null) {
-            SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
+            SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.getRevision());
             metadataReport.unPublishAppMetadata(identifier, metadataInfo);
         }
     }
