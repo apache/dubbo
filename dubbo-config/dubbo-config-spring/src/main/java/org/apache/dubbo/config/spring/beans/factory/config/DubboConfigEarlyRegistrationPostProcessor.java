@@ -61,7 +61,7 @@ public class DubboConfigEarlyRegistrationPostProcessor implements BeanDefinition
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        if (beanFactory == null) { // try again if postProcessBeanDefinitionRegistry method does not effect.
+        if (this.beanFactory == null) { // try again if postProcessBeanDefinitionRegistry method does not effect.
             this.beanFactory = unwrap(beanFactory);
             initBeanFactory(this.beanFactory);
         }
