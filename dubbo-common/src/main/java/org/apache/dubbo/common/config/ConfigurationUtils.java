@@ -35,6 +35,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -238,8 +239,11 @@ public class ConfigurationUtils {
 
                     String k = key.substring(prefix.length());
                     // convert camelCase/snake_case to kebab-case
-                    k = StringUtils.convertToSplitName(k, "-");
-                    resultMap.putIfAbsent(k, val);
+                    String newK = StringUtils.convertToSplitName(k, "-");
+                    resultMap.putIfAbsent(newK, val);
+                    if (!Objects.equals(k, newK)) {
+                        resultMap.putIfAbsent(k, val);
+                    }
                 }
             }
         }
