@@ -170,6 +170,9 @@ public class RouterChain<T> {
         }
 
 
+        if (routers.isEmpty()) {
+            return resultInvokers;
+        }
         List<Invoker<T>> commonRouterResult = new ArrayList<>(resultInvokers);
         // 2. route common router
         for (Router router : routers) {
