@@ -172,7 +172,7 @@ public class MetadataServiceDelegation implements MetadataService, Disposable {
 
         for (ServiceDiscovery sd : registryManager.getServiceDiscoveries()) {
             MetadataInfo metadataInfo = sd.getLocalMetadata();
-            if (revision.equals(metadataInfo.calAndGetRevision())) {
+            if (revision.equals(metadataInfo.getRevision())) {
                 return metadataInfo;
             }
         }
