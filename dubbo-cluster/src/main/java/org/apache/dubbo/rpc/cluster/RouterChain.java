@@ -35,6 +35,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -108,7 +109,7 @@ public class RouterChain<T> {
      */
     public void initWithRouters(List<Router> builtinRouters) {
         this.builtinRouters = builtinRouters;
-        this.routers = new ArrayList<>(builtinRouters);
+        this.routers = new LinkedList<>(builtinRouters);
     }
 
     /**
@@ -121,7 +122,7 @@ public class RouterChain<T> {
     }
 
     private void setStateRouters(List<StateRouter<T>> stateRouters) {
-        this.stateRouters = new ArrayList<>(stateRouters);
+        this.stateRouters = new LinkedList<>(stateRouters);
     }
 
     /**
@@ -133,7 +134,7 @@ public class RouterChain<T> {
      * @param routers routers from 'router://' rules in 2.6.x or before.
      */
     public void addRouters(List<Router> routers) {
-        List<Router> newRouters = new ArrayList<>();
+        List<Router> newRouters = new LinkedList<>();
         newRouters.addAll(builtinRouters);
         newRouters.addAll(routers);
         CollectionUtils.sort(newRouters);
@@ -141,7 +142,7 @@ public class RouterChain<T> {
     }
 
     public void addStateRouters(List<StateRouter<T>> stateRouters) {
-        List<StateRouter<T>> newStateRouters = new ArrayList<>();
+        List<StateRouter<T>> newStateRouters = new LinkedList<>();
         newStateRouters.addAll(builtinStateRouters);
         newStateRouters.addAll(stateRouters);
         CollectionUtils.sort(newStateRouters);
@@ -184,7 +185,7 @@ public class RouterChain<T> {
         if (routers.isEmpty()) {
             return resultInvokers;
         }
-        List<Invoker<T>> commonRouterResult = new ArrayList<>(resultInvokers);
+        List<Invoker<T>> commonRouterResult = resultInvokers.cloneToArrayList();
         // 2. route common router
         for (Router router : routers) {
             // Copy resultInvokers to a arrayList. BitList not support
