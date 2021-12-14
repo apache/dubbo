@@ -29,6 +29,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.PriorityOrdered;
 
 import javax.annotation.PostConstruct;
@@ -76,6 +77,11 @@ public class DubboConfigEarlyRegistrationPostProcessor implements BeanDefinition
         return HIGHEST_PRECEDENCE;
     }
 
+    /**
+     * Register DubboConfigEarlyInitializationPostProcessor as BeanPostProcessor manually
+     * before {@link AbstractApplicationContext#registerBeanPostProcessors(ConfigurableListableBeanFactory)
+     * Spring Framework automatically register}
+     */
     private void registryConfigEarlyInitializationPostProcessor(DefaultListableBeanFactory beanFactory) {
         if (beanFactory != null) {
             // Register DubboConfigEarlyInitializationPostProcessor
