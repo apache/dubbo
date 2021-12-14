@@ -358,8 +358,10 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
                 (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
             .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), getUrl().getGroup())
-            .putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(), getCompressor().getMessageEncoding())
             .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), Compressor.getAcceptEncoding(getUrl().getOrDefaultFrameworkModel()));
+        if (!Compressor.NONE.getMessageEncoding().equals(getCompressor().getMessageEncoding())) {
+            metadata.putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(), getCompressor().getMessageEncoding());
+        }
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {
             convertAttachment(metadata, attachments);
