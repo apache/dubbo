@@ -118,6 +118,16 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
         return new ArrayList<>(filtersSet.values());
     }
 
+    /**
+     * When the application-level service registration and discovery strategy is adopted, the URL will be of type InstanceAddressURL,
+     * and InstanceAddressURL belongs to the application layer and holds the ApplicationModel,
+     * but the filter is at the module layer and holds the ModuleModel,
+     * so it needs to be based on the url in the ScopeModel type to parse out all the moduleModels held by the url
+     * to obtain the filter configuration.
+     *
+     * @param url URL
+     * @return All ModuleModels in the url
+     */
     private List<ModuleModel> getModuleModelsFromUrl(URL url) {
         List<ModuleModel> moduleModels = null;
         ScopeModel scopeModel = url.getScopeModel();
