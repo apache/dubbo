@@ -53,7 +53,7 @@ public class DubboConfigEarlyInitializationTest {
         assertEquals(beanFactory.getBeanPostProcessorCount(), beanPostProcessorList.size());
         boolean containsDubboConfigEarlyInitializationPostProcessor = false;
         for (BeanPostProcessor beanPostProcessor : beanPostProcessorList) {
-            if (beanPostProcessor instanceof DubboConfigEarlyInitializationPostProcessor) {
+            if (beanPostProcessor instanceof DubboConfigEarlyRegistrationPostProcessor.DubboConfigEarlyInitializationPostProcessor) {
                 containsDubboConfigEarlyInitializationPostProcessor = true;
                 break;
             }

@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.beans.factory.config;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
+import com.alibaba.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -53,17 +54,20 @@ public class DubboConfigEarlyRegistrationPostProcessor implements BeanDefinition
 
     private DefaultListableBeanFactory beanFactory;
 
+    private DubboConfigEarlyInitializationPostProcessor configEarlyInitializationPostProcessor =
+            new DubboConfigEarlyInitializationPostProcessor();
+
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         this.beanFactory = unwrap(registry);
-        initBeanFactory(beanFactory);
+        registryConfigEarlyInitializationPostProcessor(beanFactory);
     }
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         if (this.beanFactory == null) { // try again if postProcessBeanDefinitionRegistry method does not effect.
             this.beanFactory = unwrap(beanFactory);
-            initBeanFactory(this.beanFactory);
+            registryConfigEarlyInitializationPostProcessor(this.beanFactory);
         }
     }
 
@@ -72,16 +76,13 @@ public class DubboConfigEarlyRegistrationPostProcessor implements BeanDefinition
         return HIGHEST_PRECEDENCE;
     }
 
-    private void initBeanFactory(DefaultListableBeanFactory beanFactory) {
+    private void registryConfigEarlyInitializationPostProcessor(DefaultListableBeanFactory beanFactory) {
         if (beanFactory != null) {
-            DubboConfigEarlyInitializationPostProcessor dceiPostProcessor =
-                    DubboConfigEarlyInitializationPostProcessor.getSingleton(beanFactory);
-            // Register itself
+            // Register DubboConfigEarlyInitializationPostProcessor
+            beanFactory.addBeanPostProcessor(configEarlyInitializationPostProcessor);
             if (logger.isInfoEnabled()) {
-                logger.info("BeanFactory is about to be initialized, trying to resolve the Dubbo Config Beans early " +
-                        "initialization");
+                logger.info("DubboConfigEarlyInitializationPostProcessor has bean registered");
             }
-            beanFactory.addBeanPostProcessor(dceiPostProcessor);
         }
     }
 
@@ -90,5 +91,42 @@ public class DubboConfigEarlyRegistrationPostProcessor implements BeanDefinition
             return (DefaultListableBeanFactory) registry;
         }
         return null;
+    }
+
+    class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPostProcessorAdapter<AbstractConfig> {
+
+        protected void processBeforeInitialization(AbstractConfig config, String beanName) throws BeansException {
+            if (beanFactory == null) {
+                if (logger.isErrorEnabled()) {
+                    logger.error("Current Processor is not running in Spring container, next action will be skipped!");
+                }
+                return;
+            }
+
+            // If CommonAnnotationBeanPostProcessor is already registered,  the method addIntoConfigManager()
+            // will be invoked in Bean life cycle.
+            if (!hasRegisteredCommonAnnotationBeanPostProcessor()) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn("CommonAnnotationBeanPostProcessor is not registered yet, " +
+                            "the method addIntoConfigManager() will be invoked directly");
+                }
+                config.addIntoConfigManager();
+            }
+        }
+
+        /**
+         * {@link DefaultListableBeanFactory} has registered {@link CommonAnnotationBeanPostProcessor} or not?
+         *
+         * @return if registered, return <code>true</code>, or <code>false</code>
+         */
+        private boolean hasRegisteredCommonAnnotationBeanPostProcessor() {
+            for (BeanPostProcessor beanPostProcessor : beanFactory.getBeanPostProcessors()) {
+                if (CommonAnnotationBeanPostProcessor.class.equals(beanPostProcessor.getClass())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 }
