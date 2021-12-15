@@ -129,7 +129,10 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getPath() {
-        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+        MetadataInfo.ServiceInfo serviceInfo = null;
+        if (StringUtils.isNotEmpty(getProtocolServiceKey())) {
+            serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+        }
         if (serviceInfo == null) {
             return getServiceInterface();
         }
