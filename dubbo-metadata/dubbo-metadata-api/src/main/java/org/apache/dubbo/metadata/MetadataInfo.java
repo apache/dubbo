@@ -59,15 +59,13 @@ import static org.apache.dubbo.rpc.Constants.INTERFACES;
 public class MetadataInfo implements Serializable {
     public static final MetadataInfo EMPTY = new MetadataInfo();
     private static final Logger logger = LoggerFactory.getLogger(MetadataInfo.class);
-
-    private String app;
-    private String revision;
-    private Map<String, ServiceInfo> services;
-
     // used at runtime
     private transient final Map<String, String> extendParams;
     private transient final Map<String, String> instanceParams;
     protected transient AtomicBoolean updated = new AtomicBoolean(false);
+    private String app;
+    private String revision;
+    private final Map<String, ServiceInfo> services;
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs;
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs;
     private transient ExtensionLoader<MetadataParamsFilter> loader;
@@ -98,7 +96,7 @@ public class MetadataInfo implements Serializable {
         // extract common instance level params
         extractInstanceParams(url, filters);
 
-        if (exportedServiceURLs == null) {
+        if (CollectionUtils.isEmptyMap(exportedServiceURLs)) {
             exportedServiceURLs = new ConcurrentSkipListMap<>();
         }
         addURL(exportedServiceURLs, url);
@@ -110,7 +108,7 @@ public class MetadataInfo implements Serializable {
             return;
         }
         this.services.remove(url.getProtocolServiceKey());
-        if (exportedServiceURLs != null) {
+        if (CollectionUtils.isNotEmptyMap(exportedServiceURLs)) {
             removeURL(exportedServiceURLs, url);
         }
 
@@ -121,11 +119,15 @@ public class MetadataInfo implements Serializable {
         return revision;
     }
 
+    public void setRevision(String revision) {
+        this.revision = revision;
+    }
+
     /**
      * Reported status and metadata modification must be synchronized if used in multiple threads.
      */
     public synchronized String calAndGetRevision() {
-        if (revision != null && !updated.get()) {
+        if (StringUtils.isNotEmpty(revision) && !updated.get()) {
             return revision;
         }
 
@@ -148,10 +150,6 @@ public class MetadataInfo implements Serializable {
             }
         }
         return revision;
-    }
-
-    public void setRevision(String revision) {
-        this.revision = revision;
     }
 
     public String getApp() {
@@ -195,7 +193,7 @@ public class MetadataInfo implements Serializable {
     }
 
     public String getServiceString(String protocolServiceKey) {
-        if (protocolServiceKey == null) {
+        if (StringUtils.isEmpty(protocolServiceKey)) {
             return null;
         }
 
@@ -207,14 +205,14 @@ public class MetadataInfo implements Serializable {
     }
 
     public synchronized void addSubscribedURL(URL url) {
-        if (subscribedServiceURLs == null) {
+        if (CollectionUtils.isEmptyMap(subscribedServiceURLs)) {
             subscribedServiceURLs = new ConcurrentSkipListMap<>();
         }
         addURL(subscribedServiceURLs, url);
     }
 
     public boolean removeSubscribedURL(URL url) {
-        if (subscribedServiceURLs == null) {
+        if (CollectionUtils.isEmptyMap(subscribedServiceURLs)) {
             return true;
         }
         return removeURL(subscribedServiceURLs, url);
@@ -267,11 +265,11 @@ public class MetadataInfo implements Serializable {
             return false;
         }
 
-        MetadataInfo other = (MetadataInfo)obj;
+        MetadataInfo other = (MetadataInfo) obj;
 
         return Objects.equals(app, other.getApp())
             && ((services == null && other.services == null)
-                || (services != null && services.equals(other.services)));
+            || (services != null && services.equals(other.services)));
     }
 
     private void extractInstanceParams(URL url, List<MetadataParamsFilter> filters) {
@@ -289,9 +287,9 @@ public class MetadataInfo implements Serializable {
             } else {
                 for (String p : included) {
                     String value = url.getParameter(p);
-                    if (value != null) {
+                    if (StringUtils.isNotEmpty(value)) {
                         String oldValue = instanceParams.put(p, value);
-                        if (oldValue != null && !oldValue.equals(value)) {
+                        if (StringUtils.isNotEmpty(oldValue) && !oldValue.equals(value)) {
                             throw new IllegalStateException(String.format("Inconsistent instance metadata found in different services: %s, %s", oldValue, value));
                         }
                     }
@@ -327,13 +325,14 @@ public class MetadataInfo implements Serializable {
     }
 
     public static class ServiceInfo implements Serializable {
+        private final static String[] KEYS_TO_REMOVE = {MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
+            QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
         private String name;
         private String group;
         private String version;
         private String protocol;
         private String path; // most of the time, path is the same with the interface name.
         private Map<String, String> params;
-
         // params configured on consumer side,
         private transient Map<String, String> consumerParams;
         // cached method params
@@ -346,13 +345,10 @@ public class MetadataInfo implements Serializable {
         private transient String serviceKey;
         // service + group + version + protocol
         private transient String matchKey;
-
         private transient URL url;
 
-        private final static String[] KEYS_TO_REMOVE = {MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
-            QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
-
-        public ServiceInfo() {}
+        public ServiceInfo() {
+        }
 
         public ServiceInfo(URL url, List<MetadataParamsFilter> filters) {
             this(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getProtocol(), url.getPath(), null);
@@ -373,7 +369,7 @@ public class MetadataInfo implements Serializable {
                             params.put(p, value);
                         }
                         String[] methods = url.getParameter(METHODS_KEY, (String[]) null);
-                        if (methods != null) {
+                        if (ArrayUtils.isNotEmpty(methods )) {
                             for (String method : methods) {
                                 String mValue = url.getMethodParameterStrict(method, p);
                                 if (StringUtils.isNotEmpty(mValue)) {
@@ -416,7 +412,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getServiceKey() {
-            if (serviceKey != null) {
+            if (StringUtils.isNotEmpty(serviceKey)) {
                 return serviceKey;
             }
             this.serviceKey = URL.buildKey(name, group, version);
@@ -464,7 +460,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public Map<String, String> getParams() {
-            if (params == null) {
+            if (CollectionUtils.isEmptyMap(params)) {
                 return Collections.emptyMap();
             }
             return params;
@@ -475,7 +471,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public Map<String, String> getAllParams() {
-            if (consumerParams != null) {
+            if (CollectionUtils.isNotEmptyMap(consumerParams)) {
                 Map<String, String> allParams = new HashMap<>((int) ((params.size() + consumerParams.size()) / 0.75f + 1));
                 allParams.putAll(params);
                 allParams.putAll(consumerParams);
@@ -485,9 +481,9 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getParameter(String key) {
-            if (consumerParams != null) {
+            if (CollectionUtils.isNotEmptyMap(consumerParams)) {
                 String value = consumerParams.get(key);
-                if (value != null) {
+                if (StringUtils.isNotEmpty(value)) {
                     return value;
                 }
             }
@@ -495,24 +491,24 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getMethodParameter(String method, String key, String defaultValue) {
-            if (methodParams == null) {
+            if (CollectionUtils.isEmptyMap(methodParams)) {
                 methodParams = URLParam.initMethodParameters(params);
                 consumerMethodParams = URLParam.initMethodParameters(consumerParams);
             }
 
             String value = getMethodParameter(method, key, consumerMethodParams);
-            if (value != null) {
+            if (StringUtils.isNotEmpty(value)) {
                 return value;
             }
             value = getMethodParameter(method, key, methodParams);
-            return value == null ? defaultValue : value;
+            return StringUtils.isEmpty(value) ? defaultValue : value;
         }
 
         private String getMethodParameter(String method, String key, Map<String, Map<String, String>> map) {
             String value = null;
-            if (map != null) {
+            if (CollectionUtils.isNotEmptyMap(map)) {
                 Map<String, String> keyMap = map.get(method);
-                if (keyMap != null) {
+                if (CollectionUtils.isNotEmptyMap(keyMap)) {
                     value = keyMap.get(key);
                 }
             }
@@ -525,7 +521,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public boolean hasMethodParameter(String method) {
-            if (methodParams == null) {
+            if (CollectionUtils.isEmptyMap(methodParams)) {
                 methodParams = URLParam.initMethodParameters(params);
                 consumerMethodParams = URLParam.initMethodParameters(consumerParams);
             }
@@ -538,13 +534,13 @@ public class MetadataInfo implements Serializable {
         }
 
         public void addParameter(String key, String value) {
-            if (consumerParams != null) {
+            if (CollectionUtils.isNotEmptyMap(consumerParams)) {
                 this.consumerParams.put(key, value);
             }
         }
 
         public void addParameterIfAbsent(String key, String value) {
-            if (consumerParams != null) {
+            if (CollectionUtils.isEmptyMap(consumerParams)) {
                 this.consumerParams.putIfAbsent(key, value);
             }
         }
