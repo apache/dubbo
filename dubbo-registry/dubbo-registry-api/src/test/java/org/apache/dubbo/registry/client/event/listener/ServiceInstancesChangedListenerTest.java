@@ -99,6 +99,7 @@ public class ServiceInstancesChangedListenerTest {
     static String service3 = "org.apache.dubbo.demo.DemoService3";
 
     static URL consumerURL = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService?registry_cluster=default");
+    static URL registryURL = URL.valueOf("dubbo://127.0.0.1:2181/org.apache.dubbo.demo.RegistryService");
 
     static MetadataInfo metadataInfo_111;
     static MetadataInfo metadataInfo_222;
@@ -155,6 +156,7 @@ public class ServiceInstancesChangedListenerTest {
         Mockito.doThrow(IllegalStateException.class).when(metadataService).getMetadataInfo("444");
 
         serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
+        Mockito.doReturn(registryURL).when(serviceDiscovery).getUrl();
     }
 
     @AfterEach

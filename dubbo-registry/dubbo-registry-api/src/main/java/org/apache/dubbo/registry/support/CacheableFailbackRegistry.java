@@ -58,6 +58,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR_ENCODED;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 
 /**
@@ -185,11 +186,16 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         if (urls.isEmpty()) {
             int i = path.lastIndexOf(PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
-            URL empty = URLBuilder.from(consumer)
+            if (!PROVIDERS_CATEGORY.equals(category) || !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
+                if (PROVIDERS_CATEGORY.equals(category)) {
+                    logger.warn("Service " + consumer.getServiceKey() + " received empty address list and empty protection is disabled, will clear current available addresses");
+                }
+                URL empty = URLBuilder.from(consumer)
                     .setProtocol(EMPTY_PROTOCOL)
                     .addParameter(CATEGORY_KEY, category)
                     .build();
-            urls.add(empty);
+                urls.add(empty);
+            }
         }
 
         return urls;
