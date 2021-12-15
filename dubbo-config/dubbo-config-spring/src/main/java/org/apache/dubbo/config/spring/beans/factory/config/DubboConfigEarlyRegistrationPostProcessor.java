@@ -39,7 +39,8 @@ import javax.annotation.PostConstruct;
  * life cycle through {@link CommonAnnotationBeanPostProcessor} executing the callback of
  * {@link PostConstruct @PostConstruct}. However, the instantiation and initialization of
  * {@link AbstractConfig Dubbo Config} Bean could be too early before {@link CommonAnnotationBeanPostProcessor}, e.g,
- * execution, thus it's required to register the current instance as a {@link BeanPostProcessor} into
+ * execution, thus it's required to register the {@link DubboConfigEarlyInitializationPostProcessor
+ * DubboConfigEarlyInitializationPostProcessor} instance as a {@link BeanPostProcessor} into
  * {@link DefaultListableBeanFactory the BeanFatory} using {@link BeanDefinitionRegistryPostProcessor} as early as
  * possible.
  *
