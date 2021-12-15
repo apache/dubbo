@@ -17,23 +17,38 @@
 package org.apache.dubbo.rpc.cluster.router.state;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.utils.Holder;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 /***
  * The abstract class of StateRoute.
  * @since 3.0
  */
 public abstract class AbstractStateRouter<T> implements StateRouter<T> {
-    private volatile int priority = DEFAULT_PRIORITY;
     private volatile boolean force = false;
     private volatile URL url;
+    private final StateRouter<T> nextRouter;
 
     private final GovernanceRuleRepository ruleRepository;
 
-    public AbstractStateRouter(URL url) {
-        this.ruleRepository = url.getOrDefaultModuleModel().getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+    /**
+     * Should continue route if current router's result is empty
+     */
+    private final boolean shouldFailFast;
+
+    public AbstractStateRouter(URL url, StateRouter<T> nextRouter) {
+        ModuleModel moduleModel = url.getOrDefaultModuleModel();
+        this.ruleRepository = moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
+        this.nextRouter = nextRouter;
+        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
     }
 
     @Override
@@ -59,21 +74,69 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
         this.force = force;
     }
 
-    @Override
-    public int getPriority() {
-        return priority;
-    }
-
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-
     public GovernanceRuleRepository getRuleRepository() {
         return this.ruleRepository;
+    }
+
+    public StateRouter<T> getNextRouter() {
+        return nextRouter;
     }
 
     @Override
     public void notify(BitList<Invoker<T>> invokers) {
 
+    }
+
+    @Override
+    public final BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) throws RpcException {
+        if (needToPrintMessage && (nodeHolder == null || nodeHolder.get() == null)) {
+            needToPrintMessage = false;
+        }
+
+        RouterSnapshotNode<T> currentNode = null;
+        RouterSnapshotNode<T> parentNode = null;
+        Holder<String> messageHolder = null;
+
+        // pre-build current node
+        if (needToPrintMessage) {
+            parentNode = nodeHolder.get();
+            currentNode = new RouterSnapshotNode<>(this.getClass().getName(), invokers.clone());
+            parentNode.appendNode(currentNode);
+            messageHolder = new Holder<>();
+            nodeHolder.set(currentNode);
+        }
+        BitList<Invoker<T>> routeResult;
+
+        // check if router support call continue route by itself
+        if (!supportContinueRoute()) {
+            routeResult = doRoute(invokers, url, invocation, needToPrintMessage, nodeHolder, messageHolder);
+            // use current node's result as next node's parameter
+            if (!shouldFailFast || !routeResult.isEmpty()) {
+                routeResult = continueRoute(routeResult, url, invocation, needToPrintMessage, nodeHolder);
+            }
+        } else {
+            routeResult = doRoute(invokers, url, invocation, needToPrintMessage, nodeHolder, messageHolder);
+        }
+
+        // post-build current node
+        if (needToPrintMessage) {
+            currentNode.setRouterMessage(messageHolder.get());
+            currentNode.setOutputInvokers(routeResult.clone());
+            nodeHolder.set(parentNode);
+        }
+        return routeResult;
+    }
+
+    protected abstract BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                                                boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
+                                                Holder<String> messageHolder) throws RpcException;
+
+    protected final BitList<Invoker<T>> continueRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                                                      boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) {
+        return nextRouter.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
+    }
+
+    protected boolean supportContinueRoute() {
+        return false;
     }
 }

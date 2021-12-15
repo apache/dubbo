@@ -17,8 +17,12 @@
 package org.apache.dubbo.rpc.cluster.router;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.router.state.BitList;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,12 +31,21 @@ public class RouterSnapshotNode<T> {
     private final int beforeSize;
     private int afterSize;
     private String routerMessage;
+    private final List<Invoker<T>> inputInvokers;
     private List<Invoker<T>> outputInvokers;
-    private RouterSnapshotNode<T> nextNode;
+    private final List<RouterSnapshotNode<T>> nextNode = new LinkedList<>();
 
-    public RouterSnapshotNode(String name, int beforeSize) {
+    public RouterSnapshotNode(String name, List<Invoker<T>> inputInvokers) {
         this.name = name;
-        this.beforeSize = beforeSize;
+        this.beforeSize = inputInvokers.size();
+        if (inputInvokers instanceof BitList) {
+            this.inputInvokers = inputInvokers;
+        } else {
+            this.inputInvokers = new ArrayList<>(5);
+            for (int i = 0; i < Math.min(5, beforeSize); i++) {
+                this.inputInvokers.add(inputInvokers.get(i));
+            }
+        }
     }
 
     public String getName() {
@@ -64,20 +77,12 @@ public class RouterSnapshotNode<T> {
         this.afterSize = outputInvokers == null ? 0 : outputInvokers.size();
     }
 
-    public RouterSnapshotNode<T> getNextNode() {
+    public List<RouterSnapshotNode<T>> getNextNode() {
         return nextNode;
     }
 
     public void appendNode(RouterSnapshotNode<T> nextNode) {
-        if (this.nextNode != null) {
-            RouterSnapshotNode<T> node = this.nextNode;
-            while (node.nextNode != null) {
-                node = node.nextNode;
-            }
-            node.nextNode = nextNode;
-        } else {
-            this.nextNode = nextNode;
-        }
+        this.nextNode.add(nextNode);
     }
 
     @Override
@@ -90,12 +95,19 @@ public class RouterSnapshotNode<T> {
         stringBuilder.append("[ ")
             .append(name)
             .append(" ")
-            .append("invokers: ")
+            .append("Invokers: ")
             .append(beforeSize).append(" -> ").append(afterSize)
-            .append(" ")
+            .append(routerMessage == null ? "" : " Router message: ")
             .append(routerMessage == null ? "" : routerMessage)
-            .append("] ")
-            .append(outputInvokers == null ? "" :
+            .append(" ] ")
+            .append(CollectionUtils.isEmpty(inputInvokers) ? "Empty" :
+                inputInvokers.subList(0, Math.min(5, inputInvokers.size()))
+                    .stream()
+                    .map(Invoker::getUrl)
+                    .map(URL::getAddress)
+                    .collect(Collectors.joining(",")))
+            .append(" -> ")
+            .append(CollectionUtils.isEmpty(outputInvokers) ? "Empty" :
                 outputInvokers.subList(0, Math.min(5, outputInvokers.size()))
                     .stream()
                     .map(Invoker::getUrl)
@@ -105,12 +117,12 @@ public class RouterSnapshotNode<T> {
         if (outputInvokers != null && outputInvokers.size() > 5) {
             stringBuilder.append("...");
         }
-        if (nextNode != null) {
+        for (RouterSnapshotNode<T> node : nextNode) {
             stringBuilder.append("\n");
             for (int i = 0; i < level; i++) {
                 stringBuilder.append("  ");
             }
-            stringBuilder.append(nextNode.toString(level + 1));
+            stringBuilder.append(node.toString(level + 1));
         }
         return stringBuilder.toString();
     }

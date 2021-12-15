@@ -24,14 +24,16 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
@@ -47,16 +49,14 @@ import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
  */
 public class TagStateRouter<T> extends AbstractStateRouter<T> implements ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";
-    private static final int TAG_ROUTER_DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagStateRouter.class);
     private static final String RULE_SUFFIX = ".tag-router";
 
     private TagRouterRule tagRouterRule;
     private String application;
 
-    public TagStateRouter(URL url) {
-        super(url);
-        this.setPriority(TAG_ROUTER_DEFAULT_PRIORITY);
+    public TagStateRouter(URL url, StateRouter<T> nextRouter) {
+        super(url, nextRouter);
     }
 
     @Override
@@ -79,18 +79,21 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
     }
 
     @Override
-    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
-                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
+    public BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder, Holder<String> messageHolder) throws RpcException {
         if (CollectionUtils.isEmpty(invokers)) {
-            return new StateRouterResult<>(invokers,
-                needToPrintMessage ? "Directly Return. Reason: Invokers from previous router is empty." : null);
+            if (needToPrintMessage) {
+                messageHolder.set("Directly Return. Reason: Invokers from previous router is empty.");
+            }
+            return invokers;
         }
 
         // since the rule can be changed by config center, we should copy one to use.
         final TagRouterRule tagRouterRuleCopy = tagRouterRule;
         if (tagRouterRuleCopy == null || !tagRouterRuleCopy.isValid() || !tagRouterRuleCopy.isEnabled()) {
-            return new StateRouterResult<>(filterUsingStaticTag(invokers, url, invocation),
-                needToPrintMessage ? "Disable Tag Router. Reason: tagRouterRule is invalid or disabled" : null);
+            if (needToPrintMessage) {
+                messageHolder.set("Disable Tag Router. Reason: tagRouterRule is invalid or disabled");
+            }
+            return filterUsingStaticTag(invokers, url, invocation);
         }
 
         BitList<Invoker<T>> result = invokers;
@@ -105,8 +108,10 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 result = filterInvoker(invokers, invoker -> addressMatches(invoker.getUrl(), addresses));
                 // if result is not null OR it's null but force=true, return result directly
                 if (CollectionUtils.isNotEmpty(result) || tagRouterRuleCopy.isForce()) {
-                    return new StateRouterResult<>(result,
-                        needToPrintMessage ? "Use tag " + tag + " to route. Reason: result is not null OR it's null but force=true" : null);
+                    if (needToPrintMessage) {
+                        messageHolder.set("Use tag " + tag + " to route. Reason: result is not null OR it's null but force=true");
+                    }
+                    return result;
                 }
             } else {
                 // dynamic tag group doesn't have any item about the requested app OR it's null after filtered by
@@ -116,15 +121,19 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
             // If there's no tagged providers that can match the current tagged request. force.tag is set by default
             // to false, which means it will invoke any providers without a tag unless it's explicitly disallowed.
             if (CollectionUtils.isNotEmpty(result) || isForceUseTag(invocation)) {
-                return new StateRouterResult<>(result,
-                    needToPrintMessage ? "Use tag " + tag + " to route. Reason: result is not empty or ForceUseTag key is true in invocation" : null);
+                if (needToPrintMessage) {
+                    messageHolder.set("Use tag " + tag + " to route. Reason: result is not empty or ForceUseTag key is true in invocation");
+                }
+                return result;
             }
             // FAILOVER: return all Providers without any tags.
             else {
                 BitList<Invoker<T>> tmp = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(),
                     tagRouterRuleCopy.getAddresses()));
-                return new StateRouterResult<>(filterInvoker(tmp, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY))),
-                    needToPrintMessage ? "FAILOVER: return all Providers without any tags" : null);
+                if (needToPrintMessage) {
+                    messageHolder.set("FAILOVER: return all Providers without any tags");
+                }
+                return filterInvoker(tmp, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
             }
         } else {
             // List<String> addresses = tagRouterRule.filter(providerApp);
@@ -134,16 +143,21 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
                 result = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(), addresses));
                 // 1. all addresses are in dynamic tag group, return empty list.
                 if (CollectionUtils.isEmpty(result)) {
-                    return new StateRouterResult<>(result,
-                        needToPrintMessage ? "all addresses are in dynamic tag group, return empty list" : null);
+                    if (needToPrintMessage) {
+                        messageHolder.set("all addresses are in dynamic tag group, return empty list");
+                    }
+                    return result;
                 }
                 // 2. if there are some addresses that are not in any dynamic tag group, continue to filter using the
                 // static tag group.
             }
-            return new StateRouterResult<>(filterInvoker(result, invoker -> {
+            if (needToPrintMessage) {
+                messageHolder.set("filter using the static tag group");
+            }
+            return filterInvoker(result, invoker -> {
                 String localTag = invoker.getUrl().getParameter(TAG_KEY);
                 return StringUtils.isEmpty(localTag) || !tagRouterRuleCopy.getTagNames().contains(localTag);
-            }), needToPrintMessage ? "filter using the static tag group" : null);
+            });
         }
     }
 

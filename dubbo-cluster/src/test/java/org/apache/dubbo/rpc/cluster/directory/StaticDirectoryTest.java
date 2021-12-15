@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.directory;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -24,6 +25,7 @@ import org.apache.dubbo.rpc.cluster.router.MockInvoker;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionStateRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.TailStateRouter;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -45,7 +47,7 @@ public class StaticDirectoryTest {
 
     @Test
     public void testStaticDirectory() {
-        StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl(" => " + " host = " + NetUtils.getLocalHost()));
+        StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl(" => " + " host = " + NetUtils.getLocalHost()), TailStateRouter.getInstance());
         List<StateRouter> routers = new ArrayList<StateRouter>();
         routers.add(router);
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();
@@ -58,7 +60,7 @@ public class StaticDirectoryTest {
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
 
 
-        List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation(), false).getResult();
+        List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation(), false, new Holder<>());
         StaticDirectory<String> staticDirectory = new StaticDirectory<>(filteredInvokers);
         boolean isAvailable = staticDirectory.isAvailable();
         Assertions.assertTrue(!isAvailable);

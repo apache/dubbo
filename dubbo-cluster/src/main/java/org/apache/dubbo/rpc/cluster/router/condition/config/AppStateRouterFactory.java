@@ -23,27 +23,28 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 /**
  * Application level router factory
+ * AppRouter should after ServiceRouter
  */
-@Activate(order = 200)
+@Activate(order = 150)
 public class AppStateRouterFactory implements StateRouterFactory {
     public static final String NAME = "app";
 
     private volatile StateRouter router;
 
     @Override
-    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url, StateRouter<T> nextRouter) {
         if (router != null) {
             return router;
         }
         synchronized (this) {
             if (router == null) {
-                router = createRouter(url);
+                router = createRouter(url, nextRouter);
             }
         }
         return router;
     }
 
-    private <T> StateRouter<T> createRouter(URL url) {
-        return new AppStateRouter<>(url);
+    private <T> StateRouter<T> createRouter(URL url, StateRouter<T> nextRouter) {
+        return new AppStateRouter<>(url, nextRouter);
     }
 }

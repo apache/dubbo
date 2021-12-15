@@ -17,10 +17,12 @@
 package org.apache.dubbo.rpc.cluster.router.state;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 
 /**
  * State Router. (SPI, Prototype, ThreadSafe)
@@ -31,9 +33,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
  * @see Directory#list(Invocation)
  * @since 3.0
  */
-public interface StateRouter<T> extends Comparable<StateRouter<T>> {
-
-    int DEFAULT_PRIORITY = Integer.MAX_VALUE;
+public interface StateRouter<T> {
 
     /**
      * Get the router url.
@@ -53,8 +53,8 @@ public interface StateRouter<T> extends Comparable<StateRouter<T>> {
      * @return state with route result
      * @since 3.0
      */
-    StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
-                                            boolean needToPrintMessage) throws RpcException;
+    BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                     boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) throws RpcException;
 
     /**
      * To decide whether this router need to execute every time an RPC comes or should only execute when addresses or
@@ -66,7 +66,7 @@ public interface StateRouter<T> extends Comparable<StateRouter<T>> {
 
     /**
      * To decide whether this router should take effect when none of the invoker can match the router rule, which
-     * means the {@link #route(BitList, URL, Invocation, boolean)} would be empty. Most of time, most router implementation would
+     * means the {@link #route(BitList, URL, Invocation, boolean, Holder)} would be empty. Most of time, most router implementation would
      * default this value to false.
      *
      * @return true to execute if none of invokers matches the current router
@@ -74,27 +74,13 @@ public interface StateRouter<T> extends Comparable<StateRouter<T>> {
     boolean isForce();
 
     /**
-     * Router's priority, used to sort routers.
-     *
-     * @return router's priority
-     */
-    int getPriority();
-
-    /**
      * Notify the router the invoker list. Invoker list may change from time to time. This method gives the router a
-     * chance to prepare before {@link StateRouter#route(BitList, URL, Invocation, boolean)} gets called.
+     * chance to prepare before {@link StateRouter#route(BitList, URL, Invocation, boolean, Holder)} gets called.
+     * No need to notify next node.
      *
      * @param invokers invoker list
      */
     void notify(BitList<Invoker<T>> invokers);
-
-    @Override
-    default int compareTo(StateRouter o) {
-        if (o == null) {
-            throw new IllegalArgumentException();
-        }
-        return Integer.compare(this.getPriority(), o.getPriority());
-    }
 
     default void stop() {
         //do nothing by default

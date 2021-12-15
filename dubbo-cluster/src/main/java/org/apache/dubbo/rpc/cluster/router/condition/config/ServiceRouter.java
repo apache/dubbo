@@ -18,19 +18,15 @@ package org.apache.dubbo.rpc.cluster.router.condition.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 /**
  * Service level router, "server-unique-name.condition-router"
  */
 public class ServiceRouter<T> extends ListenableStateRouter<T> {
     public static final String NAME = "SERVICE_ROUTER";
-    /**
-     * ServiceRouter should before AppRouter
-     */
-    private static final int SERVICE_ROUTER_DEFAULT_PRIORITY = 140;
 
-    public ServiceRouter(URL url) {
-        super(url, DynamicConfiguration.getRuleKey(url));
-        this.setPriority(SERVICE_ROUTER_DEFAULT_PRIORITY);
+    public ServiceRouter(URL url, StateRouter<T> nextRouter) {
+        super(url, DynamicConfiguration.getRuleKey(url), nextRouter);
     }
 }

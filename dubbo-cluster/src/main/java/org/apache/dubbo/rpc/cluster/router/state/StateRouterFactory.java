@@ -26,9 +26,10 @@ public interface StateRouterFactory {
      * Create state router.
      *
      * @param url url
+     * @param nextRouter
      * @return router instance
      * @since 3.0
      */
     @Adaptive("protocol")
-    <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url);
+    <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url, StateRouter<T> nextRouter);
 }

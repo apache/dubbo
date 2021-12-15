@@ -30,9 +30,9 @@ public abstract class CacheableStateRouterFactory implements StateRouterFactory 
     private final ConcurrentMap<String, StateRouter> routerMap = new ConcurrentHashMap<>();
 
     @Override
-    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
-        return routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(interfaceClass, url));
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url, StateRouter<T> nextRouter) {
+        return routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(interfaceClass, url, nextRouter));
     }
 
-    protected abstract <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url);
+    protected abstract <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url, StateRouter<T> nextRouter);
 }

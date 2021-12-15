@@ -17,9 +17,11 @@
 package org.apache.dubbo.rpc.cluster.router.mock;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.cluster.router.state.TailStateRouter;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -36,7 +38,7 @@ public class MockInvokersSelectorTest {
     @Test
     public void test() {
 
-        MockInvokersSelector selector = new MockInvokersSelector(URL.valueOf(""));
+        MockInvokersSelector selector = new MockInvokersSelector(URL.valueOf(""), TailStateRouter.getInstance());
 
         // Data preparation
         Invoker<DemoService> invoker1 = Mockito.mock(Invoker.class);
@@ -53,7 +55,7 @@ public class MockInvokersSelectorTest {
 
         selector.notify(providers);
         // rpcInvocation does not have an attached "invocation.need.mock" parameter, so normal invokers will be filtered out
-        List<Invoker<DemoService>> invokers = selector.route(providers.clone(), consumerURL, rpcInvocation, false).getResult();
+        List<Invoker<DemoService>> invokers = selector.route(providers.clone(), consumerURL, rpcInvocation, false, new Holder<>());
         Assertions.assertEquals(invokers.size(),1);
         Assertions.assertTrue(invokers.contains(invoker3));
 
@@ -61,7 +63,7 @@ public class MockInvokersSelectorTest {
         Map<String,Object> attachments = new HashMap<>();
         attachments.put(INVOCATION_NEED_MOCK,"true");
         Mockito.when(rpcInvocation.getObjectAttachments()).thenReturn(attachments);
-        invokers = selector.route(providers.clone(), consumerURL, rpcInvocation, false).getResult();
+        invokers = selector.route(providers.clone(), consumerURL, rpcInvocation, false, new Holder<>());
         Assertions.assertEquals(invokers.size(),2);
         Assertions.assertTrue(invokers.contains(invoker1));
         Assertions.assertTrue(invokers.contains(invoker2));

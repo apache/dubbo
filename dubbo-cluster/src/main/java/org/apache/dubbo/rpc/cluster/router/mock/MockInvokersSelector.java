@@ -18,12 +18,14 @@ package org.apache.dubbo.rpc.cluster.router.mock;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
@@ -35,39 +37,48 @@ import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
 public class MockInvokersSelector<T> extends AbstractStateRouter<T> {
 
     public static final String NAME = "MOCK_ROUTER";
-    private static final int MOCK_INVOKERS_DEFAULT_PRIORITY = -100;
 
     private volatile BitList<Invoker<T>> normalInvokers = BitList.emptyList();
     private volatile BitList<Invoker<T>> mockedInvokers = BitList.emptyList();
 
-    public MockInvokersSelector(URL url) {
-        super(url);
-        this.setPriority(MOCK_INVOKERS_DEFAULT_PRIORITY);
+    public MockInvokersSelector(URL url, StateRouter<T> nextRouter) {
+        super(url, nextRouter);
     }
 
     @Override
-    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
-                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
+    protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                                          boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
+                                          Holder<String> messageHolder) throws RpcException {
         if (CollectionUtils.isEmpty(invokers)) {
-            return new StateRouterResult<>(invokers,
-                needToPrintMessage ? "Empty invokers. Directly return." : null);
+            if (needToPrintMessage) {
+                messageHolder.set("Empty invokers. Directly return.");
+            }
+            return invokers;
         }
 
         if (invocation.getObjectAttachments() == null) {
-            return new StateRouterResult<>(invokers.and(normalInvokers),
-                needToPrintMessage ? "ObjectAttachments from invocation are null. Return normal Invokers." : null);
+            if (needToPrintMessage) {
+                messageHolder.set("ObjectAttachments from invocation are null. Return normal Invokers.");
+            }
+            return invokers.and(normalInvokers);
         } else {
             String value = (String) invocation.getObjectAttachments().get(INVOCATION_NEED_MOCK);
             if (value == null) {
-                return new StateRouterResult<>(invokers.and(normalInvokers),
-                    needToPrintMessage ? "invocation.need.mock not set. Return normal Invokers." : null);
+                if (needToPrintMessage) {
+                    messageHolder.set("invocation.need.mock not set. Return normal Invokers.");
+                }
+                return invokers.and(normalInvokers);
             } else if (Boolean.TRUE.toString().equalsIgnoreCase(value)) {
-                return new StateRouterResult<>(invokers.and(mockedInvokers),
-                    needToPrintMessage ? "invocation.need.mock is true. Return mocked Invokers." : null);
+                if (needToPrintMessage) {
+                    messageHolder.set("invocation.need.mock is true. Return mocked Invokers.");
+                }
+                return invokers.and(mockedInvokers);
             }
         }
-        return new StateRouterResult<>(invokers,
-            needToPrintMessage ? "Directly Return. Reason: invocation.need.mock is set but not match true" : null);
+        if (needToPrintMessage) {
+            messageHolder.set("Directly Return. Reason: invocation.need.mock is set but not match true");
+        }
+        return invokers;
     }
 
     @Override
