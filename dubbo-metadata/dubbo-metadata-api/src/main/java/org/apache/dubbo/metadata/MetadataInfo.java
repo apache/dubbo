@@ -58,7 +58,7 @@ public class MetadataInfo implements Serializable {
     public MetadataInfo(String app, String revision, Map<String, ServiceInfo> services) {
         this.app = app;
         this.revision = revision;
-        this.services = services == null ? new HashMap<>() : services;
+        this.services = CollectionUtils.isEmptyMap(services) ? new HashMap<>() : services;
         this.extendParams = new HashMap<>();
     }
 
@@ -79,7 +79,7 @@ public class MetadataInfo implements Serializable {
     }
 
     public void removeService(String key) {
-        if (key == null) {
+        if (StringUtils.isEmpty(key)) {
             return;
         }
         this.services.remove(key);
@@ -87,7 +87,7 @@ public class MetadataInfo implements Serializable {
     }
 
     public String calAndGetRevision() {
-        if (revision != null && hasReported()) {
+        if (StringUtils.isNotEmpty(revision) && hasReported()) {
             return revision;
         }
 
@@ -211,7 +211,7 @@ public class MetadataInfo implements Serializable {
                             params.put(p, value);
                         }
                         String[] methods = url.getParameter(METHODS_KEY, (String[]) null);
-                        if (methods != null) {
+                        if (ArrayUtils.isNotEmpty(methods)) {
                             for (String method : methods) {
                                 String mValue = url.getMethodParameterStrict(method, p);
                                 if (StringUtils.isNotEmpty(mValue)) {
@@ -238,7 +238,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getMatchKey() {
-            if (matchKey != null) {
+            if (StringUtils.isNotEmpty(matchKey)) {
                 return matchKey;
             }
             buildMatchKey();
@@ -254,7 +254,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getServiceKey() {
-            if (serviceKey != null) {
+            if (StringUtils.isNotEmpty(serviceKey)) {
                 return serviceKey;
             }
             this.serviceKey = URL.buildKey(name, group, version);
@@ -294,7 +294,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public Map<String, String> getParams() {
-            if (params == null) {
+            if (CollectionUtils.isEmptyMap(params)) {
                 return Collections.emptyMap();
             }
             return params;
@@ -305,7 +305,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public Map<String, String> getAllParams() {
-            if (consumerParams != null) {
+            if (CollectionUtils.isNotEmptyMap(consumerParams)) {
                 Map<String, String> allParams = new HashMap<>((int) ((params.size() + consumerParams.size()) / 0.75f + 1));
                 allParams.putAll(params);
                 allParams.putAll(consumerParams);
@@ -315,9 +315,9 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getParameter(String key) {
-            if (consumerParams != null) {
+            if (CollectionUtils.isNotEmptyMap(consumerParams)) {
                 String value = consumerParams.get(key);
-                if (value != null) {
+                if (StringUtils.isNotEmpty(value)) {
                     return value;
                 }
             }
@@ -325,17 +325,17 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getMethodParameter(String method, String key, String defaultValue) {
-            if (methodParams == null) {
+            if (CollectionUtils.isNotEmptyMap(methodParams)) {
                 methodParams = URL.toMethodParameters(params);
                 consumerMethodParams = URL.toMethodParameters(consumerParams);
             }
 
             String value = getMethodParameter(method, key, consumerMethodParams);
-            if (value != null) {
+            if (StringUtils.isNotEmpty(value)) {
                 return value;
             }
             value = getMethodParameter(method, key, methodParams);
-            return value == null ? defaultValue : value;
+            return StringUtils.isEmpty(value) ? defaultValue : value;
         }
 
         private String getMethodParameter(String method, String key, Map<String, Map<String, String>> map) {
