@@ -96,7 +96,7 @@ public class MetadataInfo implements Serializable {
         // extract common instance level params
         extractInstanceParams(url, filters);
 
-        if (CollectionUtils.isEmptyMap(exportedServiceURLs)) {
+        if (exportedServiceURLs == null) {
             exportedServiceURLs = new ConcurrentSkipListMap<>();
         }
         addURL(exportedServiceURLs, url);
@@ -205,7 +205,7 @@ public class MetadataInfo implements Serializable {
     }
 
     public synchronized void addSubscribedURL(URL url) {
-        if (CollectionUtils.isEmptyMap(subscribedServiceURLs)) {
+        if (subscribedServiceURLs == null) {
             subscribedServiceURLs = new ConcurrentSkipListMap<>();
         }
         addURL(subscribedServiceURLs, url);
@@ -460,7 +460,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public Map<String, String> getParams() {
-            if (CollectionUtils.isEmptyMap(params)) {
+            if (params == null) {
                 return Collections.emptyMap();
             }
             return params;
@@ -471,7 +471,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public Map<String, String> getAllParams() {
-            if (CollectionUtils.isNotEmptyMap(consumerParams)) {
+            if (consumerParams != null) {
                 Map<String, String> allParams = new HashMap<>((int) ((params.size() + consumerParams.size()) / 0.75f + 1));
                 allParams.putAll(params);
                 allParams.putAll(consumerParams);
