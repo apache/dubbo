@@ -34,6 +34,7 @@ import java.util.concurrent.Semaphore;
 public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
 
     private final List<String> children = new ArrayList<>();
+    NotifyListener listener;
 
     public MockCacheableRegistryImpl(URL url) {
         super(url);
@@ -71,6 +72,7 @@ public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
             }
         }
         listener.notify(res);
+        this.listener = listener;
     }
 
     @Override
@@ -87,12 +89,22 @@ public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
         children.add(URL.encode(url.toFullString()));
     }
 
+    public void removeChildren(URL url) {
+        children.remove(URL.encode(url.toFullString()));
+        if (listener != null) {
+            listener.notify(toUrlsWithEmpty(getUrl(), "providers", children));
+        }
+    }
+
     public List<String> getChildren() {
         return children;
     }
 
     public void clearChildren() {
         children.clear();
+        if (listener != null) {
+            listener.notify(toUrlsWithEmpty(getUrl(), "providers", children));
+        }
     }
 
     public Map<URL, Map<String, ServiceAddressURL>> getStringUrls() {
