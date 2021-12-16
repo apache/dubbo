@@ -102,6 +102,8 @@ public class DubboConfigEarlyRegistrationPostProcessor implements BeanDefinition
 
     class DubboConfigEarlyInitializationPostProcessor extends GenericBeanPostProcessorAdapter<AbstractConfig> {
 
+        private boolean registeredCommonAnnotationBeanPostProcessor = false;
+
         protected void processBeforeInitialization(AbstractConfig config, String beanName) throws BeansException {
             if (beanFactory == null) {
                 if (logger.isErrorEnabled()) {
@@ -127,8 +129,12 @@ public class DubboConfigEarlyRegistrationPostProcessor implements BeanDefinition
          * @return if registered, return <code>true</code>, or <code>false</code>
          */
         private boolean hasRegisteredCommonAnnotationBeanPostProcessor() {
+            if (registeredCommonAnnotationBeanPostProcessor) {
+                return true;
+            }
             for (BeanPostProcessor beanPostProcessor : beanFactory.getBeanPostProcessors()) {
                 if (CommonAnnotationBeanPostProcessor.class.equals(beanPostProcessor.getClass())) {
+                    this.registeredCommonAnnotationBeanPostProcessor = true;
                     return true;
                 }
             }
