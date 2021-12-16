@@ -76,7 +76,7 @@ public class DataQueueCommand extends QueuedCommand.AbstractQueuedCommand {
     }
 
     protected int calcCompressFlag(Compressor compressor) {
-        if (null == compressor || IdentityCompressor.NONE.equals(compressor)) {
+        if (null == compressor || IdentityCompressor.NONE.getMessageEncoding().equals(compressor.getMessageEncoding())) {
             return 0;
         }
         return 1;
