@@ -150,7 +150,7 @@ public class RouterChain<T> {
 
         // 1. route state router
         resultInvokers = headStateRouter.route(resultInvokers, url, invocation, false, null);
-        if (resultInvokers.isEmpty() && shouldFailFast) {
+        if (resultInvokers.isEmpty() && (shouldFailFast || routers.isEmpty())) {
             printRouterSnapshot(url, availableInvokers, invocation);
             return BitList.emptyList();
         }
