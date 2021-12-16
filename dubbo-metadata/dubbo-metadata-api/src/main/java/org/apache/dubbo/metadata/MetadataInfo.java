@@ -64,6 +64,8 @@ public class MetadataInfo implements Serializable {
     private String revision;
     private Map<String, ServiceInfo> services;
 
+    private volatile AtomicBoolean initiated = new AtomicBoolean(false);
+
     // used at runtime
     private transient final Map<String, String> extendParams;
     private transient final Map<String, String> instanceParams;
@@ -88,9 +90,25 @@ public class MetadataInfo implements Serializable {
         this.instanceParams = new ConcurrentHashMap<>();
     }
 
+    /**
+     * Initialize is needed when MetadataInfo is created from deserialization on the consumer side before being used for RPC call.
+     */
+    public void init() {
+        if (!initiated.compareAndSet(false, true)) {
+            return;
+        }
+        if (CollectionUtils.isNotEmptyMap(services)) {
+            services.forEach((_k, serviceInfo) -> {
+                serviceInfo.init();
+            });
+        }
+    }
+
     public synchronized void addService(URL url) {
         // fixme, pass in application mode context during initialization of MetadataInfo.
-        this.loader = url.getOrDefaultApplicationModel().getExtensionLoader(MetadataParamsFilter.class);
+        if (this.loader == null) {
+            this.loader = url.getOrDefaultApplicationModel().getExtensionLoader(MetadataParamsFilter.class);
+        }
         List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
         // generate service level metadata
         ServiceInfo serviceInfo = new ServiceInfo(url, filters);
@@ -335,17 +353,17 @@ public class MetadataInfo implements Serializable {
         private Map<String, String> params;
 
         // params configured on consumer side,
-        private transient Map<String, String> consumerParams;
+        private volatile transient Map<String, String> consumerParams;
         // cached method params
-        private transient Map<String, Map<String, String>> methodParams;
-        private transient Map<String, Map<String, String>> consumerMethodParams;
+        private volatile transient Map<String, Map<String, String>> methodParams;
+        private volatile transient Map<String, Map<String, String>> consumerMethodParams;
         // cached numbers
-        private transient Map<String, Number> numbers;
-        private transient Map<String, Map<String, Number>> methodNumbers;
+        private volatile transient Map<String, Number> numbers;
+        private volatile transient Map<String, Map<String, Number>> methodNumbers;
         // service + group + version
-        private transient String serviceKey;
+        private volatile transient String serviceKey;
         // service + group + version + protocol
-        private transient String matchKey;
+        private volatile transient String matchKey;
 
         private transient URL url;
 
@@ -385,6 +403,9 @@ public class MetadataInfo implements Serializable {
                 }
             }
             this.params = params;
+            // initialize method params caches.
+            this.methodParams = URLParam.initMethodParameters(params);
+            this.consumerMethodParams = URLParam.initMethodParameters(consumerParams);
         }
 
         public ServiceInfo(String name, String group, String version, String protocol, String path, Map<String, String> params) {
@@ -395,8 +416,22 @@ public class MetadataInfo implements Serializable {
             this.path = path;
             this.params = params == null ? new ConcurrentHashMap<>() : params;
 
-            this.serviceKey = URL.buildKey(name, group, version);
+            this.serviceKey = buildServiceKey(name, group, version);
             this.matchKey = buildMatchKey();
+        }
+
+        /**
+         * Initialize necessary caches right after deserialization on the consumer side
+         */
+        protected void init() {
+            buildMatchKey();
+            buildServiceKey(name, group, version);
+            // init method params
+            this.methodParams = URLParam.initMethodParameters(params);
+            // Actually, consumer params is empty after deserialization on the consumer side, so no need to initialize.
+            // Check how InstanceAddressURL operates on consumer url for more detail.
+//            this.consumerMethodParams = URLParam.initMethodParameters(consumerParams);
+            // no need to init numbers for it's only for cache purpose
         }
 
         public String getMatchKey() {
@@ -415,11 +450,16 @@ public class MetadataInfo implements Serializable {
             return matchKey;
         }
 
+        private String buildServiceKey(String name, String group, String version) {
+            this.serviceKey = URL.buildKey(name, group, version);
+            return this.serviceKey;
+        }
+
         public String getServiceKey() {
             if (serviceKey != null) {
                 return serviceKey;
             }
-            this.serviceKey = URL.buildKey(name, group, version);
+            buildServiceKey(name, group, version);
             return serviceKey;
         }
 
@@ -495,11 +535,6 @@ public class MetadataInfo implements Serializable {
         }
 
         public String getMethodParameter(String method, String key, String defaultValue) {
-            if (methodParams == null) {
-                methodParams = URLParam.initMethodParameters(params);
-                consumerMethodParams = URLParam.initMethodParameters(consumerParams);
-            }
-
             String value = getMethodParameter(method, key, consumerMethodParams);
             if (value != null) {
                 return value;
@@ -510,11 +545,13 @@ public class MetadataInfo implements Serializable {
 
         private String getMethodParameter(String method, String key, Map<String, Map<String, String>> map) {
             String value = null;
-            if (map != null) {
-                Map<String, String> keyMap = map.get(method);
-                if (keyMap != null) {
-                    value = keyMap.get(key);
-                }
+            if (map == null) {
+                return value;
+            }
+
+            Map<String, String> keyMap = map.get(method);
+            if (keyMap != null) {
+                value = keyMap.get(key);
             }
             return value;
         }
@@ -525,12 +562,8 @@ public class MetadataInfo implements Serializable {
         }
 
         public boolean hasMethodParameter(String method) {
-            if (methodParams == null) {
-                methodParams = URLParam.initMethodParameters(params);
-                consumerMethodParams = URLParam.initMethodParameters(consumerParams);
-            }
-
-            return consumerMethodParams.containsKey(method) || methodParams.containsKey(method);
+            return (consumerMethodParams != null && consumerMethodParams.containsKey(method))
+                || (methodParams != null && methodParams.containsKey(method));
         }
 
         public String toDescString() {
@@ -541,18 +574,24 @@ public class MetadataInfo implements Serializable {
             if (consumerParams != null) {
                 this.consumerParams.put(key, value);
             }
+            // refresh method params
+            consumerMethodParams = URLParam.initMethodParameters(consumerParams);
         }
 
         public void addParameterIfAbsent(String key, String value) {
             if (consumerParams != null) {
                 this.consumerParams.putIfAbsent(key, value);
             }
+            // refresh method params
+            consumerMethodParams = URLParam.initMethodParameters(consumerParams);
         }
 
         public void addConsumerParams(Map<String, String> params) {
             // copy once for one service subscription
             if (consumerParams == null) {
                 consumerParams = new ConcurrentHashMap<>(params);
+                // init method params
+                consumerMethodParams = URLParam.initMethodParameters(consumerParams);
             }
         }
 

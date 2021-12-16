@@ -158,6 +158,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             metadata = MetadataUtils.getRemoteMetadata(revision, instance, metadataReport);
 
             if (metadata != MetadataInfo.EMPTY) {// succeeded
+                metadata.init();
                 break;
             } else {// failed
                 if (triedTimes > 0) {

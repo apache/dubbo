@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -38,9 +39,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_TIMEOUT_VALUE;
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PROXY_TIMEOUT_KEY;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
 
 /**
  * Standard Dubbo provider enabling introspection service discovery mode.
@@ -139,5 +141,17 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 //        urlBuilder.addParameter("getAndListenInstanceMetadata.1.callback", true);
 
         return urlBuilder.build();
+    }
+
+    /**
+     * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
+     *
+     * @param serviceInstance the instance of {@link ServiceInstance}
+     * @return non-null {@link Map}, the key is {@link URL#getProtocol() the protocol of URL}, the value is
+     */
+    private Map<String, String> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
+        return isBlank(param) ? emptyMap() : (Map) ServiceInstanceMetadataUtils.gson.fromJson(param,Map.class);
     }
 }

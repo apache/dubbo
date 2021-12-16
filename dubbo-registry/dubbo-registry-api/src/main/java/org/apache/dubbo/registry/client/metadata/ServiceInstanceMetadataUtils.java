@@ -37,7 +37,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -93,19 +92,7 @@ public class ServiceInstanceMetadataUtils {
 
     public static final String INSTANCE_REVISION_UPDATED_KEY = "dubbo.instance.revision.updated";
 
-    private static final Gson gson = new Gson();
-
-    /**
-     * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
-     *
-     * @param serviceInstance the instance of {@link ServiceInstance}
-     * @return non-null {@link Map}, the key is {@link URL#getProtocol() the protocol of URL}, the value is
-     */
-    public static Map<String, String> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
-        return isBlank(param) ? emptyMap() : (Map) gson.fromJson(param,Map.class);
-    }
+    public static final Gson gson = new Gson();
 
     public static String getMetadataServiceParameter(URL url) {
         if (url == null) {
