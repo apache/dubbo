@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.spring.boot.actuate.endpoint.condition;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.ClassUtils;
-
-import java.util.stream.Stream;
 
 /**
  * {@link Conditional} that checks whether or not an endpoint is enabled, which is compatible with
@@ -35,35 +36,33 @@ import java.util.stream.Stream;
  */
 class CompatibleOnEnabledEndpointCondition implements Condition {
 
-    static String[] CONDITION_CLASS_NAMES = {
-            "org.springframework.boot.actuate.autoconfigure.endpoint.condition.OnAvailableEndpointCondition", // 2.2.0+
-            "org.springframework.boot.actuate.autoconfigure.endpoint.condition.OnEnabledEndpointCondition" // [2.0.0 , 2.2.x]
-    };
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompatibleOnEnabledEndpointCondition.class);
+
+    // Spring Boot [2.0.0 , 2.2.x]
+    static String CONDITION_CLASS_NAME_OLD =
+        "org.springframework.boot.actuate.autoconfigure.endpoint.condition.OnEnabledEndpointCondition";
+
+    // Spring Boot 2.2.0 +
+    static String CONDITION_CLASS_NAME_NEW =
+        "org.springframework.boot.actuate.autoconfigure.endpoint.condition.OnAvailableEndpointCondition";
 
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
         ClassLoader classLoader = context.getClassLoader();
-
-        Condition condition = Stream.of(CONDITION_CLASS_NAMES)                         // Iterate class names
-                .filter(className -> ClassUtils.isPresent(className, classLoader))     // Search class existing or not by name
-                .findFirst()                                                           // Find the first candidate
-                .map(className -> ClassUtils.resolveClassName(className, classLoader)) // Resolve class name to Class
-                .filter(Condition.class::isAssignableFrom)                             // Accept the Condition implementation
-                .map(BeanUtils::instantiateClass)                                      // Instantiate Class to be instance
-                .map(Condition.class::cast)                                            // Cast the instance to be Condition one
-                .orElse(NegativeCondition.INSTANCE);                                   // Or else get a negative condition
-
-        return condition.matches(context, metadata);
-    }
-
-    private static class NegativeCondition implements Condition {
-
-        static final NegativeCondition INSTANCE = new NegativeCondition();
-
-        @Override
-        public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-            return false;
+        if (ClassUtils.isPresent(CONDITION_CLASS_NAME_OLD, classLoader)) {
+            Class<?> cls = ClassUtils.resolveClassName(CONDITION_CLASS_NAME_OLD, classLoader);
+            if (Condition.class.isAssignableFrom(cls)) {
+                Condition condition = Condition.class.cast(BeanUtils.instantiateClass(cls));
+                return condition.matches(context, metadata);
+            }
         }
+        // Check by org.springframework.boot.actuate.autoconfigure.endpoint.condition.ConditionalOnAvailableEndpoint
+        if (ClassUtils.isPresent(CONDITION_CLASS_NAME_NEW, classLoader)) {
+            return true;
+        }
+        // No condition class found
+        LOGGER.warn(String.format("No condition class found, Dubbo Health Endpoint [%s] will not expose", metadata));
+        return false;
     }
 }
