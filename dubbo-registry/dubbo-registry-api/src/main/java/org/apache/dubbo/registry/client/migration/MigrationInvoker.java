@@ -429,7 +429,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         setListener(serviceDiscoveryInvoker, () -> {
             latch.countDown();
             if (reportService.hasReporter()) {
-                reportService.reportMigrationStepStatus(
+                reportService.reportConsumptionStatus(
                     reportService.createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app"));
             }
             if (step == APPLICATION_FIRST) {
@@ -453,7 +453,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         setListener(invoker, () -> {
             latch.countDown();
             if (reportService.hasReporter()) {
-                reportService.reportMigrationStepStatus(
+                reportService.reportConsumptionStatus(
                     reportService.createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "interface"));
             }
             if (step == APPLICATION_FIRST) {
