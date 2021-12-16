@@ -51,6 +51,7 @@ Or if you prefer xml config.
 
 ```xml
 <dubbo:metrics protocol="prometheus"  enable-jvm-metrics="true">
+    <dubbo:aggregation enabled="true" bucket-num="5" time-window-seconds="120" />
     <dubbo:prometheus-exporter enabled="true" metrics-port="20888" metrics-path="/metrics" />
 </dubbo:metrics>
 ```
@@ -115,6 +116,7 @@ Or if you prefer xml config.
 
 ```xml
 <dubbo:metrics protocol="prometheus"  enable-jvm-metrics="true">
+    <dubbo:aggregation enabled="true" bucket-num="5" time-window-seconds="120" />
     <dubbo:prometheus-pushgateway enabled="true" base-url="localhost:9091" push-interval="30" username="username" password="password" job="job" />
 </dubbo:metrics>
 ```
