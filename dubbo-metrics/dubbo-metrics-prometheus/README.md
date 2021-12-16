@@ -102,8 +102,7 @@ public class DubboConfiguration {
         pushgateway.setPassword("password");
         // push interval, this means push metrics to pushgateway every 15 seconds
         pushgateway.setPushInterval(15);
-
-
+        
         prometheusConfig.setPushgateway(pushgateway);
         metricsConfig.setPrometheus(prometheusConfig);
 
