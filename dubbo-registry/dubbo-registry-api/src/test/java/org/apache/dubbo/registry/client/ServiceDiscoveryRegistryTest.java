@@ -209,7 +209,7 @@ public class ServiceDiscoveryRegistryTest {
         assertEquals(multiAppsInstanceListener, serviceDiscoveryRegistry.getServiceListeners().get(toStringKeys(multiApps)));
         verify(multiAppsInstanceListener, times(1)).addListenerAndNotify(any(), eq(testServiceListener));
         // still called once, not executed this time
-        verify(serviceDiscovery, times(1)).addServiceInstancesChangedListener(multiAppsInstanceListener);
+        verify(serviceDiscovery, times(2)).addServiceInstancesChangedListener(multiAppsInstanceListener);
         // check different protocol
         Map<String, Set<NotifyListener>> serviceListeners = multiAppsInstanceListener.getServiceListeners();
         assertEquals(2, serviceListeners.size());
