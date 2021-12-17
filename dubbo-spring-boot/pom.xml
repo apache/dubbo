@@ -42,7 +42,7 @@
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <dubbo.version>${revision}</dubbo.version>
         <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
-        <log4j2_version>2.15.0</log4j2_version>
+        <log4j2_version>2.16.0</log4j2_version>
     </properties>
 
     <dependencyManagement>
