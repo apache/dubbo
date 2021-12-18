@@ -17,28 +17,12 @@
 package org.apache.dubbo.common.extension.ext6_wrap.impl;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Wrapper;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
-import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-@Wrapper(matches = {"impl1", "impl2"})
-public class Ext6Wrapper1 implements WrappedExt, WrappedExtWrapper {
-    public static AtomicInteger echoCount = new AtomicInteger();
-    WrappedExt origin;
-
-    public Ext6Wrapper1(WrappedExt origin) {
-        this.origin = origin;
-    }
-
-    public String echo(URL url, String s) {
-        echoCount.incrementAndGet();
-        return origin.echo(url, s);
-    }
+public class Ext6Impl4 implements WrappedExt {
 
     @Override
-    public WrappedExt getOrigin() {
-        return origin;
+    public String echo(URL url, String s) {
+        return "Ext6Impl4-echo";
     }
 }

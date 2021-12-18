@@ -773,8 +773,10 @@ public class ExtensionLoader<T> {
                 if (CollectionUtils.isNotEmpty(wrapperClassesList)) {
                     for (Class<?> wrapperClass : wrapperClassesList) {
                         Wrapper wrapper = wrapperClass.getAnnotation(Wrapper.class);
-                        if (wrapper == null
-                            || (ArrayUtils.contains(wrapper.matches(), name) && !ArrayUtils.contains(wrapper.mismatches(), name))) {
+                        boolean match = (wrapper == null) ||
+                            ((ArrayUtils.isEmpty(wrapper.matches()) || ArrayUtils.contains(wrapper.matches(), name)) &&
+                                !ArrayUtils.contains(wrapper.mismatches(), name));
+                        if (match) {
                             instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
                             instance = postProcessAfterInitialization(instance, name);
                         }
