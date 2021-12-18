@@ -47,7 +47,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     }
 
     protected static Codec2 getChannelCodec(URL url) {
-        String codecName = url.getProtocol(); // codec extension name must stay the same with protocol name
+        String codecName = url.getParameter(Constants.CODEC_KEY);
         FrameworkModel frameworkModel = getFrameworkModel(url.getScopeModel());
         if (frameworkModel.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
             return frameworkModel.getExtensionLoader(Codec2.class).getExtension(codecName);
