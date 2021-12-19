@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 
 public class NettyBackedChannelBuffer implements ChannelBuffer {
 
-    private org.jboss.netty.buffer.ChannelBuffer buffer;
+    private final org.jboss.netty.buffer.ChannelBuffer buffer;
 
     public NettyBackedChannelBuffer(org.jboss.netty.buffer.ChannelBuffer buffer) {
         Assert.notNull(buffer, "buffer == null");
@@ -116,9 +116,12 @@ public class NettyBackedChannelBuffer implements ChannelBuffer {
 
     @Override
     public void setBytes(int index, ChannelBuffer src, int srcIndex, int length) {
+        if (length > src.readableBytes()) {
+            throw new IndexOutOfBoundsException();
+        }
         // careful
         byte[] data = new byte[length];
-        buffer.getBytes(srcIndex, data, 0, length);
+        src.getBytes(srcIndex, data, 0, length);
         setBytes(index, data, 0, length);
     }
 

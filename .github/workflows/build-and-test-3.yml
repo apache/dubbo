@@ -65,8 +65,57 @@ jobs:
           echo "::set-output name=version::$REVISION"
           echo "dubbo version: $REVISION"
 
+  unit-test-prepare:
+    name: " Preparation for Unit Test On ${{ matrix.os }} (JDK: ${{ matrix.jdk }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-18.04, windows-2019 ]
+        jdk: [ 8, 11 ]
+    env:
+      DISABLE_FILE_SYSTEM_TEST: true
+    steps:
+      - name: "Set up msys2 if necessary"
+        if: ${{ startsWith( matrix.os, 'windows') }}
+        uses: msys2/setup-msys2@v2
+        with:
+          release: false  # support cache, see https://github.com/msys2/setup-msys2#context
+      - name: "Download zookeeper binary archive in Linux OS"
+        if: ${{ startsWith( matrix.os, 'ubuntu') }}
+        run: |
+          mkdir -p ${{ github.workspace }}/.tmp/zookeeper/
+          wget -c https://archive.apache.org/dist/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c https://apache.website-solution.net/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://apache.stu.edu.tw/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://ftp.jaist.ac.jp/pub/apache/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://apache.mirror.cdnetworks.com/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://mirror.apache-kr.org/apache/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+          echo "list the downloaded zookeeper binary archive"
+          ls -al ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+      - name: "Download zookeeper binary archive in Windows OS"
+        if: ${{ startsWith( matrix.os, 'windows') }}
+        shell: msys2 {0}
+        run: |
+          mkdir -p ${{ github.workspace }}/.tmp/zookeeper/
+          wget -c https://archive.apache.org/dist/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c https://apache.website-solution.net/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://apache.stu.edu.tw/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://ftp.jaist.ac.jp/pub/apache/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://apache.mirror.cdnetworks.com/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz ||
+          wget -c http://mirror.apache-kr.org/apache/zookeeper/zookeeper-3.6.3/apache-zookeeper-3.6.3-bin.tar.gz -O ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+          echo "list the downloaded zookeeper binary archive"
+          ls -al ${{ github.workspace }}/.tmp/zookeeper/apache-zookeeper-bin.tar.gz
+      - uses: actions/cache@v2
+        name: "Cache zookeeper binary archive"
+        with:
+          path: ${{ github.workspace }}/.tmp/zookeeper
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
   unit-test:
-    needs: [build-source]
+    needs: [build-source, unit-test-prepare]
     name: "Unit Test On ${{ matrix.os }} (JDK: ${{ matrix.jdk }})"
     runs-on: ${{ matrix.os }}
     strategy:

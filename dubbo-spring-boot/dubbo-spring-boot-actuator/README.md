@@ -150,7 +150,7 @@ Actuator endpoint `dubbo` supports Actuator Endpoints :
 | ------------------- | ----------- | ----------------------------------- | ------------------ | ------------------ | ------------------ |
 | `dubbo`    | `true`      | `/actuator/dubbo`            | `GET`       | Exposes Dubbo's meta data           | `application/json` |
 | `dubboproperties` | `true` | `/actuator/dubbo/properties` | `GET`       | Exposes all Dubbo's Properties      | `application/json` |
-| `dubboservices` | `false`     | `/dubbo/services`            | `GET`       | Exposes all Dubbo's `ServiceBean`   | `application/json` |
+| `dubboservices` | `false`     | `/actuator/dubbo/services`            | `GET`       | Exposes all Dubbo's `ServiceBean`   | `application/json` |
 | `dubboreferences` | `false` | `/actuator/dubbo/references` | `GET`       | Exposes all Dubbo's `ReferenceBean` | `application/json` |
 | `dubboconfigs` | `true` | `/actuator/dubbo/configs`    | `GET`       | Exposes all Dubbo's `*Config`       | `application/json` |
 | `dubboshutdown` | `false` | `/actuator/dubbo/shutdown`   | `POST`      | Shutdown Dubbo services             | `application/json` |
