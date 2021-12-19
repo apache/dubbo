@@ -37,9 +37,8 @@ public class ByteArrayMerger implements Merger<byte[]> {
         int index = 0;
         for (byte[] array : items) {
             if (array != null) {
-                for (byte item : array) {
-                    result[index++] = item;
-                }
+                System.arraycopy(array, 0, result, index, array.length);
+                index += array.length;
             }
         }
         return result;

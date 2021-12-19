@@ -19,8 +19,6 @@ package org.apache.dubbo.common.compiler.support;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -131,15 +129,6 @@ public class ClassUtilsTest {
     @Test
     public void testToUri() {
         Assertions.assertThrows(RuntimeException.class, () -> ClassUtils.toURI("#xx_abc#hello"));
-    }
-
-    @Test
-    public void testGetGenericClass() {
-        Assertions.assertTrue(TypeVariable.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass.class)));
-        Assertions.assertTrue(String.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass0.class)));
-        Assertions.assertTrue(Collection.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass1.class)));
-        Assertions.assertTrue(TypeVariable.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass2.class)));
-        Assertions.assertTrue(GenericArrayType.class.isAssignableFrom(ClassUtils.getGenericClass(GenericClass3.class)));
     }
 
     @Test

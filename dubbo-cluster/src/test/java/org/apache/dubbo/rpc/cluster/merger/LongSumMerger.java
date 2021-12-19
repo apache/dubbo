@@ -14,34 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.merger;
 
-import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.rpc.cluster.Merger;
 
-public class BooleanArrayMerger implements Merger<boolean[]> {
+import java.util.Arrays;
+import java.util.Objects;
+
+public class LongSumMerger implements Merger<Long> {
 
     @Override
-    public boolean[] merge(boolean[]... items) {
-        if (ArrayUtils.isEmpty(items)) {
-            return new boolean[0];
-        }
-        int totalLen = 0;
-        for (boolean[] array : items) {
-            if (array != null) {
-                totalLen += array.length;
-            }
-        }
-        boolean[] result = new boolean[totalLen];
-        int index = 0;
-        for (boolean[] array : items) {
-            if (array != null) {
-                System.arraycopy(array, 0, result, index, array.length);
-                index += array.length;
-            }
-        }
-        return result;
+    public Long merge(Long... items) {
+        return Arrays.stream(items).filter(Objects::nonNull)
+            .mapToLong(Long::longValue).sum();
     }
-
 }
