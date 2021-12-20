@@ -20,7 +20,6 @@ import org.apache.dubbo.rpc.cluster.Merger;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class IntSumMerger implements Merger<Integer> {
 

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.merger;
 
-import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.rpc.cluster.Merger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
@@ -25,7 +24,6 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
