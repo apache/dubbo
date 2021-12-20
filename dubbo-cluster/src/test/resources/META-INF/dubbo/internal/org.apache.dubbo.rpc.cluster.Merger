@@ -1,0 +1,6 @@
+intsum=org.apache.dubbo.rpc.cluster.merger.IntSumMerger
+longsum=org.apache.dubbo.rpc.cluster.merger.LongSumMerger
+floatsum=org.apache.dubbo.rpc.cluster.merger.FloatSumMerger
+doublesum=org.apache.dubbo.rpc.cluster.merger.DoubleSumMerger
+intfirst=org.apache.dubbo.rpc.cluster.merger.IntFindFirstMerger
+intany=org.apache.dubbo.rpc.cluster.merger.IntFindAnyMerger

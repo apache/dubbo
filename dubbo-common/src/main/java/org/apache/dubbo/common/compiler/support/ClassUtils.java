@@ -257,40 +257,6 @@ public class ClassUtils {
         }
     }
 
-    public static Class<?> getGenericClass(Class<?> cls) {
-        return getGenericClass(cls, 0);
-    }
-
-    public static Class<?> getGenericClass(Class<?> cls, int i) {
-        try {
-            ParameterizedType parameterizedType = ((ParameterizedType) cls.getGenericInterfaces()[0]);
-            Object genericClass = parameterizedType.getActualTypeArguments()[i];
-            if (genericClass instanceof ParameterizedType) {
-                return (Class<?>) ((ParameterizedType) genericClass).getRawType();
-            } else if (genericClass instanceof GenericArrayType) {
-                Type type = ((GenericArrayType) genericClass).getGenericComponentType();
-                if (type instanceof TypeVariable) {
-                    return type.getClass();
-                }
-                return (((GenericArrayType) genericClass).getGenericComponentType() instanceof Class<?>)
-                        ? (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType()
-                        : ((GenericArrayType) genericClass).getGenericComponentType().getClass();
-            } else if (genericClass != null) {
-                if (genericClass instanceof TypeVariable) {
-                    return genericClass.getClass();
-                }
-                return (Class<?>) genericClass;
-            }
-        } catch (Throwable e) {
-
-        }
-        if (cls.getSuperclass() != null) {
-            return getGenericClass(cls.getSuperclass(), i);
-        } else {
-            throw new IllegalArgumentException(cls.getName() + " generic type undefined!");
-        }
-    }
-
     public static boolean isBeforeJava5(String javaVersion) {
         return (StringUtils.isEmpty(javaVersion) || "1.0".equals(javaVersion)
                 || "1.1".equals(javaVersion) || "1.2".equals(javaVersion)

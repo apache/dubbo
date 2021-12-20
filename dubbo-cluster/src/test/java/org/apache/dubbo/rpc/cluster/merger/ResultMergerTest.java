@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.cluster.merger;
 
+import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.rpc.cluster.Merger;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,11 +25,16 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
 
 public class ResultMergerTest {
     private MergerFactory mergerFactory;
@@ -369,5 +376,83 @@ public class ResultMergerTest {
 
         result = mergerFactory.getMerger(short[].class).merge(null, null);
         Assertions.assertEquals(0, result.length);
+    }
+
+    /**
+     * IntSumMerger test
+     */
+    @Test
+    public void testIntSumMerger() {
+        Integer[] intArr = IntStream.rangeClosed(1, 100).boxed().toArray(Integer[]::new);
+        Merger<Integer> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "intsum");
+        Assertions.assertEquals(5050, merger.merge(intArr));
+
+        intArr = new Integer[]{};
+        Assertions.assertEquals(0, merger.merge(intArr));
+    }
+
+    /**
+     * DoubleSumMerger test
+     */
+    @Test
+    public void testDoubleSumMerger() {
+        Double[] doubleArr = DoubleStream.iterate(1, v -> ++v).limit(100).boxed().toArray(Double[]::new);
+        Merger<Double> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "doublesum");
+        Assertions.assertEquals(5050, merger.merge(doubleArr));
+
+        doubleArr = new Double[]{};
+        Assertions.assertEquals(0, merger.merge(doubleArr));
+    }
+
+    /**
+     * FloatSumMerger test
+     */
+    @Test
+    public void testFloatSumMerger() {
+        Float[] floatArr = Stream.iterate(1.0F, v -> ++v).limit(100).toArray(Float[]::new);
+        Merger<Float> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "floatsum");
+        Assertions.assertEquals(5050, merger.merge(floatArr));
+
+        floatArr = new Float[]{};
+        Assertions.assertEquals(0, merger.merge(floatArr));
+    }
+
+    /**
+     * LongSumMerger test
+     */
+    @Test
+    public void testLongSumMerger() {
+        Long[] longArr = LongStream.rangeClosed(1, 100).boxed().toArray(Long[]::new);
+        Merger<Long> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "longsum");
+        Assertions.assertEquals(5050, merger.merge(longArr));
+
+        longArr = new Long[]{};
+        Assertions.assertEquals(0, merger.merge(longArr));
+    }
+
+    /**
+     * IntFindAnyMerger test
+     */
+    @Test
+    public void testIntFindAnyMerger() {
+        Integer[] intArr = {1, 2, 3, 4};
+        Merger<Integer> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "intany");
+        Assertions.assertNotNull(merger.merge(intArr));
+
+        intArr = new Integer[]{};
+        Assertions.assertNull(merger.merge(intArr));
+    }
+
+    /**
+     * IntFindFirstMerger test
+     */
+    @Test
+    public void testIntFindFirstMerger() {
+        Integer[] intArr = {1, 2, 3, 4};
+        Merger<Integer> merger = ApplicationModel.defaultModel().getExtension(Merger.class, "intfirst");
+        Assertions.assertEquals(1, merger.merge(intArr));
+
+        intArr = new Integer[]{};
+        Assertions.assertNull(merger.merge(intArr));
     }
 }
