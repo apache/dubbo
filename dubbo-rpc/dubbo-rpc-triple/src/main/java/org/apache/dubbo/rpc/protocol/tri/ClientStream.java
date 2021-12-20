@@ -93,11 +93,12 @@ public class ClientStream extends AbstractClientStream implements Stream {
         public void onComplete() {
             execute(() -> {
                 getState().setServerEndStreamReceived();
-                final GrpcStatus status = extractStatusFromMeta(getHeaders());
+                final Metadata trailers = getTrailers() == null ? getHeaders() : getTrailers();
+                final GrpcStatus status = extractStatusFromMeta(trailers);
                 if (GrpcStatus.Code.isOk(status.code.code)) {
                     outboundMessageSubscriber().onCompleted();
                 } else {
-                    onError(status.cause);
+                    onError(getThrowableFromTrailers(trailers));
                 }
             });
         }
