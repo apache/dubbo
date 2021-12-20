@@ -323,7 +323,7 @@
         <profile>
             <id>release</id>
             <properties>
-                <log4j2_version>2.16.0</log4j2_version>
+                <log4j2_version>2.17.0</log4j2_version>
             </properties>
             <build>
                 <plugins>
