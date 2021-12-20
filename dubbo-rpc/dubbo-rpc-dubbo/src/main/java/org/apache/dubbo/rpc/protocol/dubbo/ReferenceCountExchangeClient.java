@@ -43,16 +43,18 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     private final static Logger logger = LoggerFactory.getLogger(ReferenceCountExchangeClient.class);
     private final URL url;
+    private final String codec;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
     private final AtomicInteger disconnectCount = new AtomicInteger(0);
     private final Integer warningPeriod = 50;
     private ExchangeClient client;
     private int shutdownWaitTime = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 
-    public ReferenceCountExchangeClient(ExchangeClient client) {
+    public ReferenceCountExchangeClient(ExchangeClient client, String codec) {
         this.client = client;
-        referenceCount.incrementAndGet();
+        this.referenceCount.incrementAndGet();
         this.url = client.getUrl();
+        this.codec = codec;
     }
 
     @Override
@@ -213,7 +215,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
                     //.addParameter(RECONNECT_KEY, Boolean.FALSE)
                     .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
             //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
-            client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
+            client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler(), codec, lazyUrl.getParameters());
         }
     }
 
