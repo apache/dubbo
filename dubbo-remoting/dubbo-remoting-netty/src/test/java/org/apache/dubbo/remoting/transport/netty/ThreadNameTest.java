@@ -51,10 +51,10 @@ public class ThreadNameTest {
     @BeforeEach
     public void before() throws Exception {
         int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
-        serverURL = URL.valueOf("telnet://localhost?side=provider")
+        serverURL = URL.valueOf("telnet://localhost?side=provider&codec=telnet")
             .setPort(port)
             .setScopeModel(ApplicationModel.defaultModel());
-        clientURL = URL.valueOf("telnet://localhost?side=consumer")
+        clientURL = URL.valueOf("telnet://localhost?side=consumer&codec=telnet")
             .setPort(port)
             .setScopeModel(ApplicationModel.defaultModel());
 
