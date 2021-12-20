@@ -607,7 +607,7 @@ public class DubboProtocol extends AbstractProtocol {
      */
     private ReferenceCountExchangeClient buildReferenceCountExchangeClient(URL url) {
         ExchangeClient exchangeClient = initClient(url);
-        ReferenceCountExchangeClient client = new ReferenceCountExchangeClient(exchangeClient);
+        ReferenceCountExchangeClient client = new ReferenceCountExchangeClient(exchangeClient, DubboCodec.NAME);
         // read configs
         int shutdownTimeout = ConfigurationUtils.getServerShutdownTimeout(url.getScopeModel());
         client.setShutdownWaitTime(shutdownTimeout);
@@ -640,7 +640,7 @@ public class DubboProtocol extends AbstractProtocol {
         try {
             // connection should be lazy
             if (url.getParameter(LAZY_CONNECT_KEY, false)) {
-                client = new LazyConnectExchangeClient(url, requestHandler);
+                client = new LazyConnectExchangeClient(url, requestHandler, DubboCodec.NAME, url.getParameters());
 
             } else {
                 client = Exchangers.connect(url, requestHandler);
