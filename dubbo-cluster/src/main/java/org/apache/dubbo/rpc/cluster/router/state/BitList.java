@@ -112,7 +112,7 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     public boolean hasMoreElementInTailList() {
-        return CollectionUtils.isNotEmpty(tailList) && tailList.size() > 0;
+        return CollectionUtils.isNotEmpty(tailList);
     }
 
     public List<E> getTailList() {
@@ -275,7 +275,7 @@ public class BitList<E> extends AbstractList<E> {
 
     @Override
     public boolean isEmpty() {
-        return this.rootSet.isEmpty() && (tailList == null || tailList.isEmpty());
+        return this.rootSet.isEmpty() && CollectionUtils.isEmpty(tailList);
     }
 
     @Override
@@ -471,7 +471,7 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     public ArrayList<E> cloneToArrayList() {
-        if (rootSet.cardinality() == originList.size() && (tailList == null || tailList.isEmpty())) {
+        if (rootSet.cardinality() == originList.size() && (CollectionUtils.isEmpty(tailList))) {
             return new ArrayList<>(originList);
         }
         ArrayList<E> arrayList = new ArrayList<>(size());

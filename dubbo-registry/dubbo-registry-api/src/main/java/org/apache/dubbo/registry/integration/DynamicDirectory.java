@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -54,7 +55,7 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 
 
 /**
- * RegistryDirectory
+ * DynamicDirectory
  */
 public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
 
@@ -115,6 +116,10 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
      */
     private final boolean shouldFailFast;
 
+    private volatile InvokersChangedListener invokersChangedListener;
+    private volatile boolean invokersChanged;
+
+
     public DynamicDirectory(Class<T> serviceType, URL url) {
         super(url, true);
 
@@ -127,7 +132,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             throw new IllegalArgumentException("service type is null.");
         }
 
-        if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
+        if (StringUtils.isEmpty(url.getServiceKey())) {
             throw new IllegalArgumentException("registry serviceKey is null.");
         }
 
@@ -326,9 +331,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             logger.warn("Failed to destroy service " + serviceKey, t);
         }
     }
-
-    private volatile InvokersChangedListener invokersChangedListener;
-    private volatile boolean invokersChanged;
 
     public synchronized void setInvokersChangedListener(InvokersChangedListener listener) {
         this.invokersChangedListener = listener;

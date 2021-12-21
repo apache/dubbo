@@ -244,7 +244,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     @Override
     public void onDestroy() {
         if (configuration != null) {
-            configuration.removeListener(ruleKey, this);
+            configuration.removeListener(ruleKey, DUBBO_SERVICEDISCOVERY_MIGRATION, this);
         }
         if (ruleMigrationFuture != null) {
             ruleMigrationFuture.cancel(true);

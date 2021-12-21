@@ -111,10 +111,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public void subscribe(URL url) {
-        setSubscribeUrl(url);
+        super.subscribe(url);
         consumerConfigurationListener.addNotifyListener(this);
         referenceConfigurationListener = new ReferenceConfigurationListener(url.getOrDefaultModuleModel(), this, url);
-        registry.subscribe(url, this);
     }
 
     private ConsumerConfigurationListener getConsumerConfigurationListener(ModuleModel moduleModel) {
@@ -124,10 +123,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public void unSubscribe(URL url) {
-        setSubscribeUrl(null);
+        super.unSubscribe(url);
         consumerConfigurationListener.removeNotifyListener(this);
         referenceConfigurationListener.stop();
-        registry.unsubscribe(url, this);
     }
 
     @Override
@@ -519,37 +517,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
 
         logger.info("New url total size, " + newUrlInvokerMap.size() + ", destroyed total size " + oldUrlInvokerMap.size());
-    }
-
-    @Override
-    public Class<T> getInterface() {
-        return serviceType;
-    }
-
-    @Override
-    public List<Invoker<T>> getAllInvokers() {
-        return this.getInvokers();
-    }
-
-    @Override
-    public URL getConsumerUrl() {
-        return this.consumerUrl;
-    }
-
-    @Override
-    public URL getRegisteredConsumerUrl() {
-        return registeredConsumerUrl;
-    }
-
-    @Override
-    public void setRegisteredConsumerUrl(URL url) {
-        if (!shouldSimplified) {
-            this.registeredConsumerUrl = url.addParameters(CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY,
-                    String.valueOf(false));
-        } else {
-            this.registeredConsumerUrl = URL.valueOf(url, DEFAULT_REGISTER_CONSUMER_KEYS, null).addParameters(
-                    CATEGORY_KEY, CONSUMERS_CATEGORY, CHECK_KEY, String.valueOf(false));
-        }
     }
 
     /**
