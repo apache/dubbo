@@ -9,7 +9,10 @@ choose which one you prefer.
 
 ### Pull Mode
 
-For pull mode, you can add this config to your code.
+For pull mode, you can add prometheus config to your code.
+You can use either Java Code、Yaml、Properties、Xml configuration.
+
+#### Java Code
 
 ```java
 @Configuration
@@ -47,7 +50,20 @@ public class DubboConfiguration {
 }
 ```
 
-Or if you prefer xml config.
+#### Properties
+
+```properties
+dubbo.metrics.protocol=prometheus
+dubbo.metrics.enable-jvm-metrics=true
+dubbo.metrics.aggregation.enabled=true
+dubbo.metrics.aggregation.bucket-num=5
+dubbo.metrics.aggregation.time-window-seconds=120
+dubbo.metrics.prometheus.exporter.enabled=true
+dubbo.metrics.prometheus.exporter.metrics-port=20888
+dubbo.metrics.prometheus.exporter.metrics-path=/metrics
+```
+
+#### Xml
 
 ```xml
 <dubbo:metrics protocol="prometheus"  enable-jvm-metrics="true">
@@ -69,7 +85,9 @@ scrape_configs:
 
 ### Push Mode
 
-For pull mode, you can add this config to your code.
+There is the configuration when you want to use push mode.
+
+#### Java Code
 
 ```java
 @Configuration
@@ -112,7 +130,23 @@ public class DubboConfiguration {
 }
 ```
 
-Or if you prefer xml config.
+#### Properties
+
+```properties
+dubbo.metrics.protocol=prometheus
+dubbo.metrics.enable-jvm-metrics=true
+dubbo.metrics.aggregation.enabled=true
+dubbo.metrics.aggregation.bucket-num=5
+dubbo.metrics.aggregation.time-window-seconds=120
+dubbo.metrics.prometheus.pushgateway.enabled=true
+dubbo.metrics.prometheus.pushgateway.base-url=localhost:9091
+dubbo.metrics.prometheus.pushgateway.username=username
+dubbo.metrics.prometheus.pushgateway.password=password
+dubbo.metrics.prometheus.pushgateway.job=job
+dubbo.metrics.prometheus.pushgateway.push-interval=30
+```
+
+#### Xml
 
 ```xml
 <dubbo:metrics protocol="prometheus"  enable-jvm-metrics="true">
