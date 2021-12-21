@@ -83,7 +83,7 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
 
     @Override
     public void notify(BitList<Invoker<T>> invokers) {
-
+        // default empty implement
     }
 
     @Override
@@ -126,10 +126,26 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
         return routeResult;
     }
 
+    /**
+     * Filter invokers with current routing rule and only return the invokers that comply with the rule.
+     *
+     * @param invokers all invokers to be routed
+     * @param url consumerUrl
+     * @param invocation invocation
+     * @param needToPrintMessage should current router print message
+     * @param nodeHolder RouterSnapshotNode In general, router itself no need to care this param, just pass to continueRoute
+     * @param messageHolder message holder when router should current router print message
+     * @return routed result
+     */
     protected abstract BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
                                                 boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
                                                 Holder<String> messageHolder) throws RpcException;
 
+    /**
+     * Call next router to get result
+     *
+     * @param invokers current router filtered invokers
+     */
     protected final BitList<Invoker<T>> continueRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
                                                       boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) {
         if (nextRouter != null) {
@@ -139,12 +155,24 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
         }
     }
 
+    /**
+     * Whether current router's implementation support call
+     * {@link AbstractStateRouter#continueRoute(BitList, URL, Invocation, boolean, Holder)}
+     * by router itself.
+     *
+     * @return support or not
+     */
     protected boolean supportContinueRoute() {
         return false;
     }
 
+    /**
+     * Next Router node state is maintained by AbstractStateRouter and this method is not allow to override.
+     * If a specified router wants to control the behaviour of continue route or not,
+     * please override {@link AbstractStateRouter#supportContinueRoute()}
+     */
     @Override
-    public void setNextRouter(StateRouter<T> nextRouter) {
+    public final void setNextRouter(StateRouter<T> nextRouter) {
         this.nextRouter = nextRouter;
     }
 }

@@ -29,7 +29,10 @@ import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
  *
+ * It is recommended to implement StateRouter by extending {@link AbstractStateRouter}
+ *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory, boolean)
+ * @see AbstractStateRouter
  * @see Directory#list(Invocation)
  * @since 3.0
  */
@@ -43,7 +46,6 @@ public interface StateRouter<T> {
     URL getUrl();
 
     /***
-     * ** This method can return the state of whether routerChain needed to continue route. **
      * Filter invokers with current routing rule and only return the invokers that comply with the rule.
      * Caching address lists in BitMap mode improves routing performance.
      * @param invokers  invoker bit list
@@ -86,5 +88,10 @@ public interface StateRouter<T> {
         //do nothing by default
     }
 
+    /**
+     * Notify next router node to current router.
+     *
+     * @param nextRouter next router node
+     */
     void setNextRouter(StateRouter<T> nextRouter);
 }
