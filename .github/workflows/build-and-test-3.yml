@@ -86,7 +86,7 @@ jobs:
           restore-keys: |
             zookeeper-${{ runner.os }}-${{ env.ZOOKEEPER_VERSION }}
       - name: "Set up msys2 if necessary"
-        if: ${{ startsWith( matrix.os, 'windows') }}
+        if: ${{ startsWith( matrix.os, 'windows') && steps.cache-zookeeper.outputs.cache-hit != 'true' }}
         uses: msys2/setup-msys2@v2
         with:
           release: false  # support cache, see https://github.com/msys2/setup-msys2#context
