@@ -153,6 +153,7 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         if (closed) {
             return;
         }
+        closed = true;
         try {
             // graceful close
             DefaultFuture.closeChannel(channel);
@@ -168,7 +169,6 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         if (closed) {
             return;
         }
-        closed = true;
         if (timeout > 0) {
             long start = System.currentTimeMillis();
             while (DefaultFuture.hasFuture(channel)

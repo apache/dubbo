@@ -228,10 +228,10 @@ public final class URLStrParser {
         String value;
         if (isEncoded) {
             name = decodeComponent(str, nameStart, valueStart - 3, false, tempBuf);
-            value = valueStart == valueEnd ? name : decodeComponent(str, valueStart, valueEnd, false, tempBuf);
+            value = valueStart >= valueEnd ? name : decodeComponent(str, valueStart, valueEnd, false, tempBuf);
         } else {
             name = str.substring(nameStart, valueStart - 1);
-            value = valueStart == valueEnd ? name : str.substring(valueStart, valueEnd);
+            value = valueStart >= valueEnd ? name : str.substring(valueStart, valueEnd);
         }
 
         params.put(name, value);
