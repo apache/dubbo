@@ -157,7 +157,7 @@
         <activation_version>1.2.0</activation_version>
         <test_container_version>1.15.2</test_container_version>
         <etcd_launcher_version>0.5.7</etcd_launcher_version>
-        <hessian_lite_version>3.2.11</hessian_lite_version>
+        <hessian_lite_version>3.2.12</hessian_lite_version>
         <xmlrpc_version>3.1.3</xmlrpc_version>
         <swagger_version>1.5.19</swagger_version>
 
