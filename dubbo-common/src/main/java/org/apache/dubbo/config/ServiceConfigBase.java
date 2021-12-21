@@ -312,7 +312,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             return GenericService.class;
         }
         try {
-            if (interfaceName != null && interfaceName.length() > 0) {
+            if (StringUtils.isNotEmpty(interfaceName)) {
                 this.interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
                         .getContextClassLoader());
             }

@@ -304,7 +304,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     @Override
     protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
         if (StringUtils.hasText(interfaceName)) {
-            Class<?> interfaceClass = null;
+            Class<?> interfaceClass;
             try {
                 interfaceClass = ClassUtils.forName(interfaceName);
             } catch (ClassNotFoundException e) {

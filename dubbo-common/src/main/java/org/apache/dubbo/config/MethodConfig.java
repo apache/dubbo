@@ -83,7 +83,7 @@ public class MethodConfig extends AbstractMethodConfig {
     private Boolean sticky;
 
     /**
-     * Whether need to return
+     * Whether you need to return
      */
     private Boolean isReturn;
 
@@ -236,7 +236,8 @@ public class MethodConfig extends AbstractMethodConfig {
         if (argument.getIndex() != null && argument.getIndex() >= 0) {
             String prefix = argument.getIndex() + ".";
             Environment environment = getScopeModel().getModelEnvironment();
-            java.lang.reflect.Method[] methods = argument.getClass().getMethods();
+            List<java.lang.reflect.Method> methods = MethodUtils.getMethods(argument.getClass(),
+                method -> method.getDeclaringClass() != Object.class);
             for (java.lang.reflect.Method method : methods) {
                 if (MethodUtils.isSetter(method)) {
                     String propertyName = extractPropertyName(method.getName());
