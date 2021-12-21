@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.cluster.router.MockInvoker;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionStateRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
-import org.apache.dubbo.rpc.cluster.router.state.TailStateRouter;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -47,7 +46,7 @@ public class StaticDirectoryTest {
 
     @Test
     public void testStaticDirectory() {
-        StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl(" => " + " host = " + NetUtils.getLocalHost()), TailStateRouter.getInstance());
+        StateRouter router = new ConditionStateRouterFactory().getRouter(String.class, getRouteUrl(" => " + " host = " + NetUtils.getLocalHost()));
         List<StateRouter> routers = new ArrayList<StateRouter>();
         routers.add(router);
         List<Invoker<String>> originInvokers = new ArrayList<Invoker<String>>();

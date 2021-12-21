@@ -25,7 +25,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 import static org.apache.dubbo.rpc.cluster.Constants.MOCK_PROTOCOL;
@@ -41,8 +40,8 @@ public class MockInvokersSelector<T> extends AbstractStateRouter<T> {
     private volatile BitList<Invoker<T>> normalInvokers = BitList.emptyList();
     private volatile BitList<Invoker<T>> mockedInvokers = BitList.emptyList();
 
-    public MockInvokersSelector(URL url, StateRouter<T> nextRouter) {
-        super(url, nextRouter);
+    public MockInvokersSelector(URL url) {
+        super(url);
     }
 
     @Override

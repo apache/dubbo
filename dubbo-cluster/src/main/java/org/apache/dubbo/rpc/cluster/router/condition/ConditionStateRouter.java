@@ -32,7 +32,6 @@ import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 import java.text.ParseException;
 import java.util.HashMap;
@@ -70,8 +69,8 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
 
     private boolean enabled;
 
-    public ConditionStateRouter(URL url, String rule, boolean force, boolean enabled, StateRouter<T> nextRouter) {
-        super(url, nextRouter);
+    public ConditionStateRouter(URL url, String rule, boolean force, boolean enabled) {
+        super(url);
         this.setForce(force);
         this.enabled = enabled;
         if (enabled) {
@@ -79,8 +78,8 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
         }
     }
 
-    public ConditionStateRouter(URL url, StateRouter<T> nextRouter) {
-        super(url, nextRouter);
+    public ConditionStateRouter(URL url) {
+        super(url);
         this.setUrl(url);
         this.setForce(url.getParameter(FORCE_KEY, false));
         this.enabled = url.getParameter(ENABLED_KEY, true);

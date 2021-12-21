@@ -34,7 +34,7 @@ import org.apache.dubbo.rpc.model.ModuleModel;
 public abstract class AbstractStateRouter<T> implements StateRouter<T> {
     private volatile boolean force = false;
     private volatile URL url;
-    private final StateRouter<T> nextRouter;
+    private volatile StateRouter<T> nextRouter = null;
 
     private final GovernanceRuleRepository ruleRepository;
 
@@ -43,11 +43,10 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
      */
     private final boolean shouldFailFast;
 
-    public AbstractStateRouter(URL url, StateRouter<T> nextRouter) {
+    public AbstractStateRouter(URL url) {
         ModuleModel moduleModel = url.getOrDefaultModuleModel();
         this.ruleRepository = moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
-        this.nextRouter = nextRouter;
         this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
     }
 
@@ -133,10 +132,19 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
 
     protected final BitList<Invoker<T>> continueRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
                                                       boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) {
-        return nextRouter.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
+        if (nextRouter != null) {
+            return nextRouter.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
+        } else {
+            return invokers;
+        }
     }
 
     protected boolean supportContinueRoute() {
         return false;
+    }
+
+    @Override
+    public void setNextRouter(StateRouter<T> nextRouter) {
+        this.nextRouter = nextRouter;
     }
 }

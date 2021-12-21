@@ -85,4 +85,6 @@ public interface StateRouter<T> {
     default void stop() {
         //do nothing by default
     }
+
+    void setNextRouter(StateRouter<T> nextRouter);
 }

@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.cluster.router.condition.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 /**
  * Service level router, "server-unique-name.condition-router"
@@ -26,7 +25,7 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 public class ServiceRouter<T> extends ListenableStateRouter<T> {
     public static final String NAME = "SERVICE_ROUTER";
 
-    public ServiceRouter(URL url, StateRouter<T> nextRouter) {
-        super(url, DynamicConfiguration.getRuleKey(url), nextRouter);
+    public ServiceRouter(URL url) {
+        super(url, DynamicConfiguration.getRuleKey(url));
     }
 }

@@ -38,8 +38,8 @@ public class ScriptStateRouterFactory implements StateRouterFactory {
     public static final String NAME = "script";
 
     @Override
-    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url, StateRouter<T> nextRouter) {
-        return new ScriptStateRouter<>(url, nextRouter);
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        return new ScriptStateRouter<>(url);
     }
 
 }

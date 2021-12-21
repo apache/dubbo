@@ -36,6 +36,11 @@ public class TailStateRouter<T> implements StateRouter<T> {
     }
 
     @Override
+    public void setNextRouter(StateRouter<T> nextRouter) {
+
+    }
+
+    @Override
     public URL getUrl() {
         return null;
     }

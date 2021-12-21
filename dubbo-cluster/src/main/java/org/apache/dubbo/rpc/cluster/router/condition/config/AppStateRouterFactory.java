@@ -32,19 +32,19 @@ public class AppStateRouterFactory implements StateRouterFactory {
     private volatile StateRouter router;
 
     @Override
-    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url, StateRouter<T> nextRouter) {
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
         if (router != null) {
             return router;
         }
         synchronized (this) {
             if (router == null) {
-                router = createRouter(url, nextRouter);
+                router = createRouter(url);
             }
         }
         return router;
     }
 
-    private <T> StateRouter<T> createRouter(URL url, StateRouter<T> nextRouter) {
-        return new AppStateRouter<>(url, nextRouter);
+    private <T> StateRouter<T> createRouter(URL url) {
+        return new AppStateRouter<>(url);
     }
 }

@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 import javax.script.Bindings;
 import javax.script.Compilable;
@@ -83,8 +82,8 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
         accessControlContext = new AccessControlContext(new ProtectionDomain[]{domain});
     }
 
-    public ScriptStateRouter(URL url, StateRouter<T> nextRouter) {
-        super(url, nextRouter);
+    public ScriptStateRouter(URL url) {
+        super(url);
         this.setUrl(url);
 
         engine = getEngine(url);

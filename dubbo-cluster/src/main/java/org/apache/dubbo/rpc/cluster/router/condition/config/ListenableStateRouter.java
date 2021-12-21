@@ -35,7 +35,6 @@ import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRoute
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRuleParser;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.TailStateRouter;
 
 import java.util.Collections;
@@ -54,8 +53,8 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     private volatile List<ConditionStateRouter<T>> conditionRouters = Collections.emptyList();
     private String ruleKey;
 
-    public ListenableStateRouter(URL url, String ruleKey, StateRouter<T> nextRouter) {
-        super(url, nextRouter);
+    public ListenableStateRouter(URL url, String ruleKey) {
+        super(url);
         this.setForce(false);
         this.init(ruleKey);
         this.ruleKey = ruleKey;
@@ -124,8 +123,11 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         if (rule != null && rule.isValid()) {
             this.conditionRouters = rule.getConditions()
                     .stream()
-                    .map(condition -> new ConditionStateRouter<T>(getUrl(), condition, rule.isForce(), rule.isEnabled(), TailStateRouter.getInstance()))
+                    .map(condition -> new ConditionStateRouter<T>(getUrl(), condition, rule.isForce(), rule.isEnabled()))
                     .collect(Collectors.toList());
+            for (ConditionStateRouter<T> conditionRouter : this.conditionRouters) {
+                conditionRouter.setNextRouter(TailStateRouter.getInstance());
+            }
         }
     }
 

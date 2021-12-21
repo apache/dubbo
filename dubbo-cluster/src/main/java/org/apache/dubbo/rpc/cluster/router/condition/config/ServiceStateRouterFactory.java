@@ -31,8 +31,8 @@ public class ServiceStateRouterFactory extends CacheableStateRouterFactory {
     public static final String NAME = "service";
 
     @Override
-    protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url, StateRouter<T> nextRouter) {
-        return new ServiceRouter<T>(url, nextRouter);
+    protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
+        return new ServiceRouter<T>(url);
     }
 
 }

@@ -43,7 +43,7 @@ public class FileStateRouterFactory implements StateRouterFactory {
     }
 
     @Override
-    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url, StateRouter<T> nextRouter) {
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
         try {
             // Transform File URL into Script Route URL, and Load
             // file:///d:/path/to/route.js?router=script ==> script:///d:/path/to/route.js?type=js&rule=<file-content>
@@ -67,7 +67,7 @@ public class FileStateRouterFactory implements StateRouterFactory {
                     .addParameterAndEncoded(RULE_KEY, rule)
                     .build();
 
-            return routerFactory.getRouter(interfaceClass, script, nextRouter);
+            return routerFactory.getRouter(interfaceClass, script);
         } catch (IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

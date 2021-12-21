@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
 /**
  * Application level router, "application.condition-router"
@@ -25,7 +24,7 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 public class AppStateRouter<T> extends ListenableStateRouter<T> {
     public static final String NAME = "APP_ROUTER";
 
-    public AppStateRouter(URL url, StateRouter<T> nextRouter) {
-        super(url, url.getApplication(), nextRouter);
+    public AppStateRouter(URL url) {
+        super(url, url.getApplication());
     }
 }

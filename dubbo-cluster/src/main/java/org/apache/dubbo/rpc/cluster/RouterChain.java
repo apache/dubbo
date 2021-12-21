@@ -97,7 +97,9 @@ public class RouterChain<T> {
         StateRouter<T> stateRouter = TailStateRouter.getInstance();
         List<StateRouter<T>> stateRouters = new LinkedList<>();
         for (int i = extensionStateRouterFactories.size() - 1; i >= 0; i--) {
-            stateRouter = extensionStateRouterFactories.get(i).getRouter(interfaceClass, url, stateRouter);
+            StateRouter<T> nextStateRouter = extensionStateRouterFactories.get(i).getRouter(interfaceClass, url);
+            nextStateRouter.setNextRouter(stateRouter);
+            stateRouter = nextStateRouter;
             stateRouters.add(stateRouter);
         }
         headStateRouter = stateRouter;

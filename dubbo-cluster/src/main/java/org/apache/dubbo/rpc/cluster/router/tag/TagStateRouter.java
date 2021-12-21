@@ -33,7 +33,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
@@ -55,8 +54,8 @@ public class TagStateRouter<T> extends AbstractStateRouter<T> implements Configu
     private TagRouterRule tagRouterRule;
     private String application;
 
-    public TagStateRouter(URL url, StateRouter<T> nextRouter) {
-        super(url, nextRouter);
+    public TagStateRouter(URL url) {
+        super(url);
     }
 
     @Override

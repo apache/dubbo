@@ -30,7 +30,7 @@ public class TagStateRouterFactory extends CacheableStateRouterFactory {
     public static final String NAME = "tag";
 
     @Override
-    protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url, StateRouter<T> nextRouter) {
-        return new TagStateRouter<T>(url, nextRouter);
+    protected <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url) {
+        return new TagStateRouter<T>(url);
     }
 }

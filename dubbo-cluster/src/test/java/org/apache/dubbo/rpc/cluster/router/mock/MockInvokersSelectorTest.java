@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.TailStateRouter;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,7 +37,7 @@ public class MockInvokersSelectorTest {
     @Test
     public void test() {
 
-        MockInvokersSelector selector = new MockInvokersSelector(URL.valueOf(""), TailStateRouter.getInstance());
+        MockInvokersSelector selector = new MockInvokersSelector(URL.valueOf(""));
 
         // Data preparation
         Invoker<DemoService> invoker1 = Mockito.mock(Invoker.class);
