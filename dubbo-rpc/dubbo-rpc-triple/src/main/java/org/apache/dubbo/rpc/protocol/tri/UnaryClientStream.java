@@ -77,7 +77,12 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             response.setErrorMessage(status.description);
             final AppResponse result = new AppResponse();
             final Metadata trailers = getTrailers() == null ? getHeaders() : getTrailers();
-            result.setException(getThrowableFromTrailers(trailers));
+            final Throwable trailersException = getThrowableFromTrailers(trailers);
+            if (trailersException != null) {
+                result.setException(trailersException);
+            } else {
+                result.setException(status.cause);
+            }
             result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(trailers));
             response.setResult(result);
             if (!result.hasException()) {

@@ -98,7 +98,12 @@ public class ClientStream extends AbstractClientStream implements Stream {
                 if (GrpcStatus.Code.isOk(status.code.code)) {
                     outboundMessageSubscriber().onCompleted();
                 } else {
-                    onError(getThrowableFromTrailers(trailers));
+                    final Throwable trailersException = getThrowableFromTrailers(trailers);
+                    if (trailersException != null) {
+                        onError(trailersException);
+                    } else {
+                        onError(status.cause);
+                    }
                 }
             });
         }
