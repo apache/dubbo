@@ -107,7 +107,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private volatile ServiceInstance serviceInstance;
 
     private AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
-    private AtomicBoolean hasPreparedInternalModule = new AtomicBoolean(false);
+    private volatile boolean hasPreparedInternalModule = false;
 
     private volatile MetadataService metadataService;
 
@@ -119,6 +119,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private Object stateLock = new Object();
     private Object startLock = new Object();
     private Object destroyLock = new Object();
+    private Object internalModuleLock = new Object();
 
     public DefaultApplicationDeployer(ApplicationModel applicationModel) {
         super(applicationModel);
@@ -183,8 +184,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      */
     @Override
     public void initialize() {
+        if (initialized) {
+            return;
+        }
         // Ensure that the initialization is completed when concurrent calls
-        if (initialized.compareAndSet(false, true)) {
+        synchronized (startLock) {
+            if (initialized) {
+                return;
+            }
             // register shutdown hook
             registerShutdownHook();
 
@@ -198,6 +205,8 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             startMetadataCenter();
 
             initMetadataService();
+
+            initialized = true;
 
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " has been initialized!");
@@ -632,7 +641,14 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     private void prepareInternalModule() {
-        if (hasPreparedInternalModule.compareAndSet(false, true)) {
+        if(hasPreparedInternalModule){
+            return;
+        }
+        synchronized (internalModuleLock) {
+            if (hasPreparedInternalModule) {
+                return;
+            }
+
             // start internal module
             ModuleDeployer internalModuleDeployer = applicationModel.getInternalModule().getDeployer();
             if (!internalModuleDeployer.isStarted()) {

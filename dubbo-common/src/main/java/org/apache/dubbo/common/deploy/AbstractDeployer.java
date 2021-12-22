@@ -39,7 +39,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     private volatile Throwable lastError;
 
-    protected AtomicBoolean initialized = new AtomicBoolean(false);
+    protected volatile boolean initialized = false;
 
     private List<DeployListener<E>> listeners = new ArrayList<>();
 
@@ -164,7 +164,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     public boolean isInitialized() {
-        return initialized.get();
+        return initialized;
     }
 
     protected String getIdentifier() {
