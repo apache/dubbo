@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.cluster.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -27,6 +29,9 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
@@ -101,30 +106,7 @@ public interface FilterChainBuilder {
             } finally {
 
             }
-            return asyncResult.whenCompleteWithContext((r, t) -> {
-                if (filter instanceof ListenableFilter) {
-                    ListenableFilter listenableFilter = ((ListenableFilter) filter);
-                    Filter.Listener listener = listenableFilter.listener(invocation);
-                    try {
-                        if (listener != null) {
-                            if (t == null) {
-                                listener.onResponse(r, originalInvoker, invocation);
-                            } else {
-                                listener.onError(t, originalInvoker, invocation);
-                            }
-                        }
-                    } finally {
-                        listenableFilter.removeListener(invocation);
-                    }
-                } else if (filter instanceof FILTER.Listener) {
-                    FILTER.Listener listener = (FILTER.Listener) filter;
-                    if (t == null) {
-                        listener.onResponse(r, originalInvoker, invocation);
-                    } else {
-                        listener.onError(t, originalInvoker, invocation);
-                    }
-                }
-            });
+            return asyncResult;
         }
 
         @Override
@@ -144,11 +126,115 @@ public interface FilterChainBuilder {
      * @param <TYPE>
      */
     class ClusterFilterChainNode<T, TYPE extends ClusterInvoker<T>, FILTER extends BaseFilter>
-            extends FilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
+        extends FilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
         public ClusterFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
             super(originalInvoker, nextNode, filter);
         }
 
+
+        @Override
+        public URL getRegistryUrl() {
+            return getOriginalInvoker().getRegistryUrl();
+        }
+
+        @Override
+        public Directory<T> getDirectory() {
+            return getOriginalInvoker().getDirectory();
+        }
+
+        @Override
+        public boolean isDestroyed() {
+            return getOriginalInvoker().isDestroyed();
+        }
+    }
+
+    class CallbackRegistrationInvoker<T, FILTER extends BaseFilter> implements Invoker<T> {
+        static final Logger LOGGER = LoggerFactory.getLogger(CallbackRegistrationInvoker.class);
+        private final Invoker<T> filterInvoker;
+        private final List<FILTER> filters;
+
+        public CallbackRegistrationInvoker(Invoker<T> filterInvoker, List<FILTER> filters) {
+            this.filterInvoker = filterInvoker;
+            this.filters = filters;
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            Result asyncResult = filterInvoker.invoke(invocation);
+            asyncResult.whenCompleteWithContext((r, t) -> {
+                for (int i = filters.size() - 1; i >= 0; i--) {
+                    FILTER filter = filters.get(i);
+                    try {
+                        if (filter instanceof ListenableFilter) {
+                            ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                            Filter.Listener listener = listenableFilter.listener(invocation);
+                            try {
+                                if (listener != null) {
+                                    if (t == null) {
+                                        listener.onResponse(r, filterInvoker, invocation);
+                                    } else {
+                                        listener.onError(t, filterInvoker, invocation);
+                                    }
+                                }
+                            } finally {
+                                listenableFilter.removeListener(invocation);
+                            }
+                        } else if (filter instanceof FILTER.Listener) {
+                            FILTER.Listener listener = (FILTER.Listener) filter;
+                            if (t == null) {
+                                listener.onResponse(r, filterInvoker, invocation);
+                            } else {
+                                listener.onError(t, filterInvoker, invocation);
+                            }
+                        }
+                    } catch (Throwable filterThrowable) {
+                        List<String> filterNames = new ArrayList<>(filters.size());
+                        filters.forEach(tmpFilter -> filterNames.add(tmpFilter.getClass().getSimpleName()));
+                        LOGGER.error(String.format("Exception occurred while executing the %s filter named %s.", i, filter.getClass().getSimpleName()));
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug(String.format("Whole filter list is: %s", filterNames));
+                        }
+                        throw filterThrowable;
+                    }
+                }
+            });
+
+            return asyncResult;
+        }
+
+        @Override
+        public Class<T> getInterface() {
+            return filterInvoker.getInterface();
+        }
+
+        @Override
+        public URL getUrl() {
+            return filterInvoker.getUrl();
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return filterInvoker.isAvailable();
+        }
+
+        @Override
+        public void destroy() {
+            filterInvoker.destroy();
+        }
+    }
+
+    class ClusterCallbackRegistrationInvoker<T, FILTER extends BaseFilter> extends CallbackRegistrationInvoker<T, FILTER>
+        implements ClusterInvoker<T> {
+        private ClusterInvoker<T> originalInvoker;
+
+        public ClusterCallbackRegistrationInvoker(ClusterInvoker<T> originalInvoker, Invoker<T> filterInvoker, List<FILTER> filters) {
+            super(filterInvoker, filters);
+            this.originalInvoker = originalInvoker;
+        }
+
+        public ClusterInvoker<T> getOriginalInvoker() {
+            return originalInvoker;
+        }
 
         @Override
         public URL getRegistryUrl() {

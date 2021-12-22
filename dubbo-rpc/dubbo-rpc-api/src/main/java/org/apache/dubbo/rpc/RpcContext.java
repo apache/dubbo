@@ -122,10 +122,6 @@ public class RpcContext {
         return SERVER_LOCAL.get();
     }
 
-    public static void restoreServerContext(RpcContextAttachment oldServerContext) {
-        SERVER_LOCAL.set(oldServerContext);
-    }
-
     /**
      * remove server side context.
      *
@@ -196,10 +192,6 @@ public class RpcContext {
 
     public void clearAfterEachInvoke(boolean remove) {
         this.remove = remove;
-    }
-
-    public static void restoreContext(RpcContextAttachment oldContext) {
-        CLIENT_ATTACHMENT.set(oldContext);
     }
 
     /**
@@ -809,5 +801,61 @@ public class RpcContext {
 
     public static void setRpcContext(URL url) {
         RpcServiceContext.setRpcContext(url);
+    }
+
+    public static RestoreContext storeContext() {
+        return new RestoreContext();
+    }
+
+    public static void restoreContext(RestoreContext restoreContext) {
+        restoreContext.restore();
+    }
+
+    protected static void restoreClientAttachment(RpcContextAttachment oldContext) {
+        CLIENT_ATTACHMENT.set(oldContext);
+    }
+
+    protected static void restoreServerContext(RpcContextAttachment oldServerContext) {
+        SERVER_LOCAL.set(oldServerContext);
+    }
+
+    protected static void restoreServerAttachment(RpcContextAttachment oldServerContext) {
+        SERVER_ATTACHMENT.set(oldServerContext);
+    }
+
+    protected static void restoreServiceContext(RpcServiceContext oldServiceContext) {
+        SERVICE_CONTEXT.set(oldServiceContext);
+    }
+
+    /**
+     * Used to temporarily store and restore all kinds of contexts of current thread.
+     */
+    public static class RestoreContext {
+        private final RpcServiceContext clientServiceContext;
+        private final RpcContextAttachment clientAttachment;
+        private final RpcContextAttachment serverAttachment;
+        private final RpcContextAttachment serverLocal;
+
+        public RestoreContext() {
+            clientServiceContext = getServiceContext().copyOf();
+            clientAttachment = getClientAttachment().copyOf();
+            serverAttachment = getServerAttachment().copyOf();
+            serverLocal = getServerContext().copyOf();
+        }
+
+        public void restore() {
+            if (clientServiceContext != null) {
+                restoreServiceContext(clientServiceContext);
+            }
+            if (clientAttachment != null) {
+                restoreClientAttachment(clientAttachment);
+            }
+            if (serverAttachment != null) {
+                restoreServerAttachment(serverAttachment);
+            }
+            if (serverLocal != null) {
+                restoreServerContext(serverLocal);
+            }
+        }
     }
 }

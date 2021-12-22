@@ -71,7 +71,7 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
             }
         }
 
-        return last;
+        return new CallbackRegistrationInvoker<>(last, filters);
     }
 
     /**
@@ -107,7 +107,7 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
             }
         }
 
-        return last;
+        return new ClusterCallbackRegistrationInvoker<>(originalInvoker, last, filters);
     }
 
     private <T> List<T> sortingAndDeduplication(List<T> filters, List<ExtensionDirector> directors) {
