@@ -22,7 +22,6 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.deploy.DeployState.FAILED;
 import static org.apache.dubbo.common.deploy.DeployState.PENDING;
