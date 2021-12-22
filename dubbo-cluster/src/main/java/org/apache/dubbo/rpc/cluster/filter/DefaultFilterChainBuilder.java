@@ -69,9 +69,10 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
                 final Invoker<T> next = last;
                 last = new FilterChainNode<>(originalInvoker, next, filter);
             }
+            return new CallbackRegistrationInvoker<>(last, filters);
         }
 
-        return new CallbackRegistrationInvoker<>(last, filters);
+        return last;
     }
 
     /**
@@ -105,9 +106,10 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
                 final Invoker<T> next = last;
                 last = new ClusterFilterChainNode<>(originalInvoker, next, filter);
             }
+            return new ClusterCallbackRegistrationInvoker<>(originalInvoker, last, filters);
         }
 
-        return new ClusterCallbackRegistrationInvoker<>(originalInvoker, last, filters);
+        return last;
     }
 
     private <T> List<T> sortingAndDeduplication(List<T> filters, List<ExtensionDirector> directors) {

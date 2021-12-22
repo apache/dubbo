@@ -295,7 +295,7 @@ public class FailoverClusterInvokerTest {
             }
             invokers.clear();
             MockInvoker<Demo> invoker3 = new MockInvoker<>(Demo.class, url);
-            invoker3.setResult(AsyncRpcResult.newDefaultAsyncResult(null));
+            invoker3.setResult(AsyncRpcResult.newDefaultAsyncResult(mock(RpcInvocation.class)));
             invokers.add(invoker3);
             dic.notify(invokers);
             return null;
