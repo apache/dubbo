@@ -189,7 +189,9 @@ public class RouterChain<T> {
      * store each router's input and output, log out if empty
      */
     private void printRouterSnapshot(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
-        logRouterSnapshot(url, invocation, buildRouterSnapshot(url, availableInvokers, invocation));
+        if (logger.isWarnEnabled()) {
+            logRouterSnapshot(url, invocation, buildRouterSnapshot(url, availableInvokers, invocation));
+        }
     }
 
     /**
