@@ -17,8 +17,8 @@
 package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-
 import org.apache.dubbo.common.utils.StringUtils;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -33,11 +33,11 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class URLTest {
@@ -337,6 +337,34 @@ public class URLTest {
         } catch (IllegalStateException expected) {
             assertEquals("url missing protocol: \"://1.2.3.4:8080/path\"", expected.getMessage());
         }
+    }
+
+    @Test
+    public void test_ignore_pond() {
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path#index?version=1.0.0&id=org.apache.dubbo.config.RegistryConfig#0");
+        URL urlFromDecoder = URLStrParser.parseDecodedStr("dubbo://admin:hello1234@10.20.130.230:20880/context/path#index?version=1.0.0&id=org.apache.dubbo.config.RegistryConfig#0");
+
+        assertURLStrDecoder(url);
+
+        assertEquals("dubbo", url.getProtocol());
+        assertEquals("admin", url.getUsername());
+        assertEquals("hello1234", url.getPassword());
+        assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
+        assertEquals(20880, url.getPort());
+        assertEquals("context/path", url.getPath());
+        assertEquals(2, url.getParameters().size());
+        assertEquals("org.apache.dubbo.config.RegistryConfig#0", url.getParameter("id"));
+
+        assertEquals("dubbo", urlFromDecoder.getProtocol());
+        assertEquals("admin", urlFromDecoder.getUsername());
+        assertEquals("hello1234", urlFromDecoder.getPassword());
+        assertEquals("10.20.130.230", urlFromDecoder.getHost());
+        assertEquals("10.20.130.230:20880", urlFromDecoder.getAddress());
+        assertEquals(20880, urlFromDecoder.getPort());
+        assertEquals("context/path", urlFromDecoder.getPath());
+        assertEquals(2, urlFromDecoder.getParameters().size());
+        assertEquals("org.apache.dubbo.config.RegistryConfig#0", urlFromDecoder.getParameter("id"));
     }
 
     @Test
