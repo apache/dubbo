@@ -150,8 +150,8 @@ public interface FilterChainBuilder {
 
     class CallbackRegistrationInvoker<T, FILTER extends BaseFilter> implements Invoker<T> {
         static final Logger LOGGER = LoggerFactory.getLogger(CallbackRegistrationInvoker.class);
-        private final Invoker<T> filterInvoker;
-        private final List<FILTER> filters;
+        final Invoker<T> filterInvoker;
+        final List<FILTER> filters;
 
         public CallbackRegistrationInvoker(Invoker<T> filterInvoker, List<FILTER> filters) {
             this.filterInvoker = filterInvoker;

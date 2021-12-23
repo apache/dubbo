@@ -28,8 +28,8 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
 import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +69,7 @@ public class AbstractClusterTest {
         Invoker<?> invoker = demoCluster.join(directory, true);
         Assertions.assertTrue(invoker instanceof AbstractCluster.ClusterFilterInvoker);
         Assertions.assertTrue(((AbstractCluster.ClusterFilterInvoker<?>) invoker).getFilterInvoker()
-            instanceof FilterChainBuilder.ClusterFilterChainNode);
+            instanceof FilterChainBuilder.ClusterCallbackRegistrationInvoker);
 
 
     }
