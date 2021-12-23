@@ -15,29 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
+package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-import java.util.List;
+import org.apache.dubbo.common.URL;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 
-public class ListDoubleMatch {
-    private List<DoubleMatch> oneof;
+public class StandardMeshRuleRouterFactoryTest {
 
-    public List<DoubleMatch> getOneof() {
-        return oneof;
-    }
-
-    public void setOneof(List<DoubleMatch> oneof) {
-        this.oneof = oneof;
-    }
-
-    public boolean isMatch(Double input) {
-
-        for (DoubleMatch doubleMatch : oneof) {
-            if (doubleMatch.isMatch(input)) {
-                return true;
-            }
-        }
-        return false;
+    @Test
+    public void getRouter() {
+        StandardMeshRuleRouterFactory ruleRouterFactory = new StandardMeshRuleRouterFactory();
+        Assertions.assertTrue(ruleRouterFactory.getRouter(Object.class, URL.valueOf("")) instanceof StandardMeshRuleRouter);
     }
 }

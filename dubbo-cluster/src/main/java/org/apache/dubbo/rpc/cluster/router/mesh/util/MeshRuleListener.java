@@ -15,29 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
+package org.apache.dubbo.rpc.cluster.router.mesh.util;
+
 
 import java.util.List;
+import java.util.Map;
 
+public interface MeshRuleListener {
+    void onRuleChange(String appName, List<Map<String, Object>> rules);
 
-public class ListDoubleMatch {
-    private List<DoubleMatch> oneof;
+    void clearRule(String appName);
 
-    public List<DoubleMatch> getOneof() {
-        return oneof;
-    }
-
-    public void setOneof(List<DoubleMatch> oneof) {
-        this.oneof = oneof;
-    }
-
-    public boolean isMatch(Double input) {
-
-        for (DoubleMatch doubleMatch : oneof) {
-            if (doubleMatch.isMatch(input)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    String ruleSuffix();
 }

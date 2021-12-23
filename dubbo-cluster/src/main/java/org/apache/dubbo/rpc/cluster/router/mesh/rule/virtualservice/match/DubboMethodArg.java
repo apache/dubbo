@@ -65,14 +65,14 @@ public class DubboMethodArg {
         this.bool_value = bool_value;
     }
 
-    public static boolean isMatch(DubboMethodArg dubboMethodArg, Object input) {
+    public boolean isMatch(Object input) {
 
-        if (dubboMethodArg.getStr_value() != null) {
-            return ListStringMatch.isMatch(dubboMethodArg.getStr_value(), (String) input);
-        } else if (dubboMethodArg.getNum_value() != null) {
-            return ListDoubleMatch.isMatch(dubboMethodArg.getNum_value(), Double.valueOf(input.toString()));
-        } else if (dubboMethodArg.getBool_value() != null) {
-            return BoolMatch.isMatch(dubboMethodArg.getBool_value(), (Boolean) input);
+        if (str_value != null) {
+            return input instanceof String && str_value.isMatch((String) input);
+        } else if (num_value != null) {
+            return num_value.isMatch(Double.valueOf(input.toString()));
+        } else if (bool_value != null) {
+            return input instanceof Boolean && bool_value.isMatch((Boolean) input);
         }
         return false;
     }
