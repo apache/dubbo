@@ -39,13 +39,13 @@ public class DoubleRangeMatch {
     }
 
 
-    public static boolean isMatch(DoubleRangeMatch doubleRangeMatch, Double input) {
-        if (doubleRangeMatch.getStart() != null && doubleRangeMatch.getEnd() != null) {
-            return input.compareTo(doubleRangeMatch.getStart()) >= 0 && input.compareTo(doubleRangeMatch.getEnd()) < 0;
-        } else if (doubleRangeMatch.getStart() != null) {
-            return input.compareTo(doubleRangeMatch.getStart()) >= 0;
-        } else if (doubleRangeMatch.getEnd() != null) {
-            return input.compareTo(doubleRangeMatch.getEnd()) < 0;
+    public boolean isMatch(Double input) {
+        if (start != null && end != null) {
+            return input.compareTo(start) >= 0 && input.compareTo(end) < 0;
+        } else if (start != null) {
+            return input.compareTo(start) >= 0;
+        } else if (end != null) {
+            return input.compareTo(end) < 0;
         } else {
             return false;
         }

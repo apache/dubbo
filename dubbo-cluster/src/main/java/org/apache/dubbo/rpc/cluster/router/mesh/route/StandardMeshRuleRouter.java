@@ -14,19 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
 
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.STANDARD_ROUTER_KEY;
 
-@Activate(order = -50)
-public class MeshRuleRouterFactory implements RouterFactory {
+public class StandardMeshRuleRouter<T> extends MeshRuleRouter<T> {
+
+    public StandardMeshRuleRouter(URL url) {
+        super(url);
+    }
+
     @Override
-    public Router getRouter(URL url) {
-        return new MeshRuleRouter(url);
+    public String ruleSuffix() {
+        return STANDARD_ROUTER_KEY;
+    }
+
+    @Override
+    public boolean isForce() {
+        return false;
+    }
+
+    @Override
+    public int getPriority() {
+        return -500;
     }
 }

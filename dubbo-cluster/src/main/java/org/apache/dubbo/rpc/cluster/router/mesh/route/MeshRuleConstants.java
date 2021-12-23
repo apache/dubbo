@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-import org.apache.dubbo.common.URL;
-import org.junit.jupiter.api.Test;
+public class MeshRuleConstants {
+    public static final String INVALID_APP_NAME = "unknown";
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+    public static final String DESTINATION_RULE_KEY = "DestinationRule";
 
+    public static final String VIRTUAL_SERVICE_KEY = "VirtualService";
 
-public class MeshRuleRouterFactoryTest {
+    public static final String KIND_KEY = "kind";
 
-    @Test
-    public void getRouter() {
-        MeshRuleRouterFactory ruleRouterFactory = new MeshRuleRouterFactory();
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("demoService");
-        ruleRouterFactory.getRouter(url);
-    }
+    public static final String MESH_RULE_DATA_ID_SUFFIX = ".MESHAPPRULE";
+
+    public static final String NAME_KEY = "name";
+
+    public static final String METADATA_KEY = "metadata";
+
+    public static final String STANDARD_ROUTER_KEY = "standard";
 }

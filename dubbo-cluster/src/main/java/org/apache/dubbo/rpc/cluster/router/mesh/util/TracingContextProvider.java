@@ -14,30 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.cluster.router.mesh.util;
 
-package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.Invocation;
 
-import java.util.List;
+/**
+ * SPI to get tracing context from 3rd-party tracing utils ( e.g. OpenTracing )
+ */
+@SPI(scope = ExtensionScope.APPLICATION)
+public interface TracingContextProvider {
 
-
-public class ListDoubleMatch {
-    private List<DoubleMatch> oneof;
-
-    public List<DoubleMatch> getOneof() {
-        return oneof;
-    }
-
-    public void setOneof(List<DoubleMatch> oneof) {
-        this.oneof = oneof;
-    }
-
-    public boolean isMatch(Double input) {
-
-        for (DoubleMatch doubleMatch : oneof) {
-            if (doubleMatch.isMatch(input)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    /**
+     * Get value from context
+     *
+     * @param invocation invocation
+     * @param key key of value
+     * @return value (null if absent)
+     */
+    String getValue(Invocation invocation, String key);
 }
