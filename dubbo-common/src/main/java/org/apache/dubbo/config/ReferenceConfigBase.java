@@ -217,7 +217,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             return GenericService.class;
         }
         try {
-            if (interfaceName != null && interfaceName.length() > 0) {
+            if (StringUtils.isNotEmpty(interfaceName)) {
                 return Class.forName(interfaceName, true, classLoader);
             }
         } catch (ClassNotFoundException t) {
@@ -232,16 +232,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (this.consumer != null && this.consumer.getScopeModel() != scopeModel) {
             this.consumer.setScopeModel(scopeModel);
         }
-    }
-
-    @Override
-    public String getInterface() {
-        return interfaceName;
-    }
-
-    @Override
-    public void setInterface(String interfaceName) {
-        this.interfaceName = interfaceName;
     }
 
     public void setInterface(Class<?> interfaceClass) {

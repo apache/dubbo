@@ -44,7 +44,7 @@ public class MonitorConfig extends AbstractConfig {
     private String address;
 
     /**
-     * The monitor user name
+     * The monitor username
      */
     private String username;
 

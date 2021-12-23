@@ -14,30 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.common.extension.ext6_wrap.impl;
 
-package org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Wrapper;
+import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
+import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
 
-import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+@Wrapper(mismatches = {"impl1", "impl2"}, order = 4)
+public class Ext6Wrapper4 implements WrappedExt, WrappedExtWrapper {
+    public static AtomicInteger echoCount = new AtomicInteger();
+    WrappedExt origin;
 
-public class ListDoubleMatch {
-    private List<DoubleMatch> oneof;
-
-    public List<DoubleMatch> getOneof() {
-        return oneof;
+    public Ext6Wrapper4(WrappedExt origin) {
+        this.origin = origin;
     }
 
-    public void setOneof(List<DoubleMatch> oneof) {
-        this.oneof = oneof;
+    public String echo(URL url, String s) {
+        echoCount.incrementAndGet();
+        return origin.echo(url, s);
     }
 
-    public boolean isMatch(Double input) {
-
-        for (DoubleMatch doubleMatch : oneof) {
-            if (doubleMatch.isMatch(input)) {
-                return true;
-            }
-        }
-        return false;
+    public WrappedExt getOrigin() {
+        return origin;
     }
 }

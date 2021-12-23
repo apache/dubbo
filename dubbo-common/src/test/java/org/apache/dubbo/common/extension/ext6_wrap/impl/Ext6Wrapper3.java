@@ -14,20 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.json;
+package org.apache.dubbo.common.extension.ext6_wrap.impl;
 
-/**
- * ParseException.
- */
-@Deprecated
-public class ParseException extends Exception {
-    private static final long serialVersionUID = 8611884051738966316L;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Wrapper;
+import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
+import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
 
-    public ParseException() {
-        super();
+import java.util.concurrent.atomic.AtomicInteger;
+
+@Wrapper(matches = {"impl3"}, order = 3)
+public class Ext6Wrapper3 implements WrappedExt, WrappedExtWrapper {
+    public static AtomicInteger echoCount = new AtomicInteger();
+    WrappedExt origin;
+
+    public Ext6Wrapper3(WrappedExt origin) {
+        this.origin = origin;
     }
 
-    public ParseException(String message) {
-        super(message);
+    public String echo(URL url, String s) {
+        echoCount.incrementAndGet();
+        return origin.echo(url, s);
+    }
+
+    public WrappedExt getOrigin() {
+        return origin;
     }
 }

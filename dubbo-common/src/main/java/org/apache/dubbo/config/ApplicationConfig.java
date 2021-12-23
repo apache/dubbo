@@ -42,6 +42,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
@@ -532,7 +533,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.metadataServicePort = metadataServicePort;
     }
 
-    @Parameter(key = METADATA_SERVICE_PORT_KEY)
+    @Parameter(key = METADATA_SERVICE_PROTOCOL_KEY)
     public String getMetadataServiceProtocol() {
         return metadataServiceProtocol;
     }

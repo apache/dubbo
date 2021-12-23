@@ -379,8 +379,6 @@ public class ProtocolConfigTest {
             Assertions.assertEquals(port, protocol.getPort());
             Assertions.assertEquals(protocolId, protocol.getId());
 
-            ProtocolConfig protocolConfig = configManager.getProtocol(protocolId).get();
-
         } finally {
             DubboBootstrap.getInstance().stop();
         }

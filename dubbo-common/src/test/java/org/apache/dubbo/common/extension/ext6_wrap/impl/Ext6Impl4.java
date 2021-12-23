@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.common.extension.ext6_wrap.impl;
 
-package org.apache.dubbo.rpc.cluster.router.mesh.util;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 
+public class Ext6Impl4 implements WrappedExt {
 
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
-
-public interface VsDestinationGroupRuleListener {
-    void onRuleChange(VsDestinationGroup vsDestinationGroup);
+    @Override
+    public String echo(URL url, String s) {
+        return "Ext6Impl4-echo";
+    }
 }

@@ -14,31 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.json;
 
-import java.io.IOException;
+package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-/**
- * JSON converter.
- */
-@Deprecated
-public interface JSONConverter {
-    /**
-     * write object.
-     *
-     * @param obj     obj.
-     * @param builder builder.
-     * @throws IOException
-     */
-    void writeValue(Object obj, JSONWriter builder, boolean writeClass) throws IOException;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
-    /**
-     * convert json value to target class.
-     *
-     * @param type target type.
-     * @param jv   json value.
-     * @return target object.
-     * @throws IOException
-     */
-    Object readValue(Class<?> type, Object jv) throws IOException;
+
+@Activate(order = -50)
+public class StandardMeshRuleRouterFactory implements StateRouterFactory {
+    @Override
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        return new StandardMeshRuleRouter<>(url);
+    }
 }

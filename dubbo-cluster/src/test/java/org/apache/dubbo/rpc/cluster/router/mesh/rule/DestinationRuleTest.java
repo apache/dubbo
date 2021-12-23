@@ -20,14 +20,15 @@ package org.apache.dubbo.rpc.cluster.router.mesh.rule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.loadbalance.SimpleLB;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceRule;
+
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 
 import java.util.Map;
 
-import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshAppRuleListener.DESTINATION_RULE_KEY;
-import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshAppRuleListener.KIND_KEY;
-import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshAppRuleListener.VIRTUAL_SERVICE_KEY;
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.DESTINATION_RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.KIND_KEY;
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.VIRTUAL_SERVICE_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
