@@ -218,7 +218,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
         do {
             BitList<Invoker<T>> result = meshRuleCache.getSubsetInvokers(appName, subset);
 
-            if (CollectionUtils.isNotEmpty(result) && !availableInvokers.and(result).isEmpty()) {
+            if (CollectionUtils.isNotEmpty(result) && !availableInvokers.clone().and(result).isEmpty()) {
                 return subset;
             }
 
@@ -229,6 +229,9 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
             }
             dubboDestination = dubboRouteDestination.getDestination();
 
+            if (dubboDestination == null) {
+                break;
+            }
             subset = dubboDestination.getSubset();
         } while (true);
 
