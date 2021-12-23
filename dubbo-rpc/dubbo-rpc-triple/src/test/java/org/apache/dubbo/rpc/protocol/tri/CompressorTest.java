@@ -36,7 +36,7 @@ class CompressorTest {
         TEST_STR = builder.toString();
     }
 
-    @ValueSource(strings = {"gzip", "identity"})
+    @ValueSource(strings = {"gzip"})
     @ParameterizedTest
     void compression(String compressorName) {
         System.out.println("current compressor is " + compressorName);

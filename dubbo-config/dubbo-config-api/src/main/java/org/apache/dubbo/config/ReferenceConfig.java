@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -101,8 +102,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * <li>when the url is dubbo://224.5.6.7:1234/org.apache.dubbo.config.api.DemoService?application=dubbo-sample, then
      * the protocol is <b>DubboProtocol</b></li>
      * <p>
-     * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
-     * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
+     * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wrap three
+     * layers, and eventually will get a <b>ProtocolSerializationWrapper</b> or <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
     private Protocol protocolSPI;
 
@@ -241,7 +242,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             ModuleServiceRepository repository = getScopeModel().getServiceRepository();
             repository.unregisterConsumer(consumerModel);
         }
-        getScopeModel().getConfigManager().removeConfig(this);
     }
 
     protected synchronized void init() {
@@ -254,7 +254,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             this.refresh();
         }
 
-        //init serviceMetadata
+        // init serviceMetadata
         initServiceMetadata(consumer);
         serviceMetadata.setServiceType(getServiceInterfaceClass());
         // TODO, uncomment this line once service key is unified
@@ -318,7 +318,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         if (!ProtocolUtils.isGeneric(generic)) {
             String revision = Version.getVersion(interfaceClass, version);
-            if (revision != null && revision.length() > 0) {
+            if (StringUtils.isNotEmpty(revision)) {
                 map.put(REVISION_KEY, revision);
             }
 
@@ -374,7 +374,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             createInvokerForLocal(referenceParameters);
         } else {
             urls.clear();
-            if (url != null && url.length() > 0) {
+            if (StringUtils.isNotEmpty(url)) {
                 // user specified URL, could be peer-to-peer address, or register center's address.
                 parseUrl(referenceParameters);
             } else {
@@ -407,7 +407,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void createInvokerForLocal(Map<String, String> referenceParameters) {
-        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(referenceParameters);
+        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName(), referenceParameters);
         url = url.setScopeModel(getScopeModel());
         url = url.setServiceModel(consumerModel);
         Invoker<?> withFilter = protocolSPI.refer(interfaceClass, url);
@@ -426,7 +426,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private void parseUrl(Map<String, String> referenceParameters) {
         String[] us = SEMICOLON_SPLIT_PATTERN.split(url);
-        if (us != null && us.length > 0) {
+        if (ArrayUtils.isNotEmpty(us)) {
             for (String u : us) {
                 URL url = URL.valueOf(u);
                 if (StringUtils.isEmpty(url.getPath())) {
@@ -478,7 +478,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     private void createInvokerForRemote() {
         if (urls.size() == 1) {
             URL curUrl = urls.get(0);
-            invoker = protocolSPI.refer(interfaceClass,curUrl);
+            invoker = protocolSPI.refer(interfaceClass, curUrl);
             if (!UrlUtils.isRegistry(curUrl)){
                 List<Invoker<?>> invokers = new ArrayList<>();
                 invokers.add(invoker);

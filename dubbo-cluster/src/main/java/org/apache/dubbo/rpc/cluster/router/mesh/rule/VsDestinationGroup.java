@@ -52,4 +52,8 @@ public class VsDestinationGroup {
     public void setDestinationRuleList(List<DestinationRule> destinationRuleList) {
         this.destinationRuleList = destinationRuleList;
     }
+
+    public boolean isValid() {
+        return virtualServiceRuleList.size() > 0 && destinationRuleList.size() > 0;
+    }
 }

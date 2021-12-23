@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.router.state;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
@@ -60,11 +61,24 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     public BitList(List<E> originList, boolean empty) {
+        if (originList instanceof BitList) {
+            this.originList = ((BitList<E>) originList).getOriginList();
+        } else {
+            this.originList = originList;
+        }
+        this.rootSet = new BitSet();
+        if (!empty) {
+            this.rootSet.set(0, originList.size());
+        }
+    }
+
+    public BitList(List<E> originList, boolean empty, List<E> tailList) {
         this.originList = originList;
         this.rootSet = new BitSet();
         if (!empty) {
             this.rootSet.set(0, originList.size());
         }
+        this.tailList = tailList;
     }
 
     public BitList(List<E> originList, BitSet rootSet, List<E> tailList) {
@@ -82,6 +96,18 @@ public class BitList<E> extends AbstractList<E> {
         this.rootSet.set(index);
     }
 
+    public int totalSetSize() {
+        return this.originList.size();
+    }
+
+    public boolean indexExist(int index) {
+        return this.rootSet.get(index);
+    }
+
+    public E getByIndex(int index) {
+        return this.originList.get(index);
+    }
+
     /**
      * And operation between two bitList. Return a new cloned list.
      * TailList in source bitList will be totally saved even if it is not appeared in the target bitList.
@@ -90,8 +116,13 @@ public class BitList<E> extends AbstractList<E> {
      * @return a new bitList only contains those elements contain in both two list and source bitList's tailList
      */
     public BitList<E> and(BitList<E> target) {
+        rootSet.and(target.rootSet);
+        return this;
+    }
+
+    public BitList<E> or(BitList<E> target) {
         BitSet resultSet = (BitSet) rootSet.clone();
-        resultSet.and(target.rootSet);
+        resultSet.or(target.rootSet);
         return new BitList<>(originList, resultSet, tailList);
     }
 
@@ -255,6 +286,11 @@ public class BitList<E> extends AbstractList<E> {
             }
         }
         return index;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.rootSet.isEmpty() && (tailList == null || tailList.isEmpty());
     }
 
     @Override
@@ -447,6 +483,15 @@ public class BitList<E> extends AbstractList<E> {
         public void add(E e) {
             throw new UnsupportedOperationException("Add method is not supported in BitListIterator!");
         }
+    }
+
+    public ArrayList<E> cloneToArrayList() {
+        if (rootSet.cardinality() == originList.size() && (tailList == null || tailList.isEmpty())) {
+            return new ArrayList<>(originList);
+        }
+        ArrayList<E> arrayList = new ArrayList<>(size());
+        arrayList.addAll(this);
+        return arrayList;
     }
 
     @Override

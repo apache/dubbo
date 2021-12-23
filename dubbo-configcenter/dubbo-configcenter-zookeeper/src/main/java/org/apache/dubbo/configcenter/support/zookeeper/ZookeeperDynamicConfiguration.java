@@ -25,7 +25,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
-
 import org.apache.zookeeper.data.Stat;
 
 import java.util.Collection;
@@ -41,27 +40,22 @@ import java.util.concurrent.TimeUnit;
 public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration {
 
     private Executor executor;
-    // The final root path would be: /configRootPath/"config"
-    private String rootPath;
     private ZookeeperClient zkClient;
 
     private CacheListener cacheListener;
-    private URL url;
     private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
     private static final int DEFAULT_QUEUE = 10000;
     private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
-        this.url = url;
-        rootPath = getRootPath(url);
 
         this.cacheListener = new CacheListener(rootPath);
 
         final String threadName = this.getClass().getSimpleName();
         this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
             THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(DEFAULT_QUEUE),
+            new LinkedBlockingQueue<>(DEFAULT_QUEUE),
             new NamedThreadFactory(threadName, true),
             new AbortPolicyWithReport(threadName, url));
 

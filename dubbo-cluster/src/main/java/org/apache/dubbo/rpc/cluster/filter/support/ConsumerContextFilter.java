@@ -51,9 +51,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_K
 public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Listener {
 
     private ApplicationModel applicationModel;
+    private Set<PenetrateAttachmentSelector> supportedSelectors;
 
     public ConsumerContextFilter(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = applicationModel.getExtensionLoader(PenetrateAttachmentSelector.class);
+        supportedSelectors = selectorExtensionLoader.getSupportedExtensionInstances();
     }
 
     @Override
@@ -68,11 +71,9 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
 
-        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = applicationModel.getExtensionLoader(PenetrateAttachmentSelector.class);
-        Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
         if (CollectionUtils.isNotEmpty(supportedSelectors)) {
-            for (String supportedSelector : supportedSelectors) {
-                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select();
+            for (PenetrateAttachmentSelector supportedSelector : supportedSelectors) {
+                Map<String, Object> selected = supportedSelector.select();
                 if (CollectionUtils.isNotEmptyMap(selected)) {
                     ((RpcInvocation) invocation).addObjectAttachments(selected);
                 }

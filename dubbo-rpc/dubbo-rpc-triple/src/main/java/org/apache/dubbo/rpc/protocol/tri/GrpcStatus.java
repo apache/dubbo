@@ -149,11 +149,19 @@ public class GrpcStatus {
         }
     }
 
-    public static String fromMessage(String raw) {
+    public static String decodeMessage(String raw) {
         if (StringUtils.isEmpty(raw)) {
             return "";
         }
         return QueryStringDecoder.decodeComponent(raw);
+    }
+
+
+    public static String encodeMessage(String raw) {
+        if (StringUtils.isEmpty(raw)) {
+            return "";
+        }
+        return encodeComponent(raw);
     }
 
     public GrpcStatus withCause(Throwable cause) {
@@ -182,8 +190,13 @@ public class GrpcStatus {
             return "";
         }
         String output = limitSizeTo4KB(msg);
+        return encodeComponent(output);
+    }
+
+
+    private static String encodeComponent(String raw) {
         QueryStringEncoder encoder = new QueryStringEncoder("");
-        encoder.addParam("", output);
+        encoder.addParam("", raw);
         // ?=
         return encoder.toString().substring(2);
     }

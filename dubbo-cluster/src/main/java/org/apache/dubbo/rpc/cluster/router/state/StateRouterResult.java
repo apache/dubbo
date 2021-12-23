@@ -27,15 +27,45 @@ public class StateRouterResult<T> {
         this.message = null;
     }
 
+    public StateRouterResult(BitList<T> invokers, BitList<T> routedResult) {
+        this.needContinueRoute = true;
+        this.result = invokers.and(routedResult);
+        this.message = null;
+    }
+
     public StateRouterResult(BitList<T> result, String message) {
         this.needContinueRoute = true;
         this.result = result;
         this.message = message;
     }
 
+    public StateRouterResult(BitList<T> invokers, BitList<T> routedResult, String message) {
+        this.needContinueRoute = true;
+        this.result = invokers.and(routedResult);
+        this.message = message;
+    }
+
+    public StateRouterResult(boolean needContinueRoute, BitList<T> result) {
+        this.needContinueRoute = needContinueRoute;
+        this.result = result;
+        this.message = null;
+    }
+
+    public StateRouterResult(boolean needContinueRoute, BitList<T> invokers, BitList<T> routedResult) {
+        this.needContinueRoute = needContinueRoute;
+        this.result = invokers.and(routedResult);
+        this.message = null;
+    }
+
     public StateRouterResult(boolean needContinueRoute, BitList<T> result, String message) {
         this.needContinueRoute = needContinueRoute;
         this.result = result;
+        this.message = message;
+    }
+
+    public StateRouterResult(boolean needContinueRoute, BitList<T> invokers, BitList<T> routedResult, String message) {
+        this.needContinueRoute = needContinueRoute;
+        this.result = invokers.and(routedResult);
         this.message = message;
     }
 
