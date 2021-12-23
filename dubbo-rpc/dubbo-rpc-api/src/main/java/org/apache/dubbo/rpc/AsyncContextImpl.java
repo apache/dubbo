@@ -27,9 +27,12 @@ public class AsyncContextImpl implements AsyncContext {
     private CompletableFuture<Object> future;
 
     private final RpcContext.RestoreContext restoreContext;
+    private final ClassLoader restoreClassLoader;
+    private ClassLoader stagedClassLoader;
 
     public AsyncContextImpl() {
         restoreContext = RpcContext.storeContext();
+        restoreClassLoader = Thread.currentThread().getContextClassLoader();
     }
 
     @Override
@@ -66,6 +69,18 @@ public class AsyncContextImpl implements AsyncContext {
     @Override
     public void signalContextSwitch() {
         RpcContext.restoreContext(restoreContext);
+        if (restoreClassLoader != null) {
+            stagedClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(restoreClassLoader);
+        }
+    }
+
+    @Override
+    public void resetContext() {
+        RpcContext.removeContext();
+        if (stagedClassLoader != null) {
+            Thread.currentThread().setContextClassLoader(restoreClassLoader);
+        }
     }
 
     public CompletableFuture<Object> getInternalFuture() {

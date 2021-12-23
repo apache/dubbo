@@ -803,12 +803,14 @@ public class RpcContext {
         RpcServiceContext.setRpcContext(url);
     }
 
-    public static RestoreContext storeContext() {
+    protected static RestoreContext storeContext() {
         return new RestoreContext();
     }
 
-    public static void restoreContext(RestoreContext restoreContext) {
-        restoreContext.restore();
+    protected static void restoreContext(RestoreContext restoreContext) {
+        if (restoreContext != null) {
+            restoreContext.restore();
+        }
     }
 
     protected static void restoreClientAttachment(RpcContextAttachment oldContext) {
@@ -831,21 +833,21 @@ public class RpcContext {
      * Used to temporarily store and restore all kinds of contexts of current thread.
      */
     public static class RestoreContext {
-        private final RpcServiceContext clientServiceContext;
+        private final RpcServiceContext serviceContext;
         private final RpcContextAttachment clientAttachment;
         private final RpcContextAttachment serverAttachment;
         private final RpcContextAttachment serverLocal;
 
         public RestoreContext() {
-            clientServiceContext = getServiceContext().copyOf();
+            serviceContext = getServiceContext().copyOf();
             clientAttachment = getClientAttachment().copyOf();
             serverAttachment = getServerAttachment().copyOf();
             serverLocal = getServerContext().copyOf();
         }
 
         public void restore() {
-            if (clientServiceContext != null) {
-                restoreServiceContext(clientServiceContext);
+            if (serviceContext != null) {
+                restoreServiceContext(serviceContext);
             }
             if (clientAttachment != null) {
                 restoreClientAttachment(clientAttachment);

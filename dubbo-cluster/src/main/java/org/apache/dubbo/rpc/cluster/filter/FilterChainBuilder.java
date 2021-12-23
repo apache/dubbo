@@ -30,8 +30,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
@@ -188,11 +188,9 @@ public interface FilterChainBuilder {
                             }
                         }
                     } catch (Throwable filterThrowable) {
-                        List<String> filterNames = new ArrayList<>(filters.size());
-                        filters.forEach(tmpFilter -> filterNames.add(tmpFilter.getClass().getSimpleName()));
                         LOGGER.error(String.format("Exception occurred while executing the %s filter named %s.", i, filter.getClass().getSimpleName()));
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug(String.format("Whole filter list is: %s", filterNames));
+                            LOGGER.debug(String.format("Whole filter list is: %s", filters.stream().map(tmpFilter -> tmpFilter.getClass().getSimpleName()).collect(Collectors.toList())));
                         }
                         throw filterThrowable;
                     }
