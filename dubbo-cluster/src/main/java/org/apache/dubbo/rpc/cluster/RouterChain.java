@@ -77,7 +77,7 @@ public class RouterChain<T> {
         return new RouterChain<>(interfaceClass, url);
     }
 
-    private RouterChain(Class<T> interfaceClass, URL url) {
+    public RouterChain(Class<T> interfaceClass, URL url) {
         ModuleModel moduleModel = url.getOrDefaultModuleModel();
 
         List<RouterFactory> extensionFactories = moduleModel.getExtensionLoader(RouterFactory.class)
@@ -90,22 +90,35 @@ public class RouterChain<T> {
 
         initWithRouters(routers);
 
-        List<StateRouterFactory> extensionStateRouterFactories = moduleModel
+        List<StateRouter<T>> stateRouters = moduleModel
             .getExtensionLoader(StateRouterFactory.class)
-            .getActivateExtension(url, ROUTER_KEY);
+            .getActivateExtension(url, ROUTER_KEY)
+            .stream()
+            .map(factory -> factory.getRouter(interfaceClass, url))
+            .collect(Collectors.toList());
 
-        StateRouter<T> stateRouter = TailStateRouter.getInstance();
-        List<StateRouter<T>> stateRouters = new LinkedList<>();
-        for (int i = extensionStateRouterFactories.size() - 1; i >= 0; i--) {
-            StateRouter<T> nextStateRouter = extensionStateRouterFactories.get(i).getRouter(interfaceClass, url);
-            nextStateRouter.setNextRouter(stateRouter);
-            stateRouter = nextStateRouter;
-            stateRouters.add(stateRouter);
-        }
-        headStateRouter = stateRouter;
-        this.stateRouters = Collections.unmodifiableList(stateRouters);
+        initWithStateRouters(stateRouters);
 
         this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
+    }
+
+    public RouterChain(List<Router> routers, List<StateRouter<T>> stateRouters, boolean shouldFailFast) {
+        initWithRouters(routers);
+
+        initWithStateRouters(stateRouters);
+
+        this.shouldFailFast = shouldFailFast;
+    }
+
+    private void initWithStateRouters(List<StateRouter<T>> stateRouters) {
+        StateRouter<T> stateRouter = TailStateRouter.getInstance();
+        for (int i = stateRouters.size() - 1; i >= 0; i--) {
+            StateRouter<T> nextStateRouter = stateRouters.get(i);
+            nextStateRouter.setNextRouter(stateRouter);
+            stateRouter = nextStateRouter;
+        }
+        this.headStateRouter = stateRouter;
+        this.stateRouters = Collections.unmodifiableList(stateRouters);
     }
 
     /**
