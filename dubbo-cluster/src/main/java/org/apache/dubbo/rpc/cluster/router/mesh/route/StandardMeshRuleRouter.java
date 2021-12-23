@@ -30,14 +30,4 @@ public class StandardMeshRuleRouter<T> extends MeshRuleRouter<T> {
     public String ruleSuffix() {
         return STANDARD_ROUTER_KEY;
     }
-
-    @Override
-    public boolean isForce() {
-        return false;
-    }
-
-    @Override
-    public int getPriority() {
-        return -500;
-    }
 }
