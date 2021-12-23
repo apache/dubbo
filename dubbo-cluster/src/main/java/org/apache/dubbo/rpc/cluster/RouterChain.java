@@ -74,10 +74,6 @@ public class RouterChain<T> {
     private final boolean shouldFailFast;
 
     public static <T> RouterChain<T> buildChain(Class<T> interfaceClass, URL url) {
-        return new RouterChain<>(interfaceClass, url);
-    }
-
-    public RouterChain(Class<T> interfaceClass, URL url) {
         ModuleModel moduleModel = url.getOrDefaultModuleModel();
 
         List<RouterFactory> extensionFactories = moduleModel.getExtensionLoader(RouterFactory.class)
@@ -88,8 +84,6 @@ public class RouterChain<T> {
             .sorted(Router::compareTo)
             .collect(Collectors.toList());
 
-        initWithRouters(routers);
-
         List<StateRouter<T>> stateRouters = moduleModel
             .getExtensionLoader(StateRouterFactory.class)
             .getActivateExtension(url, ROUTER_KEY)
@@ -97,9 +91,10 @@ public class RouterChain<T> {
             .map(factory -> factory.getRouter(interfaceClass, url))
             .collect(Collectors.toList());
 
-        initWithStateRouters(stateRouters);
 
-        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
+        boolean shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
+
+        return new RouterChain<>(routers, stateRouters, shouldFailFast);
     }
 
     public RouterChain(List<Router> routers, List<StateRouter<T>> stateRouters, boolean shouldFailFast) {
