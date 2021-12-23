@@ -70,6 +70,8 @@ public class BitList<E> extends AbstractList<E> {
         this.rootSet = new BitSet();
         if (!empty) {
             this.rootSet.set(0, originList.size());
+        } else {
+            this.tailList = null;
         }
     }
 
