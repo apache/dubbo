@@ -57,7 +57,6 @@ public class AsyncRpcResult implements Result {
     private RpcContext.RestoreContext storedContext;
 
     private Executor executor;
-    private boolean async;
 
     private Invocation invocation;
 
@@ -68,8 +67,9 @@ public class AsyncRpcResult implements Result {
         this.invocation = invocation;
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
         if (InvokeMode.SYNC != rpcInvocation.getInvokeMode() && !future.isDone()) {
-            async = true;
-            this.storedContext = RpcContext.storeContext();
+            this.storedContext = RpcContext.storeContext(false);
+        } else {
+            this.storedContext = RpcContext.storeContext(true);
         }
     }
 
@@ -198,15 +198,12 @@ public class AsyncRpcResult implements Result {
 
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
         this.responseFuture = this.responseFuture.whenComplete((v, t) -> {
-            RpcContext.RestoreContext tmpContext = null;
-            if (async) {
-                tmpContext = RpcContext.storeContext();
-                RpcContext.restoreContext(storedContext);
-            }
+            RpcContext.RestoreContext tmpContext = RpcContext.storeContext(false);
+            RpcContext.restoreContext(storedContext);
+
             fn.accept(v, t);
-            if (async) {
-                RpcContext.restoreContext(tmpContext);
-            }
+
+            RpcContext.restoreContext(tmpContext);
         });
 
         // Necessary! update future in context, see https://github.com/apache/dubbo/issues/9461

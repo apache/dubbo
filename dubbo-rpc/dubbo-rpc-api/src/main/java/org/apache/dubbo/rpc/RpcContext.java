@@ -803,8 +803,8 @@ public class RpcContext {
         RpcServiceContext.setRpcContext(url);
     }
 
-    protected static RestoreContext storeContext() {
-        return new RestoreContext();
+    protected static RestoreContext storeContext(boolean needCopy) {
+        return new RestoreContext(needCopy);
     }
 
     protected static void restoreContext(RestoreContext restoreContext) {
@@ -838,11 +838,11 @@ public class RpcContext {
         private final RpcContextAttachment serverAttachment;
         private final RpcContextAttachment serverLocal;
 
-        public RestoreContext() {
-            serviceContext = getServiceContext().copyOf();
-            clientAttachment = getClientAttachment().copyOf();
-            serverAttachment = getServerAttachment().copyOf();
-            serverLocal = getServerContext().copyOf();
+        public RestoreContext(boolean needCopy) {
+            serviceContext = getServiceContext().copyOf(needCopy);
+            clientAttachment = getClientAttachment().copyOf(needCopy);
+            serverAttachment = getServerAttachment().copyOf(needCopy);
+            serverLocal = getServerContext().copyOf(needCopy);
         }
 
         public void restore() {

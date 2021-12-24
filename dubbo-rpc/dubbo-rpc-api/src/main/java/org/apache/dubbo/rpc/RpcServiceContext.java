@@ -652,22 +652,27 @@ public class RpcServiceContext extends RpcContext {
 
     /**
      * Only part of the properties are copied, the others are either not used currently or can be got from invocation.
-     * Also see {@link RpcContextAttachment#copyOf()}
+     * Also see {@link RpcContextAttachment#copyOf(boolean)}
      *
+     * @param needCopy
      * @return a shallow copy of RpcServiceContext
      */
-    public RpcServiceContext copyOf() {
+    public RpcServiceContext copyOf(boolean needCopy) {
         if (!isValid()) {
             return this;
         }
 
-        RpcServiceContext copy = new RpcServiceContext();
-        copy.consumerUrl = this.consumerUrl;
-        copy.localAddress = this.localAddress;
-        copy.remoteAddress = this.remoteAddress;
-        copy.invocation = this.invocation;
-        copy.asyncContext = this.asyncContext;
-        return copy;
+        if (needCopy) {
+            RpcServiceContext copy = new RpcServiceContext();
+            copy.consumerUrl = this.consumerUrl;
+            copy.localAddress = this.localAddress;
+            copy.remoteAddress = this.remoteAddress;
+            copy.invocation = this.invocation;
+            copy.asyncContext = this.asyncContext;
+            return copy;
+        } else {
+            return this;
+        }
     }
 
 

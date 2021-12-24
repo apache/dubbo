@@ -202,20 +202,24 @@ public class RpcContextAttachment extends RpcContext{
     }
 
     /**
-     * Also see {@link RpcServiceContext#copyOf()}
+     * Also see {@link RpcServiceContext#copyOf(boolean)}
      *
      * @return a copy of RpcContextAttachment with deep copied attachments
      */
-    public RpcContextAttachment copyOf() {
+    public RpcContextAttachment copyOf(boolean needCopy) {
         if (!isValid()) {
             return null;
         }
 
-        RpcContextAttachment copy = new RpcContextAttachment();
-        if (CollectionUtils.isNotEmptyMap(attachments)) {
-            copy.attachments.putAll(this.attachments);
+        if (needCopy) {
+            RpcContextAttachment copy = new RpcContextAttachment();
+            if (CollectionUtils.isNotEmptyMap(attachments)) {
+                copy.attachments.putAll(this.attachments);
+            }
+            return copy;
+        } else {
+            return this;
         }
-        return copy;
     }
 
     private boolean isValid() {
