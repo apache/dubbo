@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.filter;
 
+import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
@@ -106,7 +107,30 @@ public interface FilterChainBuilder {
             } finally {
 
             }
-            return asyncResult;
+            return asyncResult.whenCompleteWithContext((r, t) -> {
+                if (filter instanceof ListenableFilter) {
+                    ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                    Filter.Listener listener = listenableFilter.listener(invocation);
+                    try {
+                        if (listener != null) {
+                            if (t == null) {
+                                listener.onResponse(r, originalInvoker, invocation);
+                            } else {
+                                listener.onError(t, originalInvoker, invocation);
+                            }
+                        }
+                    } finally {
+                        listenableFilter.removeListener(invocation);
+                    }
+                } else if (filter instanceof FILTER.Listener) {
+                    FILTER.Listener listener = (FILTER.Listener) filter;
+                    if (t == null) {
+                        listener.onResponse(r, originalInvoker, invocation);
+                    } else {
+                        listener.onError(t, originalInvoker, invocation);
+                    }
+                }
+            });
         }
 
         @Override
@@ -233,6 +257,100 @@ public interface FilterChainBuilder {
         public ClusterInvoker<T> getOriginalInvoker() {
             return originalInvoker;
         }
+
+        @Override
+        public URL getRegistryUrl() {
+            return getOriginalInvoker().getRegistryUrl();
+        }
+
+        @Override
+        public Directory<T> getDirectory() {
+            return getOriginalInvoker().getDirectory();
+        }
+
+        @Override
+        public boolean isDestroyed() {
+            return getOriginalInvoker().isDestroyed();
+        }
+    }
+
+
+    @Experimental("Works for the same purpose as FilterChainNode, replace FilterChainNode with this one when proved stable enough")
+    class CopyOfFilterChainNode<T, TYPE extends Invoker<T>, FILTER extends BaseFilter> implements Invoker<T> {
+        TYPE originalInvoker;
+        Invoker<T> nextNode;
+        FILTER filter;
+
+        public CopyOfFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
+            this.originalInvoker = originalInvoker;
+            this.nextNode = nextNode;
+            this.filter = filter;
+        }
+
+        public TYPE getOriginalInvoker() {
+            return originalInvoker;
+        }
+
+        @Override
+        public Class<T> getInterface() {
+            return originalInvoker.getInterface();
+        }
+
+        @Override
+        public URL getUrl() {
+            return originalInvoker.getUrl();
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return originalInvoker.isAvailable();
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            Result asyncResult;
+            try {
+                asyncResult = filter.invoke(nextNode, invocation);
+            } catch (Exception e) {
+                if (filter instanceof ListenableFilter) {
+                    ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                    try {
+                        Filter.Listener listener = listenableFilter.listener(invocation);
+                        if (listener != null) {
+                            listener.onError(e, originalInvoker, invocation);
+                        }
+                    } finally {
+                        listenableFilter.removeListener(invocation);
+                    }
+                } else if (filter instanceof FILTER.Listener) {
+                    FILTER.Listener listener = (FILTER.Listener) filter;
+                    listener.onError(e, originalInvoker, invocation);
+                }
+                throw e;
+            } finally {
+
+            }
+            return asyncResult;
+        }
+
+        @Override
+        public void destroy() {
+            originalInvoker.destroy();
+        }
+
+        @Override
+        public String toString() {
+            return originalInvoker.toString();
+        }
+    }
+
+    @Experimental("Works for the same purpose as ClusterFilterChainNode, replace ClusterFilterChainNode with this one when proved stable enough")
+    class CopyOfClusterFilterChainNode<T, TYPE extends ClusterInvoker<T>, FILTER extends BaseFilter>
+        extends CopyOfFilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
+        public CopyOfClusterFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
+            super(originalInvoker, nextNode, filter);
+        }
+
 
         @Override
         public URL getRegistryUrl() {
