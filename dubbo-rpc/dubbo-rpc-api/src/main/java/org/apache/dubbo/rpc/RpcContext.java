@@ -848,15 +848,23 @@ public class RpcContext {
         public void restore() {
             if (serviceContext != null) {
                 restoreServiceContext(serviceContext);
+            } else {
+                removeServiceContext();
             }
             if (clientAttachment != null) {
                 restoreClientAttachment(clientAttachment);
+            } else {
+                removeClientAttachment();
             }
             if (serverAttachment != null) {
                 restoreServerAttachment(serverAttachment);
+            } else {
+                removeServerAttachment();
             }
             if (serverLocal != null) {
                 restoreServerContext(serverLocal);
+            } else {
+                removeServerContext();
             }
         }
     }
