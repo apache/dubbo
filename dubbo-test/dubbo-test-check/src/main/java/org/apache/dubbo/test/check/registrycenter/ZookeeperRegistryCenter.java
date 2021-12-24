@@ -116,13 +116,6 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     private static final String TARGET_ZOOKEEPER_FILE_NAME = UNPACKED_DIRECTORY + ".tar.gz";
 
     /**
-     * The target directory.
-     * The zookeeper binary file named {@link #TARGET_ZOOKEEPER_FILE_NAME} will be saved in
-     * {@link #TARGET_DIRECTORY} if it downloaded successfully.
-     */
-    private static final String TARGET_DIRECTORY = ".tmp" + File.separator + "zookeeper";
-
-    /**
      * The path of target zookeeper binary file.
      */
     private static final Path TARGET_FILE_PATH = getTargetFilePath();
