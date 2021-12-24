@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -277,6 +278,21 @@ public class BitList<E> extends AbstractList<E> {
             }
         }
         return -1;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public boolean addAll(Collection<? extends E> c) {
+        if (c instanceof BitList) {
+            rootSet.or(((BitList<? extends E>) c).rootSet);
+            if (((BitList<? extends E>) c).hasMoreElementInTailList()) {
+                for (E e : ((BitList<? extends E>) c).tailList) {
+                    addToTailList(e);
+                }
+            }
+            return true;
+        }
+        return super.addAll(c);
     }
 
     @Override
