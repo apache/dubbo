@@ -40,7 +40,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 /**
  * InjvmProtocol
  */
-public class InjvmProtocol extends AbstractProtocol implements Protocol {
+public class InjvmProtocol extends AbstractProtocol {
 
     public static final String NAME = LOCAL_PROTOCOL;
 
