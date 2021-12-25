@@ -503,4 +503,9 @@ public interface CommonConstants {
     String ENABLE_CONNECTIVITY_VALIDATION = "dubbo.connectivity.validation";
 
     String DUBBO_INTERNAL_APPLICATION = "DUBBO_INTERNAL_APPLICATION";
+
+    String WORKING_CLASSLOADER_KEY = "WORKING_CLASSLOADER";
+
+    String STAGED_CLASSLOADER_KEY = "STAGED_CLASSLOADER";
+
 }

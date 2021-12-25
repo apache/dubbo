@@ -67,8 +67,9 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
                 final Invoker<T> next = last;
-                last = new FilterChainNode<>(originalInvoker, next, filter);
+                last = new CopyOfFilterChainNode<>(originalInvoker, next, filter);
             }
+            return new CallbackRegistrationInvoker<>(last, filters);
         }
 
         return last;
@@ -103,8 +104,9 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final ClusterFilter filter = filters.get(i);
                 final Invoker<T> next = last;
-                last = new ClusterFilterChainNode<>(originalInvoker, next, filter);
+                last = new CopyOfClusterFilterChainNode<>(originalInvoker, next, filter);
             }
+            return new ClusterCallbackRegistrationInvoker<>(originalInvoker, last, filters);
         }
 
         return last;

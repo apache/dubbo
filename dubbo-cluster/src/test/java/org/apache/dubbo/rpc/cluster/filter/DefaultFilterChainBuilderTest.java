@@ -19,16 +19,17 @@ package org.apache.dubbo.rpc.cluster.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
 public class DefaultFilterChainBuilderTest {
 
@@ -62,8 +63,8 @@ public class DefaultFilterChainBuilderTest {
             }
         };
         invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithFilter, REFERENCE_FILTER_KEY, CONSUMER);
-        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.FilterChainNode);
-        Assertions.assertTrue(((FilterChainBuilder.FilterChainNode<?, ?, ?>) invokerAfterBuild).filter instanceof LogFilter);
+        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.CallbackRegistrationInvoker);
+        Assertions.assertEquals(1, ((FilterChainBuilder.CallbackRegistrationInvoker<?, ?>) invokerAfterBuild).filters.size());
 
     }
 
@@ -97,8 +98,7 @@ public class DefaultFilterChainBuilderTest {
             }
         };
         invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithFilter, REFERENCE_FILTER_KEY, CONSUMER);
-        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.FilterChainNode);
-        Assertions.assertTrue(((FilterChainBuilder.FilterChainNode<?, ?, ?>) invokerAfterBuild).filter instanceof LogFilter);
+        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.CallbackRegistrationInvoker);
 
     }
 }
