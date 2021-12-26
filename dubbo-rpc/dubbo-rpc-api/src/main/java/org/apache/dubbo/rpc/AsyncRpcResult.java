@@ -68,7 +68,7 @@ public class AsyncRpcResult implements Result {
         this.responseFuture = future;
         this.invocation = invocation;
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
-        if (((Boolean) rpcInvocation.get(PROVIDER_ASYNC_KEY) || InvokeMode.SYNC != rpcInvocation.getInvokeMode()) && !future.isDone()) {
+        if ((rpcInvocation.get(PROVIDER_ASYNC_KEY) != null || InvokeMode.SYNC != rpcInvocation.getInvokeMode()) && !future.isDone()) {
             async = true;
             this.storedContext = RpcContext.clearAndStoreContext();
         } else {
