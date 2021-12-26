@@ -84,7 +84,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         try {
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
-            CompletableFuture<Object> future = wrapWithFuture(value);
+            CompletableFuture<Object> future = wrapWithFuture(value, invocation);
             CompletableFuture<AppResponse> appResponseFuture = future.handle((obj, t) -> {
                 AppResponse result = new AppResponse(invocation);
                 if (t != null) {
@@ -98,9 +98,6 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
                 }
                 return result;
             });
-            if (RpcContext.getServiceContext().isAsyncStarted()) {
-                invocation.put(PROVIDER_ASYNC_KEY, Boolean.TRUE);
-            }
             return new AsyncRpcResult(appResponseFuture, invocation);
         } catch (InvocationTargetException e) {
             if (RpcContext.getServiceContext().isAsyncStarted() && !RpcContext.getServiceContext().stopAsync()) {
@@ -112,10 +109,12 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
         }
     }
 
-    private CompletableFuture<Object> wrapWithFuture(Object value) {
+    private CompletableFuture<Object> wrapWithFuture(Object value, Invocation invocation) {
         if (value instanceof CompletableFuture) {
+            invocation.put(PROVIDER_ASYNC_KEY, Boolean.TRUE);
             return (CompletableFuture<Object>) value;
         } else if (RpcContext.getServiceContext().isAsyncStarted()) {
+            invocation.put(PROVIDER_ASYNC_KEY, Boolean.TRUE);
             return ((AsyncContextImpl) (RpcContext.getServiceContext().getAsyncContext())).getInternalFuture();
         }
         return CompletableFuture.completedFuture(value);
