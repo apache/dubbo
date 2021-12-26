@@ -126,27 +126,29 @@ public class ContextFilter implements Filter, Filter.Listener {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
 
-        try {
-            context.clearAfterEachInvoke(false);
-            return invoker.invoke(invocation);
-        } finally {
-            context.clearAfterEachInvoke(true);
-            RpcContext.removeServerAttachment();
-            RpcContext.removeServiceContext();
-            // IMPORTANT! For async scenario, context must be removed from current thread, so a new RpcContext is always created for the next invoke for the same thread.
-            RpcContext.getClientAttachment().removeAttachment(TIME_COUNTDOWN_KEY);
-            RpcContext.removeServerContext();
-        }
+        context.clearAfterEachInvoke(false);
+
+        return invoker.invoke(invocation);
     }
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
         appResponse.addObjectAttachments(RpcContext.getServerContext().getObjectAttachments());
+        removeContext();
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        removeContext();
+    }
 
+    private void removeContext() {
+        RpcContext.getServerAttachment().clearAfterEachInvoke(true); // TODO, not necessary anymore
+
+        RpcContext.removeServerAttachment();
+        RpcContext.removeClientAttachment();
+        RpcContext.removeServiceContext();
+        RpcContext.removeServerContext();
     }
 }

@@ -31,7 +31,7 @@ public class AsyncContextImpl implements AsyncContext {
     private ClassLoader stagedClassLoader;
 
     public AsyncContextImpl() {
-        restoreContext = RpcContext.storeContext(false);
+        restoreContext = RpcContext.storeContext();
         restoreClassLoader = Thread.currentThread().getContextClassLoader();
     }
 
