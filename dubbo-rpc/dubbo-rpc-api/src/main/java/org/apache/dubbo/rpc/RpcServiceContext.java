@@ -658,10 +658,6 @@ public class RpcServiceContext extends RpcContext {
      * @return a shallow copy of RpcServiceContext
      */
     public RpcServiceContext copyOf(boolean needCopy) {
-        if (!isValid()) {
-            return this;
-        }
-
         if (needCopy) {
             RpcServiceContext copy = new RpcServiceContext();
             copy.consumerUrl = this.consumerUrl;
@@ -673,15 +669,6 @@ public class RpcServiceContext extends RpcContext {
         } else {
             return this;
         }
-    }
-
-
-    private boolean isValid() {
-        return this.consumerUrl != null
-            || this.localAddress != null
-            || this.remoteAddress != null
-            || this.invocation != null
-            || this.asyncContext != null;
     }
 
 }

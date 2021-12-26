@@ -31,6 +31,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_ASYNC_KEY;
 import static org.apache.dubbo.common.utils.ReflectUtils.defaultReturn;
 
 /**
@@ -59,6 +60,7 @@ public class AsyncRpcResult implements Result {
     private Executor executor;
 
     private Invocation invocation;
+    private final boolean async;
 
     private CompletableFuture<AppResponse> responseFuture;
 
@@ -66,10 +68,11 @@ public class AsyncRpcResult implements Result {
         this.responseFuture = future;
         this.invocation = invocation;
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
-        if (InvokeMode.SYNC != rpcInvocation.getInvokeMode() && !future.isDone()) {
-            this.storedContext = RpcContext.storeContext(false);
+        if (((Boolean) rpcInvocation.get(PROVIDER_ASYNC_KEY) || InvokeMode.SYNC != rpcInvocation.getInvokeMode()) && !future.isDone()) {
+            async = true;
+            this.storedContext = RpcContext.clearAndStoreContext();
         } else {
-            this.storedContext = RpcContext.storeContext(true);
+            async = false;
         }
     }
 
@@ -198,12 +201,10 @@ public class AsyncRpcResult implements Result {
 
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
         this.responseFuture = this.responseFuture.whenComplete((v, t) -> {
-            RpcContext.RestoreContext tmpContext = RpcContext.storeContext(false);
-            RpcContext.restoreContext(storedContext);
-
+            if (async) {
+                RpcContext.restoreContext(storedContext);
+            }
             fn.accept(v, t);
-
-            RpcContext.restoreContext(tmpContext);
         });
 
         // Necessary! update future in context, see https://github.com/apache/dubbo/issues/9461

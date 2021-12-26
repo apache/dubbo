@@ -508,4 +508,6 @@ public interface CommonConstants {
 
     String STAGED_CLASSLOADER_KEY = "STAGED_CLASSLOADER";
 
+    String PROVIDER_ASYNC_KEY = "PROVIDER_ASYNC";
+
 }

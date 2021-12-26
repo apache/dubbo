@@ -32,6 +32,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_ASYNC_KEY;
+
 /**
  * This Invoker works on provider side, delegates RPC to interface implementation.
  */
@@ -96,6 +98,9 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
                 }
                 return result;
             });
+            if (RpcContext.getServiceContext().isAsyncStarted()) {
+                invocation.put(PROVIDER_ASYNC_KEY, Boolean.TRUE);
+            }
             return new AsyncRpcResult(appResponseFuture, invocation);
         } catch (InvocationTargetException e) {
             if (RpcContext.getServiceContext().isAsyncStarted() && !RpcContext.getServiceContext().stopAsync()) {
