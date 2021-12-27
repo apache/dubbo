@@ -188,9 +188,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         List<Invoker<T>> routedResult = doList(availableInvokers, invocation);
         if (routedResult.isEmpty()) {
             logger.warn("No provider available after connectivity filter for the service " + getConsumerUrl().getServiceKey()
-                + " all validInvokers' size: " + validInvokers.size()
-                + "/ all routed invokers' size: " + routedResult.size()
-                + "/ all invokers' size: " + invokers.size()
+                + " All validInvokers' size: " + validInvokers.size()
+                + " All routed invokers' size: " + routedResult.size()
+                + " All invokers' size: " + invokers.size()
                 + " from registry " + getUrl().getAddress()
                 + " on the consumer " + NetUtils.getLocalHost()
                 + " using the dubbo version " + Version.getVersion() + ".");

@@ -24,17 +24,18 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionStateRouter;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRouterRule;
 import org.apache.dubbo.rpc.cluster.router.condition.config.model.ConditionRuleParser;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
+import org.apache.dubbo.rpc.cluster.router.state.TailStateRouter;
 
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +50,7 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
 
     private static final Logger logger = LoggerFactory.getLogger(ListenableStateRouter.class);
     private volatile ConditionRouterRule routerRule;
-    private volatile List<ConditionStateRouter> conditionRouters = Collections.emptyList();
+    private volatile List<ConditionStateRouter<T>> conditionRouters = Collections.emptyList();
     private String ruleKey;
 
     public ListenableStateRouter(URL url, String ruleKey) {
@@ -81,11 +82,13 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
     }
 
     @Override
-    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
-                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
+    public BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                                       boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder, Holder<String> messageHolder) throws RpcException {
         if (CollectionUtils.isEmpty(invokers) || conditionRouters.size() == 0) {
-            return new StateRouterResult<>(invokers,
-                needToPrintMessage ? "Directly return. Reason: Invokers from previous router is empty or conditionRouters is empty." : null);
+            if (needToPrintMessage) {
+                messageHolder.set("Directly return. Reason: Invokers from previous router is empty or conditionRouters is empty.");
+            }
+            return invokers;
         }
 
         // We will check enabled status inside each router.
@@ -93,16 +96,18 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         if (needToPrintMessage) {
             resultMessage = new StringBuilder();
         }
-        for (StateRouter router : conditionRouters) {
-            StateRouterResult<Invoker<T>> routerResult = router.route(invokers, url, invocation, needToPrintMessage);
-            invokers = routerResult.getResult();
+        for (AbstractStateRouter<T> router : conditionRouters) {
+            invokers = router.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
             if (needToPrintMessage) {
-                resultMessage.append(routerResult.getMessage());
+                resultMessage.append(messageHolder.get());
             }
         }
 
-        return new StateRouterResult<>(invokers,
-            needToPrintMessage ? resultMessage.toString() : null);
+        if (needToPrintMessage) {
+            messageHolder.set(resultMessage.toString());
+        }
+
+        return invokers;
     }
 
     @Override
@@ -118,8 +123,11 @@ public abstract class ListenableStateRouter<T> extends AbstractStateRouter<T> im
         if (rule != null && rule.isValid()) {
             this.conditionRouters = rule.getConditions()
                     .stream()
-                    .map(condition -> new ConditionStateRouter(getUrl(), condition, rule.isForce(), rule.isEnabled()))
+                    .map(condition -> new ConditionStateRouter<T>(getUrl(), condition, rule.isForce(), rule.isEnabled()))
                     .collect(Collectors.toList());
+            for (ConditionStateRouter<T> conditionRouter : this.conditionRouters) {
+                conditionRouter.setNextRouter(TailStateRouter.getInstance());
+            }
         }
     }
 

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.directory;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -58,7 +59,7 @@ public class StaticDirectoryTest {
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
 
 
-        List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation(), false).getResult();
+        List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation(), false, new Holder<>());
         StaticDirectory<String> staticDirectory = new StaticDirectory<>(filteredInvokers);
         boolean isAvailable = staticDirectory.isAvailable();
         Assertions.assertTrue(!isAvailable);

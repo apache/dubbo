@@ -39,7 +39,6 @@ import org.junit.jupiter.api.Test;
 
 import javax.script.ScriptEngineManager;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_CONNECTIVITY_VALIDATION;
@@ -173,7 +172,7 @@ public class FileRouterEngineTest {
         URL dicInitUrl = URL.valueOf("consumer://localhost:20880/org.apache.dubbo.rpc.cluster.router.file.FileRouterEngineTest?application=FileRouterEngineTest");
         dic = new StaticDirectory<>(dicInitUrl, invokers);
         dic.buildRouterChain();
-        dic.getRouterChain().initWithStateRouters(Collections.singletonList(routerFactory.getRouter(FileRouterEngineTest.class, url)));
+        dic.getRouterChain().setHeadStateRouter(routerFactory.getRouter(FileRouterEngineTest.class, url));
     }
 
     static class MockClusterInvoker<T> extends AbstractClusterInvoker<T> {

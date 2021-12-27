@@ -22,15 +22,17 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.router.RouterResult;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
+import org.apache.dubbo.rpc.cluster.router.state.TailStateRouter;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.ArrayList;
@@ -63,8 +65,9 @@ public class RouterChain<T> {
      */
     private volatile List<Router> builtinRouters = Collections.emptyList();
 
-    private volatile List<StateRouter<T>> builtinStateRouters = Collections.emptyList();
-    private volatile List<StateRouter<T>> stateRouters = Collections.emptyList();
+    private volatile StateRouter<T> headStateRouter;
+
+    private volatile List<StateRouter<T>> stateRouters;
 
     /**
      * Should continue route if current router's result is empty
@@ -72,10 +75,6 @@ public class RouterChain<T> {
     private final boolean shouldFailFast;
 
     public static <T> RouterChain<T> buildChain(Class<T> interfaceClass, URL url) {
-        return new RouterChain<>(interfaceClass, url);
-    }
-
-    private RouterChain(Class<T> interfaceClass, URL url) {
         ModuleModel moduleModel = url.getOrDefaultModuleModel();
 
         List<RouterFactory> extensionFactories = moduleModel.getExtensionLoader(RouterFactory.class)
@@ -86,21 +85,36 @@ public class RouterChain<T> {
             .sorted(Router::compareTo)
             .collect(Collectors.toList());
 
-        initWithRouters(routers);
-
-        List<StateRouterFactory> extensionStateRouterFactories = moduleModel
+        List<StateRouter<T>> stateRouters = moduleModel
             .getExtensionLoader(StateRouterFactory.class)
-            .getActivateExtension(url, ROUTER_KEY);
-
-        List<StateRouter<T>> stateRouters = extensionStateRouterFactories.stream()
+            .getActivateExtension(url, ROUTER_KEY)
+            .stream()
             .map(factory -> factory.getRouter(interfaceClass, url))
-            .sorted(StateRouter::compareTo)
             .collect(Collectors.toList());
 
-        // init state routers
+
+        boolean shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
+
+        return new RouterChain<>(routers, stateRouters, shouldFailFast);
+    }
+
+    public RouterChain(List<Router> routers, List<StateRouter<T>> stateRouters, boolean shouldFailFast) {
+        initWithRouters(routers);
+
         initWithStateRouters(stateRouters);
 
-        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
+        this.shouldFailFast = shouldFailFast;
+    }
+
+    private void initWithStateRouters(List<StateRouter<T>> stateRouters) {
+        StateRouter<T> stateRouter = TailStateRouter.getInstance();
+        for (int i = stateRouters.size() - 1; i >= 0; i--) {
+            StateRouter<T> nextStateRouter = stateRouters.get(i);
+            nextStateRouter.setNextRouter(stateRouter);
+            stateRouter = nextStateRouter;
+        }
+        this.headStateRouter = stateRouter;
+        this.stateRouters = Collections.unmodifiableList(stateRouters);
     }
 
     /**
@@ -110,19 +124,6 @@ public class RouterChain<T> {
     public void initWithRouters(List<Router> builtinRouters) {
         this.builtinRouters = builtinRouters;
         this.routers = new LinkedList<>(builtinRouters);
-    }
-
-    /**
-     * the resident routers must being initialized before address notification.
-     * only for ut
-     */
-    public void initWithStateRouters(List<StateRouter<T>> builtinRouters) {
-        this.builtinStateRouters = builtinRouters;
-        setStateRouters(builtinStateRouters);
-    }
-
-    private void setStateRouters(List<StateRouter<T>> stateRouters) {
-        this.stateRouters = new LinkedList<>(stateRouters);
     }
 
     /**
@@ -141,46 +142,37 @@ public class RouterChain<T> {
         this.routers = newRouters;
     }
 
-    public void addStateRouters(List<StateRouter<T>> stateRouters) {
-        List<StateRouter<T>> newStateRouters = new LinkedList<>();
-        newStateRouters.addAll(builtinStateRouters);
-        newStateRouters.addAll(stateRouters);
-        CollectionUtils.sort(newStateRouters);
-        setStateRouters(newStateRouters);
-    }
-
     public List<Router> getRouters() {
         return routers;
     }
 
-    public List<StateRouter<T>> getStateRouters() {
-        return stateRouters;
+    public StateRouter<T> getHeadStateRouter() {
+        return headStateRouter;
     }
 
-    /**
-     * @param url
-     * @param invocation
-     * @return
-     */
     public List<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+        if (RpcContext.getServiceContext().isNeedPrintRouterSnapshot()) {
+            return routeAndPrint(url, availableInvokers, invocation);
+        } else {
+            return simpleRoute(url, availableInvokers, invocation);
+        }
+    }
 
+    public List<Invoker<T>> routeAndPrint(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+        RouterSnapshotNode<T> snapshot = buildRouterSnapshot(url, availableInvokers, invocation);
+        logRouterSnapshot(url, invocation, snapshot);
+        return snapshot.getChainOutputInvokers();
+    }
+
+    public List<Invoker<T>> simpleRoute(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
 
         // 1. route state router
-        for (StateRouter<T> stateRouter : stateRouters) {
-            StateRouterResult<Invoker<T>> routeResult = stateRouter.route(resultInvokers, url, invocation, false);
-            resultInvokers = routeResult.getResult();
-            if (resultInvokers.isEmpty() && shouldFailFast) {
-                printRouterSnapshot(url, availableInvokers, invocation);
-                return BitList.emptyList();
-            }
-
-            // stop continue routing
-            if (!routeResult.isNeedContinueRoute()) {
-                return routeResult.getResult();
-            }
+        resultInvokers = headStateRouter.route(resultInvokers, url, invocation, false, null);
+        if (resultInvokers.isEmpty() && (shouldFailFast || routers.isEmpty())) {
+            printRouterSnapshot(url, availableInvokers, invocation);
+            return BitList.emptyList();
         }
-
 
         if (routers.isEmpty()) {
             return resultInvokers;
@@ -214,7 +206,9 @@ public class RouterChain<T> {
      * store each router's input and output, log out if empty
      */
     private void printRouterSnapshot(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
-        logRouterSnapshot(url, invocation, buildRouterSnapshot(url, availableInvokers, invocation));
+        if (logger.isWarnEnabled()) {
+            logRouterSnapshot(url, invocation, buildRouterSnapshot(url, availableInvokers, invocation));
+        }
     }
 
     /**
@@ -222,68 +216,85 @@ public class RouterChain<T> {
      */
     public RouterSnapshotNode<T> buildRouterSnapshot(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
-        RouterSnapshotNode<T> snapshotNode = new RouterSnapshotNode<T>("Parent", resultInvokers.size());
-        snapshotNode.setOutputInvokers(resultInvokers.clone());
+        RouterSnapshotNode<T> parentNode = new RouterSnapshotNode<T>("Parent", resultInvokers.clone());
+        parentNode.setNodeOutputInvokers(resultInvokers.clone());
 
         // 1. route state router
-        for (StateRouter stateRouter : stateRouters) {
-            BitList<Invoker<T>> inputInvokers = resultInvokers.clone();
+        Holder<RouterSnapshotNode<T>> nodeHolder = new Holder<>();
+        nodeHolder.set(parentNode);
 
-            RouterSnapshotNode<T> currentNode = new RouterSnapshotNode<T>(stateRouter.getClass().getSimpleName(), inputInvokers.size());
-            snapshotNode.appendNode(currentNode);
+        resultInvokers = headStateRouter.route(resultInvokers, url, invocation, true, nodeHolder);
 
-            StateRouterResult<Invoker<T>> routeResult = stateRouter.route(inputInvokers, url, invocation, true);
-            resultInvokers = routeResult.getResult();
-            String routerMessage = routeResult.getMessage();
-
-            currentNode.setOutputInvokers(resultInvokers);
-            currentNode.setRouterMessage(routerMessage);
-
-            // result is empty, log out
-            if (resultInvokers.isEmpty() && shouldFailFast) {
-                return snapshotNode;
-            }
-
-            if (!routeResult.isNeedContinueRoute()) {
-                return snapshotNode;
-            }
+        // result is empty, log out
+        if (routers.isEmpty() || (resultInvokers.isEmpty() && shouldFailFast)) {
+            parentNode.setChainOutputInvokers(resultInvokers.clone());
+            return parentNode;
         }
 
+        RouterSnapshotNode<T> commonRouterNode = new RouterSnapshotNode<T>("CommonRouter", resultInvokers.clone());
+        parentNode.appendNode(commonRouterNode);
         List<Invoker<T>> commonRouterResult = resultInvokers;
         // 2. route common router
         for (Router router : routers) {
             // Copy resultInvokers to a arrayList. BitList not support
             List<Invoker<T>> inputInvokers = new ArrayList<>(commonRouterResult);
 
-            RouterSnapshotNode<T> currentNode = new RouterSnapshotNode<T>(router.getClass().getSimpleName(), inputInvokers.size());
-            snapshotNode.appendNode(currentNode);
+            RouterSnapshotNode<T> currentNode = new RouterSnapshotNode<T>(router.getClass().getSimpleName(), inputInvokers);
+
+            // append to router node chain
+            commonRouterNode.appendNode(currentNode);
+            commonRouterNode = currentNode;
 
             RouterResult<Invoker<T>> routeStateResult = router.route(inputInvokers, url, invocation, true);
             List<Invoker<T>> routeResult = routeStateResult.getResult();
             String routerMessage = routeStateResult.getMessage();
 
-            currentNode.setOutputInvokers(routeResult);
+            currentNode.setNodeOutputInvokers(routeResult);
             currentNode.setRouterMessage(routerMessage);
+
+            commonRouterResult = routeResult;
 
             // result is empty, log out
             if (CollectionUtils.isEmpty(routeResult) && shouldFailFast) {
-                return snapshotNode;
-            } else {
-                commonRouterResult = routeResult;
+                break;
             }
 
             if (!routeStateResult.isNeedContinueRoute()) {
-                return snapshotNode;
+                break;
             }
         }
-        return snapshotNode;
+        commonRouterNode.setChainOutputInvokers(commonRouterNode.getNodeOutputInvokers());
+
+        // 3. set router chain output reverse
+        RouterSnapshotNode<T> currentNode = commonRouterNode;
+        while (currentNode != null){
+            RouterSnapshotNode<T> parent = currentNode.getParentNode();
+            if (parent != null) {
+                // common router only has one child invoke
+                parent.setChainOutputInvokers(currentNode.getChainOutputInvokers());
+            }
+            currentNode = parent;
+        }
+        return parentNode;
     }
 
     private void logRouterSnapshot(URL url, Invocation invocation, RouterSnapshotNode<T> snapshotNode) {
-        logger.warn("No provider available after route for the service " + url.getServiceKey()
-            + " from registry " + url.getAddress()
-            + " on the consumer " + NetUtils.getLocalHost()
-            + " using the dubbo version " + Version.getVersion() + ". Router snapshot is below: \n" + snapshotNode.toString());
+        if (snapshotNode.getChainOutputInvokers() == null ||
+            snapshotNode.getChainOutputInvokers().isEmpty()) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("No provider available after route for the service " + url.getServiceKey()
+                    + " from registry " + url.getAddress()
+                    + " on the consumer " + NetUtils.getLocalHost()
+                    + " using the dubbo version " + Version.getVersion() + ". Router snapshot is below: \n" + snapshotNode.toString());
+            }
+        } else {
+            if (logger.isInfoEnabled()) {
+                logger.info("Router snapshot service " + url.getServiceKey()
+                    + " from registry " + url.getAddress()
+                    + " on the consumer " + NetUtils.getLocalHost()
+                    + " using the dubbo version " + Version.getVersion() + " is below: \n" + snapshotNode.toString());
+            }
+        }
     }
 
     /**
@@ -294,6 +305,22 @@ public class RouterChain<T> {
         this.invokers = (invokers == null ? BitList.emptyList() : invokers);
         routers.forEach(router -> router.notify(this.invokers));
         stateRouters.forEach(router -> router.notify(this.invokers));
+    }
+
+    /**
+     * for uts only
+     */
+    @Deprecated
+    public void setHeadStateRouter(StateRouter<T> headStateRouter) {
+        this.headStateRouter = headStateRouter;
+    }
+
+    /**
+     * for uts only
+     */
+    @Deprecated
+    public List<StateRouter<T>> getStateRouters() {
+        return stateRouters;
     }
 
     public void destroy() {
@@ -308,15 +335,14 @@ public class RouterChain<T> {
         routers = Collections.emptyList();
         builtinRouters = Collections.emptyList();
 
-        for (StateRouter router : stateRouters) {
+        for (StateRouter<T> router : stateRouters) {
             try {
                 router.stop();
             } catch (Exception e) {
                 logger.error("Error trying to stop stateRouter " + router.getClass(), e);
             }
         }
-        setStateRouters(Collections.emptyList());
-        builtinStateRouters = Collections.emptyList();
+        stateRouters = Collections.emptyList();
+        headStateRouter = TailStateRouter.getInstance();
     }
-
 }
