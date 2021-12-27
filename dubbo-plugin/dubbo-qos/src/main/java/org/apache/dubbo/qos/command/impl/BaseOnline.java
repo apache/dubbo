@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class BaseOnline implements BaseCommand {
-    private static final Logger logger = LoggerFactory.getLogger(Online.class);
+    private static final Logger logger = LoggerFactory.getLogger(BaseOnline.class);
     public FrameworkServiceRepository serviceRepository;
 
     public BaseOnline(FrameworkModel frameworkModel) {
