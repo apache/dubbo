@@ -44,7 +44,7 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * Each service discovery is bond to one application.
  */
 public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
-    private Logger logger = LoggerFactory.getLogger(AbstractServiceDiscovery.class);
+    private final Logger logger = LoggerFactory.getLogger(AbstractServiceDiscovery.class);
     private volatile boolean isDestroy;
 
     protected final String serviceName;

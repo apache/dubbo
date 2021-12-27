@@ -52,7 +52,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -138,14 +137,15 @@ public class ServiceInstancesChangedListener {
             parseMetadata(revision, metadata, localServiceToRevisions);
             // update metadata into each instance, in case new instance created.
             for (ServiceInstance tmpInstance : subInstances) {
-                MetadataInfo originMetadata = ((DefaultServiceInstance) tmpInstance).getServiceMetadata();
+                MetadataInfo originMetadata = tmpInstance.getServiceMetadata();
                 if (originMetadata == null || !Objects.equals(originMetadata.getRevision(), metadata.getRevision())) {
-                    ((DefaultServiceInstance) tmpInstance).setServiceMetadata(metadata);
+                    tmpInstance.setServiceMetadata(metadata);
                 }
             }
         }
 
-        if (hasEmptyMetadata(revisionToInstances)) {// retry every 10 seconds
+        int emptyNum = hasEmptyMetadata(revisionToInstances);
+        if (emptyNum != 0) {// retry every 10 seconds
             hasEmptyMetadata = true;
             if (retryPermission.tryAcquire()) {
                 if (retryFuture != null && !retryFuture.isDone()) {
@@ -156,7 +156,9 @@ public class ServiceInstancesChangedListener {
                 logger.warn("Address refresh try task submitted.");
             }
             logger.error("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
-            return;
+            if (emptyNum == revisionToInstances.size()) {// return if all metadata is empty
+                return;
+            }
         }
         hasEmptyMetadata = false;
 
@@ -283,17 +285,18 @@ public class ServiceInstancesChangedListener {
         lastRefreshTime = System.currentTimeMillis();
     }
 
-    protected boolean hasEmptyMetadata(Map<String, List<ServiceInstance>> revisionToInstances) {
+    protected int hasEmptyMetadata(Map<String, List<ServiceInstance>> revisionToInstances) {
         if (revisionToInstances == null) {
-            return false;
+            return 0;
         }
+        int emptyMetadataNum = 0;
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
             DefaultServiceInstance serviceInstance = (DefaultServiceInstance) entry.getValue().get(0);
             if (serviceInstance == null || serviceInstance.getServiceMetadata() == MetadataInfo.EMPTY) {
-                return true;
+                emptyMetadataNum++;
             }
         }
-        return false;
+        return emptyMetadataNum;
     }
 
     protected Map<String, Map<String, Set<String>>> parseMetadata(String revision, MetadataInfo metadata, Map<String, Map<String, Set<String>>> localServiceToRevisions) {
