@@ -30,7 +30,6 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
 import org.apache.dubbo.registry.support.FailbackRegistry;
-import org.apache.dubbo.registry.support.RegistryManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,13 +78,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     /* apps - listener */
     private final Map<String, ServiceInstancesChangedListener> serviceListeners = new ConcurrentHashMap<>();
 
-    private RegistryManager registryManager;
-
     public ServiceDiscoveryRegistry(URL registryURL) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.writableMetadataService = WritableMetadataService.getDefaultExtension(registryURL.getScopeModel());
-        this.registryManager = registryURL.getOrDefaultApplicationModel().getBeanFactory().getBean(RegistryManager.class);
     }
 
     // Currently, for test purpose

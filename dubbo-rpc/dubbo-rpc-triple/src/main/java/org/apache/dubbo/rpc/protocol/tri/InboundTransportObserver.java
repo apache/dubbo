@@ -54,7 +54,7 @@ public abstract class InboundTransportObserver implements TransportObserver {
             return status;
         }
         final String raw = metadata.get(TripleHeaderEnum.MESSAGE_KEY.getHeader()).toString();
-        status = status.withDescription(GrpcStatus.fromMessage(raw));
+        status = status.withDescription(GrpcStatus.decodeMessage(raw));
         return status;
     }
 }

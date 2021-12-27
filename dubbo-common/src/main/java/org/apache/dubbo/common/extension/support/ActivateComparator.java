@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ActivateComparator implements Comparator<Class<?>> {
 
-    private ExtensionDirector extensionDirector;
+    private final ExtensionDirector extensionDirector;
     private final Map<Class<?>, ActivateInfo> activateInfoMap = new ConcurrentHashMap<>();
 
     public ActivateComparator(ExtensionDirector extensionDirector) {
@@ -128,9 +128,9 @@ public class ActivateComparator implements Comparator<Class<?>> {
             info.before = activate.before();
             info.after = activate.after();
             info.order = activate.order();
-        } else if (clazz.isAnnotationPresent(com.alibaba.dubbo.common.extension.Activate.class)){
+        } else if (clazz.isAnnotationPresent(com.alibaba.dubbo.common.extension.Activate.class)) {
             com.alibaba.dubbo.common.extension.Activate activate = clazz.getAnnotation(
-                    com.alibaba.dubbo.common.extension.Activate.class);
+                com.alibaba.dubbo.common.extension.Activate.class);
             info.before = activate.before();
             info.after = activate.after();
             info.order = activate.order();

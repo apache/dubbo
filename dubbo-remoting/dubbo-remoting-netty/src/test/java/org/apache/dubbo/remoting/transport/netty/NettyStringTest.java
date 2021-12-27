@@ -40,8 +40,8 @@ public class NettyStringTest {
         //int port = 10001;
         int port = NetUtils.getAvailablePort();
         System.out.println(port);
-        server = Exchangers.bind(URL.valueOf("telnet://0.0.0.0:" + port + "?server=netty3"), new TelnetServerHandler());
-        client = Exchangers.connect(URL.valueOf("telnet://127.0.0.1:" + port + "?client=netty3"), new TelnetClientHandler());
+        server = Exchangers.bind(URL.valueOf("telnet://0.0.0.0:" + port + "?server=netty3&codec=telnet"), new TelnetServerHandler());
+        client = Exchangers.connect(URL.valueOf("telnet://127.0.0.1:" + port + "?client=netty3&codec=telnet"), new TelnetClientHandler());
     }
 
     @AfterAll

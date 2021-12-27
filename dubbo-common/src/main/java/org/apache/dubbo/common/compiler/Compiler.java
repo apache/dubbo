@@ -31,7 +31,24 @@ public interface Compiler {
      * @param code        Java source code
      * @param classLoader classloader
      * @return Compiled class
+     * @deprecated use {@link Compiler#compile(Class, String, ClassLoader)} to support JDK 16
      */
-    Class<?> compile(String code, ClassLoader classLoader);
+    @Deprecated
+    default Class<?> compile(String code, ClassLoader classLoader) {
+        return compile(null, code, classLoader);
+    }
+
+    /**
+     * Compile java source code.
+     *
+     * @param neighbor    A class belonging to the same package that this
+     *                    class belongs to.  It is used to load the class. (For JDK 16 and above)
+     * @param code        Java source code
+     * @param classLoader classloader
+     * @return Compiled class
+     */
+    default Class<?> compile(Class<?> neighbor, String code, ClassLoader classLoader) {
+        return compile(code, classLoader);
+    }
 
 }

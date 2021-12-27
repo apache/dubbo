@@ -14,12 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-package org.apache.dubbo.rpc.cluster.router.mesh.util;
+import org.apache.dubbo.common.URL;
 
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.STANDARD_ROUTER_KEY;
 
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
+public class StandardMeshRuleRouter<T> extends MeshRuleRouter<T> {
 
-public interface VsDestinationGroupRuleListener {
-    void onRuleChange(VsDestinationGroup vsDestinationGroup);
+    public StandardMeshRuleRouter(URL url) {
+        super(url);
+    }
+
+    @Override
+    public String ruleSuffix() {
+        return STANDARD_ROUTER_KEY;
+    }
+
+    @Override
+    public boolean isForce() {
+        return false;
+    }
+
+    @Override
+    public int getPriority() {
+        return -500;
+    }
 }

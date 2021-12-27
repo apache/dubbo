@@ -14,20 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.json;
+package org.apache.dubbo.common.bytecode;
+
+import javassist.LoaderClassPath;
+import javassist.NotFoundException;
+
+import java.io.InputStream;
+import java.net.URL;
 
 /**
- * ParseException.
+ * Ensure javassist will load Dubbo's class from Dubbo's classLoader
  */
-@Deprecated
-public class ParseException extends Exception {
-    private static final long serialVersionUID = 8611884051738966316L;
-
-    public ParseException() {
-        super();
+public class DubboLoaderClassPath extends LoaderClassPath {
+    public DubboLoaderClassPath() {
+        super(DubboLoaderClassPath.class.getClassLoader());
     }
 
-    public ParseException(String message) {
-        super(message);
+    @Override
+    public InputStream openClassfile(String classname) throws NotFoundException {
+        if (!classname.startsWith("org.apache.dubbo")) {
+            return null;
+        }
+        return super.openClassfile(classname);
+    }
+
+    @Override
+    public URL find(String classname) {
+        if (!classname.startsWith("org.apache.dubbo")) {
+            return null;
+        }
+        return super.find(classname);
     }
 }

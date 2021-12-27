@@ -49,13 +49,13 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -70,6 +70,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
@@ -497,7 +498,9 @@ public class NacosRegistry extends FailbackRegistry {
 
     private List<URL> toUrlWithEmpty(URL consumerURL, Collection<Instance> instances) {
         List<URL> urls = buildURLs(consumerURL, instances);
-        if (urls.size() == 0) {
+        // Nacos does not support configurators and routers from registry, so all notifications are of providers type.
+        if (urls.size() == 0 && !getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true)) {
+            logger.warn("Received empty url address list and empty protection is disabled, will clear current available addresses");
             URL empty = URLBuilder.from(consumerURL)
                 .setProtocol(EMPTY_PROTOCOL)
                 .addParameter(CATEGORY_KEY, DEFAULT_CATEGORY)

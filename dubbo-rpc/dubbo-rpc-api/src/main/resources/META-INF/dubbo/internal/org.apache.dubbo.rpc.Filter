@@ -4,6 +4,7 @@ genericimpl=org.apache.dubbo.rpc.filter.GenericImplFilter
 token=org.apache.dubbo.rpc.filter.TokenFilter
 accesslog=org.apache.dubbo.rpc.filter.AccessLogFilter
 classloader=org.apache.dubbo.rpc.filter.ClassLoaderFilter
+classloader-callback=org.apache.dubbo.rpc.filter.ClassLoaderCallbackFilter
 context=org.apache.dubbo.rpc.filter.ContextFilter
 exception=org.apache.dubbo.rpc.filter.ExceptionFilter
 executelimit=org.apache.dubbo.rpc.filter.ExecuteLimitFilter

@@ -18,6 +18,8 @@ package org.apache.dubbo.common.compiler.support;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import java.lang.reflect.Method;
 
@@ -25,7 +27,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
     @Test
     public void testCompileJavaClass() throws Exception {
         JavassistCompiler compiler = new JavassistCompiler();
-        Class<?> clazz = compiler.compile(getSimpleCode(), JavassistCompiler.class.getClassLoader());
+        Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCode(), JavassistCompiler.class.getClassLoader());
 
         // Because javassist compiles using the caller class loader, we should't use HelloService directly
         Object instance = clazz.newInstance();
@@ -37,19 +39,26 @@ public class JavassistCompilerTest extends JavaCodeTest {
      * javassist compile will find HelloService in classpath
      */
     @Test
+    @DisabledForJreRange(min = JRE.JAVA_16)
     public void testCompileJavaClass0() throws Exception {
+        boolean ignoreWithoutPackage = shouldIgnoreWithoutPackage();
         JavassistCompiler compiler = new JavassistCompiler();
-        Class<?> clazz = compiler.compile(getSimpleCodeWithoutPackage(), JavassistCompiler.class.getClassLoader());
-        Object instance = clazz.newInstance();
-        Method sayHello = instance.getClass().getMethod("sayHello");
-        Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
+
+        if (ignoreWithoutPackage) {
+            Assertions.assertThrows(RuntimeException.class, () -> compiler.compile(null, getSimpleCodeWithoutPackage(), JavassistCompiler.class.getClassLoader()));
+        } else {
+            Class<?> clazz = compiler.compile(null, getSimpleCodeWithoutPackage(), JavassistCompiler.class.getClassLoader());
+            Object instance = clazz.newInstance();
+            Method sayHello = instance.getClass().getMethod("sayHello");
+            Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
+        }
     }
 
     @Test
     public void testCompileJavaClass1() throws Exception {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             JavassistCompiler compiler = new JavassistCompiler();
-            Class<?> clazz = compiler.compile(getSimpleCodeWithSyntax0(), JavassistCompiler.class.getClassLoader());
+            Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithSyntax0(), JavassistCompiler.class.getClassLoader());
             Object instance = clazz.newInstance();
             Method sayHello = instance.getClass().getMethod("sayHello");
             Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
@@ -59,7 +68,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
     @Test
     public void testCompileJavaClassWithImport() throws Exception {
         JavassistCompiler compiler = new JavassistCompiler();
-        Class<?> clazz = compiler.compile(getSimpleCodeWithImports(), JavassistCompiler.class.getClassLoader());
+        Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithImports(), JavassistCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
@@ -68,7 +77,7 @@ public class JavassistCompilerTest extends JavaCodeTest {
     @Test
     public void testCompileJavaClassWithExtends() throws Exception {
         JavassistCompiler compiler = new JavassistCompiler();
-        Class<?> clazz = compiler.compile(getSimpleCodeWithWithExtends(), JavassistCompiler.class.getClassLoader());
+        Class<?> clazz = compiler.compile(JavaCodeTest.class, getSimpleCodeWithWithExtends(), JavassistCompiler.class.getClassLoader());
         Object instance = clazz.newInstance();
         Method sayHello = instance.getClass().getMethod("sayHello");
         Assertions.assertEquals("Hello world3!", sayHello.invoke(instance));

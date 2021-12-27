@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.MyInvoker;
 
@@ -64,6 +65,9 @@ public class ClassLoaderFilterTest {
             }
         };
         Invocation invocation = Mockito.mock(Invocation.class);
+        ServiceModel serviceModel = Mockito.mock(ServiceModel.class);
+        Mockito.when(serviceModel.getClassLoader()).thenReturn(cl);
+        Mockito.when(invocation.getServiceModel()).thenReturn(serviceModel);
 
         classLoaderFilter.invoke(invoker, invocation);
     }

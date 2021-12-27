@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.Map;
@@ -37,7 +38,7 @@ public class ConfigurationCache {
      */
     public String computeIfAbsent(String key, Function<String, String> function) {
         String value = cache.get(key);
-        if (value == null) {
+        if (StringUtils.isEmpty(value)) {
             // lock free, tolerate repeat apply, will return previous value
             cache.putIfAbsent(key, function.apply(key));
             value = cache.get(key);

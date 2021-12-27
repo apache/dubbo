@@ -14,19 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.rpc.cluster.router.mesh.route;
+package org.apache.dubbo.common.extension.ext6_wrap.impl;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 
+public class Ext6Impl4 implements WrappedExt {
 
-@Activate(order = -50)
-public class MeshRuleRouterFactory implements RouterFactory {
     @Override
-    public Router getRouter(URL url) {
-        return new MeshRuleRouter(url);
+    public String echo(URL url, String s) {
+        return "Ext6Impl4-echo";
     }
 }
