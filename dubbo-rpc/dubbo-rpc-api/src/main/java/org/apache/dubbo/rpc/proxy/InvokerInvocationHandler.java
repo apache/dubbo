@@ -101,14 +101,14 @@ public class InvokerInvocationHandler implements InvocationHandler {
                 Profiler.release(bizProfiler);
                 if (!containsBizProfiler) {
                     int timeout;
-                    Object timeoutKey = rpcInvocation.getObjectAttachment(TIMEOUT_KEY);
+                    Object timeoutKey = rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
                     if (timeoutKey instanceof Integer) {
                         timeout = (Integer) timeoutKey;
                     } else {
-                        timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+                        timeout = url.getMethodPositiveParameter(methodName, TIMEOUT_KEY, DEFAULT_TIMEOUT);
                     }
                     long usage = bizProfiler.getEndTime() - bizProfiler.getStartTime();
-                    if (usage > (timeout * 1000_000 * ProfilerSwitch.getWarnPercent())) {
+                    if ((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) {
                         StringBuilder attachment = new StringBuilder();
                         for (Map.Entry<String, Object> entry : rpcInvocation.getObjectAttachments().entrySet()) {
                             attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
