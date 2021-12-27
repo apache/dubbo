@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
@@ -47,8 +48,10 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 public abstract class AbstractServerStream extends AbstractStream implements Stream {
 
@@ -146,6 +149,11 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
         final Map<String, Object> attachments = parseMetadataToAttachmentMap(metadata);
         inv.setObjectAttachments(attachments);
+        final String timeout = metadata.get(TripleHeaderEnum.TIMEOUT.getHeader()).toString();
+        final Long timeoutInNanos = parseTimeoutToNanos(timeout);
+        if (timeoutInNanos != null) {
+            inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
+        }
         invokeHeaderFilter(inv);
         return inv;
     }
@@ -307,6 +315,31 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return metadata;
     }
 
+    protected Long parseTimeoutToNanos(String timeoutVal) {
+        if (StringUtils.isEmpty(timeoutVal)) {
+            return null;
+        }
+        long value = Long.parseLong(timeoutVal.substring(0, timeoutVal.length() - 1));
+        char unit = timeoutVal.charAt(timeoutVal.length() - 1);
+        switch (unit) {
+            case 'n':
+                return value;
+            case 'u':
+                return TimeUnit.MICROSECONDS.toNanos(value);
+            case 'm':
+                return TimeUnit.MILLISECONDS.toNanos(value);
+            case 'S':
+                return TimeUnit.SECONDS.toNanos(value);
+            case 'M':
+                return TimeUnit.MINUTES.toNanos(value);
+            case 'H':
+                return TimeUnit.HOURS.toNanos(value);
+            default:
+                // invalid timeout config
+                return null;
+        }
+    }
+
     protected byte[] encodeResponse(Object value) {
         final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
@@ -380,6 +413,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             .onError(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED)
                 .withCause(throwable));
     }
+
 
     public TripleWrapper.TripleResponseWrapper wrapResp(URL url, String serializeType, Object resp,
                                                         MethodDescriptor desc,
