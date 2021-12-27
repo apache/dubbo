@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.extension;
 
+import org.apache.dubbo.common.Extension;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.beans.support.InstantiationStrategy;
 import org.apache.dubbo.common.config.Environment;
@@ -1197,7 +1198,7 @@ public class ExtensionLoader<T> {
 
     @SuppressWarnings("deprecation")
     private String findAnnotationName(Class<?> clazz) {
-        org.apache.dubbo.common.Extension extension = clazz.getAnnotation(org.apache.dubbo.common.Extension.class);
+        Extension extension = clazz.getAnnotation(Extension.class);
         if (extension != null) {
             return extension.value();
         }
