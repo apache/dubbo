@@ -89,7 +89,7 @@ public interface FilterChainBuilder {
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult;
             try {
-                InvocationProfilerUtils.enterProfiler(invocation, () -> "Filter " + filter.getClass().getName() + " invoke.");
+                InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Filter " + filter.getClass().getName() + " invoke.");
                 asyncResult = filter.invoke(nextNode, invocation);
             } catch (Exception e) {
                 if (filter instanceof ListenableFilter) {
@@ -111,7 +111,7 @@ public interface FilterChainBuilder {
 
             }
             return asyncResult.whenCompleteWithContext((r, t) -> {
-                InvocationProfilerUtils.releaseProfiler(invocation);
+                InvocationProfilerUtils.releaseDetailProfiler(invocation);
                 if (filter instanceof ListenableFilter) {
                     ListenableFilter listenableFilter = ((ListenableFilter) filter);
                     Filter.Listener listener = listenableFilter.listener(invocation);

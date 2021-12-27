@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ProfilerSwitch {
     private final static AtomicBoolean enableDetailProfiler = new AtomicBoolean(false);
 
-    private final static AtomicBoolean enableSimpleProfiler = new AtomicBoolean(false);
+    private final static AtomicBoolean enableSimpleProfiler = new AtomicBoolean(true);
 
     private final static AtomicReference<Double> warnPercent = new AtomicReference<>(0.75);
 

@@ -24,27 +24,54 @@ import java.util.concurrent.Callable;
 
 public class InvocationProfilerUtils {
 
-    public static void enterProfiler(Invocation invocation, Callable<String> messageCallable) {
-        if (ProfilerSwitch.isEnableDetailProfiler()) {
-            Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
-            if (fromInvocation instanceof ProfilerEntry) {
-                String message = "";
-                try {
-                    message = messageCallable.call();
-                } catch (Exception ignore) {
+    public static void enterSimpleProfiler(Invocation invocation, Callable<String> messageCallable) {
+        if (ProfilerSwitch.isEnableSimpleProfiler()) {
+            enterProfiler(invocation, messageCallable);
+        }
+    }
 
-                }
-                invocation.put(Profiler.PROFILER_KEY, Profiler.enter((ProfilerEntry) fromInvocation, message));
+    public static void releaseSimpleProfiler(Invocation invocation) {
+        if (ProfilerSwitch.isEnableSimpleProfiler()) {
+            releaseProfiler(invocation);
+        }
+    }
+
+    public static void enterDetailProfiler(Invocation invocation, Callable<String> messageCallable) {
+        if (ProfilerSwitch.isEnableDetailProfiler()) {
+            enterProfiler(invocation, messageCallable);
+        }
+    }
+
+    public static void releaseDetailProfiler(Invocation invocation) {
+        if (ProfilerSwitch.isEnableDetailProfiler()) {
+            releaseProfiler(invocation);
+        }
+    }
+
+    public static void enterProfiler(Invocation invocation, String message) {
+        Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
+        if (fromInvocation instanceof ProfilerEntry) {
+            invocation.put(Profiler.PROFILER_KEY, Profiler.enter((ProfilerEntry) fromInvocation, message));
+        }
+    }
+
+    public static void enterProfiler(Invocation invocation, Callable<String> messageCallable) {
+        Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
+        if (fromInvocation instanceof ProfilerEntry) {
+            String message = "";
+            try {
+                message = messageCallable.call();
+            } catch (Exception ignore) {
+
             }
+            invocation.put(Profiler.PROFILER_KEY, Profiler.enter((ProfilerEntry) fromInvocation, message));
         }
     }
 
     public static void releaseProfiler(Invocation invocation) {
-        if (ProfilerSwitch.isEnableDetailProfiler()) {
-            Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
-            if (fromInvocation instanceof ProfilerEntry) {
-                invocation.put(Profiler.PROFILER_KEY, Profiler.release((ProfilerEntry) fromInvocation));
-            }
+        Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
+        if (fromInvocation instanceof ProfilerEntry) {
+            invocation.put(Profiler.PROFILER_KEY, Profiler.release((ProfilerEntry) fromInvocation));
         }
     }
 }

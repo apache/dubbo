@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -327,18 +328,18 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 //            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(contextAttachments);
 //        }
 
-        InvocationProfilerUtils.enterProfiler(invocation, () -> "Router route.");
+        InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Router route.");
         List<Invoker<T>> invokers = list(invocation);
-        InvocationProfilerUtils.releaseProfiler(invocation);
+        InvocationProfilerUtils.releaseDetailProfiler(invocation);
 
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
-        InvocationProfilerUtils.enterProfiler(invocation, () -> "Cluster " + this.getClass().getName() + " invoke.");
+        InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Cluster " + this.getClass().getName() + " invoke.");
         try {
             return doInvoke(invocation, invokers, loadbalance);
         } finally {
-            InvocationProfilerUtils.releaseProfiler(invocation);
+            InvocationProfilerUtils.releaseDetailProfiler(invocation);
         }
     }
 
@@ -371,11 +372,13 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         setContext(invoker);
         Result result;
         try {
-            InvocationProfilerUtils.enterProfiler(invocation, () -> "Invoker invoke. Target Address: " + invoker.getUrl().getAddress());
+            if (ProfilerSwitch.isEnableSimpleProfiler()) {
+                InvocationProfilerUtils.enterProfiler(invocation, "Invoker invoke. Target Address: " + invoker.getUrl().getAddress());
+            }
             result = invoker.invoke(invocation);
         } finally {
             clearContext(invoker);
-            InvocationProfilerUtils.releaseProfiler(invocation);
+            InvocationProfilerUtils.releaseSimpleProfiler(invocation);
         }
         return result;
     }
