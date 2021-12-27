@@ -28,13 +28,18 @@ import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
 import org.apache.dubbo.triple.TripleWrapper;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.ErrorInfo;
+import com.google.rpc.Status;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
@@ -46,6 +51,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
@@ -138,6 +144,54 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             }
         }
         throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
+    }
+
+    private Map<Class<?>, Object> tranFromStatusDetails(List<Any> detailList) {
+        Map<Class<?>, Object> map = new HashMap<>();
+        try {
+            for (Any any : detailList) {
+                if (any.is(ErrorInfo.class)) {
+                    ErrorInfo errorInfo = any.unpack(ErrorInfo.class);
+                    map.putIfAbsent(ErrorInfo.class, errorInfo);
+                } else if (any.is(DebugInfo.class)) {
+                    DebugInfo debugInfo = any.unpack(DebugInfo.class);
+                    map.putIfAbsent(DebugInfo.class, debugInfo);
+                }
+                // support others type but now only support this
+            }
+        } catch (Throwable t) {
+            LOGGER.error("tran from grpc-status-details error", t);
+        }
+        return map;
+    }
+
+    Throwable getThrowableFromTrailers(Metadata metadata) {
+        if (null == metadata) {
+            return null;
+        }
+        // second get status detail
+        if (!metadata.contains(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
+            return null;
+        }
+        final CharSequence raw = metadata.get(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader());
+        byte[] statusDetailBin = decodeASCIIByte(raw);
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        try {
+            final Status statusDetail = unpack(statusDetailBin, Status.class);
+            List<Any> detailList = statusDetail.getDetailsList();
+            Map<Class<?>, Object> classObjectMap = tranFromStatusDetails(detailList);
+
+            // get common exception from DebugInfo
+            DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
+            if (debugInfo == null) {
+                return new RpcException(statusDetail.getCode(),
+                    GrpcStatus.decodeMessage(statusDetail.getMessage()));
+            }
+            String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
+            return new RpcException(statusDetail.getCode(), msg);
+        } finally {
+            ClassLoadUtil.switchContextLoader(tccl);
+        }
     }
 
     protected void startCall(WriteQueue queue, ChannelPromise promise) {
