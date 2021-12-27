@@ -129,7 +129,7 @@
         <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
-        <revision>3.0.5-SNAPSHOT</revision>
+        <revision>3.0.5</revision>
     </properties>
 
     <modules>
@@ -379,7 +379,7 @@
         <profile>
             <id>release</id>
             <properties>
-                <log4j2_version>2.11.1</log4j2_version>
+                <log4j2_version>2.17.0</log4j2_version>
                 <jacoco.skip>false</jacoco.skip>
             </properties>
             <build>
