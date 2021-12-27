@@ -25,52 +25,33 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
-import static org.apache.dubbo.common.constants.CommonConstants.STAGED_CLASSLOADER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.WORKING_CLASSLOADER_KEY;
 
 /**
- * Set the current execution thread class loader to service interface's class loader.
+ * Switch thread context class loader on filter callback.
  */
-@Activate(group = CommonConstants.PROVIDER, order = -30000)
-public class ClassLoaderFilter implements Filter, BaseFilter.Listener {
+@Activate(group = CommonConstants.PROVIDER, order = Integer.MAX_VALUE)
+public class ClassLoaderCallbackFilter implements Filter, BaseFilter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        ClassLoader stagedClassLoader = Thread.currentThread().getContextClassLoader();
-        ClassLoader effectiveClassLoader;
-        if (invocation.getServiceModel() != null) {
-            effectiveClassLoader = invocation.getServiceModel().getClassLoader();
-        } else {
-            effectiveClassLoader = invoker.getClass().getClassLoader();
-        }
-
-        if (effectiveClassLoader != null) {
-            invocation.put(STAGED_CLASSLOADER_KEY, stagedClassLoader);
-            invocation.put(WORKING_CLASSLOADER_KEY, effectiveClassLoader);
-
-            Thread.currentThread().setContextClassLoader(effectiveClassLoader);
-        }
-        try {
-            return invoker.invoke(invocation);
-        } finally {
-            Thread.currentThread().setContextClassLoader(stagedClassLoader);
-        }
+        return invoker.invoke(invocation);
     }
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        resetClassLoader(invoker, invocation);
+        setClassLoader(invoker, invocation);
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        resetClassLoader(invoker, invocation);
+        setClassLoader(invoker, invocation);
     }
 
-    private void resetClassLoader(Invoker<?> invoker, Invocation invocation) {
-        ClassLoader stagedClassLoader = (ClassLoader) invocation.get(STAGED_CLASSLOADER_KEY);
-        if (stagedClassLoader != null) {
-            Thread.currentThread().setContextClassLoader(stagedClassLoader);
+    private void setClassLoader(Invoker<?> invoker, Invocation invocation) {
+        ClassLoader workingClassLoader = (ClassLoader) invocation.get(WORKING_CLASSLOADER_KEY);
+        if (workingClassLoader != null) {
+            Thread.currentThread().setContextClassLoader(workingClassLoader);
         }
     }
 }

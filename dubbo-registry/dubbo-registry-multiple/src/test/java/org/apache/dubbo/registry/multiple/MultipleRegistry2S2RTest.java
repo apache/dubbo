@@ -22,9 +22,11 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.zookeeper.ZookeeperRegistry;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperClient;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +54,7 @@ public class MultipleRegistry2S2RTest {
         zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
         zookeeperConnectionAddress2 = System.getProperty("zookeeper.connection.address.2");
 
-        URL url = URL.valueOf("multiple://127.0.0.1?application=vic&" +
+        URL url = URL.valueOf("multiple://127.0.0.1?application=vic&enable-empty-protection=false&" +
             MultipleRegistry.REGISTRY_FOR_SERVICE + "=" + zookeeperConnectionAddress1 + "," + zookeeperConnectionAddress2 + "&"
             + MultipleRegistry.REGISTRY_FOR_REFERENCE + "=" + zookeeperConnectionAddress1 + "," + zookeeperConnectionAddress2);
         multipleRegistry = (MultipleRegistry) new MultipleRegistryFactory().createRegistry(url);

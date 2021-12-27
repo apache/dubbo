@@ -26,9 +26,9 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 
@@ -180,9 +180,9 @@ public class RegistryConfig extends AbstractConfig {
      */
     private Integer weight;
 
-    private Boolean publishInterface;
+    private String registerMode;
 
-    private Boolean publishInstance;
+    private Boolean enableEmptyProtection;
 
     public RegistryConfig() {
     }
@@ -519,22 +519,22 @@ public class RegistryConfig extends AbstractConfig {
         this.weight = weight;
     }
 
-    @Parameter(key = REGISTRY_PUBLISH_INTERFACE_KEY)
-    public Boolean getPublishInterface() {
-        return publishInterface;
+    @Parameter(key = REGISTER_MODE_KEY)
+    public String getRegisterMode() {
+        return registerMode;
     }
 
-    public void setPublishInterface(Boolean publishInterface) {
-        this.publishInterface = publishInterface;
+    public void setRegisterMode(String registerMode) {
+        this.registerMode = registerMode;
     }
 
-    @Parameter(key = REGISTRY_PUBLISH_INSTANCE_KEY)
-    public Boolean getPublishInstance() {
-        return publishInstance;
+    @Parameter(key = ENABLE_EMPTY_PROTECTION_KEY)
+    public Boolean getEnableEmptyProtection() {
+        return enableEmptyProtection;
     }
 
-    public void setPublishInstance(Boolean publishInstance) {
-        this.publishInstance = publishInstance;
+    public void setEnableEmptyProtection(Boolean enableEmptyProtection) {
+        this.enableEmptyProtection = enableEmptyProtection;
     }
 
     @Override
