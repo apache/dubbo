@@ -91,7 +91,7 @@
         <!-- Common libs -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
         <spring_version>5.2.8.RELEASE</spring_version>
-        <javassist_version>3.23.1-GA</javassist_version>
+        <javassist_version>3.28.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.1.56.Final</netty4_version>
         <mina_version>1.1.7</mina_version>
@@ -99,8 +99,8 @@
         <httpclient_version>4.5.13</httpclient_version>
         <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.70</fastjson_version>
-        <zookeeper_version>3.4.13</zookeeper_version>
-        <curator_version>4.2.0</curator_version>
+        <zookeeper_version>3.7.0</zookeeper_version>
+        <curator_version>5.1.0</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
         <jedis_version>3.6.0</jedis_version>
         <consul_version>1.4.2</consul_version>

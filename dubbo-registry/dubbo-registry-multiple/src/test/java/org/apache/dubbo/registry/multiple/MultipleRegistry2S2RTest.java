@@ -95,10 +95,10 @@ public class MultipleRegistry2S2RTest {
         Assertions.assertNotNull(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
 
         Assertions.assertEquals(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()),
-                MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
+            MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
 
         Assertions.assertEquals(MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getServiceRegistries().values()),
-                MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
+            MultipleRegistryTestUtil.getZookeeperRegistry(multipleRegistry.getReferenceRegistries().values()));
 
         Assertions.assertEquals(multipleRegistry.getApplicationName(), "vic");
 

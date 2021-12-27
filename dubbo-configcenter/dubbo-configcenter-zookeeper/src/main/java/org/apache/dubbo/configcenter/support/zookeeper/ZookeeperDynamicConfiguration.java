@@ -54,10 +54,10 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
         final String threadName = this.getClass().getSimpleName();
         this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
-                THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(DEFAULT_QUEUE),
-                new NamedThreadFactory(threadName, true),
-                new AbortPolicyWithReport(threadName, url));
+            THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(DEFAULT_QUEUE),
+            new NamedThreadFactory(threadName, true),
+            new AbortPolicyWithReport(threadName, url));
 
         zkClient = zookeeperTransporter.connect(url);
         boolean isConnected = zkClient.isConnected();

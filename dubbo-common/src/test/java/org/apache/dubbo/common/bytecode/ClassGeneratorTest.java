@@ -50,7 +50,7 @@ public class ClassGeneratorTest {
         cg.addMethod("public void setName(" + Bean.class.getName() + " o, Object name){ FNAME.set($1, $2); }");
 
         cg.addDefaultConstructor();
-        Class<?> cl = cg.toClass();
+        Class<?> cl = cg.toClass(Bean.class);
         cl.getField("FNAME").set(null, fname);
 
         System.out.println(cl.getName());
@@ -80,7 +80,7 @@ public class ClassGeneratorTest {
         cg.addMethod("public void setName(" + Bean.class.getName() + " o, Object name){ FNAME.set($1, $2); }");
 
         cg.addDefaultConstructor();
-        Class<?> cl = cg.toClass();
+        Class<?> cl = cg.toClass(Bean.class);
         cl.getField("FNAME").set(null, fname);
 
         System.out.println(cl.getName());
