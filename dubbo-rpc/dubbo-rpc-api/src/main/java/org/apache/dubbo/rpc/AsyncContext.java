@@ -74,4 +74,50 @@ public interface AsyncContext {
      * </code>
      */
     void signalContextSwitch();
+
+    /**
+     * Reset Context is not necessary. Only reset context after result was write back if it is necessary.
+     *
+     * <code>
+     * public class AsyncServiceImpl implements AsyncService {
+     * public String sayHello(String name) {
+     * final AsyncContext asyncContext = RpcContext.startAsync();
+     * new Thread(() -> {
+     * <p>
+     * // the right place to use this method
+     * asyncContext.signalContextSwitch();
+     * <p>
+     * try {
+     * Thread.sleep(500);
+     * } catch (InterruptedException e) {
+     * e.printStackTrace();
+     * }
+     * asyncContext.write("Hello " + name + ", response from provider.");
+     * // only reset after asyncContext.write()
+     * asyncContext.resetContext();
+     * }).start();
+     * return null;
+     * }
+     * }
+     * </code>
+     *
+     * <code>
+     * public class AsyncServiceImpl implements AsyncService {
+     * public CompletableFuture sayHello(String name) {
+     * CompletableFuture future = new CompletableFuture();
+     * final AsyncContext asyncContext = RpcContext.startAsync();
+     * new Thread(() -> {
+     * // the right place to use this method
+     * asyncContext.signalContextSwitch();
+     * // some operations...
+     * future.complete();
+     * // only reset after future.complete()
+     * asyncContext.resetContext();
+     * }).start();
+     * return future;
+     * }
+     * }
+     * </code>
+     */
+    void resetContext();
 }

@@ -112,8 +112,6 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
 import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
@@ -179,8 +177,6 @@ public class ReferenceConfigTest {
         applicationConfig.setRegisterConsumer(false);
         applicationConfig.setRepository("repository1");
         applicationConfig.setEnableFileCache(false);
-        applicationConfig.setPublishInstance(false);
-        applicationConfig.setPublishInterface(false);
         applicationConfig.setProtocol("dubbo");
         applicationConfig.setMetadataServicePort(88888);
         applicationConfig.setMetadataServiceProtocol("tri");
@@ -317,11 +313,6 @@ public class ReferenceConfigTest {
             serviceMetadata.getAttachments().get("repository"));
         Assertions.assertEquals(applicationConfig.getEnableFileCache().toString(),
             serviceMetadata.getAttachments().get(REGISTRY_LOCAL_FILE_CACHE_ENABLED));
-        Assertions.assertEquals(applicationConfig.getPublishInstance().toString(),
-            serviceMetadata.getAttachments().get(REGISTRY_PUBLISH_INSTANCE_KEY));
-        Assertions.assertEquals(applicationConfig.getPublishInterface().toString(),
-            serviceMetadata.getAttachments().get(REGISTRY_PUBLISH_INTERFACE_KEY));
-        Assertions.assertTrue(serviceMetadata.getAttachments().containsKey(REGISTRY_PUBLISH_INTERFACE_KEY));
         Assertions.assertEquals(applicationConfig.getMetadataServicePort().toString(),
             serviceMetadata.getAttachments().get(METADATA_SERVICE_PORT_KEY));
         Assertions.assertEquals(applicationConfig.getMetadataServiceProtocol().toString(),

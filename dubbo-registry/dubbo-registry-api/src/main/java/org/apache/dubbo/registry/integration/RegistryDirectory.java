@@ -214,6 +214,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             // use local reference to avoid NPE as this.cachedInvokerUrls will be set null by destroyAllInvokers().
             Set<URL> localCachedInvokerUrls = this.cachedInvokerUrls;
             if (invokerUrls.isEmpty() && localCachedInvokerUrls != null) {
+                logger.warn("Service" + serviceKey + " received empty address list with no EMPTY protocol set, trigger empty protection.");
                 invokerUrls.addAll(localCachedInvokerUrls);
             } else {
                 localCachedInvokerUrls = new HashSet<>();

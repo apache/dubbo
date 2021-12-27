@@ -51,8 +51,8 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
@@ -167,10 +167,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     private Boolean enableFileCache;
 
-    private Boolean publishInterface;
-
-    private Boolean publishInstance;
-
     /**
      * The preferred protocol(name) of this application
      * convenient for places where it's hard to determine which is the preferred protocol
@@ -195,6 +191,10 @@ public class ApplicationConfig extends AbstractConfig {
     private String readinessProbe;
 
     private String startupProbe;
+
+    private String registerMode;
+
+    private Boolean enableEmptyProtection;
 
     public ApplicationConfig() {
     }
@@ -497,22 +497,22 @@ public class ApplicationConfig extends AbstractConfig {
         this.enableFileCache = enableFileCache;
     }
 
-    @Parameter(key = REGISTRY_PUBLISH_INTERFACE_KEY)
-    public Boolean getPublishInterface() {
-        return publishInterface;
+    @Parameter(key = REGISTER_MODE_KEY)
+    public String getRegisterMode() {
+        return registerMode;
     }
 
-    public void setPublishInterface(Boolean publishInterface) {
-        this.publishInterface = publishInterface;
+    public void setRegisterMode(String registerMode) {
+        this.registerMode = registerMode;
     }
 
-    @Parameter(key = REGISTRY_PUBLISH_INSTANCE_KEY)
-    public Boolean getPublishInstance() {
-        return publishInstance;
+    @Parameter(key = ENABLE_EMPTY_PROTECTION_KEY)
+    public Boolean getEnableEmptyProtection() {
+        return enableEmptyProtection;
     }
 
-    public void setPublishInstance(Boolean publishInstance) {
-        this.publishInstance = publishInstance;
+    public void setEnableEmptyProtection(Boolean enableEmptyProtection) {
+        this.enableEmptyProtection = enableEmptyProtection;
     }
 
     @Parameter(excluded = true, key = APPLICATION_PROTOCOL_KEY)
