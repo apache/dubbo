@@ -73,6 +73,8 @@ public class RpcServiceContext extends RpcContext {
     private Object response;
     private AsyncContext asyncContext;
 
+    private boolean needPrintRouterSnapshot;
+
     /**
      * Get the request object of the underlying RPC protocol, e.g. HttpServletRequest
      *
@@ -648,6 +650,14 @@ public class RpcServiceContext extends RpcContext {
     public static void setRpcContext(URL url) {
         RpcServiceContext rpcContext = RpcContext.getServiceContext();
         rpcContext.setConsumerUrl(url);
+    }
+
+    public boolean isNeedPrintRouterSnapshot() {
+        return needPrintRouterSnapshot;
+    }
+
+    public void setNeedPrintRouterSnapshot(boolean needPrintRouterSnapshot) {
+        this.needPrintRouterSnapshot = needPrintRouterSnapshot;
     }
 
     /**

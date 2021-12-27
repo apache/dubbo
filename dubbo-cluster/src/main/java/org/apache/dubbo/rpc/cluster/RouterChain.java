@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.router.RouterResult;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
@@ -149,13 +150,21 @@ public class RouterChain<T> {
         return headStateRouter;
     }
 
-    /**
-     * @param url
-     * @param invocation
-     * @return
-     */
     public List<Invoker<T>> route(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+        if (RpcContext.getServiceContext().isNeedPrintRouterSnapshot()) {
+            return routeAndPrint(url, availableInvokers, invocation);
+        } else {
+            return simpleRoute(url, availableInvokers, invocation);
+        }
+    }
 
+    public List<Invoker<T>> routeAndPrint(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
+        RouterSnapshotNode<T> snapshot = buildRouterSnapshot(url, availableInvokers, invocation);
+        logRouterSnapshot(url, invocation, snapshot);
+        return snapshot.getChainOutputInvokers();
+    }
+
+    public List<Invoker<T>> simpleRoute(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
 
         // 1. route state router
@@ -270,10 +279,22 @@ public class RouterChain<T> {
     }
 
     private void logRouterSnapshot(URL url, Invocation invocation, RouterSnapshotNode<T> snapshotNode) {
-        logger.warn("No provider available after route for the service " + url.getServiceKey()
-            + " from registry " + url.getAddress()
-            + " on the consumer " + NetUtils.getLocalHost()
-            + " using the dubbo version " + Version.getVersion() + ". Router snapshot is below: \n" + snapshotNode.toString());
+        if (snapshotNode.getChainOutputInvokers() == null ||
+            snapshotNode.getChainOutputInvokers().isEmpty()) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("No provider available after route for the service " + url.getServiceKey()
+                    + " from registry " + url.getAddress()
+                    + " on the consumer " + NetUtils.getLocalHost()
+                    + " using the dubbo version " + Version.getVersion() + ". Router snapshot is below: \n" + snapshotNode.toString());
+            }
+        } else {
+            if (logger.isInfoEnabled()) {
+                logger.info("Router snapshot service " + url.getServiceKey()
+                    + " from registry " + url.getAddress()
+                    + " on the consumer " + NetUtils.getLocalHost()
+                    + " using the dubbo version " + Version.getVersion() + " is below: \n" + snapshotNode.toString());
+            }
+        }
     }
 
     /**
