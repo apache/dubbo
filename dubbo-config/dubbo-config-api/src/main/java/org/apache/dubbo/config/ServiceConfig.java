@@ -540,7 +540,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
 
         // export service
-        String host = findConfiguredHosts(protocolConfig, provider, registryURLs, params);
+        String host = findConfiguredHosts(protocolConfig, provider, params);
         Integer port = findConfiguredPort(protocolConfig, provider, this.getExtensionLoader(Protocol.class), name, params);
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
 
@@ -696,7 +696,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private static String findConfiguredHosts(ProtocolConfig protocolConfig,
                                               ProviderConfig provider,
-                                              List<URL> registryURLs,
                                               Map<String, String> map) {
         boolean anyhost = false;
 
