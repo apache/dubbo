@@ -29,11 +29,14 @@ import java.util.stream.Collectors;
 public class RouterSnapshotNode<T> {
     private final String name;
     private final int beforeSize;
-    private int afterSize;
+    private int nodeOutputSize;
+    private int chainOutputSize;
     private String routerMessage;
     private final List<Invoker<T>> inputInvokers;
-    private List<Invoker<T>> outputInvokers;
+    private List<Invoker<T>> nodeOutputInvokers;
+    private List<Invoker<T>> chainOutputInvokers;
     private final List<RouterSnapshotNode<T>> nextNode = new LinkedList<>();
+    private RouterSnapshotNode<T> parentNode;
 
     public RouterSnapshotNode(String name, List<Invoker<T>> inputInvokers) {
         this.name = name;
@@ -46,6 +49,7 @@ public class RouterSnapshotNode<T> {
                 this.inputInvokers.add(inputInvokers.get(i));
             }
         }
+        this.nodeOutputSize = 0;
     }
 
     public String getName() {
@@ -56,8 +60,8 @@ public class RouterSnapshotNode<T> {
         return beforeSize;
     }
 
-    public int getAfterSize() {
-        return afterSize;
+    public int getNodeOutputSize() {
+        return nodeOutputSize;
     }
 
     public String getRouterMessage() {
@@ -68,21 +72,39 @@ public class RouterSnapshotNode<T> {
         this.routerMessage = routerMessage;
     }
 
-    public List<Invoker<T>> getOutputInvokers() {
-        return outputInvokers;
+    public List<Invoker<T>> getNodeOutputInvokers() {
+        return nodeOutputInvokers;
     }
 
-    public void setOutputInvokers(List<Invoker<T>> outputInvokers) {
-        this.outputInvokers = outputInvokers;
-        this.afterSize = outputInvokers == null ? 0 : outputInvokers.size();
+    public void setNodeOutputInvokers(List<Invoker<T>> outputInvokers) {
+        this.nodeOutputInvokers = outputInvokers;
+        this.nodeOutputSize = outputInvokers == null ? 0 : outputInvokers.size();
+    }
+
+    public void setChainOutputInvokers(List<Invoker<T>> outputInvokers) {
+        this.chainOutputInvokers = outputInvokers;
+        this.chainOutputSize = outputInvokers == null ? 0 : outputInvokers.size();
+    }
+
+    public int getChainOutputSize() {
+        return chainOutputSize;
+    }
+
+    public List<Invoker<T>> getChainOutputInvokers() {
+        return chainOutputInvokers;
     }
 
     public List<RouterSnapshotNode<T>> getNextNode() {
         return nextNode;
     }
 
+    public RouterSnapshotNode<T> getParentNode() {
+        return parentNode;
+    }
+
     public void appendNode(RouterSnapshotNode<T> nextNode) {
         this.nextNode.add(nextNode);
+        nextNode.parentNode = this;
     }
 
     @Override
@@ -95,26 +117,32 @@ public class RouterSnapshotNode<T> {
         stringBuilder.append("[ ")
             .append(name)
             .append(" ")
-            .append("Invokers: ")
-            .append(beforeSize).append(" -> ").append(afterSize)
+            .append("(Input: ").append(beforeSize).append(") ")
+            .append("(Current Node Output: ").append(nodeOutputSize).append(") ")
+            .append("(Chain Node Output: ").append(chainOutputSize).append(") ")
             .append(routerMessage == null ? "" : " Router message: ")
             .append(routerMessage == null ? "" : routerMessage)
-            .append(" ] ")
-            .append(CollectionUtils.isEmpty(inputInvokers) ? "Empty" :
-                inputInvokers.subList(0, Math.min(5, inputInvokers.size()))
-                    .stream()
-                    .map(Invoker::getUrl)
-                    .map(URL::getAddress)
-                    .collect(Collectors.joining(",")))
-            .append(" -> ")
-            .append(CollectionUtils.isEmpty(outputInvokers) ? "Empty" :
-                outputInvokers.subList(0, Math.min(5, outputInvokers.size()))
+            .append(" ] ");
+        if (level != 1) {
+            stringBuilder.append("Input: ")
+                .append(CollectionUtils.isEmpty(inputInvokers) ? "Empty" :
+                        inputInvokers.subList(0, Math.min(5, inputInvokers.size()))
+                            .stream()
+                            .map(Invoker::getUrl)
+                            .map(URL::getAddress)
+                            .collect(Collectors.joining(",")))
+                .append(" -> ");
+        }
+
+        stringBuilder.append("Current Node Output: ")
+            .append(CollectionUtils.isEmpty(nodeOutputInvokers) ? "Empty" :
+                nodeOutputInvokers.subList(0, Math.min(5, nodeOutputInvokers.size()))
                     .stream()
                     .map(Invoker::getUrl)
                     .map(URL::getAddress)
                     .collect(Collectors.joining(",")));
 
-        if (outputInvokers != null && outputInvokers.size() > 5) {
+        if (nodeOutputInvokers != null && nodeOutputInvokers.size() > 5) {
             stringBuilder.append("...");
         }
         for (RouterSnapshotNode<T> node : nextNode) {

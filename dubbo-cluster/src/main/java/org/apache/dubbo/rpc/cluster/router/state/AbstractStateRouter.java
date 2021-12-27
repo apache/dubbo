@@ -101,6 +101,13 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
             parentNode = nodeHolder.get();
             currentNode = new RouterSnapshotNode<>(this.getClass().getName(), invokers.clone());
             parentNode.appendNode(currentNode);
+
+            // set parent node's output size in the first child invoke
+            // initial node output size is zero, first child will override it
+            if (parentNode.getNodeOutputSize() < invokers.size()) {
+                parentNode.setNodeOutputInvokers(invokers.clone());
+            }
+
             messageHolder = new Holder<>();
             nodeHolder.set(currentNode);
         }
@@ -120,7 +127,11 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
         // post-build current node
         if (needToPrintMessage) {
             currentNode.setRouterMessage(messageHolder.get());
-            currentNode.setOutputInvokers(routeResult.clone());
+            if (currentNode.getNodeOutputSize() == 0) {
+                // no child call
+                currentNode.setNodeOutputInvokers(routeResult.clone());
+            }
+            currentNode.setChainOutputInvokers(routeResult.clone());
             nodeHolder.set(parentNode);
         }
         return routeResult;

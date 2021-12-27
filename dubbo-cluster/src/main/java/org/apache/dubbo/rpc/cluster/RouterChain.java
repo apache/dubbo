@@ -208,7 +208,7 @@ public class RouterChain<T> {
     public RouterSnapshotNode<T> buildRouterSnapshot(URL url, BitList<Invoker<T>> availableInvokers, Invocation invocation) {
         BitList<Invoker<T>> resultInvokers = availableInvokers.clone();
         RouterSnapshotNode<T> parentNode = new RouterSnapshotNode<T>("Parent", resultInvokers.clone());
-        parentNode.setOutputInvokers(resultInvokers.clone());
+        parentNode.setNodeOutputInvokers(resultInvokers.clone());
 
         // 1. route state router
         Holder<RouterSnapshotNode<T>> nodeHolder = new Holder<>();
@@ -218,7 +218,7 @@ public class RouterChain<T> {
 
         // result is empty, log out
         if (routers.isEmpty() || (resultInvokers.isEmpty() && shouldFailFast)) {
-            parentNode.setOutputInvokers(resultInvokers.clone());
+            parentNode.setChainOutputInvokers(resultInvokers.clone());
             return parentNode;
         }
 
@@ -240,7 +240,7 @@ public class RouterChain<T> {
             List<Invoker<T>> routeResult = routeStateResult.getResult();
             String routerMessage = routeStateResult.getMessage();
 
-            currentNode.setOutputInvokers(routeResult);
+            currentNode.setNodeOutputInvokers(routeResult);
             currentNode.setRouterMessage(routerMessage);
 
             commonRouterResult = routeResult;
@@ -254,7 +254,18 @@ public class RouterChain<T> {
                 break;
             }
         }
-        parentNode.setOutputInvokers(commonRouterResult);
+        commonRouterNode.setChainOutputInvokers(commonRouterNode.getNodeOutputInvokers());
+
+        // 3. set router chain output reverse
+        RouterSnapshotNode<T> currentNode = commonRouterNode;
+        while (currentNode != null){
+            RouterSnapshotNode<T> parent = currentNode.getParentNode();
+            if (parent != null) {
+                // common router only has one child invoke
+                parent.setChainOutputInvokers(currentNode.getChainOutputInvokers());
+            }
+            currentNode = parent;
+        }
         return parentNode;
     }
 
