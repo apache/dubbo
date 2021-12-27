@@ -76,14 +76,14 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
 
     private void dumpIfNeed(Invoker<?> invoker, Invocation invocation, ProfilerEntry profiler) {
         int timeout;
-        Object timeoutKey = invocation.getObjectAttachment(TIMEOUT_KEY);
+        Object timeoutKey = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
         if (timeoutKey instanceof Integer) {
             timeout = (Integer) timeoutKey;
         } else {
-            timeout = invoker.getUrl().getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+            timeout = invoker.getUrl().getMethodPositiveParameter(invocation.getMethodName(), TIMEOUT_KEY, DEFAULT_TIMEOUT);
         }
         long usage = profiler.getEndTime() - profiler.getStartTime();
-        if (usage > (timeout * 1000_000 * ProfilerSwitch.getWarnPercent())) {
+        if ((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) {
 
             StringBuilder attachment = new StringBuilder();
             for (Map.Entry<String, Object> entry : invocation.getObjectAttachments().entrySet()) {
