@@ -643,8 +643,7 @@ public class DubboProtocol extends AbstractProtocol {
             url = new ServiceConfigURL(DubboCodec.NAME, url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(),  url.getParameters());
             // connection should be lazy
             if (url.getParameter(LAZY_CONNECT_KEY, false)) {
-                client = new LazyConnectExchangeClient(url, requestHandler, DubboCodec.NAME, url.getParameters());
-
+                client = new LazyConnectExchangeClient(url, requestHandler);
             } else {
                 client = Exchangers.connect(url, requestHandler);
             }
