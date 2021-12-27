@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
@@ -49,11 +50,11 @@ public interface Compressor {
     }
 
     static String getAcceptEncoding(FrameworkModel frameworkModel) {
-        Set<String> supportedEncodingSet = frameworkModel.getExtensionLoader(Compressor.class).getSupportedExtensions();
+        Set<Compressor> supportedEncodingSet = frameworkModel.getExtensionLoader(Compressor.class).getSupportedExtensionInstances();
         if (supportedEncodingSet.isEmpty()) {
             return null;
         }
-        return String.join(",", supportedEncodingSet);
+        return supportedEncodingSet.stream().map(Compressor::getMessageEncoding).collect(Collectors.joining(","));
     }
 
     /**

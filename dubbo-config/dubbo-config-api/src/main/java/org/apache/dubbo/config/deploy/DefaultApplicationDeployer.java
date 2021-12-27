@@ -344,7 +344,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (cc.getParameters() == null) {
             cc.setParameters(new HashMap<>());
         }
-        if (registryConfig.getParameters() != null) {
+        if (CollectionUtils.isNotEmptyMap(registryConfig.getParameters())) {
             cc.getParameters().putAll(registryConfig.getParameters()); // copy the parameters
         }
         cc.getParameters().put(CLIENT_KEY, registryConfig.getClient());
@@ -454,7 +454,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
         if (metadataReportConfig.getParameters() == null) {
             metadataReportConfig.setParameters(new HashMap<>());
         }
-        if (registryConfig.getParameters() != null) {
+        if (CollectionUtils.isNotEmptyMap(registryConfig.getParameters())) {
             metadataReportConfig.getParameters().putAll(registryConfig.getParameters()); // copy the parameters
         }
         metadataReportConfig.getParameters().put(CLIENT_KEY, registryConfig.getClient());
@@ -505,12 +505,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 boolean hasPendingModule = hasPendingModule();
 
                 if (isStarting()) {
-                    // currently is starting, maybe both start by module and application
-                    // if has new modules, start them
+                    // currently, is starting, maybe both start by module and application
+                    // if it has new modules, start them
                     if (hasPendingModule) {
                         startModules();
                     }
-                    // if is starting, reuse previous startFuture
+                    // if it is starting, reuse previous startFuture
                     return startFuture;
                 }
 
@@ -653,7 +653,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
                 return null;
             }
 
-            DynamicConfiguration dynamicConfiguration = null;
+            DynamicConfiguration dynamicConfiguration;
             try {
                 dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
             } catch (Exception e) {

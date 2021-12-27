@@ -98,10 +98,7 @@ public class ServiceInstanceMetadataUtils {
         if (url == null) {
             return "";
         }
-        url = url.removeParameter(APPLICATION_KEY);
-        url = url.removeParameter(GROUP_KEY);
-        url = url.removeParameter(DEPRECATED_KEY);
-        url = url.removeParameter(TIMESTAMP_KEY);
+        url = url.removeParameters(APPLICATION_KEY, GROUP_KEY, DEPRECATED_KEY, TIMESTAMP_KEY);
         Map<String, String> params = getParams(url);
 
         if (params.isEmpty()) {

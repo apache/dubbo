@@ -14,31 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.json;
+package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-import java.io.IOException;
+public class MeshRuleConstants {
+    public static final String INVALID_APP_NAME = "unknown";
 
-/**
- * JSON converter.
- */
-@Deprecated
-public interface JSONConverter {
-    /**
-     * write object.
-     *
-     * @param obj     obj.
-     * @param builder builder.
-     * @throws IOException
-     */
-    void writeValue(Object obj, JSONWriter builder, boolean writeClass) throws IOException;
+    public static final String DESTINATION_RULE_KEY = "DestinationRule";
 
-    /**
-     * convert json value to target class.
-     *
-     * @param type target type.
-     * @param jv   json value.
-     * @return target object.
-     * @throws IOException
-     */
-    Object readValue(Class<?> type, Object jv) throws IOException;
+    public static final String VIRTUAL_SERVICE_KEY = "VirtualService";
+
+    public static final String KIND_KEY = "kind";
+
+    public static final String MESH_RULE_DATA_ID_SUFFIX = ".MESHAPPRULE";
+
+    public static final String NAME_KEY = "name";
+
+    public static final String METADATA_KEY = "metadata";
+
+    public static final String STANDARD_ROUTER_KEY = "standard";
 }

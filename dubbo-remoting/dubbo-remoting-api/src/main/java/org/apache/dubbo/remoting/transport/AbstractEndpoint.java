@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Resetable;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Codec;
 import org.apache.dubbo.remoting.Codec2;
@@ -47,13 +48,17 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     }
 
     protected static Codec2 getChannelCodec(URL url) {
-        String codecName = url.getProtocol(); // codec extension name must stay the same with protocol name
+        String codecName = url.getParameter(Constants.CODEC_KEY);
+        if (StringUtils.isEmpty(codecName)) {
+            // codec extension name must stay the same with protocol name
+            codecName = url.getProtocol();
+        }
         FrameworkModel frameworkModel = getFrameworkModel(url.getScopeModel());
         if (frameworkModel.getExtensionLoader(Codec2.class).hasExtension(codecName)) {
             return frameworkModel.getExtensionLoader(Codec2.class).getExtension(codecName);
         } else {
             return new CodecAdapter(frameworkModel.getExtensionLoader(Codec.class)
-                    .getExtension(codecName));
+                .getExtension(codecName));
         }
     }
 
@@ -61,7 +66,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     public void reset(URL url) {
         if (isClosed()) {
             throw new IllegalStateException("Failed to reset parameters "
-                    + url + ", cause: Channel closed. channel: " + getLocalAddress());
+                + url + ", cause: Channel closed. channel: " + getLocalAddress());
         }
 
         try {

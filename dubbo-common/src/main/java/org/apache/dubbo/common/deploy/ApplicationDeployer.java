@@ -84,6 +84,8 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
      */
     void checkState(ModuleModel moduleModel, DeployState moduleState);
 
-    // module state changed callbacks
+    /**
+     * module state changed callbacks
+     */
     void notifyModuleChanged(ModuleModel moduleModel, DeployState state);
 }

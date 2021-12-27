@@ -385,8 +385,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                     }
                 }
             } catch (Throwable t) {
-                logger.error(getIdentifier() + " refer catch error", t);
+                logger.error(getIdentifier() + " refer catch error.");
                 referenceCache.destroy(rc);
+                throw t;
             }
         });
     }

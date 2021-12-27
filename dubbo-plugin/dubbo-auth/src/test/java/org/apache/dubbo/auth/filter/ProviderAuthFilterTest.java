@@ -24,6 +24,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,7 @@ class ProviderAuthFilterTest {
     void testAuthDisabled() {
         URL url = mock(URL.class);
         Invoker invoker = mock(Invoker.class);
-        Invocation invocation = mock(Invocation.class);
+        Invocation invocation = mock(RpcInvocation.class);
         when(invoker.getUrl()).thenReturn(url);
         ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
         providerAuthFilter.invoke(invoker, invocation);
@@ -59,7 +60,7 @@ class ProviderAuthFilterTest {
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
                 .addParameter(Constants.SERVICE_AUTH, true);
         Invoker invoker = mock(Invoker.class);
-        Invocation invocation = mock(Invocation.class);
+        Invocation invocation = mock(RpcInvocation.class);
         when(invoker.getUrl()).thenReturn(url);
         ProviderAuthFilter providerAuthFilter = new ProviderAuthFilter(ApplicationModel.defaultModel());
         providerAuthFilter.invoke(invoker, invocation);
@@ -75,7 +76,7 @@ class ProviderAuthFilterTest {
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
                 .addParameter(Constants.SERVICE_AUTH, true);
         Invoker invoker = mock(Invoker.class);
-        Invocation invocation = mock(Invocation.class);
+        Invocation invocation = mock(RpcInvocation.class);
         when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(null);
         when(invoker.getUrl()).thenReturn(url);
 
@@ -93,7 +94,7 @@ class ProviderAuthFilterTest {
                 .addParameter(CommonConstants.APPLICATION_KEY, "test")
                 .addParameter(Constants.SERVICE_AUTH, true);
         Invoker invoker = mock(Invoker.class);
-        Invocation invocation = mock(Invocation.class);
+        Invocation invocation = mock(RpcInvocation.class);
         when(invocation.getAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn(null);
         when(invoker.getUrl()).thenReturn(url);
 
@@ -108,7 +109,7 @@ class ProviderAuthFilterTest {
                 .addParameter(CommonConstants.APPLICATION_KEY, "test-provider")
                 .addParameter(Constants.SERVICE_AUTH, true);
         Invoker invoker = mock(Invoker.class);
-        Invocation invocation = mock(Invocation.class);
+        Invocation invocation = mock(RpcInvocation.class);
         when(invocation.getObjectAttachment(Constants.REQUEST_SIGNATURE_KEY)).thenReturn("dubbo");
         when(invocation.getObjectAttachment(Constants.AK_KEY)).thenReturn("ak");
         when(invocation.getObjectAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
@@ -136,7 +137,7 @@ class ProviderAuthFilterTest {
                 .addParameter(Constants.SERVICE_AUTH, true);
 
         Invoker invoker = mock(Invoker.class);
-        Invocation invocation = mock(Invocation.class);
+        Invocation invocation = mock(RpcInvocation.class);
         when(invocation.getObjectAttachment(Constants.AK_KEY)).thenReturn("ak");
         when(invocation.getObjectAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
         when(invocation.getObjectAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(currentTimeMillis);
@@ -169,7 +170,7 @@ class ProviderAuthFilterTest {
                 .addParameter(CommonConstants.APPLICATION_KEY, "test-provider")
                 .addParameter(Constants.SERVICE_AUTH, true);
         Invoker invoker = mock(Invoker.class);
-        Invocation invocation = mock(Invocation.class);
+        Invocation invocation = mock(RpcInvocation.class);
         when(invocation.getAttachment(Constants.AK_KEY)).thenReturn("ak");
         when(invocation.getAttachment(CommonConstants.CONSUMER)).thenReturn("test-consumer");
         when(invocation.getAttachment(Constants.REQUEST_TIMESTAMP_KEY)).thenReturn(String.valueOf(currentTimeMillis));

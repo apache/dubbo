@@ -26,7 +26,7 @@ import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.remoting.Constants.TELNET;
+import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
 
 public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements TelnetHandler {
 
@@ -84,7 +84,7 @@ public class TelnetHandlerAdapter extends ChannelHandlerAdapter implements Telne
     }
 
     private boolean commandEnabled(URL url, String command) {
-        String supportCommands = url.getParameter(TELNET);
+        String supportCommands = url.getParameter(TELNET_KEY);
         if (StringUtils.isEmpty(supportCommands)) {
             return true;
         }

@@ -65,7 +65,9 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
         url = URLBuilder.from(url)
             .setPath(RegistryService.class.getName())
             .addParameter(INTERFACE_KEY, RegistryService.class.getName())
-            .removeParameters(EXPORT_KEY, REFER_KEY, TIMESTAMP_KEY)
+            .removeParameter(TIMESTAMP_KEY)
+            .removeAttribute(EXPORT_KEY)
+            .removeAttribute(REFER_KEY)
             .build();
         String key = createRegistryCacheKey(url);
         Registry registry = null;

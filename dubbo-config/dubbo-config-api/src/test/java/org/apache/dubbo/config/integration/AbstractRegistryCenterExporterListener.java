@@ -56,12 +56,13 @@ public abstract class AbstractRegistryCenterExporterListener implements Exporter
     @Override
     public void exported(Exporter<?> exporter) throws RpcException {
         ListenerExporterWrapper listenerExporterWrapper = (ListenerExporterWrapper) exporter;
-        FilterChainBuilder.FilterChainNode filterChainNode = (FilterChainBuilder.FilterChainNode) listenerExporterWrapper.getInvoker();
-        if (filterChainNode == null ||
-            filterChainNode.getInterface() != getInterface()) {
+        FilterChainBuilder.CallbackRegistrationInvoker callbackRegistrationInvoker = (FilterChainBuilder.CallbackRegistrationInvoker) listenerExporterWrapper.getInvoker();
+        if (callbackRegistrationInvoker == null ||
+            callbackRegistrationInvoker.getInterface() != getInterface()) {
             return;
         }
         exportedExporters.add(exporter);
+        FilterChainBuilder.CopyOfFilterChainNode filterChainNode = getFilterChainNode(callbackRegistrationInvoker);
         do {
             Filter filter = this.getFilter(filterChainNode);
             if (filter != null) {
@@ -96,7 +97,24 @@ public abstract class AbstractRegistryCenterExporterListener implements Exporter
     /**
      * Use reflection to obtain {@link Filter}
      */
-    private Filter getFilter(FilterChainBuilder.FilterChainNode filterChainNode) {
+    private FilterChainBuilder.CopyOfFilterChainNode getFilterChainNode(FilterChainBuilder.CallbackRegistrationInvoker callbackRegistrationInvoker) {
+        if (callbackRegistrationInvoker != null) {
+            Field field = null;
+            try {
+                field = callbackRegistrationInvoker.getClass().getDeclaredField("filterInvoker");
+                field.setAccessible(true);
+                return (FilterChainBuilder.CopyOfFilterChainNode) field.get(callbackRegistrationInvoker);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                // ignore
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Use reflection to obtain {@link Filter}
+     */
+    private Filter getFilter(FilterChainBuilder.CopyOfFilterChainNode filterChainNode) {
         if (filterChainNode != null) {
             Field field = null;
             try {
@@ -111,17 +129,17 @@ public abstract class AbstractRegistryCenterExporterListener implements Exporter
     }
 
     /**
-     * Use reflection to obtain {@link FilterChainBuilder.FilterChainNode}
+     * Use reflection to obtain {@link FilterChainBuilder.CopyOfFilterChainNode}
      */
-    private FilterChainBuilder.FilterChainNode getNextNode(FilterChainBuilder.FilterChainNode filterChainNode) {
+    private FilterChainBuilder.CopyOfFilterChainNode getNextNode(FilterChainBuilder.CopyOfFilterChainNode filterChainNode) {
         if (filterChainNode != null) {
             Field field = null;
             try {
                 field = filterChainNode.getClass().getDeclaredField("nextNode");
                 field.setAccessible(true);
                 Object object = field.get(filterChainNode);
-                if (object instanceof FilterChainBuilder.FilterChainNode) {
-                    return (FilterChainBuilder.FilterChainNode) object;
+                if (object instanceof FilterChainBuilder.CopyOfFilterChainNode) {
+                    return (FilterChainBuilder.CopyOfFilterChainNode) object;
                 }
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 // ignore

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
@@ -35,6 +36,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -106,7 +108,7 @@ public class ConfigurationUtils {
         Configuration configuration = getGlobalConfiguration(scopeModel);
         String value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_KEY));
 
-        if (value != null && value.length() > 0) {
+        if (StringUtils.isNotEmpty(value)) {
             try {
                 timeout = Integer.parseInt(value);
             } catch (Exception e) {
@@ -114,7 +116,7 @@ public class ConfigurationUtils {
             }
         } else {
             value = StringUtils.trim(configuration.getString(SHUTDOWN_WAIT_SECONDS_KEY));
-            if (value != null && value.length() > 0) {
+            if (StringUtils.isNotEmpty(value)) {
                 try {
                     timeout = Integer.parseInt(value) * 1000;
                 } catch (Exception e) {
@@ -228,7 +230,7 @@ public class ConfigurationUtils {
             resultMap = new LinkedHashMap<>();
         }
 
-        if (null != configMap) {
+        if (CollectionUtils.isNotEmptyMap(configMap)) {
             for(Map.Entry<String, V> entry : configMap.entrySet()) {
                 String key = entry.getKey();
                 V val = entry.getValue();
@@ -238,8 +240,11 @@ public class ConfigurationUtils {
 
                     String k = key.substring(prefix.length());
                     // convert camelCase/snake_case to kebab-case
-                    k = StringUtils.convertToSplitName(k, "-");
-                    resultMap.putIfAbsent(k, val);
+                    String newK = StringUtils.convertToSplitName(k, "-");
+                    resultMap.putIfAbsent(newK, val);
+                    if (!Objects.equals(k, newK)) {
+                        resultMap.putIfAbsent(k, val);
+                    }
                 }
             }
         }

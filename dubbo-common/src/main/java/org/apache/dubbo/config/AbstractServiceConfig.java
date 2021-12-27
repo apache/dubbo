@@ -101,7 +101,9 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      */
     protected String protocolIds;
 
-    // max allowed execute times
+    /**
+     * Max allowed executing times
+     */
     private Integer executes;
 
     /**

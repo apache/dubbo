@@ -150,8 +150,10 @@ public class ModuleServiceRepository {
     @Deprecated
     public void reRegisterProvider(String newServiceKey, String serviceKey) {
         ProviderModel providerModel = this.providers.get(serviceKey);
+        frameworkServiceRepository.unregisterProvider(providerModel);
         providerModel.setServiceKey(newServiceKey);
         this.providers.putIfAbsent(newServiceKey, providerModel);
+        frameworkServiceRepository.registerProvider(providerModel);
         this.providers.remove(serviceKey);
     }
 

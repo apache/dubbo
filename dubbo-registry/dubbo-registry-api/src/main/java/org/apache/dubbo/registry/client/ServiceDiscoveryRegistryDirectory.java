@@ -198,17 +198,18 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     private void refreshInvoker(List<URL> invokerUrls) {
-        Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty url list to clear address.");
+        Assert.notNull(invokerUrls, "invokerUrls should not be null, use EMPTY url to clear current addresses.");
         this.originalUrls = invokerUrls;
 
-        if (invokerUrls.size() == 0) {
-            logger.info("Received empty url list...");
+        if (invokerUrls.size() == 1 && EMPTY_PROTOCOL.equals(invokerUrls.get(0).getProtocol())) {
+            logger.warn("Received url with EMPTY protocol, will clear all available addresses.");
             this.forbidden = true; // Forbid to access
             routerChain.setInvokers(BitList.emptyList());
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow accessing
             if (CollectionUtils.isEmpty(invokerUrls)) {
+                logger.warn("Received empty url list, will ignore for protection purpose.");
                 return;
             }
 

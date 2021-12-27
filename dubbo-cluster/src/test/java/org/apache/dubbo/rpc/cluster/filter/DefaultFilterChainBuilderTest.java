@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import org.junit.jupiter.api.Assertions;
@@ -39,6 +40,7 @@ public class DefaultFilterChainBuilderTest {
         // verify that no filter is built by default
         URL urlWithoutFilter = URL.valueOf("injvm://127.0.0.1/DemoService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
+        urlWithoutFilter = urlWithoutFilter.setScopeModel(ApplicationModel.defaultModel());
         AbstractInvoker<DemoService> invokerWithoutFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithoutFilter) {
             @Override
             protected Result doInvoke(Invocation invocation) throws Throwable {
@@ -53,6 +55,7 @@ public class DefaultFilterChainBuilderTest {
         URL urlWithFilter = URL.valueOf("injvm://127.0.0.1/DemoService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName())
             .addParameter(REFERENCE_FILTER_KEY, "log");
+        urlWithFilter = urlWithFilter.setScopeModel(ApplicationModel.defaultModel());
         AbstractInvoker<DemoService> invokerWithFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithFilter) {
             @Override
             protected Result doInvoke(Invocation invocation) throws Throwable {
@@ -60,8 +63,8 @@ public class DefaultFilterChainBuilderTest {
             }
         };
         invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithFilter, REFERENCE_FILTER_KEY, CONSUMER);
-        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.FilterChainNode);
-        Assertions.assertTrue(((FilterChainBuilder.FilterChainNode<?, ?, ?>) invokerAfterBuild).filter instanceof LogFilter);
+        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.CallbackRegistrationInvoker);
+        Assertions.assertEquals(1, ((FilterChainBuilder.CallbackRegistrationInvoker<?, ?>) invokerAfterBuild).filters.size());
 
     }
 
@@ -72,6 +75,7 @@ public class DefaultFilterChainBuilderTest {
         // verify that no filter is built by default
         URL urlWithoutFilter = URL.valueOf("dubbo://127.0.0.1:20880/DemoService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName());
+        urlWithoutFilter = urlWithoutFilter.setScopeModel(ApplicationModel.defaultModel());
         AbstractInvoker<DemoService> invokerWithoutFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithoutFilter) {
             @Override
             protected Result doInvoke(Invocation invocation) throws Throwable {
@@ -86,6 +90,7 @@ public class DefaultFilterChainBuilderTest {
         URL urlWithFilter = URL.valueOf("dubbo://127.0.0.1:20880/DemoService")
             .addParameter(INTERFACE_KEY, DemoService.class.getName())
             .addParameter(REFERENCE_FILTER_KEY, "log");
+        urlWithFilter = urlWithFilter.setScopeModel(ApplicationModel.defaultModel());
         AbstractInvoker<DemoService> invokerWithFilter = new AbstractInvoker<DemoService>(DemoService.class, urlWithFilter) {
             @Override
             protected Result doInvoke(Invocation invocation) throws Throwable {
@@ -93,8 +98,7 @@ public class DefaultFilterChainBuilderTest {
             }
         };
         invokerAfterBuild = defaultFilterChainBuilder.buildInvokerChain(invokerWithFilter, REFERENCE_FILTER_KEY, CONSUMER);
-        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.FilterChainNode);
-        Assertions.assertTrue(((FilterChainBuilder.FilterChainNode<?, ?, ?>) invokerAfterBuild).filter instanceof LogFilter);
+        Assertions.assertTrue(invokerAfterBuild instanceof FilterChainBuilder.CallbackRegistrationInvoker);
 
     }
 }

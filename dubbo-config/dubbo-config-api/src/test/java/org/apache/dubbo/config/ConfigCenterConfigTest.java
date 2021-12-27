@@ -81,30 +81,27 @@ public class ConfigCenterConfigTest {
         SysProps.setProperty("dubbo.config-center.check", "false");
         SysProps.setProperty("dubbo.config-center.address", zkAddr);
 
+        //No id and no address
+        ConfigCenterConfig configCenter = new ConfigCenterConfig();
+        configCenter.setAddress("N/A");
+
         try {
-            //No id and no address
-            ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            configCenter.setAddress("N/A");
-
-            try {
-                DubboBootstrap.getInstance()
-                        .application("demo-app")
-                        .configCenter(configCenter)
-                        .initialize();
-            } catch (Exception e) {
-                // ignore
-                e.printStackTrace();
-            }
-
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
-            Assertions.assertEquals(1, configCenters.size());
-            Assertions.assertEquals(configCenter, configCenters.iterator().next());
-            Assertions.assertEquals(zkAddr, configCenter.getAddress());
-            Assertions.assertEquals(false, configCenter.isCheck());
-        } finally {
-            SysProps.clear();
-            DubboBootstrap.getInstance().stop();
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .configCenter(configCenter)
+                    .initialize();
+        } catch (Exception e) {
+            // ignore
+            e.printStackTrace();
         }
+
+        Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
+        Assertions.assertEquals(1, configCenters.size());
+        Assertions.assertEquals(configCenter, configCenters.iterator().next());
+        Assertions.assertEquals(zkAddr, configCenter.getAddress());
+        Assertions.assertEquals(false, configCenter.isCheck());
+
+        DubboBootstrap.getInstance().stop();
     }
 
     @Test
@@ -115,25 +112,22 @@ public class ConfigCenterConfigTest {
         SysProps.setProperty("dubbo.config-center.check", "false");
         SysProps.setProperty("dubbo.config-center.address", zkAddr);
 
-        try {
-            //No id but has address
-            ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            configCenter.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress());
+        //No id but has address
+        ConfigCenterConfig configCenter = new ConfigCenterConfig();
+        configCenter.setAddress(ZookeeperRegistryCenterConfig.getConnectionAddress());
 
-            DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .configCenter(configCenter)
-                    .start();
+        DubboBootstrap.getInstance()
+                .application("demo-app")
+                .configCenter(configCenter)
+                .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
-            Assertions.assertEquals(1, configCenters.size());
-            Assertions.assertEquals(configCenter, configCenters.iterator().next());
-            Assertions.assertEquals(zkAddr, configCenter.getAddress());
-            Assertions.assertEquals(false, configCenter.isCheck());
-        } finally {
-            SysProps.clear();
-            DubboBootstrap.getInstance().stop();
-        }
+        Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
+        Assertions.assertEquals(1, configCenters.size());
+        Assertions.assertEquals(configCenter, configCenters.iterator().next());
+        Assertions.assertEquals(zkAddr, configCenter.getAddress());
+        Assertions.assertEquals(false, configCenter.isCheck());
+
+        DubboBootstrap.getInstance().stop();
     }
 
     @Test
@@ -143,25 +137,22 @@ public class ConfigCenterConfigTest {
         SysProps.setProperty("dubbo.config-center.check", "false");
         SysProps.setProperty("dubbo.config-center.timeout", "1234");
 
-        try {
-            // Config instance has id
-            ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            configCenter.setTimeout(3000L);
+        // Config instance has id
+        ConfigCenterConfig configCenter = new ConfigCenterConfig();
+        configCenter.setTimeout(3000L);
 
-            DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .configCenter(configCenter)
-                    .initialize();
+        DubboBootstrap.getInstance()
+                .application("demo-app")
+                .configCenter(configCenter)
+                .initialize();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
-            Assertions.assertEquals(1, configCenters.size());
-            Assertions.assertEquals(configCenter, configCenters.iterator().next());
-            Assertions.assertEquals(1234, configCenter.getTimeout());
-            Assertions.assertEquals(false, configCenter.isCheck());
-        } finally {
-            SysProps.clear();
-            DubboBootstrap.getInstance().stop();
-        }
+        Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
+        Assertions.assertEquals(1, configCenters.size());
+        Assertions.assertEquals(configCenter, configCenters.iterator().next());
+        Assertions.assertEquals(1234, configCenter.getTimeout());
+        Assertions.assertEquals(false, configCenter.isCheck());
+
+        DubboBootstrap.getInstance().stop();
     }
 
     @Test
@@ -200,26 +191,23 @@ public class ConfigCenterConfigTest {
         SysProps.setProperty("dubbo.config-centers.configcenterA.check", "false");
         SysProps.setProperty("dubbo.config-centers.configcenterA.timeout", "1234");
 
-        try {
-            // Config instance has id
-            ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            configCenter.setId("configcenterA");
-            configCenter.setTimeout(3000L);
+        // Config instance has id
+        ConfigCenterConfig configCenter = new ConfigCenterConfig();
+        configCenter.setId("configcenterA");
+        configCenter.setTimeout(3000L);
 
-            DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .configCenter(configCenter)
-                    .start();
+        DubboBootstrap.getInstance()
+                .application("demo-app")
+                .configCenter(configCenter)
+                .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
-            Assertions.assertEquals(1, configCenters.size());
-            Assertions.assertEquals(configCenter, configCenters.iterator().next());
-            Assertions.assertEquals(1234, configCenter.getTimeout());
-            Assertions.assertEquals(false, configCenter.isCheck());
-        } finally {
-            SysProps.clear();
-            DubboBootstrap.getInstance().stop();
-        }
+        Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
+        Assertions.assertEquals(1, configCenters.size());
+        Assertions.assertEquals(configCenter, configCenters.iterator().next());
+        Assertions.assertEquals(1234, configCenter.getTimeout());
+        Assertions.assertEquals(false, configCenter.isCheck());
+
+        DubboBootstrap.getInstance().stop();
     }
 
     @Test

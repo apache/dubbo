@@ -111,7 +111,6 @@ public class ConfigurableMetadataServiceExporter {
                     if (it.hasNext()) {
                         String addr = it.next().getAddress();
                         String rawPort = addr.substring(addr.indexOf(":") + 1);
-                        logger.info("Using " + specifiedProtocol +" protocol to export MetadataService on port " + rawPort);
                         protocolConfig.setPort(Integer.parseInt(rawPort));
                     }
                 }
@@ -126,7 +125,7 @@ public class ConfigurableMetadataServiceExporter {
             protocolConfig.setPort(-1);
         }
 
-        logger.info("Using dubbo protocol to export metadata service on port " + protocolConfig.getPort());
+        logger.info("Using " + specifiedProtocol + " protocol to export metadata service on port " + protocolConfig.getPort());
 
         return protocolConfig;
     }

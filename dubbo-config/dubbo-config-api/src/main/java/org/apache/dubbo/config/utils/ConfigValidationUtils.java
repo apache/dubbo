@@ -129,7 +129,7 @@ import static org.apache.dubbo.remoting.Constants.DISPATCHER_KEY;
 import static org.apache.dubbo.remoting.Constants.EXCHANGER_KEY;
 import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
 import static org.apache.dubbo.remoting.Constants.SERVER_KEY;
-import static org.apache.dubbo.remoting.Constants.TELNET;
+import static org.apache.dubbo.remoting.Constants.TELNET_KEY;
 import static org.apache.dubbo.remoting.Constants.TRANSPORTER_KEY;
 import static org.apache.dubbo.rpc.Constants.FAIL_PREFIX;
 import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
@@ -189,7 +189,7 @@ public class ConfigValidationUtils {
 
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
-        List<URL> registryList = new ArrayList<URL>();
+        List<URL> registryList = new ArrayList<>();
         ApplicationConfig application = interfaceConfig.getApplication();
         List<RegistryConfig> registries = interfaceConfig.getRegistries();
         if (CollectionUtils.isNotEmpty(registries)) {
@@ -537,7 +537,7 @@ public class ConfigValidationUtils {
                 checkMultiExtension(config.getScopeModel(), Transporter.class, CLIENT_KEY, config.getClient());
             }
 
-            checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET, config.getTelnet());
+            checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET_KEY, config.getTelnet());
             checkMultiExtension(config.getScopeModel(), StatusChecker.class, "status", config.getStatus());
             checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
             checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());
@@ -550,7 +550,7 @@ public class ConfigValidationUtils {
     public static void validateProviderConfig(ProviderConfig config) {
         checkPathName(CONTEXTPATH_KEY, config.getContextpath());
         checkExtension(config.getScopeModel(), ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
-        checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET, config.getTelnet());
+        checkMultiExtension(config.getScopeModel(), TelnetHandler.class, TELNET_KEY, config.getTelnet());
         checkMultiExtension(config.getScopeModel(), StatusChecker.class, STATUS_KEY, config.getStatus());
         checkExtension(config.getScopeModel(), Transporter.class, TRANSPORTER_KEY, config.getTransporter());
         checkExtension(config.getScopeModel(), Exchanger.class, EXCHANGER_KEY, config.getExchanger());

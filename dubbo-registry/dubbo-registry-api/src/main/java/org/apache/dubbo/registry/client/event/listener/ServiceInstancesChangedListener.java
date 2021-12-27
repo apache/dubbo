@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.event.listener;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -51,6 +52,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
@@ -325,7 +329,7 @@ public class ServiceInstancesChangedListener {
                         continue;
                     }
                 }
-                urls.add(i.toURL());
+                urls.add(i.toURL().setScopeModel(i.getApplicationModel()));
             }
         }
         return urls;
@@ -349,6 +353,14 @@ public class ServiceInstancesChangedListener {
     protected List<URL> toUrlsWithEmpty(List<URL> urls) {
         if (urls == null) {
             urls = Collections.emptyList();
+        }
+        boolean emptyProtectionEnabled = serviceDiscovery.getUrl().getParameter(ENABLE_EMPTY_PROTECTION_KEY, true);
+        if (CollectionUtils.isEmpty(urls) && !emptyProtectionEnabled) {
+            // notice that the service of this.url may not be the same as notify listener.
+            URL empty = URLBuilder.from(this.url)
+                .setProtocol(EMPTY_PROTOCOL)
+                .build();
+            urls.add(empty);
         }
         return urls;
     }

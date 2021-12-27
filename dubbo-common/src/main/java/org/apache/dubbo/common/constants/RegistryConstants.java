@@ -61,10 +61,6 @@ public interface RegistryConstants {
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";
 
-    String REGISTRY_PUBLISH_INTERFACE_KEY = "publish-interface";
-
-    String REGISTRY_PUBLISH_INSTANCE_KEY = "publish-instance";
-
     String REGISTER_MODE_KEY = "register-mode";
 
     String DUBBO_REGISTER_MODE_DEFAULT_KEY = "dubbo.application.register-mode";
@@ -128,4 +124,6 @@ public interface RegistryConstants {
     String INIT = "INIT";
 
     float DEFAULT_HASHMAP_LOAD_FACTOR = 0.75f;
+
+    String ENABLE_EMPTY_PROTECTION_KEY = "enable-empty-protection";
 }

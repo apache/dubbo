@@ -93,7 +93,7 @@ public class MultipleRegistry extends AbstractRegistry {
                 serviceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
                 continue;
             }
-            final URL registryUrl = URL.valueOf(tmpUrl).addParameterIfAbsent(CHECK_KEY, url.getParameter(CHECK_KEY, "true"));
+            final URL registryUrl = URL.valueOf(tmpUrl).addParametersIfAbsent(url.getParameters()).addParameterIfAbsent(CHECK_KEY, url.getParameter(CHECK_KEY, "true"));
             Registry registry = registryFactory.getRegistry(registryUrl);
             registryMap.put(tmpUrl, registry);
             serviceRegistries.put(tmpUrl, registry);

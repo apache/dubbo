@@ -57,7 +57,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
      */
     private final boolean initialState;
     private volatile ExchangeClient client;
-    private AtomicLong warningCount = new AtomicLong(0);
+    private final AtomicLong warningCount = new AtomicLong(0);
 
     public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler) {
         // lazy connect, need set send.reconnect = true, to avoid channel bad status.

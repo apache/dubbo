@@ -140,7 +140,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     protected RpcInvocation buildInvocation(Metadata metadata) {
         RpcInvocation inv = new RpcInvocation(getUrl().getServiceModel(),
             getMethodName(), getServiceDescriptor().getServiceName(),
-            getUrl().getProtocolServiceKey(), getMethodDescriptor().getParameterClasses(), new Object[0]);
+            getUrl().getProtocolServiceKey(), getMethodDescriptor().getRealParameterClasses(), new Object[0]);
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
         inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
 

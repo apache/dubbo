@@ -95,7 +95,7 @@ public abstract class AbstractRegistry implements Registry {
     // Local disk cache file
     private File file;
     private boolean localCacheEnabled;
-    private RegistryManager registryManager;
+    protected RegistryManager registryManager;
     protected ApplicationModel applicationModel;
 
     public AbstractRegistry(URL url) {

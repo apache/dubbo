@@ -92,6 +92,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_KEY;
@@ -109,8 +110,6 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
 import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
@@ -176,10 +175,9 @@ public class ReferenceConfigTest {
         applicationConfig.setRegisterConsumer(false);
         applicationConfig.setRepository("repository1");
         applicationConfig.setEnableFileCache(false);
-        applicationConfig.setPublishInstance(false);
-        applicationConfig.setPublishInterface(false);
         applicationConfig.setProtocol("dubbo");
         applicationConfig.setMetadataServicePort(88888);
+        applicationConfig.setMetadataServiceProtocol("tri");
         applicationConfig.setLivenessProbe("livenessProbe");
         applicationConfig.setReadinessProbe("readinessProb");
         applicationConfig.setStartupProbe("startupProbe");
@@ -313,13 +311,10 @@ public class ReferenceConfigTest {
             serviceMetadata.getAttachments().get("repository"));
         Assertions.assertEquals(applicationConfig.getEnableFileCache().toString(),
             serviceMetadata.getAttachments().get(REGISTRY_LOCAL_FILE_CACHE_ENABLED));
-        Assertions.assertEquals(applicationConfig.getPublishInstance().toString(),
-            serviceMetadata.getAttachments().get(REGISTRY_PUBLISH_INSTANCE_KEY));
-        Assertions.assertEquals(applicationConfig.getPublishInterface().toString(),
-            serviceMetadata.getAttachments().get(REGISTRY_PUBLISH_INTERFACE_KEY));
-        Assertions.assertTrue(serviceMetadata.getAttachments().containsKey(REGISTRY_PUBLISH_INTERFACE_KEY));
         Assertions.assertEquals(applicationConfig.getMetadataServicePort().toString(),
             serviceMetadata.getAttachments().get(METADATA_SERVICE_PORT_KEY));
+        Assertions.assertEquals(applicationConfig.getMetadataServiceProtocol().toString(),
+            serviceMetadata.getAttachments().get(METADATA_SERVICE_PROTOCOL_KEY));
         Assertions.assertEquals(applicationConfig.getLivenessProbe(),
             serviceMetadata.getAttachments().get(LIVENESS_PROBE_KEY));
         Assertions.assertEquals(applicationConfig.getReadinessProbe(),
@@ -724,8 +719,6 @@ public class ReferenceConfigTest {
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress(zkUrl1);
-        ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("injvm");
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
         rc.setRegistry(registry);
@@ -830,8 +823,8 @@ public class ReferenceConfigTest {
 
         metaData = config.getMetaData();
         Assertions.assertEquals(2, metaData.size());
-        Assertions.assertEquals("" + consumerConfig.getActives(), metaData.get("actives"));
-        Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
+        Assertions.assertEquals(String.valueOf(consumerConfig.getActives()), metaData.get("actives"));
+        Assertions.assertEquals(String.valueOf(config.isAsync()), metaData.get("async"));
 
     }
 

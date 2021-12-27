@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.bytecode;
 
+import org.apache.dubbo.common.utils.ClassUtils;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -137,13 +139,16 @@ public class WrapperTest {
     @Test
     public void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello",}, Wrapper.getWrapper(Parent1.class).getMethodNames());
+        assertArrayEquals(new String[]{"hello",}, ClassUtils.getMethodNames(Parent1.class));
 
         assertArrayEquals(new String[]{}, Wrapper.getWrapper(Son.class).getDeclaredMethodNames());
+        assertArrayEquals(new String[]{}, ClassUtils.getDeclaredMethodNames(Son.class));
     }
 
     @Test
     public void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
+        assertArrayEquals(new String[]{"hello", "world"}, ClassUtils.getMethodNames(Son.class));
     }
 
     public interface I0 {

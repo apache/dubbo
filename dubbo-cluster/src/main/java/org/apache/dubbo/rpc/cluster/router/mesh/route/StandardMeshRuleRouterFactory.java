@@ -18,20 +18,15 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
-
-import org.junit.jupiter.api.Test;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
+import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 
-public class MeshRuleRouterFactoryTest {
-
-    @Test
-    public void getRouter() {
-        MeshRuleRouterFactory ruleRouterFactory = new MeshRuleRouterFactory();
-        URL url = mock(URL.class);
-        when(url.getServiceKey()).thenReturn("demoService");
-        ruleRouterFactory.getRouter(url);
+@Activate(order = -50)
+public class StandardMeshRuleRouterFactory implements StateRouterFactory {
+    @Override
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        return new StandardMeshRuleRouter<>(url);
     }
 }

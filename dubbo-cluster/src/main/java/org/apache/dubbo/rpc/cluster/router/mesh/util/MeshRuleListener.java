@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.cluster.router.mesh.route;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+package org.apache.dubbo.rpc.cluster.router.mesh.util;
 
 
-@Activate(order = -50)
-public class MeshRuleRouterFactory implements RouterFactory {
-    @Override
-    public Router getRouter(URL url) {
-        return new MeshRuleRouter(url);
-    }
+import java.util.List;
+import java.util.Map;
+
+public interface MeshRuleListener {
+    void onRuleChange(String appName, List<Map<String, Object>> rules);
+
+    void clearRule(String appName);
+
+    String ruleSuffix();
 }

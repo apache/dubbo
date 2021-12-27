@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
@@ -53,7 +54,7 @@ public class MergeableClusterInvokerTest {
     private Directory directory = mock(Directory.class);
     private Invoker firstInvoker = mock(Invoker.class);
     private Invoker secondInvoker = mock(Invoker.class);
-    private Invocation invocation = mock(Invocation.class);
+    private Invocation invocation = mock(RpcInvocation.class);
     private ModuleModel moduleModel = mock(ModuleModel.class);
 
     private MergeableClusterInvoker<MenuService> mergeableClusterInvoker;
@@ -96,7 +97,7 @@ public class MergeableClusterInvokerTest {
         directory = mock(Directory.class);
         firstInvoker = mock(Invoker.class);
         secondInvoker = mock(Invoker.class);
-        invocation = mock(Invocation.class);
+        invocation = mock(RpcInvocation.class);
 
     }
 

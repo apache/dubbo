@@ -101,7 +101,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private static final Logger logger = LoggerFactory.getLogger(ServiceConfig.class);
 
     /**
-     * A random port cache, the different protocols who has no port specified have different random port
+     * A random port cache, the different protocols who have no port specified have different random port
      */
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
 
@@ -393,10 +393,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // remove null key and null value
         map.keySet().removeIf(key -> key == null || map.get(key) == null);
-        //init serviceMetadata attachments
+        // init serviceMetadata attachments
         serviceMetadata.getAttachments().putAll(map);
 
-        URL url = buildUrl(protocolConfig, registryURLs, map);
+        URL url = buildUrl(protocolConfig, map);
 
         exportUrl(url, registryURLs);
     }
@@ -441,7 +441,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
-                map.put(METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+                map.put(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), ","));
             }
         }
 
@@ -512,20 +512,20 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private Integer findArgumentIndexIndexWithGivenType(ArgumentConfig argument, Method method) {
-        Class<?>[] argtypes = method.getParameterTypes();
+        Class<?>[] argTypes = method.getParameterTypes();
         // one callback in the method
         if (hasIndex(argument)) {
             Integer index = argument.getIndex();
             String type = argument.getType();
-            if (isTypeMatched(type, index, argtypes)) {
+            if (isTypeMatched(type, index, argTypes)) {
                 return index;
             } else {
                 throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
             }
         } else {
             // multiple callbacks in the method
-            for (int j = 0; j < argtypes.length; j++) {
-                if (isTypeMatched(argument.getType(), j, argtypes)) {
+            for (int j = 0; j < argTypes.length; j++) {
+                if (isTypeMatched(argument.getType(), j, argTypes)) {
                     return j;
                 }
             }
@@ -533,7 +533,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
-    private URL buildUrl(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> params) {
+    private URL buildUrl(ProtocolConfig protocolConfig, Map<String, String> params) {
         String name = protocolConfig.getName();
         if (StringUtils.isEmpty(name)) {
             name = DUBBO;
@@ -543,7 +543,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         String host = findConfiguredHosts(protocolConfig, provider, registryURLs, params);
         Integer port = findConfiguredPort(protocolConfig, provider, this.getExtensionLoader(Protocol.class), name, params);
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
-        url.setScopeModel(getScopeModel());
 
         // You can customize Configurator to append extra parameters
         if (this.getExtensionLoader(ConfiguratorFactory.class)
@@ -692,7 +691,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * /etc/hosts -> default network address -> first available network address
      *
      * @param protocolConfig
-     * @param registryURLs
      * @param map
      * @return
      */
@@ -726,7 +724,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // registry ip is not used for bind ip by default
         String hostToRegistry = getValueFromConfig(protocolConfig, DUBBO_IP_TO_REGISTRY);
-        if (hostToRegistry != null && hostToRegistry.length() > 0 && isInvalidLocalHost(hostToRegistry)) {
+        if (StringUtils.isNotEmpty(hostToRegistry) && isInvalidLocalHost(hostToRegistry)) {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         } else if (StringUtils.isEmpty(hostToRegistry)) {
             // bind ip is used as registry ip by default
@@ -792,7 +790,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private static Integer parsePort(String configPort) {
         Integer port = null;
-        if (configPort != null && configPort.length() > 0) {
+        if (StringUtils.isNotEmpty(configPort)) {
             try {
                 int intPort = Integer.parseInt(configPort);
                 if (isInvalidPort(intPort)) {

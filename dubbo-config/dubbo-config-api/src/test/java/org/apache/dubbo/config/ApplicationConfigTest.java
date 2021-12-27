@@ -202,35 +202,30 @@ public class ApplicationConfigTest {
 
     @Test
     public void testAppendEnvironmentProperties() {
-        try {
-            ApplicationConfig application = new ApplicationConfig("app");
-            SysProps.setProperty("dubbo.labels", "tag1=value1;tag2=value2 ; tag3 = value3");
-            application.refresh();
-            Map<String, String> parameters = application.getParameters();
-            Assertions.assertEquals("value1", parameters.get("tag1"));
-            Assertions.assertEquals("value2", parameters.get("tag2"));
-            Assertions.assertEquals("value3", parameters.get("tag3"));
+        ApplicationConfig application = new ApplicationConfig("app");
+        SysProps.setProperty("dubbo.labels", "tag1=value1;tag2=value2 ; tag3 = value3");
+        application.refresh();
+        Map<String, String> parameters = application.getParameters();
+        Assertions.assertEquals("value1", parameters.get("tag1"));
+        Assertions.assertEquals("value2", parameters.get("tag2"));
+        Assertions.assertEquals("value3", parameters.get("tag3"));
 
-            ApplicationConfig application1 = new ApplicationConfig("app");
-            SysProps.setProperty("dubbo.env.keys", "tag1, tag2,tag3");
-            // mock environment variables
-            SysProps.setProperty("tag1", "value1");
-            SysProps.setProperty("tag2", "value2");
-            SysProps.setProperty("tag3", "value3");
-            application1.refresh();
-            Map<String, String> parameters1 = application1.getParameters();
-            Assertions.assertEquals("value1", parameters1.get("tag1"));
-            Assertions.assertEquals("value2", parameters1.get("tag2"));
-            Assertions.assertEquals("value3", parameters1.get("tag3"));
+        ApplicationConfig application1 = new ApplicationConfig("app");
+        SysProps.setProperty("dubbo.env.keys", "tag1, tag2,tag3");
+        // mock environment variables
+        SysProps.setProperty("tag1", "value1");
+        SysProps.setProperty("tag2", "value2");
+        SysProps.setProperty("tag3", "value3");
+        application1.refresh();
+        Map<String, String> parameters1 = application1.getParameters();
+        Assertions.assertEquals("value2", parameters1.get("tag2"));
+        Assertions.assertEquals("value3", parameters1.get("tag3"));
 
-            Map<String, String> urlParameters = new HashMap<>();
-            ApplicationConfig.appendParameters(urlParameters, application1);
-            Assertions.assertEquals("value1", urlParameters.get("tag1"));
-            Assertions.assertEquals("value2", urlParameters.get("tag2"));
-            Assertions.assertEquals("value3", urlParameters.get("tag3"));
-        } finally {
-            SysProps.clear();
-        }
+        Map<String, String> urlParameters = new HashMap<>();
+        ApplicationConfig.appendParameters(urlParameters, application1);
+        Assertions.assertEquals("value1", urlParameters.get("tag1"));
+        Assertions.assertEquals("value2", urlParameters.get("tag2"));
+        Assertions.assertEquals("value3", urlParameters.get("tag3"));
     }
 
     @Test
@@ -247,17 +242,16 @@ public class ApplicationConfigTest {
         SysProps.setProperty("dubbo.application.owner", owner);
         SysProps.setProperty("dubbo.application.version", "1.2.3");
 
-        try {
-            ApplicationConfig applicationConfig = new ApplicationConfig();
+        ApplicationConfig applicationConfig = new ApplicationConfig();
 
-            DubboBootstrap.getInstance()
-                    .application(applicationConfig)
-                    .initialize();
+        DubboBootstrap.getInstance()
+            .application(applicationConfig)
+            .initialize();
 
-            Assertions.assertEquals(owner, applicationConfig.getOwner());
-            Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
-        } finally {
-        }
+        Assertions.assertEquals(owner, applicationConfig.getOwner());
+        Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
+
+        DubboBootstrap.getInstance().destroy();
     }
 
     @Test
@@ -267,20 +261,19 @@ public class ApplicationConfigTest {
         SysProps.setProperty("dubbo.applications.demo-app.version", "1.2.3");
         SysProps.setProperty("dubbo.applications.demo-app.name", "demo-app");
 
-        try {
-            ApplicationConfig applicationConfig = new ApplicationConfig();
-            applicationConfig.setId("demo-app");
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setId("demo-app");
 
-            DubboBootstrap.getInstance()
-                    .application(applicationConfig)
-                    .initialize();
+        DubboBootstrap.getInstance()
+                .application(applicationConfig)
+                .initialize();
 
-            Assertions.assertEquals("demo-app", applicationConfig.getId());
-            Assertions.assertEquals("demo-app", applicationConfig.getName());
-            Assertions.assertEquals(owner, applicationConfig.getOwner());
-            Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
-        } finally {
-        }
+        Assertions.assertEquals("demo-app", applicationConfig.getId());
+        Assertions.assertEquals("demo-app", applicationConfig.getName());
+        Assertions.assertEquals(owner, applicationConfig.getOwner());
+        Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
+
+        DubboBootstrap.getInstance().destroy();
     }
 
     @Test
@@ -289,18 +282,17 @@ public class ApplicationConfigTest {
         SysProps.setProperty("dubbo.applications.demo-app.owner", owner);
         SysProps.setProperty("dubbo.applications.demo-app.version", "1.2.3");
 
-        try {
-            ApplicationConfig applicationConfig = new ApplicationConfig();
-            applicationConfig.setName("demo-app");
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("demo-app");
 
-            DubboBootstrap.getInstance()
-                    .application(applicationConfig)
-                    .initialize();
+        DubboBootstrap.getInstance()
+                .application(applicationConfig)
+                .initialize();
 
-            Assertions.assertEquals(owner, applicationConfig.getOwner());
-            Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
-        } finally {
-        }
+        Assertions.assertEquals(owner, applicationConfig.getOwner());
+        Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
+
+        DubboBootstrap.getInstance().destroy();
     }
 
     @Test
@@ -309,18 +301,17 @@ public class ApplicationConfigTest {
         SysProps.setProperty("dubbo.applications.demo-app.owner", owner);
         SysProps.setProperty("dubbo.applications.demo-app.version", "1.2.3");
 
-        try {
-            DubboBootstrap.getInstance()
-                    .initialize();
+        DubboBootstrap.getInstance()
+                .initialize();
 
-            ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
+        ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
 
-            Assertions.assertEquals("demo-app", applicationConfig.getId());
-            Assertions.assertEquals("demo-app", applicationConfig.getName());
-            Assertions.assertEquals(owner, applicationConfig.getOwner());
-            Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
-        } finally {
-        }
+        Assertions.assertEquals("demo-app", applicationConfig.getId());
+        Assertions.assertEquals("demo-app", applicationConfig.getName());
+        Assertions.assertEquals(owner, applicationConfig.getOwner());
+        Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
+
+        DubboBootstrap.getInstance().destroy();
     }
 
     @Test
@@ -330,17 +321,16 @@ public class ApplicationConfigTest {
         SysProps.setProperty("dubbo.application.qos_host", "127.0.0.1");
         SysProps.setProperty("dubbo.application.qosPort", "2345");
 
-        try {
-            DubboBootstrap.getInstance()
-                    .initialize();
+        DubboBootstrap.getInstance()
+                .initialize();
 
-            ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
+        ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
 
-            Assertions.assertEquals(false, applicationConfig.getQosEnable());
-            Assertions.assertEquals("127.0.0.1", applicationConfig.getQosHost());
-            Assertions.assertEquals(2345, applicationConfig.getQosPort());
-            Assertions.assertEquals("demo-app", applicationConfig.getName());
-        } finally {
-        }
+        Assertions.assertEquals(false, applicationConfig.getQosEnable());
+        Assertions.assertEquals("127.0.0.1", applicationConfig.getQosHost());
+        Assertions.assertEquals(2345, applicationConfig.getQosPort());
+        Assertions.assertEquals("demo-app", applicationConfig.getName());
+
+        DubboBootstrap.getInstance().destroy();
     }
 }
