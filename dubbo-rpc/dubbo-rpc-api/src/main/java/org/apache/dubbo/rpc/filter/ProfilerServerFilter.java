@@ -43,7 +43,7 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (ProfilerSwitch.isEnableProfiler()) {
+        if (ProfilerSwitch.isEnableSimpleProfiler()) {
             ProfilerEntry bizProfiler = Profiler.start("Receive request. Server invoke begin.");
             invocation.put(Profiler.PROFILER_KEY, bizProfiler);
             invocation.put(CLIENT_IP_KEY, RpcContext.getServiceContext().getRemoteAddressString());
@@ -54,7 +54,16 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        if (ProfilerSwitch.isEnableProfiler()) {
+        afterInvoke(invoker, invocation);
+    }
+
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        afterInvoke(invoker, invocation);
+    }
+
+    private void afterInvoke(Invoker<?> invoker, Invocation invocation) {
+        if (ProfilerSwitch.isEnableSimpleProfiler()) {
             Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
             if (fromInvocation instanceof ProfilerEntry) {
                 ProfilerEntry profiler = Profiler.release((ProfilerEntry) fromInvocation);
@@ -87,18 +96,6 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
                     "thread info: \n%s",
                 invocation.getTargetServiceUniqueName(), invocation.getMethodName(), usage / 1000_000, usage % 1000_000,
                 invocation.get(CLIENT_IP_KEY), attachment, Profiler.buildDetail(profiler)));
-        }
-    }
-
-    @Override
-    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        if (ProfilerSwitch.isEnableProfiler()) {
-            Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
-            if (fromInvocation instanceof ProfilerEntry) {
-                ProfilerEntry profiler = Profiler.release((ProfilerEntry) fromInvocation);
-                invocation.put(Profiler.PROFILER_KEY, profiler);
-                dumpIfNeed(invoker, invocation, profiler);
-            }
         }
     }
 }

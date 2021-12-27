@@ -19,21 +19,38 @@ package org.apache.dubbo.common.profiler;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * TODO
+ */
 public class ProfilerSwitch {
-    private final static AtomicBoolean enableProfiler = new AtomicBoolean(false);
+    private final static AtomicBoolean enableDetailProfiler = new AtomicBoolean(false);
+
+    private final static AtomicBoolean enableSimpleProfiler = new AtomicBoolean(false);
 
     private final static AtomicReference<Double> warnPercent = new AtomicReference<>(0.75);
 
-    public static void enableProfiler() {
-        enableProfiler.set(true);
+    public static void enableSimpleProfiler() {
+        enableSimpleProfiler.set(true);
     }
 
-    public static void disableProfiler() {
-        enableProfiler.set(false);
+    public static void disableSimpleProfiler() {
+        enableSimpleProfiler.set(false);
     }
 
-    public static boolean isEnableProfiler() {
-        return enableProfiler.get();
+    public static void enableDetailProfiler() {
+        enableDetailProfiler.set(true);
+    }
+
+    public static void disableDetailProfiler() {
+        enableDetailProfiler.set(false);
+    }
+
+    public static boolean isEnableDetailProfiler() {
+        return enableDetailProfiler.get() && enableSimpleProfiler.get();
+    }
+
+    public static boolean isEnableSimpleProfiler() {
+        return enableSimpleProfiler.get();
     }
 
     public static double getWarnPercent() {

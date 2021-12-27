@@ -25,7 +25,7 @@ import java.util.concurrent.Callable;
 public class InvocationProfilerUtils {
 
     public static void enterProfiler(Invocation invocation, Callable<String> messageCallable) {
-        if (ProfilerSwitch.isEnableProfiler()) {
+        if (ProfilerSwitch.isEnableDetailProfiler()) {
             Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
             if (fromInvocation instanceof ProfilerEntry) {
                 String message = "";
@@ -40,7 +40,7 @@ public class InvocationProfilerUtils {
     }
 
     public static void releaseProfiler(Invocation invocation) {
-        if (ProfilerSwitch.isEnableProfiler()) {
+        if (ProfilerSwitch.isEnableDetailProfiler()) {
             Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
             if (fromInvocation instanceof ProfilerEntry) {
                 invocation.put(Profiler.PROFILER_KEY, Profiler.release((ProfilerEntry) fromInvocation));

@@ -23,14 +23,14 @@ import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 
-@Cmd(name = "enableProfiler", summary = "Enable Dubbo Invocation Profiler.")
-public class EnableProfiler implements BaseCommand {
-    private final static Logger logger = LoggerFactory.getLogger(EnableProfiler.class);
+@Cmd(name = "disableDetailProfiler", summary = "Disable Dubbo Invocation Profiler.")
+public class DisableDetailProfiler implements BaseCommand {
+    private final static Logger logger = LoggerFactory.getLogger(DisableDetailProfiler.class);
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        ProfilerSwitch.enableProfiler();
-        logger.warn("Dubbo Invocation Profiler has been enabled.");
+        ProfilerSwitch.disableDetailProfiler();
+        logger.warn("Dubbo Invocation Profiler has been disabled.");
         return "OK";
     }
 }

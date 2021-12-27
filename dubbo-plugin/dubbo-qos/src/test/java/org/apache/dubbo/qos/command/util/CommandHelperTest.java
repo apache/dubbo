@@ -19,8 +19,10 @@ package org.apache.dubbo.qos.command.util;
 import org.apache.dubbo.qos.command.GreetingCommand;
 import org.apache.dubbo.qos.command.impl.ChangeTelnet;
 import org.apache.dubbo.qos.command.impl.CountTelnet;
-import org.apache.dubbo.qos.command.impl.DisableProfiler;
-import org.apache.dubbo.qos.command.impl.EnableProfiler;
+import org.apache.dubbo.qos.command.impl.DisableDetailProfiler;
+import org.apache.dubbo.qos.command.impl.DisableSimpleProfiler;
+import org.apache.dubbo.qos.command.impl.EnableDetailProfiler;
+import org.apache.dubbo.qos.command.impl.EnableSimpleProfiler;
 import org.apache.dubbo.qos.command.impl.Help;
 import org.apache.dubbo.qos.command.impl.InvokeTelnet;
 import org.apache.dubbo.qos.command.impl.Live;
@@ -92,8 +94,10 @@ public class CommandHelperTest {
         expectedClasses.add(PortTelnet.class);
         expectedClasses.add(PwdTelnet.class);
         expectedClasses.add(ShutdownTelnet.class);
-        expectedClasses.add(EnableProfiler.class);
-        expectedClasses.add(DisableProfiler.class);
+        expectedClasses.add(EnableDetailProfiler.class);
+        expectedClasses.add(DisableDetailProfiler.class);
+        expectedClasses.add(EnableSimpleProfiler.class);
+        expectedClasses.add(DisableSimpleProfiler.class);
         expectedClasses.add(SetProfilerWarnPercent.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }

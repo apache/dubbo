@@ -84,7 +84,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         try {
-            if (ProfilerSwitch.isEnableProfiler()) {
+            if (ProfilerSwitch.isEnableSimpleProfiler()) {
                 Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
                 if (fromInvocation instanceof ProfilerEntry) {
                     ProfilerEntry profiler = Profiler.enter((ProfilerEntry) fromInvocation, "Receive request. Server biz impl invoke begin.");
@@ -96,7 +96,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
 
             Object value = doInvoke(proxy, invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
 
-            if (ProfilerSwitch.isEnableProfiler()) {
+            if (ProfilerSwitch.isEnableSimpleProfiler()) {
                 Object fromInvocation = invocation.get(Profiler.PROFILER_KEY);
                 if (fromInvocation instanceof ProfilerEntry) {
                     ProfilerEntry profiler = Profiler.release((ProfilerEntry) fromInvocation);

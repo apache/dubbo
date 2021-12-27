@@ -96,7 +96,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
             rpcInvocation.put(Constants.METHOD_MODEL, ((ConsumerModel) serviceModel).getMethodModel(method));
         }
 
-        if (ProfilerSwitch.isEnableProfiler()) {
+        if (ProfilerSwitch.isEnableSimpleProfiler()) {
             ProfilerEntry parentProfiler = Profiler.getBizProfiler();
             ProfilerEntry bizProfiler;
             boolean containsBizProfiler = false;
