@@ -36,6 +36,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.net.InetSocketAddress;
+
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 @EnableDubbo
@@ -66,7 +68,7 @@ public class LocalCallReferenceAnnotationTest {
         // see also: org.apache.dubbo.rpc.protocol.injvm.InjvmInvoker.doInvoke
         // InjvmInvoker set remote address to 127.0.0.1:0
         String result = helloService.sayHello("world");
-        Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", result);
+        Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
     }
 
     @Configuration

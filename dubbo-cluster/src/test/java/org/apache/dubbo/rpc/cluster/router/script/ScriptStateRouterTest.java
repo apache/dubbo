@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.script;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.router.MockInvoker;
@@ -28,12 +29,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class ScriptStateRouterTest {
 
     private URL SCRIPT_URL = URL.valueOf("script://javascript?type=javascript");
@@ -59,19 +63,19 @@ public class ScriptStateRouterTest {
         originInvokers.add(new MockInvoker<String>());
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
 
-        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
+        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false, new Holder<>());
         Assertions.assertEquals(invokers, filteredInvokers);
     }
 
     @Test
     public void testRoutePickInvokers() {
         String rule = "var result = new java.util.ArrayList(invokers.size());" +
-                "for (i=0;i<invokers.size(); i++){ " +
-                "if (invokers.get(i).isAvailable()) {" +
-                "result.add(invokers.get(i)) ;" +
-                "}" +
-                "} ; " +
-                "return result;";
+            "for (i=0;i<invokers.size(); i++){ " +
+            "if (invokers.get(i).isAvailable()) {" +
+            "result.add(invokers.get(i)) ;" +
+            "}" +
+            "} ; " +
+            "return result;";
         String script = "function route(invokers,invocation,context){" + rule + "} route(invokers,invocation,context)";
         StateRouter router = new ScriptStateRouterFactory().getRouter(String.class, getRouteUrl(script));
 
@@ -84,7 +88,7 @@ public class ScriptStateRouterTest {
         originInvokers.add(invoker3);
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
 
-        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
+        List<Invoker<String>> filteredInvokers = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false, new Holder<>());
         Assertions.assertEquals(2, filteredInvokers.size());
         Assertions.assertEquals(invoker2, filteredInvokers.get(0));
         Assertions.assertEquals(invoker3, filteredInvokers.get(1));
@@ -102,20 +106,20 @@ public class ScriptStateRouterTest {
         BitList<Invoker<String>> invokers = new BitList<>(originInvokers);
 
         String script = "function route(invokers, invocation, context){ " +
-                "    var result = new java.util.ArrayList(invokers.size()); " +
-                "    var targetHost = new java.util.ArrayList(); " +
-                "    targetHost.add(\"10.134.108.2\"); " +
-                "    for (var i = 0; i < invokers.length; i++) { " +
-                "        if(targetHost.contains(invokers[i].getUrl().getHost())){ " +
-                "            result.add(invokers[i]); " +
-                "        } " +
-                "    } " +
-                "    return result; " +
-                "} " +
-                "route(invokers, invocation, context) ";
+            "    var result = new java.util.ArrayList(invokers.size()); " +
+            "    var targetHost = new java.util.ArrayList(); " +
+            "    targetHost.add(\"10.134.108.2\"); " +
+            "    for (var i = 0; i < invokers.length; i++) { " +
+            "        if(targetHost.contains(invokers[i].getUrl().getHost())){ " +
+            "            result.add(invokers[i]); " +
+            "        } " +
+            "    } " +
+            "    return result; " +
+            "} " +
+            "route(invokers, invocation, context) ";
 
         StateRouter router = new ScriptStateRouterFactory().getRouter(String.class, getRouteUrl(script));
-        List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
+        List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false, new Holder<>());
         Assertions.assertEquals(1, routeResult.size());
         Assertions.assertEquals(invoker2, routeResult.get(0));
     }
@@ -133,7 +137,7 @@ public class ScriptStateRouterTest {
 
         String script = "/";
         StateRouter router = new ScriptStateRouterFactory().getRouter(String.class, getRouteUrl(script));
-        List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false).getResult();
+        List<Invoker<String>> routeResult = router.route(invokers, invokers.get(0).getUrl(), new RpcInvocation(), false, new Holder<>());
         Assertions.assertEquals(3, routeResult.size());
     }
 }

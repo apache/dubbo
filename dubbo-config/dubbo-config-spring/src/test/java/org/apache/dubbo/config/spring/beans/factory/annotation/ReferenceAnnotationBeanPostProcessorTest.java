@@ -51,6 +51,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -148,8 +149,8 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Assertions.assertNotNull(context.getBean("demoService"));
         Assertions.assertNotNull(context.getBean("demoServiceFromParent"));
 
-        String callSuffix = AOP_SUFFIX + " from "+ NetUtils.getLocalHost() +":12345";
-        String localCallSuffix = AOP_SUFFIX + " from 127.0.0.1:0";
+        String callSuffix = AOP_SUFFIX + " from "+ InetSocketAddress.createUnresolved(NetUtils.getLocalHost(), 12345);
+        String localCallSuffix = AOP_SUFFIX + " from " + InetSocketAddress.createUnresolved("127.0.0.1", 0);
         String directInvokeSuffix = AOP_SUFFIX + " from null";
 
         String defaultHelloServiceResult = "Greeting, Mercy";

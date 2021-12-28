@@ -32,6 +32,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.net.InetSocketAddress;
+
 public class PropertySourcesConfigurerTest {
 
     @BeforeAll
@@ -59,7 +61,7 @@ public class PropertySourcesConfigurerTest {
                 HelloService service = (HelloService) context.getBean("demoService");
                 String result = service.sayHello("world");
                 System.out.println("result: " + result);
-                Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", result);
+                Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
             } finally {
                 context.close();
             }

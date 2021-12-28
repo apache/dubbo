@@ -94,7 +94,7 @@ public final class ClassGenerator {
         if (pool == null) {
             pool = new ClassPool(true);
             pool.insertClassPath(new LoaderClassPath(loader));
-            pool.insertClassPath(new LoaderClassPath(ClassGenerator.class.getClassLoader()));
+            pool.insertClassPath(new DubboLoaderClassPath());
             POOL_MAP.put(loader, pool);
         }
         return pool;
@@ -284,12 +284,17 @@ public final class ClassGenerator {
         return mPool;
     }
 
-    public Class<?> toClass() {
-        return toClass(mClassLoader,
-                getClass().getProtectionDomain());
+    /**
+     * @param neighbor    A class belonging to the same package that this
+     *                    class belongs to.  It is used to load the class.
+     */
+    public Class<?> toClass(Class<?> neighbor) {
+        return toClass(neighbor,
+            mClassLoader,
+            getClass().getProtectionDomain());
     }
 
-    public Class<?> toClass(ClassLoader loader, ProtectionDomain pd) {
+    public Class<?> toClass(Class<?> neighborClass, ClassLoader loader, ProtectionDomain pd) {
         if (mCtc != null) {
             mCtc.detach();
         }
@@ -340,7 +345,15 @@ public final class ClassGenerator {
                     }
                 }
             }
-            return mCtc.toClass(loader, pd);
+
+            try {
+                return mPool.toClass(mCtc, neighborClass, loader, pd);
+            } catch (Throwable t) {
+                if (!(t instanceof CannotCompileException)) {
+                    return mPool.toClass(mCtc, loader, pd);
+                }
+                throw t;
+            }
         } catch (RuntimeException e) {
             throw e;
         } catch (NotFoundException | CannotCompileException e) {

@@ -68,7 +68,7 @@ public class ConfigCenterConfigTest {
 
         Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress()+"/ConfigCenterConfig?check=true&" +
                         "config-file=dubbo.properties&group=group&" +
-                        "namespace=namespace&timeout=3000",
+                        "namespace=namespace&timeout=30000",
                 config.toUrl().toFullString()
         );
     }

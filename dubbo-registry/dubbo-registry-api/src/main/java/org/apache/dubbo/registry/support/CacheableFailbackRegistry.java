@@ -134,7 +134,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         Map<String, ServiceAddressURL> newURLs;
         URL copyOfConsumer = removeParamsFromConsumer(consumer);
         if (oldURLs == null) {
-            newURLs = new HashMap<>();
+            newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
                 ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
@@ -145,7 +145,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 newURLs.put(rawProvider, cachedURL);
             }
         } else {
-            newURLs = new HashMap<>((int) (oldURLs.size() / .75 + 1));
+            newURLs = new HashMap<>((int) (providers.size() / 0.75f + 1));
             // maybe only default , or "env" + default
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
