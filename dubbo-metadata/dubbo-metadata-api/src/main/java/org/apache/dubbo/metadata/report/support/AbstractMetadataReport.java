@@ -75,9 +75,6 @@ import static org.apache.dubbo.metadata.report.support.Constants.RETRY_TIMES_KEY
 import static org.apache.dubbo.metadata.report.support.Constants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.USER_HOME;
 
-/**
- *
- */
 public abstract class AbstractMetadataReport implements MetadataReport {
 
     protected final static String DEFAULT_ROOT = "dubbo";
@@ -454,7 +451,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         void cancelRetryTask() {
             if (retryScheduledFuture != null) {
-                retryScheduledFuture.cancel(false);
+                retryScheduledFuture.cancel(true);
             }
             retryExecutor.shutdown();
         }

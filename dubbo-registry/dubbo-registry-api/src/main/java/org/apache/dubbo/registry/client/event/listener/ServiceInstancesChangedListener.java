@@ -44,10 +44,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
@@ -73,9 +72,9 @@ public class ServiceInstancesChangedListener {
     protected final ServiceDiscovery serviceDiscovery;
     protected URL url;
     protected Map<String, Set<NotifyListener>> listeners;
-    protected ConcurrentLinkedQueue<NotifyListenerWithKey> listenerQueue;
+    protected Queue<NotifyListenerWithKey> listenerQueue;
 
-    protected AtomicBoolean destroyed = new AtomicBoolean(false);
+    protected volatile boolean destroyed = false;
 
     protected Map<String, List<ServiceInstance>> allInstances;
     protected Map<String, Object> serviceUrls;
@@ -89,8 +88,8 @@ public class ServiceInstancesChangedListener {
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
-        this.listeners = new ConcurrentHashMap<>();
-        this.listenerQueue = new ConcurrentLinkedQueue<>();
+        this.listeners = new HashMap<>();
+        this.listenerQueue = new LinkedList<>();
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
         this.revisionToMetadata = new HashMap<>();
@@ -105,7 +104,7 @@ public class ServiceInstancesChangedListener {
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public synchronized void onEvent(ServiceInstancesChangedEvent event) {
-        if (destroyed.get() || !accept(event) || isRetryAndExpired(event)) {
+        if (destroyed || !accept(event) || isRetryAndExpired(event)) {
             return;
         }
 
@@ -450,22 +449,21 @@ public class ServiceInstancesChangedListener {
      * Since this listener is shared among interfaces, destroy this listener only when all interface listener are unsubscribed
      */
     public synchronized void destroy() {
-        if (!destroyed.get()) {
+        if (!destroyed && CollectionUtils.isEmptyMap(listeners)) {
             if (CollectionUtils.isEmptyMap(listeners)) {
-                if (destroyed.compareAndSet(false, true)) {
-                    allInstances.clear();
-                    serviceUrls.clear();
-                    revisionToMetadata.clear();
-                    if (retryFuture != null && !retryFuture.isDone()) {
-                        retryFuture.cancel(true);
-                    }
+                allInstances.clear();
+                serviceUrls.clear();
+                revisionToMetadata.clear();
+                if (retryFuture != null && !retryFuture.isDone()) {
+                    retryFuture.cancel(true);
                 }
+                destroyed = true;
             }
         }
     }
 
     public boolean isDestroyed() {
-        return destroyed.get();
+        return destroyed;
     }
 
     @Override

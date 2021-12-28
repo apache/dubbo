@@ -27,12 +27,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public abstract class AbstractMetadataReportFactory implements MetadataReportFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractMetadataReportFactory.class);
-    private static final String EXPORT_KEY = "export";
-    private static final String REFER_KEY = "refer";
 
     /**
      * The lock for the acquisition process of the registry
@@ -47,7 +47,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
     @Override
     public MetadataReport getMetadataReport(URL url) {
         url = url.setPath(MetadataReport.class.getName())
-            .removeParameters(EXPORT_KEY, REFER_KEY);
+            .removeAttribute(EXPORT_KEY).removeAttribute(REFER_KEY);
         String key = url.toServiceString();
 
         MetadataReport metadataReport = serviceStoreMap.get(key);

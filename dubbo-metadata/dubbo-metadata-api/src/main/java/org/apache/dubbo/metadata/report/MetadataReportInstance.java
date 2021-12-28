@@ -26,13 +26,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
-/**
- * 2019-08-09
- */
 public class MetadataReportInstance {
 
     private AtomicBoolean init = new AtomicBoolean(false);
@@ -48,7 +45,7 @@ public class MetadataReportInstance {
         MetadataReportFactory metadataReportFactory = applicationModel.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
         URL url = config.toUrl();
         if (METADATA_REPORT_KEY.equals(url.getProtocol())) {
-            String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
+            String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_PROTOCOL);
             url = URLBuilder.from(url)
                     .setProtocol(protocol)
                     .setScopeModel(config.getScopeModel())
