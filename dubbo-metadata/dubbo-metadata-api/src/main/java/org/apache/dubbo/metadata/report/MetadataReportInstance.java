@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
 /**
@@ -82,7 +82,7 @@ public class MetadataReportInstance implements Disposable {
     private void init(MetadataReportConfig config, MetadataReportFactory metadataReportFactory) {
         URL url = config.toUrl();
         if (METADATA_REPORT_KEY.equals(url.getProtocol())) {
-            String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
+            String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_PROTOCOL);
             url = URLBuilder.from(url)
                     .setProtocol(protocol)
                     .setScopeModel(config.getScopeModel())

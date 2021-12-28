@@ -249,7 +249,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     }
 
     /**
-     * Turn urls into invokers, and if url has been refer, will not re-reference.
+     * Turn urls into invokers, and if url has been referred, will not re-reference.
      * the items that will be put into newUrlInvokeMap will be removed from oldUrlInvokerMap.
      *
      * @param oldUrlInvokerMap it might be modified during the process.
@@ -284,7 +284,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
             Invoker<T> invoker = oldUrlInvokerMap == null ? null : oldUrlInvokerMap.get(instanceAddressURL.getAddress());
             if (invoker == null || urlChanged(invoker, instanceAddressURL)) { // Not in the cache, refer again
                 try {
-                    boolean enabled = true;
+                    boolean enabled;
                     if (instanceAddressURL.hasParameter(DISABLED_KEY)) {
                         enabled = !instanceAddressURL.getParameter(DISABLED_KEY, false);
                     } else {

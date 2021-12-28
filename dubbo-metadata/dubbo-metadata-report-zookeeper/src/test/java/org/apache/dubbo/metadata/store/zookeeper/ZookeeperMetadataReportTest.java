@@ -83,7 +83,7 @@ public class ZookeeperMetadataReportTest {
         String version = "1.0.0.zk.md";
         String group = null;
         String application = "vic.zk.md";
-        MetadataIdentifier providerMetadataIdentifier = storePrivider(zookeeperMetadataReport, interfaceName, version, group, application);
+        MetadataIdentifier providerMetadataIdentifier = storeProvider(zookeeperMetadataReport, interfaceName, version, group, application);
 
         String fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         fileContent = waitSeconds(fileContent, 3500, zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
@@ -95,7 +95,7 @@ public class ZookeeperMetadataReportTest {
         Assertions.assertNull(fileContent);
 
 
-        providerMetadataIdentifier = storePrivider(zookeeperMetadataReport, interfaceName, version, group, application);
+        providerMetadataIdentifier = storeProvider(zookeeperMetadataReport, interfaceName, version, group, application);
         fileContent = zookeeperMetadataReport.zkClient.getContent(zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         fileContent = waitSeconds(fileContent, 3500, zookeeperMetadataReport.getNodePath(providerMetadataIdentifier));
         Assertions.assertNotNull(fileContent);
@@ -237,7 +237,7 @@ public class ZookeeperMetadataReportTest {
     }
 
 
-    private MetadataIdentifier storePrivider(MetadataReport zookeeperMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException, InterruptedException {
+    private MetadataIdentifier storeProvider(MetadataReport zookeeperMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException, InterruptedException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?paramTest=zkTest&version=" + version + "&application="
             + application + (group == null ? "" : "&group=" + group));
 

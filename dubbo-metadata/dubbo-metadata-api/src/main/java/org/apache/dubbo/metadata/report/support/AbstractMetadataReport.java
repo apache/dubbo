@@ -452,7 +452,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         void cancelRetryTask() {
             if (retryScheduledFuture != null) {
-                retryScheduledFuture.cancel(false);
+                retryScheduledFuture.cancel(true);
             }
             retryExecutor.shutdown();
         }
