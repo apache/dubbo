@@ -27,6 +27,8 @@ import static org.apache.dubbo.metadata.report.MetadataReportFactory.DEFAULT;
 @SPI(DEFAULT)
 public interface MetadataReportFactory {
 
+    String DEFAULT = "redis";
+
     @Adaptive({PROTOCOL_KEY})
     MetadataReport getMetadataReport(URL url);
 
