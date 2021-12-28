@@ -116,10 +116,7 @@ public class ServiceInstanceMetadataUtils {
         if (url == null) {
             return "";
         }
-        url = url.removeParameter(APPLICATION_KEY);
-        url = url.removeParameter(GROUP_KEY);
-        url = url.removeParameter(DEPRECATED_KEY);
-        url = url.removeParameter(TIMESTAMP_KEY);
+        url = url.removeParameters(APPLICATION_KEY, GROUP_KEY, DEPRECATED_KEY, TIMESTAMP_KEY);
         Map<String, String> params = getParams(url);
 
         if (params.isEmpty()) {
@@ -278,7 +275,7 @@ public class ServiceInstanceMetadataUtils {
                 LOGGER.warn("Refreshing of service instance started, but instance hasn't been registered yet.");
                 instance = serviceInstance;
             }
-            // copy instance again, in case the same instance accidently shared among registries
+            // copy instance again, in case the same instance accidentally shared among registries
             instance = new DefaultServiceInstance((DefaultServiceInstance) instance);
             calInstanceRevision(serviceDiscovery, instance);
             customizeInstance(instance);

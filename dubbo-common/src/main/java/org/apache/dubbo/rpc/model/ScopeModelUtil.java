@@ -28,7 +28,7 @@ public class ScopeModelUtil {
         return getDefaultScopeModel(type);
     }
 
-    private static <T>ScopeModel getDefaultScopeModel(Class<T> type) {
+    private static <T> ScopeModel getDefaultScopeModel(Class<T> type) {
         SPI spi = type.getAnnotation(SPI.class);
         if (spi == null) {
             throw new IllegalArgumentException("SPI annotation not found for class: " + type.getName());
@@ -40,8 +40,9 @@ public class ScopeModelUtil {
                 return ApplicationModel.defaultModel();
             case MODULE:
                 return ApplicationModel.defaultModel().getDefaultModule();
+            default:
+                throw new IllegalStateException("Unable to get default scope model for type: " + type.getName());
         }
-        throw new IllegalStateException("Unable to get default scope model for type: " + type.getName());
     }
 
     public static ModuleModel getModuleModel(ScopeModel scopeModel) {

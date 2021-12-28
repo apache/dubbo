@@ -138,6 +138,26 @@ public class BitListTest {
     }
 
     @Test
+    public void testAddAll() {
+        List<String> list = Arrays.asList("A", "B", "C");
+        BitList<String> bitList1 = new BitList<>(list);
+        BitList<String> bitList2 = new BitList<>(list);
+
+        bitList1.removeAll(list);
+        Assertions.assertEquals(0, bitList1.size());
+
+        bitList1.addAll(bitList2);
+
+        Assertions.assertEquals(3, bitList1.size());
+        Assertions.assertFalse(bitList1.hasMoreElementInTailList());
+
+
+        bitList1.addAll(bitList2);
+
+        Assertions.assertEquals(3, bitList1.size());
+    }
+
+    @Test
     public void testGet() {
         List<String> list = Arrays.asList("A", "B", "C");
         BitList<String> bitList = new BitList<>(list);

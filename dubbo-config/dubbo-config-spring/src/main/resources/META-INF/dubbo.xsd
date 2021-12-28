@@ -427,10 +427,16 @@
                 <xsd:documentation><![CDATA[ Register consumer instance or not, default false. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="publish-interface" type="xsd:boolean">
+        <xsd:attribute name="register-mode" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation>
-                    <![CDATA[ Publish interface level url to registry, default true. ]]></xsd:documentation>
+                    <![CDATA[ Register interface/instance/all addresses to registry, default all. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="enable-empty-protection" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ Enable empty protection on empty address notification, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="protocol" type="xsd:string">
@@ -674,16 +680,16 @@
                 <xsd:documentation><![CDATA[ weight of registry. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="publish-interface" type="xsd:boolean">
+        <xsd:attribute name="register-mode" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation>
-                    <![CDATA[ Publish interface level url to registry, default true. ]]></xsd:documentation>
+                    <![CDATA[ Register interface/instance/all addresses to registry, default all. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="publish-instance" type="xsd:boolean">
+        <xsd:attribute name="enable-empty-protection" type="xsd:boolean">
             <xsd:annotation>
                 <xsd:documentation>
-                    <![CDATA[ Publish instance level url to registry, default true. ]]></xsd:documentation>
+                    <![CDATA[ Enable empty protection on empty address notification, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>

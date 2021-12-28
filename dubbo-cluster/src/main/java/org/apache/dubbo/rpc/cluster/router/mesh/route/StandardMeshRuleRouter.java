@@ -14,28 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.json;
+package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-public class MyException extends Exception {
+import org.apache.dubbo.common.URL;
 
-    private static final long serialVersionUID = 2905707783883694687L;
+import static org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleConstants.STANDARD_ROUTER_KEY;
 
-    private String code;
+public class StandardMeshRuleRouter<T> extends MeshRuleRouter<T> {
 
-    public MyException() {
+    public StandardMeshRuleRouter(URL url) {
+        super(url);
     }
 
-    public MyException(String code, String message) {
-        super(message);
-        this.code = code;
+    @Override
+    public String ruleSuffix() {
+        return STANDARD_ROUTER_KEY;
     }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
 }

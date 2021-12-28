@@ -41,6 +41,9 @@ public class RpcServiceContext extends RpcContext {
     protected RpcServiceContext() {
     }
 
+    // RPC service context updated before each service call.
+    private URL consumerUrl;
+
     private List<URL> urls;
 
     private URL url;
@@ -69,6 +72,8 @@ public class RpcServiceContext extends RpcContext {
     private Object request;
     private Object response;
     private AsyncContext asyncContext;
+
+    private boolean needPrintRouterSnapshot;
 
     /**
      * Get the request object of the underlying RPC protocol, e.g. HttpServletRequest
@@ -584,9 +589,6 @@ public class RpcServiceContext extends RpcContext {
         return asyncContext;
     }
 
-    // RPC service context updated before each service call.
-    private URL consumerUrl;
-
     @Override
     public String getGroup() {
         if (consumerUrl == null) {
@@ -649,4 +651,34 @@ public class RpcServiceContext extends RpcContext {
         RpcServiceContext rpcContext = RpcContext.getServiceContext();
         rpcContext.setConsumerUrl(url);
     }
+
+    public boolean isNeedPrintRouterSnapshot() {
+        return needPrintRouterSnapshot;
+    }
+
+    public void setNeedPrintRouterSnapshot(boolean needPrintRouterSnapshot) {
+        this.needPrintRouterSnapshot = needPrintRouterSnapshot;
+    }
+
+    /**
+     * Only part of the properties are copied, the others are either not used currently or can be got from invocation.
+     * Also see {@link RpcContextAttachment#copyOf(boolean)}
+     *
+     * @param needCopy
+     * @return a shallow copy of RpcServiceContext
+     */
+    public RpcServiceContext copyOf(boolean needCopy) {
+        if (needCopy) {
+            RpcServiceContext copy = new RpcServiceContext();
+            copy.consumerUrl = this.consumerUrl;
+            copy.localAddress = this.localAddress;
+            copy.remoteAddress = this.remoteAddress;
+            copy.invocation = this.invocation;
+            copy.asyncContext = this.asyncContext;
+            return copy;
+        } else {
+            return this;
+        }
+    }
+
 }

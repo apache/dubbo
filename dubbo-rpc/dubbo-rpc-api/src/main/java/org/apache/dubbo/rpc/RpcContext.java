@@ -122,10 +122,6 @@ public class RpcContext {
         return SERVER_LOCAL.get();
     }
 
-    public static void restoreServerContext(RpcContextAttachment oldServerContext) {
-        SERVER_LOCAL.set(oldServerContext);
-    }
-
     /**
      * remove server side context.
      *
@@ -196,10 +192,6 @@ public class RpcContext {
 
     public void clearAfterEachInvoke(boolean remove) {
         this.remove = remove;
-    }
-
-    public static void restoreContext(RpcContextAttachment oldContext) {
-        CLIENT_ATTACHMENT.set(oldContext);
     }
 
     /**
@@ -809,5 +801,61 @@ public class RpcContext {
 
     public static void setRpcContext(URL url) {
         RpcServiceContext.setRpcContext(url);
+    }
+
+    protected static RestoreContext clearAndStoreContext() {
+        RestoreContext restoreContext = new RestoreContext();
+        RpcContext.removeContext();
+        return restoreContext;
+    }
+
+    protected static RestoreContext storeContext() {
+        return new RestoreContext();
+    }
+
+    protected static void restoreContext(RestoreContext restoreContext) {
+        if (restoreContext != null) {
+            restoreContext.restore();
+        }
+    }
+
+    /**
+     * Used to temporarily store and restore all kinds of contexts of current thread.
+     */
+    public static class RestoreContext {
+        private final RpcServiceContext serviceContext;
+        private final RpcContextAttachment clientAttachment;
+        private final RpcContextAttachment serverAttachment;
+        private final RpcContextAttachment serverLocal;
+
+        public RestoreContext() {
+            serviceContext = getServiceContext().copyOf(false);
+            clientAttachment = getClientAttachment().copyOf(false);
+            serverAttachment = getServerAttachment().copyOf(false);
+            serverLocal = getServerContext().copyOf(false);
+        }
+
+        public void restore() {
+            if (serviceContext != null) {
+                SERVICE_CONTEXT.set(serviceContext);
+            } else {
+                removeServiceContext();
+            }
+            if (clientAttachment != null) {
+                CLIENT_ATTACHMENT.set(clientAttachment);
+            } else {
+                removeClientAttachment();
+            }
+            if (serverAttachment != null) {
+                SERVER_ATTACHMENT.set(serverAttachment);
+            } else {
+                removeServerAttachment();
+            }
+            if (serverLocal != null) {
+                SERVER_LOCAL.set(serverLocal);
+            } else {
+                removeServerContext();
+            }
+        }
     }
 }

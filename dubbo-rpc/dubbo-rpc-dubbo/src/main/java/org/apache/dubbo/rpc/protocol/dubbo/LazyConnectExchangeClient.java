@@ -29,6 +29,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
@@ -60,9 +61,11 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     private volatile ExchangeClient client;
     private final AtomicLong warningCount = new AtomicLong(0);
 
-    public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler) {
+    public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler, String codec, Map<String, String> parameters) {
         // lazy connect, need set send.reconnect = true, to avoid channel bad status.
-        this.url = new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), url.getParameters())
+        // Parameters like 'username', 'password' and 'path' are set but will not be used in following processes.
+        // The most important parameters here are 'host', port', 'parameters' and 'codec', 'codec' can also be extracted from 'parameters'
+        this.url = new ServiceConfigURL(codec, url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), parameters)
             .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
         this.requestHandler = requestHandler;
         this.initialState = url.getParameter(LAZY_CONNECT_INITIAL_STATE_KEY, DEFAULT_LAZY_CONNECT_INITIAL_STATE);

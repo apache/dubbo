@@ -39,7 +39,9 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
+import org.apache.dubbo.config.bootstrap.builders.ConfigCenterBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
+import org.apache.dubbo.config.bootstrap.builders.MetadataReportBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ProtocolBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ProviderBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
@@ -363,6 +365,16 @@ public final class DubboBootstrap {
 
     // MetadataReportConfig correlative methods
 
+    public DubboBootstrap metadataReport(Consumer<MetadataReportBuilder> consumerBuilder) {
+        return metadataReport(null, consumerBuilder);
+    }
+
+    public DubboBootstrap metadataReport(String id,Consumer<MetadataReportBuilder> consumerBuilder) {
+        MetadataReportBuilder metadataReportBuilder = createMetadataReportBuilder(id);
+        consumerBuilder.accept(metadataReportBuilder);
+        return this;
+    }
+
     public DubboBootstrap metadataReport(MetadataReportConfig metadataReportConfig) {
         configManager.addMetadataReport(metadataReportConfig);
         return this;
@@ -649,6 +661,16 @@ public final class DubboBootstrap {
     // module configs end
 
     // {@link ConfigCenterConfig} correlative methods
+    public DubboBootstrap configCenter(Consumer<ConfigCenterBuilder> consumerBuilder) {
+        return configCenter(null, consumerBuilder);
+    }
+
+    public DubboBootstrap configCenter(String id, Consumer<ConfigCenterBuilder> consumerBuilder) {
+        ConfigCenterBuilder configCenterBuilder = createConfigCenterBuilder(id);
+        consumerBuilder.accept(configCenterBuilder);
+        return this;
+    }
+
     public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
         configCenterConfig.setScopeModel(applicationModel);
         configManager.addConfigCenter(configCenterConfig);
@@ -691,6 +713,14 @@ public final class DubboBootstrap {
 
     private RegistryBuilder createRegistryBuilder(String id) {
         return new RegistryBuilder().id(id);
+    }
+
+    private MetadataReportBuilder createMetadataReportBuilder(String id) {
+        return new MetadataReportBuilder().id(id);
+    }
+
+    private ConfigCenterBuilder createConfigCenterBuilder(String id) {
+        return new ConfigCenterBuilder().id(id);
     }
 
     private ProtocolBuilder createProtocolBuilder(String id) {

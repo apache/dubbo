@@ -61,18 +61,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRY_TIMES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.replace;
 import static org.apache.dubbo.metadata.report.support.Constants.CACHE;
-import static org.apache.dubbo.metadata.report.support.Constants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_TIMES;
 import static org.apache.dubbo.metadata.report.support.Constants.DUBBO_METADATA;
-import static org.apache.dubbo.metadata.report.support.Constants.RETRY_PERIOD_KEY;
-import static org.apache.dubbo.metadata.report.support.Constants.RETRY_TIMES_KEY;
-import static org.apache.dubbo.metadata.report.support.Constants.SYNC_REPORT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.USER_HOME;
 
 public abstract class AbstractMetadataReport implements MetadataReport {

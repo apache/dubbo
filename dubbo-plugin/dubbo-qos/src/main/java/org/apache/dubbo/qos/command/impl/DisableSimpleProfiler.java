@@ -14,19 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.qos.command.impl;
 
-package org.apache.dubbo.rpc.cluster.router.mesh.route;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.profiler.ProfilerSwitch;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.command.annotation.Cmd;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterFactory;
+@Cmd(name = "disableSimpleProfiler", summary = "Disable Dubbo Invocation Profiler.")
+public class DisableSimpleProfiler implements BaseCommand {
+    private final static Logger logger = LoggerFactory.getLogger(DisableSimpleProfiler.class);
 
-
-@Activate(order = -50)
-public class MeshRuleRouterFactory implements RouterFactory {
     @Override
-    public Router getRouter(URL url) {
-        return new MeshRuleRouter(url);
+    public String execute(CommandContext commandContext, String[] args) {
+        ProfilerSwitch.disableSimpleProfiler();
+        logger.warn("Dubbo Invocation Profiler has been disabled.");
+        return "OK";
     }
 }

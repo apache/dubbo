@@ -19,14 +19,15 @@ package org.apache.dubbo.rpc.cluster.router.script;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 
 import javax.script.Bindings;
 import javax.script.Compilable;
@@ -50,7 +51,6 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_SCRIPT_TYPE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.PRIORITY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
@@ -85,7 +85,6 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
     public ScriptStateRouter(URL url) {
         super(url);
         this.setUrl(url);
-        this.setPriority(url.getParameter(PRIORITY_KEY, SCRIPT_ROUTER_DEFAULT_PRIORITY));
 
         engine = getEngine(url);
         rule = getRule(url);
@@ -124,16 +123,16 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
         });
     }
 
-
     @Override
-    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
-                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
+    protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder, Holder<String> messageHolder) throws RpcException {
         if (engine == null || function == null) {
-            return new StateRouterResult<>(invokers,
-                needToPrintMessage ? "Directly Return. Reason: engine or function is null" : null);
+            if (needToPrintMessage) {
+                messageHolder.set("Directly Return. Reason: engine or function is null");
+            }
+            return invokers;
         }
         Bindings bindings = createBindings(invokers, invocation);
-        return new StateRouterResult<>(getRoutedInvokers(invokers, AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+        return getRoutedInvokers(invokers, AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
                 return function.eval(bindings);
             } catch (ScriptException e) {
@@ -141,7 +140,7 @@ public class ScriptStateRouter<T> extends AbstractStateRouter<T> {
                     invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
                 return invokers;
             }
-        }, accessControlContext)));
+        }, accessControlContext));
     }
 
     /**

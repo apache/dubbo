@@ -38,14 +38,14 @@ public class ListBoolMatchTest {
         oneof.add(boolMatch1);
         listBoolMatch.setOneof(oneof);
 
-        assertTrue(ListBoolMatch.isMatch(listBoolMatch, true));
-        assertFalse(ListBoolMatch.isMatch(listBoolMatch, false));
+        assertTrue(listBoolMatch.isMatch(true));
+        assertFalse(listBoolMatch.isMatch(false));
 
         BoolMatch boolMatch2 = new BoolMatch();
         boolMatch2.setExact(false);
         oneof.add(boolMatch2);
         listBoolMatch.setOneof(oneof);
 
-        assertTrue(ListBoolMatch.isMatch(listBoolMatch, false));
+        assertTrue(listBoolMatch.isMatch(false));
     }
 }

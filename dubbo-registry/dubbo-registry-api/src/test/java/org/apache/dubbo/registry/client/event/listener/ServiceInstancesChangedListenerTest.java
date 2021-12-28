@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 
 import com.google.gson.Gson;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -99,6 +100,7 @@ public class ServiceInstancesChangedListenerTest {
     static String service3 = "org.apache.dubbo.demo.DemoService3";
 
     static URL consumerURL = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.demo.DemoService?registry_cluster=default");
+    static URL registryURL = URL.valueOf("dubbo://127.0.0.1:2181/org.apache.dubbo.demo.RegistryService");
 
     static MetadataInfo metadataInfo_111;
     static MetadataInfo metadataInfo_222;
@@ -155,6 +157,7 @@ public class ServiceInstancesChangedListenerTest {
         Mockito.doThrow(IllegalStateException.class).when(metadataService).getMetadataInfo("444");
 
         serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
+        Mockito.doReturn(registryURL).when(serviceDiscovery).getUrl();
     }
 
     @AfterEach
@@ -328,7 +331,7 @@ public class ServiceInstancesChangedListenerTest {
             Assertions.assertEquals(0, revisionToMetadata_app2.size());
 
             assertTrue(isEmpty(listener.getAddresses(service1 + ":dubbo", consumerURL)));
-            assertTrue(isEmpty(listener.getAddresses(service2+ ":dubbo", consumerURL)));
+            assertTrue(isEmpty(listener.getAddresses(service2 + ":dubbo", consumerURL)));
             assertTrue(isEmpty(listener.getAddresses(service3 + ":dubbo", consumerURL)));
         }
     }
@@ -511,7 +514,7 @@ public class ServiceInstancesChangedListenerTest {
         List<ServiceInstance> instances = new ArrayList<>();
 
         for (Object obj : rawURls) {
-            String rawURL = (String)obj;
+            String rawURL = (String) obj;
             DefaultServiceInstance instance = new DefaultServiceInstance();
             final URL dubboUrl = URL.valueOf(rawURL);
             instance.setRawAddress(rawURL);
@@ -520,6 +523,7 @@ public class ServiceInstancesChangedListenerTest {
             instance.setHealthy(true);
             instance.setPort(dubboUrl.getPort());
             instance.setRegistryCluster("default");
+            instance.setApplicationModel(ApplicationModel.defaultModel());
 
             Map<String, String> metadata = new HashMap<>();
             if (StringUtils.isNotEmpty(dubboUrl.getParameter(REVISION_KEY))) {
