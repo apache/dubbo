@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.impl;
 
 import org.apache.dubbo.config.spring.api.MethodCallback;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;

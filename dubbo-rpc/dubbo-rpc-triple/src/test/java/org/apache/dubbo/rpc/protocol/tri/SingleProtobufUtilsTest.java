@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.triple.TripleWrapper;
+
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.BytesValue;
 import com.google.protobuf.DoubleValue;
@@ -30,7 +32,6 @@ import com.google.protobuf.Parser;
 import com.google.protobuf.StringValue;
 import grpc.health.v1.HealthCheckRequest;
 import grpc.health.v1.HealthCheckResponse;
-import org.apache.dubbo.triple.TripleWrapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

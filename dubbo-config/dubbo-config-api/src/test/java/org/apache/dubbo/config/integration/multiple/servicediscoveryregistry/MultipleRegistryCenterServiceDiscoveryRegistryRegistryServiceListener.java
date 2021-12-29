@@ -18,11 +18,9 @@ package org.apache.dubbo.config.integration.multiple.servicediscoveryregistry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryServiceListener;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 
 import static org.apache.dubbo.config.integration.Constants.MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY;
 
@@ -43,7 +41,6 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
         serviceDiscoveryRegistryInfoWrapper.setHost(host);
         serviceDiscoveryRegistryInfoWrapper.setPort(port);
         serviceDiscoveryRegistryInfoWrapper.setServiceDiscoveryRegistry(serviceDiscoveryRegistry);
-        serviceDiscoveryRegistryInfoWrapper.setInMemoryWritableMetadataService((InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(url.getScopeModel()));
         serviceDiscoveryRegistryInfoWrapper.setRegistered(true);
         return serviceDiscoveryRegistryInfoWrapper;
     }

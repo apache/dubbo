@@ -27,7 +27,6 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,8 +43,6 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     private final static Logger logger = LoggerFactory.getLogger(ReferenceCountExchangeClient.class);
     private final URL url;
-    private final String codec;
-    private final Map<String, String> attributes;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
     private final AtomicInteger disconnectCount = new AtomicInteger(0);
     private final Integer warningPeriod = 50;
@@ -56,8 +53,6 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         this.client = client;
         this.referenceCount.incrementAndGet();
         this.url = client.getUrl();
-        this.codec = codec;
-        this.attributes = url.getParameters();
     }
 
     @Override
@@ -219,12 +214,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
                 .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
             //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
 
-            // uncomment this snippet when replacing lazyUrl in the futrue
-//            Map<String, String> lazyAttributes = new HashMap<>(attributes);
-//            lazyAttributes.put(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE.toString());
-//            lazyAttributes.put(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
-
-            client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler(), codec, attributes);
+            client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
         }
     }
 

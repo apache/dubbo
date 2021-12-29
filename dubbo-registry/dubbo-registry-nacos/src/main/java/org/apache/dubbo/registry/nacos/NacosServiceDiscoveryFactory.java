@@ -20,14 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 
-/**
- *
- */
 public class NacosServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
 
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
-        return new NacosServiceDiscovery();
+        return new NacosServiceDiscovery(applicationModel, registryURL);
     }
 
 }

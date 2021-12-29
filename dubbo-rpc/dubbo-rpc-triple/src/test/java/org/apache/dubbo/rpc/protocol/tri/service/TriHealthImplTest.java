@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri.service;
 
-import grpc.health.v1.HealthCheckRequest;
-import grpc.health.v1.HealthCheckResponse;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+
+import grpc.health.v1.HealthCheckRequest;
+import grpc.health.v1.HealthCheckResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

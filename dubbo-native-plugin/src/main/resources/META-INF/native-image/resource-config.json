@@ -47,9 +47,6 @@
         "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.metadata.ServiceNameMapping\\E"
       },
       {
-        "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.metadata.WritableMetadataService\\E"
-      },
-      {
         "pattern": "\\QMETA-INF/dubbo/internal/org.apache.dubbo.metadata.definition.builder.TypeBuilder\\E"
       },
       {

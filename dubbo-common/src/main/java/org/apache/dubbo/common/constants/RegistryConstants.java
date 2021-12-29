@@ -96,11 +96,7 @@ public interface RegistryConstants {
     String SERVICE_REGISTRY_PROTOCOL = "service-discovery-registry";
 
     /**
-     * The parameter key of the subscribed service names for Service-Oriented Registry
-     * <p>
-     * If there is a multiple-values, the  "comma" is the separator.
-     *
-     * @since 2.7.5
+     * Specify registry level services consumer needs to subscribe to, multiple values should be separated using ",".
      */
     String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed-services";
 

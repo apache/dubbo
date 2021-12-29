@@ -18,8 +18,8 @@ package org.apache.dubbo.spring.boot.beans.factory.config;
 
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.spring.ServiceBean;
-
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;

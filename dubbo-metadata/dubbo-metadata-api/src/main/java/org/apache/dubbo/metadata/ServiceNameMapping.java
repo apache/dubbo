@@ -18,13 +18,15 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
@@ -32,9 +34,9 @@ import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 
 /**
- * The interface for Dubbo service name Mapping
+ * This will interact with remote metadata center to find the interface-app mapping and will cache the data locally.
  *
- * @since 2.7.5
+ * Call variants of getCachedMapping() methods whenever need to use the mapping data.
  */
 @SPI(value = "metadata", scope = APPLICATION)
 public interface ServiceNameMapping {
@@ -65,26 +67,54 @@ public interface ServiceNameMapping {
     }
 
     static String toStringKeys(Set<String> serviceNames) {
-        return serviceNames.toString();
+        if (CollectionUtils.isEmpty(serviceNames)) {
+            return "";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (String n : serviceNames) {
+            builder.append(n);
+            builder.append(COMMA_SEPARATOR);
+        }
+
+        builder.deleteCharAt(builder.length() - 1);
+        return builder.toString();
     }
 
     static Set<String> getAppNames(String content) {
         if (StringUtils.isBlank(content)) {
             return emptySet();
         }
-        return new HashSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
+        return new TreeSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
     }
 
     /**
-     * 1.developer explicitly specifies the application name this interface belongs to
-     * 2.check Interface-App mapping
+     * Get the mapping data from remote metadata center and cache in local storage.
+     *
+     * @return app list current interface mapping to, in sequence determined by:
+     * 1.check PROVIDED_BY
+     * 2.check remote metadata center
+     *
      */
     Set<String> getServices(URL subscribedURL);
 
     /**
-     * 1.developer explicitly specifies the application name this interface belongs to
-     * 2.check Interface-App mapping
-     * 3.use the services specified in registry url.
+     * Register listener to get notified once mapping data changes.
+     *
+     * @param listener
+     * @return
      */
-    Set<String> getAndListenServices(URL registryURL, URL subscribedURL, MappingListener listener);
+    Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener);
+
+    MappingListener stopListen(URL subscribeURL);
+
+    void putCachedMapping(String serviceKey, Set<String> apps);
+
+    Set<String> getCachedMapping(String mappingKey);
+
+    Set<String> getCachedMapping(URL consumerURL);
+
+    Map<String, Set<String>> getCachedMapping();
+
+    Set<String> removeCachedMapping(String serviceKey);
 }

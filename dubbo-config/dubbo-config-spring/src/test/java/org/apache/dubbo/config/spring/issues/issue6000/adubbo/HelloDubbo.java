@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.issues.issue6000.adubbo;
 
 import org.apache.dubbo.config.spring.api.HelloService;
+
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;

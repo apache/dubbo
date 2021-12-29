@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.common.serialize.hessian2;
 
-import com.alibaba.com.caucho.hessian.io.Hessian2Output;
 import org.apache.dubbo.common.serialize.Cleanable;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.hessian2.dubbo.Hessian2FactoryInitializer;
+
+import com.alibaba.com.caucho.hessian.io.Hessian2Output;
 
 import java.io.IOException;
 import java.io.OutputStream;

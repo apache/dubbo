@@ -27,6 +27,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -95,6 +96,7 @@ public abstract class AbstractRegistry implements Registry {
     private File file;
     private boolean localCacheEnabled;
     protected RegistryManager registryManager;
+    protected ApplicationModel applicationModel;
 
     public AbstractRegistry(URL url) {
         setUrl(url);
@@ -177,8 +179,9 @@ public abstract class AbstractRegistry implements Registry {
             return;
         }
         // Save
+        File lockfile = null;
         try {
-            File lockfile = new File(file.getAbsolutePath() + ".lock");
+            lockfile = new File(file.getAbsolutePath() + ".lock");
             if (!lockfile.exists()) {
                 lockfile.createNewFile();
             }
@@ -214,6 +217,10 @@ public abstract class AbstractRegistry implements Registry {
                 registryCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
             }
             logger.warn("Failed to save registry cache file, will retry, cause: " + e.getMessage(), e);
+        } finally {
+            if (lockfile != null) {
+                lockfile.delete();
+            }
         }
     }
 

@@ -47,7 +47,7 @@ public class CompositeConfiguration implements Configuration {
         }
     }
 
-    //FIXME, consider change configList to SortedMap to replace this boolean status.
+    //FIXME, consider changing configList to SortedMap to replace this boolean status.
     public boolean isDynamicIncluded() {
         return dynamicIncluded;
     }

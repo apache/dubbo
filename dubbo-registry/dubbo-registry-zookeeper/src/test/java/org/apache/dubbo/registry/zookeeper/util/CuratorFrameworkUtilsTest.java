@@ -16,20 +16,24 @@
  */
 package org.apache.dubbo.registry.zookeeper.util;
 
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.zookeeper.ZookeeperInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.x.discovery.ServiceDiscovery;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_STORAGE_TYPE_PROPERTY_NAME;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.ROOT_PATH;
@@ -40,6 +44,7 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.RO
 class CuratorFrameworkUtilsTest {
     private static URL registryUrl;
     private static String zookeeperConnectionAddress1;
+    private static MetadataReport metadataReport;
 
     @BeforeAll
     public static void init() throws Exception {
@@ -47,6 +52,8 @@ class CuratorFrameworkUtilsTest {
 
         registryUrl = URL.valueOf(zookeeperConnectionAddress1);
         registryUrl.setScopeModel(ApplicationModel.defaultModel());
+
+        metadataReport = Mockito.mock(MetadataReport.class);
     }
 
     @Test

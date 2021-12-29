@@ -20,11 +20,12 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
-import org.asynchttpclient.Response;
-import org.asynchttpclient.AsyncHttpClient;
+
 import org.asynchttpclient.AsyncCompletionHandler;
-import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
+import org.asynchttpclient.Response;
 
 import java.io.IOException;
 import java.nio.file.Files;
