@@ -262,6 +262,7 @@ public class ServerStreamTest {
         Mockito.when(streamChannel.writeAndFlush(Mockito.any())).thenReturn(channelFuture);
         Mockito.when(streamChannel.alloc()).thenReturn(ByteBufAllocator.DEFAULT);
         Mockito.when(streamChannel.attr(TripleConstant.SERVER_STREAM_KEY)).thenReturn(attribute);
+        Mockito.when(streamChannel.isActive()).thenReturn(true);
         Mockito.when(streamChannel.eventLoop()).thenReturn(eventLoop);
         Mockito.when(streamChannel.newPromise()).thenReturn(promise);
 
