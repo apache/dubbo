@@ -35,9 +35,6 @@ import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http2.Http2Headers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
