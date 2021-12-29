@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -149,10 +150,13 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
         final Map<String, Object> attachments = parseMetadataToAttachmentMap(metadata);
         inv.setObjectAttachments(attachments);
-        final String timeout = metadata.get(TripleHeaderEnum.TIMEOUT.getHeader()).toString();
-        final Long timeoutInNanos = parseTimeoutToNanos(timeout);
-        if (timeoutInNanos != null) {
-            inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
+        // handle timeout
+        CharSequence timeout = metadata.get(TripleHeaderEnum.TIMEOUT.getHeader());
+        if (!Objects.isNull(timeout)) {
+            final Long timeoutInNanos = parseTimeoutToNanos(timeout.toString());
+            if (!Objects.isNull(timeoutInNanos)) {
+                inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
+            }
         }
         invokeHeaderFilter(inv);
         return inv;
@@ -307,9 +311,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
      * create basic meta data
      */
     protected Metadata createResponseMeta() {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(Http2Headers.PseudoHeaderName.STATUS.value(), HttpResponseStatus.OK.codeAsText());
-        metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+        Metadata metadata = createDefaultMetadata();
         metadata.putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(), super.getCompressor().getMessageEncoding())
             .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), getAcceptEncoding());
         return metadata;
