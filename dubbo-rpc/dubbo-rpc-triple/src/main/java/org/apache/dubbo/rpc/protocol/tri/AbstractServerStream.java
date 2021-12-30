@@ -149,11 +149,16 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         inv.setObjectAttachments(attachments);
         // handle timeout
         CharSequence timeout = metadata.get(TripleHeaderEnum.TIMEOUT.getHeader());
-        if (!Objects.isNull(timeout)) {
-            final Long timeoutInNanos = parseTimeoutToNanos(timeout.toString());
-            if (!Objects.isNull(timeoutInNanos)) {
-                inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
+        try {
+            if (!Objects.isNull(timeout)) {
+                final Long timeoutInNanos = parseTimeoutToNanos(timeout.toString());
+                if (!Objects.isNull(timeoutInNanos)) {
+                    inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
+                }
             }
+        } catch (Throwable t) {
+            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s", timeout, getServiceDescriptor().getServiceName(),
+                getMethodName()));
         }
         invokeHeaderFilter(inv);
         return inv;
