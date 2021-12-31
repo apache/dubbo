@@ -151,8 +151,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             return;
         }
         // Save
+        File lockfile = null;
         try {
-            File lockfile = new File(file.getAbsolutePath() + ".lock");
+            lockfile = new File(file.getAbsolutePath() + ".lock");
             if (!lockfile.exists()) {
                 lockfile.createNewFile();
             }
@@ -181,6 +182,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 reportCacheExecutor.execute(new SaveProperties(lastCacheChanged.incrementAndGet()));
             }
             logger.warn("Failed to save service store file, cause: " + e.getMessage(), e);
+        } finally {
+            if (lockfile != null){
+                lockfile.delete();
+            }
         }
     }
 
