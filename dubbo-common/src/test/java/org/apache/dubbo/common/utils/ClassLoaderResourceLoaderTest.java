@@ -19,6 +19,7 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.extension.DubboInternalLoadingStrategy;
 import org.apache.dubbo.common.extension.director.FooAppProvider;
 import org.apache.dubbo.common.resource.GlobalResourcesRepository;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

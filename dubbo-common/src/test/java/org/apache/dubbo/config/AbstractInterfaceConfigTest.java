@@ -18,10 +18,11 @@ package org.apache.dubbo.config;
 
 
 import org.apache.dubbo.common.constants.CommonConstants;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;

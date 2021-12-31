@@ -97,7 +97,7 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
             try {
                 configuration.close();
             } catch (Exception e) {
-                logger.warn("close dynamic configuration failed: " + e.getMessage(), e);
+                logger.warn("close dynamic configuration " + configuration.getClass().getName() + "failed: " + e.getMessage(), e);
             }
         }
         configurations.clear();

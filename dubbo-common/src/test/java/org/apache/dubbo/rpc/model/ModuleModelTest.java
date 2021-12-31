@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationCache;
 import org.apache.dubbo.common.config.ModuleEnvironment;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.rpc.support.MockScopeModelDestroyListener;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

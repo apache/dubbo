@@ -17,23 +17,37 @@
 package org.apache.dubbo.rpc.cluster.router.state;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.utils.Holder;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 /***
  * The abstract class of StateRoute.
  * @since 3.0
  */
 public abstract class AbstractStateRouter<T> implements StateRouter<T> {
-    private volatile int priority = DEFAULT_PRIORITY;
     private volatile boolean force = false;
     private volatile URL url;
+    private volatile StateRouter<T> nextRouter = null;
 
     private final GovernanceRuleRepository ruleRepository;
 
+    /**
+     * Should continue route if current router's result is empty
+     */
+    private final boolean shouldFailFast;
+
     public AbstractStateRouter(URL url) {
-        this.ruleRepository = url.getOrDefaultModuleModel().getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        ModuleModel moduleModel = url.getOrDefaultModuleModel();
+        this.ruleRepository = moduleModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         this.url = url;
+        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
     }
 
     @Override
@@ -59,21 +73,117 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
         this.force = force;
     }
 
-    @Override
-    public int getPriority() {
-        return priority;
-    }
-
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
-
     public GovernanceRuleRepository getRuleRepository() {
         return this.ruleRepository;
     }
 
+    public StateRouter<T> getNextRouter() {
+        return nextRouter;
+    }
+
     @Override
     public void notify(BitList<Invoker<T>> invokers) {
+        // default empty implement
+    }
 
+    @Override
+    public final BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) throws RpcException {
+        if (needToPrintMessage && (nodeHolder == null || nodeHolder.get() == null)) {
+            needToPrintMessage = false;
+        }
+
+        RouterSnapshotNode<T> currentNode = null;
+        RouterSnapshotNode<T> parentNode = null;
+        Holder<String> messageHolder = null;
+
+        // pre-build current node
+        if (needToPrintMessage) {
+            parentNode = nodeHolder.get();
+            currentNode = new RouterSnapshotNode<>(this.getClass().getSimpleName(), invokers.clone());
+            parentNode.appendNode(currentNode);
+
+            // set parent node's output size in the first child invoke
+            // initial node output size is zero, first child will override it
+            if (parentNode.getNodeOutputSize() < invokers.size()) {
+                parentNode.setNodeOutputInvokers(invokers.clone());
+            }
+
+            messageHolder = new Holder<>();
+            nodeHolder.set(currentNode);
+        }
+        BitList<Invoker<T>> routeResult;
+
+        // check if router support call continue route by itself
+        if (!supportContinueRoute()) {
+            routeResult = doRoute(invokers, url, invocation, needToPrintMessage, nodeHolder, messageHolder);
+            // use current node's result as next node's parameter
+            if (!shouldFailFast || !routeResult.isEmpty()) {
+                routeResult = continueRoute(routeResult, url, invocation, needToPrintMessage, nodeHolder);
+            }
+        } else {
+            routeResult = doRoute(invokers, url, invocation, needToPrintMessage, nodeHolder, messageHolder);
+        }
+
+        // post-build current node
+        if (needToPrintMessage) {
+            currentNode.setRouterMessage(messageHolder.get());
+            if (currentNode.getNodeOutputSize() == 0) {
+                // no child call
+                currentNode.setNodeOutputInvokers(routeResult.clone());
+            }
+            currentNode.setChainOutputInvokers(routeResult.clone());
+            nodeHolder.set(parentNode);
+        }
+        return routeResult;
+    }
+
+    /**
+     * Filter invokers with current routing rule and only return the invokers that comply with the rule.
+     *
+     * @param invokers all invokers to be routed
+     * @param url consumerUrl
+     * @param invocation invocation
+     * @param needToPrintMessage should current router print message
+     * @param nodeHolder RouterSnapshotNode In general, router itself no need to care this param, just pass to continueRoute
+     * @param messageHolder message holder when router should current router print message
+     * @return routed result
+     */
+    protected abstract BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                                                boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
+                                                Holder<String> messageHolder) throws RpcException;
+
+    /**
+     * Call next router to get result
+     *
+     * @param invokers current router filtered invokers
+     */
+    protected final BitList<Invoker<T>> continueRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                                                      boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder) {
+        if (nextRouter != null) {
+            return nextRouter.route(invokers, url, invocation, needToPrintMessage, nodeHolder);
+        } else {
+            return invokers;
+        }
+    }
+
+    /**
+     * Whether current router's implementation support call
+     * {@link AbstractStateRouter#continueRoute(BitList, URL, Invocation, boolean, Holder)}
+     * by router itself.
+     *
+     * @return support or not
+     */
+    protected boolean supportContinueRoute() {
+        return false;
+    }
+
+    /**
+     * Next Router node state is maintained by AbstractStateRouter and this method is not allow to override.
+     * If a specified router wants to control the behaviour of continue route or not,
+     * please override {@link AbstractStateRouter#supportContinueRoute()}
+     */
+    @Override
+    public final void setNextRouter(StateRouter<T> nextRouter) {
+        this.nextRouter = nextRouter;
     }
 }

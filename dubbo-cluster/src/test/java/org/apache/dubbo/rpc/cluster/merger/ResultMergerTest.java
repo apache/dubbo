@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.merger;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -17,6 +17,7 @@
 package org.apache.dubbo.test.check;
 
 import org.apache.dubbo.test.check.registrycenter.GlobalRegistryCenter;
+
 import org.junit.platform.launcher.TestPlan;
 
 /**

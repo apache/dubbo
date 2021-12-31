@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.context;
 
 import org.apache.dubbo.config.RegistryConfig;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

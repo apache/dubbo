@@ -684,6 +684,7 @@
                         <exclude>**/generated/**</exclude>
                         <!-- exclude mockito extensions spi files -->
                         <exclude>**/mockito-extensions/*</exclude>
+                        <exclude>**/*.dubbo.cache</exclude>
                     </excludes>
                 </configuration>
             </plugin>

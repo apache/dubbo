@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
@@ -30,7 +29,6 @@ import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
@@ -58,12 +56,9 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     private volatile ExchangeClient client;
     private final AtomicLong warningCount = new AtomicLong(0);
 
-    public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler, String codec, Map<String, String> parameters) {
+    public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler) {
         // lazy connect, need set send.reconnect = true, to avoid channel bad status.
-        // Parameters like 'username', 'password' and 'path' are set but will not be used in following processes.
-        // The most important parameters here are 'host', port', 'parameters' and 'codec', 'codec' can also be extracted from 'parameters'
-        this.url = new ServiceConfigURL(codec, url.getUsername(), url.getPassword(), url.getHost(), url.getPort(),
-            url.getPath(), parameters).addParameter(LAZY_CONNECT_KEY, true);
+        this.url = url.addParameter(LAZY_CONNECT_KEY, true);
         this.needReconnect = url.getParameter(SEND_RECONNECT_KEY, false);
         this.requestHandler = requestHandler;
         this.requestWithWarning = url.getParameter(LAZY_REQUEST_WITH_WARNING_KEY, DEFAULT_LAZY_REQUEST_WITH_WARNING);

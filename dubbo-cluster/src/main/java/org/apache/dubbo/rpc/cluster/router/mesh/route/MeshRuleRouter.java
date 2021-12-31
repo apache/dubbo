@@ -20,11 +20,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.DubboMatchRequest;
@@ -39,7 +41,6 @@ import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleListener;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.TracingContextProvider;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -76,10 +77,15 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
     }
 
     @Override
-    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url, Invocation invocation, boolean needToPrintMessage) throws RpcException {
+    protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                                          boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
+                                          Holder<String> messageHolder) throws RpcException {
         MeshRuleCache<T> ruleCache = this.meshRuleCache;
         if (!ruleCache.containsRule()) {
-            return new StateRouterResult<>(invokers, needToPrintMessage ? "MeshRuleCache has not been built. Skip route." : null);
+            if (needToPrintMessage) {
+                messageHolder.set("MeshRuleCache has not been built. Skip route.");
+            }
+            return invokers;
         }
 
         BitList<Invoker<T>> result = new BitList<>(invokers.getOriginList(), true, invokers.getTailList());
@@ -106,10 +112,16 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
 
         // empty protection
         if (result.isEmpty()) {
-            return new StateRouterResult<>(invokers, needToPrintMessage ? "Empty protection after routed." : null);
+            if (needToPrintMessage) {
+                messageHolder.set("Empty protection after routed.");
+            }
+            return invokers;
         }
 
-        return new StateRouterResult<>(invokers.and(result), needToPrintMessage ? stringBuilder.toString() : null);
+        if (needToPrintMessage) {
+            messageHolder.set(stringBuilder.toString());
+        }
+        return invokers.and(result);
     }
 
     /**

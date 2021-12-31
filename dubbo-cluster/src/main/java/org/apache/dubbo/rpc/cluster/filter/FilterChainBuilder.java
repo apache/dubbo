@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationProfilerUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
@@ -50,10 +51,11 @@ public interface FilterChainBuilder {
 
     /**
      * Works on provider side
+     *
      * @param <T>
      * @param <TYPE>
      */
-    class FilterChainNode<T, TYPE extends Invoker<T>, FILTER extends BaseFilter> implements Invoker<T>{
+    class FilterChainNode<T, TYPE extends Invoker<T>, FILTER extends BaseFilter> implements Invoker<T> {
         TYPE originalInvoker;
         Invoker<T> nextNode;
         FILTER filter;
@@ -87,8 +89,10 @@ public interface FilterChainBuilder {
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult;
             try {
+                InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Filter " + filter.getClass().getName() + " invoke.");
                 asyncResult = filter.invoke(nextNode, invocation);
             } catch (Exception e) {
+                InvocationProfilerUtils.releaseDetailProfiler(invocation);
                 if (filter instanceof ListenableFilter) {
                     ListenableFilter listenableFilter = ((ListenableFilter) filter);
                     try {
@@ -108,6 +112,7 @@ public interface FilterChainBuilder {
 
             }
             return asyncResult.whenCompleteWithContext((r, t) -> {
+                InvocationProfilerUtils.releaseDetailProfiler(invocation);
                 if (filter instanceof ListenableFilter) {
                     ListenableFilter listenableFilter = ((ListenableFilter) filter);
                     Filter.Listener listener = listenableFilter.listener(invocation);
@@ -146,6 +151,7 @@ public interface FilterChainBuilder {
 
     /**
      * Works on consumer side
+     *
      * @param <T>
      * @param <TYPE>
      */
@@ -189,6 +195,7 @@ public interface FilterChainBuilder {
                 for (int i = filters.size() - 1; i >= 0; i--) {
                     FILTER filter = filters.get(i);
                     try {
+                        InvocationProfilerUtils.releaseDetailProfiler(invocation);
                         if (filter instanceof ListenableFilter) {
                             ListenableFilter listenableFilter = ((ListenableFilter) filter);
                             Filter.Listener listener = listenableFilter.listener(invocation);
@@ -310,8 +317,10 @@ public interface FilterChainBuilder {
         public Result invoke(Invocation invocation) throws RpcException {
             Result asyncResult;
             try {
+                InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Filter " + filter.getClass().getName() + " invoke.");
                 asyncResult = filter.invoke(nextNode, invocation);
             } catch (Exception e) {
+                InvocationProfilerUtils.releaseDetailProfiler(invocation);
                 if (filter instanceof ListenableFilter) {
                     ListenableFilter listenableFilter = ((ListenableFilter) filter);
                     try {

@@ -23,13 +23,8 @@ import org.apache.dubbo.common.URL;
  */
 public class AppStateRouter<T> extends ListenableStateRouter<T> {
     public static final String NAME = "APP_ROUTER";
-    /**
-     * AppRouter should after ServiceRouter
-     */
-    private static final int APP_ROUTER_DEFAULT_PRIORITY = 150;
 
     public AppStateRouter(URL url) {
         super(url, url.getApplication());
-        this.setPriority(APP_ROUTER_DEFAULT_PRIORITY);
     }
 }

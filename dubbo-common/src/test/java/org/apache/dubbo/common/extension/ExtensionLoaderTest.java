@@ -64,6 +64,7 @@ import org.apache.dubbo.common.extension.wrapper.impl.DemoImpl;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -76,8 +76,8 @@ public class InstanceAddressURLTest {
     private MetadataInfo createMetaDataInfo() {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
         // export normal url again
-        metadataInfo.addService(new MetadataInfo.ServiceInfo(url));
-        metadataInfo.addService(new MetadataInfo.ServiceInfo(url2));
+        metadataInfo.addService(url);
+        metadataInfo.addService(url2);
         return metadataInfo;
     }
 

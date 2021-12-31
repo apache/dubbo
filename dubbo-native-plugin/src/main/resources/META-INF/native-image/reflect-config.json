@@ -1593,9 +1593,6 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.registry.client.DefaultServiceDiscoveryFactory"
-  },
-  {
     "name": "org.apache.dubbo.registry.client.DefaultServiceInstance$Endpoint",
     "allDeclaredFields": true,
     "methods": [

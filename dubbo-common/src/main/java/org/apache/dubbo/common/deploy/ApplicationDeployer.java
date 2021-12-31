@@ -51,6 +51,11 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
     void prepareApplicationInstance();
 
     /**
+     * Register application instance and start internal services
+     */
+    void prepareInternalModule();
+
+    /**
      * Pre-processing before destroy model
      */
     void preDestroy();
@@ -77,7 +82,7 @@ public interface ApplicationDeployer extends Deployer<ApplicationModel> {
     /**
      * check all module state and update application state
      */
-    void checkState();
+    void checkState(ModuleModel moduleModel, DeployState moduleState);
 
     /**
      * module state changed callbacks

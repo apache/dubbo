@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import com.alibaba.fastjson.JSON;
-import io.netty.channel.Channel;
-import io.netty.util.AttributeKey;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -30,6 +27,10 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
+
+import com.alibaba.fastjson.JSON;
+import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

@@ -23,8 +23,9 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 /**
  * Application level router factory
+ * AppRouter should after ServiceRouter
  */
-@Activate(order = 200)
+@Activate(order = 150)
 public class AppStateRouterFactory implements StateRouterFactory {
     public static final String NAME = "app";
 

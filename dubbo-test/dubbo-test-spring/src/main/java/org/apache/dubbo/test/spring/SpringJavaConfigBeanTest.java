@@ -35,6 +35,7 @@ import org.apache.dubbo.test.common.SysProps;
 import org.apache.dubbo.test.common.api.DemoService;
 import org.apache.dubbo.test.common.impl.DemoServiceImpl;
 import org.apache.dubbo.test.spring.context.MockSpringInitCustomizer;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

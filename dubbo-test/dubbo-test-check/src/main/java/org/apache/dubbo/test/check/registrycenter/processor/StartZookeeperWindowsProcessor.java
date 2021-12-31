@@ -16,14 +16,15 @@
  */
 package org.apache.dubbo.test.check.registrycenter.processor;
 
-import org.apache.commons.exec.Executor;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.CommandLine;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.Processor;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
+
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.Executor;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

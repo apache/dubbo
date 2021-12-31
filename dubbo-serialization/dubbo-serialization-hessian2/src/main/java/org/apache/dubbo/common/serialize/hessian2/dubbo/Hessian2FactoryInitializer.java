@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.common.serialize.hessian2.dubbo;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
 @SPI(value = "default", scope = ExtensionScope.FRAMEWORK)
 public interface Hessian2FactoryInitializer {

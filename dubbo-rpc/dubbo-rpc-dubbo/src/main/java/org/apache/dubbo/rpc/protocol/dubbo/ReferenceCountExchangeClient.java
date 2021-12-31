@@ -27,7 +27,6 @@ import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -42,8 +41,6 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     private final static Logger logger = LoggerFactory.getLogger(ReferenceCountExchangeClient.class);
     private final URL url;
-    private final String codec;
-    private final Map<String, String> attributes;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
     private final AtomicInteger disconnectCount = new AtomicInteger(0);
     private final Integer warningPeriod = 50;
@@ -54,8 +51,6 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         this.client = client;
         this.referenceCount.incrementAndGet();
         this.url = client.getUrl();
-        this.codec = codec;
-        this.attributes = url.getParameters();
     }
 
     @Override
@@ -211,7 +206,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
          * the order of judgment in the if statement cannot be changed.
          */
         if (!(client instanceof LazyConnectExchangeClient)) {
-            client = new LazyConnectExchangeClient(url, client.getExchangeHandler(), codec, attributes);
+            client = new LazyConnectExchangeClient(url, client.getExchangeHandler());
         }
     }
 

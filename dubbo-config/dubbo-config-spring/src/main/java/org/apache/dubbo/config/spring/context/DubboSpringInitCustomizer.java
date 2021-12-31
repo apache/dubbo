@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 

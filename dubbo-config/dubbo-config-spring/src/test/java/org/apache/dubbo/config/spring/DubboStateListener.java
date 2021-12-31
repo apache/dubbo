@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.config.spring.context.event.DubboApplicationStateEvent;
+
 import org.springframework.context.ApplicationListener;
 
 public class DubboStateListener implements ApplicationListener<DubboApplicationStateEvent> {

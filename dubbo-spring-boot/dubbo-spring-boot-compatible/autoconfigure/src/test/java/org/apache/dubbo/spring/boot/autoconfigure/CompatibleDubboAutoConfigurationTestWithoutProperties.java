@@ -19,8 +19,8 @@ package org.apache.dubbo.spring.boot.autoconfigure;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
-
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
