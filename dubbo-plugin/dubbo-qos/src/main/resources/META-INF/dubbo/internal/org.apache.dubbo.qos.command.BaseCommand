@@ -24,3 +24,4 @@ disableDetailProfiler=org.apache.dubbo.qos.command.impl.DisableDetailProfiler
 enableSimpleProfiler=org.apache.dubbo.qos.command.impl.EnableSimpleProfiler
 disableSimpleProfiler=org.apache.dubbo.qos.command.impl.DisableSimpleProfiler
 setProfilerWarnPercent=org.apache.dubbo.qos.command.impl.SetProfilerWarnPercent
+getRouterSnapshot=org.apache.dubbo.qos.command.impl.GetRouterSnapshot

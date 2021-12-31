@@ -520,4 +520,5 @@ public interface CommonConstants {
 
     String PROVIDER_ASYNC_KEY = "PROVIDER_ASYNC";
 
+    String CURRENT_CLUSTER_INVOKER_KEY = "currentClusterInvoker";
 }
