@@ -28,3 +28,4 @@ getRouterSnapshot=org.apache.dubbo.qos.command.impl.GetRouterSnapshot
 getEnabledRouterSnapshot=org.apache.dubbo.qos.command.impl.GetEnabledRouterSnapshot
 enableRouterSnapshot=org.apache.dubbo.qos.command.impl.EnableRouterSnapshot
 disableRouterSnapshot=org.apache.dubbo.qos.command.impl.DisableRouterSnapshot
+getRecentRouterSnapshot=org.apache.dubbo.qos.command.impl.GetRecentRouterSnapshot

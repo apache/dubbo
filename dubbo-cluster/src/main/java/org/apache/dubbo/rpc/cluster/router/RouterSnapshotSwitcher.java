@@ -20,10 +20,16 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RouterSnapshotSwitcher {
     private volatile boolean enable;
     private final Set<String> enabledService = new ConcurrentHashSet<>();
+
+    private final static int MAX_LENGTH = 1 << 5; // 2 ^ 5 = 31
+
+    private final AtomicInteger offset = new AtomicInteger(0);
+    private volatile String[] recentSnapshot = new String[MAX_LENGTH];
 
     public boolean isEnable() {
         return enable;
@@ -32,6 +38,7 @@ public class RouterSnapshotSwitcher {
     public synchronized void addEnabledService(String service) {
         enabledService.add(service);
         enable = true;
+        recentSnapshot = new String[MAX_LENGTH];
     }
 
     public boolean isEnable(String service) {
@@ -41,9 +48,25 @@ public class RouterSnapshotSwitcher {
     public synchronized void removeEnabledService(String service) {
         enabledService.remove(service);
         enable = enabledService.size() > 0;
+        recentSnapshot = new String[MAX_LENGTH];
     }
 
-    public Set<String> getEnabledService() {
+    public synchronized Set<String> getEnabledService() {
         return Collections.unmodifiableSet(enabledService);
+    }
+
+    public void setSnapshot(String snapshot) {
+        if (enable) {
+            // lock free
+            recentSnapshot[offset.incrementAndGet() % MAX_LENGTH] = snapshot;
+        }
+    }
+
+    public String[] cloneSnapshot() {
+        String[] clonedSnapshot = new String[MAX_LENGTH];
+        for (int i = 0; i < MAX_LENGTH; i++) {
+            clonedSnapshot[i] = recentSnapshot[i];
+        }
+        return clonedSnapshot;
     }
 }
