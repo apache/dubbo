@@ -54,6 +54,6 @@ public class EnableRouterSnapshot implements BaseCommand {
 
             }
         }
-        return "OK. Found service count: " + count;
+        return "OK. Found service count: " + count + ". This will cause performance degradation, please be careful!";
     }
 }

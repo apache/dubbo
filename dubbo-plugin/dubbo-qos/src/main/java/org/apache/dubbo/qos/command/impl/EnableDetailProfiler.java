@@ -31,6 +31,6 @@ public class EnableDetailProfiler implements BaseCommand {
     public String execute(CommandContext commandContext, String[] args) {
         ProfilerSwitch.enableDetailProfiler();
         logger.warn("Dubbo Invocation Profiler has been enabled.");
-        return "OK";
+        return "OK. This will cause performance degradation, please be careful!";
     }
 }

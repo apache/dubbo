@@ -38,6 +38,6 @@ public class GetRecentRouterSnapshot implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        return Arrays.stream(routerSnapshotSwitcher.cloneSnapshot()).filter(Objects::nonNull).collect(Collectors.joining("\n"));
+        return Arrays.stream(routerSnapshotSwitcher.cloneSnapshot()).filter(Objects::nonNull).sorted().collect(Collectors.joining("\n\n"));
     }
 }
