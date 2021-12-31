@@ -521,4 +521,6 @@ public interface CommonConstants {
     String PROVIDER_ASYNC_KEY = "PROVIDER_ASYNC";
 
     String CURRENT_CLUSTER_INVOKER_KEY = "currentClusterInvoker";
+
+    String ENABLE_ROUTER_SNAPSHOT_PRINT_KEY = "ENABLE_ROUTER_SNAPSHOT_PRINT";
 }
