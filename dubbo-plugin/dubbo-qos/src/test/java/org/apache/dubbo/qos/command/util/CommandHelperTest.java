@@ -23,6 +23,7 @@ import org.apache.dubbo.qos.command.impl.DisableDetailProfiler;
 import org.apache.dubbo.qos.command.impl.DisableSimpleProfiler;
 import org.apache.dubbo.qos.command.impl.EnableDetailProfiler;
 import org.apache.dubbo.qos.command.impl.EnableSimpleProfiler;
+import org.apache.dubbo.qos.command.impl.GetRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.Help;
 import org.apache.dubbo.qos.command.impl.InvokeTelnet;
 import org.apache.dubbo.qos.command.impl.Live;
@@ -99,6 +100,7 @@ public class CommandHelperTest {
         expectedClasses.add(EnableSimpleProfiler.class);
         expectedClasses.add(DisableSimpleProfiler.class);
         expectedClasses.add(SetProfilerWarnPercent.class);
+        expectedClasses.add(GetRouterSnapshot.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 
