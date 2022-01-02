@@ -47,10 +47,14 @@ public class TokenFilter implements Filter {
             Class<?> serviceType = invoker.getInterface();
             Map<String, Object> attachments = inv.getObjectAttachments();
             String remoteToken = (attachments == null ? null : (String) attachments.get(TOKEN_KEY));
-            if (!token.equals(remoteToken)) {
-                throw new RpcException("Invalid token! Forbid invoke remote service " + serviceType + " method " + inv.getMethodName() +
-                        "() from consumer " + RpcContext.getServiceContext().getRemoteHost() + " to provider " +
-                        RpcContext.getServiceContext().getLocalHost()+ ", consumer incorrect token is " + remoteToken);
+            if (ConfigUtils.isDefault(token)){
+                inv.setAttachment(TOKEN_KEY,token);
+            }
+            if (!token.equals(remoteToken) && !ConfigUtils.isDefault(token)) {
+
+                throw new RpcException("Invalid token! Forbid invoke remote service " + serviceType + " method " + inv.getMethodName()
+                    + "() from consumer " + RpcContext.getContext().getRemoteHost() + " to provider " + RpcContext.getContext().getLocalHost()
+                    + ", consumer incorrect token is " + remoteToken);
             }
         }
         return invoker.invoke(inv);

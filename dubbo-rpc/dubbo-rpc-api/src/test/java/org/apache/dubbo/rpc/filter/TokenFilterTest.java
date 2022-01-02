@@ -90,5 +90,21 @@ public class TokenFilterTest {
             tokenFilter.invoke(invoker, invocation);
         });
     }
+
+    @Test
+    public void testInvokeWithoutDynamicToken() throws Exception {
+        Assertions.assertDoesNotThrow( () -> {
+            String token = "default";
+
+            Invoker invoker = Mockito.mock(Invoker.class);
+            URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&token=" + token);
+            when(invoker.getUrl()).thenReturn(url);
+            when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
+
+            Invocation invocation = Mockito.mock(Invocation.class);
+
+            tokenFilter.invoke(invoker, invocation);
+        });
+    }
 }
 
