@@ -426,6 +426,16 @@ public final class StringUtils {
     }
 
     /**
+     * is not blank string.
+     *
+     * @param cs source string.
+     * @return is not blank.
+     */
+    public static boolean isNotBlank(CharSequence cs) {
+        return !isBlank(cs);
+    }
+
+    /**
      * Check the cs String whether contains non whitespace characters.
      * @param cs
      * @return
