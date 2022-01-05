@@ -96,7 +96,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final ExecutorRepository executorRepository;
 
     private final AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
-    private final volatile boolean hasPreparedInternalModule = false;
+    private volatile boolean hasPreparedInternalModule = false;
 
     private ScheduledFuture<?> asyncMetadataFuture;
     private volatile CompletableFuture<Boolean> startFuture;
