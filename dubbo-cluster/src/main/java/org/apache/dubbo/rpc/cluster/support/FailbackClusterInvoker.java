@@ -134,7 +134,6 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         private final List<Invoker<T>> invokers;
         private final long tick;
         private Invoker<T> lastInvoker;
-        private int retryTimes = 0;
         private URL consumerUrl;
 
         /**
