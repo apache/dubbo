@@ -16,21 +16,23 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Cmd(name = "enableDetailProfiler", summary = "Enable Dubbo Invocation Profiler.")
-public class EnableDetailProfiler implements BaseCommand {
-    private final static Logger logger = LoggerFactory.getLogger(EnableDetailProfiler.class);
+@Cmd(name = "getEnabledRouterSnapshot",
+    summary = "Get enabled Dubbo invocation level router snapshot print service list")
+public class GetEnabledRouterSnapshot implements BaseCommand {
+    private final RouterSnapshotSwitcher routerSnapshotSwitcher;
+
+    public GetEnabledRouterSnapshot(FrameworkModel frameworkModel) {
+        this.routerSnapshotSwitcher = frameworkModel.getBeanFactory().getBean(RouterSnapshotSwitcher.class);
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        ProfilerSwitch.enableDetailProfiler();
-        logger.warn("Dubbo Invocation Profiler has been enabled.");
-        return "OK. This will cause performance degradation, please be careful!";
+        return String.join("\n", routerSnapshotSwitcher.getEnabledService());
     }
 }

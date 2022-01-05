@@ -20,9 +20,14 @@ import org.apache.dubbo.qos.command.GreetingCommand;
 import org.apache.dubbo.qos.command.impl.ChangeTelnet;
 import org.apache.dubbo.qos.command.impl.CountTelnet;
 import org.apache.dubbo.qos.command.impl.DisableDetailProfiler;
+import org.apache.dubbo.qos.command.impl.DisableRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.DisableSimpleProfiler;
 import org.apache.dubbo.qos.command.impl.EnableDetailProfiler;
+import org.apache.dubbo.qos.command.impl.EnableRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.EnableSimpleProfiler;
+import org.apache.dubbo.qos.command.impl.GetEnabledRouterSnapshot;
+import org.apache.dubbo.qos.command.impl.GetRecentRouterSnapshot;
+import org.apache.dubbo.qos.command.impl.GetRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.Help;
 import org.apache.dubbo.qos.command.impl.InvokeTelnet;
 import org.apache.dubbo.qos.command.impl.Live;
@@ -99,6 +104,11 @@ public class CommandHelperTest {
         expectedClasses.add(EnableSimpleProfiler.class);
         expectedClasses.add(DisableSimpleProfiler.class);
         expectedClasses.add(SetProfilerWarnPercent.class);
+        expectedClasses.add(GetRouterSnapshot.class);
+        expectedClasses.add(GetEnabledRouterSnapshot.class);
+        expectedClasses.add(EnableRouterSnapshot.class);
+        expectedClasses.add(DisableRouterSnapshot.class);
+        expectedClasses.add(GetRecentRouterSnapshot.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 

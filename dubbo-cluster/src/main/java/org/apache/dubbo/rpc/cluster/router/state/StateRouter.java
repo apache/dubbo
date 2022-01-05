@@ -84,6 +84,13 @@ public interface StateRouter<T> {
      */
     void notify(BitList<Invoker<T>> invokers);
 
+    /**
+     * Build Router's Current State Snapshot for QoS
+     *
+     * @return Current State
+     */
+    String buildSnapshot();
+
     default void stop() {
         //do nothing by default
     }
