@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
 
@@ -35,5 +36,5 @@ public interface ServiceInstanceCustomizer extends Prioritized {
      *
      * @param serviceInstance {@link ServiceInstance the service instance}
      */
-    void customize(ServiceInstance serviceInstance);
+    void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel);
 }

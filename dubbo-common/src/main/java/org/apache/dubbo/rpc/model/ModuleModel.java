@@ -67,6 +67,7 @@ public class ModuleModel extends ScopeModel {
         if (applicationDeployer != null) {
             applicationDeployer.notifyModuleChanged(this, DeployState.PENDING);
         }
+        this.internalModule = isInternal;
     }
 
     @Override

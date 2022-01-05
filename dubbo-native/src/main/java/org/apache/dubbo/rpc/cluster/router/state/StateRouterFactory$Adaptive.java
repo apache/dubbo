@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 package org.apache.dubbo.rpc.cluster.router.state;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 public class StateRouterFactory$Adaptive implements org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory {
-public org.apache.dubbo.rpc.cluster.router.state.StateRouter getRouter(java.lang.Class arg0, org.apache.dubbo.common.URL arg1)  {
+public <T> org.apache.dubbo.rpc.cluster.router.state.StateRouter<T> getRouter(Class<T> arg0, URL arg1)  {
 if (arg0 == null) throw new IllegalArgumentException("url == null");
 org.apache.dubbo.common.URL url = arg1;
 String extName = ( url.getProtocol() == null ? "adaptive" : url.getProtocol() );

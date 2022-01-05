@@ -21,6 +21,7 @@ import org.apache.dubbo.common.beans.model.FooBeanWithApplicationModel;
 import org.apache.dubbo.common.beans.model.FooBeanWithFrameworkModel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -25,7 +25,6 @@ import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.HashMap;
@@ -130,7 +129,10 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getPath() {
-        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+        MetadataInfo.ServiceInfo serviceInfo = null;
+        if (StringUtils.isNotEmpty(getProtocolServiceKey())) {
+            serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+        }
         if (serviceInfo == null) {
             return getServiceInterface();
         }
@@ -376,7 +378,7 @@ public class InstanceAddressURL extends URL {
             return this;
         }
 
-        getInstance().getExtendParams().put(key, value);
+        getInstance().putExtendParam(key, value);
         return this;
     }
 
@@ -386,7 +388,7 @@ public class InstanceAddressURL extends URL {
             return this;
         }
 
-        getInstance().getExtendParams().putIfAbsent(key, value);
+        getInstance().putExtendParamIfAbsent(key, value);
         return this;
     }
 
@@ -486,16 +488,11 @@ public class InstanceAddressURL extends URL {
         if (StringUtils.isNotEmpty(value)) {
             return value;
         }
-        return this.instance.getExtendParams().get(key);
+        return this.instance.getExtendParam(key);
     }
 
     private Map<String, String> getInstanceMetadata() {
         return this.instance.getMetadata();
-    }
-
-    @Override
-    public ScopeModel getScopeModel() {
-        return RpcContext.getServiceContext().getConsumerUrl().getScopeModel();
     }
 
     @Override

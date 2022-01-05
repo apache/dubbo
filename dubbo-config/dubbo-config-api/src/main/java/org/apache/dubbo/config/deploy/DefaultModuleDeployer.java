@@ -141,11 +141,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             // export services
             exportServices();
 
-            // prepare application instance
-            // exclude internal module to avoid wait itself
-            if (moduleModel != moduleModel.getApplicationModel().getInternalModule()) {
-                applicationDeployer.prepareApplicationInstance();
-            }
+        // prepare application instance
+        // exclude internal module to avoid wait itself
+        if (moduleModel != moduleModel.getApplicationModel().getInternalModule()) {
+            applicationDeployer.prepareInternalModule();
+        }
 
             // refer services
             referServices();
@@ -385,8 +385,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                     }
                 }
             } catch (Throwable t) {
-                logger.error(getIdentifier() + " refer catch error", t);
+                logger.error(getIdentifier() + " refer catch error.");
                 referenceCache.destroy(rc);
+                throw t;
             }
         });
     }

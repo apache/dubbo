@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.DefaultEventLoop;
-import io.netty.channel.EventLoop;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
@@ -27,6 +23,11 @@ import org.apache.dubbo.rpc.protocol.tri.command.FlushQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
+
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.DefaultEventLoop;
+import io.netty.channel.EventLoop;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

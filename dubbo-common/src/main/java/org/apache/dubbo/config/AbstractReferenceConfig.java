@@ -24,7 +24,9 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ROUTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 
 /**
  * AbstractConsumerConfig
@@ -83,7 +85,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     protected String router;
 
     /**
-     * Weather the reference is refer asynchronously
+     * Weather the reference is referred asynchronously
      * @deprecated
      * @see ModuleConfig#referAsync
      */
@@ -237,7 +239,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
 
 
-    @Parameter(key = "provided-by")
+    @Parameter(key = PROVIDED_BY)
     public String getProvidedBy() {
         return providedBy;
     }
@@ -246,7 +248,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.providedBy = providedBy;
     }
 
-    @Parameter(key = "router", append = true)
+    @Parameter(key = ROUTER_KEY, append = true)
     public String getRouter() {
         return router;
     }

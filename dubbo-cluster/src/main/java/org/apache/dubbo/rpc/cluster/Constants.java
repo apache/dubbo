@@ -135,4 +135,6 @@ public interface Constants {
      * The key of shortestResponseSlidePeriod
      */
     String SHORTEST_RESPONSE_SLIDE_PERIOD = "shortestResponseSlidePeriod";
+
+    String SHOULD_FAIL_FAST_KEY = "dubbo.router.should-fail-fast";
 }

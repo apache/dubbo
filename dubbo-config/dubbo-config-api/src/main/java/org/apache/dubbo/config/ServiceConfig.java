@@ -32,9 +32,7 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -47,7 +45,6 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.service.GenericService;
-import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -84,6 +81,7 @@ import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
+import static org.apache.dubbo.metadata.MetadataService.isMetadataService;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -94,6 +92,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
+import static org.apache.dubbo.rpc.support.ProtocolUtils.isGeneric;
 
 public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
@@ -102,7 +101,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private static final Logger logger = LoggerFactory.getLogger(ServiceConfig.class);
 
     /**
-     * A random port cache, the different protocols who has no port specified have different random port
+     * A random port cache, the different protocols who have no port specified have different random port
      */
     private static final Map<String, Integer> RANDOM_PORT_MAP = new HashMap<String, Integer>();
 
@@ -134,7 +133,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
     private final List<ServiceListener> serviceListeners = new ArrayList<>();
-    private WritableMetadataService localMetadataService;
 
     public ServiceConfig() {
     }
@@ -156,7 +154,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         super.postProcessAfterScopeModelChanged(oldScopeModel, newScopeModel);
         protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
         proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        localMetadataService = this.getScopeModel().getDefaultExtension(WritableMetadataService.class);
     }
 
     @Override
@@ -261,6 +258,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     boolean succeeded = serviceNameMapping.map(url);
                     if (succeeded) {
                         logger.info("Successfully registered interface application mapping for service " + url.getServiceKey());
+                    } else {
+                        logger.error("Failed register interface application mapping for service " + url.getServiceKey());
                     }
                 } catch (Exception e) {
                     logger.error("Failed register interface application mapping for service " + url.getServiceKey(), e);
@@ -394,10 +393,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // remove null key and null value
         map.keySet().removeIf(key -> key == null || map.get(key) == null);
-        //init serviceMetadata attachments
+        // init serviceMetadata attachments
         serviceMetadata.getAttachments().putAll(map);
 
-        URL url = buildUrl(protocolConfig, registryURLs, map);
+        URL url = buildUrl(protocolConfig, map);
 
         exportUrl(url, registryURLs);
     }
@@ -428,7 +427,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             getMethods().forEach(method -> appendParametersWithMethod(method, map));
         }
 
-        if (ProtocolUtils.isGeneric(generic)) {
+        if (isGeneric(generic)) {
             map.put(GENERIC_KEY, generic);
             map.put(METHODS_KEY, ANY_VALUE);
         } else {
@@ -442,7 +441,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
                 map.put(METHODS_KEY, ANY_VALUE);
             } else {
-                map.put(METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
+                map.put(METHODS_KEY, StringUtils.join(new HashSet<>(Arrays.asList(methods)), ","));
             }
         }
 
@@ -513,20 +512,20 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private Integer findArgumentIndexIndexWithGivenType(ArgumentConfig argument, Method method) {
-        Class<?>[] argtypes = method.getParameterTypes();
+        Class<?>[] argTypes = method.getParameterTypes();
         // one callback in the method
         if (hasIndex(argument)) {
             Integer index = argument.getIndex();
             String type = argument.getType();
-            if (isTypeMatched(type, index, argtypes)) {
+            if (isTypeMatched(type, index, argTypes)) {
                 return index;
             } else {
                 throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
             }
         } else {
             // multiple callbacks in the method
-            for (int j = 0; j < argtypes.length; j++) {
-                if (isTypeMatched(argument.getType(), j, argtypes)) {
+            for (int j = 0; j < argTypes.length; j++) {
+                if (isTypeMatched(argument.getType(), j, argTypes)) {
                     return j;
                 }
             }
@@ -534,17 +533,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
-    private URL buildUrl(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> params) {
+    private URL buildUrl(ProtocolConfig protocolConfig, Map<String, String> params) {
         String name = protocolConfig.getName();
         if (StringUtils.isEmpty(name)) {
             name = DUBBO;
         }
 
         // export service
-        String host = findConfigedHosts(protocolConfig, registryURLs, params);
-        Integer port = findConfigedPorts(protocolConfig, name, params);
+        String host = findConfiguredHosts(protocolConfig, provider, params);
+        Integer port = findConfiguredPort(protocolConfig, provider, this.getExtensionLoader(Protocol.class), name, params);
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
-        url.setScopeModel(getScopeModel());
 
         // You can customize Configurator to append extra parameters
         if (this.getExtensionLoader(ConfiguratorFactory.class)
@@ -570,9 +568,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 url = exportRemote(url, registryURLs);
-                MetadataUtils.publishServiceDefinition(url);
+                if (!isGeneric(generic) && !isMetadataService(interfaceName)) {
+                    ServiceDescriptor descriptor = getScopeModel().getServiceRepository().getService(interfaceName);
+                    if (descriptor != null) {
+                        MetadataUtils.publishServiceDefinition(getScopeModel().getServiceRepository().getService(interfaceName), getApplicationModel());
+                    }
+                }
             }
-
         }
         this.urls.add(url);
     }
@@ -613,10 +615,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
 
         } else {
-
-            if (MetadataService.class.getName().equals(url.getServiceInterface())) {
-                localMetadataService.setMetadataServiceURL(url);
-            }
 
             if (logger.isInfoEnabled()) {
                 logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
@@ -665,6 +663,27 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 && LOCAL_PROTOCOL.equalsIgnoreCase(getProtocols().get(0).getName());
     }
 
+    private void postProcessConfig() {
+        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
+                .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
+        configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
+    }
+
+    public void addServiceListener(ServiceListener listener) {
+        this.serviceListeners.add(listener);
+    }
+
+    protected void onExported() {
+        for (ServiceListener serviceListener : this.serviceListeners) {
+            serviceListener.exported(this);
+        }
+    }
+
+    protected void onUnexpoted() {
+        for (ServiceListener serviceListener : this.serviceListeners) {
+            serviceListener.unexported(this);
+        }
+    }
 
     /**
      * Register & bind IP address for service provider, can be configured separately.
@@ -672,13 +691,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * /etc/hosts -> default network address -> first available network address
      *
      * @param protocolConfig
-     * @param registryURLs
      * @param map
      * @return
      */
-    private String findConfigedHosts(ProtocolConfig protocolConfig,
-                                     List<URL> registryURLs,
-                                     Map<String, String> map) {
+    private static String findConfiguredHosts(ProtocolConfig protocolConfig,
+                                              ProviderConfig provider,
+                                              Map<String, String> map) {
         boolean anyhost = false;
 
         String hostToBind = getValueFromConfig(protocolConfig, DUBBO_IP_TO_BIND);
@@ -705,7 +723,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // registry ip is not used for bind ip by default
         String hostToRegistry = getValueFromConfig(protocolConfig, DUBBO_IP_TO_REGISTRY);
-        if (hostToRegistry != null && hostToRegistry.length() > 0 && isInvalidLocalHost(hostToRegistry)) {
+        if (StringUtils.isNotEmpty(hostToRegistry) && isInvalidLocalHost(hostToRegistry)) {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         } else if (StringUtils.isEmpty(hostToRegistry)) {
             // bind ip is used as registry ip by default
@@ -727,9 +745,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * @param name
      * @return
      */
-    private Integer findConfigedPorts(ProtocolConfig protocolConfig,
-                                      String name,
-                                      Map<String, String> map) {
+    private static synchronized Integer findConfiguredPort(ProtocolConfig protocolConfig,
+                                                           ProviderConfig provider,
+                                                           ExtensionLoader<Protocol> extensionLoader,
+                                                           String name,Map<String, String> map) {
         Integer portToBind;
 
         // parse bind port from environment
@@ -742,7 +761,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             if (provider != null && (portToBind == null || portToBind == 0)) {
                 portToBind = provider.getPort();
             }
-            final int defaultPort = this.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
+            final int defaultPort = extensionLoader.getExtension(name).getDefaultPort();
             if (portToBind == null || portToBind == 0) {
                 portToBind = defaultPort;
             }
@@ -768,9 +787,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         return portToRegistry;
     }
 
-    private Integer parsePort(String configPort) {
+    private static Integer parsePort(String configPort) {
         Integer port = null;
-        if (configPort != null && configPort.length() > 0) {
+        if (StringUtils.isNotEmpty(configPort)) {
             try {
                 int intPort = Integer.parseInt(configPort);
                 if (isInvalidPort(intPort)) {
@@ -784,7 +803,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         return port;
     }
 
-    private String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
+    private static String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
         String protocolPrefix = protocolConfig.getName().toUpperCase() + "_";
         String value = ConfigUtils.getSystemProperty(protocolPrefix + key);
         if (StringUtils.isEmpty(value)) {
@@ -793,12 +812,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         return value;
     }
 
-    private Integer getRandomPort(String protocol) {
+    private static Integer getRandomPort(String protocol) {
         protocol = protocol.toLowerCase();
         return RANDOM_PORT_MAP.getOrDefault(protocol, Integer.MIN_VALUE);
     }
 
-    private void putRandomPort(String protocol, Integer port) {
+    private static void putRandomPort(String protocol, Integer port) {
         protocol = protocol.toLowerCase();
         if (!RANDOM_PORT_MAP.containsKey(protocol)) {
             RANDOM_PORT_MAP.put(protocol, port);
@@ -806,25 +825,4 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
-    private void postProcessConfig() {
-        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
-                .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
-        configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
-    }
-
-    public void addServiceListener(ServiceListener listener) {
-        this.serviceListeners.add(listener);
-    }
-
-    protected void onExported() {
-        for (ServiceListener serviceListener : this.serviceListeners) {
-            serviceListener.exported(this);
-        }
-    }
-
-    protected void onUnexpoted() {
-        for (ServiceListener serviceListener : this.serviceListeners) {
-            serviceListener.unexported(this);
-        }
-    }
 }

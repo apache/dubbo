@@ -16,9 +16,9 @@
  */
 package com.alibaba.dubbo.container.page.pages;
 
-import com.alibaba.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
+import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;

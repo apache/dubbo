@@ -20,6 +20,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,6 +31,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import java.net.InetSocketAddress;
 
 public class PropertySourcesConfigurerTest {
 
@@ -58,7 +61,7 @@ public class PropertySourcesConfigurerTest {
                 HelloService service = (HelloService) context.getBean("demoService");
                 String result = service.sayHello("world");
                 System.out.println("result: " + result);
-                Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", result);
+                Assertions.assertEquals("Hello world, response from provider: " + InetSocketAddress.createUnresolved("127.0.0.1", 0), result);
             } finally {
                 context.close();
             }

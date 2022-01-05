@@ -17,8 +17,8 @@
 package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 
 public class Curator5ZookeeperTransporter extends AbstractZookeeperTransporter {
 

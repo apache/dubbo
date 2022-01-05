@@ -41,11 +41,12 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRegistryFactory.class);
 
-
     private RegistryManager registryManager;
+    protected ApplicationModel applicationModel;
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
         this.registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
     }
 
@@ -64,7 +65,9 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
         url = URLBuilder.from(url)
             .setPath(RegistryService.class.getName())
             .addParameter(INTERFACE_KEY, RegistryService.class.getName())
-            .removeParameters(EXPORT_KEY, REFER_KEY, TIMESTAMP_KEY)
+            .removeParameter(TIMESTAMP_KEY)
+            .removeAttribute(EXPORT_KEY)
+            .removeAttribute(REFER_KEY)
             .build();
         String key = createRegistryCacheKey(url);
         Registry registry = null;
@@ -117,5 +120,6 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
     }
 
     protected abstract Registry createRegistry(URL url);
+
 
 }

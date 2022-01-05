@@ -18,6 +18,8 @@ package org.apache.dubbo.test.check.registrycenter;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.test.check.exception.DubboTestException;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperContext;
 import org.apache.dubbo.test.check.registrycenter.context.ZookeeperWindowsContext;
@@ -34,11 +36,11 @@ import org.apache.dubbo.test.check.registrycenter.processor.StopZookeeperWindows
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -79,6 +81,11 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperRegistryCenter.class);
 
     /**
+     * The JVM arguments to set the embedded zookeeper directory.
+     */
+    private static final String CONFIG_EMBEDDED_ZOOKEEPER_DIRECTORY = "embeddedZookeeperPath";
+
+    /**
      * The OS type.
      */
     private static OS os = getOS();
@@ -109,13 +116,6 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     private static final String TARGET_ZOOKEEPER_FILE_NAME = UNPACKED_DIRECTORY + ".tar.gz";
 
     /**
-     * The target directory.
-     * The zookeeper binary file named {@link #TARGET_ZOOKEEPER_FILE_NAME} will be saved in
-     * {@link #TARGET_DIRECTORY} if it downloaded successfully.
-     */
-    private static final String TARGET_DIRECTORY = ".tmp" + File.separator + "zookeeper";
-
-    /**
      * The path of target zookeeper binary file.
      */
     private static final Path TARGET_FILE_PATH = getTargetFilePath();
@@ -126,17 +126,41 @@ class ZookeeperRegistryCenter implements RegistryCenter {
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
     /**
+     * Returns the directory to store zookeeper binary archive.
+     * <p>The priorities to obtain the directory are as follows:</p>
+     * <p>1. Use System.getProperty({@link #CONFIG_EMBEDDED_ZOOKEEPER_DIRECTORY}) if not null or empty</p>
+     * <p>2. Use System.getProperty(user.home) if not null or empty</p>
+     * <p>3. Use System.getProperty(java.io.tmpdir)</p>
+     */
+    private static String getEmbeddedZookeeperDirectory() {
+        String directory;
+        // Use System.getProperty({@link #CONFIG_EMBEDDED_ZOOKEEPER_DIRECTORY})
+        directory = System.getProperty(CONFIG_EMBEDDED_ZOOKEEPER_DIRECTORY);
+        logger.info(String.format("The customized directory is %s to store zookeeper binary archive.",directory));
+        if (StringUtils.isNotEmpty(directory)) {
+            return directory;
+        }
+        // Use System.getProperty(user.home)
+        logger.info(String.format("The user home is %s to store zookeeper binary archive.",directory));
+        directory = System.getProperty("user.home");
+        logger.info(String.format("user.home is %s",directory));
+        if (StringUtils.isEmpty(directory)) {
+            // Use default temporary directory
+            directory = System.getProperty("java.io.tmpdir");
+            logger.info(String.format("The temporary directory is %s to store zookeeper binary archive.",directory));
+        }
+        Assert.notEmptyString(directory, "The directory to store zookeeper binary archive cannot be null or empty.");
+        return directory + File.separator + ".tmp" + File.separator + "zookeeper";
+
+    }
+
+    /**
      * Returns the target file path.
      */
     private static Path getTargetFilePath() {
-        String currentWorkDirectory = System.getProperty("user.dir");
-        logger.info("Current work directory: " + currentWorkDirectory);
-        int index = currentWorkDirectory.lastIndexOf(File.separator + "dubbo" + File.separator);
-        Path targetFilePath = Paths.get(currentWorkDirectory.substring(0, index),
-            "dubbo",
-            TARGET_DIRECTORY,
-            TARGET_ZOOKEEPER_FILE_NAME);
-        logger.info("Target file's absolute directory: " + targetFilePath.toString());
+        String zookeeperDirectory = getEmbeddedZookeeperDirectory();
+        Path targetFilePath = Paths.get(zookeeperDirectory, TARGET_ZOOKEEPER_FILE_NAME);
+        logger.info("Target file's absolute directory: " + targetFilePath);
         return targetFilePath;
     }
 

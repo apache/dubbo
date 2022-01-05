@@ -18,10 +18,10 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -121,7 +121,7 @@ public class CallbackServiceCodec {
             params.put(GROUP_KEY, group);
         }
         // add method, for verifying against method, automatic fallback (see dubbo protocol)
-        params.put(METHODS_KEY, StringUtils.join(Wrapper.getWrapper(clazz).getDeclaredMethodNames(), ","));
+        params.put(METHODS_KEY, StringUtils.join(ClassUtils.getDeclaredMethodNames(clazz), ","));
 
         Map<String, String> tmpMap = new HashMap<>();
         if (url != null) {

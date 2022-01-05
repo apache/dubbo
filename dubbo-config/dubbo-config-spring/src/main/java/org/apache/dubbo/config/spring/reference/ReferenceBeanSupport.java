@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.config.spring.reference;
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.rpc.service.GenericService;
+
+import com.alibaba.spring.util.AnnotationUtils;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;

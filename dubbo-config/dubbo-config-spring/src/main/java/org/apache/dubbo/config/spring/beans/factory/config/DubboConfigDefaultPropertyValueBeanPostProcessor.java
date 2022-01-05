@@ -17,9 +17,9 @@
 package org.apache.dubbo.config.spring.beans.factory.config;
 
 import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.Constants;
 
 import com.alibaba.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
-import org.apache.dubbo.config.Constants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;

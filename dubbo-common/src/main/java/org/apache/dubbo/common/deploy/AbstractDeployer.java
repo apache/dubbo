@@ -40,7 +40,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     protected volatile boolean initialized = false;
 
-    private List<DeployListener<E>> listeners = new ArrayList<>();
+    protected List<DeployListener<E>> listeners = new ArrayList<>();
 
     private E scopeModel;
 

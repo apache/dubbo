@@ -23,6 +23,7 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.api.MethodCallback;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import org.apache.dubbo.config.spring.impl.MethodCallbackImpl;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

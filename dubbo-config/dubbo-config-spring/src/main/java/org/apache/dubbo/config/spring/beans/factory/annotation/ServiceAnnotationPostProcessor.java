@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -30,6 +29,8 @@ import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefin
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
+
+import com.alibaba.spring.util.AnnotationUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;

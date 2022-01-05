@@ -23,6 +23,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.DubboStateListener;
 import org.apache.dubbo.config.spring.SysProps;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

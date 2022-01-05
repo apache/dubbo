@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import io.netty.channel.Channel;
-import io.netty.util.DefaultAttributeMap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.command.BaseCommand;
@@ -27,6 +25,9 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+
+import io.netty.channel.Channel;
+import io.netty.util.DefaultAttributeMap;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;

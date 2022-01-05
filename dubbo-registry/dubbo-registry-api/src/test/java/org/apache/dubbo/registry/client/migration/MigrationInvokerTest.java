@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
@@ -27,6 +28,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +46,7 @@ public class MigrationInvokerTest {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("Test");
         ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getBeanFactory().registerBean(FrameworkStatusReportService.class);
     }
 
     @AfterEach
@@ -85,6 +88,7 @@ public class MigrationInvokerTest {
         Mockito.when(consumerURL.getVersion()).thenReturn("0.0.0");
         Mockito.when(consumerURL.getServiceKey()).thenReturn("Group/Test:0.0.0");
         Mockito.when(consumerURL.getDisplayServiceKey()).thenReturn("Test:0.0.0");
+        Mockito.when(consumerURL.getOrDefaultApplicationModel()).thenReturn(ApplicationModel.defaultModel());
 
         Mockito.when(invoker.getUrl()).thenReturn(consumerURL);
         Mockito.when(serviceDiscoveryInvoker.getUrl()).thenReturn(consumerURL);

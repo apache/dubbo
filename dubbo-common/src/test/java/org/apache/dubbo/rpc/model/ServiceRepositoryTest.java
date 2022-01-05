@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.DemoServiceImpl;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

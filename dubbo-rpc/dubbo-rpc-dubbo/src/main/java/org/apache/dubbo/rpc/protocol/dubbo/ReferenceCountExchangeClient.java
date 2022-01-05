@@ -49,9 +49,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private ExchangeClient client;
     private int shutdownWaitTime = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 
-    public ReferenceCountExchangeClient(ExchangeClient client) {
+    public ReferenceCountExchangeClient(ExchangeClient client, String codec) {
         this.client = client;
-        referenceCount.incrementAndGet();
+        this.referenceCount.incrementAndGet();
         this.url = client.getUrl();
     }
 
@@ -210,9 +210,10 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         if (!(client instanceof LazyConnectExchangeClient)) {
             // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
             URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
-                    //.addParameter(RECONNECT_KEY, Boolean.FALSE)
-                    .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
+                //.addParameter(RECONNECT_KEY, Boolean.FALSE)
+                .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
             //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
+
             client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
         }
     }

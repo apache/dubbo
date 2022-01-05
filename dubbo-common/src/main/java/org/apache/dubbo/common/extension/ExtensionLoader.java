@@ -444,7 +444,7 @@ public class ExtensionLoader<T> {
         }
         for (String[] keyPair : keyPairs) {
             // @Active(value="key1:value1, key2:value2")
-            String key = null;
+            String key;
             String keyValue = null;
             if (keyPair.length > 1) {
                 key = keyPair[0];
@@ -773,8 +773,10 @@ public class ExtensionLoader<T> {
                 if (CollectionUtils.isNotEmpty(wrapperClassesList)) {
                     for (Class<?> wrapperClass : wrapperClassesList) {
                         Wrapper wrapper = wrapperClass.getAnnotation(Wrapper.class);
-                        if (wrapper == null
-                            || (ArrayUtils.contains(wrapper.matches(), name) && !ArrayUtils.contains(wrapper.mismatches(), name))) {
+                        boolean match = (wrapper == null) ||
+                            ((ArrayUtils.isEmpty(wrapper.matches()) || ArrayUtils.contains(wrapper.matches(), name)) &&
+                                !ArrayUtils.contains(wrapper.mismatches(), name));
+                        if (match) {
                             instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
                             instance = postProcessAfterInitialization(instance, name);
                         }
@@ -1242,7 +1244,7 @@ public class ExtensionLoader<T> {
         String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
         org.apache.dubbo.common.compiler.Compiler compiler = extensionDirector.getExtensionLoader(
             org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
-        return compiler.compile(code, classLoader);
+        return compiler.compile(type, code, classLoader);
     }
 
     private Environment getEnvironment() {

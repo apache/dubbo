@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.utils.StringUtils;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.Test;
 public class FrameworkModelTest {
     @Test
     public void testInitialize() {
+        FrameworkModel.destroyAll();
         FrameworkModel frameworkModel = new FrameworkModel();
 
         Assertions.assertNull(frameworkModel.getParent());

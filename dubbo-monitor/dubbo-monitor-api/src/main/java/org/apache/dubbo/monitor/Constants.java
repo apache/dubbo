@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.monitor;
 
-import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
-import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
-
 public interface Constants {
     String DUBBO_PROVIDER = "dubbo.provider";
 

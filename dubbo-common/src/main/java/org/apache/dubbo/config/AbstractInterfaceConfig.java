@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.bytecode.Wrapper;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
@@ -294,7 +293,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (isNative) {
             return Arrays.stream(interfaceClass.getMethods()).map(Method::getName).toArray(String[]::new);
         } else {
-            return Wrapper.getWrapper(interfaceClass).getMethodNames();
+            return ClassUtils.getMethodNames(interfaceClass);
         }
     }
 
@@ -305,7 +304,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     @Override
     protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
         if (StringUtils.hasText(interfaceName)) {
-            Class<?> interfaceClass = null;
+            Class<?> interfaceClass;
             try {
                 interfaceClass = ClassUtils.forName(interfaceName);
             } catch (ClassNotFoundException e) {

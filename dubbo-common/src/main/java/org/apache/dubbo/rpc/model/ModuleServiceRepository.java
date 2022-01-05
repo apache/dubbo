@@ -150,8 +150,10 @@ public class ModuleServiceRepository {
     @Deprecated
     public void reRegisterProvider(String newServiceKey, String serviceKey) {
         ProviderModel providerModel = this.providers.get(serviceKey);
+        frameworkServiceRepository.unregisterProvider(providerModel);
         providerModel.setServiceKey(newServiceKey);
         this.providers.putIfAbsent(newServiceKey, providerModel);
+        frameworkServiceRepository.registerProvider(providerModel);
         this.providers.remove(serviceKey);
     }
 
@@ -184,6 +186,15 @@ public class ModuleServiceRepository {
     public List<ServiceDescriptor> getAllServices() {
         List<ServiceDescriptor> serviceDescriptors = services.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
         return Collections.unmodifiableList(serviceDescriptors);
+    }
+
+    public ServiceDescriptor getService(String serviceName) {
+        // TODO, may need to distinguish service by class loader.
+        List<ServiceDescriptor> serviceDescriptors = services.get(serviceName);
+        if (CollectionUtils.isEmpty(serviceDescriptors)) {
+            return null;
+        }
+        return serviceDescriptors.get(0);
     }
 
     public ServiceDescriptor lookupService(String interfaceName) {

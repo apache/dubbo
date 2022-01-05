@@ -16,20 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.ByteString;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.DefaultEventLoop;
-import io.netty.channel.EventLoop;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.util.Attribute;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.DefaultMultipleSerialization;
@@ -52,6 +38,21 @@ import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
 import org.apache.dubbo.triple.TripleWrapper;
+
+import com.google.protobuf.ByteString;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.DefaultEventLoop;
+import io.netty.channel.EventLoop;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.Attribute;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -128,7 +129,7 @@ public class ClientStreamTest {
         Assertions.assertEquals(unaryClientStream.getCompressor(), Compressor.NONE);
         Assertions.assertEquals(unaryClientStream.getDeCompressor(), Compressor.NONE);
         Assertions.assertEquals(stream.getScheme(), HTTP_SCHEME);
-        Assertions.assertEquals(stream.getAcceptEncoding(), "gzip,identity");
+        Assertions.assertEquals(stream.getAcceptEncoding(), "gzip");
         Assertions.assertFalse(stream.getCancellationContext().getListeners().isEmpty());
         Assertions.assertTrue(stream.getMultipleSerialization() instanceof DefaultMultipleSerialization);
 
@@ -183,7 +184,7 @@ public class ClientStreamTest {
         Assertions.assertEquals(headers.get(Http2Headers.PseudoHeaderName.AUTHORITY.value()), url.getAddress());
         Assertions.assertEquals(headers.get(Http2Headers.PseudoHeaderName.METHOD.value()), HttpMethod.POST.asciiName());
         Assertions.assertEquals(headers.get(HttpHeaderNames.TE), HttpHeaderValues.TRAILERS);
-        Assertions.assertEquals(headers.get(GRPC_ENCODING.getHeader()), DEFAULT_COMPRESSOR);
+        Assertions.assertNull(headers.get(GRPC_ENCODING.getHeader()));
         Assertions.assertEquals(headers.get(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader()), stream.getAcceptEncoding());
         Assertions.assertEquals(headers.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader()), TripleHeaderEnum.CONTENT_PROTO.getHeader());
         Assertions.assertEquals(headers.get(TripleHeaderEnum.TIMEOUT.getHeader()), timeout + "m");

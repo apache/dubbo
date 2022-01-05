@@ -22,6 +22,15 @@ public class JavaCodeTest {
 
     public final static AtomicInteger SUBFIX = new AtomicInteger(8);
 
+    boolean shouldIgnoreWithoutPackage() {
+        String jdkVersion = System.getProperty("java.specification.version");
+        try {
+            return Integer.parseInt(jdkVersion) > 15;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     String getSimpleCode() {
         StringBuilder code = new StringBuilder();
         code.append("package org.apache.dubbo.common.compiler.support;");

@@ -20,10 +20,10 @@ package org.apache.dubbo.common.status;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.status.Status.Level.OK;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class StatusTest {
     @Test

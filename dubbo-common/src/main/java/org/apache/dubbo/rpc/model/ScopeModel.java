@@ -72,6 +72,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     private Map<String, Object> attributes;
     private final AtomicBoolean destroyed = new AtomicBoolean(false);
+    protected boolean internalModule;
 
     public ScopeModel(ScopeModel parent, ExtensionScope scope) {
         this.parent = parent;
@@ -225,6 +226,10 @@ public abstract class ScopeModel implements ExtensionAccessor {
     public void setModelName(String modelName) {
         this.modelName = modelName;
         this.desc = buildDesc();
+    }
+
+    public boolean isInternal() {
+        return internalModule;
     }
 
     /**
