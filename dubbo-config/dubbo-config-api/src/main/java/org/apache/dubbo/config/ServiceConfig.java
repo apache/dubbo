@@ -571,7 +571,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 if (!isGeneric(generic) && !isMetadataService(interfaceName)) {
                     ServiceDescriptor descriptor = getScopeModel().getServiceRepository().getService(interfaceName);
                     if (descriptor != null) {
-                        MetadataUtils.publishServiceDefinition(getScopeModel().getServiceRepository().getService(interfaceName), getApplicationModel());
+                        MetadataUtils.publishServiceDefinition(
+                            getScopeModel().getServiceRepository().getService(interfaceName),
+                            version == null ? "" : version,
+                            group == null ? "" : group,
+                            getApplicationModel());
                     }
                 }
             }
