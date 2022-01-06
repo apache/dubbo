@@ -27,6 +27,7 @@ import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class ApiConsumer {
@@ -53,6 +54,9 @@ public class ApiConsumer {
                 .build());
             TimeUnit.SECONDS.sleep(1);
             System.out.println("Reply: " + reply.getMessage());
+
+            CompletableFuture<String> sayHelloAsync = greeterService.sayHelloAsync("triple");
+            System.out.println("Async Reply: "+sayHelloAsync.get());
         } catch (Throwable t) {
             t.printStackTrace();
         }

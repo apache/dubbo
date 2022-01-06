@@ -19,6 +19,8 @@ package org.apache.dubbo.demo;
 import org.apache.dubbo.demo.hello.HelloReply;
 import org.apache.dubbo.demo.hello.HelloRequest;
 
+import java.util.concurrent.CompletableFuture;
+
 public class GreeterServiceImpl implements GreeterService {
 
     @Override
@@ -26,5 +28,10 @@ public class GreeterServiceImpl implements GreeterService {
         return HelloReply.newBuilder()
                 .setMessage("Hello " + request.getName())
                 .build();
+    }
+
+    @Override
+    public CompletableFuture<String> sayHelloAsync(String name) {
+        return CompletableFuture.supplyAsync(() -> name);
     }
 }
