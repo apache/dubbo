@@ -186,4 +186,15 @@ public abstract class AbstractStateRouter<T> implements StateRouter<T> {
     public final void setNextRouter(StateRouter<T> nextRouter) {
         this.nextRouter = nextRouter;
     }
+
+    @Override
+    public final String buildSnapshot() {
+        return doBuildSnapshot() +
+            "            ↓ \n" +
+            nextRouter.buildSnapshot();
+    }
+
+    protected String doBuildSnapshot() {
+        return this.getClass().getSimpleName() + " not support\n";
+    }
 }

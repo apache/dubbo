@@ -64,4 +64,9 @@ public class TailStateRouter<T> implements StateRouter<T> {
     public void notify(BitList<Invoker<T>> invokers) {
 
     }
+
+    @Override
+    public String buildSnapshot() {
+        return "TailStateRouter End";
+    }
 }

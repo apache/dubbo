@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
@@ -95,7 +96,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.reportService = consumerUrl.getOrDefaultApplicationModel().getBeanFactory().getBean(FrameworkStatusReportService.class);
 
         if (consumerModel != null) {
-            Object object = consumerModel.getServiceMetadata().getAttribute("currentClusterInvoker");
+            Object object = consumerModel.getServiceMetadata().getAttribute(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
             Map<Registry, MigrationInvoker<?>> invokerMap;
             if (object instanceof Map) {
                 invokerMap = (Map<Registry, MigrationInvoker<?>>) object;
@@ -103,7 +104,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
                 invokerMap = new ConcurrentHashMap<>();
             }
             invokerMap.put(registry, this);
-            consumerModel.getServiceMetadata().addAttribute("currentClusterInvoker", invokerMap);
+            consumerModel.getServiceMetadata().addAttribute(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY, invokerMap);
         }
     }
 
@@ -319,13 +320,13 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             serviceDiscoveryInvoker.destroy();
         }
         if (consumerModel != null) {
-            Object object = consumerModel.getServiceMetadata().getAttribute("currentClusterInvoker");
+            Object object = consumerModel.getServiceMetadata().getAttribute(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
             Map<Registry, MigrationInvoker<?>> invokerMap;
             if (object instanceof Map) {
                 invokerMap = (Map<Registry, MigrationInvoker<?>>) object;
                 invokerMap.remove(registry);
                 if (invokerMap.isEmpty()) {
-                    consumerModel.getServiceMetadata().getAttributeMap().remove("currentClusterInvoker");
+                    consumerModel.getServiceMetadata().getAttributeMap().remove(CommonConstants.CURRENT_CLUSTER_INVOKER_KEY);
                 }
             }
         }

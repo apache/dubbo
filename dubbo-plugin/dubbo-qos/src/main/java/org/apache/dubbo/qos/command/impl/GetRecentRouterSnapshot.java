@@ -16,21 +16,28 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
-@Cmd(name = "enableDetailProfiler", summary = "Enable Dubbo Invocation Profiler.")
-public class EnableDetailProfiler implements BaseCommand {
-    private final static Logger logger = LoggerFactory.getLogger(EnableDetailProfiler.class);
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+@Cmd(name = "getRecentRouterSnapshot",
+    summary = "Get recent (32) router snapshot message")
+public class GetRecentRouterSnapshot implements BaseCommand {
+
+    private final RouterSnapshotSwitcher routerSnapshotSwitcher;
+
+    public GetRecentRouterSnapshot(FrameworkModel frameworkModel) {
+        this.routerSnapshotSwitcher = frameworkModel.getBeanFactory().getBean(RouterSnapshotSwitcher.class);
+    }
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        ProfilerSwitch.enableDetailProfiler();
-        logger.warn("Dubbo Invocation Profiler has been enabled.");
-        return "OK. This will cause performance degradation, please be careful!";
+        return Arrays.stream(routerSnapshotSwitcher.cloneSnapshot()).filter(Objects::nonNull).sorted().collect(Collectors.joining("\n\n"));
     }
 }

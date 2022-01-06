@@ -29,11 +29,13 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.router.RouterResult;
 import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotSwitcher;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.state.TailStateRouter;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,6 +76,8 @@ public class RouterChain<T> {
      */
     private final boolean shouldFailFast;
 
+    private final RouterSnapshotSwitcher routerSnapshotSwitcher;
+
     public static <T> RouterChain<T> buildChain(Class<T> interfaceClass, URL url) {
         ModuleModel moduleModel = url.getOrDefaultModuleModel();
 
@@ -95,15 +99,18 @@ public class RouterChain<T> {
 
         boolean shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
 
-        return new RouterChain<>(routers, stateRouters, shouldFailFast);
+        RouterSnapshotSwitcher routerSnapshotSwitcher = ScopeModelUtil.getFrameworkModel(moduleModel).getBeanFactory().getBean(RouterSnapshotSwitcher.class);
+
+        return new RouterChain<>(routers, stateRouters, shouldFailFast, routerSnapshotSwitcher);
     }
 
-    public RouterChain(List<Router> routers, List<StateRouter<T>> stateRouters, boolean shouldFailFast) {
+    public RouterChain(List<Router> routers, List<StateRouter<T>> stateRouters, boolean shouldFailFast, RouterSnapshotSwitcher routerSnapshotSwitcher) {
         initWithRouters(routers);
 
         initWithStateRouters(stateRouters);
 
         this.shouldFailFast = shouldFailFast;
+        this.routerSnapshotSwitcher = routerSnapshotSwitcher;
     }
 
     private void initWithStateRouters(List<StateRouter<T>> stateRouters) {
@@ -282,17 +289,25 @@ public class RouterChain<T> {
         if (snapshotNode.getChainOutputInvokers() == null ||
             snapshotNode.getChainOutputInvokers().isEmpty()) {
             if (logger.isWarnEnabled()) {
-                logger.warn("No provider available after route for the service " + url.getServiceKey()
+                String message = "No provider available after route for the service " + url.getServiceKey()
                     + " from registry " + url.getAddress()
                     + " on the consumer " + NetUtils.getLocalHost()
-                    + " using the dubbo version " + Version.getVersion() + ". Router snapshot is below: \n" + snapshotNode.toString());
+                    + " using the dubbo version " + Version.getVersion() + ". Router snapshot is below: \n" + snapshotNode.toString();
+                if (routerSnapshotSwitcher.isEnable()) {
+                    routerSnapshotSwitcher.setSnapshot(message);
+                }
+                logger.warn(message);
             }
         } else {
             if (logger.isInfoEnabled()) {
-                logger.info("Router snapshot service " + url.getServiceKey()
+                String message = "Router snapshot service " + url.getServiceKey()
                     + " from registry " + url.getAddress()
                     + " on the consumer " + NetUtils.getLocalHost()
-                    + " using the dubbo version " + Version.getVersion() + " is below: \n" + snapshotNode.toString());
+                    + " using the dubbo version " + Version.getVersion() + " is below: \n" + snapshotNode.toString();
+                if (routerSnapshotSwitcher.isEnable()) {
+                    routerSnapshotSwitcher.setSnapshot(message);
+                }
+                logger.info(message);
             }
         }
     }

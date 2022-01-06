@@ -63,7 +63,7 @@ public class MetadataUtils {
         return metadataServiceProxies.computeIfAbsent(computeKey(instance), k -> referProxy(k, instance));
     }
 
-    public static void publishServiceDefinition(ServiceDescriptor serviceDescriptor, ApplicationModel applicationModel) {
+    public static void publishServiceDefinition(ServiceDescriptor serviceDescriptor, String version, String group, ApplicationModel applicationModel) {
         if (getMetadataReports(applicationModel).size() == 0) {
             String msg = "Remote Metadata Report Server not hasn't been configured or unavailable . Unable to get Metadata from remote!";
             logger.warn(msg);
@@ -77,7 +77,7 @@ public class MetadataUtils {
                 for (Map.Entry<String, MetadataReport> entry : getMetadataReports(applicationModel).entrySet()) {
                     MetadataReport metadataReport = entry.getValue();
                     metadataReport.storeProviderMetadata(new MetadataIdentifier(serviceName,
-                        "", "",
+                        version, group,
                         PROVIDER_SIDE, applicationModel.getApplicationName()), serviceDefinition);
                 }
                 return;
