@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
@@ -43,6 +44,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
@@ -63,29 +65,51 @@ public class MetadataUtils {
         return metadataServiceProxies.computeIfAbsent(computeKey(instance), k -> referProxy(k, instance));
     }
 
-    public static void publishServiceDefinition(ServiceDescriptor serviceDescriptor, String version, String group, ApplicationModel applicationModel) {
+    public static void publishServiceDefinition(String serviceName, URL url, ModuleModel scopeModel, ApplicationModel applicationModel) {
         if (getMetadataReports(applicationModel).size() == 0) {
             String msg = "Remote Metadata Report Server not hasn't been configured or unavailable . Unable to get Metadata from remote!";
             logger.warn(msg);
         }
 
-        String serviceName = serviceDescriptor.getServiceName();
-        FullServiceDefinition serviceDefinition = serviceDescriptor.getServiceDefinition(serviceName);
-
         try {
-            if (StringUtils.isNotEmpty(serviceName)) {
+            String side = url.getSide();
+            if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
+                ServiceDescriptor serviceDescriptor = scopeModel.getServiceRepository().getService(serviceName);
+                if (serviceDescriptor == null) {
+                    return;
+                }
+                FullServiceDefinition serviceDefinition = serviceDescriptor.getServiceDefinition(serviceName);
+
+                if (StringUtils.isNotEmpty(serviceName) && serviceDefinition != null) {
+                    serviceDefinition.setParameters(url.getParameters());
+                    for (Map.Entry<String, MetadataReport> entry : getMetadataReports(applicationModel).entrySet()) {
+                        MetadataReport metadataReport = entry.getValue();
+                        metadataReport.storeProviderMetadata(
+                            new MetadataIdentifier(
+                                serviceName,
+                                url.getVersion() == null ? "" : url.getVersion(),
+                                url.getGroup() == null ? "" : url.getGroup(),
+                                PROVIDER_SIDE,
+                                applicationModel.getApplicationName())
+                            , serviceDefinition);
+                    }
+                }
+            } else {
                 for (Map.Entry<String, MetadataReport> entry : getMetadataReports(applicationModel).entrySet()) {
                     MetadataReport metadataReport = entry.getValue();
-                    metadataReport.storeProviderMetadata(new MetadataIdentifier(serviceName,
-                        version, group,
-                        PROVIDER_SIDE, applicationModel.getApplicationName()), serviceDefinition);
+                    metadataReport.storeConsumerMetadata(
+                        new MetadataIdentifier(
+                            serviceName,
+                            url.getVersion() == null ? "" : url.getVersion(),
+                            url.getGroup() == null ? "" : url.getGroup(),
+                            CONSUMER_SIDE,
+                            applicationModel.getApplicationName()),
+                        url.getParameters());
                 }
-                return;
             }
-            logger.error("publishProvider interfaceName is empty.");
         } catch (Exception e) {
             //ignore error
-            logger.error("publishProvider getServiceDescriptor error.", e);
+            logger.error("publish service definition metadata error.", e);
         }
     }
 

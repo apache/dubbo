@@ -33,6 +33,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -402,6 +403,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             referenceParameters.get(INTERFACE_KEY), referenceParameters);
         consumerUrl = consumerUrl.setScopeModel(getScopeModel());
         consumerUrl = consumerUrl.setServiceModel(consumerModel);
+        MetadataUtils.publishServiceDefinition(interfaceName, consumerUrl, getScopeModel(), getApplicationModel());
 
         // create service proxy
         return (T) proxyFactory.getProxy(invoker, ProtocolUtils.isGeneric(generic));
