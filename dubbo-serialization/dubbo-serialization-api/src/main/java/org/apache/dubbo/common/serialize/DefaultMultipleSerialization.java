@@ -18,7 +18,6 @@
 package org.apache.dubbo.common.serialize;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
