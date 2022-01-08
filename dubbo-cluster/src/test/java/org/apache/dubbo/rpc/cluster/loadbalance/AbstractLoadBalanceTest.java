@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterInvoker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -78,5 +79,18 @@ public class AbstractLoadBalanceTest {
 
         Assertions.assertEquals(100, balance.getWeight(invoker1, invocation));
         Assertions.assertEquals(20, balance.getWeight(invoker2, invocation));
+    }
+
+    @Test
+    public void testGetMultiRegistryWeight() {
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("say");
+
+        MigrationClusterInvoker invoker = mock(MigrationClusterInvoker.class, Mockito.withSettings().stubOnly());
+        URL url = new URL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
+        url = url.addParameter(WEIGHT_KEY, 20);
+        given(invoker.getRegistryUrl()).willReturn(url);
+
+        Assertions.assertEquals(20, balance.getWeight(invoker, invocation));
     }
 }
