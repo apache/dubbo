@@ -508,6 +508,10 @@ class URL implements Serializable {
         return urlParam.getParameters();
     }
 
+    public Map<String, String> getAllParameters() {
+        return urlParam.getParameters();
+    }
+
     /**
      * Get the parameters to be selected(filtered)
      *
