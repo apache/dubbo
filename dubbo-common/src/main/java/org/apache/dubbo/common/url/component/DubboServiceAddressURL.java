@@ -21,6 +21,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ServiceModel;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -88,6 +90,23 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
             value = super.getAnyMethodParameter(key);
         }
         return value;
+    }
+
+    /**
+     * The returned parameters is imprecise regarding override priorities of consumer url and provider url.
+     * This method is only used to pass the configuration in the 'client'.
+     */
+    @Override
+    public Map<String, String> getAllParameters() {
+        Map<String, String> allParameters = new HashMap<>((int)(super.getParameters().size()/.75 + 1));
+        allParameters.putAll(super.getParameters());
+        if (consumerURL != null) {
+            allParameters.putAll(consumerURL.getParameters());
+        }
+        if (overrideURL != null) {
+            allParameters.putAll(overrideURL.getParameters());
+        }
+        return Collections.unmodifiableMap(allParameters);
     }
 
     public ServiceConfigURL getOverrideURL() {
