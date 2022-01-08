@@ -627,9 +627,6 @@ public class DubboProtocol extends AbstractProtocol {
          * which means params are shared among different services. Since client is shared among services this is currently not a problem.
          */
         String str = url.getParameter(CLIENT_KEY, url.getParameter(SERVER_KEY, DEFAULT_REMOTING_CLIENT));
-        url = url.addParameter(CODEC_KEY, DubboCodec.NAME);
-        // enable heartbeat by default
-        url = url.addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT));
 
         // BIO is not allowed since it has severe performance issue.
         if (StringUtils.isNotEmpty(str) && !url.getOrDefaultFrameworkModel().getExtensionLoader(Transporter.class).hasExtension(str)) {
@@ -641,6 +638,9 @@ public class DubboProtocol extends AbstractProtocol {
         try {
             // Replace InstanceAddressURL with ServiceConfigURL.
             url = new ServiceConfigURL(DubboCodec.NAME, url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(),  url.getAllParameters());
+            url = url.addParameter(CODEC_KEY, DubboCodec.NAME);
+            // enable heartbeat by default
+            url = url.addParameterIfAbsent(HEARTBEAT_KEY, String.valueOf(DEFAULT_HEARTBEAT));
 
             // connection should be lazy
             if (url.getParameter(LAZY_CONNECT_KEY, false)) {
