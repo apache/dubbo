@@ -509,7 +509,7 @@ class URL implements Serializable {
     }
 
     public Map<String, String> getAllParameters() {
-        return urlParam.getParameters();
+        return this.getParameters();
     }
 
     /**
