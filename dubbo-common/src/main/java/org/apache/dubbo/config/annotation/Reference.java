@@ -280,4 +280,10 @@ public @interface Reference {
      * @since 2.7.3
      */
     String id() default "";
+
+    /**
+     * specify serialization from consumer side
+     * @see org.apache.dubbo.remoting.Constants#SERIALIZATION_KEY
+     */
+    String serialization() default "";
 }
