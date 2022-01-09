@@ -81,4 +81,17 @@ public class AbstractLoadBalanceTest {
         Assertions.assertEquals(100, balance.getWeight(invoker1, invocation));
         Assertions.assertEquals(20, balance.getWeight(invoker2, invocation));
     }
+
+    @Test
+    public void testGetMultiRegistryWeight() {
+        RpcInvocation invocation = new RpcInvocation();
+        invocation.setMethodName("say");
+
+        ClusterInvoker invoker = mock(ClusterInvoker.class, Mockito.withSettings().stubOnly());
+        URL url = new URL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
+        url = url.addParameter(WEIGHT_KEY, 20);
+        given(invoker.getRegistryUrl()).willReturn(url);
+
+        Assertions.assertEquals(20, balance.getWeight(invoker, invocation));
+    }
 }
