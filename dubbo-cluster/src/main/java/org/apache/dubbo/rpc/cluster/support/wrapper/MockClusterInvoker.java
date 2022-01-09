@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
@@ -90,7 +91,7 @@ public class MockClusterInvoker<T> implements ClusterInvoker<T> {
         Result result;
 
         String value = getUrl().getMethodParameter(invocation.getMethodName(), MOCK_KEY, Boolean.FALSE.toString()).trim();
-        if (value.length() == 0 || "false".equalsIgnoreCase(value)) {
+        if (ConfigUtils.isEmpty(value)) {
             //no mock
             result = this.invoker.invoke(invocation);
         } else if (value.startsWith(FORCE_KEY)) {
