@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -72,10 +73,10 @@ public class AbstractLoadBalanceTest {
         url1 = url1.addParameter(REGISTRY_KEY + "." + WEIGHT_KEY, 10);
         given(invoker1.getUrl()).willReturn(url1);
 
-        Invoker invoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        ClusterInvoker invoker2 = mock(ClusterInvoker.class, Mockito.withSettings().stubOnly());
         URL url2 = new ServiceConfigURL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
-        url2 = url2.addParameter(REGISTRY_KEY + "." + WEIGHT_KEY, 20);
-        given(invoker2.getUrl()).willReturn(url2);
+        url2 = url2.addParameter(WEIGHT_KEY, 20);
+        given(invoker2.getRegistryUrl()).willReturn(url2);
 
         Assertions.assertEquals(100, balance.getWeight(invoker1, invocation));
         Assertions.assertEquals(20, balance.getWeight(invoker2, invocation));

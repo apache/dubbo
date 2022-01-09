@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.cluster.LoadBalance;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_SERVICE_REFERENCE_PATH;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WARMUP;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_WEIGHT;
@@ -81,7 +80,7 @@ public abstract class AbstractLoadBalance implements LoadBalance {
         }
         // Multiple registry scenario, load balance among multiple registries.
         if (REGISTRY_SERVICE_REFERENCE_PATH.equals(url.getServiceInterface())) {
-            weight = url.getParameter(REGISTRY_KEY + "." + WEIGHT_KEY, DEFAULT_WEIGHT);
+            weight = url.getParameter(WEIGHT_KEY, DEFAULT_WEIGHT);
         } else {
             weight = url.getMethodParameter(invocation.getMethodName(), WEIGHT_KEY, DEFAULT_WEIGHT);
             if (weight > 0) {
