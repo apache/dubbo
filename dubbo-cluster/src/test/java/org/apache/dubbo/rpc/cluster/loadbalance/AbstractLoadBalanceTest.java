@@ -73,12 +73,12 @@ public class AbstractLoadBalanceTest {
         url1 = url1.addParameter(WEIGHT_KEY, 10);
         given(invoker1.getUrl()).willReturn(url1);
 
-        Invoker invoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
+        MigrationClusterInvoker invoker2 = mock(MigrationClusterInvoker.class, Mockito.withSettings().stubOnly());
         URL url2 = new ServiceConfigURL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
         url2 = url2.addParameter(WEIGHT_KEY, 20);
-        given(invoker2.getUrl()).willReturn(url2);
+        given(invoker2.getRegistryUrl()).willReturn(url2);
 
-        Assertions.assertEquals(100, balance.getWeight(invoker1, invocation));
+        Assertions.assertEquals(10, balance.getWeight(invoker1, invocation));
         Assertions.assertEquals(20, balance.getWeight(invoker2, invocation));
     }
 
