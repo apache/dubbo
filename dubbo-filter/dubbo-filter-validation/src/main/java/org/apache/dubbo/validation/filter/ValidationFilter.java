@@ -27,8 +27,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.validation.Validation;
 import org.apache.dubbo.validation.Validator;
 
-import javax.validation.ValidationException;
-
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
@@ -90,10 +88,11 @@ public class ValidationFilter implements Filter {
                     validator.validate(invocation.getMethodName(), invocation.getParameterTypes(), invocation.getArguments());
                 }
             } catch (RpcException e) {
+                if(e.isValidation()){
+
+                    return AsyncRpcResult.newDefaultAsyncResult(e, invocation);
+                }
                 throw e;
-            } catch (ValidationException e) {
-                // only use exception's message to avoid potential serialization issue
-                return AsyncRpcResult.newDefaultAsyncResult(new ValidationException(e.getMessage()), invocation);
             } catch (Throwable t) {
                 return AsyncRpcResult.newDefaultAsyncResult(t, invocation);
             }

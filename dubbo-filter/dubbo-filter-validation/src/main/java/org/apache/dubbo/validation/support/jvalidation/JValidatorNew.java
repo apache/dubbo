@@ -25,6 +25,13 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.validation.MethodValidated;
 import org.apache.dubbo.validation.Validator;
 
+import jakarta.validation.Constraint;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidationException;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.groups.Default;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
@@ -48,13 +55,6 @@ import javassist.bytecode.annotation.MemberValue;
 import javassist.bytecode.annotation.ShortMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
 
-import javax.validation.Constraint;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.ValidationException;
-import javax.validation.ValidatorFactory;
-import javax.validation.groups.Default;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -69,25 +69,25 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Implementation of JValidation. JValidation is invoked if configuration validation attribute value is 'jvalidation'.
+ * Implementation of JValidationNew. JValidationNew is invoked if configuration validation attribute value is 'jvalidationNew'.
  * <pre>
- *     e.g. &lt;dubbo:method name="save" validation="jvalidation" /&gt;
+ *     e.g. &lt;dubbo:method name="save" validation="jvalidationNew" /&gt;
  * </pre>
  */
-public class JValidator implements Validator {
+public class JValidatorNew implements Validator {
 
-    private static final Logger logger = LoggerFactory.getLogger(JValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(JValidatorNew.class);
 
     private final Class<?> clazz;
 
     private final Map<String, Class> methodClassMap;
 
-    private final javax.validation.Validator validator;
+    private final jakarta.validation.Validator validator;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public JValidator(URL url) {
+    public JValidatorNew(URL url) {
         this.clazz = ReflectUtils.forName(url.getServiceInterface());
-        String jvalidation = url.getParameter("jvalidation");
+        String jvalidation = url.getParameter("jvalidationNew");
         ValidatorFactory factory;
         if (jvalidation != null && jvalidation.length() > 0) {
             factory = Validation.byProvider((Class) ReflectUtils.forName(jvalidation)).configure().buildValidatorFactory();
