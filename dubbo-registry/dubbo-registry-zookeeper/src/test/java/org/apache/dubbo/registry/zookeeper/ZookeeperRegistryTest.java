@@ -29,6 +29,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class ZookeeperRegistryTest {
     private static String zookeeperConnectionAddress1;
     private ZookeeperRegistry zookeeperRegistry;
