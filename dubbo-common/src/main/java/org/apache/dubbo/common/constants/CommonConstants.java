@@ -524,4 +524,7 @@ public interface CommonConstants {
 
     String INJVM_IGNORE_SAME_MODULE_KEY = "injvm.ignore.same-module";
 
+    String SET_FUTURE_IN_SYNC_MODE = "future.sync.set";
+
+    String CLEAR_FUTURE_AFTER_GET = "future.clear.once";
 }
