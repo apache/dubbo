@@ -759,6 +759,16 @@
 
     <profiles>
         <profile>
+            <id>curator5</id>
+            <activation>
+                <jdk>[1.17,)</jdk>
+            </activation>
+            <properties>
+                <zookeeper_version>3.7.0</zookeeper_version>
+                <curator_version>5.1.0</curator_version>
+            </properties>
+        </profile>
+        <profile>
             <id>release</id>
             <build>
                 <plugins>

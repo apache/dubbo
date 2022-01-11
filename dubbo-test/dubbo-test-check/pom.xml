@@ -32,9 +32,9 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <skip_maven_deploy>true</skip_maven_deploy>
-        <curator.test.version>5.1.0</curator.test.version>
-        <zookeeper.version>3.6.0</zookeeper.version>
-        <curator5.version>5.1.0</curator5.version>
+        <curator.test.version>4.2.0</curator.test.version>
+        <zookeeper.version>3.4.13</zookeeper.version>
+        <curator5.version>4.2.0</curator5.version>
         <commons.compress.version>1.20</commons.compress.version>
         <junit.platform.launcher.version>1.6.2</junit.platform.launcher.version>
         <commons.exec.version>1.3</commons.exec.version>
@@ -84,4 +84,18 @@
             <version>${async.http.client.version}</version>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>curator5</id>
+            <activation>
+                <jdk>[1.17,)</jdk>
+            </activation>
+            <properties>
+                <curator.test.version>5.1.0</curator.test.version>
+                <zookeeper.version>3.6.0</zookeeper.version>
+                <curator5.version>5.1.0</curator5.version>
+            </properties>
+        </profile>
+    </profiles>
 </project>
