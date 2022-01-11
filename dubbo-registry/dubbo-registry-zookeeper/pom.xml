@@ -45,21 +45,4 @@
             <artifactId>curator-x-discovery</artifactId>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>curator5-dependency</id>
-            <activation>
-                <jdk>[1.17,)</jdk>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.apache.dubbo</groupId>
-                    <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
-                    <version>${project.parent.version}</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>
