@@ -1,2 +1,2 @@
 curator=org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter
-curator5=org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperTransporter
+curator5=org.apache.dubbo.remoting.zookeeper.curator.Curator5ZookeeperTransporter
