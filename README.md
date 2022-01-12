@@ -12,7 +12,7 @@
 
 Apache Dubbo is a high-performance, Java-based open-source RPC framework. Please visit the [official site](http://dubbo.apache.org) for the quick start guide and documentation, as well as the [wiki](https://github.com/apache/dubbo/wiki) for news, FAQ, and release notes.
 
-We are now collecting Dubbo user info to help us to improve Dubbo further. Kindly support us by providing your usage information on [issue#1012: Wanted: who's using dubbo](https://github.com/apache/dubbo/issues/1012), thanks :)
+We are now collecting Dubbo user info to help us to improve Dubbo further. Kindly support us by providing your usage information on [issue#9436: Wanted: who's using dubbo](https://github.com/apache/dubbo/issues/9436), thanks :)
 
 ## Architecture
 
