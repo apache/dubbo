@@ -398,7 +398,12 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     }
 
     protected void setInvokers(BitList<Invoker<T>> invokers) {
-        this.invokers = invokers;
+        if (this.invokers == null) {
+            this.invokers = invokers;            
+        } else {
+            this.invokers.addAll(invokers);
+        }
+
         refreshInvokerInternal();
         this.invokersInitialized = true;
     }
