@@ -107,9 +107,6 @@ public class RpcContext {
         CANCELLATION_CONTEXT.set(oldContext);
     }
 
-
-    private boolean remove = true;
-
     protected RpcContext() {
     }
 
@@ -174,47 +171,19 @@ public class RpcContext {
     }
 
     public static void removeClientAttachment() {
-        if (CLIENT_ATTACHMENT.get().canRemove()) {
-            CLIENT_ATTACHMENT.remove();
-        }
+        CLIENT_ATTACHMENT.remove();
     }
 
     public static void removeServerAttachment() {
-        if (SERVER_ATTACHMENT.get().canRemove()) {
-            SERVER_ATTACHMENT.remove();
-        }
-    }
-
-
-    public boolean canRemove() {
-        return remove;
-    }
-
-    public void clearAfterEachInvoke(boolean remove) {
-        this.remove = remove;
-    }
-
-    /**
-     * remove context.
-     *
-     * @see org.apache.dubbo.rpc.filter.ContextFilter
-     */
-    public static void removeContext() {
-        removeContext(false);
+        SERVER_ATTACHMENT.remove();
     }
 
     /**
      * customized for internal use.
-     *
-     * @param checkCanRemove if need check before remove
      */
-    public static void removeContext(boolean checkCanRemove) {
-        if (CLIENT_ATTACHMENT.get().canRemove()) {
-            CLIENT_ATTACHMENT.remove();
-        }
-        if (SERVER_ATTACHMENT.get().canRemove()) {
-            SERVER_ATTACHMENT.remove();
-        }
+    public static void removeContext() {
+        CLIENT_ATTACHMENT.remove();
+        SERVER_ATTACHMENT.remove();
         SERVER_LOCAL.remove();
         SERVICE_CONTEXT.remove();
         CANCELLATION_CONTEXT.remove();
@@ -748,23 +717,23 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public static AsyncContext startAsync() throws IllegalStateException {
-        return RpcServiceContext.startAsync();
+        return RpcContextAttachment.startAsync();
     }
 
     protected void setAsyncContext(AsyncContext asyncContext) {
-        SERVICE_CONTEXT.get().setAsyncContext(asyncContext);
+        SERVER_ATTACHMENT.get().setAsyncContext(asyncContext);
     }
 
     public boolean isAsyncStarted() {
-        return SERVICE_CONTEXT.get().isAsyncStarted();
+        return SERVER_ATTACHMENT.get().isAsyncStarted();
     }
 
     public boolean stopAsync() {
-        return SERVICE_CONTEXT.get().stopAsync();
+        return SERVER_ATTACHMENT.get().stopAsync();
     }
 
     public AsyncContext getAsyncContext() {
-        return SERVICE_CONTEXT.get().getAsyncContext();
+        return SERVER_ATTACHMENT.get().getAsyncContext();
     }
 
     public String getGroup() {
