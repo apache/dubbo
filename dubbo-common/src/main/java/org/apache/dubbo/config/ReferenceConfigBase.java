@@ -239,6 +239,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
+        this.interfaceClass = interfaceClass;
         if (getInterfaceClassLoader() == null) {
             setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
         }
