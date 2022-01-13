@@ -49,6 +49,8 @@ public class FileCacheStoreTest {
 
         Map<String, String> propertiesLimitTo10 = cacheStore.loadCache(10);
         assertEquals(4, propertiesLimitTo10.size());
+
+        cacheStore.destroy();
     }
 
     private String getDirectoryOfClassPath() throws URISyntaxException {

@@ -264,7 +264,7 @@ public class AbstractRegistryTest {
         // check if unsubscribe successfully
         abstractRegistry.subscribe(testUrl, listener);
         abstractRegistry.unsubscribe(testUrl, listener);
-        // Since we have subscribe testUrl, here should return a empty set instead of null
+        // Since we have subscribed testUrl, here should return a empty set instead of null
         Assertions.assertNotNull(abstractRegistry.getSubscribed().get(testUrl));
         Assertions.assertFalse(abstractRegistry.getSubscribed().get(testUrl).contains(listener));
     }

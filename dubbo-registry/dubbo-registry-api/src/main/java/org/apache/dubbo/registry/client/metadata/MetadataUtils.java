@@ -165,7 +165,7 @@ public class MetadataUtils {
 
     public static MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance, MetadataReport metadataReport) {
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
-        MetadataInfo metadataInfo = null;
+        MetadataInfo metadataInfo;
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);

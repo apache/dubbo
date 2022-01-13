@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 public class MetaCacheManager implements ScopeModelAware, Disposable {
     private static final Logger logger = LoggerFactory.getLogger(MetaCacheManager.class);
     private static final String DEFAULT_FILE_NAME = ".metadata";
+    private static final String DEFAULT_COMMENT = "Metadata cache";
     private static final int DEFAULT_ENTRY_SIZE = 1000;
 
     private static final long INTERVAL = 60L;
@@ -79,8 +80,8 @@ public class MetaCacheManager implements ScopeModelAware, Disposable {
             Map<String, String> properties = cacheStore.loadCache(entrySize);
             logger.info("Successfully loaded meta cache from file " + fileName + ", entries " + properties.size());
             for (Map.Entry<String, String> entry : properties.entrySet()) {
-                String key = (String) entry.getKey();
-                String value = (String) entry.getValue();
+                String key = entry.getKey();
+                String value = entry.getValue();
 
                 MetadataInfo metadataInfo = JsonUtils.getGson().fromJson(value, MetadataInfo.class);
                 cache.put(key, metadataInfo);
@@ -156,7 +157,7 @@ public class MetaCacheManager implements ScopeModelAware, Disposable {
             }
 
             logger.info("Dumping meta caches, latest entries " + properties.size());
-            cacheStore.refreshCache(properties, "Metadata cache");
+            cacheStore.refreshCache(properties, DEFAULT_COMMENT);
         }
     }
 }

@@ -44,7 +44,7 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
             return;
         }
 
-        MetadataInfo metadataInfo = ((DefaultServiceInstance)serviceInstance).getServiceMetadata();
+        MetadataInfo metadataInfo = serviceInstance.getServiceMetadata();
         if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getExportedServiceURLs())) {
             return;
         }

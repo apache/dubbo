@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.client.metadata;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -52,7 +51,7 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
 
     @Override
     public void customize(ServiceInstance serviceInstance, ApplicationModel applicationModel) {
-        MetadataInfo metadataInfo = ((DefaultServiceInstance)serviceInstance).getServiceMetadata();
+        MetadataInfo metadataInfo = serviceInstance.getServiceMetadata();
         if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getServices())) {
             return;
         }

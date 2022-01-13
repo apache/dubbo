@@ -29,7 +29,6 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.SubscribedURLsSynthesizer;
 import org.apache.dubbo.registry.support.FailbackRegistry;
-import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
@@ -79,13 +78,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     /* apps - listener */
     private final Map<String, ServiceInstancesChangedListener> serviceListeners = new ConcurrentHashMap<>();
 
-    private RegistryManager registryManager;
-
     public ServiceDiscoveryRegistry(URL registryURL, ApplicationModel applicationModel) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
-        this.registryManager = applicationModel.getBeanFactory().getBean(RegistryManager.class);
         super.applicationModel = applicationModel;
     }
 
@@ -179,7 +175,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     public void doUnregister(URL url) {
         // fixme, add registry-cluster is not necessary anymore
         url = addRegistryClusterKey(url);
-       serviceDiscovery.unregister(url);
+        serviceDiscovery.unregister(url);
     }
 
     @Override
@@ -200,7 +196,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         Set<String> subscribedServices = Collections.emptySet();
         try {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension(this.getUrl().getScopeModel());
             subscribedServices = serviceNameMapping.getAndListen(this.getUrl(), url, new DefaultMappingListener(url, subscribedServices, listener));
         } catch (Exception e) {
             logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
