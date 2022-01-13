@@ -320,7 +320,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     }
 
     protected Long parseTimeoutToNanos(String timeoutVal) {
-        if (StringUtils.isEmpty(timeoutVal)) {
+        if (StringUtils.isEmpty(timeoutVal) || StringUtils.isContains(timeoutVal, "null")) {
             return null;
         }
         long value = Long.parseLong(timeoutVal.substring(0, timeoutVal.length() - 1));
