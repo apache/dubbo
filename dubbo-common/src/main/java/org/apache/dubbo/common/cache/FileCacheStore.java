@@ -51,7 +51,6 @@ public class FileCacheStore {
     private static final Set<Character> ILLEGALS = new HashSet<Character>();
     private static final String SUFFIX = ".dubbo.cache";
 
-    private String fileName;
     private File basePath;
     private File cacheFile;
     private FileLock directoryLock;
@@ -62,7 +61,6 @@ public class FileCacheStore {
             basePath = System.getProperty("user.home") + "/.dubbo/";
         }
         this.basePath = new File(basePath);
-        this.fileName = fileName;
 
         this.cacheFile = getFile(fileName, SUFFIX);
         if (cacheFile != null && !cacheFile.exists()) {
@@ -77,7 +75,7 @@ public class FileCacheStore {
             String line = reader.readLine();
             while (line != null && count <= entrySize) {
                 // content has '=' need to be encoded before write
-                if (!line.equals("") && !line.startsWith("#") && line.contains("=")) {
+                if (!line.startsWith("#") && line.contains("=")) {
                     String[] pairs = line.split("=");
                     properties.put(pairs[0], pairs[1]);
                     count++;
@@ -117,13 +115,25 @@ public class FileCacheStore {
                 throw new RuntimeException("Cache store path can't be created: " + candidate);
             }
 
-            try {
-                tryFileLock(name);
-            } catch (PathNotExclusiveException e) {
-                logger.warn("Path '" + basePath
-                    + "' is already used by an existing Dubbo process.\n"
-                    + "Please specify another one explicitly.");
-                throw e;
+            boolean autoCreated = false;
+            int index = 1;
+            while (true) {
+                try {
+                    tryFileLock(name);
+                    break;
+                } catch (PathNotExclusiveException e) {
+                    autoCreated = true;
+                    index++;
+                    name += index;
+                    if (index > 3) {
+                        logger.warn("Path '" + basePath + "/" + name
+                            + "' has already used by an existing Dubbo process.\n Please specify another one explicitly.");
+                        throw e;
+                    }
+                }
+            }
+            if (autoCreated && index < 3) {
+                logger.warn("Auto-generated cache file name is " + basePath + "/" + name);
             }
         }
 

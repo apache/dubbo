@@ -145,8 +145,10 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
         synchronized (mappingListeners) {
             MappingListener listener = mappingListeners.remove(subscribeURL.getProtocolServiceKey());
             //todo, remove listener from remote metadata center
-            listener.stop();
-            removeListener(subscribeURL, listener);
+            if (listener != null) {
+                listener.stop();
+                removeListener(subscribeURL, listener);
+            }
             if (mappingListeners.size() == 0) {
                 removeCachedMapping(ServiceNameMapping.buildMappingKey(subscribeURL));
             }

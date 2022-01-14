@@ -43,6 +43,7 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_TIMEOUT_VALUE;
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PROXY_TIMEOUT_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
+import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 
 /**
  * Standard Dubbo provider enabling introspection service discovery mode.
@@ -100,7 +101,8 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .setProtocol(protocol)
                 .setPath(MetadataService.class.getName())
                 .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
-                .addParameter(SIDE_KEY, CONSUMER);
+                .addParameter(SIDE_KEY, CONSUMER)
+                .addParameter(CONNECTIONS_KEY, 1);
 
         // add parameters
         params.forEach(urlBuilder::addParameter);
