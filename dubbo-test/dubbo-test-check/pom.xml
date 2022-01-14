@@ -89,7 +89,7 @@
         <profile>
             <id>curator5</id>
             <activation>
-                <jdk>1.17</jdk>
+                <jdk>[17,</jdk>
             </activation>
             <properties>
                 <curator.test.version>5.1.0</curator.test.version>
