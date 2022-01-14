@@ -761,7 +761,7 @@
         <profile>
             <id>curator5</id>
             <activation>
-                <jdk>1.17</jdk>
+                <jdk>[17,)</jdk>
             </activation>
             <properties>
                 <zookeeper_version>3.7.0</zookeeper_version>

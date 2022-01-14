@@ -22,11 +22,14 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class Curator5ZookeeperTransporterTest {
     private ZookeeperClient zookeeperClient;
     private Curator5ZookeeperTransporter curatorZookeeperTransporter;
