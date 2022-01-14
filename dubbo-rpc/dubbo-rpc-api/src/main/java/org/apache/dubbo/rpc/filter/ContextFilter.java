@@ -126,8 +126,6 @@ public class ContextFilter implements Filter, Filter.Listener {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
 
-        context.clearAfterEachInvoke(false);
-
         return invoker.invoke(invocation);
     }
 
@@ -144,8 +142,6 @@ public class ContextFilter implements Filter, Filter.Listener {
     }
 
     private void removeContext() {
-        RpcContext.getServerAttachment().clearAfterEachInvoke(true); // TODO, not necessary anymore
-
         RpcContext.removeServerAttachment();
         RpcContext.removeClientAttachment();
         RpcContext.removeServiceContext();

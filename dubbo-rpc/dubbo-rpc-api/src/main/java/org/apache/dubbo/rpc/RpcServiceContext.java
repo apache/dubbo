@@ -71,7 +71,6 @@ public class RpcServiceContext extends RpcContext {
     // we want these objects to be as generic as possible
     private Object request;
     private Object response;
-    private AsyncContext asyncContext;
 
     private boolean needPrintRouterSnapshot;
 
@@ -552,43 +551,6 @@ public class RpcServiceContext extends RpcContext {
         }
     }
 
-    /**
-     * @return
-     * @throws IllegalStateException
-     */
-    @SuppressWarnings("unchecked")
-    public static AsyncContext startAsync() throws IllegalStateException {
-        RpcServiceContext currentContext = getServiceContext();
-        if (currentContext.asyncContext == null) {
-            currentContext.asyncContext = new AsyncContextImpl();
-        }
-        currentContext.asyncContext.start();
-        return currentContext.asyncContext;
-    }
-
-    @Override
-    protected void setAsyncContext(AsyncContext asyncContext) {
-        this.asyncContext = asyncContext;
-    }
-
-    @Override
-    public boolean isAsyncStarted() {
-        if (this.asyncContext == null) {
-            return false;
-        }
-        return asyncContext.isAsyncStarted();
-    }
-
-    @Override
-    public boolean stopAsync() {
-        return asyncContext.stop();
-    }
-
-    @Override
-    public AsyncContext getAsyncContext() {
-        return asyncContext;
-    }
-
     @Override
     public String getGroup() {
         if (consumerUrl == null) {
@@ -674,7 +636,6 @@ public class RpcServiceContext extends RpcContext {
             copy.localAddress = this.localAddress;
             copy.remoteAddress = this.remoteAddress;
             copy.invocation = this.invocation;
-            copy.asyncContext = this.asyncContext;
             return copy;
         } else {
             return this;
