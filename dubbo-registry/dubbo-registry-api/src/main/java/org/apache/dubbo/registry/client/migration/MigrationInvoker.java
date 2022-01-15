@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
 public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private Logger logger = LoggerFactory.getLogger(MigrationInvoker.class);
@@ -82,6 +83,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.type = type;
         this.url = url;
         this.consumerUrl = consumerUrl;
+        if (StringUtils.isEmpty(this.consumerUrl.getParameter(WEIGHT_KEY))
+                && !StringUtils.isEmpty(this.url.getParameter(WEIGHT_KEY))) {
+            this.consumerUrl.addParameter(WEIGHT_KEY, this.url.getParameter(WEIGHT_KEY));
+        }
         this.migrationMultiRegistry = url.getParameter(RegistryConstants.MIGRATION_MULTI_REGISTRY, false);
     }
 
@@ -90,6 +95,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     public void setInvoker(ClusterInvoker<T> invoker) {
+        if (StringUtils.isEmpty(invoker.getUrl().getParameter(WEIGHT_KEY))
+                && !StringUtils.isEmpty(this.url.getParameter(WEIGHT_KEY))) {
+            invoker.getUrl().addParameter(WEIGHT_KEY, this.url.getParameter(WEIGHT_KEY));
+        }
         this.invoker = invoker;
     }
 
@@ -98,6 +107,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     public void setServiceDiscoveryInvoker(ClusterInvoker<T> serviceDiscoveryInvoker) {
+        if (StringUtils.isEmpty(serviceDiscoveryInvoker.getUrl().getParameter(WEIGHT_KEY))
+                && !StringUtils.isEmpty(this.url.getParameter(WEIGHT_KEY))) {
+            serviceDiscoveryInvoker.getUrl().addParameter(WEIGHT_KEY, this.url.getParameter(WEIGHT_KEY));
+        }
         this.serviceDiscoveryInvoker = serviceDiscoveryInvoker;
     }
 
@@ -292,8 +305,12 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             if (logger.isDebugEnabled()) {
                 logger.debug("Re-subscribing instance addresses, current interface " + type.getName());
             }
-            serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
-
+            ClusterInvoker<T> tmpServiceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
+            if (StringUtils.isEmpty(tmpServiceDiscoveryInvoker.getUrl().getParameter(WEIGHT_KEY))
+                    && !StringUtils.isEmpty(url.getParameter(WEIGHT_KEY))) {
+                tmpServiceDiscoveryInvoker.getUrl().addParameter(WEIGHT_KEY, url.getParameter(WEIGHT_KEY));
+            }
+            serviceDiscoveryInvoker = tmpServiceDiscoveryInvoker;
             if (migrationMultiRegistry) {
                 setListener(serviceDiscoveryInvoker, () -> {
                     this.setAddressChanged();
@@ -330,7 +347,12 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             if (logger.isDebugEnabled()) {
                 logger.debug("Re-subscribing interface addresses for interface " + type.getName());
             }
-            invoker = registryProtocol.getInvoker(cluster, registry, type, url);
+            ClusterInvoker<T> tmpInvoker = registryProtocol.getInvoker(cluster, registry, type, url);
+            if (StringUtils.isEmpty(tmpInvoker.getUrl().getParameter(WEIGHT_KEY))
+                    && !StringUtils.isEmpty(url.getParameter(WEIGHT_KEY))) {
+                tmpInvoker.getUrl().addParameter(WEIGHT_KEY, url.getParameter(WEIGHT_KEY));
+            }
+            invoker = tmpInvoker;
 
             if (migrationMultiRegistry) {
                 setListener(serviceDiscoveryInvoker, () -> {
