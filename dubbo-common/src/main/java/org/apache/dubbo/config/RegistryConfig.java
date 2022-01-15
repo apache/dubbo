@@ -39,7 +39,6 @@ import static org.apache.dubbo.config.Constants.REGISTRIES_PREFIX;
 public class RegistryConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
-    public static final String PREFER_REGISTRY_KEY = REGISTRY_KEY + "." + PREFERRED_KEY;
     private static final long serialVersionUID = 5508512956753757169L;
 
     /**
@@ -484,7 +483,6 @@ public class RegistryConfig extends AbstractConfig {
         this.accepts = accepts;
     }
 
-    @Parameter(key = PREFER_REGISTRY_KEY)
     public Boolean getPreferred() {
         return preferred;
     }

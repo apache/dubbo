@@ -27,9 +27,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
-import static org.apache.dubbo.config.RegistryConfig.PREFER_REGISTRY_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -200,7 +200,7 @@ public class RegistryConfigTest {
         AbstractConfig.appendParameters(map, registry);
         // Simulate the check that ZoneAwareClusterInvoker#doInvoke do
         URL url = UrlUtils.parseURL("zookeeper://127.0.0.1:2181", map);
-        Assertions.assertTrue(url.getParameter(PREFER_REGISTRY_KEY, false));
+        Assertions.assertTrue(url.getParameter(PREFERRED_KEY, false));
     }
 
     @Test
@@ -212,6 +212,6 @@ public class RegistryConfigTest {
         AbstractConfig.appendParameters(map, registry);
         // Simulate the check that ZoneAwareClusterInvoker#doInvoke do
         URL url = UrlUtils.parseURL("zookeeper://127.0.0.1:2181", map);
-        Assertions.assertFalse(url.getParameter(PREFER_REGISTRY_KEY, false));
+        Assertions.assertFalse(url.getParameter(PREFERRED_KEY, false));
     }
 }

@@ -467,6 +467,15 @@ public class RegistryProtocol implements Protocol {
 
         // group="a,b" or group="*"
         Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
+
+        // set parameter weight for consumerUrl if needed.
+        if (!qs.containsKey(WEIGHT_KEY)) {
+            String weight = url.getParameter(WEIGHT_KEY);
+            if (!StringUtils.isEmpty(weight)) {
+                qs.put(WEIGHT_KEY, weight);
+            }
+        }
+
         String group = qs.get(GROUP_KEY);
         if (group != null && group.length() > 0) {
             if ((COMMA_SPLIT_PATTERN.split(group)).length > 1 || "*".equals(group)) {
