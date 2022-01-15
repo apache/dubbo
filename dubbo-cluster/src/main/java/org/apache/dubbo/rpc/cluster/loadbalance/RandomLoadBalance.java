@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_SERVICE_REFERENCE_PATH;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
 /**
@@ -92,21 +90,13 @@ public class RandomLoadBalance extends AbstractLoadBalance {
 
         Invoker invoker = invokers.get(0);
         URL invokerUrl = invoker.getUrl();
-        // Multiple registry scenario, load balance among multiple registries.
-        if (REGISTRY_SERVICE_REFERENCE_PATH.equals(invokerUrl.getServiceInterface())) {
-            String weight = invokerUrl.getParameter(REGISTRY_KEY + "." + WEIGHT_KEY);
-            if (StringUtils.isNotEmpty(weight)) {
-                return true;
-            }
+        String weight = invokerUrl.getMethodParameter(invocation.getMethodName(), WEIGHT_KEY);
+        if (StringUtils.isNotEmpty(weight)) {
+            return true;
         } else {
-            String weight = invokerUrl.getMethodParameter(invocation.getMethodName(), WEIGHT_KEY);
-            if (StringUtils.isNotEmpty(weight)) {
+            String timeStamp = invoker.getUrl().getParameter(TIMESTAMP_KEY);
+            if (StringUtils.isNotEmpty(timeStamp)) {
                 return true;
-            }else {
-                String timeStamp = invoker.getUrl().getParameter(TIMESTAMP_KEY);
-                if (StringUtils.isNotEmpty(timeStamp)) {
-                    return true;
-                }
             }
         }
         return false;
