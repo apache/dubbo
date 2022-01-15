@@ -86,6 +86,9 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 URL consumerUrl = RpcContext.getServiceContext().getConsumerUrl();
                 executor.execute(() -> {
                     try {
+                        if (ref.size() > 0) {
+                            return;
+                        }
                         Result result = invokeWithContextAsync(invoker, invocation, consumerUrl);
                         ref.offer(result);
                     } catch (Throwable e) {
