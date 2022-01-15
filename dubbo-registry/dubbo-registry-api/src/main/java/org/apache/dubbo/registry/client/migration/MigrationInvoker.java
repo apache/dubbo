@@ -83,9 +83,11 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.type = type;
         this.url = url;
         this.consumerUrl = consumerUrl;
-        if (StringUtils.isEmpty(this.consumerUrl.getParameter(WEIGHT_KEY))
-                && !StringUtils.isEmpty(this.url.getParameter(WEIGHT_KEY))) {
-            this.consumerUrl.addParameter(WEIGHT_KEY, this.url.getParameter(WEIGHT_KEY));
+        if (consumerUrl != null && consumerUrl.getParameters() != null
+                && StringUtils.isEmpty(consumerUrl.getParameter(WEIGHT_KEY))
+                && url != null && url.getParameters() != null
+                && !StringUtils.isEmpty(url.getParameter(WEIGHT_KEY))) {
+            this.consumerUrl.addParameter(WEIGHT_KEY, url.getParameter(WEIGHT_KEY));
         }
         this.migrationMultiRegistry = url.getParameter(RegistryConstants.MIGRATION_MULTI_REGISTRY, false);
     }
@@ -95,10 +97,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     public void setInvoker(ClusterInvoker<T> invoker) {
-        if (StringUtils.isEmpty(invoker.getUrl().getParameter(WEIGHT_KEY))
-                && !StringUtils.isEmpty(this.url.getParameter(WEIGHT_KEY))) {
-            invoker.getUrl().addParameter(WEIGHT_KEY, this.url.getParameter(WEIGHT_KEY));
-        }
+        setWeightIfNeeded(invoker);
         this.invoker = invoker;
     }
 
@@ -107,10 +106,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     public void setServiceDiscoveryInvoker(ClusterInvoker<T> serviceDiscoveryInvoker) {
-        if (StringUtils.isEmpty(serviceDiscoveryInvoker.getUrl().getParameter(WEIGHT_KEY))
-                && !StringUtils.isEmpty(this.url.getParameter(WEIGHT_KEY))) {
-            serviceDiscoveryInvoker.getUrl().addParameter(WEIGHT_KEY, this.url.getParameter(WEIGHT_KEY));
-        }
+        setWeightIfNeeded(serviceDiscoveryInvoker);
         this.serviceDiscoveryInvoker = serviceDiscoveryInvoker;
     }
 
@@ -306,10 +302,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
                 logger.debug("Re-subscribing instance addresses, current interface " + type.getName());
             }
             ClusterInvoker<T> tmpServiceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
-            if (StringUtils.isEmpty(tmpServiceDiscoveryInvoker.getUrl().getParameter(WEIGHT_KEY))
-                    && !StringUtils.isEmpty(url.getParameter(WEIGHT_KEY))) {
-                tmpServiceDiscoveryInvoker.getUrl().addParameter(WEIGHT_KEY, url.getParameter(WEIGHT_KEY));
-            }
+            setWeightIfNeeded(tmpServiceDiscoveryInvoker);
             serviceDiscoveryInvoker = tmpServiceDiscoveryInvoker;
             if (migrationMultiRegistry) {
                 setListener(serviceDiscoveryInvoker, () -> {
@@ -348,10 +341,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
                 logger.debug("Re-subscribing interface addresses for interface " + type.getName());
             }
             ClusterInvoker<T> tmpInvoker = registryProtocol.getInvoker(cluster, registry, type, url);
-            if (StringUtils.isEmpty(tmpInvoker.getUrl().getParameter(WEIGHT_KEY))
-                    && !StringUtils.isEmpty(url.getParameter(WEIGHT_KEY))) {
-                tmpInvoker.getUrl().addParameter(WEIGHT_KEY, url.getParameter(WEIGHT_KEY));
-            }
+            setWeightIfNeeded(tmpInvoker);
             invoker = tmpInvoker;
 
             if (migrationMultiRegistry) {
@@ -416,4 +406,12 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         return migrationMultiRegistry;
     }
 
+    private void setWeightIfNeeded(ClusterInvoker<T> invoker) {
+        if (invoker != null && invoker.getUrl() != null && invoker.getUrl().getParameters() != null
+                && StringUtils.isEmpty(invoker.getUrl().getParameter(WEIGHT_KEY))
+                && url != null && url.getParameters() != null
+                && !StringUtils.isEmpty(url.getParameter(WEIGHT_KEY))) {
+            invoker.getUrl().addParameter(WEIGHT_KEY, url.getParameter(WEIGHT_KEY));
+        }
+    }
 }
