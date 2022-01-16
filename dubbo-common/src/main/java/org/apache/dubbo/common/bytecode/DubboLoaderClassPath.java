@@ -32,7 +32,7 @@ public class DubboLoaderClassPath extends LoaderClassPath {
 
     @Override
     public InputStream openClassfile(String classname) throws NotFoundException {
-        if (!classname.startsWith("org.apache.dubbo")) {
+        if (!classname.startsWith("org.apache.dubbo") && !classname.startsWith("grpc.health") && !classname.startsWith("com.google")) {
             return null;
         }
         return super.openClassfile(classname);
