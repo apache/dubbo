@@ -16,6 +16,22 @@
  */
 package org.apache.dubbo.registry.client.event.listener;
 
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
+import static org.apache.dubbo.metadata.MetadataInfo.DEFAULT_REVISION;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
+import static org.apache.dubbo.rpc.Constants.ID_KEY;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,23 +49,6 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
-
-import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
-import static org.apache.dubbo.metadata.MetadataInfo.DEFAULT_REVISION;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
-import static org.apache.dubbo.rpc.Constants.ID_KEY;
 
 /**
  * The Service Discovery Changed {@link EventListener Event Listener}
@@ -135,9 +134,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
             localServiceToRevisions.forEach((serviceKey, revisions) -> {
                 List<URL> urls = revisionsToUrls.get(revisions);
-                if (urls != null) {
-                    tmpServiceUrls.put(serviceKey, urls);
-                } else {
+                if (urls == null) {
                     urls = new ArrayList<>();
                     for (String r : revisions) {
                         for (ServiceInstance i : revisionToInstances.get(r)) {
@@ -145,8 +142,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                         }
                     }
                     revisionsToUrls.put(revisions, urls);
-                    tmpServiceUrls.put(serviceKey, urls);
                 }
+                tmpServiceUrls.put(serviceKey, urls);
             });
         }
 
