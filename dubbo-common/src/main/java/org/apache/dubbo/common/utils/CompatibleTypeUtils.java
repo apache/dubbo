@@ -131,7 +131,8 @@ public class CompatibleTypeUtils {
             } else if (type == BigInteger.class) {
                 return BigInteger.valueOf(number.longValue());
             } else if (type == BigDecimal.class) {
-                return BigDecimal.valueOf(number.doubleValue());
+//                return BigDecimal.valueOf(number.doubleValue());
+                return new BigDecimal(number.doubleValue());
             } else if (type == Date.class) {
                 return new Date(number.longValue());
             }
