@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.TripleHttp2ClientResponseHandler;
 import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
+import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
@@ -64,6 +65,7 @@ public class ClientStream extends AbstractStream implements Stream {
     private final Pack requestPack;
     private final Unpack responseUnpack;
     public final Listener responseListener;
+    private boolean remoteClosed;
 
     public ClientStream(long id,
                         Channel parent,
@@ -122,9 +124,8 @@ public class ClientStream extends AbstractStream implements Stream {
         final Http2StreamChannel channel = future.getNow();
         channel.pipeline()
             .addLast(new TripleCommandOutBoundHandler())
-            .addLast(new TripleHttp2ClientResponseHandler())
-            .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true))
-            .addLast(new TripleClientInboundHandler());
+            .addLast(new TripleHttp2ClientResponseHandler(this))
+            .addLast(new GrpcDataDecoder(Integer.MAX_VALUE, true));
         DefaultFuture2.addTimeoutListener(id(), channel::close);
         return new WriteQueue(channel);
     }
@@ -171,17 +172,18 @@ public class ClientStream extends AbstractStream implements Stream {
         private boolean headerReceived;
 
         private GrpcStatus validateHeaderStatus(Http2Headers headers){
-            Integer httpStatus = headers.getInt(TripleHeaderEnum.);
-
-            String contentType = headers.get(GrpcUtil.CONTENT_TYPE_KEY);
-            if (!GrpcUtil.isGrpcContentType(contentType)) {
-                return GrpcUtil.httpStatusToGrpcStatus(httpStatus)
-                    .augmentDescription("invalid content-type: " + contentType);
+            Integer httpStatus=headers.status()==null?null:Integer.parseInt(headers.status().toString());
+            if (httpStatus == null) {
+                return GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription("Missing HTTP status code");
+            }
+            final CharSequence contentType = headers.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader());
+            if(contentType==null||!contentType.toString().startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader())){
+                return GrpcStatus.fromCode(GrpcStatus.httpStatusToGrpcCode(httpStatus))
+                    .withDescription("invalid content-type: "+contentType);
             }
             return null;
         }
-        @Override
-        public void onHeader(Http2Headers headers, boolean endStream) {
+        void onHeaderReceived(Http2Headers headers){
             if(transportError!=null){
                 transportError.appendDescription("headers:"+headers);
                 return;
@@ -197,16 +199,10 @@ public class ClientStream extends AbstractStream implements Stream {
                 // ignored
                 return;
             }
-            if (httpStatus == null) {
-                transportError = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription("Missing HTTP status code");
-                return ;
-            }
-            final CharSequence contentType = headers.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader());
-            if(contentType==null||!contentType.toString().startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader())){
-                transportError=GrpcStatus.fromCode(GrpcStatus.httpStatusToGrpcCode(httpStatus))
-                    .withDescription("invalid content-type: "+contentType);
-                return;
-            }
+            headerReceived=true;
+            transportError=validateHeaderStatus(headers);
+
+            // todo support full payload compressor
             CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
             if (null != messageEncoding) {
                 String compressorStr = messageEncoding.toString();
@@ -221,50 +217,95 @@ public class ClientStream extends AbstractStream implements Stream {
                     }
                 }
             }
+        }
+        void onTrailersReceived(Http2Headers trailers){
+            if(transportError==null&&!headerReceived){
+                transportError=validateHeaderStatus(trailers);
+            }
+            if(transportError!=null){
+                transportError = transportError.appendDescription("trailers: " + trailers);
 
-            AppResponse result=new AppResponse(appResponse);
-            Response response = new Response(id(), TripleConstant.TRI_VERSION);
-            result.setObjectAttachments(parseMetadataToAttachmentMap(trailers));
-            response.setResult(result);
-            responseListener.onResponse(response);
+            }else{
+                GrpcStatus status=statusFromTrailers(trailers);
+                // todo abstract for stream / unary
+                if(status.code== GrpcStatus.Code.OK) {
+                    AppResponse result=new AppResponse(appResponse);
+                    Response response = new Response(id(), TripleConstant.TRI_VERSION);
+                    result.setObjectAttachments(parseMetadataToAttachmentMap(trailers));
+                    response.setResult(result);
+                    responseListener.onResponse(response);
+                }
+            }
+        }
+        /**
+         * Parse metadata to a KV pairs map.
+         *
+         * @param trailers the metadata from remote
+         * @return KV pairs map
+         */
+        private Map<String, Object> parseMetadataToAttachmentMap(Http2Headers trailers) {
+            Map<String, Object> attachments = new HashMap<>();
+            for (Map.Entry<CharSequence, CharSequence> header : trailers) {
+                String key = header.getKey().toString();
+                if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
+                    continue;
+                }
+                // avoid subsequent parse protocol header
+                if (TripleHeaderEnum.containsExcludeAttachments(key)) {
+                    continue;
+                }
+                if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
+                    try {
+                        attachments.put(key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length()), decodeASCIIByte(header.getValue()));
+                    } catch (Exception e) {
+                        LOGGER.error("Failed to parse response attachment key=" + key, e);
+                    }
+                } else {
+                    attachments.put(key, header.getValue().toString());
+                }
+            }
+            return attachments;
+        }
+        /**
+         * Extract the response status from trailers.
+         */
+        private GrpcStatus statusFromTrailers(Http2Headers trailers) {
+            final Integer intStatus = trailers.getInt(TripleHeaderEnum.STATUS_KEY.getHeader());
+            GrpcStatus status=intStatus==null?null:GrpcStatus.fromCode(intStatus);
+            if (status != null) {
+                return status.withDescription(trailers.get(TripleHeaderEnum.MESSAGE_KEY.getHeader()).toString());
+            }
+            // No status; something is broken. Try to provide a resonanable error.
+            if (headerReceived) {
+                return GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withDescription("missing GRPC status in response");
+            }
+            Integer httpStatus = trailers.status()==null?null:Integer.parseInt(trailers.status().toString());
+            if (httpStatus != null) {
+                status = GrpcStatus.fromCode(GrpcStatus.httpStatusToGrpcCode(httpStatus));
+            } else {
+                status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription("missing HTTP status code");
+            }
+            return status.appendDescription("missing GRPC status, inferred error from HTTP status code");
+        }
+
+        @Override
+        public void onHeader(Http2Headers headers, boolean endStream) {
+            if(endStream){
+                if(!remoteClosed){
+                    writeQueue.enqueue(CancelQueueCommand.createCommand(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED)),true);
+                }
+                onTrailersReceived(headers);
+            }else{
+                onHeaderReceived(headers);
+            }
+
+
             TriDecoder.Listener listener=new TriDecoder.Listener() {
                 @Override
                 public void onRawMessage(byte[] data) {
                     appResponse = responseUnpack.unpack(data);
-
-                }
-
-                /**
-                 * Parse metadata to a KV pairs map.
-                 *
-                 * @param trailers the metadata from remote
-                 * @return KV pairs map
-                 */
-                private Map<String, Object> parseMetadataToAttachmentMap(Http2Headers trailers) {
-                    Map<String, Object> attachments = new HashMap<>();
-                    for (Map.Entry<CharSequence, CharSequence> header : trailers) {
-                        String key = header.getKey().toString();
-                        if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
-                            continue;
-                        }
-                        // avoid subsequent parse protocol header
-                        if (TripleHeaderEnum.containsExcludeAttachments(key)) {
-                            continue;
-                        }
-                        if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
-                            try {
-                                attachments.put(key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length()), decodeASCIIByte(header.getValue()));
-                            } catch (Exception e) {
-                                LOGGER.error("Failed to parse response attachment key=" + key, e);
-                            }
-                        } else {
-                            attachments.put(key, header.getValue().toString());
-                        }
-                    }
-                    return attachments;
                 }
             };
-
         }
 
         @Override
