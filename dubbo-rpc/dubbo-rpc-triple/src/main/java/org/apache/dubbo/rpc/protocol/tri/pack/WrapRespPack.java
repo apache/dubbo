@@ -23,25 +23,19 @@ import com.google.protobuf.ByteString;
 
 import java.io.IOException;
 
+
 public class WrapRespPack implements Pack {
+    private final GenericPack genericPack;
 
-    private final MultipleGenericPack genericPack;
-    private final PbPack genericPbPack;
-    private final Class<?> returnType;
-
-    public WrapRespPack(MultipleGenericPack genericPack, PbPack genericPbPack, Class<?> returnType) {
+    public WrapRespPack(GenericPack genericPack) {
         this.genericPack = genericPack;
-        this.genericPbPack = genericPbPack;
-        this.returnType = returnType;
     }
 
     @Override
     public byte[] pack(Object obj) throws IOException {
         final TripleWrapper.TripleResponseWrapper.Builder builder = TripleWrapper.TripleResponseWrapper.newBuilder()
-            .setType(returnType.getName())
-            .setSerializeType(genericPack.serializationName);
-        builder.setData(ByteString.copyFrom(genericPack.pack(obj)));
-        return genericPbPack.pack(builder.build());
+            .setSerializeType(genericPack.serializationName)
+            .setData(ByteString.copyFrom(genericPack.pack(obj)));
+        return PbPack.INSTANCE.pack(builder.build());
     }
-
 }

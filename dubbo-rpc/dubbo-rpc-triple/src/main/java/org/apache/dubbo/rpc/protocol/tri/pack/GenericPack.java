@@ -24,13 +24,13 @@ import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class MultipleGenericPack implements Pack {
+public class GenericPack implements Pack {
     public final String serializationName;
     private final MultipleSerialization serialization;
     private final String innerSerializationName;
     private final URL url;
 
-    public MultipleGenericPack(MultipleSerialization serialization, String serializationName, URL url) {
+    public GenericPack(MultipleSerialization serialization, String serializationName, URL url) {
         this.serialization = serialization;
         this.serializationName = serializationName;
         this.innerSerializationName = convertHessianFromWrapper(serializationName);

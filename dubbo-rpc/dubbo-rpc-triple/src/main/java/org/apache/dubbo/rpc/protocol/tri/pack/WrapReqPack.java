@@ -26,10 +26,10 @@ import java.io.IOException;
 
 public class WrapReqPack implements Pack {
     private final Class<?>[] parameterTypes;
-    private final MultipleGenericPack genericPack;
+    private final GenericPack genericPack;
     private final PbPack pbPack;
 
-    public WrapReqPack(Class<?>[] parameterTypes, MultipleGenericPack genericPack, PbPack genericPbPack) {
+    public WrapReqPack(Class<?>[] parameterTypes, GenericPack genericPack, PbPack genericPbPack) {
         this.parameterTypes = parameterTypes;
         this.genericPack = genericPack;
         this.pbPack = genericPbPack;
@@ -39,7 +39,7 @@ public class WrapReqPack implements Pack {
     public byte[] pack(Object obj) throws IOException {
         final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
             .setSerializeType(genericPack.serializationName);
-        Object[] arguments= (Object[]) obj;
+        Object[] arguments = (Object[]) obj;
         for (int i = 0; i < arguments.length; i++) {
             builder.addArgTypes(parameterTypes[i].getName());
             ByteArrayOutputStream bos = new ByteArrayOutputStream();

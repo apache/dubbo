@@ -21,7 +21,6 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -34,7 +33,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.ConsumerModel;
@@ -43,8 +41,9 @@ import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.MultipleGenericPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
+import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
@@ -84,7 +83,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final Compressor compressor;
     private final String acceptEncoding;
     private final Set<Invoker<?>> invokers;
-    private final MultipleGenericPack genericPack;
+    private final GenericPack genericPack;
     private final GenericUnpack genericUnpack;
 
     public TripleInvoker(Class<T> serviceType,
@@ -96,8 +95,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                          ConnectionManager connectionManager,
                          Set<Invoker<?>> invokers) throws RemotingException {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
-        this.genericPack = new MultipleGenericPack(serialization, serializationName, url);
-        this.genericUnpack = new GenericUnpack(serialization, url);
+        this.genericPack=new GenericPack(serialization,serializationName,url);
+        this.genericUnpack=new GenericUnpack(serialization,url);
         this.invokers = invokers;
         this.scheme = getSchemeFromUrl(url);
         this.acceptEncoding = acceptEncoding;
@@ -126,7 +125,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
     }
 
-    private ClientStream createStream(RpcInvocation invocation, long id, String methodName, String timeout) {
+    private ClientStream createStream(RpcInvocation invocation, long id, String methodName, String timeout, ExecutorService executor){
         String application = (String) invocation.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY);
         if (application == null) {
             application = (String) invocation.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY);
@@ -136,21 +135,23 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         org.apache.dubbo.rpc.protocol.tri.stream.ClientStream stream = null;
 
         Pack requestPack;
-        Unpack<?> responseUnpack;
-        if (methodDescriptor.isNeedWrap()) {
-            requestPack = new WrapReqPack(invocation.getParameterTypes(), genericPack, PbPack.PB_PACK);
-            if (!Void.TYPE.equals(methodDescriptor.getReturnClass())) {
-                responseUnpack = new WrapRespUnpack(genericUnpack, PbUnpack.RESP_PB_UNPACK);
-            } else {
-                responseUnpack = VoidUnpack.INSTANCE;
+        Unpack responseUnpack;
+        if(methodDescriptor.isNeedWrap()){
+            requestPack=new WrapReqPack(invocation.getParameterTypes(), genericPack,PbPack.INSTANCE);
+            if(!Void.TYPE.equals(methodDescriptor.getReturnClass())){
+                responseUnpack=new WrapRespUnpack(genericUnpack);
+            }else{
+                responseUnpack= VoidUnpack.INSTANCE;
             }
-        } else {
-            requestPack = PbPack.PB_PACK;
-            responseUnpack = new PbUnpack<>(methodDescriptor.getReturnClass());
+        }else{
+            requestPack= PbPack.INSTANCE;
+            responseUnpack= new PbUnpack(methodDescriptor.getReturnClass());
         }
         final Stream.Listener listener = response -> DefaultFuture2.received(connection, response);
         if (methodDescriptor.isUnary()) {
             stream = new org.apache.dubbo.rpc.protocol.tri.stream.ClientStream(
+                getUrl(),
+                executor,
                 id,
                 connection.getChannel(),
                 scheme,
@@ -161,7 +162,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 getUrl().getAddress(),
                 compressor.getMessageEncoding(),
                 acceptEncoding,
-                calculateTimeout(invocation, methodName) + "m",
+                timeout,
                 compressor,
                 invocation.getObjectAttachments(),
                 requestPack,
@@ -175,15 +176,15 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
-        try {
+//        try {
             Request req = new Request();
             req.setVersion(TripleConstant.TRI_VERSION);
             req.setTwoWay(true);
             req.setData(invocation);
             final String methodName = RpcUtils.getMethodName(invocation);
             int timeout = calculateTimeout(invocation, methodName);
-            final org.apache.dubbo.rpc.protocol.tri.stream.ClientStream stream = createStream((RpcInvocation) invocation, req.getId(), methodName, timeout + "m");
-            ExecutorService executor = getCallbackExecutor(getUrl(), invocation);
+        ExecutorService executor = getCallbackExecutor(getUrl(),invocation);
+        final org.apache.dubbo.rpc.protocol.tri.stream.ClientStream stream = createStream((RpcInvocation) invocation, req.getId(), methodName, timeout + "m",executor);
 //        inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
 //        inv.setAttachment(PATH_KEY, getUrl().getPath());
 //        inv.setAttachment(Constants.SERIALIZATION_KEY,
@@ -217,15 +218,15 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             }
 
             return result;
-        } catch (TimeoutException e) {
-            throw new RpcException(RpcException.TIMEOUT_EXCEPTION,
-                "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                    + ", cause: " + e.getMessage(), e);
-        } catch (RemotingException e) {
-            throw new RpcException(RpcException.NETWORK_EXCEPTION,
-                "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                    + ", cause: " + e.getMessage(), e);
-        }
+//        } catch (TimeoutException e) {
+//            throw new RpcException(RpcException.TIMEOUT_EXCEPTION,
+//                "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
+//                    + ", cause: " + e.getMessage(), e);
+//        } catch (RemotingException e) {
+//            throw new RpcException(RpcException.NETWORK_EXCEPTION,
+//                "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
+//                    + ", cause: " + e.getMessage(), e);
+//        }
     }
 
     @Override

@@ -44,10 +44,6 @@ public class HeaderQueueCommand extends QueuedCommand{
         return new HeaderQueueCommand(headers, endStream);
     }
 
-    public static HeaderQueueCommand createTrailers(Metadata headers) {
-        return new HeaderQueueCommand(headers, true);
-    }
-
     public Http2Headers getHeaders() {
         return headers;
     }

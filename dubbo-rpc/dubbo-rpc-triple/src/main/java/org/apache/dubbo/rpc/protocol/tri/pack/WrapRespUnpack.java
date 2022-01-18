@@ -22,18 +22,15 @@ import org.apache.dubbo.triple.TripleWrapper.TripleResponseWrapper;
 import java.io.IOException;
 
 public class WrapRespUnpack implements Unpack<Object> {
+    private final GenericUnpack genericUnpack;
 
-    private final GenericUnpack genericUnPack;
-    private final PbUnpack<TripleResponseWrapper> pbUnpack;
-
-    public WrapRespUnpack(GenericUnpack genericUnPack, PbUnpack<TripleResponseWrapper> pbUnpack) {
-        this.genericUnPack = genericUnPack;
-        this.pbUnpack = pbUnpack;
+    public WrapRespUnpack(GenericUnpack genericUnpack) {
+        this.genericUnpack = genericUnpack;
     }
 
     @Override
-    public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
-        final TripleResponseWrapper wrapper = pbUnpack.unpack(data);
-        return genericUnPack.unpack(wrapper.getData().toByteArray(), wrapper.getSerializeType(), wrapper.getType());
+    public Object unpack(byte[] data) throws ClassNotFoundException, IOException {
+        final TripleResponseWrapper wrapper = PbUnpack.RESP_PB_UNPACK.unpack(data);
+        return genericUnpack.unpack(wrapper.getData().toByteArray(), wrapper.getSerializeType(), wrapper.getType());
     }
 }

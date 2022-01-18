@@ -14,19 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+package org.apache.dubbo.rpc.protocol.tri.pack;
 
-public class TripleServerInboundHandler extends ChannelInboundHandlerAdapter {
+import org.apache.dubbo.triple.TripleWrapper;
+
+import java.io.IOException;
+
+public class ReqWrapUnpack implements Unpack {
+    private final GenericUnpack genericUnpack;
+
+    public ReqWrapUnpack(GenericUnpack genericPack) {
+        this.genericUnpack = genericPack;
+    }
+
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
-        final byte[] data = (byte[]) msg;
-        if (serverStream != null) {
-            serverStream.inboundTransportObserver()
-                .onData(data, false);
+    public Object unpack(byte[] data) throws IOException, ClassNotFoundException {
+        final TripleWrapper.TripleRequestWrapper wrapper = PbUnpack.REQ_PB_UNPACK.unpack(data);
+        Object[] arguments = new Object[wrapper.getArgsCount()];
+        for (int i = 0; i < arguments.length; i++) {
+            byte[] argument = wrapper.getArgs(i).toByteArray();
+            arguments[i] = genericUnpack.unpack(argument, wrapper.getSerializeType(), wrapper.getArgTypes(i));
         }
+        return arguments;
     }
 }

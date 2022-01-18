@@ -17,8 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.protocol.tri.Metadata;
 import org.apache.dubbo.rpc.protocol.tri.Stream;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
@@ -31,12 +34,24 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
-public abstract class AbstractStream {
+public abstract class AbstractStream implements org.apache.dubbo.rpc.protocol.tri.stream.Stream {
+    final URL url;
+    final Executor executor;
+    final CancellationContext cancellationContext;
+
     protected static final Logger LOGGER = LoggerFactory.getLogger(Stream.class);
 
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
+
+    protected AbstractStream(URL url, Executor executor) {
+        this.url = url;
+        this.executor= new SerializingExecutor(executor);
+        this.cancellationContext = new CancellationContext();
+
+    }
 
     /**
      * Parse and put the KV pairs into metadata. Ignore Http2 PseudoHeaderName and internal name.
@@ -94,5 +109,10 @@ public abstract class AbstractStream {
 
     protected byte[] decodeASCIIByte(CharSequence value) {
         return BASE64_DECODER.decode(value.toString().getBytes(StandardCharsets.US_ASCII));
+    }
+
+    @Override
+    public URL url() {
+        return url;
     }
 }

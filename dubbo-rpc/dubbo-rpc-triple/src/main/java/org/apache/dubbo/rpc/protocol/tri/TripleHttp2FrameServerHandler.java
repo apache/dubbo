@@ -50,7 +50,6 @@ import io.netty.util.ReferenceCounted;
 import java.util.List;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.apache.dubbo.rpc.protocol.tri.compressor.Compressor.DEFAULT_COMPRESSOR;
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
@@ -251,7 +250,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         }
 
         final TransportObserver observer = stream.inboundTransportObserver();
-        observer.onHeader(new Http2HeaderMeta(headers), false);
+        observer.onHeader(headers, false);
         if (msg.isEndStream()) {
             observer.onComplete();
         }

@@ -81,9 +81,6 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
                 final ChannelPipeline p = ch.pipeline();
                 p.addLast(new TripleCommandOutBoundHandler());
                 p.addLast(new TripleHttp2FrameServerHandler(frameworkModel));
-                // TODO constraint MAX DATA_SIZE
-                p.addLast(new GrpcDataDecoder(Integer.MAX_VALUE, false));
-                p.addLast(new TripleServerInboundHandler());
             }
         });
         pipeline.addLast(codec, new TripleServerConnectionHandler(), handler, new TripleTailHandler());
@@ -104,6 +101,6 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
             .frameLogger(CLIENT_LOGGER)
             .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleClientHandler(frameworkModel));
-        pipeline.addLast(codec, handler, new TripleClientRequestHandler(frameworkModel));
+        pipeline.addLast(codec, handler);
     }
 }

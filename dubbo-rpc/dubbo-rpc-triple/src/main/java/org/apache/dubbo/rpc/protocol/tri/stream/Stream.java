@@ -21,10 +21,8 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.OutboundTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TransportObserver;
-import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 
 /**
  * Stream acts as a bi-directional intermediate layer for processing streaming data . It serializes object instance to
@@ -36,16 +34,6 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 public interface Stream {
 
     URL url();
-
-    long id();
-
-    void setCompressor(Compressor compressor);
-
-    Compressor compressor();
-
-    DeCompressor decompressor();
-
-    void setDecompressor(DeCompressor compressor);
 
     interface Listener{
 
