@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 public interface ServerStreamObserver<T> extends StreamObserver<T> {
 

@@ -19,8 +19,8 @@ package org.apache.dubbo.rpc.protocol.tri.pack;
 
 import java.io.IOException;
 
-public interface Unpack {
+public interface Unpack<T> {
 
-    Object unpack(byte[] data) throws IOException, ClassNotFoundException;
+    T unpack(byte[] data) throws IOException, ClassNotFoundException;
 
 }

@@ -17,14 +17,14 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.protocol.tri.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcDataDecoder;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.Metadata;
 import org.apache.dubbo.rpc.protocol.tri.TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
@@ -34,11 +34,12 @@ import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
 
-import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -55,17 +56,23 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
+import static org.apache.dubbo.rpc.protocol.tri.compressor.Compressor.DEFAULT_COMPRESSOR;
 
 public class ClientStream extends AbstractStream implements Stream {
-    private final Compressor compressor;
     private final DefaultHttp2Headers headers;
+
+    public final TransportObserver remoteObserver;
+
     private final long id;
     private final WriteQueue writeQueue;
     private final Pack requestPack;
     private final Unpack responseUnpack;
     public final Listener responseListener;
+    private Compressor compressor;
+    private DeCompressor deCompressor;
+
     private boolean remoteClosed;
+
 
     public ClientStream(long id,
                         Channel parent,
@@ -87,8 +94,8 @@ public class ClientStream extends AbstractStream implements Stream {
         this.compressor = compressor;
         this.writeQueue = createWriteQueue(parent);
         this.requestPack = requestPack;
-        this.responseUnpack= responseUnpack;
-        this.responseListener=listener;
+        this.responseUnpack = responseUnpack;
+        this.responseListener = listener;
         this.headers = new DefaultHttp2Headers(false);
         this.headers.scheme(scheme)
             .authority(authority)
@@ -148,19 +155,46 @@ public class ClientStream extends AbstractStream implements Stream {
         this.writeQueue.enqueue(dataCmd, false);
     }
 
-    public void cancelByLocal(Throwable t){
+    public void cancelByLocal(Throwable t) {
         RpcContext.getCancellationContext().cancel(t);
     }
-    public void cancelByRemote(){
+
+    public void cancelByRemote() {
         DefaultFuture2.getFuture(id()).cancel();
     }
+
+    @Override
+    public URL url() {
+        return null;
+    }
+
     @Override
     public long id() {
         return id;
     }
-    public final TransportObserver remoteObserver;
 
-    public class ClientTransportObserver implements TransportObserver{
+    @Override
+    public void setCompressor(Compressor compressor) {
+        this.compressor = compressor;
+    }
+
+    @Override
+    public Compressor compressor() {
+        return compressor;
+    }
+
+    @Override
+    public DeCompressor decompressor() {
+        return this.deCompressor;
+    }
+
+    @Override
+    public void setDecompressor(DeCompressor decompressor) {
+        this.deCompressor = decompressor;
+    }
+
+
+    public class ClientTransportObserver implements TransportObserver {
 
         private GrpcStatus transportError;
         private Compressor decompressor;
@@ -171,65 +205,67 @@ public class ClientStream extends AbstractStream implements Stream {
         private boolean terminated;
         private boolean headerReceived;
 
-        private GrpcStatus validateHeaderStatus(Http2Headers headers){
-            Integer httpStatus=headers.status()==null?null:Integer.parseInt(headers.status().toString());
+        private GrpcStatus validateHeaderStatus(Http2Headers headers) {
+            Integer httpStatus = headers.status() == null ? null : Integer.parseInt(headers.status().toString());
             if (httpStatus == null) {
                 return GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription("Missing HTTP status code");
             }
             final CharSequence contentType = headers.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader());
-            if(contentType==null||!contentType.toString().startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader())){
+            if (contentType == null || !contentType.toString().startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader())) {
                 return GrpcStatus.fromCode(GrpcStatus.httpStatusToGrpcCode(httpStatus))
-                    .withDescription("invalid content-type: "+contentType);
+                    .withDescription("invalid content-type: " + contentType);
             }
             return null;
         }
-        void onHeaderReceived(Http2Headers headers){
-            if(transportError!=null){
-                transportError.appendDescription("headers:"+headers);
+
+        void onHeaderReceived(Http2Headers headers) {
+            if (transportError != null) {
+                transportError.appendDescription("headers:" + headers);
                 return;
             }
-            if(headerReceived){
-                transportError=GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+            if (headerReceived) {
+                transportError = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription("Received headers twice");
                 return;
             }
-            Integer httpStatus=headers.status()==null?null:Integer.parseInt(headers.status().toString());
+            Integer httpStatus = headers.status() == null ? null : Integer.parseInt(headers.status().toString());
 
-            if(httpStatus!=null&&Integer.parseInt(httpStatus.toString())>100&&httpStatus<200){
+            if (httpStatus != null && Integer.parseInt(httpStatus.toString()) > 100 && httpStatus < 200) {
                 // ignored
                 return;
             }
-            headerReceived=true;
-            transportError=validateHeaderStatus(headers);
+            headerReceived = true;
+            transportError = validateHeaderStatus(headers);
 
             // todo support full payload compressor
             CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
             if (null != messageEncoding) {
                 String compressorStr = messageEncoding.toString();
-                if (!DEFAULT_COMPRESSOR.equals(compressorStr)) {
+                if (!Identity.IDENTITY.getMessageEncoding().equals(compressorStr)) {
                     Compressor compressor = Compressor.getCompressor(url().getOrDefaultFrameworkModel(), compressorStr);
                     if (null == compressor) {
                         throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
                             .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
                             .asException();
                     } else {
-                        decompressor=compressor;
+                        decompressor = compressor;
                     }
                 }
             }
         }
-        void onTrailersReceived(Http2Headers trailers){
-            if(transportError==null&&!headerReceived){
-                transportError=validateHeaderStatus(trailers);
+
+        void onTrailersReceived(Http2Headers trailers) {
+            if (transportError == null && !headerReceived) {
+                transportError = validateHeaderStatus(trailers);
             }
-            if(transportError!=null){
+            if (transportError != null) {
                 transportError = transportError.appendDescription("trailers: " + trailers);
 
-            }else{
-                GrpcStatus status=statusFromTrailers(trailers);
+            } else {
+                GrpcStatus status = statusFromTrailers(trailers);
                 // todo abstract for stream / unary
-                if(status.code== GrpcStatus.Code.OK) {
-                    AppResponse result=new AppResponse(appResponse);
+                if (status.code == GrpcStatus.Code.OK) {
+                    AppResponse result = new AppResponse(appResponse);
                     Response response = new Response(id(), TripleConstant.TRI_VERSION);
                     result.setObjectAttachments(parseMetadataToAttachmentMap(trailers));
                     response.setResult(result);
@@ -237,6 +273,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
             }
         }
+
         /**
          * Parse metadata to a KV pairs map.
          *
@@ -266,12 +303,13 @@ public class ClientStream extends AbstractStream implements Stream {
             }
             return attachments;
         }
+
         /**
          * Extract the response status from trailers.
          */
         private GrpcStatus statusFromTrailers(Http2Headers trailers) {
             final Integer intStatus = trailers.getInt(TripleHeaderEnum.STATUS_KEY.getHeader());
-            GrpcStatus status=intStatus==null?null:GrpcStatus.fromCode(intStatus);
+            GrpcStatus status = intStatus == null ? null : GrpcStatus.fromCode(intStatus);
             if (status != null) {
                 return status.withDescription(trailers.get(TripleHeaderEnum.MESSAGE_KEY.getHeader()).toString());
             }
@@ -279,7 +317,7 @@ public class ClientStream extends AbstractStream implements Stream {
             if (headerReceived) {
                 return GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withDescription("missing GRPC status in response");
             }
-            Integer httpStatus = trailers.status()==null?null:Integer.parseInt(trailers.status().toString());
+            Integer httpStatus = trailers.status() == null ? null : Integer.parseInt(trailers.status().toString());
             if (httpStatus != null) {
                 status = GrpcStatus.fromCode(GrpcStatus.httpStatusToGrpcCode(httpStatus));
             } else {
@@ -290,28 +328,35 @@ public class ClientStream extends AbstractStream implements Stream {
 
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
-            if(endStream){
-                if(!remoteClosed){
-                    writeQueue.enqueue(CancelQueueCommand.createCommand(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED)),true);
+            if (endStream) {
+                if (!remoteClosed) {
+                    writeQueue.enqueue(CancelQueueCommand.createCommand(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED)), true);
                 }
                 onTrailersReceived(headers);
-            }else{
+            } else {
                 onHeaderReceived(headers);
             }
 
 
-            TriDecoder.Listener listener=new TriDecoder.Listener() {
+            TriDecoder.Listener listener = new TriDecoder.Listener() {
                 @Override
                 public void onRawMessage(byte[] data) {
-                    appResponse = responseUnpack.unpack(data);
+                    try {
+                        appResponse = responseUnpack.unpack(data);
+                        // todo
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
                 }
             };
         }
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            decoder.onData(data);
-            if(endStream) {
+            decoder.deframe(data);
+            if (endStream) {
                 decoder.close();
             }
         }

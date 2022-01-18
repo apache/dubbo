@@ -40,12 +40,13 @@ import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.MultipleGenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.ReqWrapPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.VoidUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespUnpack;
@@ -85,19 +86,18 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final Set<Invoker<?>> invokers;
     private final MultipleGenericPack genericPack;
     private final GenericUnpack genericUnpack;
-    private static final PbPack PB_PACK =new PbPack();
 
     public TripleInvoker(Class<T> serviceType,
                          URL url,
-                         MultipleSerialization serialization ,
+                         MultipleSerialization serialization,
                          String serializationName,
                          Compressor defaultCompressor,
                          String acceptEncoding,
                          ConnectionManager connectionManager,
                          Set<Invoker<?>> invokers) throws RemotingException {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
-        this.genericPack=new MultipleGenericPack(serialization,serializationName,url);
-        this.genericUnpack=new GenericUnpack(serialization,url);
+        this.genericPack = new MultipleGenericPack(serialization, serializationName, url);
+        this.genericUnpack = new GenericUnpack(serialization, url);
         this.invokers = invokers;
         this.scheme = getSchemeFromUrl(url);
         this.acceptEncoding = acceptEncoding;
@@ -126,7 +126,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
     }
 
-    private ClientStream createStream(RpcInvocation invocation, long id, String methodName, String timeout){
+    private ClientStream createStream(RpcInvocation invocation, long id, String methodName, String timeout) {
         String application = (String) invocation.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY);
         if (application == null) {
             application = (String) invocation.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY);
@@ -136,17 +136,17 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         org.apache.dubbo.rpc.protocol.tri.stream.ClientStream stream = null;
 
         Pack requestPack;
-        Unpack responseUnpack;
-        if(methodDescriptor.isNeedWrap()){
-            requestPack=new ReqWrapPack(invocation.getParameterTypes(),genericPack, PB_PACK);
-            if(!Void.TYPE.equals(methodDescriptor.getReturnClass())){
-                responseUnpack=new WrapRespUnpack(genericUnpack, PB_PACK);
-            }else{
-                responseUnpack= VoidUnpack.INSTANCE;
+        Unpack<?> responseUnpack;
+        if (methodDescriptor.isNeedWrap()) {
+            requestPack = new WrapReqPack(invocation.getParameterTypes(), genericPack, PbPack.PB_PACK);
+            if (!Void.TYPE.equals(methodDescriptor.getReturnClass())) {
+                responseUnpack = new WrapRespUnpack(genericUnpack, PbUnpack.RESP_PB_UNPACK);
+            } else {
+                responseUnpack = VoidUnpack.INSTANCE;
             }
-        }else{
-            requestPack= PB_PACK;
-            responseUnpack= new PbUnpack(methodDescriptor.getReturnClass());
+        } else {
+            requestPack = PbPack.PB_PACK;
+            responseUnpack = new PbUnpack<>(methodDescriptor.getReturnClass());
         }
         final Stream.Listener listener = response -> DefaultFuture2.received(connection, response);
         if (methodDescriptor.isUnary()) {
@@ -161,7 +161,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 getUrl().getAddress(),
                 compressor.getMessageEncoding(),
                 acceptEncoding,
-                calculateTimeout(invocation,methodName)+"m",
+                calculateTimeout(invocation, methodName) + "m",
                 compressor,
                 invocation.getObjectAttachments(),
                 requestPack,
@@ -172,17 +172,18 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         return stream;
     }
+
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         try {
             Request req = new Request();
-            req.setVersion("3.0-TRI");
+            req.setVersion(TripleConstant.TRI_VERSION);
             req.setTwoWay(true);
             req.setData(invocation);
             final String methodName = RpcUtils.getMethodName(invocation);
             int timeout = calculateTimeout(invocation, methodName);
             final org.apache.dubbo.rpc.protocol.tri.stream.ClientStream stream = createStream((RpcInvocation) invocation, req.getId(), methodName, timeout + "m");
-            ExecutorService executor = getCallbackExecutor(getUrl(),invocation);
+            ExecutorService executor = getCallbackExecutor(getUrl(), invocation);
 //        inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
 //        inv.setAttachment(PATH_KEY, getUrl().getPath());
 //        inv.setAttachment(Constants.SERIALIZATION_KEY,
@@ -197,7 +198,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
             FutureContext.getContext().setCompatibleFuture(respFuture);
-            AsyncRpcResult result = new AsyncRpcResult(respFuture,invocation);
+            AsyncRpcResult result = new AsyncRpcResult(respFuture, invocation);
             result.setExecutor(executor);
 
             if (!connection.isAvailable()) {

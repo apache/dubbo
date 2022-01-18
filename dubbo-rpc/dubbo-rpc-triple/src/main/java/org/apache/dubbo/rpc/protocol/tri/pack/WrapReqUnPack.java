@@ -19,28 +19,25 @@ package org.apache.dubbo.rpc.protocol.tri.pack;
 
 import org.apache.dubbo.triple.TripleWrapper;
 
-import com.google.protobuf.ByteString;
-
 import java.io.IOException;
 
-public class RespWrapPack implements Pack {
-    private final MultipleGenericPack genericPack;
-    private final PbPack genericPbPack;
-    private final Class<?> returnType;
+public class WrapReqUnPack implements Unpack<Object[]> {
+    private final GenericUnpack genericPack;
+    private final PbUnpack<TripleWrapper.TripleRequestWrapper> pbUnpack;
 
-    public RespWrapPack(MultipleGenericPack genericPack, PbPack genericPbPack, Class<?> returnType) {
+    public WrapReqUnPack(GenericUnpack genericPack, PbUnpack<TripleWrapper.TripleRequestWrapper> pbUnpack) {
         this.genericPack = genericPack;
-        this.genericPbPack = genericPbPack;
-        this.returnType = returnType;
+        this.pbUnpack = pbUnpack;
     }
 
     @Override
-    public byte[] pack(Object obj) throws IOException {
-        final TripleWrapper.TripleResponseWrapper.Builder builder = TripleWrapper.TripleResponseWrapper.newBuilder()
-            .setType(returnType.getName())
-            .setSerializeType(genericPack.serializationName);
-        builder.setData(ByteString.copyFrom(genericPack.pack(obj)));
-        return genericPbPack.pack(builder.build());
+    public Object[] unpack(byte[] data) throws IOException, ClassNotFoundException {
+        final TripleWrapper.TripleRequestWrapper wrapper = pbUnpack.unpack(data);
+        Object[] arguments = new Object[wrapper.getArgsCount()];
+        for (int i = 0; i < arguments.length; i++) {
+            byte[] argument = wrapper.getArgs(i).toByteArray();
+            arguments[i] = genericPack.unpack(argument, wrapper.getSerializeType(), wrapper.getArgTypes(i));
+        }
+        return arguments;
     }
-
 }

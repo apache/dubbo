@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
 import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
@@ -66,7 +67,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
+import static org.apache.dubbo.rpc.protocol.tri.compressor.Compressor.DEFAULT_COMPRESSOR;
 
 /**
  * {@link ServerStream}

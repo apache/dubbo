@@ -17,11 +17,6 @@
 
 package org.apache.dubbo.rpc.protocol.tri.command;
 
-import org.apache.dubbo.rpc.protocol.tri.AbstractStream;
-import org.apache.dubbo.rpc.protocol.tri.Compressor;
-import org.apache.dubbo.rpc.protocol.tri.IdentityCompressor;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -56,16 +51,19 @@ public class DataQueueCommand extends QueuedCommand{
     }
 
     private int getCompressFlag(ChannelHandlerContext ctx) {
-        AbstractStream stream = client ? ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get() : ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
-        return calcCompressFlag(stream.getCompressor());
+//        AbstractStream stream = client ? ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get() : ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+//        return calcCompressFlag(stream.getCompressor());
+        // todo
+
+        return 0;
     }
 
-    protected int calcCompressFlag(Compressor compressor) {
-        if (null == compressor || IdentityCompressor.NONE.getMessageEncoding().equals(compressor.getMessageEncoding())) {
-            return 0;
-        }
-        return 1;
-    }
+//    protected int calcCompressFlag(Compressor compressor) {
+//        if (null == compressor || Identity.NONE.getMessageEncoding().equals(compressor.getMessageEncoding())) {
+//            return 0;
+//        }
+//        return 1;
+//    }
 
     // for test
     public byte[] getData() {
@@ -78,7 +76,7 @@ public class DataQueueCommand extends QueuedCommand{
     }
 
     // for test
-    public boolean isClient() {
-        return client;
-    }
+//    public boolean isClient() {
+//        return client;
+//    }
 }

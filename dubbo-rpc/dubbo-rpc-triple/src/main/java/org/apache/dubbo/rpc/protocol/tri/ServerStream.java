@@ -22,6 +22,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 public class ServerStream extends AbstractServerStream implements Stream {
     protected ServerStream(URL url) {

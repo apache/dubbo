@@ -21,43 +21,27 @@ import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.ByteString;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class ReqWrapPack implements Pack {
-    private final Class<?>[] parameterTypes;
+public class WrapRespPack implements Pack {
+
     private final MultipleGenericPack genericPack;
     private final PbPack genericPbPack;
+    private final Class<?> returnType;
 
-    public ReqWrapPack(Class<?>[] parameterTypes,  MultipleGenericPack genericPack, PbPack genericPbPack) {
-        this.parameterTypes = parameterTypes;
+    public WrapRespPack(MultipleGenericPack genericPack, PbPack genericPbPack, Class<?> returnType) {
         this.genericPack = genericPack;
         this.genericPbPack = genericPbPack;
+        this.returnType = returnType;
     }
 
     @Override
     public byte[] pack(Object obj) throws IOException {
-        final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+        final TripleWrapper.TripleResponseWrapper.Builder builder = TripleWrapper.TripleResponseWrapper.newBuilder()
+            .setType(returnType.getName())
             .setSerializeType(genericPack.serializationName);
-        Object[] arguments= (Object[]) obj;
-        for (int i = 0; i < arguments.length; i++) {
-            builder.addArgTypes(parameterTypes[i].getName());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            bos.write(genericPack.pack(arguments[i]));
-            builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
-        }
+        builder.setData(ByteString.copyFrom(genericPack.pack(obj)));
         return genericPbPack.pack(builder.build());
-    }
-
-    @Override
-    public Object unpack(byte[] data, String clz) throws ClassNotFoundException, IOException {
-        final TripleWrapper.TripleRequestWrapper wrapper = (TripleWrapper.TripleRequestWrapper) genericPack.unpack(data, TripleWrapper.TripleRequestWrapper.class);
-        Object[] arguments = new Object[wrapper.getArgsCount()];
-        for (int i = 0; i < arguments.length; i++) {
-            byte[] argument = wrapper.getArgs(i).toByteArray();
-            arguments[i] = genericPack.unpack(argument, wrapper.getArgTypes(i));
-        }
-        return arguments;
     }
 
 }

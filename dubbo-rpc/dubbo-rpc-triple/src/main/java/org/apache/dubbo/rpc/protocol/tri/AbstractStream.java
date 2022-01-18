@@ -27,6 +27,9 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -35,15 +38,8 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.Http2Headers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -68,8 +64,8 @@ public abstract class AbstractStream implements Stream {
     private String serializeType;
     private StreamObserver<Object> outboundMessageSubscriber;
     private OutboundTransportObserver outboundTransportObserver;
-    private Compressor compressor = IdentityCompressor.NONE;
-    private Compressor deCompressor = IdentityCompressor.NONE;
+    private Compressor compressor = Compressor.NONE;
+    private DeCompressor deCompressor = DeCompressor.NONE;
     private volatile boolean cancelled = false;
 
     protected AbstractStream(URL url) {

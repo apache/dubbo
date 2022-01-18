@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 
 import io.netty.channel.Channel;
@@ -49,7 +50,7 @@ import io.netty.util.ReferenceCounted;
 import java.util.List;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
+import static org.apache.dubbo.rpc.protocol.tri.compressor.Compressor.DEFAULT_COMPRESSOR;
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);

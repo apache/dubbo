@@ -20,9 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -33,10 +31,9 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceModel;
-import org.apache.dubbo.triple.TripleWrapper;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 import com.google.protobuf.Any;
-import com.google.protobuf.ByteString;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
@@ -47,18 +44,12 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AsciiString;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 
 import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
-import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
-
 
 /**
  * Abstracting common actions for client streaming.

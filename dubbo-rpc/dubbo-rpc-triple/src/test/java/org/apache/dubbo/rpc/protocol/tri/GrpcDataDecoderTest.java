@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;

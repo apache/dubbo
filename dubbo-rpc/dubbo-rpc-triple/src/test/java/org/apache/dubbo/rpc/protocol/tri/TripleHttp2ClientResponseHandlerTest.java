@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;

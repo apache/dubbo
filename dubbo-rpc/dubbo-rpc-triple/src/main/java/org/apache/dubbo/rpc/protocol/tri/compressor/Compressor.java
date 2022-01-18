@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
@@ -25,25 +25,30 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
-
 /**
  * compress payload for grpc request， and decompress response payload
  * Configure it in files, pictures or other configurations that exist in the system properties
  * Configure {@link Constants#COMPRESSOR_KEY} in dubbo.properties、dubbo.yml or other configuration that exist in the system property
  */
-@SPI(value = DEFAULT_COMPRESSOR, scope = ExtensionScope.FRAMEWORK)
-public interface Compressor {
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface Compressor extends MessageEncoding {
 
-    Compressor NONE = new IdentityCompressor();
+    Compressor NONE = Identity.IDENTITY;
 
-    String DEFAULT_COMPRESSOR = "identity";
+    /**
+     * compress payload
+     *
+     * @param payloadByteArr payload byte array
+     * @return compressed payload byte array
+     */
+    byte[] compress(byte[] payloadByteArr);
+
 
     static Compressor getCompressor(FrameworkModel frameworkModel, String compressorStr) {
         if (null == compressorStr) {
             return null;
         }
-        if (compressorStr.equals(DEFAULT_COMPRESSOR)) {
+        if (compressorStr.equals(Identity.MESSAGE_ENCODING)) {
             return NONE;
         }
         return frameworkModel.getExtensionLoader(Compressor.class).getExtension(compressorStr);
@@ -57,26 +62,4 @@ public interface Compressor {
         return supportedEncodingSet.stream().map(Compressor::getMessageEncoding).collect(Collectors.joining(","));
     }
 
-    /**
-     * message encoding of current compressor
-     *
-     * @return return message encoding
-     */
-    String getMessageEncoding();
-
-    /**
-     * compress payload
-     *
-     * @param payloadByteArr payload byte array
-     * @return compressed payload byte array
-     */
-    byte[] compress(byte[] payloadByteArr);
-
-    /**
-     * decompress payload
-     *
-     * @param payloadByteArr payload byte array
-     * @return decompressed payload byte array
-     */
-    byte[] decompress(byte[] payloadByteArr);
 }

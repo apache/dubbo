@@ -19,11 +19,12 @@ package org.apache.dubbo.rpc.protocol.tri.pack;
 
 import java.io.IOException;
 
-public class VoidUnpack implements Unpack {
+public class VoidUnpack implements Unpack<Void> {
+
     public static final VoidUnpack INSTANCE = new VoidUnpack();
 
     @Override
-    public Object unpack(byte[] data, String clz) throws ClassNotFoundException, IOException {
+    public Void unpack(byte[] data) throws IOException, ClassNotFoundException {
         return null;
     }
 }

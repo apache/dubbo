@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;

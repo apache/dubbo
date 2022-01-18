@@ -32,12 +32,13 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
 import grpc.health.v1.HealthCheckResponse;
 
 import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
-import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 
 public class TripleProtocol extends AbstractProtocol {
 
@@ -54,7 +55,7 @@ public class TripleProtocol extends AbstractProtocol {
         this.triBuiltinService = new TriBuiltinService(frameworkModel);
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
         String compressorStr = ConfigurationUtils
-            .getCachedDynamicProperty(frameworkModel, COMPRESSOR_KEY, DEFAULT_COMPRESSOR);
+            .getCachedDynamicProperty(frameworkModel, COMPRESSOR_KEY, Identity.MESSAGE_ENCODING);
         this.defaultCompressor = Compressor.getCompressor(frameworkModel, compressorStr);
         this.acceptEncoding = Compressor.getAcceptEncoding(frameworkModel);
         this.connectionManager = frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension("multiple");

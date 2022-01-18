@@ -18,19 +18,25 @@
 package org.apache.dubbo.rpc.protocol.tri.pack;
 
 import org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils;
+import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-public class PbUnpack implements Unpack {
-    private final Class<?> clz;
+public class PbUnpack<T> implements Unpack<T> {
 
-    public PbUnpack(Class<?> clz) {
+    public static final PbUnpack<TripleWrapper.TripleResponseWrapper> RESP_PB_UNPACK = new PbUnpack<>(TripleWrapper.TripleResponseWrapper.class);
+
+    public static final PbUnpack<TripleWrapper.TripleRequestWrapper> REQ_PB_UNPACK = new PbUnpack<>(TripleWrapper.TripleRequestWrapper.class);
+
+    private final Class<T> clz;
+
+    public PbUnpack(Class<T> clz) {
         this.clz = clz;
     }
 
     @Override
-    public Object unpack(byte[] data) throws ClassNotFoundException, IOException {
+    public T unpack(byte[] data) throws ClassNotFoundException, IOException {
         return SingleProtobufUtils.deserialize(new ByteArrayInputStream(data), clz);
     }
 }

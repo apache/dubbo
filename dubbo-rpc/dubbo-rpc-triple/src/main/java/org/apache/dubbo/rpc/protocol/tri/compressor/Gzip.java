@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 import org.apache.dubbo.rpc.RpcException;
 
@@ -27,11 +27,13 @@ import java.util.zip.GZIPOutputStream;
 /**
  * gzip compressor
  */
-public class GzipCompressor implements Compressor {
+public class Gzip implements Compressor, DeCompressor {
+
+    public static final String GZIP = "gzip";
 
     @Override
     public String getMessageEncoding() {
-        return "gzip";
+        return GZIP;
     }
 
     @Override

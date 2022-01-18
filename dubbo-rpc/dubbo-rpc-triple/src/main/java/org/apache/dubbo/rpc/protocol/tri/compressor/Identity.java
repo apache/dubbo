@@ -15,18 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.compressor;
 
 /**
  * Default compressor
  * <p>
  * Do not use the spi
  */
-public class IdentityCompressor implements Compressor {
+public class Identity implements Compressor, DeCompressor {
+
+    public static final String MESSAGE_ENCODING = "identity";
+
+    public static final Identity IDENTITY = new Identity();
 
     @Override
     public String getMessageEncoding() {
-        return "identity";
+        return MESSAGE_ENCODING;
     }
 
     @Override
