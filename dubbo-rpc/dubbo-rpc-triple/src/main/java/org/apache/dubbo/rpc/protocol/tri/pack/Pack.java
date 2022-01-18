@@ -15,23 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.pack;
 
-import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
+import java.io.IOException;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
+public interface Pack {
+    byte[] pack(Object obj) throws IOException;
 
-public class TripleCommandOutBoundHandler extends ChannelOutboundHandlerAdapter {
-
-    @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (msg instanceof QueuedCommand) {
-            QueuedCommand command = (QueuedCommand) msg;
-            command.send(ctx, promise);
-        } else {
-            super.write(ctx, msg, promise);
-        }
+    default Object unpack(byte[] data, Class<?> clz) throws IOException, ClassNotFoundException {
+        return unpack(data, clz.getName());
     }
+
+    Object unpack(byte[] data, String clz) throws ClassNotFoundException, IOException;
 }

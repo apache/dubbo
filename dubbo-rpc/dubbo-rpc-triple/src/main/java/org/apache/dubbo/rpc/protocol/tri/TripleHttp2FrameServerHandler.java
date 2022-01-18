@@ -250,7 +250,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         }
 
         final TransportObserver observer = stream.inboundTransportObserver();
-        observer.onMetadata(new Http2HeaderMeta(headers), false);
+        observer.onHeader(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {
             observer.onComplete();
         }
@@ -283,7 +283,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
-        observer.onMetadata(trailers, true);
+        observer.onHeader(trailers, true);
     }
 
     private boolean isEcho(String methodName) {

@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.protocol.tri.frame;
 
-import org.apache.dubbo.rpc.protocol.tri.command.QueuedCommand;
+import org.apache.dubbo.rpc.protocol.tri.Compressor;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.Unpooled;
 
-public class TripleCommandOutBoundHandler extends ChannelOutboundHandlerAdapter {
+public class TriDecoder{
+    private final Compressor decompressor;
+    private final CompositeByteBuf accumulate= Unpooled.compositeBuffer();
 
-    @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (msg instanceof QueuedCommand) {
-            QueuedCommand command = (QueuedCommand) msg;
-            command.send(ctx, promise);
-        } else {
-            super.write(ctx, msg, promise);
-        }
+    public TriDecoder(Compressor decompressor) {
+        this.decompressor = decompressor;
+    }
+
+    void onData(ByteBuf in){
+        accumulate.addComponent(in);
     }
 }

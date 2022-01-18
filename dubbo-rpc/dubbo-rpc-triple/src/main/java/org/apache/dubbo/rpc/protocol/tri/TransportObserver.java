@@ -17,6 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.http2.Http2Headers;
+
 /**
  * An observer used for transport messaging which provides full streaming support.
  * A TransportObserver receives raw data or control messages from local/remote.
@@ -28,10 +31,10 @@ public interface TransportObserver {
     /**
      * Transport metadata
      *
-     * @param metadata  metadata KV paris
+     * @param headers   metadata KV paris
      * @param endStream whether this data should terminate the stream
      */
-    void onMetadata(Metadata metadata, boolean endStream);
+    void onHeader(Http2Headers headers, boolean endStream);
 
     /**
      * Transport data
@@ -39,7 +42,7 @@ public interface TransportObserver {
      * @param data      raw byte array
      * @param endStream whether this data should terminate the stream
      */
-    void onData(byte[] data, boolean endStream);
+    void onData(ByteBuf data, boolean endStream);
 
     /**
      * Error

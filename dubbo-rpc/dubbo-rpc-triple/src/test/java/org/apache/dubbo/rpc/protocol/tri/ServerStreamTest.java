@@ -135,7 +135,7 @@ public class ServerStreamTest {
         Http2Headers headers = getHttp2Headers(methodName);
 
         final TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
-        inboundTransportObserver.onMetadata(new Http2HeaderMeta(headers), false); // 1
+        inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false); // 1
         byte[] data = getPackedData(stream, new Object[]{REQUEST_MSG}, new Class[]{String.class});
         inboundTransportObserver.onData(data, false); // 2
         inboundTransportObserver.onComplete(); // 3
@@ -192,7 +192,7 @@ public class ServerStreamTest {
 
         final TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
         Http2Headers headers = getHttp2Headers(methodName);
-        inboundTransportObserver.onMetadata(new Http2HeaderMeta(headers), false); // 1
+        inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false); // 1
         byte[] data = getPackedData(stream, new Object[]{REQUEST_MSG}, new Class[]{String.class});
         inboundTransportObserver.onData(data, false); // 2
         inboundTransportObserver.onComplete(); // 3
@@ -222,7 +222,7 @@ public class ServerStreamTest {
 
         final TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
         Http2Headers headers = getHttp2Headers(methodName);
-        inboundTransportObserver.onMetadata(new Http2HeaderMeta(headers), false); // 1
+        inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false); // 1
         byte[] data = getPackedData(stream, new Object[]{REQUEST_MSG}, new Class[]{String.class});
         inboundTransportObserver.onData(data, false); // 2
         inboundTransportObserver.onComplete(); // 3

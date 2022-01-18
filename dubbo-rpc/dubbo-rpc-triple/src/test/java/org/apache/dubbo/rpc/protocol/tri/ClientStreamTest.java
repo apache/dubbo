@@ -206,11 +206,11 @@ public class ClientStreamTest {
         // here we manually call to simulate the behavior of the [server -> client]
         TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
         headers = getHttp2Headers(stream);
-        inboundTransportObserver.onMetadata(new Http2HeaderMeta(headers), false);
+        inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false);
         Object resp = "RESPONSE";
         byte[] bytes = getPackedData(stream, resp);
         inboundTransportObserver.onData(bytes, false);
-        inboundTransportObserver.onMetadata(TripleConstant.getSuccessResponseMeta(), false); // trailers
+        inboundTransportObserver.onHeader(TripleConstant.getSuccessResponseMeta(), false); // trailers
         inboundTransportObserver.onComplete();
         Object result = future.get();
         Assertions.assertEquals(((AppResponse) result).recreate(), resp);
@@ -251,11 +251,11 @@ public class ClientStreamTest {
         // here we manually call to simulate the behavior of the [server -> client]
         TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
         DefaultHttp2Headers headers = getHttp2Headers(stream);
-        inboundTransportObserver.onMetadata(new Http2HeaderMeta(headers), false);
+        inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false);
         Object resp = "RESPONSE";
         byte[] bytes = getPackedData(stream, resp);
         inboundTransportObserver.onData(bytes, false);
-        inboundTransportObserver.onMetadata(TripleConstant.SUCCESS_RESPONSE_META, false);
+        inboundTransportObserver.onHeader(TripleConstant.SUCCESS_RESPONSE_META, false);
         inboundTransportObserver.onComplete();
         MockStreamObserver observer = (MockStreamObserver) outboundMessageSubscriber;
         observer.getLatch().await(1000, TimeUnit.MILLISECONDS); // Wait for the asynchronous operation to complete
@@ -307,11 +307,11 @@ public class ClientStreamTest {
         // here we manually call to simulate the behavior of the [server -> client]
         TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
         DefaultHttp2Headers headers = getHttp2Headers(stream);
-        inboundTransportObserver.onMetadata(new Http2HeaderMeta(headers), false);
+        inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false);
         Object resp = "RESPONSE";
         byte[] bytes = getPackedData(stream, resp);
         inboundTransportObserver.onData(bytes, false);
-        inboundTransportObserver.onMetadata(TripleConstant.SUCCESS_RESPONSE_META, false);
+        inboundTransportObserver.onHeader(TripleConstant.SUCCESS_RESPONSE_META, false);
         inboundTransportObserver.onComplete();
 
         MockStreamObserver observer = (MockStreamObserver) outboundMessageSubscriber;

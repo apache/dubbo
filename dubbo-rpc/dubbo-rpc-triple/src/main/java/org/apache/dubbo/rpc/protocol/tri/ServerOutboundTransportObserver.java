@@ -34,7 +34,7 @@ public class ServerOutboundTransportObserver extends OutboundTransportObserver {
         super(queue);
     }
 
-    public void onMetadata(Http2Headers headers, boolean endStream) {
+    public void onHeader(Http2Headers headers, boolean endStream) {
         checkSendMeta(headers, endStream);
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, endStream), true)
             .addListener(future -> {
@@ -58,7 +58,7 @@ public class ServerOutboundTransportObserver extends OutboundTransportObserver {
     protected void doOnMetadata(Metadata metadata, boolean endStream) {
         final DefaultHttp2Headers headers = new DefaultHttp2Headers(true);
         metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
-        onMetadata(headers, endStream);
+        onHeader(headers, endStream);
     }
 
     @Override

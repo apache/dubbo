@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
+
 import io.netty.util.AsciiString;
 import io.netty.util.AttributeKey;
 
@@ -40,7 +42,7 @@ public class TripleConstant {
     public static final AsciiString HTTP_SCHEME = AsciiString.of("http");
 
     public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf("tri_server_stream");
-    public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.valueOf("tri_client_stream");
+    public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.valueOf("tri_client_stream");
 
     public static final String SUCCESS_RESPONSE_MESSAGE = "OK";
     public static final String SUCCESS_RESPONSE_STATUS = Integer.toString(GrpcStatus.Code.OK.code);

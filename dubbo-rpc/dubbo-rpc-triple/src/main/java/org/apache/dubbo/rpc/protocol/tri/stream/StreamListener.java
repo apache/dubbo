@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+package org.apache.dubbo.rpc.protocol.tri.stream;
 
-public class TripleClientInboundHandler extends ChannelInboundHandlerAdapter {
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        final AbstractClientStream clientStream = ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
+import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 
-        final byte[] data = (byte[]) msg;
-        if (clientStream != null) {
-            clientStream.inboundTransportObserver()
-                .onData(data, false);
-        }
-    }
+import io.netty.handler.codec.http2.Http2Headers;
+
+public interface StreamListener {
+
+    void onHeaders(Http2Headers headers);
+
+    void onData(byte[] data);
+
+    void onComplete(GrpcStatus grpcStatus);
+
+    void cancel();
+
 }

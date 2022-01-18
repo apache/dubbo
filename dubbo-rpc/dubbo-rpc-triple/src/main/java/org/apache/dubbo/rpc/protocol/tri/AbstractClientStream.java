@@ -130,21 +130,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
     }
 
-    /**
-     * Get the tri protocol special MethodDescriptor
-     */
-    private static MethodDescriptor getTriMethodDescriptor(ConsumerModel consumerModel, RpcInvocation inv) {
-        List<MethodDescriptor> methodDescriptors = consumerModel.getServiceModel().getMethods(inv.getMethodName());
-        if (CollectionUtils.isEmpty(methodDescriptors)) {
-            throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
-        }
-        for (MethodDescriptor methodDescriptor : methodDescriptors) {
-            if (Arrays.equals(inv.getParameterTypes(), methodDescriptor.getRealParameterClasses())) {
-                return methodDescriptor;
-            }
-        }
-        throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
-    }
 
     private Map<Class<?>, Object> tranFromStatusDetails(List<Any> detailList) {
         Map<Class<?>, Object> map = new HashMap<>();
@@ -300,96 +285,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         }
         out = pack(obj);
         return super.compress(out);
-    }
-
-    private TripleWrapper.TripleRequestWrapper getRequestWrapper(Object value) {
-        if (getMethodDescriptor().isStream()) {
-            String type = getMethodDescriptor().getParameterClasses()[0].getName();
-            return wrapReq(getUrl(), getSerializeType(), value, type, getMultipleSerialization());
-        } else {
-            RpcInvocation invocation = (RpcInvocation) value;
-            return wrapReq(getUrl(), invocation, getMultipleSerialization());
-        }
-    }
-
-    private TripleWrapper.TripleRequestWrapper wrapReq(URL url, RpcInvocation invocation,
-                                                       MultipleSerialization serialization) {
-        try {
-            String serializationName = (String) invocation.getObjectAttachment(Constants.SERIALIZATION_KEY);
-            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
-                .setSerializeType(convertHessianToWrapper(serializationName));
-            for (int i = 0; i < invocation.getArguments().length; i++) {
-                final String clz = invocation.getParameterTypes()[i].getName();
-                builder.addArgTypes(clz);
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                serialization.serialize(url, serializationName, clz, invocation.getArguments()[i], bos);
-                builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
-            }
-            return builder.build();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to pack wrapper req", e);
-        }
-    }
-
-    public TripleWrapper.TripleRequestWrapper wrapReq(URL url, String serializeType, Object req,
-                                                      String type,
-                                                      MultipleSerialization multipleSerialization) {
-        try {
-            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
-                .addArgTypes(type)
-                .setSerializeType(convertHessianToWrapper(serializeType));
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            multipleSerialization.serialize(url, serializeType, type, req, bos);
-            builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
-            bos.close();
-            return builder.build();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to pack wrapper req", e);
-        }
-    }
-
-    private Object getRequestValue(Object value) {
-        if (getMethodDescriptor().isUnary()) {
-            RpcInvocation invocation = (RpcInvocation) value;
-            return invocation.getArguments()[0];
-        }
-        return value;
-    }
-
-    protected Object deserializeResponse(byte[] data) {
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        try {
-            if (getConsumerModel() != null) {
-                ClassLoadUtil.switchContextLoader(getConsumerModel().getClassLoader());
-            }
-            if (getMethodDescriptor().isNeedWrap()) {
-                final TripleWrapper.TripleResponseWrapper wrapper = unpack(data,
-                    TripleWrapper.TripleResponseWrapper.class);
-                if (!getSerializeType().equals(convertHessianFromWrapper(wrapper.getSerializeType()))) {
-                    throw new UnsupportedOperationException("Received inconsistent serialization type from server, " +
-                        "reject to deserialize! Expected:" + getSerializeType() +
-                        " Actual:" + convertHessianFromWrapper(wrapper.getSerializeType()));
-                }
-                return unwrapResp(getUrl(), wrapper, getMultipleSerialization());
-            } else {
-                return unpack(data, getMethodDescriptor().getReturnClass());
-            }
-        } finally {
-            ClassLoadUtil.switchContextLoader(tccl);
-        }
-    }
-
-    public Object unwrapResp(URL url, TripleWrapper.TripleResponseWrapper wrap,
-                             MultipleSerialization serialization) {
-        String serializeType = convertHessianFromWrapper(wrap.getSerializeType());
-        try {
-            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
-            final Object ret = serialization.deserialize(url, serializeType, wrap.getType(), bais);
-            bais.close();
-            return ret;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to unwrap resp", e);
-        }
     }
 
 

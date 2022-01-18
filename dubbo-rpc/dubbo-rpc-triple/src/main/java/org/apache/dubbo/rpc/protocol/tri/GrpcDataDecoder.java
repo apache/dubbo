@@ -97,10 +97,6 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
         return stream.getDeCompressor();
     }
 
-    private AbstractClientStream getClientStream(ChannelHandlerContext ctx) {
-        return ctx.channel().attr(TripleConstant.CLIENT_STREAM_KEY).get();
-    }
-
     private AbstractServerStream getServerStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
     }

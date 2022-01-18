@@ -27,34 +27,19 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 
-public class DataQueueCommand extends QueuedCommand.AbstractQueuedCommand {
+public class DataQueueCommand extends QueuedCommand{
 
     private final byte[] data;
 
     private final boolean endStream;
 
-    private final boolean client;
-
-    private DataQueueCommand(byte[] data, boolean endStream, boolean client) {
+    private DataQueueCommand(byte[] data, boolean endStream) {
         this.data = data;
         this.endStream = endStream;
-        this.client = client;
     }
 
-    private DataQueueCommand(boolean endStream, boolean client) {
-        this(null, endStream, client);
-    }
-
-    private DataQueueCommand(boolean endStream) {
-        this(null, endStream, false);
-    }
-
-    public static DataQueueCommand createGrpcCommand(byte[] data, boolean endStream, boolean client) {
-        return new DataQueueCommand(data, endStream, client);
-    }
-
-    public static DataQueueCommand createGrpcCommand(boolean endStream) {
-        return new DataQueueCommand(endStream);
+    public static DataQueueCommand createGrpcCommand(byte[] data, boolean endStream) {
+        return new DataQueueCommand(data, endStream);
     }
 
     @Override
