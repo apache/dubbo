@@ -205,7 +205,7 @@ public class ClientStreamTest {
         // 2. Verify the data from the server()
         // NOTE: The onXX method of inboundTransportObserver is usually triggered when receiving server data,
         // here we manually call to simulate the behavior of the [server -> client]
-        TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
+        H2TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
         headers = getHttp2Headers(stream);
         inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false);
         Object resp = "RESPONSE";
@@ -250,7 +250,7 @@ public class ClientStreamTest {
         // 2. Verify the data from the server()
         // NOTE: The onXX method of inboundTransportObserver is usually triggered when receiving server data,
         // here we manually call to simulate the behavior of the [server -> client]
-        TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
+        H2TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
         DefaultHttp2Headers headers = getHttp2Headers(stream);
         inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false);
         Object resp = "RESPONSE";
@@ -306,7 +306,7 @@ public class ClientStreamTest {
 
         // NOTE: The onXX method of inboundTransportObserver is usually triggered when receiving server data,
         // here we manually call to simulate the behavior of the [server -> client]
-        TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
+        H2TransportObserver inboundTransportObserver = stream.inboundTransportObserver();
         DefaultHttp2Headers headers = getHttp2Headers(stream);
         inboundTransportObserver.onHeader(new Http2HeaderMeta(headers), false);
         Object resp = "RESPONSE";

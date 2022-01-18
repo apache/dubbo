@@ -20,7 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
@@ -29,7 +31,9 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 
 import io.netty.channel.Channel;
@@ -48,6 +52,7 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -55,9 +60,15 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
     private final PathResolver pathResolver;
     private final FrameworkModel frameworkModel;
+    private final Executor executor;
+    private final List<HeaderFilter> filters;
+    private final MultipleSerialization serialization;
 
-    public TripleHttp2FrameServerHandler(FrameworkModel frameworkModel) {
+    public TripleHttp2FrameServerHandler(FrameworkModel frameworkModel, Executor executor, List<HeaderFilter> filters, MultipleSerialization serialization) {
         this.frameworkModel = frameworkModel;
+        this.executor=executor;
+        this.filters=filters;
+        this.serialization=serialization;
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
     }
 
@@ -217,12 +228,12 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             }
         }
 
-        Compressor deCompressor = Compressor.NONE;
+        DeCompressor deCompressor = DeCompressor.NONE;
         CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
         if (null != messageEncoding) {
             String compressorStr = messageEncoding.toString();
-            if (!DEFAULT_COMPRESSOR.equals(compressorStr)) {
-                Compressor compressor = Compressor.getCompressor(frameworkModel, compressorStr);
+            if (!Identity.MESSAGE_ENCODING.equals(compressorStr)) {
+                DeCompressor compressor = DeCompressor.getCompressor(frameworkModel, compressorStr);
                 if (null == compressor) {
                     responseErr(transportObserver, GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
                         .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
@@ -233,23 +244,20 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         }
 
         boolean isUnary = methodDescriptor == null || methodDescriptor.isUnary();
-        final AbstractServerStream stream = AbstractServerStream.newServerStream(invoker.getUrl(), isUnary);
+        final ServerStream stream = new ServerStream(invoker.getUrl(),
+            executor,
+            providerModel,
+            filters,
+            providerModel.getServiceModel(),
+            methodName,
+            methodDescriptor,
+            invoker,
+            methodDescriptors,
+            deCompressor,
+            serialization
+            );
 
         Channel channel = ctx.channel();
-        // You can add listeners to ChannelPromise here if you want to listen for the result of sending a frame
-        stream.service(providerModel.getServiceModel())
-            .invoker(invoker)
-            .methodName(methodName)
-            .setDeCompressor(deCompressor)
-            .subscribe(transportObserver);
-        if (methodDescriptor != null) {
-            stream.method(methodDescriptor);
-        } else {
-            // Then you need to find the corresponding parameter according to the request body
-            stream.methods(methodDescriptors);
-        }
-
-        final TransportObserver observer = stream.inboundTransportObserver();
         observer.onHeader(headers, false);
         if (msg.isEndStream()) {
             observer.onComplete();

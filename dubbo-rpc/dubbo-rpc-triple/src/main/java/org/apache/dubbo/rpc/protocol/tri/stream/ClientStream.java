@@ -22,12 +22,13 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -184,9 +185,9 @@ public class ClientStream extends AbstractStream implements Stream {
         DefaultFuture2.getFuture(id).cancel();
     }
 
-    public final TransportObserver remoteObserver=new ClientTransportObserver();
+    public final H2TransportObserver remoteObserver=new ClientTransportObserver();
 
-    class ClientTransportObserver implements TransportObserver{
+    class ClientTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
         private final PbUnpack STATUS_DETAIL_UNPACK=new PbUnpack(Status.class);
         private GrpcStatus transportError;
         private DeCompressor decompressor;
@@ -201,7 +202,7 @@ public class ClientStream extends AbstractStream implements Stream {
         void finishProcess(GrpcStatus status,Http2Headers trailers){
             AppResponse result=new AppResponse();
             Response response = new Response(id, TripleConstant.TRI_VERSION);
-            result.setObjectAttachments(parseMetadataToAttachmentMap(trailers));
+            result.setObjectAttachments(headersToMap(trailers));
             response.setResult(result);
             if(status.code== GrpcStatus.Code.OK) {
                 result.setValue(appResponse);
@@ -232,7 +233,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 return null;
             }
             final CharSequence raw = metadata.get(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader());
-            byte[] statusDetailBin = decodeASCIIByte(raw);
+            byte[] statusDetailBin = H2TransportObserver.decodeASCIIByte(raw);
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {
                 final Status statusDetail = (Status) STATUS_DETAIL_UNPACK.unpack(statusDetailBin);
@@ -330,7 +331,7 @@ public class ClientStream extends AbstractStream implements Stream {
                         .withCause(e),null);
                 }
             };
-            decoder=new TriDecoder(decompressor,listener);
+            decoder= new TriDecoder(decompressor,listener);
         }
 
         void onTrailersReceived(Http2Headers trailers) {
@@ -339,49 +340,18 @@ public class ClientStream extends AbstractStream implements Stream {
             }
             if (transportError != null) {
                 transportError = transportError.appendDescription("trailers: " + trailers);
-
             } else {
                 GrpcStatus status = statusFromTrailers(trailers);
                 // todo abstract for stream / unary
                 if (status.code == GrpcStatus.Code.OK) {
                     AppResponse result = new AppResponse(appResponse);
                     Response response = new Response(id, TripleConstant.TRI_VERSION);
-                    result.setObjectAttachments(parseMetadataToAttachmentMap(trailers));
+                    result.setObjectAttachments(headersToMap(trailers));
                     response.setResult(result);
                     responseListener.onResponse(response);
                 }
                 finishProcess(status,trailers);
             }
-        }
-
-        /**
-         * Parse metadata to a KV pairs map.
-         *
-         * @param trailers the metadata from remote
-         * @return KV pairs map
-         */
-        private Map<String, Object> parseMetadataToAttachmentMap(Http2Headers trailers) {
-            Map<String, Object> attachments = new HashMap<>();
-            for (Map.Entry<CharSequence, CharSequence> header : trailers) {
-                String key = header.getKey().toString();
-                if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
-                    continue;
-                }
-                // avoid subsequent parse protocol header
-                if (TripleHeaderEnum.containsExcludeAttachments(key)) {
-                    continue;
-                }
-                if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
-                    try {
-                        attachments.put(key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length()), decodeASCIIByte(header.getValue()));
-                    } catch (Exception e) {
-                        LOGGER.error("Failed to parse response attachment key=" + key, e);
-                    }
-                } else {
-                    attachments.put(key, header.getValue().toString());
-                }
-            }
-            return attachments;
         }
 
         /**
@@ -416,16 +386,6 @@ public class ClientStream extends AbstractStream implements Stream {
             } else {
                 onHeaderReceived(headers);
             }
-
-
-            TriDecoder.Listener listener = data -> {
-                try {
-                    appResponse = responseUnpack.unpack(data);
-                    // todo
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            };
         }
 
         @Override
@@ -450,11 +410,6 @@ public class ClientStream extends AbstractStream implements Stream {
         @Override
         public void onError(GrpcStatus status) {
             // handle cancel
-
-        }
-
-        @Override
-        public void onComplete() {
 
         }
     }

@@ -22,16 +22,13 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.protocol.tri.Metadata;
-import org.apache.dubbo.rpc.protocol.tri.Stream;
+import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -43,8 +40,6 @@ public abstract class AbstractStream implements org.apache.dubbo.rpc.protocol.tr
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(Stream.class);
 
-    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
-    private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 
     protected AbstractStream(URL url, Executor executor) {
         this.url = url;
@@ -90,7 +85,7 @@ public abstract class AbstractStream implements org.apache.dubbo.rpc.protocol.tr
                 String str = (String) v;
                 headers.set(key, str);
             } else if (v instanceof byte[]) {
-                String str = encodeBase64ASCII((byte[]) v);
+                String str = H2TransportObserver.encodeBase64ASCII((byte[]) v);
                 headers.set(key + TripleConstant.GRPC_BIN_SUFFIX, str);
             }
         } catch (Throwable t) {
@@ -98,18 +93,6 @@ public abstract class AbstractStream implements org.apache.dubbo.rpc.protocol.tr
         }
     }
 
-    protected String encodeBase64ASCII(byte[] in) {
-        byte[] bytes = encodeBase64(in);
-        return new String(bytes, StandardCharsets.US_ASCII);
-    }
-
-    protected byte[] encodeBase64(byte[] in) {
-        return BASE64_ENCODER.encode(in);
-    }
-
-    protected byte[] decodeASCIIByte(CharSequence value) {
-        return BASE64_DECODER.decode(value.toString().getBytes(StandardCharsets.US_ASCII));
-    }
 
     @Override
     public URL url() {

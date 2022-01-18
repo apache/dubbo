@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.HeaderFilter;
@@ -29,22 +30,37 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.DefaultMetadata;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.Metadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
+import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
+import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
+import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
+import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqUnPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespUnpack;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.Http2Headers;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,68 +69,52 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.getStatus;
 
-public class ServerStream extends AbstractStream implements Stream{
+public class ServerStream extends AbstractStream implements Stream {
     private final ProviderModel providerModel;
     private final List<HeaderFilter> headerFilters;
+    private final String methodName;
+    private final DeCompressor deCompressor;
     private ServiceDescriptor serviceDescriptor;
+    private MethodDescriptor methodDescriptor;
     private List<MethodDescriptor> methodDescriptors;
-    private Invoker<?> invoker;
+    private final Invoker<?> invoker;
+    private TriDecoder decoder;
+    private final Unpack unpack;
+    private Pack pack;
+    private final MultipleSerialization serialization;
 
-    protected ServerStream(URL url, Executor executor, ProviderModel providerModel) {
+    public ServerStream(URL url,
+                        Executor executor,
+                        ProviderModel providerModel,
+                        List<HeaderFilter> headerFilters,
+                        ServiceDescriptor serviceDescriptor,
+                        String methodName,
+                        MethodDescriptor methodDescriptor,
+                        Invoker<?> invoker,
+                        List<MethodDescriptor> methodDescriptors,
+                        DeCompressor deCompressor,
+                        MultipleSerialization serialization) {
         super(url, executor);
         this.providerModel = providerModel;
-        this.headerFilters = url.getOrDefaultApplicationModel().getExtensionLoader(HeaderFilter.class).getActivateExtension(url, HEADER_FILTER_KEY);
-    }
-
-    /**
-     * Build the RpcInvocation with metadata and execute headerFilter
-     *
-     * @param metadata request header
-     * @return RpcInvocation
-     */
-    protected RpcInvocation buildInvocation(Metadata metadata) {
-        RpcInvocation inv = new RpcInvocation(url().getServiceModel(),
-            getMethodName(), getServiceDescriptor().getServiceName(),
-            url().getProtocolServiceKey(), getMethodDescriptor().getRealParameterClasses(), new Object[0]);
-        inv.setTargetServiceUniqueName(url().getServiceKey());
-        inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
-
-        final Map<String, Object> attachments = parseMetadataToAttachmentMap(metadata);
-        inv.setObjectAttachments(attachments);
-        // handle timeout
-        CharSequence timeout = metadata.get(TripleHeaderEnum.TIMEOUT.getHeader());
-        try {
-            if (!Objects.isNull(timeout)) {
-                final Long timeoutInNanos = parseTimeoutToNanos(timeout.toString());
-                if (!Objects.isNull(timeoutInNanos)) {
-                    inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
-                }
-            }
-        } catch (Throwable t) {
-            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s", timeout, getServiceDescriptor().getServiceName(),
-                getMethodName()));
-        }
-        invokeHeaderFilter(inv);
-        return inv;
-    }
-
-    /**
-     * Intercept the header to do some validation
-     * <p>
-     * for example, check the token or a user-defined permission check operation
-     *
-     * @param inv RPC Invocation
-     * @throws RpcException maybe throw rpcException
-     */
-    protected void invokeHeaderFilter(RpcInvocation inv) throws RpcException {
-        for (HeaderFilter headerFilter : getHeaderFilters()) {
-            headerFilter.invoke(getInvoker(), inv);
+        this.headerFilters = headerFilters;
+        this.methodDescriptors = methodDescriptors;
+        this.invoker = invoker;
+        this.methodName = methodName;
+        this.deCompressor = deCompressor;
+        if(methodDescriptor==null||methodDescriptor.isNeedWrap()){
+            unpack= new WrapReqUnPack(new GenericUnpack(serialization,url));
+//            pack=new WrapRespPack(new GenericPack(serialization,))
+        }else{
+            unpack= new PbUnpack(methodDescriptor.getParameterClasses()[0]);
+            pack=PbPack.INSTANCE;
         }
     }
+
+
+
 
     /**
      * For the unary method, there may be overloaded methods,
@@ -186,6 +186,7 @@ public class ServerStream extends AbstractStream implements Stream{
                 return null;
         }
     }
+
     private Metadata getTrailers(GrpcStatus grpcStatus) {
         Metadata metadata = new DefaultMetadata();
         String grpcMessage = getGrpcMessage(grpcStatus);
@@ -214,7 +215,6 @@ public class ServerStream extends AbstractStream implements Stream{
         return metadata;
     }
 
-
     /**
      * default header
      * <p>
@@ -227,7 +227,6 @@ public class ServerStream extends AbstractStream implements Stream{
         return metadata;
     }
 
-
     private String getGrpcMessage(GrpcStatus status) {
         if (StringUtils.isNotEmpty(status.description)) {
             return status.description;
@@ -237,7 +236,6 @@ public class ServerStream extends AbstractStream implements Stream{
         }
         return "unknown";
     }
-
 
     public void invoke() {
         RpcInvocation invocation = buildUnaryInvocation(getHeaders(), getData());
@@ -282,6 +280,73 @@ public class ServerStream extends AbstractStream implements Stream{
             }
         });
         RpcContext.removeContext();
+    }
+
+    class ServerTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
+
+        @Override
+        public void onHeader(Http2Headers headers, boolean endStream) {
+            final RpcInvocation inv = buildInvocation(headers);
+            headerFilters.forEach(f -> f.invoke(invoker, inv));
+            final TriDecoder.Listener listener = data -> {
+                try {
+                    final Object unpack = ServerStream.this.unpack.unpack(data);
+                    if(unpack instanceof Object[]){
+                        inv.setArguments((Object[]) unpack);
+                    }else{
+                        inv.setArguments(new Object[]{unpack});
+                    }
+                    invoker.invoke(inv);
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            };
+            decoder = new TriDecoder(deCompressor, listener);
+        }
+
+        @Override
+        public void onData(ByteBuf data, boolean endStream) {
+            decoder.deframe(data);
+            if (endStream) {
+                decoder.close();
+            }
+        }
+
+        @Override
+        public void onError(GrpcStatus status) {
+
+        }
+        /**
+         * Build the RpcInvocation with metadata and execute headerFilter
+         *
+         * @param headers request header
+         * @return RpcInvocation
+         */
+        protected RpcInvocation buildInvocation(Http2Headers headers) {
+            RpcInvocation inv = new RpcInvocation(url().getServiceModel(),
+                methodName, serviceDescriptor.getServiceName(),
+                url().getProtocolServiceKey(), methodDescriptor.getRealParameterClasses(), new Object[0]);
+            inv.setTargetServiceUniqueName(url().getServiceKey());
+            inv.setReturnTypes(methodDescriptor.getReturnTypes());
+
+            final Map<String, Object> attachments = headersToMap(headers);
+            inv.setObjectAttachments(attachments);
+            // handle timeout
+            CharSequence timeout = headers.get(TripleHeaderEnum.TIMEOUT.getHeader());
+            try {
+                if (!Objects.isNull(timeout)) {
+                    final Long timeoutInNanos = parseTimeoutToNanos(timeout.toString());
+                    if (!Objects.isNull(timeoutInNanos)) {
+                        inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
+                    }
+                }
+            } catch (Throwable t) {
+                LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s",
+                    timeout, serviceDescriptor.getServiceName(), methodName));
+            }
+            return inv;
+        }
+
     }
 
 

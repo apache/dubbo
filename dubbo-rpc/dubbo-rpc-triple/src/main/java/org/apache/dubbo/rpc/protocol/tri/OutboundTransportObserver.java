@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 /**
  * Provides loosely state management for write message to outbound.
  */
-public abstract class OutboundTransportObserver implements TransportObserver {
+public abstract class OutboundTransportObserver implements H2TransportObserver {
 
     protected final TransportState state = new TransportState();
     protected final WriteQueue writeQueue;

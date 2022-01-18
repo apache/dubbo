@@ -59,7 +59,6 @@ public class TripleProtocol extends AbstractProtocol {
         this.defaultCompressor = Compressor.getCompressor(frameworkModel, compressorStr);
         this.acceptEncoding = Compressor.getAcceptEncoding(frameworkModel);
         this.connectionManager = frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension("multiple");
-
     }
 
     @Override

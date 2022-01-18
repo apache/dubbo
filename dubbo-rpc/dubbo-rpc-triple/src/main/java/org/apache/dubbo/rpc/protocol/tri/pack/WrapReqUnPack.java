@@ -23,16 +23,14 @@ import java.io.IOException;
 
 public class WrapReqUnPack implements Unpack<Object[]> {
     private final GenericUnpack genericPack;
-    private final PbUnpack<TripleWrapper.TripleRequestWrapper> pbUnpack;
 
-    public WrapReqUnPack(GenericUnpack genericPack, PbUnpack<TripleWrapper.TripleRequestWrapper> pbUnpack) {
+    public WrapReqUnPack(GenericUnpack genericPack) {
         this.genericPack = genericPack;
-        this.pbUnpack = pbUnpack;
     }
 
     @Override
     public Object[] unpack(byte[] data) throws IOException, ClassNotFoundException {
-        final TripleWrapper.TripleRequestWrapper wrapper = pbUnpack.unpack(data);
+        final TripleWrapper.TripleRequestWrapper wrapper = PbUnpack.REQ_PB_UNPACK.unpack(data);
         Object[] arguments = new Object[wrapper.getArgsCount()];
         for (int i = 0; i < arguments.length; i++) {
             byte[] argument = wrapper.getArgs(i).toByteArray();
