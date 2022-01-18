@@ -21,7 +21,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -46,11 +45,6 @@ public class MultipleGenericPack implements Pack {
     }
 
 
-    @Override
-    public Object unpack(byte[] data, String clz) throws ClassNotFoundException, IOException {
-        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return serialization.deserialize(url, innerSerializationName, clz, bais);
-    }
 
     /**
      * Convert hessian version from Dubbo's SPI version(hessian2) to wrapper API version (hessian4)

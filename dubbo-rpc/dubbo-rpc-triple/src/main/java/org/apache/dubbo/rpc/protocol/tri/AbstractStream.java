@@ -372,33 +372,5 @@ public abstract class AbstractStream implements Stream {
         return metadata;
     }
 
-    /**
-     * Parse metadata to a KV pairs map.
-     *
-     * @param metadata the metadata from remote
-     * @return KV pairs map
-     */
-    protected Map<String, Object> parseMetadataToAttachmentMap(Metadata metadata) {
-        Map<String, Object> attachments = new HashMap<>();
-        for (Map.Entry<CharSequence, CharSequence> header : metadata) {
-            String key = header.getKey().toString();
-            if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
-                continue;
-            }
-            // avoid subsequent parse protocol header
-            if (TripleHeaderEnum.containsExcludeAttachments(key)) {
-                continue;
-            }
-            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
-                try {
-                    attachments.put(key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length()), decodeASCIIByte(header.getValue()));
-                } catch (Exception e) {
-                    LOGGER.error("Failed to parse response attachment key=" + key, e);
-                }
-            } else {
-                attachments.put(key, header.getValue().toString());
-            }
-        }
-        return attachments;
-    }
+
 }

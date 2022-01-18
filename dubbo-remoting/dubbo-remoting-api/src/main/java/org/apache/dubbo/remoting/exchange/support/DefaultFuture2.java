@@ -55,7 +55,6 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
             30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
     private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
-    // invoke id.
     private final Request request;
     private final Connection connection;
     private final int timeout;

@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.protocol.tri.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.OutboundTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TransportObserver;
@@ -44,4 +45,10 @@ public interface Stream {
     Compressor decompressor();
 
     void setDecompressor(Compressor compressor);
+
+    interface Listener{
+
+        void onResponse(Response response);
+
+    }
 }

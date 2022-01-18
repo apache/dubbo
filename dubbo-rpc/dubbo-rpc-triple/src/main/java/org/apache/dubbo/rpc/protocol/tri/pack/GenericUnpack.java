@@ -17,28 +17,31 @@
 
 package org.apache.dubbo.rpc.protocol.tri.pack;
 
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class GenericPbPack implements Pack {
-    @Override
-    public byte[] pack(Object obj) throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        SingleProtobufUtils.serialize(obj, baos);
-        return baos.toByteArray();
+public class GenericUnpack {
+    private final MultipleSerialization serialization;
+    private final URL url;
+
+    public GenericUnpack(MultipleSerialization serialization, URL url) {
+        this.serialization = serialization;
+        this.url = url;
     }
 
-    @Override
-    public Object unpack(byte[] data, Class<?> clz) throws IOException {
-        return SingleProtobufUtils.deserialize(new ByteArrayInputStream(data), clz);
+    public Object unpack(byte[] data,String serializeType, String clz) throws ClassNotFoundException, IOException {
+        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
+        return serialization.deserialize(url,convertHessianFromWrapper(serializeType), clz, bais);
     }
 
-    @Override
-    public Object unpack(byte[] data, String clz) throws ClassNotFoundException, IOException {
-        return SingleProtobufUtils.deserialize(new ByteArrayInputStream(data), ClassUtils.forName(clz));
+    protected String convertHessianFromWrapper(String serializeType) {
+        if (TripleConstant.HESSIAN4.equals(serializeType)) {
+            return TripleConstant.HESSIAN2;
+        }
+        return serializeType;
     }
 }

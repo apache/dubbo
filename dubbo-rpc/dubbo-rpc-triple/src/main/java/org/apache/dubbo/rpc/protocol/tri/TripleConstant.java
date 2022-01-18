@@ -26,7 +26,7 @@ public class TripleConstant {
     public static final String CONTENT_PROTO = "application/grpc+proto";
     public static final String APPLICATION_GRPC = "application/grpc";
     public static final String TEXT_PLAIN_UTF8 = "text/plain; encoding=utf-8";
-    public static final String TRI_VERSION = "1.0.0";
+    public static final String TRI_VERSION = "3.0-TRI";
 
     public static final String SERIALIZATION_KEY = "serialization";
     public static final String TE_KEY = "te";

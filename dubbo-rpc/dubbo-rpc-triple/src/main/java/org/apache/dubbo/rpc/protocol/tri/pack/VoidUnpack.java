@@ -15,33 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.frame;
+package org.apache.dubbo.rpc.protocol.tri.pack;
 
-import org.apache.dubbo.rpc.protocol.tri.Compressor;
+import java.io.IOException;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.CompositeByteBuf;
-import io.netty.buffer.Unpooled;
+public class VoidUnpack implements Unpack {
+    public static final VoidUnpack INSTANCE = new VoidUnpack();
 
-public class TriDecoder{
-    private final Compressor decompressor;
-    private final CompositeByteBuf accumulate= Unpooled.compositeBuffer();
-    private final Listener listener;
-
-    public TriDecoder(Compressor decompressor, Listener listener) {
-        this.decompressor = decompressor;
-        this.listener = listener;
-    }
-
-    public void onData(ByteBuf in){
-        accumulate.addComponent(in);
-    }
-
-    public interface Listener{
-        void onRawMessage(byte[] data);
-    }
-
-    public void close(){
-
+    @Override
+    public Object unpack(byte[] data, String clz) throws ClassNotFoundException, IOException {
+        return null;
     }
 }

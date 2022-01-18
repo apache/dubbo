@@ -15,33 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.frame;
+package org.apache.dubbo.rpc.protocol.tri.pack;
 
-import org.apache.dubbo.rpc.protocol.tri.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.CompositeByteBuf;
-import io.netty.buffer.Unpooled;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
-public class TriDecoder{
-    private final Compressor decompressor;
-    private final CompositeByteBuf accumulate= Unpooled.compositeBuffer();
-    private final Listener listener;
-
-    public TriDecoder(Compressor decompressor, Listener listener) {
-        this.decompressor = decompressor;
-        this.listener = listener;
+public class PbPack implements Pack {
+    @Override
+    public byte[] pack(Object obj) throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        SingleProtobufUtils.serialize(obj, baos);
+        return baos.toByteArray();
     }
 
-    public void onData(ByteBuf in){
-        accumulate.addComponent(in);
-    }
-
-    public interface Listener{
-        void onRawMessage(byte[] data);
-    }
-
-    public void close(){
-
-    }
 }

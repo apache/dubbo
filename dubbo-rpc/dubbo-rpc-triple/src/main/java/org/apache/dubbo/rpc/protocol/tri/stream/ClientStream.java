@@ -17,11 +17,14 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.tri.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcDataDecoder;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.Metadata;
 import org.apache.dubbo.rpc.protocol.tri.TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleCommandOutBoundHandler;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
@@ -30,8 +33,11 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHttp2ClientResponseHandler;
 import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
+import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
 
+import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -45,6 +51,7 @@ import io.netty.util.AsciiString;
 import io.netty.util.concurrent.Future;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
@@ -55,8 +62,8 @@ public class ClientStream extends AbstractStream implements Stream {
     private final long id;
     private final WriteQueue writeQueue;
     private final Pack requestPack;
-    private final Pack responsePack;
-    public final StreamListener listener;
+    private final Unpack responseUnpack;
+    public final Listener responseListener;
 
     public ClientStream(long id,
                         Channel parent,
@@ -72,14 +79,14 @@ public class ClientStream extends AbstractStream implements Stream {
                         Compressor compressor,
                         Map<String, Object> attachments,
                         Pack requestPack,
-                        Pack responsePack,
-                        StreamListener listener) {
+                        Unpack responseUnpack,
+                        Listener listener) {
         this.id = id;
         this.compressor = compressor;
         this.writeQueue = createWriteQueue(parent);
         this.requestPack = requestPack;
-        this.responsePack = responsePack;
-        this.listener=listener;
+        this.responseUnpack= responseUnpack;
+        this.responseListener=listener;
         this.headers = new DefaultHttp2Headers(false);
         this.headers.scheme(scheme)
             .authority(authority)
@@ -154,10 +161,52 @@ public class ClientStream extends AbstractStream implements Stream {
 
     public class ClientTransportObserver implements TransportObserver{
 
+        private GrpcStatus transportError;
         private Compressor decompressor;
+        private TriDecoder decoder;
+        private Object appResponse;
+        private Http2Headers headers;
+        private Http2Headers trailers;
+        private boolean terminated;
+        private boolean headerReceived;
 
+        private GrpcStatus validateHeaderStatus(Http2Headers headers){
+            Integer httpStatus = headers.getInt(TripleHeaderEnum.);
+
+            String contentType = headers.get(GrpcUtil.CONTENT_TYPE_KEY);
+            if (!GrpcUtil.isGrpcContentType(contentType)) {
+                return GrpcUtil.httpStatusToGrpcStatus(httpStatus)
+                    .augmentDescription("invalid content-type: " + contentType);
+            }
+            return null;
+        }
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
+            if(transportError!=null){
+                transportError.appendDescription("headers:"+headers);
+                return;
+            }
+            if(headerReceived){
+                transportError=GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withDescription("Received headers twice");
+                return;
+            }
+            Integer httpStatus=headers.status()==null?null:Integer.parseInt(headers.status().toString());
+
+            if(httpStatus!=null&&Integer.parseInt(httpStatus.toString())>100&&httpStatus<200){
+                // ignored
+                return;
+            }
+            if (httpStatus == null) {
+                transportError = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription("Missing HTTP status code");
+                return ;
+            }
+            final CharSequence contentType = headers.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader());
+            if(contentType==null||!contentType.toString().startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader())){
+                transportError=GrpcStatus.fromCode(GrpcStatus.httpStatusToGrpcCode(httpStatus))
+                    .withDescription("invalid content-type: "+contentType);
+                return;
+            }
             CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
             if (null != messageEncoding) {
                 String compressorStr = messageEncoding.toString();
@@ -173,11 +222,57 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
             }
 
+            AppResponse result=new AppResponse(appResponse);
+            Response response = new Response(id(), TripleConstant.TRI_VERSION);
+            result.setObjectAttachments(parseMetadataToAttachmentMap(trailers));
+            response.setResult(result);
+            responseListener.onResponse(response);
+            TriDecoder.Listener listener=new TriDecoder.Listener() {
+                @Override
+                public void onRawMessage(byte[] data) {
+                    appResponse = responseUnpack.unpack(data);
+
+                }
+
+                /**
+                 * Parse metadata to a KV pairs map.
+                 *
+                 * @param trailers the metadata from remote
+                 * @return KV pairs map
+                 */
+                private Map<String, Object> parseMetadataToAttachmentMap(Http2Headers trailers) {
+                    Map<String, Object> attachments = new HashMap<>();
+                    for (Map.Entry<CharSequence, CharSequence> header : trailers) {
+                        String key = header.getKey().toString();
+                        if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
+                            continue;
+                        }
+                        // avoid subsequent parse protocol header
+                        if (TripleHeaderEnum.containsExcludeAttachments(key)) {
+                            continue;
+                        }
+                        if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
+                            try {
+                                attachments.put(key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length()), decodeASCIIByte(header.getValue()));
+                            } catch (Exception e) {
+                                LOGGER.error("Failed to parse response attachment key=" + key, e);
+                            }
+                        } else {
+                            attachments.put(key, header.getValue().toString());
+                        }
+                    }
+                    return attachments;
+                }
+            };
+
         }
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-
+            decoder.onData(data);
+            if(endStream) {
+                decoder.close();
+            }
         }
 
         @Override

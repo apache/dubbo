@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.api.Connection;
@@ -41,16 +40,19 @@ import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericPbPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.MultipleGenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
+import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.ReqWrapPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.RespWrapPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
+import org.apache.dubbo.rpc.protocol.tri.pack.VoidUnpack;
+import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
-import org.apache.dubbo.rpc.protocol.tri.stream.StreamListener;
+import org.apache.dubbo.rpc.protocol.tri.stream.Stream;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AsciiString;
 
 import java.util.Arrays;
@@ -82,7 +84,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     private final String acceptEncoding;
     private final Set<Invoker<?>> invokers;
     private final MultipleGenericPack genericPack;
-    private static final GenericPbPack genericPbPack=new GenericPbPack();
+    private final GenericUnpack genericUnpack;
+    private static final PbPack PB_PACK =new PbPack();
 
     public TripleInvoker(Class<T> serviceType,
                          URL url,
@@ -94,6 +97,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                          Set<Invoker<?>> invokers) throws RemotingException {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.genericPack=new MultipleGenericPack(serialization,serializationName,url);
+        this.genericUnpack=new GenericUnpack(serialization,url);
         this.invokers = invokers;
         this.scheme = getSchemeFromUrl(url);
         this.acceptEncoding = acceptEncoding;
@@ -132,35 +136,19 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         org.apache.dubbo.rpc.protocol.tri.stream.ClientStream stream = null;
 
         Pack requestPack;
-        Pack responsePack;
+        Unpack responseUnpack;
         if(methodDescriptor.isNeedWrap()){
-            requestPack=new ReqWrapPack(invocation.getParameterTypes(),genericPack,genericPbPack);
-            responsePack=new RespWrapPack(genericPack,genericPbPack,invocation.getReturnType());
+            requestPack=new ReqWrapPack(invocation.getParameterTypes(),genericPack, PB_PACK);
+            if(!Void.TYPE.equals(methodDescriptor.getReturnClass())){
+                responseUnpack=new WrapRespUnpack(genericUnpack, PB_PACK);
+            }else{
+                responseUnpack= VoidUnpack.INSTANCE;
+            }
         }else{
-            requestPack=genericPbPack;
-            responsePack=genericPbPack;
+            requestPack= PB_PACK;
+            responseUnpack= new PbUnpack(methodDescriptor.getReturnClass());
         }
-        StreamListener listener=new StreamListener() {
-            @Override
-            public void onHeaders(Http2Headers headers) {
-
-            }
-
-            @Override
-            public void onData(byte[] data) {
-
-            }
-
-            @Override
-            public void onComplete(GrpcStatus grpcStatus) {
-
-            }
-
-            @Override
-            public void cancel() {
-
-            }
-        }
+        final Stream.Listener listener = response -> DefaultFuture2.received(connection, response);
         if (methodDescriptor.isUnary()) {
             stream = new org.apache.dubbo.rpc.protocol.tri.stream.ClientStream(
                 id,
@@ -176,7 +164,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 calculateTimeout(invocation,methodName)+"m",
                 compressor,
                 invocation.getObjectAttachments(),
-                requestPack,responsePack);
+                requestPack,
+                responseUnpack,
+                listener);
         } else {
 
         }
@@ -219,10 +209,10 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 stream.startCall();
                 stream.sendMessage(invocation.getArguments());
                 DefaultFuture2.sent(req);
-                        Response response = new Response(req.getId(), req.getVersion());
-                        response.setStatus(Response.CHANNEL_INACTIVE);
-                        response.setErrorMessage(StringUtils.toString(future1.cause()));
-                        DefaultFuture2.received(connection, response);
+//                        Response response = new Response(req.getId(), req.getVersion());
+//                        response.setStatus(Response.CHANNEL_INACTIVE);
+//                        response.setErrorMessage(StringUtils.toString(future1.cause()));
+//                        DefaultFuture2.received(connection, response);
             }
 
             return result;

@@ -25,10 +25,10 @@ import java.io.IOException;
 
 public class RespWrapPack implements Pack {
     private final MultipleGenericPack genericPack;
-    private final GenericPbPack genericPbPack;
+    private final PbPack genericPbPack;
     private final Class<?> returnType;
 
-    public RespWrapPack(MultipleGenericPack genericPack, GenericPbPack genericPbPack, Class<?> returnType) {
+    public RespWrapPack(MultipleGenericPack genericPack, PbPack genericPbPack, Class<?> returnType) {
         this.genericPack = genericPack;
         this.genericPbPack = genericPbPack;
         this.returnType = returnType;
@@ -43,9 +43,4 @@ public class RespWrapPack implements Pack {
         return genericPbPack.pack(builder.build());
     }
 
-    @Override
-    public Object unpack(byte[] data, String clz) throws ClassNotFoundException, IOException {
-        final TripleWrapper.TripleResponseWrapper wrapper = (TripleWrapper.TripleResponseWrapper) genericPack.unpack(data, TripleWrapper.TripleResponseWrapper.class);
-        return genericPack.unpack(wrapper.getData().toByteArray(), wrapper.getType());
-    }
 }

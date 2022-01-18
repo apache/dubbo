@@ -15,33 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.frame;
+package org.apache.dubbo.rpc.protocol.tri.pack;
 
-import org.apache.dubbo.rpc.protocol.tri.Compressor;
+import org.apache.dubbo.triple.TripleWrapper.TripleResponseWrapper;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.CompositeByteBuf;
-import io.netty.buffer.Unpooled;
+import java.io.IOException;
 
-public class TriDecoder{
-    private final Compressor decompressor;
-    private final CompositeByteBuf accumulate= Unpooled.compositeBuffer();
-    private final Listener listener;
+public class WrapRespUnpack implements Unpack {
 
-    public TriDecoder(Compressor decompressor, Listener listener) {
-        this.decompressor = decompressor;
-        this.listener = listener;
+    private final GenericUnpack genericPack;
+    private final PbPack genericPbPack;
+
+    public WrapRespUnpack(GenericUnpack genericPack, PbPack genericPbPack) {
+        this.genericPack = genericPack;
+        this.genericPbPack = genericPbPack;
     }
 
-    public void onData(ByteBuf in){
-        accumulate.addComponent(in);
-    }
-
-    public interface Listener{
-        void onRawMessage(byte[] data);
-    }
-
-    public void close(){
-
+    @Override
+    public Object unpack(byte[] data, String clz) throws ClassNotFoundException, IOException {
+        final TripleResponseWrapper wrapper = (TripleResponseWrapper) genericPbPack.unpack(data, TripleResponseWrapper.class);
+        return genericPack.unpack(wrapper.getData().toByteArray(), wrapper.getSerializeType(), wrapper.getType());
     }
 }

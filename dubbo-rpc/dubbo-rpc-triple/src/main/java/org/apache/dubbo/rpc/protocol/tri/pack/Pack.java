@@ -21,10 +21,4 @@ import java.io.IOException;
 
 public interface Pack {
     byte[] pack(Object obj) throws IOException;
-
-    default Object unpack(byte[] data, Class<?> clz) throws IOException, ClassNotFoundException {
-        return unpack(data, clz.getName());
-    }
-
-    Object unpack(byte[] data, String clz) throws ClassNotFoundException, IOException;
 }

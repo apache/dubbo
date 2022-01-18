@@ -27,9 +27,9 @@ import java.io.IOException;
 public class ReqWrapPack implements Pack {
     private final Class<?>[] parameterTypes;
     private final MultipleGenericPack genericPack;
-    private final GenericPbPack genericPbPack;
+    private final PbPack genericPbPack;
 
-    public ReqWrapPack(Class<?>[] parameterTypes,  MultipleGenericPack genericPack, GenericPbPack genericPbPack) {
+    public ReqWrapPack(Class<?>[] parameterTypes,  MultipleGenericPack genericPack, PbPack genericPbPack) {
         this.parameterTypes = parameterTypes;
         this.genericPack = genericPack;
         this.genericPbPack = genericPbPack;

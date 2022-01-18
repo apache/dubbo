@@ -21,6 +21,7 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.RpcException;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
 
@@ -164,6 +165,39 @@ public class GrpcStatus {
         return encodeComponent(raw);
     }
 
+    private static String encodeComponent(String raw) {
+        QueryStringEncoder encoder = new QueryStringEncoder("");
+        encoder.addParam("", raw);
+        // ?=
+        return encoder.toString().substring(2);
+    }
+
+    public static GrpcStatus.Code httpStatusToGrpcCode(int httpStatusCode) {
+        if (httpStatusCode >= 100 && httpStatusCode < 200) {
+            return GrpcStatus.Code.INTERNAL;
+        }
+        if (httpStatusCode == HttpResponseStatus.BAD_REQUEST.code() ||
+            httpStatusCode == HttpResponseStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.code()
+        ) {
+
+            return GrpcStatus.Code.INTERNAL;
+        } else if (httpStatusCode == HttpResponseStatus.UNAUTHORIZED.code()) {
+            return GrpcStatus.Code.UNAUTHENTICATED;
+        } else if (httpStatusCode == HttpResponseStatus.FORBIDDEN.code()) {
+            return GrpcStatus.Code.PERMISSION_DENIED;
+        } else if (httpStatusCode == HttpResponseStatus.NOT_FOUND.code()) {
+            return GrpcStatus.Code.UNIMPLEMENTED;
+        } else if (httpStatusCode == HttpResponseStatus.BAD_GATEWAY.code()
+            || httpStatusCode == HttpResponseStatus.TOO_MANY_REQUESTS.code()
+            || httpStatusCode == HttpResponseStatus.SERVICE_UNAVAILABLE.code()
+            || httpStatusCode == HttpResponseStatus.GATEWAY_TIMEOUT.code()) {
+
+            return UNAVAILABLE;
+        } else {
+            return GrpcStatus.Code.UNKNOWN;
+        }
+    }
+
     public GrpcStatus withCause(Throwable cause) {
         this.cause = cause;
         return this;
@@ -171,6 +205,15 @@ public class GrpcStatus {
 
     public GrpcStatus withDescription(String description) {
         this.description = description;
+        return this;
+    }
+
+    public GrpcStatus appendDescription(String description) {
+        if (this.description == null) {
+            withDescription(description);
+        } else {
+            this.description += "\n" + description;
+        }
         return this;
     }
 
@@ -193,13 +236,6 @@ public class GrpcStatus {
         return encodeComponent(output);
     }
 
-
-    private static String encodeComponent(String raw) {
-        QueryStringEncoder encoder = new QueryStringEncoder("");
-        encoder.addParam("", raw);
-        // ?=
-        return encoder.toString().substring(2);
-    }
 
     public enum Code {
         OK(0),
