@@ -19,23 +19,20 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.rpc.protocol.tri.OutboundTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 
 /**
  * Stream acts as a bi-directional intermediate layer for processing streaming data . It serializes object instance to
- * byte[] then send to remote, and deserializes byte[] to object instance from remote. {@link #inboundTransportObserver()}
- * and {@link #subscribe(OutboundTransportObserver)} provide {@link H2TransportObserver} to receive or send remote data.
- * {@link #inboundMessageObserver()} and {@link #subscribe(StreamObserver)} provide {@link StreamObserver}
- * as API for users fetching/emitting objects from/to remote peer.
+ * byte[] then send to remote, and deserializes byte[] to object instance from remote. {@link H2TransportObserver} to
+ * receive data from remote and {@link org.apache.dubbo.rpc.protocol.tri.WriteQueue} to write data.
+ * {@link Listener} acts as API for users fetch objects from remote peer.
  */
 public interface Stream {
 
     URL url();
 
-    interface Listener{
+    interface Listener {
 
         void onResponse(Response response);
 
