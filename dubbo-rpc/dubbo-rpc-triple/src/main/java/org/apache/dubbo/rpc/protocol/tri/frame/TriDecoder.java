@@ -65,7 +65,7 @@ public class TriDecoder implements Deframer {
 
     @Override
     public void deframe(ByteBuf data) {
-        accumulate.addComponent(data);
+        accumulate.addComponent(true,data);
         deliver();
     }
 
