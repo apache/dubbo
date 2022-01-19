@@ -60,7 +60,12 @@ public class ServiceDescriptor {
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
-            MethodDescriptor methodDescriptor = new MethodDescriptor(method);
+            MethodDescriptor methodDescriptor ;
+            if(StreamMethodDescriptor.isStreamMethod(method)){
+                methodDescriptor = new StreamMethodDescriptor(method);
+            }else{
+                methodDescriptor = new MethodDescriptor(method);
+            }
 
             List<MethodDescriptor> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
             methodModels.add(methodDescriptor);
