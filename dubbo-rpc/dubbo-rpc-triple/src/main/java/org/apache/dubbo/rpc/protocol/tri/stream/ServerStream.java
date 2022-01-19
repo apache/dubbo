@@ -318,14 +318,10 @@ public class ServerStream extends AbstractStream implements Stream {
             }
         }
 
-        @Override
-        public void onError(GrpcStatus status) {
-
-        }
 
         @Override
-        public void cancelByRemote() {
-
+        public void cancelByRemote(GrpcStatus status) {
+            close(status,null);
         }
 
         /**

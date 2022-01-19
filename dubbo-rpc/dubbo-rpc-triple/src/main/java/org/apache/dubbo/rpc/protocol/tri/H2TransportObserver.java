@@ -63,13 +63,7 @@ public interface H2TransportObserver {
      */
     void onData(ByteBuf data, boolean endStream);
 
-    /**
-     * Error
-     *
-     * @param status error status
-     */
-    void onError(GrpcStatus status);
 
-    void cancelByRemote();
+    void cancelByRemote(GrpcStatus status);
 
 }

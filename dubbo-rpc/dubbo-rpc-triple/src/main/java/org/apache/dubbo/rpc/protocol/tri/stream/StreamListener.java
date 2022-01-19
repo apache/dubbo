@@ -25,5 +25,11 @@ public interface StreamListener {
 
     void onMessage(Object message);
 
+    /**
+     * Indicate the stream is closed . Will be called exactly once
+     *
+     * @param grpcStatus
+     * @param attachments
+     */
     void complete(GrpcStatus grpcStatus, Map<String, Object> attachments);
 }

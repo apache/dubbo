@@ -28,21 +28,21 @@ import java.util.Map;
 
 public class UnaryClientListener implements ClientStreamListener {
     private final Connection connection;
-    private final int requestId;
+    private final long requestId;
     private Object appResponse;
 
-    public UnaryClientListener(Connection connection, int requestId) {
+    public UnaryClientListener(Connection connection, long requestId) {
         this.connection = connection;
         this.requestId = requestId;
     }
 
     @Override
     public void onMessage(Object message) {
-        if(appResponse!=null){
+        if (appResponse != null) {
             complete(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withDescription("Too many response data"), null);
         }
-        this.appResponse=message;
+        this.appResponse = message;
     }
 
     @Override

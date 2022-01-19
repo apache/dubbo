@@ -39,18 +39,19 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
-import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.VoidUnpack;
+import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
-import org.apache.dubbo.rpc.protocol.tri.stream.Stream;
+import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamListener;
+import org.apache.dubbo.rpc.protocol.tri.stream.StreamClientListener;
+import org.apache.dubbo.rpc.protocol.tri.stream.UnaryClientListener;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.util.AsciiString;
@@ -147,11 +148,11 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             requestPack= PbPack.INSTANCE;
             responseUnpack= new PbUnpack(methodDescriptor.getReturnClass());
         }
-        final Stream.Listener listener = response -> DefaultFuture2.received(connection, response);
+        ClientStreamListener listener;
         if (methodDescriptor.isUnary()) {
-
+             listener = new UnaryClientListener(connection,id);
         } else {
-
+            listener=new StreamClientListener(null,null);
         }
         stream = new org.apache.dubbo.rpc.protocol.tri.stream.ClientStream(
             getUrl(),

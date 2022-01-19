@@ -160,7 +160,7 @@ public class ClientStream extends AbstractStream implements Stream {
         this.writeQueue.enqueue(headerCmd, false);
     }
 
-    public void sendMessage(Object message){
+    public void sendMessage(Object message) {
         try {
             final byte[] data = requestPack.pack(message);
 
@@ -168,8 +168,8 @@ public class ClientStream extends AbstractStream implements Stream {
 
             final DataQueueCommand dataCmd = DataQueueCommand.createGrpcCommand(compress, false);
             this.writeQueue.enqueue(dataCmd, false);
-        }catch (Throwable t){
-
+        } catch (Throwable t) {
+            cancelByLocal(t);
         }
     }
 
@@ -182,6 +182,10 @@ public class ClientStream extends AbstractStream implements Stream {
         return null;
     }
 
+    public void complete() {
+
+    }
+
     class ClientTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
         private final PbUnpack STATUS_DETAIL_UNPACK = new PbUnpack(Status.class);
         private GrpcStatus transportError;
@@ -189,6 +193,7 @@ public class ClientStream extends AbstractStream implements Stream {
         private TriDecoder decoder;
         private Object appResponse;
         private boolean headerReceived;
+        private boolean streamClosed;
 
         void handleH2TransportError(GrpcStatus status, Http2Headers trailers) {
             writeQueue.enqueue(CancelQueueCommand.createCommand(status), true);
@@ -196,16 +201,21 @@ public class ClientStream extends AbstractStream implements Stream {
         }
 
         void finishProcess(GrpcStatus status, Http2Headers trailers) {
+            if (streamClosed) {
+                return;
+            }
+            streamClosed = true;
+
             final Map<String, Object> attachments = headersToMap(trailers);
-            if(!status.isOk()){
+            if (!status.isOk()) {
                 final Throwable throwableFromTrailers = getThrowableFromTrailers(trailers);
-                if(throwableFromTrailers!=null){
-                    responseListener.complete( status.withCause(throwableFromTrailers), attachments);
-                }else{
-                    responseListener.complete(status,attachments);
+                if (throwableFromTrailers != null) {
+                    responseListener.complete(status.withCause(throwableFromTrailers), attachments);
+                } else {
+                    responseListener.complete(status, attachments);
                 }
-            }else{
-                responseListener.complete(status,attachments);
+            } else {
+                responseListener.complete(status, attachments);
             }
             if (decoder != null) {
                 decoder.close();
@@ -389,18 +399,13 @@ public class ClientStream extends AbstractStream implements Stream {
         }
 
         @Override
-        public void onError(GrpcStatus status) {
-            // handle cancel
-
+        public void cancelByRemote(GrpcStatus status) {
+            transportError = status;
+            if (status.code == GrpcStatus.Code.CANCELLED) {
+                DefaultFuture2.getFuture(id).cancel();
+            } else {
+                finishProcess(status, null);
+            }
         }
-
-        @Override
-        public void cancelByRemote() {
-            DefaultFuture2.getFuture(id).cancel();
-        }
-    }
-
-    public void complete(){
-
     }
 }
