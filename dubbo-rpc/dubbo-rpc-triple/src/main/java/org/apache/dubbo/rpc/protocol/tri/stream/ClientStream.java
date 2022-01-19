@@ -157,7 +157,7 @@ public class ClientStream extends AbstractStream implements Stream {
             return;
         }
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
-        this.writeQueue.enqueue(headerCmd,true);
+        this.writeQueue.enqueue(headerCmd, true);
     }
 
     public void sendMessage(Object message, boolean lastMessage) {
@@ -166,8 +166,8 @@ public class ClientStream extends AbstractStream implements Stream {
 
             final byte[] compress = compressor.compress(data);
 
-            final DataQueueCommand dataCmd = DataQueueCommand.createGrpcCommand(compress,lastMessage);
-            this.writeQueue.enqueue(dataCmd,true);
+            final DataQueueCommand dataCmd = DataQueueCommand.createGrpcCommand(compress, lastMessage);
+            this.writeQueue.enqueue(dataCmd, true);
         } catch (Throwable t) {
             cancelByLocal(t);
         }
@@ -351,7 +351,7 @@ public class ClientStream extends AbstractStream implements Stream {
         private GrpcStatus statusFromTrailers(Http2Headers trailers) {
             final Integer intStatus = trailers.getInt(TripleHeaderEnum.STATUS_KEY.getHeader());
             GrpcStatus status = intStatus == null ? null : GrpcStatus.fromCode(intStatus);
-            if (status != null) {
+            if (status != null && !status.isOk()) {
                 return status.withDescription(trailers.get(TripleHeaderEnum.MESSAGE_KEY.getHeader()).toString());
             }
             // No status; something is broken. Try to provide a resonanable error.
