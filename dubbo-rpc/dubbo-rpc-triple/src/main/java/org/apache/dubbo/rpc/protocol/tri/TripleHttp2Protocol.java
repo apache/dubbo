@@ -42,7 +42,10 @@ import io.netty.handler.ssl.SslContext;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_ENABLE_PUSH_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_HEADER_TABLE_SIZE_KEY;
 import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_INITIAL_WINDOW_SIZE_KEY;
@@ -54,6 +57,7 @@ import static org.apache.dubbo.rpc.Constants.H2_SETTINGS_MAX_HEADER_LIST_SIZE_KE
 public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModelAware {
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
+    private static final String CLIENT_THREAD_POOL_NAME = "DubboTriClientHandler";
 
 
     @Override
@@ -114,6 +118,12 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
 
     @Override
     public void configClientPipeline(URL url, ChannelPipeline pipeline, SslContext sslContext) {
+        url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME);
+        url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+        url.getOrDefaultApplicationModel()
+            .getExtensionLoader(ExecutorRepository.class)
+            .getDefaultExtension()
+            .createExecutorIfAbsent(url);
         final Configuration config = ConfigurationUtils.getGlobalConfiguration(applicationModel);
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
             .gracefulShutdownTimeoutMillis(10000)

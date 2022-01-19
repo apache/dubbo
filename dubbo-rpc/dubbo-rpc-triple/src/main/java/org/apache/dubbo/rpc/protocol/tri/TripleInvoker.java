@@ -78,6 +78,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class TripleInvoker<T> extends AbstractInvoker<T> {
 
+
     private final Connection connection;
     private final ReentrantLock destroyLock = new ReentrantLock();
     private final AsciiString scheme;
@@ -185,6 +186,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             req.setData(invocation);
             final String methodName = RpcUtils.getMethodName(invocation);
             int timeout = calculateTimeout(invocation, methodName);
+
         ExecutorService executor = getCallbackExecutor(getUrl(),invocation);
         DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
         final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
