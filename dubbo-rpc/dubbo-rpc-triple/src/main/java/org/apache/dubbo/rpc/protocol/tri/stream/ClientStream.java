@@ -157,7 +157,7 @@ public class ClientStream extends AbstractStream implements Stream {
             return;
         }
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
-        this.writeQueue.enqueue(headerCmd, false);
+        this.writeQueue.enqueue(headerCmd,true);
     }
 
     public void sendMessage(Object message) {
