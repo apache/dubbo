@@ -186,6 +186,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             final String methodName = RpcUtils.getMethodName(invocation);
             int timeout = calculateTimeout(invocation, methodName);
         ExecutorService executor = getCallbackExecutor(getUrl(),invocation);
+        DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
+        final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
         final org.apache.dubbo.rpc.protocol.tri.stream.ClientStream stream = createStream((RpcInvocation) invocation, req.getId(), methodName, timeout + "m",executor);
 //        inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
 //        inv.setAttachment(PATH_KEY, getUrl().getPath());
@@ -197,8 +199,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             // try connect
             connection.isAvailable();
 
-            DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
-            final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
+
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
             FutureContext.getContext().setCompatibleFuture(respFuture);
             AsyncRpcResult result = new AsyncRpcResult(respFuture, invocation);
