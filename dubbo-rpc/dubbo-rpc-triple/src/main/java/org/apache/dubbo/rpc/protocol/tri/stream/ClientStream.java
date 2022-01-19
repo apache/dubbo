@@ -130,7 +130,7 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key, CharSequence value) {
-        if (key == null) {
+        if (value == null) {
             return;
         }
         headers.set(key, value);
