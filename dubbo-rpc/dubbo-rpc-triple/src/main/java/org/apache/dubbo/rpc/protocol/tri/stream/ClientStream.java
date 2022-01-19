@@ -352,8 +352,12 @@ public class ClientStream extends AbstractStream implements Stream {
         private GrpcStatus statusFromTrailers(Http2Headers trailers) {
             final Integer intStatus = trailers.getInt(TripleHeaderEnum.STATUS_KEY.getHeader());
             GrpcStatus status = intStatus == null ? null : GrpcStatus.fromCode(intStatus);
-            if (status != null && !status.isOk()) {
-                return status.withDescription(trailers.get(TripleHeaderEnum.MESSAGE_KEY.getHeader()).toString());
+            if (status != null) {
+                final CharSequence message = trailers.get(TripleHeaderEnum.MESSAGE_KEY.getHeader());
+                if (message != null) {
+                    status.withDescription(message.toString());
+                }
+                return status;
             }
             // No status; something is broken. Try to provide a resonanable error.
             if (headerReceived) {
