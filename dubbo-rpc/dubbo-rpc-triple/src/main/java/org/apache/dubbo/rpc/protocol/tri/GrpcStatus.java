@@ -157,7 +157,6 @@ public class GrpcStatus {
         return QueryStringDecoder.decodeComponent(raw);
     }
 
-
     public static String encodeMessage(String raw) {
         if (StringUtils.isEmpty(raw)) {
             return "";
@@ -196,6 +195,10 @@ public class GrpcStatus {
         } else {
             return GrpcStatus.Code.UNKNOWN;
         }
+    }
+
+    public boolean isOk() {
+        return Code.isOk(code.code);
     }
 
     public GrpcStatus withCause(Throwable cause) {

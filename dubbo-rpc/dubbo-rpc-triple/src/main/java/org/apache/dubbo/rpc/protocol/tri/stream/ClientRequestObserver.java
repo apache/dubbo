@@ -17,18 +17,27 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
+public class ClientRequestObserver implements StreamObserver<Object> {
+    private final ClientStream stream;
 
-/**
- * Stream acts as a bi-directional intermediate layer for processing streaming data . It serializes object instance to
- * byte[] then send to remote, and deserializes byte[] to object instance from remote. {@link H2TransportObserver} to
- * receive data from remote and {@link org.apache.dubbo.rpc.protocol.tri.WriteQueue} to write data.
- * {@link Listener} acts as API for users fetch objects from remote peer.
- */
-public interface Stream {
+    public ClientRequestObserver(ClientStream stream) {
+        this.stream = stream;
+    }
 
-    URL url();
+    @Override
+    public void onNext(Object data) {
+        stream.sendMessage(data);
+    }
 
+    @Override
+    public void onError(Throwable throwable) {
+        stream.cancelByLocal(throwable);
+    }
+
+    @Override
+    public void onCompleted() {
+        stream.complete();
+    }
 }

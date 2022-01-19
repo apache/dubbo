@@ -19,16 +19,11 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 
-import io.netty.handler.codec.http2.Http2Headers;
+import java.util.Map;
 
 public interface StreamListener {
 
-    void onHeaders(Http2Headers headers);
+    void onMessage(Object message);
 
-    void onData(byte[] data);
-
-    void onComplete(GrpcStatus grpcStatus);
-
-    void cancel();
-
+    void complete(GrpcStatus grpcStatus, Map<String, Object> attachments);
 }

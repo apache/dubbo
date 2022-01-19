@@ -45,7 +45,6 @@ public abstract class AbstractStream implements org.apache.dubbo.rpc.protocol.tr
         this.url = url;
         this.executor= new SerializingExecutor(executor);
         this.cancellationContext = new CancellationContext();
-
     }
 
     /**

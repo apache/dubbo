@@ -149,28 +149,29 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         final Stream.Listener listener = response -> DefaultFuture2.received(connection, response);
         if (methodDescriptor.isUnary()) {
-            stream = new org.apache.dubbo.rpc.protocol.tri.stream.ClientStream(
-                getUrl(),
-                executor,
-                id,
-                connection.getChannel(),
-                scheme,
-                getUrl().getPath() + "/" + methodName,
-                getUrl().getVersion(),
-                getUrl().getGroup(),
-                application,
-                getUrl().getAddress(),
-                compressor.getMessageEncoding(),
-                acceptEncoding,
-                timeout,
-                compressor,
-                invocation.getObjectAttachments(),
-                requestPack,
-                responseUnpack,
-                listener);
+
         } else {
 
         }
+        stream = new org.apache.dubbo.rpc.protocol.tri.stream.ClientStream(
+            getUrl(),
+            executor,
+            id,
+            connection.getChannel(),
+            scheme,
+            getUrl().getPath() + "/" + methodName,
+            getUrl().getVersion(),
+            getUrl().getGroup(),
+            application,
+            getUrl().getAddress(),
+            compressor.getMessageEncoding(),
+            acceptEncoding,
+            timeout,
+            compressor,
+            invocation.getObjectAttachments(),
+            requestPack,
+            responseUnpack,
+            listener);
         return stream;
     }
 

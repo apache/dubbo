@@ -18,9 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
-import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
@@ -70,7 +68,7 @@ import java.util.concurrent.Executor;
 
 
 public class ClientStream extends AbstractStream implements Stream {
-    public final Listener responseListener;
+    public final ClientStreamListener responseListener;
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final DefaultHttp2Headers headers;
     private final long id;
@@ -97,7 +95,7 @@ public class ClientStream extends AbstractStream implements Stream {
                         Map<String, Object> attachments,
                         Pack requestPack,
                         Unpack responseUnpack,
-                        Listener listener) {
+                        ClientStreamListener listener) {
         super(url, executor);
         this.id = id;
         this.compressor = compressor;
@@ -162,13 +160,17 @@ public class ClientStream extends AbstractStream implements Stream {
         this.writeQueue.enqueue(headerCmd, false);
     }
 
-    public void sendMessage(Object message) throws IOException {
-        final byte[] data = requestPack.pack(message);
+    public void sendMessage(Object message){
+        try {
+            final byte[] data = requestPack.pack(message);
 
-        final byte[] compress = compressor.compress(data);
+            final byte[] compress = compressor.compress(data);
 
-        final DataQueueCommand dataCmd = DataQueueCommand.createGrpcCommand(compress, false);
-        this.writeQueue.enqueue(dataCmd, false);
+            final DataQueueCommand dataCmd = DataQueueCommand.createGrpcCommand(compress, false);
+            this.writeQueue.enqueue(dataCmd, false);
+        }catch (Throwable t){
+
+        }
     }
 
     public void cancelByLocal(Throwable t) {
@@ -194,26 +196,17 @@ public class ClientStream extends AbstractStream implements Stream {
         }
 
         void finishProcess(GrpcStatus status, Http2Headers trailers) {
-            AppResponse result = new AppResponse();
-            Response response = new Response(id, TripleConstant.TRI_VERSION);
-            result.setObjectAttachments(headersToMap(trailers));
-            response.setResult(result);
-            if (status.code == GrpcStatus.Code.OK) {
-                result.setValue(appResponse);
-            } else {
-                final Throwable trailersException = getThrowableFromTrailers(trailers);
-                if (trailersException != null) {
-                    result.setException(trailersException);
-                } else {
-                    result.setException(status.cause);
+            final Map<String, Object> attachments = headersToMap(trailers);
+            if(!status.isOk()){
+                final Throwable throwableFromTrailers = getThrowableFromTrailers(trailers);
+                if(throwableFromTrailers!=null){
+                    responseListener.complete( status.withCause(throwableFromTrailers), attachments);
+                }else{
+                    responseListener.complete(status,attachments);
                 }
-                response.setResult(result);
-                if (result.hasException()) {
-                    final byte code = GrpcStatus.toDubboStatus(status.code);
-                    response.setStatus(code);
-                }
+            }else{
+                responseListener.complete(status,attachments);
             }
-            responseListener.onResponse(response);
             if (decoder != null) {
                 decoder.close();
             }
@@ -320,6 +313,7 @@ public class ClientStream extends AbstractStream implements Stream {
             TriDecoder.Listener listener = data -> {
                 try {
                     appResponse = responseUnpack.unpack(data);
+                    responseListener.onMessage(appResponse);
                 } catch (IOException | ClassNotFoundException e) {
                     finishProcess(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                         .withDescription("Decode response failed")
@@ -337,14 +331,6 @@ public class ClientStream extends AbstractStream implements Stream {
                 transportError = transportError.appendDescription("trailers: " + trailers);
             } else {
                 GrpcStatus status = statusFromTrailers(trailers);
-                // todo abstract for stream / unary
-                if (status.code == GrpcStatus.Code.OK) {
-                    AppResponse result = new AppResponse(appResponse);
-                    Response response = new Response(id, TripleConstant.TRI_VERSION);
-                    result.setObjectAttachments(headersToMap(trailers));
-                    response.setResult(result);
-                    responseListener.onResponse(response);
-                }
                 finishProcess(status, trailers);
             }
         }
@@ -412,5 +398,9 @@ public class ClientStream extends AbstractStream implements Stream {
         public void cancelByRemote() {
             DefaultFuture2.getFuture(id).cancel();
         }
+    }
+
+    public void complete(){
+
     }
 }
