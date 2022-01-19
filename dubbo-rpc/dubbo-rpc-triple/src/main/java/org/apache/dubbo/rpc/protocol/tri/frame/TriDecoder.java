@@ -180,8 +180,10 @@ public class TriDecoder implements Deframer {
 
 
     private byte[] getUncompressedBody() {
+        byte[] data=new byte[requiredLength];
+        accumulate.readBytes(data);
         // todo
-        return accumulate.array();
+        return data;
     }
 
     public interface Listener {
