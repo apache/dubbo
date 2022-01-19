@@ -331,6 +331,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
             };
             decoder = new TriDecoder(decompressor, listener);
+            decoder.request(2);
         }
 
         void onTrailersReceived(Http2Headers trailers) {
