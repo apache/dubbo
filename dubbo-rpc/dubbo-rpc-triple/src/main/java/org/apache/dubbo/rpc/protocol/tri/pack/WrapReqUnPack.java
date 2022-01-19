@@ -21,8 +21,11 @@ import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.IOException;
 
+import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION;
+
 public class WrapReqUnPack implements Unpack<Object[]> {
     private final GenericUnpack genericPack;
+    public String serializeType = DEFAULT_REMOTING_SERIALIZATION;
 
     public WrapReqUnPack(GenericUnpack genericPack) {
         this.genericPack = genericPack;
@@ -32,6 +35,7 @@ public class WrapReqUnPack implements Unpack<Object[]> {
     public Object[] unpack(byte[] data) throws IOException, ClassNotFoundException {
         final TripleWrapper.TripleRequestWrapper wrapper = PbUnpack.REQ_PB_UNPACK.unpack(data);
         Object[] arguments = new Object[wrapper.getArgsCount()];
+        this.serializeType = wrapper.getSerializeType();
         for (int i = 0; i < arguments.length; i++) {
             byte[] argument = wrapper.getArgs(i).toByteArray();
             arguments[i] = genericPack.unpack(argument, wrapper.getSerializeType(), wrapper.getArgTypes(i));

@@ -41,12 +41,14 @@ import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqUnPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespPack;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -74,11 +76,9 @@ public class ServerStream extends AbstractStream implements Stream {
     private final List<HeaderFilter> headerFilters;
     private final String methodName;
     private final DeCompressor deCompressor;
-    private ServiceDescriptor serviceDescriptor;
-    private MethodDescriptor methodDescriptor;
-    private List<MethodDescriptor> methodDescriptors;
     private final Invoker<?> invoker;
     private TriDecoder decoder;
+    private final ServiceDescriptor serviceDescriptor;
     private final Unpack unpack;
     private boolean headerSent;
     private boolean trailersSent;
@@ -90,9 +90,9 @@ public class ServerStream extends AbstractStream implements Stream {
     public ServerStream(URL url,
                         WriteQueue writeQueue,
                         Executor executor,
+                        ServiceDescriptor serviceDescriptor,
                         ProviderModel providerModel,
                         List<HeaderFilter> headerFilters,
-                        ServiceDescriptor serviceDescriptor,
                         String methodName,
                         MethodDescriptor methodDescriptor,
                         Invoker<?> invoker,
@@ -102,15 +102,14 @@ public class ServerStream extends AbstractStream implements Stream {
         super(url, executor);
         this.writeQueue=writeQueue;
         this.providerModel = providerModel;
+        this.serviceDescriptor=serviceDescriptor;
         this.headerFilters = headerFilters;
-        this.methodDescriptors = methodDescriptors;
         this.invoker = invoker;
         this.methodName = methodName;
         this.serialization=serialization;
         this.deCompressor = deCompressor;
         if(methodDescriptor==null||methodDescriptor.isNeedWrap()){
             unpack= new WrapReqUnPack(new GenericUnpack(serialization,url));
-//            pack=new WrapRespPack(new GenericPack(serialization,))
         }else{
             unpack= new PbUnpack(methodDescriptor.getParameterClasses()[0]);
             pack=PbPack.INSTANCE;
@@ -177,6 +176,9 @@ public class ServerStream extends AbstractStream implements Stream {
                             inv.setArguments((Object[]) unpack);
                         } else {
                             inv.setArguments(new Object[]{unpack});
+                        }
+                        if(pack==null){
+                            pack=new WrapRespPack(new GenericPack(serialization,((WrapReqUnPack)unpack).serializeType,url));
                         }
                         invoke(inv);
                     } catch (IOException | ClassNotFoundException e) {
