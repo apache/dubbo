@@ -70,5 +70,6 @@ public interface H2TransportObserver {
      */
     void onError(GrpcStatus status);
 
+    void cancelByRemote();
 
 }

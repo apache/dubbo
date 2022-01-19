@@ -17,7 +17,12 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
+import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AsciiString;
 import io.netty.util.AttributeKey;
 
@@ -41,18 +46,28 @@ public class TripleConstant {
     public static final AsciiString HTTPS_SCHEME = AsciiString.of("https");
     public static final AsciiString HTTP_SCHEME = AsciiString.of("http");
 
-    public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf("tri_server_stream");
+    public static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.valueOf("tri_server_stream");
     public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.valueOf("tri_client_stream");
 
     public static final String SUCCESS_RESPONSE_MESSAGE = "OK";
     public static final String SUCCESS_RESPONSE_STATUS = Integer.toString(GrpcStatus.Code.OK.code);
 
-    public static final Metadata SUCCESS_RESPONSE_META = getSuccessResponseMeta();
+    /**
+     * default header
+     * <p>
+     * only status and content-type
+     */
+    public static Http2Headers createSuccessHttp2Headers() {
+        Http2Headers headers = new DefaultHttp2Headers();
+        headers.status(HttpResponseStatus.OK.codeAsText());
+        headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+        return headers;
+    }
 
-    static Metadata getSuccessResponseMeta() {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), TripleConstant.SUCCESS_RESPONSE_MESSAGE);
-        metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), TripleConstant.SUCCESS_RESPONSE_STATUS);
+    public static DefaultHttp2Headers createSuccessHttp2Trailers() {
+        DefaultHttp2Headers metadata = new DefaultHttp2Headers();
+        metadata.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), TripleConstant.SUCCESS_RESPONSE_MESSAGE);
+        metadata.set(TripleHeaderEnum.STATUS_KEY.getHeader(), TripleConstant.SUCCESS_RESPONSE_STATUS);
         return metadata;
     }
 

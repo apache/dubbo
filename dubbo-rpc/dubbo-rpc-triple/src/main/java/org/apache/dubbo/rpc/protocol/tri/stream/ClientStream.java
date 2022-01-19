@@ -76,7 +76,7 @@ public class ClientStream extends AbstractStream implements Stream {
     private final Pack requestPack;
     private final Unpack responseUnpack;
     public final Listener responseListener;
-    private Compressor compressor;
+    private final Compressor compressor;
 
     private boolean remoteClosed;
 
@@ -410,6 +410,11 @@ public class ClientStream extends AbstractStream implements Stream {
         @Override
         public void onError(GrpcStatus status) {
             // handle cancel
+
+        }
+
+        @Override
+        public void cancelByRemote() {
 
         }
     }

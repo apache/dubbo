@@ -36,7 +36,6 @@ import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -94,10 +93,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     public void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame frame) {
-        final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+        final ServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
         if (serverStream != null) {
-            serverStream.cancelByRemote();
+            serverStream.transportObserver.cancelByRemote();
         }
         ctx.close();
     }
@@ -108,19 +107,15 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             LOGGER.warn("Exception in processing triple message", cause);
         }
         GrpcStatus status = GrpcStatus.getStatus(cause, "Provider's error:\n" + cause.getMessage());
-        final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
-        serverStream.transportError(status, null, true);
+        final ServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+        if(serverStream!=null){
+            serverStream.close(status,null);
+        }
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
-        super.channelRead(ctx, msg.content());
-
-        if (msg.isEndStream()) {
-            final AbstractServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
-            if (serverStream != null) {
-                serverStream.inboundTransportObserver().onComplete();
-            }
-        }
+        final ServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
+        serverStream.transportObserver.onData(msg.content(),msg.isEndStream());
     }
 
     private Invoker<?> getInvoker(Http2Headers headers, String serviceName) {
@@ -139,7 +134,6 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
         final Http2Headers headers = msg.headers();
         WriteQueue writeQueue = new WriteQueue(ctx.channel());
-        ServerOutboundTransportObserver transportObserver = new ServerOutboundTransportObserver(writeQueue);
 
         if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
             responsePlainTextError(writeQueue, HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
@@ -180,7 +174,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
         String[] parts = path.split("/");
         if (parts.length != 3) {
-            responseErr(transportObserver, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+            responseErr(writeQueue, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
                 .withDescription("Bad path format:" + path));
             return;
         }
@@ -190,14 +184,14 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
         final Invoker<?> invoker = getInvoker(headers, serviceName);
         if (invoker == null) {
-            responseErr(transportObserver, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+            responseErr(writeQueue, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
                 .withDescription("Service not found:" + serviceName));
             return;
         }
         FrameworkServiceRepository repo = frameworkModel.getServiceRepository();
         ProviderModel providerModel = repo.lookupExportedService(invoker.getUrl().getServiceKey());
         if (providerModel == null || providerModel.getServiceModel() == null) {
-            responseErr(transportObserver, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+            responseErr(writeQueue, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
                 .withDescription("Service not found:" + serviceName));
             return;
         }
@@ -218,7 +212,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
                 methodDescriptors = providerModel.getServiceModel().getMethods(originalMethodName);
             }
             if (CollectionUtils.isEmpty(methodDescriptors)) {
-                responseErr(transportObserver, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+                responseErr(writeQueue, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
                     .withDescription("Method :" + methodName + " not found of service:" + serviceName));
                 return;
             }
@@ -235,7 +229,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             if (!Identity.MESSAGE_ENCODING.equals(compressorStr)) {
                 DeCompressor compressor = DeCompressor.getCompressor(frameworkModel, compressorStr);
                 if (null == compressor) {
-                    responseErr(transportObserver, GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
+                    responseErr(writeQueue, GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
                         .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
                     return;
                 }
@@ -245,6 +239,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
         boolean isUnary = methodDescriptor == null || methodDescriptor.isUnary();
         final ServerStream stream = new ServerStream(invoker.getUrl(),
+            writeQueue,
             executor,
             providerModel,
             filters,
@@ -257,12 +252,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             serialization
             );
 
-        Channel channel = ctx.channel();
-        observer.onHeader(headers, false);
-        if (msg.isEndStream()) {
-            observer.onComplete();
-        }
-        channel.attr(TripleConstant.SERVER_STREAM_KEY).set(stream);
+        stream.transportObserver.onHeader(headers,msg.isEndStream());
+        ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).set(stream);
     }
 
     /**
@@ -285,13 +276,13 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true), true);
     }
 
-    private void responseErr(ServerOutboundTransportObserver observer, GrpcStatus status) {
+    private void responseErr(WriteQueue writeQueue, GrpcStatus status) {
         Http2Headers trailers = new DefaultHttp2Headers()
             .status(OK.codeAsText())
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
-        observer.onHeader(trailers, true);
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true),true);
     }
 
     private boolean isEcho(String methodName) {

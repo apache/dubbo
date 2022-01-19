@@ -260,7 +260,7 @@ public class GrpcStatus {
          */
         UNAUTHENTICATED(16);
 
-        final int code;
+        public final int code;
 
         Code(int code) {
             this.code = code;

@@ -25,32 +25,28 @@ import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.protocol.tri.DefaultMetadata;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
-import org.apache.dubbo.rpc.protocol.tri.Metadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
+import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqUnPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespUnpack;
-import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -58,6 +54,7 @@ import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 
 import java.io.IOException;
@@ -83,10 +80,15 @@ public class ServerStream extends AbstractStream implements Stream {
     private final Invoker<?> invoker;
     private TriDecoder decoder;
     private final Unpack unpack;
+    private boolean headerSent;
+    private boolean trailersSent;
     private Pack pack;
     private final MultipleSerialization serialization;
+    private final WriteQueue writeQueue;
+    public final ServerTransportObserver transportObserver=new ServerTransportObserver();
 
     public ServerStream(URL url,
+                        WriteQueue writeQueue,
                         Executor executor,
                         ProviderModel providerModel,
                         List<HeaderFilter> headerFilters,
@@ -98,11 +100,13 @@ public class ServerStream extends AbstractStream implements Stream {
                         DeCompressor deCompressor,
                         MultipleSerialization serialization) {
         super(url, executor);
+        this.writeQueue=writeQueue;
         this.providerModel = providerModel;
         this.headerFilters = headerFilters;
         this.methodDescriptors = methodDescriptors;
         this.invoker = invoker;
         this.methodName = methodName;
+        this.serialization=serialization;
         this.deCompressor = deCompressor;
         if(methodDescriptor==null||methodDescriptor.isNeedWrap()){
             unpack= new WrapReqUnPack(new GenericUnpack(serialization,url));
@@ -114,53 +118,6 @@ public class ServerStream extends AbstractStream implements Stream {
     }
 
 
-
-
-    /**
-     * For the unary method, there may be overloaded methods,
-     * so need to parse out the Wrapper from the data and continue buildRpcInvocation
-     * <p>
-     * Also, to prevent serialization attacks, headerFilter needs to be executed
-     *
-     * @param metadata request headers
-     * @param data     request data
-     * @return RPC Invocation
-     */
-    protected RpcInvocation buildUnaryInvocation(Metadata metadata, byte[] data) {
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        try {
-            if (getProviderModel() != null) {
-                ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
-            }
-            // For the Wrapper method,the methodDescriptor needs to get from data, so parse the request first
-            if (needDeserializeWrapper(getMethodDescriptor())) {
-                // the wrapper structure is first resolved without actual deserialization
-                TripleWrapper.TripleRequestWrapper wrapper = deserializeWrapperSetMdIfNeed(data);
-                if (wrapper == null) {
-                    return null;
-                }
-                RpcInvocation inv = buildInvocation(metadata);
-                inv.setArguments(unwrapReq(url(), wrapper, getMultipleSerialization()));
-                return inv;
-            } else {
-                // Protobuf MethodDescriptor must not be null
-                RpcInvocation inv = buildInvocation(metadata);
-                inv.setArguments(new Object[]{unpack(data, getMethodDescriptor().getParameterClasses()[0])});
-                return inv;
-            }
-        } catch (RpcException rpcException) {
-            // for catch exceptions in headerFilter
-            transportError(GrpcStatus.getStatus(rpcException, rpcException.getMessage()));
-            return null;
-        } catch (Throwable throwable) {
-            LOGGER.warn("Decode request failed:", throwable);
-            transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withDescription("Decode request failed:" + throwable.getMessage()));
-            return null;
-        } finally {
-            ClassLoadUtil.switchContextLoader(tccl);
-        }
-    }
 
     protected Long parseTimeoutToNanos(String timeoutVal) {
         if (StringUtils.isEmpty(timeoutVal) || StringUtils.isContains(timeoutVal, "null")) {
@@ -187,45 +144,8 @@ public class ServerStream extends AbstractStream implements Stream {
         }
     }
 
-    private Metadata getTrailers(GrpcStatus grpcStatus) {
-        Metadata metadata = new DefaultMetadata();
-        String grpcMessage = getGrpcMessage(grpcStatus);
-        grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
-        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
-        metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
-        Status.Builder builder = Status.newBuilder()
-            .setCode(grpcStatus.code.code)
-            .setMessage(grpcMessage);
-        Throwable throwable = grpcStatus.cause;
-        if (throwable == null) {
-            Status status = builder.build();
-            metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                encodeBase64ASCII(status.toByteArray()));
-            return metadata;
-        }
-        DebugInfo debugInfo = DebugInfo.newBuilder()
-            .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
-            // can not use now
-            // .setDetail(throwable.getMessage())
-            .build();
-        builder.addDetails(Any.pack(debugInfo));
-        Status status = builder.build();
-        metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-            encodeBase64ASCII(status.toByteArray()));
-        return metadata;
-    }
 
-    /**
-     * default header
-     * <p>
-     * only status and content-type
-     */
-    protected Metadata createDefaultMetadata() {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(Http2Headers.PseudoHeaderName.STATUS.value(), HttpResponseStatus.OK.codeAsText());
-        metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
-        return metadata;
-    }
+
 
     private String getGrpcMessage(GrpcStatus status) {
         if (StringUtils.isNotEmpty(status.description)) {
@@ -237,71 +157,39 @@ public class ServerStream extends AbstractStream implements Stream {
         return "unknown";
     }
 
-    public void invoke() {
-        RpcInvocation invocation = buildUnaryInvocation(getHeaders(), getData());
-        if (invocation == null) {
-            return;
-        }
-        final long stInNano = System.nanoTime();
-        final Result result = getInvoker().invoke(invocation);
-        CompletionStage<Object> future = result.thenApply(Function.identity());
-        future.whenComplete((o, throwable) -> {
-            if (throwable != null) {
-                LOGGER.error("Invoke error", throwable);
-                transportError(getStatus(throwable));
-                return;
-            }
-            AppResponse response = (AppResponse) o;
-            if (response.hasException()) {
-                transportError(getStatus(response.getException()));
-                return;
-            }
-            final Object timeoutVal = invocation.getObjectAttachment(TIMEOUT_KEY);
-            final long cost = System.nanoTime() - stInNano;
-            if (timeoutVal != null && cost > ((Long) timeoutVal)) {
-                LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s timeout=%s",
-                    invocation.getTargetServiceUniqueName(),
-                    invocation.getMethodName(),
-                    cost, timeoutVal));
-                outboundTransportObserver()
-                    .onError(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED));
-            } else {
-                Metadata metadata = createResponseMeta();
-                outboundTransportObserver().onMetadata(metadata, false);
-                final byte[] data = encodeResponse(response.getValue());
-                if (data == null) {
-                    // already handled in encodeResponse()
-                    return;
-                }
-                outboundTransportObserver().onData(data, false);
-                Metadata trailers = TripleConstant.getSuccessResponseMeta();
-                convertAttachment(trailers, response.getObjectAttachments());
-                outboundTransportObserver().onMetadata(trailers, true);
-            }
-        });
-        RpcContext.removeContext();
-    }
 
-    class ServerTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
+
+    public class ServerTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
 
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
-            final RpcInvocation inv = buildInvocation(headers);
-            headerFilters.forEach(f -> f.invoke(invoker, inv));
-            final TriDecoder.Listener listener = data -> {
-                try {
-                    final Object unpack = ServerStream.this.unpack.unpack(data);
-                    if(unpack instanceof Object[]){
-                        inv.setArguments((Object[]) unpack);
-                    }else{
-                        inv.setArguments(new Object[]{unpack});
+            try {
+                final RpcInvocation inv = buildInvocation(headers);
+                headerFilters.forEach(f -> f.invoke(invoker, inv));
+                final TriDecoder.Listener listener = data -> {
+                    ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                    try {
+                        if (providerModel != null) {
+                            ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
+                        }
+                        final Object unpack = ServerStream.this.unpack.unpack(data);
+                        if (unpack instanceof Object[]) {
+                            inv.setArguments((Object[]) unpack);
+                        } else {
+                            inv.setArguments(new Object[]{unpack});
+                        }
+                        invoke(inv);
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    } finally {
+                        ClassLoadUtil.switchContextLoader(tccl);
                     }
-                    invoker.invoke(inv);
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            };
-            decoder = new TriDecoder(deCompressor, listener);
+                };
+                decoder = new TriDecoder(deCompressor, listener);
+            }catch (Throwable t){
+                close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withCause(t), null);
+            }
         }
 
         @Override
@@ -316,6 +204,12 @@ public class ServerStream extends AbstractStream implements Stream {
         public void onError(GrpcStatus status) {
 
         }
+
+        @Override
+        public void cancelByRemote() {
+
+        }
+
         /**
          * Build the RpcInvocation with metadata and execute headerFilter
          *
@@ -346,7 +240,113 @@ public class ServerStream extends AbstractStream implements Stream {
             }
             return inv;
         }
+        public void invoke(RpcInvocation invocation) {
+            final long stInNano = System.nanoTime();
+            final Result result = invoker.invoke(invocation);
+            CompletionStage<Object> future = result.thenApply(Function.identity());
+            future.whenComplete((o, throwable) -> {
+                if (throwable != null) {
+                    LOGGER.error("Invoke error", throwable);
+                    close(getStatus(throwable),null);
+                    return;
+                }
+                AppResponse response = (AppResponse) o;
+                if (response.hasException()) {
+                    close(getStatus(response.getException()),null);
+                    return;
+                }
+                final Object timeoutVal = invocation.getObjectAttachment(TIMEOUT_KEY);
+                final long cost = System.nanoTime() - stInNano;
+                if (timeoutVal != null && cost > ((Long) timeoutVal)) {
+                    LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s timeout=%s",
+                        invocation.getTargetServiceUniqueName(),
+                        invocation.getMethodName(),
+                        cost, timeoutVal));
+                    close(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED),null);
+                } else {
+                    Http2Headers metadata = TripleConstant.createSuccessHttp2Headers();
+                    // todo add encoding
+                    sendHeader(metadata);
+                    sendMessage(response.getValue());
+                    DefaultHttp2Headers trailers = TripleConstant.createSuccessHttp2Trailers();
+                    convertAttachment(trailers, response.getObjectAttachments());
+                    sendHeader(trailers);
+                }
+            });
+            RpcContext.removeContext();
+        }
+    }
+    void sendHeader(Http2Headers headers){
+        if(headerSent&&trailersSent){
+            // todo handle this state
+            return ;
+        }
+        if(!headerSent) {
+            headerSent = true;
+            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false), true);
+        }else{
+            trailersSent=true;
+            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers,true), true);
+        }
+    }
+    void sendMessage(Object message){
+        final byte[] data;
+        try {
+            data = pack.pack(message);
+        } catch (IOException e) {
+            close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription("Serialize response failed")
+                .withCause(e),null);
+            return ;
+        }
+        if (data == null) {
+            close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription("Missing response"),null);
+            return;
+        }
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(data,false),true);
+    }
 
+    public void close(GrpcStatus status,Http2Headers trailers){
+        if(headerSent&&trailersSent){
+            // already closed
+            // todo add sign for outbound status
+            return ;
+        }
+        final Http2Headers headers= getTrailers(status, headerSent);
+        sendHeader(headers);
+    }
+
+    private Http2Headers getTrailers(GrpcStatus grpcStatus,boolean headerSent) {
+        Http2Headers  headers= new DefaultHttp2Headers();
+        if(!headerSent){
+            headers.status(HttpResponseStatus.OK.codeAsText());
+            headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+        }
+        String grpcMessage = getGrpcMessage(grpcStatus);
+        grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
+        headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
+        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
+        Status.Builder builder = Status.newBuilder()
+            .setCode(grpcStatus.code.code)
+            .setMessage(grpcMessage);
+        Throwable throwable = grpcStatus.cause;
+        if (throwable == null) {
+            Status status = builder.build();
+            headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
+                H2TransportObserver.encodeBase64ASCII(status.toByteArray()));
+            return headers;
+        }
+        DebugInfo debugInfo = DebugInfo.newBuilder()
+            .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
+            // can not use now
+            // .setDetail(throwable.getMessage())
+            .build();
+        builder.addDetails(Any.pack(debugInfo));
+        Status status = builder.build();
+        headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
+            H2TransportObserver.encodeBase64ASCII(status.toByteArray()));
+        return headers;
     }
 
 
