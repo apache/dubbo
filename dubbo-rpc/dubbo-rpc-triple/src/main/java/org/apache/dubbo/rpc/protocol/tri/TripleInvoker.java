@@ -214,7 +214,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             DefaultFuture2.received(connection, response);
         } else {
             stream.startCall();
-            stream.sendMessage(invocation.getArguments(),true);
+            // todo auto decect pb or multiple arguments
+            stream.sendMessage(invocation.getArguments()[0],true);
             DefaultFuture2.sent(req);
 //                        Response response = new Response(req.getId(), req.getVersion());
 //                        response.setStatus(Response.CHANNEL_INACTIVE);
