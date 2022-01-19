@@ -32,7 +32,7 @@ public class GenericPack implements Pack {
 
     public GenericPack(MultipleSerialization serialization, String serializationName, URL url) {
         this.serialization = serialization;
-        this.serializationName = serializationName;
+        this.serializationName = convertHessianToWrapper(serializationName);
         this.innerSerializationName = convertHessianFromWrapper(serializationName);
         this.url = url;
     }
