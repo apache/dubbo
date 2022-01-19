@@ -28,7 +28,7 @@ public class ClientRequestObserver implements StreamObserver<Object> {
 
     @Override
     public void onNext(Object data) {
-        stream.sendMessage(data);
+        stream.sendMessage(data,false);
     }
 
     @Override

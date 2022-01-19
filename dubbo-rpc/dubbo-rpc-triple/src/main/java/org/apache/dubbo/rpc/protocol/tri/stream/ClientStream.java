@@ -160,14 +160,14 @@ public class ClientStream extends AbstractStream implements Stream {
         this.writeQueue.enqueue(headerCmd,true);
     }
 
-    public void sendMessage(Object message) {
+    public void sendMessage(Object message, boolean lastMessage) {
         try {
             final byte[] data = requestPack.pack(message);
 
             final byte[] compress = compressor.compress(data);
 
-            final DataQueueCommand dataCmd = DataQueueCommand.createGrpcCommand(compress, false);
-            this.writeQueue.enqueue(dataCmd, false);
+            final DataQueueCommand dataCmd = DataQueueCommand.createGrpcCommand(compress,lastMessage);
+            this.writeQueue.enqueue(dataCmd,true);
         } catch (Throwable t) {
             cancelByLocal(t);
         }
