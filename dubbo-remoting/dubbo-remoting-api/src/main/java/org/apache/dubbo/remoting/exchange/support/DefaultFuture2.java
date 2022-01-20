@@ -185,6 +185,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, null, connection.getRemote(), res.getErrorMessage()));
         } else {
+            final Object result = res.getResult();
             if (connection.getChannel() != null) {
                 final InetSocketAddress local = (InetSocketAddress) connection.getChannel().localAddress();
                 this.completeExceptionally(new RemotingException(local, connection.getRemote(), res.getErrorMessage()));

@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.WrapUtils;
@@ -84,11 +85,12 @@ public class ObserverToCallListenerAdaptor implements ClientCall.Listener {
             if (status.isOk()) {
                 result.setValue(appResponse);
             } else {
-                result.setException(status.cause);
+                result.setException(status.asException());
                 response.setResult(result);
                 if (result.hasException()) {
                     final byte code = GrpcStatus.toDubboStatus(status.code);
                     response.setStatus(code);
+                    response.setErrorMessage(ExceptionUtils.getStackTrace(status.asException()));
                 }
             }
             responseObserver.onNext(response);
