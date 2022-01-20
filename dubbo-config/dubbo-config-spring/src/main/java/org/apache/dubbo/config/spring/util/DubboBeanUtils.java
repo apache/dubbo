@@ -21,10 +21,11 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
-import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigEarlyInitializationPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigEarlyRegistrationPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboApplicationListenerRegistrar;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
@@ -89,9 +90,9 @@ public abstract class DubboBeanUtils {
         registerInfrastructureBean(registry, DubboConfigDefaultPropertyValueBeanPostProcessor.BEAN_NAME,
                 DubboConfigDefaultPropertyValueBeanPostProcessor.class);
 
-        // Since 2.7.9 Register DubboConfigEarlyInitializationPostProcessor as an infrastructure Bean
-        registerInfrastructureBean(registry, DubboConfigEarlyInitializationPostProcessor.BEAN_NAME,
-                DubboConfigEarlyInitializationPostProcessor.class);
+        // Since 2.7.15 Register DubboConfigEarlyRegistrationPostProcessor as an infrastructure Bean
+        registerInfrastructureBean(registry, DubboConfigEarlyRegistrationPostProcessor.BEAN_NAME,
+                DubboConfigEarlyRegistrationPostProcessor.class);
     }
 
     /**
@@ -126,7 +127,7 @@ public abstract class DubboBeanUtils {
         String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(beanFactory, beanType, true, false);
         if (beanNames == null || beanNames.length == 0) {
             return null;
-        } else if (beanNames.length > 1){
+        } else if (beanNames.length > 1) {
             throw new NoUniqueBeanDefinitionException(beanType, Arrays.asList(beanNames));
         }
         return (T) beanFactory.getBean(beanNames[0]);

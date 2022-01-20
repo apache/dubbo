@@ -110,6 +110,6 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
      */
     @Override
     public int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE + 1;
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 }
