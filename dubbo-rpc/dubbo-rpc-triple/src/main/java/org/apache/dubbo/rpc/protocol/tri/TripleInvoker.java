@@ -46,6 +46,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.util.AsciiString;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -124,6 +125,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
         MethodDescriptor methodDescriptor = consumerModel.getServiceModel().getMethod(methodName, invocation.getParameterTypes());
+        if(methodDescriptor==null){
+            throw new IllegalStateException("MethodDescriptor not found for"+methodName+" params:"+ Arrays.toString(invocation.getCompatibleParamSignatures()));
+        }
         String application = (String) invocation.getObjectAttachments().get(CommonConstants.APPLICATION_KEY);
         if (application == null) {
             application = (String) invocation.getObjectAttachments().get(CommonConstants.REMOTE_APPLICATION_KEY);

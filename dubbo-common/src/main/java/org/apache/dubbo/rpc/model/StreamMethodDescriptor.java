@@ -31,27 +31,12 @@ public class StreamMethodDescriptor extends MethodDescriptor {
     private static final String RX_RETURN_CLASS = "io.reactivex.Single";
     private static final String GRPC_STREAM_CLASS = "io.grpc.stub.StreamObserver";
 
-    public final Class<?> requestType;
-    public final Class<?> responseType;
-    public final StreamType streamType;
+    public Class<?> requestType;
+    public Class<?> responseType;
+    public StreamType streamType;
 
     public StreamMethodDescriptor(Method method) {
         super(method);
-        Class<?>[] parameterTypes = method.getParameterTypes();
-        // bidirectional-stream: StreamObserver<Request> foo(StreamObserver<Response>)
-        if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
-            this.requestType =
-                (Class<?>) ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0];
-            this.responseType = (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[0])
-                .getActualTypeArguments()[0];
-            this.streamType = StreamType.BI_DIRECTIONAL;
-            // server-stream: void foo(Request, StreamObserver<Response>)
-        } else {
-            this.requestType = method.getParameterTypes()[0];
-            this.responseType =
-                (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[1]).getActualTypeArguments()[0];
-            this.streamType = StreamType.SERVER;
-        }
     }
 
     public static boolean isStreamMethod(Method method) {
@@ -66,7 +51,27 @@ public class StreamMethodDescriptor extends MethodDescriptor {
     }
 
     @Override
+    public Class<?> getReturnClass() {
+        return responseType;
+    }
+
+    @Override
     protected boolean needWrap() {
+        Class<?>[] parameterTypes = getMethod().getParameterTypes();
+        // bidirectional-stream: StreamObserver<Request> foo(StreamObserver<Response>)
+        if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
+            this.requestType =
+                (Class<?>) ((ParameterizedType) getMethod().getGenericReturnType()).getActualTypeArguments()[0];
+            this.responseType = (Class<?>) ((ParameterizedType) getMethod().getGenericParameterTypes()[0])
+                .getActualTypeArguments()[0];
+            this.streamType = StreamType.BI_DIRECTIONAL;
+            // server-stream: void foo(Request, StreamObserver<Response>)
+        } else {
+            this.requestType = getMethod().getParameterTypes()[0];
+            this.responseType =
+                (Class<?>) ((ParameterizedType) getMethod().getGenericParameterTypes()[1]).getActualTypeArguments()[0];
+            this.streamType = StreamType.SERVER;
+        }
         if (isProtobufClass(requestType) && isProtobufClass(responseType)) {
             return false;
         } else if (!isProtobufClass(requestType) && !isProtobufClass(responseType)) {

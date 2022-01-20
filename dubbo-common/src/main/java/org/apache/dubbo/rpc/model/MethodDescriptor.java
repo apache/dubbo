@@ -61,11 +61,13 @@ public class MethodDescriptor {
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
     public MethodDescriptor(Method method) {
-        this.method = method;
+        this(method,method.getParameterTypes(),method.getReturnType());
+    }
+    public MethodDescriptor(Method method,Class<?>[] parameterClasses, Class<?> returnClass){
+        this.method=method;
         this.methodName = method.getName();
-        this.parameterClasses = method.getParameterTypes();
-        this.returnClass = method.getReturnType();
-        this.wrap = needWrap();
+        this.parameterClasses=parameterClasses;
+        this.returnClass=returnClass;
         Type[] returnTypesResult;
         try {
             returnTypesResult = ReflectUtils.getReturnTypes(method);
@@ -74,6 +76,7 @@ public class MethodDescriptor {
             returnTypesResult = new Type[]{returnClass, returnClass};
         }
         this.returnTypes = returnTypesResult;
+        this.wrap=needWrap();
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
         this.compatibleParamSignatures = Stream.of(parameterClasses)
             .map(Class::getName)
