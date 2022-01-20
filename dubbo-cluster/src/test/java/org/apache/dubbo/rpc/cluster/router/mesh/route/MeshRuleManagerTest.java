@@ -17,146 +17,266 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.MeshRuleListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
-import java.util.Optional;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
 public class MeshRuleManagerTest {
+    private final static String rule1 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+        "kind: DestinationRule\n" +
+        "metadata: { name: demo-route.Type1 }\n" +
+        "spec:\n" +
+        "  host: demo\n" +
+        "\n";
+    private final static String rule2 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+        "kind: VirtualService\n" +
+        "metadata: { name: demo-route.Type1 }\n" +
+        "spec:\n" +
+        "  hosts: [demo]\n";
+    private final static String rule3 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+        "kind: DestinationRule\n" +
+        "metadata: { name: demo-route.Type2 }\n" +
+        "spec:\n" +
+        "  host: demo\n" +
+        "\n";
+    private final static String rule4 = "apiVersion: service.dubbo.apache.org/v1alpha1\n" +
+        "kind: VirtualService\n" +
+        "metadata: { name: demo-route.Type2 }\n" +
+        "spec:\n" +
+        "  hosts: [demo]\n";
 
-    @Test
-    public void subscribeAppRule() {
-        Optional<DynamicConfiguration> before = ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().getDynamicConfiguration();
-        try {
-            DynamicConfiguration dynamicConfiguration = mock(DynamicConfiguration.class);
 
-            ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(dynamicConfiguration);
+    private ModuleModel originModule;
+    private ModuleModel moduleModel;
+    private GovernanceRuleRepository ruleRepository;
+    private Set<MeshEnvListenerFactory> envListenerFactories;
 
-            MeshRuleManager.subscribeAppRule(URL.valueOf(""), "test");
+    @BeforeEach
+    public void setup() {
+        originModule = ApplicationModel.defaultModel().getDefaultModule();
+        moduleModel = Mockito.spy(originModule);
 
-            ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(dynamicConfiguration).getConfig(captor.capture(), anyString(), anyLong());
+        ruleRepository = Mockito.mock(GovernanceRuleRepository.class);
+        when(moduleModel.getDefaultExtension(GovernanceRuleRepository.class)).thenReturn(ruleRepository);
 
-            String result = captor.getValue();
+        ExtensionLoader<MeshEnvListenerFactory> envListenerFactoryLoader = Mockito.mock(ExtensionLoader.class);
+        envListenerFactories = new HashSet<>();
+        when(envListenerFactoryLoader.getSupportedExtensionInstances()).thenReturn(envListenerFactories);
+        when(moduleModel.getExtensionLoader(MeshEnvListenerFactory.class)).thenReturn(envListenerFactoryLoader);
+    }
 
-            assertEquals("test.MESHAPPRULE", result);
-        } finally {
-            ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(before.orElse(null));
-        }
-
-
+    @AfterEach
+    public void teardown() {
+        originModule.destroy();
     }
 
     @Test
-    public void register() {
-        Optional<DynamicConfiguration> before = ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().getDynamicConfiguration();
-        try {
-            DynamicConfiguration dynamicConfiguration = mock(DynamicConfiguration.class);
+    public void testRegister1() {
+        MeshRuleManager meshRuleManager = new MeshRuleManager(moduleModel);
 
-            ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(dynamicConfiguration);
+        MeshRuleListener meshRuleListener1 = new MeshRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+                fail();
+            }
 
-            when(dynamicConfiguration.getConfig(anyString(), anyString(), anyLong())).thenReturn("apiVersion: service.dubbo.apache.org/v1alpha1\n" +
-                    "kind: VirtualService\n" +
-                    "metadata: {name: demo-route}\n" +
-                    "spec:\n" +
-                    "  dubbo:\n" +
-                    "    - routedetail:\n" +
-                    "        - match:\n" +
-                    "            - sourceLabels: {trafficLabel: xxx}\n" +
-                    "          name: xxx-project\n" +
-                    "          route:\n" +
-                    "            - destination: {host: demo, subset: isolation}\n" +
-                    "        - match:\n" +
-                    "            - sourceLabels: {trafficLabel: testing-trunk}\n" +
-                    "          name: testing-trunk\n" +
-                    "          route:\n" +
-                    "            - destination: {host: demo, subset: testing-trunk}\n" +
-                    "        - name: testing\n" +
-                    "          route:\n" +
-                    "            - destination: {host: demo, subset: testing}\n" +
-                    "      services:\n" +
-                    "        - {regex: ccc}\n" +
-                    "  hosts: [demo]\n");
+            @Override
+            public void clearRule(String appName) {
 
-            MeshRuleManager.subscribeAppRule(URL.valueOf(""), "test");
+            }
 
+            @Override
+            public String ruleSuffix() {
+                return "Type1";
+            }
+        };
 
-            MeshRuleRouter meshRuleRouter = mock(MeshRuleRouter.class);
+        meshRuleManager.register("dubbo-demo", meshRuleListener1);
 
-            MeshRuleManager.register("test", meshRuleRouter);
+        assertEquals(1, meshRuleManager.getAppRuleListeners().size());
+        verify(ruleRepository, times(1)).getRule("dubbo-demo.MESHAPPRULE", "dubbo", 5000L);
 
-            ArgumentCaptor<VsDestinationGroup> captor = ArgumentCaptor.forClass(VsDestinationGroup.class);
+        MeshAppRuleListener meshAppRuleListener = meshRuleManager.getAppRuleListeners().values().iterator().next();
+        verify(ruleRepository, times(1)).addListener("dubbo-demo.MESHAPPRULE", "dubbo",
+            meshAppRuleListener);
 
+        meshRuleManager.register("dubbo-demo", meshRuleListener1);
+        assertEquals(1, meshRuleManager.getAppRuleListeners().size());
 
-            Mockito.verify(meshRuleRouter).onRuleChange(captor.capture());
+        MeshRuleListener meshRuleListener2 = new MeshRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+                fail();
+            }
 
-            VsDestinationGroup result = captor.getValue();
+            @Override
+            public void clearRule(String appName) {
 
-            assertNotNull(result);
-            assertEquals("test", result.getAppName());
-            assertEquals(1, result.getVirtualServiceRuleList().size());
-            assertEquals(0, result.getDestinationRuleList().size());
-        } finally {
-            ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(before.orElse(null));
-        }
+            }
+
+            @Override
+            public String ruleSuffix() {
+                return "Type2";
+            }
+        };
+        meshRuleManager.register("dubbo-demo", meshRuleListener2);
+        assertEquals(1, meshRuleManager.getAppRuleListeners().size());
+        assertEquals(2, meshAppRuleListener.getMeshRuleDispatcher().getListenerMap().size());
+
+        meshRuleManager.unregister("dubbo-demo", meshRuleListener1);
+        assertEquals(1, meshRuleManager.getAppRuleListeners().size());
+        assertEquals(1, meshAppRuleListener.getMeshRuleDispatcher().getListenerMap().size());
+
+        meshRuleManager.unregister("dubbo-demo", meshRuleListener2);
+        assertEquals(0, meshRuleManager.getAppRuleListeners().size());
+
+        verify(ruleRepository, times(1)).removeListener("dubbo-demo.MESHAPPRULE", "dubbo",
+            meshAppRuleListener);
     }
 
     @Test
-    public void unregister() {
-        Optional<DynamicConfiguration> before = ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().getDynamicConfiguration();
-        try {
-            DynamicConfiguration dynamicConfiguration = mock(DynamicConfiguration.class);
+    public void testRegister2() {
+        MeshRuleManager meshRuleManager = new MeshRuleManager(moduleModel);
 
-            ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(dynamicConfiguration);
+        AtomicInteger invokeTimes = new AtomicInteger(0);
+        MeshRuleListener meshRuleListener = new MeshRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+                assertEquals("dubbo-demo", appName);
+                Yaml yaml = new Yaml(new SafeConstructor());
+                assertTrue(rules.contains(yaml.load(rule1)));
+                assertTrue(rules.contains(yaml.load(rule2)));
 
-            when(dynamicConfiguration.getConfig(anyString(), anyString(), anyLong())).thenReturn("apiVersion: service.dubbo.apache.org/v1alpha1\n" +
-                    "kind: VirtualService\n" +
-                    "metadata: {name: demo-route}\n" +
-                    "spec:\n" +
-                    "  dubbo:\n" +
-                    "    - routedetail:\n" +
-                    "        - match:\n" +
-                    "            - sourceLabels: {trafficLabel: xxx}\n" +
-                    "          name: xxx-project\n" +
-                    "          route:\n" +
-                    "            - destination: {host: demo, subset: isolation}\n" +
-                    "        - match:\n" +
-                    "            - sourceLabels: {trafficLabel: testing-trunk}\n" +
-                    "          name: testing-trunk\n" +
-                    "          route:\n" +
-                    "            - destination: {host: demo, subset: testing-trunk}\n" +
-                    "        - name: testing\n" +
-                    "          route:\n" +
-                    "            - destination: {host: demo, subset: testing}\n" +
-                    "      services:\n" +
-                    "        - {regex: ccc}\n" +
-                    "  hosts: [demo]\n");
+                invokeTimes.incrementAndGet();
+            }
 
-            MeshRuleManager.subscribeAppRule(URL.valueOf(""), "test");
+            @Override
+            public void clearRule(String appName) {
+
+            }
+
+            @Override
+            public String ruleSuffix() {
+                return "Type1";
+            }
+        };
+
+        when(ruleRepository.getRule("dubbo-demo.MESHAPPRULE", "dubbo", 5000L)).thenReturn(rule1 + "---\n" + rule2);
+
+        meshRuleManager.register("dubbo-demo", meshRuleListener);
+
+        assertEquals(1, meshRuleManager.getAppRuleListeners().size());
+        verify(ruleRepository, times(1)).getRule("dubbo-demo.MESHAPPRULE", "dubbo", 5000L);
+        verify(ruleRepository, times(1)).addListener("dubbo-demo.MESHAPPRULE", "dubbo",
+            meshRuleManager.getAppRuleListeners().values().iterator().next());
+        assertEquals(1, invokeTimes.get());
+
+        meshRuleManager.register("dubbo-demo", meshRuleListener);
+        assertEquals(1, meshRuleManager.getAppRuleListeners().size());
+    }
+
+    @Test
+    public void testRegister3() {
+        MeshEnvListenerFactory meshEnvListenerFactory1 = Mockito.mock(MeshEnvListenerFactory.class);
+        MeshEnvListenerFactory meshEnvListenerFactory2 = Mockito.mock(MeshEnvListenerFactory.class);
+
+        MeshEnvListener meshEnvListener1 = Mockito.mock(MeshEnvListener.class);
+        when(meshEnvListenerFactory1.getListener()).thenReturn(meshEnvListener1);
+        MeshEnvListener meshEnvListener2 = Mockito.mock(MeshEnvListener.class);
+        when(meshEnvListenerFactory2.getListener()).thenReturn(meshEnvListener2);
+
+        envListenerFactories.add(meshEnvListenerFactory1);
+        envListenerFactories.add(meshEnvListenerFactory2);
+
+        MeshRuleManager meshRuleManager = new MeshRuleManager(moduleModel);
+
+        MeshRuleListener meshRuleListener1 = new MeshRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+                fail();
+            }
+
+            @Override
+            public void clearRule(String appName) {
+
+            }
+
+            @Override
+            public String ruleSuffix() {
+                return "Type1";
+            }
+        };
+
+        when(meshEnvListener1.isEnable()).thenReturn(false);
+        when(meshEnvListener2.isEnable()).thenReturn(true);
+
+        meshRuleManager.register("dubbo-demo", meshRuleListener1);
+
+        assertEquals(1, meshRuleManager.getAppRuleListeners().size());
+        verify(ruleRepository, times(1)).getRule("dubbo-demo.MESHAPPRULE", "dubbo", 5000L);
+        MeshAppRuleListener meshAppRuleListener = meshRuleManager.getAppRuleListeners().values().iterator().next();
+        verify(ruleRepository, times(1)).addListener("dubbo-demo.MESHAPPRULE", "dubbo",
+            meshAppRuleListener);
+
+        verify(meshEnvListener2, times(1)).onSubscribe("dubbo-demo",
+            meshAppRuleListener);
+
+        meshRuleManager.register("dubbo-demo", meshRuleListener1);
+        assertEquals(1, meshRuleManager.getAppRuleListeners().size());
 
 
-            MeshRuleRouter meshRuleRouter = mock(MeshRuleRouter.class);
+        MeshRuleListener meshRuleListener2 = new MeshRuleListener() {
+            @Override
+            public void onRuleChange(String appName, List<Map<String, Object>> rules) {
+                fail();
+            }
 
-            MeshRuleManager.register("test", meshRuleRouter);
+            @Override
+            public void clearRule(String appName) {
 
-            MeshRuleManager.unregister(meshRuleRouter);
+            }
 
-        } finally {
-            ApplicationModel.defaultModel().getDefaultModule().getModelEnvironment().setDynamicConfiguration(before.orElse(null));
-        }
+            @Override
+            public String ruleSuffix() {
+                return "Type2";
+            }
+        };
+        meshRuleManager.register("dubbo-demo", meshRuleListener2);
+        assertEquals(1, meshRuleManager.getAppRuleListeners().size());
+        assertEquals(2, meshAppRuleListener.getMeshRuleDispatcher().getListenerMap().size());
+
+        meshRuleManager.unregister("dubbo-demo", meshRuleListener1);
+        assertEquals(1, meshRuleManager.getAppRuleListeners().size());
+        assertEquals(1, meshAppRuleListener.getMeshRuleDispatcher().getListenerMap().size());
+
+        meshRuleManager.unregister("dubbo-demo", meshRuleListener2);
+        assertEquals(0, meshRuleManager.getAppRuleListeners().size());
+
+        verify(ruleRepository, times(1)).removeListener("dubbo-demo.MESHAPPRULE", "dubbo",
+            meshAppRuleListener);
+        verify(meshEnvListener2, times(1)).onUnSubscribe("dubbo-demo");
     }
 }

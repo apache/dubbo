@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.service.GenericService;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

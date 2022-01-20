@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.test.check;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import org.apache.commons.lang3.StringUtils;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.ClassSource;

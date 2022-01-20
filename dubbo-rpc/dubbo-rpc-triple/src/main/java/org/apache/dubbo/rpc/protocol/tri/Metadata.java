@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import java.util.Map;
+import java.util.Optional;
 
 public interface Metadata extends Iterable<Map.Entry<CharSequence, CharSequence>> {
 
@@ -31,6 +32,11 @@ public interface Metadata extends Iterable<Map.Entry<CharSequence, CharSequence>
     }
 
     CharSequence get(CharSequence key);
+
+
+    default CharSequence getOrDefault(CharSequence key, CharSequence val) {
+        return Optional.ofNullable(get(key)).orElse(val);
+    }
 
     boolean contains(CharSequence key);
 

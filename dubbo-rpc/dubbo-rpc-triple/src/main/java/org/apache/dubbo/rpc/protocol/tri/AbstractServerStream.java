@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Invoker;
@@ -34,9 +35,6 @@ import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http2.Http2Headers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -44,11 +42,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.HEADER_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
 public abstract class AbstractServerStream extends AbstractStream implements Stream {
 
@@ -146,6 +147,19 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
         final Map<String, Object> attachments = parseMetadataToAttachmentMap(metadata);
         inv.setObjectAttachments(attachments);
+        // handle timeout
+        CharSequence timeout = metadata.get(TripleHeaderEnum.TIMEOUT.getHeader());
+        try {
+            if (!Objects.isNull(timeout)) {
+                final Long timeoutInNanos = parseTimeoutToNanos(timeout.toString());
+                if (!Objects.isNull(timeoutInNanos)) {
+                    inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
+                }
+            }
+        } catch (Throwable t) {
+            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s", timeout, getServiceDescriptor().getServiceName(),
+                getMethodName()));
+        }
         invokeHeaderFilter(inv);
         return inv;
     }
@@ -299,12 +313,35 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
      * create basic meta data
      */
     protected Metadata createResponseMeta() {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(Http2Headers.PseudoHeaderName.STATUS.value(), HttpResponseStatus.OK.codeAsText());
-        metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+        Metadata metadata = createDefaultMetadata();
         metadata.putIfNotNull(TripleHeaderEnum.GRPC_ENCODING.getHeader(), super.getCompressor().getMessageEncoding())
             .putIfNotNull(TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), getAcceptEncoding());
         return metadata;
+    }
+
+    protected Long parseTimeoutToNanos(String timeoutVal) {
+        if (StringUtils.isEmpty(timeoutVal) || StringUtils.isContains(timeoutVal, "null")) {
+            return null;
+        }
+        long value = Long.parseLong(timeoutVal.substring(0, timeoutVal.length() - 1));
+        char unit = timeoutVal.charAt(timeoutVal.length() - 1);
+        switch (unit) {
+            case 'n':
+                return value;
+            case 'u':
+                return TimeUnit.MICROSECONDS.toNanos(value);
+            case 'm':
+                return TimeUnit.MILLISECONDS.toNanos(value);
+            case 'S':
+                return TimeUnit.SECONDS.toNanos(value);
+            case 'M':
+                return TimeUnit.MINUTES.toNanos(value);
+            case 'H':
+                return TimeUnit.HOURS.toNanos(value);
+            default:
+                // invalid timeout config
+                return null;
+        }
     }
 
     protected byte[] encodeResponse(Object value) {
@@ -380,6 +417,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             .onError(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED)
                 .withCause(throwable));
     }
+
 
     public TripleWrapper.TripleResponseWrapper wrapResp(URL url, String serializeType, Object resp,
                                                         MethodDescriptor desc,

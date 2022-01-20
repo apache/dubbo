@@ -31,10 +31,10 @@ public class ListDoubleMatch {
         this.oneof = oneof;
     }
 
-    public static boolean isMatch(ListDoubleMatch listDoubleMatch, Double input) {
+    public boolean isMatch(Double input) {
 
-        for (DoubleMatch doubleMatch : listDoubleMatch.getOneof()) {
-            if (DoubleMatch.isMatch(doubleMatch, input)) {
+        for (DoubleMatch doubleMatch : oneof) {
+            if (doubleMatch.isMatch(input)) {
                 return true;
             }
         }

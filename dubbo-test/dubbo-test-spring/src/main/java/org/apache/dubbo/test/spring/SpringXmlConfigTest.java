@@ -22,15 +22,21 @@ import org.apache.dubbo.test.common.api.DemoService;
 import org.apache.dubbo.test.common.api.GreetingService;
 import org.apache.dubbo.test.common.api.RestDemoService;
 import org.apache.dubbo.test.spring.context.MockSpringInitCustomizer;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class SpringXmlConfigTest {
+
+    private static ClassPathXmlApplicationContext providerContext;
 
     @BeforeAll
     public static void beforeAll() {
@@ -40,11 +46,19 @@ public class SpringXmlConfigTest {
     @AfterAll
     public static void afterAll(){
         DubboBootstrap.reset();
+        providerContext.close();
+    }
+
+    private void startProvider() {
+        providerContext = new ClassPathXmlApplicationContext("/spring/dubbo-demo-provider.xml");
     }
 
     @Test
     public void test() {
         SysProps.setProperty(SHUTDOWN_WAIT_KEY, "2000");
+        // start provider context
+        startProvider();
+        // start consumer context
         ClassPathXmlApplicationContext applicationContext = null;
         try {
             applicationContext = new ClassPathXmlApplicationContext("/spring/dubbo-demo.xml");

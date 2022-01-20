@@ -17,11 +17,9 @@
 package com.alibaba.dubbo.container.page.pages;
 
 import com.alibaba.dubbo.common.URL;
-
 import com.alibaba.dubbo.container.page.Menu;
 import com.alibaba.dubbo.container.page.Page;
 import com.alibaba.dubbo.container.page.PageHandler;
-
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;

@@ -25,10 +25,11 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.integration.IntegrationTest;
+import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.registry.RegistryServiceListener;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
-import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperConfig;
+import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -172,15 +173,15 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
             Assertions.assertTrue(serviceDiscoveryRegistryInfoWrapper.isRegistered());
             // check if it's subscribed
             Assertions.assertFalse(serviceDiscoveryRegistryInfoWrapper.isSubscribed());
-            InMemoryWritableMetadataService inMemoryWritableMetadataService = serviceDiscoveryRegistryInfoWrapper.getInMemoryWritableMetadataService();
+            MetadataServiceDelegation metadataService = DubboBootstrap.getInstance().getApplicationModel().getBeanFactory().getBean(MetadataServiceDelegation.class);
             // check if the count of exported urls is right or not
-            Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);
+            Assertions.assertEquals(metadataService.getExportedURLs().size(), 1);
             // check the exported url is right or not.
-            Assertions.assertTrue(inMemoryWritableMetadataService.getExportedURLs()
+            Assertions.assertTrue(metadataService.getExportedURLs()
                 .first()
                 .contains(MultipleRegistryCenterServiceDiscoveryRegistryService.class.getName()));
             // check the count of metadatainfo is right or not.
-            Assertions.assertEquals(inMemoryWritableMetadataService.getMetadataInfos().size(), 1);
+            Assertions.assertEquals(2, metadataService.getMetadataInfos().size());
         }
     }
 

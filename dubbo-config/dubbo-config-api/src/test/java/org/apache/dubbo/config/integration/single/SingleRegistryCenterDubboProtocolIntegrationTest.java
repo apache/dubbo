@@ -27,23 +27,26 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.integration.IntegrationTest;
+import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.ListenerRegistryWrapper;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registry.support.RegistryManager;
 import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.test.check.registrycenter.config.ZookeeperRegistryCenterConfig;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +61,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 /**
  * This abstraction class will implement some methods as base for single registry center.
  */
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterDubboProtocolIntegrationTest.class);
@@ -172,8 +176,6 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      *     <li>Protocol port is right or not</li>
      *     <li>ServiceDiscoveryRegistry's protocol is right or not</li>
      *     <li>Registered service in registry center is right or not</li>
-     *     <li>Exported url is right or not in InMemoryWritableMetadataService</li>
-     *     <li>MetadataInfo exists or not in InMemoryWritableMetadataService</li>
      *     <li>MetadataInfo has reported or not</li>
      *     <li>MetadataInfo has reported or not has service or not</li>
      *     <li>MetadataInfo's application name is right or not</li>
@@ -224,24 +226,18 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         Assertions.assertTrue(services.contains(PROVIDER_APPLICATION_NAME));
 
         // obtain InMemoryWritableMetadataService instance
-        InMemoryWritableMetadataService inMemoryWritableMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(serviceConfig.getScopeModel());
+        MetadataServiceDelegation inMemoryWritableMetadataService = (MetadataServiceDelegation) serviceConfig.getScopeModel().getBeanFactory().getBean(MetadataService.class);
         // Exported url is right or not in InMemoryWritableMetadataService
         Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);
         // MetadataInfo exists or not in InMemoryWritableMetadataService
-        Assertions.assertFalse(inMemoryWritableMetadataService.getMetadataInfos().values().isEmpty());
-        // get MetadataInfo
-        MetadataInfo metadataInfo = inMemoryWritableMetadataService.getMetadataInfos().get("default");
-        // MetadataInfo exists or not in InMemoryWritableMetadataService
-        Assertions.assertNotNull(metadataInfo);
-        // MetadataInfo has reported or not
-        Assertions.assertFalse(metadataInfo.hasReported());
+        Assertions.assertFalse(inMemoryWritableMetadataService.getMetadataInfos().isEmpty());
         // MetadataInfo has reported or not has service or not
-        Assertions.assertFalse(metadataInfo.getServices().isEmpty());
+        Assertions.assertFalse(inMemoryWritableMetadataService.getMetadataInfos().get(0).getServices().isEmpty());
         // MetadataInfo has reported or not has service or not
-        Assertions.assertEquals(metadataInfo.getServices().size(), 1);
+        Assertions.assertEquals(inMemoryWritableMetadataService.getMetadataInfos().get(0).getServices().size(), 1);
         // obtain the service's key
         String key = SingleRegistryCenterIntegrationService.class.getName() + ":" + PROTOCOL_NAME;
-        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServices().get(key);
+        MetadataInfo.ServiceInfo serviceInfo = inMemoryWritableMetadataService.getMetadataInfos().get(0).getServices().get(key);
         // MetadataInfo's service exists or not
         Assertions.assertNotNull(serviceInfo);
         // The name of MetadataInfo's service is right or not

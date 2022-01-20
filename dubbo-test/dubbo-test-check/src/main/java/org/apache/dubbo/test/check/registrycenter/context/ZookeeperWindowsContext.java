@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.test.check.registrycenter.context;
 
-import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
+
+import org.apache.commons.exec.ExecuteWatchdog;
 
 import java.util.HashMap;
 import java.util.Map;

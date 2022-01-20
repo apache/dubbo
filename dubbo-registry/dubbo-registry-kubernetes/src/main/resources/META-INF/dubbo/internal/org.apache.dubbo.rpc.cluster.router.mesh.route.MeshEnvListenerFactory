@@ -1,1 +1,0 @@
-kubernetes=org.apache.dubbo.registry.kubernetes.KubernetesMeshEnvListenerFactory

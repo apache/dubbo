@@ -30,8 +30,6 @@
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <!-- Uncomment spring_version property to check Spring 4.x compatibility -->
         <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
-        <curator5_version>5.1.0</curator5_version>
-        <zookeeper_version>3.6.0</zookeeper_version>
     </properties>
 
     <dependencies>
@@ -152,6 +150,11 @@
                     <artifactId>junit-vintage-engine</artifactId>
                     <groupId>org.junit.vintage</groupId>
                 </exclusion>
+                <!-- Fix the bug of log4j refer:https://github.com/apache/logging-log4j2/pull/608 -->
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-api</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -185,29 +188,25 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
+            <artifactId>dubbo-remoting-zookeeper</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-recipes</artifactId>
-            <version>${curator5_version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-x-discovery</artifactId>
-            <version>${curator5_version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
-            <version>${zookeeper_version}</version>
             <scope>test</scope>
         </dependency>
 

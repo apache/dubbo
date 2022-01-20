@@ -93,35 +93,40 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             ((RpcInvocation) invocation).addObjectAttachments(contextAttachments);
         }
 
-        try {
-            // pass default timeout set by end user (ReferenceConfig)
-            Object countDown = context.getObjectAttachment(TIME_COUNTDOWN_KEY);
-            if (countDown != null) {
-                TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
-                if (timeoutCountDown.isExpired()) {
-                    return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
-                            "No time left for making the following call: " + invocation.getServiceName() + "."
-                                    + invocation.getMethodName() + ", terminate directly."), invocation);
-                }
+        // pass default timeout set by end user (ReferenceConfig)
+        Object countDown = context.getObjectAttachment(TIME_COUNTDOWN_KEY);
+        if (countDown != null) {
+            TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
+            if (timeoutCountDown.isExpired()) {
+                return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
+                    "No time left for making the following call: " + invocation.getServiceName() + "."
+                        + invocation.getMethodName() + ", terminate directly."), invocation);
             }
-
-            RpcContext.removeServerContext();
-            return invoker.invoke(invocation);
-        } finally {
-            RpcContext.removeServiceContext();
-            RpcContext.removeClientAttachment();
         }
+
+        RpcContext.removeServerContext();
+        return invoker.invoke(invocation);
     }
 
     @Override
     public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         // pass attachments to result
         RpcContext.getServerContext().setObjectAttachments(appResponse.getObjectAttachments());
+
+        removeContext();
     }
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        removeContext();
+    }
 
+    private void removeContext() {
+        RpcContext.removeServiceContext();
+        RpcContext.removeClientAttachment();
+        // server context must not be removed because user might use it on callback.
+        // So the clear of is delayed til the start of the next rpc call, see RpcContext.removeServerContext(); in invoke() above
+        // RpcContext.removeServerContext();
     }
 
 }

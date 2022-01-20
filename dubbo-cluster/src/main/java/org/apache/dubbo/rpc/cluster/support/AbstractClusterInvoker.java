@@ -22,10 +22,12 @@ import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.profiler.ProfilerSwitch;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationProfilerUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -326,10 +328,19 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 //            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(contextAttachments);
 //        }
 
+        InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Router route.");
         List<Invoker<T>> invokers = list(invocation);
+        InvocationProfilerUtils.releaseDetailProfiler(invocation);
+
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
-        return doInvoke(invocation, invokers, loadbalance);
+
+        InvocationProfilerUtils.enterDetailProfiler(invocation, () -> "Cluster " + this.getClass().getName() + " invoke.");
+        try {
+            return doInvoke(invocation, invokers, loadbalance);
+        } finally {
+            InvocationProfilerUtils.releaseDetailProfiler(invocation);
+        }
     }
 
     protected void checkWhetherDestroyed() {
@@ -361,9 +372,13 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         setContext(invoker);
         Result result;
         try {
+            if (ProfilerSwitch.isEnableSimpleProfiler()) {
+                InvocationProfilerUtils.enterProfiler(invocation, "Invoker invoke. Target Address: " + invoker.getUrl().getAddress());
+            }
             result = invoker.invoke(invocation);
         } finally {
             clearContext(invoker);
+            InvocationProfilerUtils.releaseSimpleProfiler(invocation);
         }
         return result;
     }

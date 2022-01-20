@@ -30,8 +30,8 @@ public class DoubleMatchTest {
         DoubleMatch doubleMatch = new DoubleMatch();
         doubleMatch.setExact(10.0);
 
-        assertTrue(DoubleMatch.isMatch(doubleMatch, 10.0));
-        assertFalse(DoubleMatch.isMatch(doubleMatch, 9.0));
+        assertTrue(doubleMatch.isMatch(10.0));
+        assertFalse(doubleMatch.isMatch(9.0));
     }
 
     @Test
@@ -43,8 +43,8 @@ public class DoubleMatchTest {
 
         doubleMatch.setRange(doubleRangeMatch);
 
-        assertTrue(DoubleMatch.isMatch(doubleMatch, 10.0));
-        assertFalse(DoubleMatch.isMatch(doubleMatch, 9.0));
+        assertTrue(doubleMatch.isMatch(10.0));
+        assertFalse(doubleMatch.isMatch(9.0));
     }
 
 
@@ -57,8 +57,8 @@ public class DoubleMatchTest {
 
         doubleMatch.setRange(doubleRangeMatch);
 
-        assertFalse(DoubleMatch.isMatch(doubleMatch, 10.0));
-        assertTrue(DoubleMatch.isMatch(doubleMatch, 9.0));
+        assertFalse(doubleMatch.isMatch(10.0));
+        assertTrue(doubleMatch.isMatch(9.0));
     }
 
 
@@ -72,13 +72,13 @@ public class DoubleMatchTest {
 
         doubleMatch.setRange(doubleRangeMatch);
 
-        assertTrue(DoubleMatch.isMatch(doubleMatch, 5.0));
-        assertFalse(DoubleMatch.isMatch(doubleMatch, 10.0));
+        assertTrue(doubleMatch.isMatch(5.0));
+        assertFalse(doubleMatch.isMatch(10.0));
 
-        assertFalse(DoubleMatch.isMatch(doubleMatch, 4.9));
-        assertFalse(DoubleMatch.isMatch(doubleMatch, 10.1));
+        assertFalse(doubleMatch.isMatch(4.9));
+        assertFalse(doubleMatch.isMatch(10.1));
 
-        assertTrue(DoubleMatch.isMatch(doubleMatch, 6.0));
+        assertTrue(doubleMatch.isMatch(6.0));
 
     }
 
@@ -89,13 +89,13 @@ public class DoubleMatchTest {
         doubleMatch.setMod(2.0);
         doubleMatch.setExact(3.0);
 
-        assertFalse(DoubleMatch.isMatch(doubleMatch, 3.0));
+        assertFalse(doubleMatch.isMatch(3.0));
 
         doubleMatch.setExact(1.0);
 
-        assertTrue(DoubleMatch.isMatch(doubleMatch, 1.0));
-        assertFalse(DoubleMatch.isMatch(doubleMatch, 2.0));
-        assertTrue(DoubleMatch.isMatch(doubleMatch, 3.0));
+        assertTrue(doubleMatch.isMatch(1.0));
+        assertFalse(doubleMatch.isMatch(2.0));
+        assertTrue(doubleMatch.isMatch(3.0));
     }
 
 }

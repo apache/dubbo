@@ -21,31 +21,33 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * BitList based on BitMap implementation.
  * BitList is consists of `originList`, `rootSet` and `tailList`.
- *
+ * <p>
  * originList: Initial elements of the list. This list will not be changed
- *             in modification actions (expect clear all).
+ * in modification actions (expect clear all).
  * rootSet: A bitMap to store the indexes of originList are still exist.
- *          Most of the modification actions are operated on this bitMap.
+ * Most of the modification actions are operated on this bitMap.
  * tailList: An additional list for BitList. Worked when adding totally new
- *           elements to list. These elements will be appended to the last
- *           of the BitList.
- *
+ * elements to list. These elements will be appended to the last
+ * of the BitList.
+ * <p>
  * An example of BitList:
- *   originList:  A  B  C  D  E             (5 elements)
- *   rootSet:     x  v  x  v  v
- *                0  1  0  1  1             (5 elements)
- *   tailList:                   F  G  H    (3 elements)
- *   resultList:     B     D  E  F  G  H    (6 elements)
+ * originList:  A  B  C  D  E             (5 elements)
+ * rootSet:     x  v  x  v  v
+ * 0  1  0  1  1             (5 elements)
+ * tailList:                   F  G  H    (3 elements)
+ * resultList:     B     D  E  F  G  H    (6 elements)
  *
  * @param <E>
  * @since 3.0
@@ -63,13 +65,25 @@ public class BitList<E> extends AbstractList<E> {
     public BitList(List<E> originList, boolean empty) {
         if (originList instanceof BitList) {
             this.originList = ((BitList<E>) originList).getOriginList();
+            this.tailList = ((BitList<E>) originList).getTailList();
         } else {
             this.originList = originList;
         }
         this.rootSet = new BitSet();
         if (!empty) {
             this.rootSet.set(0, originList.size());
+        } else {
+            this.tailList = null;
         }
+    }
+
+    public BitList(List<E> originList, boolean empty, List<E> tailList) {
+        this.originList = originList;
+        this.rootSet = new BitSet();
+        if (!empty) {
+            this.rootSet.set(0, originList.size());
+        }
+        this.tailList = tailList;
     }
 
     public BitList(List<E> originList, BitSet rootSet, List<E> tailList) {
@@ -111,12 +125,50 @@ public class BitList<E> extends AbstractList<E> {
         return this;
     }
 
+    public BitList<E> or(BitList<E> target) {
+        BitSet resultSet = (BitSet) rootSet.clone();
+        resultSet.or(target.rootSet);
+        return new BitList<>(originList, resultSet, tailList);
+    }
+
     public boolean hasMoreElementInTailList() {
-        return CollectionUtils.isNotEmpty(tailList) && tailList.size() > 0;
+        return CollectionUtils.isNotEmpty(tailList);
     }
 
     public List<E> getTailList() {
         return tailList;
+    }
+
+    public void addToTailList(E e) {
+        if (tailList == null) {
+            tailList = new LinkedList<>();
+        }
+        tailList.add(e);
+    }
+
+    public E randomSelectOne() {
+        int originSize = originList.size();
+        int tailSize = tailList != null ? tailList.size() : 0;
+        int totalSize = originSize + tailSize;
+        int cardinality = rootSet.cardinality();
+
+        // example 1 : origin size is 1000, cardinality is 50, rate is 1/20. 20 * 2 = 40 < 50, try random select
+        // example 2 : origin size is 1000, cardinality is 25, rate is 1/40. 40 * 2 = 80 > 50, directly use iterator
+        int rate = originSize / cardinality;
+        if (rate <= cardinality * 2) {
+            int count = rate * 5;
+            for (int i = 0; i < count; i++) {
+                int random = ThreadLocalRandom.current().nextInt(totalSize);
+                if (random < originSize) {
+                    if (rootSet.get(random)) {
+                        return originList.get(random);
+                    }
+                } else {
+                    return tailList.get(random - originSize);
+                }
+            }
+        }
+        return get(ThreadLocalRandom.current().nextInt(cardinality + tailSize));
     }
 
     @SuppressWarnings("unchecked")
@@ -144,9 +196,9 @@ public class BitList<E> extends AbstractList<E> {
     /**
      * If the element to added is appeared in originList even if it is not in rootSet,
      * directly set its index in rootSet to true. (This may change the order of elements.)
-     * 
+     * <p>
      * If the element is not contained in originList, allocate tailList and add to tailList.
-     *
+     * <p>
      * Notice: It is not recommended adding duplicated element.
      */
     @Override
@@ -166,7 +218,7 @@ public class BitList<E> extends AbstractList<E> {
     /**
      * If the element to added is appeared in originList,
      * directly set its index in rootSet to false. (This may change the order of elements.)
-     * 
+     * <p>
      * If the element is not contained in originList, try to remove from tailList.
      */
     @Override
@@ -183,7 +235,7 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     /**
-     * Caution: This operation will clear originList for removing references purpose. 
+     * Caution: This operation will clear originList for removing references purpose.
      * This may change the default behaviour when adding new element later.
      */
     @Override
@@ -255,6 +307,21 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
+    public boolean addAll(Collection<? extends E> c) {
+        if (c instanceof BitList) {
+            rootSet.or(((BitList<? extends E>) c).rootSet);
+            if (((BitList<? extends E>) c).hasMoreElementInTailList()) {
+                for (E e : ((BitList<? extends E>) c).tailList) {
+                    addToTailList(e);
+                }
+            }
+            return true;
+        }
+        return super.addAll(c);
+    }
+
+    @Override
     public int lastIndexOf(Object o) {
         int bitIndex = -1;
         int index = -1;
@@ -275,7 +342,7 @@ public class BitList<E> extends AbstractList<E> {
 
     @Override
     public boolean isEmpty() {
-        return this.rootSet.isEmpty() && (tailList == null || tailList.isEmpty());
+        return this.rootSet.isEmpty() && CollectionUtils.isEmpty(tailList);
     }
 
     @Override
@@ -471,7 +538,7 @@ public class BitList<E> extends AbstractList<E> {
     }
 
     public ArrayList<E> cloneToArrayList() {
-        if (rootSet.cardinality() == originList.size() && (tailList == null || tailList.isEmpty())) {
+        if (rootSet.cardinality() == originList.size() && (CollectionUtils.isEmpty(tailList))) {
             return new ArrayList<>(originList);
         }
         ArrayList<E> arrayList = new ArrayList<>(size());

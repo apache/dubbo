@@ -836,7 +836,7 @@ public class ExtensionLoader<T> {
                 /**
                  * Check {@link DisableInject} to see if we need auto injection for this property
                  */
-                if (method.getAnnotation(DisableInject.class) != null) {
+                if (method.isAnnotationPresent(DisableInject.class)) {
                     continue;
                 }
                 Class<?> pt = method.getParameterTypes()[0];
@@ -1244,7 +1244,7 @@ public class ExtensionLoader<T> {
         String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
         org.apache.dubbo.common.compiler.Compiler compiler = extensionDirector.getExtensionLoader(
             org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
-        return compiler.compile(code, classLoader);
+        return compiler.compile(type, code, classLoader);
     }
 
     private Environment getEnvironment() {

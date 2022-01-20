@@ -17,6 +17,8 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -31,9 +33,15 @@ import java.util.concurrent.ConcurrentMap;
  * @see ServiceDiscoveryFactory
  * @since 2.7.5
  */
-public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscoveryFactory {
+public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscoveryFactory, ScopeModelAware {
 
+    protected ApplicationModel applicationModel;
     private final ConcurrentMap<String, ServiceDiscovery> discoveries = new ConcurrentHashMap<>();
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
 
     public List<ServiceDiscovery> getAllServiceDiscoveries() {
         return Collections.unmodifiableList(new LinkedList<>(discoveries.values()));

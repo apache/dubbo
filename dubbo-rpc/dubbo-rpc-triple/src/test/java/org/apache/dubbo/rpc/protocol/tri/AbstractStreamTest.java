@@ -16,13 +16,14 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.ByteString;
-import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.protocol.tri.support.MockAbstractStreamImpl;
 import org.apache.dubbo.triple.TripleWrapper;
+
+import com.google.protobuf.ByteString;
+import io.netty.handler.codec.http2.Http2Headers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

@@ -58,7 +58,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
 import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
@@ -187,9 +186,10 @@ public abstract class AbstractConfig implements Serializable {
                             continue;
                         }
                         // get parameter key
-                        key = calculatePropertyFromGetter(name);
                         if (parameter != null && parameter.key().length() > 0) {
                             key = parameter.key();
+                        } else {
+                            key = calculatePropertyFromGetter(name);
                         }
                     } else { // as attributes
                         // filter non attribute
@@ -197,7 +197,7 @@ public abstract class AbstractConfig implements Serializable {
                             continue;
                         }
                         // get attribute name
-                        String propertyName = calculateAttributeFromGetter(method.getName());
+                        String propertyName = calculateAttributeFromGetter(name);
                         // convert camelCase/snake_case to kebab-case
                         key = StringUtils.convertToSplitName(propertyName, "-");
                     }
@@ -249,13 +249,6 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    protected static Set<String> getSubProperties(Map<String, String> properties, String prefix) {
-        return properties.keySet().stream().filter(k -> k.contains(prefix)).map(k -> {
-            k = k.substring(prefix.length());
-            return k.substring(0, k.indexOf("."));
-        }).collect(Collectors.toSet());
-    }
-
     protected static String extractPropertyName(String setter) {
         String propertyName = setter.substring("set".length());
         propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
@@ -285,6 +278,7 @@ public abstract class AbstractConfig implements Serializable {
 
     private static Map<String, String> invokeGetParameters(Class c, Object o) {
         try {
+
             Method method = findMethodByMethodSignature(c, "getParameters", null);
             if (method != null && isParametersGetter(method)) {
                 return (Map<String, String>) method.invoke(o);
@@ -360,12 +354,12 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         Map<String, String> result = new HashMap<>();
-        String pre = (prefix != null && prefix.length() > 0 ? prefix + "." : "");
+        String pre = (StringUtils.isNotEmpty(prefix) ? prefix + "." : "");
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
             result.put(pre + key, value);
-            // For compatibility, key like "registry-type" will has a duplicate key "registry.type"
+            // For compatibility, key like "registry-type" will have a duplicate key "registry.type"
             if (Arrays.binarySearch(Constants.DOT_COMPATIBLE_KEYS, key) >= 0) {
                 result.put(pre + key.replace('-', '.'), value);
             }
@@ -438,7 +432,7 @@ public abstract class AbstractConfig implements Serializable {
         return scopeModel.getExtensionLoader(type);
     }
 
-    @Parameter(excluded = true, attribute = true)
+    @Parameter(excluded = true)
     public String getId() {
         return id;
     }
@@ -519,7 +513,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     private static BeanInfo getBeanInfo(Class cls) {
-        BeanInfo beanInfo = null;
+        BeanInfo beanInfo;
         try {
             beanInfo = Introspector.getBeanInfo(cls);
         } catch (IntrospectionException e) {
@@ -609,7 +603,7 @@ public abstract class AbstractConfig implements Serializable {
 
             assignProperties(this, environment, subProperties, subPropsConfiguration);
 
-            // process extra refresh of sub class, e.g. refresh method configs
+            // process extra refresh of subclass, e.g. refresh method configs
             processExtraRefresh(preferredPrefix, subPropsConfiguration);
 
         } catch (Exception e) {
@@ -622,7 +616,7 @@ public abstract class AbstractConfig implements Serializable {
 
     private void assignProperties(Object obj, Environment environment, Map<String, String> properties, InmemoryConfiguration configuration) {
         // loop methods, get override value and set the new value back to method
-        Method[] methods = obj.getClass().getMethods();
+        List<Method> methods = MethodUtils.getMethods(obj.getClass(), method -> method.getDeclaringClass() != Object.class);
         for (Method method : methods) {
             if (MethodUtils.isSetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
@@ -632,8 +626,9 @@ public abstract class AbstractConfig implements Serializable {
                 try {
                     String value = StringUtils.trim(configuration.getString(kebabPropertyName));
                     // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
-                    if (StringUtils.hasText(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value) &&
-                        !isIgnoredAttribute(obj.getClass(), propertyName)) {
+                    if (StringUtils.hasText(value)
+                        && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)
+                        && !isIgnoredAttribute(obj.getClass(), propertyName)) {
                         value = environment.resolvePlaceholders(value);
                         method.invoke(obj, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                     }
@@ -645,7 +640,7 @@ public abstract class AbstractConfig implements Serializable {
             } else if (isParametersSetter(method)) {
                 String propertyName = extractPropertyName(method.getName());
                 String value = StringUtils.trim(configuration.getString(propertyName));
-                Map<String, String> parameterMap = null;
+                Map<String, String> parameterMap;
                 if (StringUtils.hasText(value)) {
                     parameterMap = StringUtils.parseParameters(value);
                 } else {
@@ -688,6 +683,7 @@ public abstract class AbstractConfig implements Serializable {
             try {
                 getter = clazz.getMethod("is" + capitalizePropertyName);
             } catch (NoSuchMethodException ex) {
+                // ignore
             }
         }
 
@@ -862,7 +858,7 @@ public abstract class AbstractConfig implements Serializable {
                     continue;
                 }
                 String propertyName = calculateAttributeFromGetter(method.getName());
-                // filter non writable property, exclude non property methods, fix #4225
+                // filter non-writable property, exclude non property methods, fix #4225
                 if (!isWritableProperty(beanInfo, propertyName)) {
                     continue;
                 }

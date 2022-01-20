@@ -16,20 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.ByteString;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.DefaultEventLoop;
-import io.netty.channel.EventLoop;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.util.Attribute;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
@@ -50,6 +36,21 @@ import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
 import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
 import org.apache.dubbo.triple.TripleWrapper;
+
+import com.google.protobuf.ByteString;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.DefaultEventLoop;
+import io.netty.channel.EventLoop;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2StreamChannel;
+import io.netty.util.Attribute;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -261,6 +262,7 @@ public class ServerStreamTest {
         Mockito.when(streamChannel.writeAndFlush(Mockito.any())).thenReturn(channelFuture);
         Mockito.when(streamChannel.alloc()).thenReturn(ByteBufAllocator.DEFAULT);
         Mockito.when(streamChannel.attr(TripleConstant.SERVER_STREAM_KEY)).thenReturn(attribute);
+        Mockito.when(streamChannel.isActive()).thenReturn(true);
         Mockito.when(streamChannel.eventLoop()).thenReturn(eventLoop);
         Mockito.when(streamChannel.newPromise()).thenReturn(promise);
 

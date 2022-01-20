@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.Node;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
@@ -84,6 +85,11 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
      * {@link Node} destroy
      */
     private boolean destroyed = false;
+
+    /**
+     * Whether set future to Thread Local when invocation mode is sync
+     */
+    private static final boolean setFutureWhenSync = Boolean.parseBoolean(System.getProperty(CommonConstants.SET_FUTURE_IN_SYNC_MODE, "true"));
 
     // -- Constructor
 
@@ -235,8 +241,10 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
 
-        // set server context
-        RpcContext.getServiceContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
+        if (setFutureWhenSync || invocation.getInvokeMode() != InvokeMode.SYNC) {
+            // set server context
+            RpcContext.getServiceContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
+        }
 
         return asyncResult;
     }
@@ -251,7 +259,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
              * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
              * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
              */
-            Object timeout = invocation.get(TIMEOUT_KEY);
+            Object timeout = invocation.getObjectAttachment(TIMEOUT_KEY);
             if (timeout instanceof Integer) {
                 asyncResult.get((Integer) timeout, TimeUnit.MILLISECONDS);
             } else {

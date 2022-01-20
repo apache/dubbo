@@ -17,10 +17,12 @@
 package org.apache.dubbo.metadata.definition.protobuf;
 
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
+import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.protobuf.model.ServiceInterface;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -37,6 +39,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class ProtobufTypeBuilderTest {
     @Test
     public void testProtobufBuilder() {
+        TypeDefinitionBuilder.initBuilders(FrameworkModel.defaultModel());
+
         // TEST Pb Service metaData builder
         FullServiceDefinition serviceDefinition = ServiceDefinitionBuilder.buildFullDefinition(ServiceInterface.class);
         MethodDefinition methodDefinition = serviceDefinition.getMethods().get(0);

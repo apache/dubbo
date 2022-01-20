@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 /**
  *
  */
-@Activate
+@Activate(order = -100)
 public class MockStateRouterFactory implements StateRouterFactory {
     public static final String NAME = "mock";
 
