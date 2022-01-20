@@ -37,6 +37,10 @@ public class UnaryClientListener implements ClientStreamListener {
     }
 
     @Override
+    public void onReady() {
+    }
+
+    @Override
     public void onMessage(Object message) {
         if (appResponse != null) {
             complete(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)

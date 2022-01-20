@@ -18,19 +18,26 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 
 import java.util.Map;
 
-public class StreamClientListener implements ClientStreamListener{
-    private final StreamObserver<Object> requestObserver;
+public class StreamClientListener implements ClientStreamListener {
     private final StreamObserver<Object> responseObserver;
+    private final Connection connection;
+    private final long requestId;
+    private StreamObserver<Object> requestObserver;
 
-    public StreamClientListener(StreamObserver<Object> requestObserver, StreamObserver<Object> responseObserver) {
-        this.requestObserver = requestObserver;
+    public StreamClientListener(Connection connection, long requestId, StreamObserver<Object> responseObserver) {
+        this.connection = connection;
+        this.requestId = requestId;
         this.responseObserver = responseObserver;
     }
 
+    public void setRequestObserver(StreamObserver<Object> requestObserver) {
+        this.requestObserver = requestObserver;
+    }
 
     @Override
     public void onMessage(Object message) {
@@ -39,7 +46,7 @@ public class StreamClientListener implements ClientStreamListener{
 
     @Override
     public void complete(GrpcStatus grpcStatus, Map<String, Object> attachments) {
-        if(grpcStatus.isOk()) {
+        if (grpcStatus.isOk()) {
             responseObserver.onCompleted();
         }
     }

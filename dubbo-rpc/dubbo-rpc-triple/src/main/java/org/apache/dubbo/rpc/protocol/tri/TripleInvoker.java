@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.Connection;
@@ -37,7 +38,9 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
@@ -48,6 +51,7 @@ import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.VoidUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespUnpack;
+import org.apache.dubbo.rpc.protocol.tri.stream.ClientRequestObserver;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamListener;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamClientListener;
@@ -120,7 +124,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
         }
         for (MethodDescriptor methodDescriptor : methodDescriptors) {
-            if (Arrays.equals(inv.getParameterTypes(), methodDescriptor.getRealParameterClasses())) {
+            if (Arrays.equals(inv.getParameterTypes(), methodDescriptor.getParameterClasses())) {
                 return methodDescriptor;
             }
         }
@@ -128,13 +132,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     private ClientStream createStream(RpcInvocation invocation, long id, String methodName, String timeout, ExecutorService executor) {
-        String application = (String) invocation.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY);
+        String application = (String) invocation.getObjectAttachments().get(CommonConstants.APPLICATION_KEY);
         if (application == null) {
-            application = (String) invocation.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY);
+            application = (String) invocation.getObjectAttachments().get(CommonConstants.REMOTE_APPLICATION_KEY);
         }
         ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
-        MethodDescriptor methodDescriptor = lookupMethodDescriptor(consumerModel, invocation);
-        org.apache.dubbo.rpc.protocol.tri.stream.ClientStream stream = null;
+        MethodDescriptor methodDescriptor =consumerModel.getServiceModel().getMethod(methodName,invocation.getParameterTypes());
+        ClientStream stream ;
 
         Pack requestPack;
         Unpack responseUnpack;
@@ -150,12 +154,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             responseUnpack = new PbUnpack(methodDescriptor.getReturnClass());
         }
         ClientStreamListener listener;
-        if (methodDescriptor.isUnary()) {
-            listener = new UnaryClientListener(connection, id);
+        if (methodDescriptor instanceof StreamMethodDescriptor) {
+
+            listener = new StreamClientListener(connection,id,(StreamObserver<Object>) responseObserver);
         } else {
-            listener = new StreamClientListener(null, null);
+            listener = new UnaryClientListener(connection, id);
         }
-        stream = new org.apache.dubbo.rpc.protocol.tri.stream.ClientStream(
+        stream = new ClientStream(
             getUrl(),
             executor,
             id,
@@ -174,11 +179,16 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             requestPack,
             responseUnpack,
             listener);
+        if (methodDescriptor instanceof StreamMethodDescriptor) {
+            ((StreamClientListener)listener).setRequestObserver(new ClientRequestObserver(stream));
+        }
         return stream;
     }
 
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
+        ClientCall call;
+        call.start(invocation);
 //        try {
         Request req = new Request();
         req.setVersion(TripleConstant.TRI_VERSION);
@@ -190,7 +200,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         ExecutorService executor = getCallbackExecutor(getUrl(), invocation);
         DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
         final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
-        final org.apache.dubbo.rpc.protocol.tri.stream.ClientStream stream = createStream((RpcInvocation) invocation, req.getId(), methodName, timeout + "m", executor);
+        final ClientStream stream = createStream((RpcInvocation) invocation, req.getId(), methodName, timeout + "m", executor);
 //        inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
 //        inv.setAttachment(PATH_KEY, getUrl().getPath());
 //        inv.setAttachment(Constants.SERIALIZATION_KEY,
@@ -214,8 +224,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             DefaultFuture2.received(connection, response);
         } else {
             stream.startCall();
-            // todo auto decect pb or multiple arguments
             stream.sendMessage(invocation.getArguments()[0],true);
+            // todo auto detect pb or multiple arguments
             DefaultFuture2.sent(req);
 //                        Response response = new Response(req.getId(), req.getVersion());
 //                        response.setStatus(Response.CHANNEL_INACTIVE);

@@ -73,9 +73,7 @@ public class ClientStream extends AbstractStream implements Stream {
     private final DefaultHttp2Headers headers;
     private final long id;
     private final WriteQueue writeQueue;
-    private final Pack requestPack;
-    private final Unpack responseUnpack;
-    private final Compressor compressor;
+
     private boolean remoteClosed;
 
     public ClientStream(URL url,
@@ -331,7 +329,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
             };
             decoder = new TriDecoder(decompressor, listener);
-            decoder.request(2);
+            decoder.request(Integer.MAX_VALUE);
         }
 
         void onTrailersReceived(Http2Headers trailers) {

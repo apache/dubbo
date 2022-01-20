@@ -44,24 +44,14 @@ public class StreamMethodDescriptor extends MethodDescriptor {
                 (Class<?>) ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0];
             this.responseType = (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[0])
                 .getActualTypeArguments()[0];
-            this.streamType=StreamType.BI_DIRECTIONAL;
+            this.streamType = StreamType.BI_DIRECTIONAL;
             // server-stream: void foo(Request, StreamObserver<Response>)
         } else {
             this.requestType = method.getParameterTypes()[0];
             this.responseType =
                 (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[1]).getActualTypeArguments()[0];
-            this.streamType=StreamType.SERVER;
+            this.streamType = StreamType.SERVER;
         }
-    }
-
-    @Override
-    protected boolean needWrap() {
-        if(isProtobufClass(requestType)&&isProtobufClass(responseType)){
-            return false;
-        }else if(!isProtobufClass(requestType)&&!isProtobufClass(responseType)){
-            return true;
-        }
-        throw new IllegalStateException("method params error method=" + methodName);
     }
 
     public static boolean isStreamMethod(Method method) {
@@ -73,6 +63,24 @@ public class StreamMethodDescriptor extends MethodDescriptor {
 
     private static boolean isStreamType(Class<?> clz) {
         return StreamObserver.class.isAssignableFrom(clz) || GRPC_STREAM_CLASS.equalsIgnoreCase(clz.getName());
+    }
+
+    @Override
+    protected boolean needWrap() {
+        if (isProtobufClass(requestType) && isProtobufClass(responseType)) {
+            return false;
+        } else if (!isProtobufClass(requestType) && !isProtobufClass(responseType)) {
+            return true;
+        }
+        throw new IllegalStateException("method params error method=" + methodName);
+    }
+
+    public int responseObserverIndex() {
+        if (streamType == StreamType.SERVER) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
     public enum StreamType {

@@ -15,21 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.stream;
+package org.apache.dubbo.rpc.protocol.tri;
 
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
-
-/**
- * Stream acts as a bi-directional intermediate layer for processing streaming data . It serializes object instance to
- * byte[] then send to remote, and deserializes byte[] to object instance from remote. {@link H2TransportObserver} to
- * receive data from remote and {@link org.apache.dubbo.rpc.protocol.tri.WriteQueue} to write data.
- * {@link Listener} acts as API for users fetch objects from remote peer.
- */
-public interface Stream {
-
-    URL url();
-
-    void writeMessage(byte[] message);
+public class TripleCalls {
+    public static void callUnary()
 }
