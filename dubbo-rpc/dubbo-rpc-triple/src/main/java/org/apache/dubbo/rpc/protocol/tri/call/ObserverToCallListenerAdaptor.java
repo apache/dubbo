@@ -38,10 +38,6 @@ public class ObserverToCallListenerAdaptor implements ClientCall.Listener {
     }
 
     @Override
-    public void onHeaders(Map<String, Object> attachments) {
-    }
-
-    @Override
     public void onMessage(Object message) {
         if (streamingMethod) {
             responseObserver.onNext(message);

@@ -23,7 +23,7 @@ import java.util.Map;
 
 public interface StreamListener {
 
-    void onMessage(Object message);
+    void onMessage(byte[] message);
 
     /**
      * Indicate the stream is closed . Will be called exactly once

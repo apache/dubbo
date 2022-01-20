@@ -18,19 +18,9 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
-import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.Http2Headers;
-
-import java.util.Locale;
-import java.util.Map;
 import java.util.concurrent.Executor;
 
 public abstract class AbstractStream implements org.apache.dubbo.rpc.protocol.tri.stream.Stream {
@@ -38,7 +28,6 @@ public abstract class AbstractStream implements org.apache.dubbo.rpc.protocol.tr
     final Executor executor;
     final CancellationContext cancellationContext;
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(Stream.class);
 
 
     protected AbstractStream(URL url, Executor executor) {
@@ -46,52 +35,6 @@ public abstract class AbstractStream implements org.apache.dubbo.rpc.protocol.tr
         this.executor= new SerializingExecutor(executor);
         this.cancellationContext = new CancellationContext();
     }
-
-    /**
-     * Parse and put the KV pairs into metadata. Ignore Http2 PseudoHeaderName and internal name.
-     * Only raw byte array or string value will be put.
-     *
-     * @param metadata    the metadata holder
-     * @param attachments KV pairs
-     */
-    protected void convertAttachment(DefaultHttp2Headers headers, Map<String, Object> attachments) {
-        if (attachments == null) {
-            return;
-        }
-        for (Map.Entry<String, Object> entry : attachments.entrySet()) {
-            final String key = entry.getKey().toLowerCase(Locale.ROOT);
-            if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
-                continue;
-            }
-            if (TripleHeaderEnum.containsExcludeAttachments(key)) {
-                continue;
-            }
-            final Object v = entry.getValue();
-            convertSingleAttachment(headers, key, v);
-        }
-    }
-    /**
-     * Convert each user's attach value to metadata
-     *
-     * @param metadata {@link Metadata}
-     * @param key      metadata key
-     * @param v        metadata value (Metadata Only string and byte arrays are allowed)
-     */
-    private void convertSingleAttachment(DefaultHttp2Headers headers, String key, Object v) {
-        try {
-            // todo Support boolean/ numbers
-            if (v instanceof String) {
-                String str = (String) v;
-                headers.set(key, str);
-            } else if (v instanceof byte[]) {
-                String str = H2TransportObserver.encodeBase64ASCII((byte[]) v);
-                headers.set(key + TripleConstant.GRPC_BIN_SUFFIX, str);
-            }
-        } catch (Throwable t) {
-            LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v, t);
-        }
-    }
-
 
     @Override
     public URL url() {

@@ -18,7 +18,8 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
@@ -27,20 +28,16 @@ import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleCommandOutBoundHandler;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.TripleHttp2ClientResponseHandler;
 import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
-import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
-import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -48,14 +45,9 @@ import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
-import io.netty.util.AsciiString;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
 
@@ -68,103 +60,46 @@ import java.util.concurrent.Executor;
 
 
 public class ClientStream extends AbstractStream implements Stream {
-    public final ClientStreamListener responseListener;
+    private static final Logger logger = LoggerFactory.getLogger(ClientStream.class);
+
+    public final ClientStreamListener listener;
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
-    private final DefaultHttp2Headers headers;
-    private final long id;
     private final WriteQueue writeQueue;
 
     private boolean remoteClosed;
 
     public ClientStream(URL url,
                         Executor executor,
-                        long id,
                         Channel parent,
-                        AsciiString scheme,
-                        String path,
-                        String serviceVersion,
-                        String serviceGroup,
-                        String application,
-                        String authority,
-                        String encoding,
-                        String acceptEncoding,
-                        String timeout,
-                        Compressor compressor,
-                        Map<String, Object> attachments,
-                        Pack requestPack,
-                        Unpack responseUnpack,
                         ClientStreamListener listener) {
         super(url, executor);
-        this.id = id;
-        this.compressor = compressor;
         this.writeQueue = createWriteQueue(parent);
-        this.requestPack = requestPack;
-        this.responseUnpack = responseUnpack;
-        this.responseListener = listener;
-        this.headers = new DefaultHttp2Headers(false);
-        this.headers.scheme(scheme)
-            .authority(authority)
-            .method(HttpMethod.POST.asciiName())
-            .path(path)
-            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
-            .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
-        setIfNotNull(headers, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
-        setIfNotNull(headers, TripleHeaderEnum.SERVICE_VERSION.getHeader(), serviceVersion);
-        setIfNotNull(headers, TripleHeaderEnum.SERVICE_GROUP.getHeader(), serviceGroup);
-        setIfNotNull(headers, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(), application);
-        setIfNotNull(headers, TripleHeaderEnum.GRPC_ENCODING.getHeader(), encoding);
-        setIfNotNull(headers, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), acceptEncoding);
-        if (attachments != null) {
-            convertAttachment(headers, attachments);
-        }
-        this.cancellationContext.addListener(context -> {
-            Throwable throwable = cancellationContext.getCancellationCause();
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn("Triple request to "
-                    + path +
-                    " was canceled by local exception ", throwable);
-            }
-        });
+        this.listener = listener;
     }
 
-    private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key, CharSequence value) {
-        if (value == null) {
-            return;
-        }
-        headers.set(key, value);
-    }
 
     WriteQueue createWriteQueue(Channel parent) {
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(parent);
         final Future<Http2StreamChannel> future = streamChannelBootstrap.open().syncUninterruptibly();
         if (!future.isSuccess()) {
-            DefaultFuture2.getFuture(id).cancel();
+            listener.complete(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription("Create remote stream failed"), null);
             return null;
         }
         final Http2StreamChannel channel = future.getNow();
         channel.pipeline()
             .addLast(new TripleCommandOutBoundHandler())
             .addLast(new TripleHttp2ClientResponseHandler(this));
-        DefaultFuture2.addTimeoutListener(id, channel::close);
         return new WriteQueue(channel);
     }
 
-    public void startCall() {
+    public void startCall(Http2Headers headers) {
         if (this.writeQueue == null) {
             // already processed at createStream()
             return;
         }
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
         this.writeQueue.enqueue(headerCmd, true);
-    }
-
-    public void sendMessage(byte[] message, boolean lastMessage) {
-        try {
-
-            this.writeQueue.enqueue(dataCmd, true);
-        } catch (Throwable t) {
-            cancelByLocal(t);
-        }
     }
 
     public void cancelByLocal(Throwable t) {
@@ -176,8 +111,20 @@ public class ClientStream extends AbstractStream implements Stream {
         return null;
     }
 
-    public void complete() {
+    @Override
+    public void writeMessage(byte[] message) {
+        try {
+            final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false);
+            this.writeQueue.enqueue(cmd, true);
+        } catch (Throwable t) {
+            cancelByLocal(t);
+        }
 
+    }
+
+    public void complete() {
+        final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(new byte[0], true);
+        this.writeQueue.enqueue(cmd, true);
     }
 
     class ClientTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
@@ -185,7 +132,6 @@ public class ClientStream extends AbstractStream implements Stream {
         private GrpcStatus transportError;
         private DeCompressor decompressor;
         private TriDecoder decoder;
-        private Object appResponse;
         private boolean headerReceived;
         private boolean streamClosed;
 
@@ -204,12 +150,12 @@ public class ClientStream extends AbstractStream implements Stream {
             if (!status.isOk()) {
                 final Throwable throwableFromTrailers = getThrowableFromTrailers(trailers);
                 if (throwableFromTrailers != null) {
-                    responseListener.complete(status.withCause(throwableFromTrailers), attachments);
+                    listener.complete(status.withCause(throwableFromTrailers), attachments);
                 } else {
-                    responseListener.complete(status, attachments);
+                    listener.complete(status, attachments);
                 }
             } else {
-                responseListener.complete(status, attachments);
+                listener.complete(status, attachments);
             }
             if (decoder != null) {
                 decoder.close();
@@ -261,7 +207,7 @@ public class ClientStream extends AbstractStream implements Stream {
                     // support others type but now only support this
                 }
             } catch (Throwable t) {
-                LOGGER.error("tran from grpc-status-details error", t);
+                logger.error("tran from grpc-status-details error", t);
             }
             return map;
         }
@@ -314,16 +260,7 @@ public class ClientStream extends AbstractStream implements Stream {
                     }
                 }
             }
-            TriDecoder.Listener listener = data -> {
-                try {
-                    appResponse = responseUnpack.unpack(data);
-                    responseListener.onMessage(appResponse);
-                } catch (IOException | ClassNotFoundException e) {
-                    finishProcess(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Decode response failed")
-                        .withCause(e), null);
-                }
-            };
+            TriDecoder.Listener listener = ClientStream.this.listener::onMessage;
             decoder = new TriDecoder(decompressor, listener);
             decoder.request(Integer.MAX_VALUE);
         }
@@ -401,7 +338,7 @@ public class ClientStream extends AbstractStream implements Stream {
         public void cancelByRemote(GrpcStatus status) {
             transportError = status;
             if (status.code == GrpcStatus.Code.CANCELLED) {
-                DefaultFuture2.getFuture(id).cancel();
+                listener.complete(status, null);
             } else {
                 finishProcess(status, null);
             }

@@ -125,7 +125,29 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
         MethodDescriptor methodDescriptor =consumerModel.getServiceModel().getMethod(methodName,invocation.getParameterTypes());
-        ClientCall call=new ClientCall(req,connection,executor,methodDescriptor);
+        String application = (String) invocation.getObjectAttachments().get(CommonConstants.APPLICATION_KEY);
+        if (application == null) {
+            application = (String) invocation.getObjectAttachments().get(CommonConstants.REMOTE_APPLICATION_KEY);
+        }
+        ClientCall call=new ClientCall(getUrl(),
+            req.getId(),
+            connection,
+            scheme,
+            getUrl().getPath(),
+            getUrl().getVersion(),
+            getUrl().getGroup(),
+            application,
+            getUrl().getAddress(),
+            timeout+"m",
+            methodName,
+            acceptEncoding,
+            compressor,
+            invocation.getObjectAttachments(),
+            invocation.getParameterTypes(),
+            genericPack,
+            genericUnpack,
+            executor,
+            methodDescriptor);
         if(methodDescriptor instanceof StreamMethodDescriptor){
             final StreamObserver<Object> requestObserver = ClientCall.streamCall(call, ClientCall.getObserver(methodDescriptor, invocation.getArguments()));
             DefaultFuture2.sent(req);

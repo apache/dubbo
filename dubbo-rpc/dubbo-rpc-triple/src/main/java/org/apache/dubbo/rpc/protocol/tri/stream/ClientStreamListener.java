@@ -17,5 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import io.netty.handler.codec.http2.Http2Headers;
+
 public interface ClientStreamListener extends StreamListener{
+    void onHeaders(Http2Headers headers);
 }

@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 
 public class UnaryObserver implements StreamObserver<Object> {
     private final Connection connection;
+    private Object appResponse;
 
     public UnaryObserver(Connection connection) {
         this.connection = connection;
@@ -31,7 +32,9 @@ public class UnaryObserver implements StreamObserver<Object> {
 
     @Override
     public void onNext(Object data) {
-        DefaultFuture2.received(connection, (Response) data);
+        if(appResponse!=null){
+
+        }
     }
 
     @Override
@@ -41,6 +44,6 @@ public class UnaryObserver implements StreamObserver<Object> {
 
     @Override
     public void onCompleted() {
-
+        DefaultFuture2.received(connection, (Response)appResponse);
     }
 }
