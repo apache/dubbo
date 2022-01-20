@@ -28,9 +28,8 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_APPLICATION_NAME_PROPERTY;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_APPLICATION_QOS_ENABLE_PROPERTY;
@@ -74,6 +73,8 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
         setDubboApplicationNameProperty(environment, defaultProperties);
         setDubboConfigMultipleProperty(defaultProperties);
         setDubboApplicationQosEnableProperty(defaultProperties);
+
+        postProcessDefaultProperty(defaultProperties);
         //setAllowBeanDefinitionOverriding(defaultProperties);
         return defaultProperties;
     }
@@ -81,7 +82,7 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
     private void setDubboApplicationNameProperty(Environment environment, Map<String, Object> defaultProperties) {
         String springApplicationName = environment.getProperty(SPRING_APPLICATION_NAME_PROPERTY);
         if (StringUtils.hasLength(springApplicationName)
-                && !environment.containsProperty(DUBBO_APPLICATION_NAME_PROPERTY)) {
+            && !environment.containsProperty(DUBBO_APPLICATION_NAME_PROPERTY)) {
             defaultProperties.put(DUBBO_APPLICATION_NAME_PROPERTY, springApplicationName);
         }
     }
@@ -131,6 +132,25 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
         }
         if (!propertySources.contains(PROPERTY_SOURCE_NAME)) {
             propertySources.addLast(target);
+        }
+    }
+
+    /**
+     * change value from possible kebab-case 2 camelCase
+     */
+    private void postProcessDefaultProperty(Map<String, Object> propertyMap) {
+        if (propertyMap==null){
+            return;
+        }
+        Set<String> keySet = propertyMap.keySet();
+        Set<String> keysInKebabCase = keySet.stream()
+            .filter(org.apache.dubbo.common.utils.StringUtils::isKebabCase)
+            .collect(Collectors.toSet());
+        for (String kebabKey : keysInKebabCase) {
+            String camelKey = org.apache.dubbo.common.utils.StringUtils.kebabToCamelName(kebabKey);
+            Object value =propertyMap.get(kebabKey);
+            propertyMap.putIfAbsent(camelKey,value);
+            propertyMap.remove(kebabKey,value);
         }
     }
 }

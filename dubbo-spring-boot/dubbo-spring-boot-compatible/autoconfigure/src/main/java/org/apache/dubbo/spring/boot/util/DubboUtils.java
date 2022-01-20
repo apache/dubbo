@@ -171,7 +171,7 @@ public abstract class DubboUtils {
      *
      * @since 2.7.1
      */
-    public static final String DUBBO_APPLICATION_QOS_ENABLE_PROPERTY = "dubbo.application.qos-enable";
+    public static final String DUBBO_APPLICATION_QOS_ENABLE_PROPERTY = "dubbo.application.qosEnable";
 
     /**
      * The property name of {@link EnableDubboConfig#multiple() @EnableDubboConfig.multiple()}

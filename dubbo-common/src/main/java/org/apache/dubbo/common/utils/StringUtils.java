@@ -23,16 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import com.alibaba.fastjson.JSON;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -970,6 +961,48 @@ public final class StringUtils {
             return replace(lowerCase, "_", split);
         }
         return snakeName;
+    }
+
+    /**
+     * kebab-case 2 camelCase
+     *
+     * "key-a","keyA"
+     * "key-a-b","keyAB"
+     * "-a","A"
+     * "--a","A"
+     * "a-","a-"
+     * "a--","a-"
+     * "a--a","aA"
+     *
+     * @param kebabName
+     * @return
+     */
+    public static String kebabToCamelName(String kebabName) {
+
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < kebabName.length(); i++) {
+            char ch = kebabName.charAt(i);
+            if (ch == '-') {
+                i++;
+                if (i == kebabName.length()){
+                    buf.append(ch);
+                    break;
+                }
+                if (kebabName.charAt(i) == '-'){
+                    i--;
+                    continue;
+                }
+                char nextCh = kebabName.charAt(i);
+                buf.append(Character.toUpperCase(nextCh));
+            } else{
+                buf.append(ch);
+            }
+        }
+        return buf.toString();
+    }
+
+    public static boolean isKebabCase(String str) {
+        return str.contains("-");
     }
 
     protected static boolean isSnakeCase(String str) {

@@ -32,10 +32,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
-import static org.apache.dubbo.common.utils.StringUtils.splitToList;
-import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
-import static org.apache.dubbo.common.utils.StringUtils.startsWithIgnoreCase;
-import static org.apache.dubbo.common.utils.StringUtils.toCommaDelimitedString;
+import static org.apache.dubbo.common.utils.StringUtils.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -501,5 +498,16 @@ public class StringUtilsTest {
         assertTrue(startsWithIgnoreCase("dubbo.Application.name", "dubbo.application."));
         assertTrue(startsWithIgnoreCase("Dubbo.application.name", "dubbo.application."));
 
+    }
+
+    @Test
+    public void testKebabToCamelName() {
+        assertEquals(kebabToCamelName("key-a"),"keyA");
+        assertEquals(kebabToCamelName("key-a-b"),"keyAB");
+        assertEquals(kebabToCamelName("-a"),"A");
+        assertEquals(kebabToCamelName("--a"),"A");
+        assertEquals(kebabToCamelName("a-"),"a-");
+        assertEquals(kebabToCamelName("a--"),"a-");
+        assertEquals(kebabToCamelName("a--a"),"aA");
     }
 }
