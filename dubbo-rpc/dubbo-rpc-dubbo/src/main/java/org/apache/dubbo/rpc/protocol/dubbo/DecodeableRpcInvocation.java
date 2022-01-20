@@ -178,7 +178,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             }
 
             setArguments(args);
-            String targetServiceName = buildKey((String) getAttachment(PATH_KEY),
+            String targetServiceName = buildKey(getAttachment(PATH_KEY),
                     getAttachment(GROUP_KEY),
                     getAttachment(VERSION_KEY));
             setTargetServiceUniqueName(targetServiceName);
