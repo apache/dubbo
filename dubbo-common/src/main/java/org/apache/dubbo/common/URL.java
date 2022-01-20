@@ -270,12 +270,12 @@ class URL implements Serializable {
         return result.clearParameters().addParameters(newMap);
     }
 
-    public static URL valueOf(URL url, String[] reserveParams, String[] reserveParamPrefixs) {
+    public static URL valueOf(URL url, String[] reserveParams, String[] reserveParamPrefixes) {
         Map<String, String> newMap = new HashMap<>();
         Map<String, String> oldMap = url.getParameters();
-        if (reserveParamPrefixs != null && reserveParamPrefixs.length != 0) {
+        if (reserveParamPrefixes != null && reserveParamPrefixes.length != 0) {
             for (Map.Entry<String, String> entry : oldMap.entrySet()) {
-                for (String reserveParamPrefix : reserveParamPrefixs) {
+                for (String reserveParamPrefix : reserveParamPrefixes) {
                     if (entry.getKey().startsWith(reserveParamPrefix) && StringUtils.isNotEmpty(entry.getValue())) {
                         newMap.put(entry.getKey(), entry.getValue());
                     }
