@@ -308,7 +308,7 @@ public class ClientStream extends AbstractStream implements Stream {
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
             if (endStream) {
-                if (!ClientStream.this.remoteClosed) {
+                if (!remoteClosed) {
                     writeQueue.enqueue(CancelQueueCommand.createCommand(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED)), true);
                 }
                 onTrailersReceived(headers);
