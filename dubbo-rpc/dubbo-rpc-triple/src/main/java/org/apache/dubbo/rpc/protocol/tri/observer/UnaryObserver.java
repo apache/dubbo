@@ -32,8 +32,10 @@ public class UnaryObserver implements StreamObserver<Object> {
 
     @Override
     public void onNext(Object data) {
-        if(appResponse!=null){
-
+        if (appResponse != null) {
+            onError(new IllegalStateException("Duplicate response"));
+        } else {
+            appResponse = data;
         }
     }
 
@@ -44,6 +46,6 @@ public class UnaryObserver implements StreamObserver<Object> {
 
     @Override
     public void onCompleted() {
-        DefaultFuture2.received(connection, (Response)appResponse);
+        DefaultFuture2.received(connection, (Response) appResponse);
     }
 }

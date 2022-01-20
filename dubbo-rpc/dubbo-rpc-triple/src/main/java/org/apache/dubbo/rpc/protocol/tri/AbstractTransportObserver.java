@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractTransportObserver implements H2TransportObserver {
-    Logger LOGGER = LoggerFactory.getLogger(AbstractTransportObserver.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractTransportObserver.class);
 
     /**
      * Parse metadata to a KV pairs map.

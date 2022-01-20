@@ -18,6 +18,8 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.AppResponse;
@@ -75,6 +77,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.getStatus;
 
 public class ServerStream extends AbstractStream implements Stream {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerStream.class);
+
     public final ServerTransportObserver transportObserver = new ServerTransportObserver();
     private final ProviderModel providerModel;
     private final List<HeaderFilter> headerFilters;
@@ -239,6 +243,11 @@ public class ServerStream extends AbstractStream implements Stream {
         return headers;
     }
 
+    @Override
+    public void writeMessage(byte[] message) {
+
+    }
+
     public class ServerTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
 
         @Override
@@ -333,7 +342,7 @@ public class ServerStream extends AbstractStream implements Stream {
         protected RpcInvocation buildInvocation(Http2Headers headers) {
             RpcInvocation inv = new RpcInvocation(url().getServiceModel(),
                 methodName, serviceDescriptor.getServiceName(),
-                url().getProtocolServiceKey(), methodDescriptor.getRealParameterClasses(), new Object[0]);
+                url().getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
             inv.setTargetServiceUniqueName(url().getServiceKey());
             inv.setReturnTypes(methodDescriptor.getReturnTypes());
 
@@ -384,7 +393,7 @@ public class ServerStream extends AbstractStream implements Stream {
                     sendHeader(metadata);
                     sendMessage(response.getValue());
                     DefaultHttp2Headers trailers = TripleConstant.createSuccessHttp2Trailers();
-                    convertAttachment(trailers, response.getObjectAttachments());
+                    StreamUtils.convertAttachment(trailers, response.getObjectAttachments());
                     sendHeader(trailers);
                 }
             });

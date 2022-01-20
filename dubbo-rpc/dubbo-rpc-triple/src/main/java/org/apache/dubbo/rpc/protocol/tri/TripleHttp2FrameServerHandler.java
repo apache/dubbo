@@ -237,7 +237,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             }
         }
 
-        boolean isUnary = methodDescriptor == null || methodDescriptor.isUnary();
+//        boolean isUnary = methodDescriptor == null || methodDescriptor.isUnary();
         final ServerStream stream = new ServerStream(invoker.getUrl(),
             writeQueue,
             executor,
