@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHttp2ClientResponseHandler;
 import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
 import org.apache.dubbo.rpc.protocol.tri.command.CancelQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
@@ -122,7 +123,7 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     public void complete() {
-        final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(new byte[0], true);
+        final EndStreamQueueCommand cmd = EndStreamQueueCommand.create();
         this.writeQueue.enqueue(cmd, true);
     }
 
@@ -172,7 +173,7 @@ public class ClientStream extends AbstractStream implements Stream {
             byte[] statusDetailBin = H2TransportObserver.decodeASCIIByte(raw);
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {
-                final Status statusDetail = (Status)Status.parseFrom(statusDetailBin);
+                final Status statusDetail = Status.parseFrom(statusDetailBin);
                 List<Any> detailList = statusDetail.getDetailsList();
                 Map<Class<?>, Object> classObjectMap = tranFromStatusDetails(detailList);
 
