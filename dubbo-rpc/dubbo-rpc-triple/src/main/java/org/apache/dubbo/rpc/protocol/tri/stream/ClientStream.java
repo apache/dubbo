@@ -62,6 +62,7 @@ public class ClientStream extends AbstractStream implements Stream {
     private static final Logger logger = LoggerFactory.getLogger(ClientStream.class);
 
     private boolean canceled;
+    private boolean headerReceived;
     public final ClientStreamListener listener;
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
@@ -96,7 +97,13 @@ public class ClientStream extends AbstractStream implements Stream {
             return;
         }
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
-        this.writeQueue.enqueue(headerCmd, true);
+        this.writeQueue.enqueue(headerCmd, true).addListener(future->{
+            if(!future.isSuccess()){
+                cancelByLocal(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withDescription("Http2 exception")
+                    .withCause(future.cause()));
+            }
+        });
     }
 
     public void cancelByLocal(GrpcStatus status) {
@@ -104,8 +111,11 @@ public class ClientStream extends AbstractStream implements Stream {
             return;
         }
         canceled=true;
-        final CancelQueueCommand cmd = CancelQueueCommand.createCommand(status);
-        this.writeQueue.enqueue(cmd,true);
+        listener.complete(status,null);
+        if (headerReceived) {
+            final CancelQueueCommand cmd = CancelQueueCommand.createCommand(status);
+            this.writeQueue.enqueue(cmd,true);
+        }
     }
 
     @Override
@@ -134,7 +144,6 @@ public class ClientStream extends AbstractStream implements Stream {
         private GrpcStatus transportError;
         private DeCompressor decompressor;
         private TriDecoder decoder;
-        private boolean headerReceived;
         private boolean remoteClosed;
 
         void handleH2TransportError(GrpcStatus status, Http2Headers trailers) {
