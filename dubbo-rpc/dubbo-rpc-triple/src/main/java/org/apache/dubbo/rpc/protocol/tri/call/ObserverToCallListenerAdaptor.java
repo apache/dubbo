@@ -18,29 +18,57 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
 import java.util.Map;
 
-public class ObserverToCallListenerAdaptor implements ClientCall.Listener{
+public class ObserverToCallListenerAdaptor implements ClientCall.Listener {
     private final StreamObserver<Object> responseObserver;
+    private final boolean streamingMethod;
+    private final long requestId;
+    private Object appResponse;
 
-    public ObserverToCallListenerAdaptor(StreamObserver<Object> responseObserver) {
+    public ObserverToCallListenerAdaptor(long requestId, StreamObserver<Object> responseObserver, boolean streamingMethod) {
+        this.requestId = requestId;
         this.responseObserver = responseObserver;
+        this.streamingMethod = streamingMethod;
     }
 
     @Override
-    public void onAttachment(Map<String, Object> attachments) {
-
+    public void onHeaders(Map<String, Object> attachments) {
     }
 
     @Override
     public void onMessage(Object message) {
-        responseObserver.onNext(message);
+        if (streamingMethod) {
+            responseObserver.onNext(message);
+        } else {
+            this.appResponse = message;
+        }
     }
 
     @Override
     public void onClose(GrpcStatus status, Map<String, Object> trailers) {
-
+        if (!streamingMethod) {
+            AppResponse result = new AppResponse();
+            Response response = new Response(requestId, TripleConstant.TRI_VERSION);
+            result.setObjectAttachments(trailers);
+            response.setResult(result);
+            if (status.isOk()) {
+                result.setValue(appResponse);
+            } else {
+                result.setException(status.cause);
+                response.setResult(result);
+                if (result.hasException()) {
+                    final byte code = GrpcStatus.toDubboStatus(status.code);
+                    response.setStatus(code);
+                }
+            }
+            responseObserver.onNext(response);
+        }
+        responseObserver.onCompleted();
     }
 }

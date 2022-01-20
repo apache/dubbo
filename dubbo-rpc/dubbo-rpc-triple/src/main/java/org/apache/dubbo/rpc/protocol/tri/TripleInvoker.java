@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
@@ -34,7 +33,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -44,24 +42,10 @@ import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
-import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.VoidUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespUnpack;
-import org.apache.dubbo.rpc.protocol.tri.stream.ClientRequestObserver;
-import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
-import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamListener;
-import org.apache.dubbo.rpc.protocol.tri.stream.StreamClientListener;
-import org.apache.dubbo.rpc.protocol.tri.stream.UnaryClientListener;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import io.netty.util.AsciiString;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -115,104 +99,19 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
     }
 
-    /**
-     * Get the tri protocol special MethodDescriptor
-     */
-    private static MethodDescriptor lookupMethodDescriptor(ConsumerModel consumerModel, RpcInvocation inv) {
-        List<MethodDescriptor> methodDescriptors = consumerModel.getServiceModel().getMethods(inv.getMethodName());
-        if (CollectionUtils.isEmpty(methodDescriptors)) {
-            throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
-        }
-        for (MethodDescriptor methodDescriptor : methodDescriptors) {
-            if (Arrays.equals(inv.getParameterTypes(), methodDescriptor.getParameterClasses())) {
-                return methodDescriptor;
-            }
-        }
-        throw new IllegalStateException("methodDescriptors must not be null method=" + inv.getMethodName());
-    }
-
-    private ClientStream createStream(RpcInvocation invocation, long id, String methodName, String timeout, ExecutorService executor) {
-        String application = (String) invocation.getObjectAttachments().get(CommonConstants.APPLICATION_KEY);
-        if (application == null) {
-            application = (String) invocation.getObjectAttachments().get(CommonConstants.REMOTE_APPLICATION_KEY);
-        }
-        ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
-        MethodDescriptor methodDescriptor =consumerModel.getServiceModel().getMethod(methodName,invocation.getParameterTypes());
-        ClientStream stream ;
-
-        Pack requestPack;
-        Unpack responseUnpack;
-        if (methodDescriptor.isNeedWrap()) {
-            requestPack = new WrapReqPack(invocation.getParameterTypes(), genericPack, PbPack.INSTANCE);
-            if (!Void.TYPE.equals(methodDescriptor.getReturnClass())) {
-                responseUnpack = new WrapRespUnpack(genericUnpack);
-            } else {
-                responseUnpack = VoidUnpack.INSTANCE;
-            }
-        } else {
-            requestPack = PbPack.INSTANCE;
-            responseUnpack = new PbUnpack(methodDescriptor.getReturnClass());
-        }
-        ClientStreamListener listener;
-        if (methodDescriptor instanceof StreamMethodDescriptor) {
-
-            listener = new StreamClientListener(connection,id,(StreamObserver<Object>) responseObserver);
-        } else {
-            listener = new UnaryClientListener(connection, id);
-        }
-        stream = new ClientStream(
-            getUrl(),
-            executor,
-            id,
-            connection.getChannel(),
-            scheme,
-            "/" + getUrl().getPath() + "/" + methodName,
-            getUrl().getVersion(),
-            getUrl().getGroup(),
-            application,
-            getUrl().getAddress(),
-            compressor.getMessageEncoding(),
-            acceptEncoding,
-            timeout,
-            compressor,
-            invocation.getObjectAttachments(),
-            requestPack,
-            responseUnpack,
-            listener);
-        if (methodDescriptor instanceof StreamMethodDescriptor) {
-            ((StreamClientListener)listener).setRequestObserver(new ClientRequestObserver(stream));
-        }
-        return stream;
-    }
 
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
-        ClientCall call;
-        call.start(invocation);
-//        try {
+        connection.isAvailable();
+        ExecutorService executor = getCallbackExecutor(getUrl(), invocation);
+        final String methodName = RpcUtils.getMethodName(invocation);
+        int timeout = calculateTimeout(invocation, methodName);
         Request req = new Request();
         req.setVersion(TripleConstant.TRI_VERSION);
         req.setTwoWay(true);
         req.setData(invocation);
-        final String methodName = RpcUtils.getMethodName(invocation);
-        int timeout = calculateTimeout(invocation, methodName);
-
-        ExecutorService executor = getCallbackExecutor(getUrl(), invocation);
         DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
         final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
-        final ClientStream stream = createStream((RpcInvocation) invocation, req.getId(), methodName, timeout + "m", executor);
-//        inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
-//        inv.setAttachment(PATH_KEY, getUrl().getPath());
-//        inv.setAttachment(Constants.SERIALIZATION_KEY,
-//            getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
-        // create request.
-
-
-        // try connect
-        connection.isAvailable();
-
-
-        // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
         FutureContext.getContext().setCompatibleFuture(respFuture);
         AsyncRpcResult result = new AsyncRpcResult(respFuture, invocation);
         result.setExecutor(executor);
@@ -222,18 +121,37 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             response.setStatus(Response.CHANNEL_INACTIVE);
             response.setErrorMessage(String.format("Connect to %s failed", this));
             DefaultFuture2.received(connection, response);
-        } else {
-            stream.startCall();
-            stream.sendMessage(invocation.getArguments()[0],true);
-            // todo auto detect pb or multiple arguments
-            DefaultFuture2.sent(req);
-//                        Response response = new Response(req.getId(), req.getVersion());
-//                        response.setStatus(Response.CHANNEL_INACTIVE);
-//                        response.setErrorMessage(StringUtils.toString(future1.cause()));
-//                        DefaultFuture2.received(connection, response);
+            return result;
         }
-
+        ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
+        MethodDescriptor methodDescriptor =consumerModel.getServiceModel().getMethod(methodName,invocation.getParameterTypes());
+        ClientCall call=new ClientCall(req,connection,executor,methodDescriptor);
+        if(methodDescriptor instanceof StreamMethodDescriptor){
+            final StreamObserver<Object> requestObserver = ClientCall.streamCall(call, ClientCall.getObserver(methodDescriptor, invocation.getArguments()));
+            DefaultFuture2.sent(req);
+            AppResponse appResponse= new AppResponse();
+            appResponse.setValue(requestObserver);
+            Response response = new Response(req.getId(), TripleConstant.TRI_VERSION);
+            response.setResult(appResponse);
+            DefaultFuture2.received(connection, response);
+        }else{
+            ClientCall.unaryCall(call,invocation.getArguments());
+        }
         return result;
+//        try {
+//        inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
+//        inv.setAttachment(PATH_KEY, getUrl().getPath());
+//        inv.setAttachment(Constants.SERIALIZATION_KEY,
+//            getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+        // create request.
+
+
+        // try connect
+
+
+        // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
+
+
 //        } catch (TimeoutException e) {
 //            throw new RpcException(RpcException.TIMEOUT_EXCEPTION,
 //                "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()

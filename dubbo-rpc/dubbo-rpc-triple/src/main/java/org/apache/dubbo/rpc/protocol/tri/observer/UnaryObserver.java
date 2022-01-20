@@ -15,38 +15,32 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.stream;
+package org.apache.dubbo.rpc.protocol.tri.observer;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
-import java.util.Map;
-
-public class UnaryClientListener implements ClientStreamListener {
+public class UnaryObserver implements StreamObserver<Object> {
     private final Connection connection;
-    private final long requestId;
-    private Object appResponse;
 
-    public UnaryClientListener(Connection connection, long requestId) {
+    public UnaryObserver(Connection connection) {
         this.connection = connection;
-        this.requestId = requestId;
     }
 
     @Override
-    public void onMessage(Object message) {
-        if (appResponse != null) {
-            complete(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withDescription("Too many response data"), null);
-        }
-        this.appResponse = message;
+    public void onNext(Object data) {
+        DefaultFuture2.received(connection, (Response) data);
     }
 
     @Override
-    public void complete(GrpcStatus status, Map<String, Object> attachments) {
+    public void onError(Throwable throwable) {
+
+    }
+
+    @Override
+    public void onCompleted() {
 
     }
 }
