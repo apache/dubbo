@@ -499,7 +499,7 @@ public class AbstractClusterInvokerTest {
         dic.buildRouterChain();
     }
 
-    @Test()
+    @Test
     public void testTimeoutExceptionCode() {
         List<Invoker<DemoService>> invokers = new ArrayList<Invoker<DemoService>>();
         invokers.add(new Invoker<DemoService>() {

@@ -101,7 +101,7 @@ public class FailoverClusterInvokerTest {
         }
     }
 
-    @Test()
+    @Test
     public void testInvokeWithRPCException() {
         given(invoker1.invoke(invocation)).willThrow(new RpcException());
         given(invoker1.isAvailable()).willReturn(true);
@@ -120,7 +120,7 @@ public class FailoverClusterInvokerTest {
         }
     }
 
-    @Test()
+    @Test
     public void testInvoke_retryTimes() {
         given(invoker1.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
         given(invoker1.isAvailable()).willReturn(false);
@@ -143,7 +143,7 @@ public class FailoverClusterInvokerTest {
         }
     }
 
-    @Test()
+    @Test
     public void testInvoke_retryTimes2() {
         int finalRetries = 1;
         given(invoker1.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
@@ -170,7 +170,7 @@ public class FailoverClusterInvokerTest {
         }
     }
 
-    @Test()
+    @Test
     public void testInvoke_retryTimes_withBizException() {
         given(invoker1.invoke(invocation)).willThrow(new RpcException(RpcException.BIZ_EXCEPTION));
         given(invoker1.isAvailable()).willReturn(false);
@@ -192,7 +192,7 @@ public class FailoverClusterInvokerTest {
         }
     }
 
-    @Test()
+    @Test
     public void testInvoke_without_retry() {
         int withoutRetry = 0;
         final URL url = URL.valueOf("test://localhost/" + Demo.class.getName() + "?loadbalance=roundrobin&retries=" + withoutRetry);
@@ -219,7 +219,7 @@ public class FailoverClusterInvokerTest {
         }
     }
 
-    @Test()
+    @Test
     public void testInvoke_when_retry_illegal() {
         int illegalRetry = -1;
         final URL url = URL.valueOf("test://localhost/" + Demo.class.getName() + "?loadbalance=roundrobin&retries=" + illegalRetry);
@@ -246,7 +246,7 @@ public class FailoverClusterInvokerTest {
         }
     }
 
-    @Test()
+    @Test
     public void testNoInvoke() {
         dic = mock(Directory.class);
 
