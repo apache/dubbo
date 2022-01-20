@@ -30,7 +30,6 @@ import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.observer.CallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.UnaryObserver;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
@@ -54,13 +53,13 @@ public class ClientCall {
     public final long requestId;
     public final GenericUnpack genericUnpack;
     private final Connection connection;
-    private final MethodDescriptor methodDescriptor;
     private final ExecutorService executor;
     private final DefaultHttp2Headers headers;
     private final URL url;
     private final PbUnpack<?> unpack;
     private final Compressor compressor;
     private ClientStream stream;
+    private boolean canceled;
 
     public ClientCall(URL url,
                       long requestId,
@@ -76,8 +75,6 @@ public class ClientCall {
                       String acceptEncoding,
                       Compressor compressor,
                       Map<String, Object> attachments,
-                      Class<?>[] parameterTypes,
-                      GenericPack genericPack,
                       GenericUnpack genericUnpack,
                       ExecutorService executor,
                       MethodDescriptor methodDescriptor
@@ -85,7 +82,6 @@ public class ClientCall {
         this.url = url;
         this.requestId = requestId;
         this.executor = executor;
-        this.methodDescriptor = methodDescriptor;
         this.genericUnpack = genericUnpack;
         this.connection = connection;
         this.compressor = compressor;
@@ -169,9 +165,7 @@ public class ClientCall {
             final byte[] compress = compressor.compress(data);
             stream.writeMessage(compress);
         } catch (IOException e) {
-            cancel(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withDescription("Write message failed")
-                .withCause(e), e);
+            cancel("Serialize request failed", e);
         }
     }
 
@@ -188,7 +182,23 @@ public class ClientCall {
         stream.startCall(headers);
     }
 
-    public void cancel(GrpcStatus status, Throwable t) {
+    public void cancel(String message, Throwable t) {
+        if (canceled) {
+            return;
+        }
+        canceled = true;
+        if (stream != null) {
+            final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED);
+            if (message != null) {
+                status.withDescription(message);
+            } else {
+                status.withDescription("Cancel by client without message");
+            }
+            if (t != null) {
+                status.withCause(t);
+            }
+            stream.cancelByLocal(status);
+        }
 
     }
 
@@ -199,9 +209,10 @@ public class ClientCall {
         void onClose(GrpcStatus status, Map<String, Object> trailers);
     }
 
-    static class ClientStreamListenerImpl implements ClientStreamListener {
+    class ClientStreamListenerImpl implements ClientStreamListener {
         private final Listener listener;
         private final PbUnpack<?> unpack;
+        private boolean done;
 
         ClientStreamListenerImpl(Listener listener, PbUnpack<?> unpack) {
             this.unpack = unpack;
@@ -214,17 +225,30 @@ public class ClientCall {
                 final Object unpacked = unpack.unpack(message);
                 listener.onMessage(unpacked);
             } catch (IOException e) {
-                complete(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                cancelByErr(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription("Deserialize response failed")
-                    .withCause(e), null);
+                    .withCause(e));
             }
         }
 
         @Override
         public void complete(GrpcStatus grpcStatus, Map<String, Object> attachments) {
-            listener.onClose(grpcStatus, attachments);
+            if (done) {
+                return;
+            }
+            done = true;
+            try {
+                listener.onClose(grpcStatus, attachments);
+            }catch (Throwable t){
+                cancelByErr(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withDescription("Close stream error")
+                    .withCause(t));
+            }
         }
 
+        void cancelByErr(GrpcStatus status){
+            stream.cancelByLocal(status);
+        }
         @Override
         public void onHeaders(Http2Headers headers) {
             // ignored

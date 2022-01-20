@@ -66,7 +66,6 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class TripleInvoker<T> extends AbstractInvoker<T> {
 
-
     private final Connection connection;
     private final ReentrantLock destroyLock = new ReentrantLock();
     private final AsciiString scheme;
@@ -143,8 +142,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             acceptEncoding,
             compressor,
             invocation.getObjectAttachments(),
-            invocation.getParameterTypes(),
-            genericPack,
             genericUnpack,
             executor,
             methodDescriptor);
@@ -160,29 +157,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             ClientCall.unaryCall(call, WrapUtils.getRequest(genericPack, methodDescriptor, invocation.getArguments()));
         }
         return result;
-//        try {
-//        inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
-//        inv.setAttachment(PATH_KEY, getUrl().getPath());
-//        inv.setAttachment(Constants.SERIALIZATION_KEY,
-//            getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
-        // create request.
-
-
-        // try connect
-
-
-        // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
-
-
-//        } catch (TimeoutException e) {
-//            throw new RpcException(RpcException.TIMEOUT_EXCEPTION,
-//                "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
-//                    + ", cause: " + e.getMessage(), e);
-//        } catch (RemotingException e) {
-//            throw new RpcException(RpcException.NETWORK_EXCEPTION,
-//                "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
-//                    + ", cause: " + e.getMessage(), e);
-//        }
     }
 
     @Override

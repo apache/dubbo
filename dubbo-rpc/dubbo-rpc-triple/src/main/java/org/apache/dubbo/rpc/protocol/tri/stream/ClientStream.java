@@ -20,7 +20,6 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
@@ -62,12 +61,10 @@ import java.util.concurrent.Executor;
 public class ClientStream extends AbstractStream implements Stream {
     private static final Logger logger = LoggerFactory.getLogger(ClientStream.class);
 
+    private boolean canceled;
     public final ClientStreamListener listener;
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
-
-    private boolean remoteClosed;
-
     public ClientStream(URL url,
                         Executor executor,
                         Channel parent,
@@ -102,13 +99,18 @@ public class ClientStream extends AbstractStream implements Stream {
         this.writeQueue.enqueue(headerCmd, true);
     }
 
-    public void cancelByLocal(Throwable t) {
-        RpcContext.getCancellationContext().cancel(t);
+    public void cancelByLocal(GrpcStatus status) {
+        if(canceled){
+            return;
+        }
+        canceled=true;
+        final CancelQueueCommand cmd = CancelQueueCommand.createCommand(status);
+        this.writeQueue.enqueue(cmd,true);
     }
 
     @Override
     public URL url() {
-        return null;
+        return url;
     }
 
     @Override
@@ -117,9 +119,10 @@ public class ClientStream extends AbstractStream implements Stream {
             final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false);
             this.writeQueue.enqueue(cmd, true);
         } catch (Throwable t) {
-            cancelByLocal(t);
+            cancelByLocal(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription("Client write message failed")
+                .withCause(t));
         }
-
     }
 
     public void complete() {
@@ -132,7 +135,7 @@ public class ClientStream extends AbstractStream implements Stream {
         private DeCompressor decompressor;
         private TriDecoder decoder;
         private boolean headerReceived;
-        private boolean streamClosed;
+        private boolean remoteClosed;
 
         void handleH2TransportError(GrpcStatus status, Http2Headers trailers) {
             writeQueue.enqueue(CancelQueueCommand.createCommand(status), true);
@@ -140,10 +143,10 @@ public class ClientStream extends AbstractStream implements Stream {
         }
 
         void finishProcess(GrpcStatus status, Http2Headers trailers) {
-            if (streamClosed) {
+            if (remoteClosed) {
                 return;
             }
-            streamClosed = true;
+            remoteClosed = true;
 
             final Map<String, Object> attachments = headersToMap(trailers);
             if (!status.isOk()) {
@@ -305,7 +308,7 @@ public class ClientStream extends AbstractStream implements Stream {
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
             if (endStream) {
-                if (!remoteClosed) {
+                if (!ClientStream.this.remoteClosed) {
                     writeQueue.enqueue(CancelQueueCommand.createCommand(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED)), true);
                 }
                 onTrailersReceived(headers);
@@ -336,11 +339,7 @@ public class ClientStream extends AbstractStream implements Stream {
         @Override
         public void cancelByRemote(GrpcStatus status) {
             transportError = status;
-            if (status.code == GrpcStatus.Code.CANCELLED) {
-                listener.complete(status, null);
-            } else {
-                finishProcess(status, null);
-            }
+            finishProcess(status, null);
         }
     }
 }

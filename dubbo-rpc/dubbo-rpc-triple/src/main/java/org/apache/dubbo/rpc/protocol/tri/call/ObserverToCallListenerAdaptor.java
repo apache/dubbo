@@ -35,6 +35,7 @@ public class ObserverToCallListenerAdaptor implements ClientCall.Listener {
     private final long requestId;
     private final GenericUnpack unpack;
     private Object appResponse;
+    private boolean closed;
 
     public ObserverToCallListenerAdaptor(
         GenericUnpack genericUnpack,
@@ -49,6 +50,9 @@ public class ObserverToCallListenerAdaptor implements ClientCall.Listener {
 
     @Override
     public void onMessage(Object message) {
+        if(closed){
+            return;
+        }
         if (streamingMethod) {
             responseObserver.onNext(message);
         } else {
@@ -68,6 +72,10 @@ public class ObserverToCallListenerAdaptor implements ClientCall.Listener {
 
     @Override
     public void onClose(GrpcStatus status, Map<String, Object> trailers) {
+        if(closed){
+            return;
+        }
+        closed=true;
         if (!streamingMethod) {
             AppResponse result = new AppResponse();
             Response response = new Response(requestId, TripleConstant.TRI_VERSION);
@@ -84,7 +92,13 @@ public class ObserverToCallListenerAdaptor implements ClientCall.Listener {
                 }
             }
             responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } else {
+            if (status.isOk()) {
+                responseObserver.onCompleted();
+            } else {
+                responseObserver.onError(status.asException());
+            }
         }
-        responseObserver.onCompleted();
     }
 }
