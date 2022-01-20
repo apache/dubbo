@@ -37,7 +37,6 @@ import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
-import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
@@ -128,7 +127,6 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     class ClientTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
-        private final PbUnpack STATUS_DETAIL_UNPACK = new PbUnpack(Status.class);
         private GrpcStatus transportError;
         private DeCompressor decompressor;
         private TriDecoder decoder;
@@ -174,7 +172,7 @@ public class ClientStream extends AbstractStream implements Stream {
             byte[] statusDetailBin = H2TransportObserver.decodeASCIIByte(raw);
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {
-                final Status statusDetail = (Status) STATUS_DETAIL_UNPACK.unpack(statusDetailBin);
+                final Status statusDetail = (Status)Status.parseFrom(statusDetailBin);
                 List<Any> detailList = statusDetail.getDetailsList();
                 Map<Class<?>, Object> classObjectMap = tranFromStatusDetails(detailList);
 
@@ -186,7 +184,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
                 String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
                 return new RpcException(statusDetail.getCode(), msg);
-            } catch (IOException | ClassNotFoundException ioException) {
+            } catch (IOException ioException) {
                 return null;
             } finally {
                 ClassLoadUtil.switchContextLoader(tccl);

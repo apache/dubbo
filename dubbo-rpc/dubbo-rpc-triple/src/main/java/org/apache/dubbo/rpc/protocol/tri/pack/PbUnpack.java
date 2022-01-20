@@ -23,20 +23,17 @@ import org.apache.dubbo.triple.TripleWrapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-public class PbUnpack<T> implements Unpack<T> {
+public class PbUnpack<T> {
+    private final Class<?> clz;
+    public static PbUnpack<TripleWrapper.TripleResponseWrapper> RESP_PB_UNPACK = new PbUnpack<>(TripleWrapper.TripleResponseWrapper.class);
+    public static PbUnpack<TripleWrapper.TripleRequestWrapper> REQ_PB_UNPACK = new PbUnpack<>(TripleWrapper.TripleRequestWrapper.class);
 
-    public static final PbUnpack<TripleWrapper.TripleResponseWrapper> RESP_PB_UNPACK = new PbUnpack<>(TripleWrapper.TripleResponseWrapper.class);
-
-    public static final PbUnpack<TripleWrapper.TripleRequestWrapper> REQ_PB_UNPACK = new PbUnpack<>(TripleWrapper.TripleRequestWrapper.class);
-
-    private final Class<T> clz;
-
-    public PbUnpack(Class<T> clz) {
+    public PbUnpack(Class<?> clz) {
         this.clz = clz;
     }
 
-    @Override
-    public T unpack(byte[] data) throws ClassNotFoundException, IOException {
-        return SingleProtobufUtils.deserialize(new ByteArrayInputStream(data), clz);
+    public T unpack(byte[] data) throws IOException {
+        final ByteArrayInputStream bais = new ByteArrayInputStream(data);
+        return (T) SingleProtobufUtils.deserialize(bais, clz);
     }
 }

@@ -32,13 +32,8 @@ import org.apache.dubbo.rpc.protocol.tri.observer.CallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.UnaryObserver;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.VoidUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamListener;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
@@ -57,13 +52,13 @@ import java.util.concurrent.ExecutorService;
 public class ClientCall {
     private static final Logger logger = LoggerFactory.getLogger(ClientCall.class);
     public final long requestId;
+    public final GenericUnpack genericUnpack;
     private final Connection connection;
     private final MethodDescriptor methodDescriptor;
     private final ExecutorService executor;
     private final DefaultHttp2Headers headers;
     private final URL url;
-    private final Pack requestPack;
-    private final Unpack responseUnpack;
+    private final PbUnpack<?> unpack;
     private final Compressor compressor;
     private ClientStream stream;
 
@@ -91,6 +86,7 @@ public class ClientCall {
         this.requestId = requestId;
         this.executor = executor;
         this.methodDescriptor = methodDescriptor;
+        this.genericUnpack = genericUnpack;
         this.connection = connection;
         this.compressor = compressor;
         this.headers = new DefaultHttp2Headers(false);
@@ -110,21 +106,15 @@ public class ClientCall {
             StreamUtils.convertAttachment(headers, attachments);
         }
         if (methodDescriptor.isNeedWrap()) {
-            requestPack = new WrapReqPack(parameterTypes, genericPack, PbPack.INSTANCE);
-            if (!Void.TYPE.equals(methodDescriptor.getReturnClass())) {
-                responseUnpack = new WrapRespUnpack(genericUnpack);
-            } else {
-                responseUnpack = VoidUnpack.INSTANCE;
-            }
+            unpack = PbUnpack.RESP_PB_UNPACK;
         } else {
-            requestPack = PbPack.INSTANCE;
-            responseUnpack = new PbUnpack(methodDescriptor.getReturnClass());
+            unpack = new PbUnpack<>(methodDescriptor.getReturnClass());
         }
     }
 
     public static StreamObserver<Object> streamCall(ClientCall call, StreamObserver<Object> responseObserver) {
         final CallToObserverAdapter requestObserver = new CallToObserverAdapter(call);
-        startCall(call, new ObserverToCallListenerAdaptor(call.requestId, responseObserver, true));
+        startCall(call, new ObserverToCallListenerAdaptor(call.genericUnpack, call.requestId, responseObserver, true));
         return requestObserver;
     }
 
@@ -134,7 +124,7 @@ public class ClientCall {
     }
 
     public static void unaryCall(ClientCall call, Object request, StreamObserver<Object> responseObserver, boolean streamingMethod) {
-        startCall(call, new ObserverToCallListenerAdaptor(call.requestId, responseObserver, streamingMethod));
+        startCall(call, new ObserverToCallListenerAdaptor(call.genericUnpack, call.requestId, responseObserver, streamingMethod));
         try {
             call.sendMessage(request);
             call.closeLocal();
@@ -175,7 +165,7 @@ public class ClientCall {
     public void sendMessage(Object message) {
         final byte[] data;
         try {
-            data = requestPack.pack(message);
+            data = PbPack.INSTANCE.pack(message);
             final byte[] compress = compressor.compress(data);
             stream.writeMessage(compress);
         } catch (IOException e) {
@@ -194,7 +184,7 @@ public class ClientCall {
             url,
             executor,
             connection.getChannel(),
-            new ClientStreamListenerImpl(responseListener, responseUnpack));
+            new ClientStreamListenerImpl(responseListener, unpack));
         stream.startCall(headers);
     }
 
@@ -211,9 +201,9 @@ public class ClientCall {
 
     static class ClientStreamListenerImpl implements ClientStreamListener {
         private final Listener listener;
-        private final Unpack unpack;
+        private final PbUnpack<?> unpack;
 
-        ClientStreamListenerImpl(Listener listener, Unpack unpack) {
+        ClientStreamListenerImpl(Listener listener, PbUnpack<?> unpack) {
             this.unpack = unpack;
             this.listener = listener;
         }
@@ -221,9 +211,9 @@ public class ClientCall {
         @Override
         public void onMessage(byte[] message) {
             try {
-                final Object unpack = this.unpack.unpack(message);
-                listener.onMessage(unpack);
-            } catch (IOException | ClassNotFoundException e) {
+                final Object unpacked = unpack.unpack(message);
+                listener.onMessage(unpacked);
+            } catch (IOException e) {
                 complete(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription("Deserialize response failed")
                     .withCause(e), null);

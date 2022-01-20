@@ -22,18 +22,28 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.WrapUtils;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.triple.TripleWrapper;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class ObserverToCallListenerAdaptor implements ClientCall.Listener {
     private final StreamObserver<Object> responseObserver;
     private final boolean streamingMethod;
     private final long requestId;
+    private final GenericUnpack unpack;
     private Object appResponse;
 
-    public ObserverToCallListenerAdaptor(long requestId, StreamObserver<Object> responseObserver, boolean streamingMethod) {
+    public ObserverToCallListenerAdaptor(
+        GenericUnpack genericUnpack,
+        long requestId,
+        StreamObserver<Object> responseObserver,
+        boolean streamingMethod) {
         this.requestId = requestId;
         this.responseObserver = responseObserver;
+        this.unpack = genericUnpack;
         this.streamingMethod = streamingMethod;
     }
 
@@ -42,7 +52,17 @@ public class ObserverToCallListenerAdaptor implements ClientCall.Listener {
         if (streamingMethod) {
             responseObserver.onNext(message);
         } else {
-            this.appResponse = message;
+            if (message instanceof TripleWrapper.TripleResponseWrapper) {
+                try {
+                    this.appResponse = WrapUtils.getResponse(unpack, (TripleWrapper.TripleResponseWrapper) message);
+                } catch (IOException | ClassNotFoundException e) {
+                    onClose(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription("Unwrap response failed")
+                        .withCause(e), null);
+                }
+            } else {
+                this.appResponse = message;
+            }
         }
     }
 

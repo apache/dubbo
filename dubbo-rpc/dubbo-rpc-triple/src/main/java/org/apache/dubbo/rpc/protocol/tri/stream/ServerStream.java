@@ -43,14 +43,9 @@ import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.Unpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapReqUnPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapRespPack;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.Any;
@@ -86,7 +81,7 @@ public class ServerStream extends AbstractStream implements Stream {
     private final DeCompressor deCompressor;
     private final Invoker<?> invoker;
     private final ServiceDescriptor serviceDescriptor;
-    private final Unpack unpack;
+    private final PbUnpack<?> unpack;
     private final MultipleSerialization serialization;
     private final WriteQueue writeQueue;
     private TriDecoder decoder;
@@ -121,7 +116,7 @@ public class ServerStream extends AbstractStream implements Stream {
         this.methodDescriptor = methodDescriptor;
         this.methodDescriptors = methodDescriptors;
         if (methodDescriptor == null || methodDescriptor.isNeedWrap()) {
-            unpack = new WrapReqUnPack(new GenericUnpack(serialization, url));
+            unpack = PbUnpack.REQ_PB_UNPACK;
         } else {
             unpack = new PbUnpack(methodDescriptor.getParameterClasses()[0]);
             pack = PbPack.INSTANCE;
@@ -198,10 +193,10 @@ public class ServerStream extends AbstractStream implements Stream {
     }
 
     public void close(GrpcStatus status, Http2Headers trailers) {
-        if(closed){
+        if (closed) {
             return;
         }
-        closed=true;
+        closed = true;
         if (headerSent && trailersSent) {
             // already closed
             // todo add sign for outbound status
@@ -257,15 +252,15 @@ public class ServerStream extends AbstractStream implements Stream {
                     ClassLoader tccl = Thread.currentThread().getContextClassLoader();
                     try {
                         trySetMethodDescriptor(data);
-                        if(closed){
+                        if (closed) {
                             return;
                         }
                         final RpcInvocation inv = buildInvocation(headers);
-                        if(closed){
+                        if (closed) {
                             return;
                         }
                         headerFilters.forEach(f -> f.invoke(invoker, inv));
-                        if(closed){
+                        if (closed) {
                             return;
                         }
                         if (providerModel != null) {
@@ -279,12 +274,12 @@ public class ServerStream extends AbstractStream implements Stream {
                             inv.setArguments(new Object[]{unpack});
                         }
                         if (pack == null) {
-                            pack = new WrapRespPack(new GenericPack(serialization, ((WrapReqUnPack) unpack).serializeType, url));
+                            pack = PbPack.INSTANCE;
                         }
                         invoke(inv);
-                    } catch (IOException | ClassNotFoundException e) {
+                    } catch (IOException e) {
                         close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription("Server error")
-                            .withCause(e),null);
+                            .withCause(e), null);
                     } finally {
                         ClassLoadUtil.switchContextLoader(tccl);
                     }
@@ -330,7 +325,7 @@ public class ServerStream extends AbstractStream implements Stream {
 
         @Override
         public void cancelByRemote(GrpcStatus status) {
-            close(status,null);
+            close(status, null);
         }
 
         /**
