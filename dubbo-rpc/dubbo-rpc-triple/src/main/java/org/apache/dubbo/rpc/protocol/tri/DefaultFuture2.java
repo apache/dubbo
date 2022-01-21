@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.exchange.support;
+package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -30,6 +30,7 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
@@ -116,8 +117,8 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         return FUTURES.get(id);
     }
 
-    public static void sent(Request request) {
-        DefaultFuture2 future = FUTURES.get(request.getId());
+    public static void sent(long requestId) {
+        DefaultFuture2 future = FUTURES.get(requestId);
         if (future != null) {
             future.doSent();
         }
@@ -185,7 +186,6 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, null, connection.getRemote(), res.getErrorMessage()));
         } else {
-            final Object result = res.getResult();
             if (connection.getChannel() != null) {
                 final InetSocketAddress local = (InetSocketAddress) connection.getChannel().localAddress();
                 this.completeExceptionally(new RemotingException(local, connection.getRemote(), res.getErrorMessage()));

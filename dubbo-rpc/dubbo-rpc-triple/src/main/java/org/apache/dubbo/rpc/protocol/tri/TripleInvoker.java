@@ -19,13 +19,11 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.FutureContext;
@@ -36,7 +34,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
@@ -47,11 +44,13 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import io.netty.util.AsciiString;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
@@ -125,15 +124,14 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         }
         ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
         MethodDescriptor methodDescriptor = consumerModel.getServiceModel().getMethod(methodName, invocation.getParameterTypes());
-        if(methodDescriptor==null){
-            throw new IllegalStateException("MethodDescriptor not found for"+methodName+" params:"+ Arrays.toString(invocation.getCompatibleParamSignatures()));
+        if (methodDescriptor == null) {
+            throw new IllegalStateException("MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(invocation.getCompatibleParamSignatures()));
         }
         String application = (String) invocation.getObjectAttachments().get(CommonConstants.APPLICATION_KEY);
         if (application == null) {
             application = (String) invocation.getObjectAttachments().get(CommonConstants.REMOTE_APPLICATION_KEY);
         }
         ClientCall call = new ClientCall(getUrl(),
-            req.getId(),
             connection,
             scheme,
             getUrl().getPath(),
@@ -149,17 +147,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             executor,
             methodDescriptor);
 
-        if (methodDescriptor instanceof StreamMethodDescriptor) {
-            final StreamObserver<Object> requestObserver = ClientCall.streamCall(call,genericUnpack, ClientCall.getObserver(methodDescriptor, invocation.getArguments()));
-            DefaultFuture2.sent(req);
-            AppResponse appResponse = new AppResponse();
-            appResponse.setValue(requestObserver);
-            Response response = new Response(req.getId(), TripleConstant.TRI_VERSION);
-            response.setResult(appResponse);
-            DefaultFuture2.received(connection, response);
-        } else {
-            ClientCall.unaryCall(call,genericUnpack, WrapUtils.getRequest(genericPack, methodDescriptor, invocation.getArguments()));
-        }
+        final List<String> paramTypes = Arrays.stream(invocation.getCompatibleParamSignatures())
+            .collect(Collectors.toList());
+        ClientCall.call(call,req.getId(),invocation.getArguments(),connection,methodDescriptor,genericPack,paramTypes,genericUnpack);
         return result;
     }
 

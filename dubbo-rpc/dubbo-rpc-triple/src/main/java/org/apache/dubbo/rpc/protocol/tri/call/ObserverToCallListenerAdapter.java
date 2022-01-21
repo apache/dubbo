@@ -15,37 +15,31 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.observer;
+package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 
-public class UnaryObserver implements StreamObserver<Object> {
-    private final Connection connection;
-    private Object appResponse;
+import java.util.Map;
 
-    public UnaryObserver(Connection connection) {
-        this.connection = connection;
+public class ObserverToCallListenerAdapter implements ClientCall.Listener {
+    private final StreamObserver<Object> delegate;
+
+    public ObserverToCallListenerAdapter(StreamObserver<Object> delegate) {
+        this.delegate = delegate;
     }
 
     @Override
-    public void onNext(Object data) {
-        if (appResponse != null) {
-            onError(new IllegalStateException("Duplicate response"));
+    public void onMessage(Object message) {
+        delegate.onNext(message);
+    }
+
+    @Override
+    public void onClose(GrpcStatus status, Map<String, Object> trailers) {
+        if (status.isOk()) {
+            delegate.onCompleted();
         } else {
-            appResponse = data;
+            delegate.onError(status.asException());
         }
-    }
-
-    @Override
-    public void onError(Throwable throwable) {
-
-    }
-
-    @Override
-    public void onCompleted() {
-        DefaultFuture2.received(connection, (Response) appResponse);
     }
 }

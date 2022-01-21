@@ -1,0 +1,69 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.dubbo.rpc.protocol.tri.call;
+
+import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
+import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+
+import java.util.Map;
+
+public class UnaryCallListener implements ClientCall.Listener {
+    private final long requestId;
+    private final Connection connection;
+    private Object appResponse;
+    private boolean closed;
+
+    public UnaryCallListener(long requestId, Connection connection) {
+        this.requestId = requestId;
+        this.connection = connection;
+    }
+
+    @Override
+    public void onMessage(Object message) {
+        this.appResponse=message;
+    }
+
+    @Override
+    public void onClose(GrpcStatus status, Map<String, Object> trailers) {
+        if (closed) {
+            return;
+        }
+        closed = true;
+        Response response = new Response(requestId, TripleConstant.TRI_VERSION);
+        AppResponse result = new AppResponse();
+        response.setResult(result);
+        result.setObjectAttachments(trailers);
+        if (status.isOk()) {
+            result.setValue(appResponse);
+        } else {
+            result.setException(status.asException());
+            response.setResult(result);
+            if (result.hasException()) {
+                final byte code = GrpcStatus.toDubboStatus(status.code);
+                response.setStatus(code);
+                response.setErrorMessage(ExceptionUtils.getStackTrace(status.asException()));
+            }
+        }
+        DefaultFuture2.received(connection, response);
+    }
+}
