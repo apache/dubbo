@@ -43,7 +43,7 @@ public class TaskQueueTest {
         TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
         EagerThreadPoolExecutor executor = mock(EagerThreadPoolExecutor.class);
         Mockito.when(executor.getPoolSize()).thenReturn(2);
-        Mockito.when(executor.getSubmittedTaskCount()).thenReturn(1);
+        Mockito.when(executor.getActiveCount()).thenReturn(1);
         queue.setExecutor(executor);
         assertThat(queue.offer(mock(Runnable.class)), is(true));
     }
@@ -53,7 +53,7 @@ public class TaskQueueTest {
         TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
         EagerThreadPoolExecutor executor = mock(EagerThreadPoolExecutor.class);
         Mockito.when(executor.getPoolSize()).thenReturn(2);
-        Mockito.when(executor.getSubmittedTaskCount()).thenReturn(2);
+        Mockito.when(executor.getActiveCount()).thenReturn(2);
         Mockito.when(executor.getMaximumPoolSize()).thenReturn(4);
         queue.setExecutor(executor);
         assertThat(queue.offer(mock(Runnable.class)), is(false));
@@ -64,7 +64,7 @@ public class TaskQueueTest {
         TaskQueue<Runnable> queue = new TaskQueue<Runnable>(1);
         EagerThreadPoolExecutor executor = mock(EagerThreadPoolExecutor.class);
         Mockito.when(executor.getPoolSize()).thenReturn(4);
-        Mockito.when(executor.getSubmittedTaskCount()).thenReturn(4);
+        Mockito.when(executor.getActiveCount()).thenReturn(4);
         Mockito.when(executor.getMaximumPoolSize()).thenReturn(4);
         queue.setExecutor(executor);
         assertThat(queue.offer(mock(Runnable.class)), is(true));
