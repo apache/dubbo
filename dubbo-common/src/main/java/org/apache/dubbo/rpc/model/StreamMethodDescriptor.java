@@ -80,14 +80,6 @@ public class StreamMethodDescriptor extends MethodDescriptor {
         throw new IllegalStateException("method params error method=" + methodName);
     }
 
-    public int responseObserverIndex() {
-        if (streamType == StreamType.SERVER) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
-
     public enum StreamType {
         SERVER, CLIENT, BI_DIRECTIONAL
     }

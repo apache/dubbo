@@ -237,11 +237,6 @@ public class ClientCall {
         call.start(responseListener);
     }
 
-    public static StreamObserver<Object> getObserver(MethodDescriptor methodDescriptor, Object[] arguments) {
-        final int index = ((StreamMethodDescriptor) methodDescriptor).responseObserverIndex();
-        return (StreamObserver<Object>) arguments[index];
-    }
-
     private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key, CharSequence value) {
         if (value == null) {
             return;
