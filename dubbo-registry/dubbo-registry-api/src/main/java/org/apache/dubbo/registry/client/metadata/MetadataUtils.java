@@ -122,6 +122,8 @@ public class MetadataUtils {
         String key = computeKey(instance);
         if (metadataServiceProxies.containsKey(key)) {
             metadataServiceProxies.remove(key);
+        }
+        if (metadataServiceInvokers.containsKey(key)) {
             Invoker<?> invoker = metadataServiceInvokers.remove(key);
             invoker.destroy();
         }

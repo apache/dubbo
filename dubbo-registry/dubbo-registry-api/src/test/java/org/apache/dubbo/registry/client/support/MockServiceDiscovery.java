@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
@@ -62,5 +63,9 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return Collections.emptyList();
+    }
+
+    public MetaCacheManager getMetaCacheManager() {
+        return metaCacheManager;
     }
 }
