@@ -159,7 +159,6 @@ public class ClientCall {
                                                     StreamMethodDescriptor methodDescriptor,
                                                     GenericPack genericPack, List<String> argumentTypes,
                                                     GenericUnpack genericUnpack) {
-
         ObserverToCallListenerAdapter listener = new ObserverToCallListenerAdapter(responseObserver);
         final StreamObserver<Object> requestObserver = call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
         return requestObserver;
@@ -313,29 +312,33 @@ public class ClientCall {
 
         @Override
         public void onMessage(byte[] message) {
-            try {
-                final Object unpacked = unpack.unpack(message);
-                listener.onMessage(unpacked);
-            } catch (IOException e) {
-                cancelByErr(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Deserialize response failed")
-                    .withCause(e));
-            }
+            executor.execute(()-> {
+                try {
+                    final Object unpacked = unpack.unpack(message);
+                    listener.onMessage(unpacked);
+                } catch (IOException e) {
+                    cancelByErr(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription("Deserialize response failed")
+                        .withCause(e));
+                }
+            });
         }
 
         @Override
         public void complete(GrpcStatus grpcStatus, Map<String, Object> attachments) {
-            if (done) {
-                return;
-            }
-            done = true;
-            try {
-                listener.onClose(grpcStatus, attachments);
-            } catch (Throwable t) {
-                cancelByErr(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Close stream error")
-                    .withCause(t));
-            }
+            executor.execute(()-> {
+                if (done) {
+                    return;
+                }
+                done = true;
+                try {
+                    listener.onClose(grpcStatus, attachments);
+                } catch (Throwable t) {
+                    cancelByErr(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription("Close stream error")
+                        .withCause(t));
+                }
+            });
         }
 
         void cancelByErr(GrpcStatus status) {
