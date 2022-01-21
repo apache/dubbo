@@ -51,15 +51,14 @@ import java.util.concurrent.ExecutorService;
 public class ClientCall {
     private static final Logger logger = LoggerFactory.getLogger(ClientCall.class);
     public final long requestId;
-    public final GenericUnpack genericUnpack;
     private final Connection connection;
     private final ExecutorService executor;
     private final DefaultHttp2Headers headers;
     private final URL url;
-    private final PbUnpack<?> unpack;
     private final Compressor compressor;
     private ClientStream stream;
     private boolean canceled;
+    private final PbUnpack<?> unpack;
 
     public ClientCall(URL url,
                       long requestId,
@@ -75,14 +74,12 @@ public class ClientCall {
                       String acceptEncoding,
                       Compressor compressor,
                       Map<String, Object> attachments,
-                      GenericUnpack genericUnpack,
                       ExecutorService executor,
                       MethodDescriptor methodDescriptor
     ) {
         this.url = url;
         this.requestId = requestId;
         this.executor = executor;
-        this.genericUnpack = genericUnpack;
         this.connection = connection;
         this.compressor = compressor;
         this.headers = new DefaultHttp2Headers(false);
@@ -108,19 +105,19 @@ public class ClientCall {
         }
     }
 
-    public static StreamObserver<Object> streamCall(ClientCall call, StreamObserver<Object> responseObserver) {
+    public static StreamObserver<Object> streamCall(ClientCall call, GenericUnpack unpack, StreamObserver<Object> responseObserver) {
         final CallToObserverAdapter requestObserver = new CallToObserverAdapter(call);
-        startCall(call, new ObserverToCallListenerAdaptor(call.genericUnpack, call.requestId, responseObserver, true));
+        startCall(call, new ObserverToCallListenerAdaptor(unpack, call.requestId, responseObserver, true));
         return requestObserver;
     }
 
-    public static void unaryCall(ClientCall call, Object request) {
+    public static void unaryCall(ClientCall call,GenericUnpack unpack, Object request) {
         UnaryObserver observer = new UnaryObserver(call.connection);
-        unaryCall(call, request, observer, false);
+        unaryCall(call, request, unpack,observer, false);
     }
 
-    public static void unaryCall(ClientCall call, Object request, StreamObserver<Object> responseObserver, boolean streamingMethod) {
-        startCall(call, new ObserverToCallListenerAdaptor(call.genericUnpack, call.requestId, responseObserver, streamingMethod));
+    public static void unaryCall(ClientCall call, Object request, GenericUnpack unpack,StreamObserver<Object> responseObserver, boolean streamingMethod) {
+        startCall(call, new ObserverToCallListenerAdaptor(unpack, call.requestId, responseObserver, streamingMethod));
         try {
             call.sendMessage(request);
             call.closeLocal();

@@ -146,11 +146,11 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             acceptEncoding,
             compressor,
             invocation.getObjectAttachments(),
-            genericUnpack,
             executor,
             methodDescriptor);
+
         if (methodDescriptor instanceof StreamMethodDescriptor) {
-            final StreamObserver<Object> requestObserver = ClientCall.streamCall(call, ClientCall.getObserver(methodDescriptor, invocation.getArguments()));
+            final StreamObserver<Object> requestObserver = ClientCall.streamCall(call,genericUnpack, ClientCall.getObserver(methodDescriptor, invocation.getArguments()));
             DefaultFuture2.sent(req);
             AppResponse appResponse = new AppResponse();
             appResponse.setValue(requestObserver);
@@ -158,7 +158,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             response.setResult(appResponse);
             DefaultFuture2.received(connection, response);
         } else {
-            ClientCall.unaryCall(call, WrapUtils.getRequest(genericPack, methodDescriptor, invocation.getArguments()));
+            ClientCall.unaryCall(call,genericUnpack, WrapUtils.getRequest(genericPack, methodDescriptor, invocation.getArguments()));
         }
         return result;
     }
