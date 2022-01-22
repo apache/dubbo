@@ -263,7 +263,7 @@ public @interface DubboService {
 
     /**
      * Application spring bean name
-     * @deprecated Do not set it and use the global Application Config
+     * @deprecated This attribute was deprecated, use bind application/module of spring ApplicationContext
      */
     @Deprecated
     String application() default "";

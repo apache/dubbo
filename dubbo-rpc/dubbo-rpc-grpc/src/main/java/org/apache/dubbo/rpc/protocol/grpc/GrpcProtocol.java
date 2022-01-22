@@ -190,6 +190,9 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
     @Override
     public void destroy() {
+        if (logger.isInfoEnabled()) {
+            logger.info("Destroying protocol [" + this.getClass().getSimpleName() + "] ...");
+        }
         serverMap.values().forEach(ProtocolServer::close);
         channelMap.values().forEach(ReferenceCountManagedChannel::shutdown);
         serverMap.clear();

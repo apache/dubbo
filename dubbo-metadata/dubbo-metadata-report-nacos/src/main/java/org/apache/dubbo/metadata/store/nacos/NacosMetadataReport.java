@@ -34,7 +34,6 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
-import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
@@ -80,6 +79,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private Map<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
 
+    private MD5Utils md5Utils = new MD5Utils();
 
     public NacosMetadataReport(URL url) {
         super(url);
@@ -149,6 +149,15 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         String content = gson.toJson(metadataInfo);
         try {
             configService.publishConfig(identifier.getApplication(), identifier.getRevision(), content);
+        } catch (NacosException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void unPublishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
+        try {
+            configService.removeConfig(identifier.getApplication(), identifier.getRevision());
         } catch (NacosException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -226,7 +235,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         String content = getConfig(key, group);
         String casMd5 = "";
         if (StringUtils.isNotEmpty(content)) {
-            casMd5 = MD5Utils.getMd5(content);
+            casMd5 = md5Utils.getMd5(content);
         }
         return new ConfigItem(content, casMd5);
     }
@@ -240,6 +249,14 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         }
         String content = getConfig(serviceKey, group);
         return ServiceNameMapping.getAppNames(content);
+    }
+
+    @Override
+    public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
+        MappingDataListener mappingDataListener = casListenerMap.get(buildListenerKey(serviceKey, group));
+        if (null != mappingDataListener) {
+            removeCasServiceMappingListener(serviceKey, group, listener);
+        }
     }
 
     @Override
@@ -263,6 +280,17 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         addListener(serviceKey, DEFAULT_MAPPING_GROUP, mappingDataListener);
     }
 
+    private void removeCasServiceMappingListener(String serviceKey, String group, MappingListener listener) {
+        MappingDataListener mappingDataListener = casListenerMap.get(buildListenerKey(serviceKey, group));
+        if (mappingDataListener != null) {
+            mappingDataListener.removeListeners(listener);
+            if (mappingDataListener.isEmpty()) {
+                removeListener(serviceKey, DEFAULT_MAPPING_GROUP, mappingDataListener);
+                casListenerMap.remove(buildListenerKey(serviceKey, group), mappingDataListener);
+            }
+        }
+    }
+
     public void addListener(String key, String group, ConfigurationListener listener) {
         String listenerKey = buildListenerKey(key, group);
         NacosConfigListener nacosConfigListener =
@@ -270,6 +298,22 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         nacosConfigListener.addListener(listener);
         try {
             configService.addListener(key, group, nacosConfigListener);
+        } catch (NacosException e) {
+            logger.error(e.getMessage());
+        }
+    }
+
+    public void removeListener(String key, String group, ConfigurationListener listener) {
+        String listenerKey = buildListenerKey(key, group);
+        NacosConfigListener nacosConfigListener = watchListenerMap.get(listenerKey);
+        try {
+            if (nacosConfigListener != null) {
+                nacosConfigListener.removeListener(listener);
+                if (nacosConfigListener.isEmpty()) {
+                    configService.removeListener(key, group, nacosConfigListener);
+                    watchListenerMap.remove(listenerKey);
+                }
+            }
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -294,7 +338,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             }
         } catch (Throwable t) {
             logger.error("Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
-            throw new RpcException("Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
+            throw new RuntimeException("Failed to put " + identifier + " to nacos " + value + ", cause: " + t.getMessage(), t);
         }
     }
 
@@ -306,7 +350,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             }
         } catch (Throwable t) {
             logger.error("Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
-            throw new RpcException("Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
+            throw new RuntimeException("Failed to remove " + identifier + " from nacos , cause: " + t.getMessage(), t);
         }
     }
 
@@ -315,7 +359,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 3000L);
         } catch (Throwable t) {
             logger.error("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
-            throw new RpcException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
+            throw new RuntimeException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
         }
     }
 
@@ -360,6 +404,10 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             this.listeners.remove(configurationListener);
         }
 
+        boolean isEmpty() {
+            return this.listeners.isEmpty();
+        }
+
         private ConfigChangeType getChangeType(String configInfo, String oldValue) {
             if (StringUtils.isBlank(configInfo)) {
                 return ConfigChangeType.DELETED;
@@ -390,6 +438,14 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
         public void addListeners(MappingListener mappingListener) {
             listeners.add(mappingListener);
+        }
+
+        public void removeListeners(MappingListener mappingListener) {
+            listeners.remove(mappingListener);
+        }
+
+        public boolean isEmpty() {
+            return listeners.isEmpty();
         }
 
         @Override

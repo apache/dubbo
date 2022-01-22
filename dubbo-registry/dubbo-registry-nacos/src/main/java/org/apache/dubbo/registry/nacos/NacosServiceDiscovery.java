@@ -26,6 +26,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -54,12 +55,9 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private NacosNamingServiceWrapper namingService;
 
-    private URL registryURL;
-
-    @Override
-    public void doInitialize(URL registryURL) throws Exception {
+    public NacosServiceDiscovery(ApplicationModel applicationModel, URL registryURL) {
+        super(applicationModel, registryURL);
         this.namingService = createNamingService(registryURL);
-        this.registryURL = registryURL;
     }
 
     @Override
@@ -76,13 +74,6 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
             // Provider's group is invisible for consumer
             service.registerInstance(instance.getServiceName(), Constants.DEFAULT_GROUP, instance);
         });
-    }
-
-    @Override
-    public void doUpdate(ServiceInstance serviceInstance) {
-        ServiceInstance oldInstance = this.serviceInstance;
-        unregister(oldInstance);
-        register(serviceInstance);
     }
 
     @Override
@@ -119,6 +110,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
         throws NullPointerException, IllegalArgumentException {
+        // check if listener has already been added through another interface/service
+        if (!instanceListeners.add(listener)) {
+            return;
+        }
         execute(namingService, service -> listener.getServiceNames().forEach(serviceName -> {
             try {
                 service.subscribe(serviceName, Constants.DEFAULT_GROUP, e -> { // Register Nacos EventListener

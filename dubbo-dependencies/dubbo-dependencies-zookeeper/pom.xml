@@ -32,30 +32,22 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>3.0.4-SNAPSHOT</revision>
+        <revision>3.0.6-SNAPSHOT</revision>
         <maven_flatten_version>1.1.0</maven_flatten_version>
+        <curator_version>4.2.0</curator_version>
+        <zookeeper_version>3.4.13</zookeeper_version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-dependencies-bom</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-x-discovery</artifactId>
+            <version>${curator_version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
+            <version>${zookeeper_version}</version>
         </dependency>
     </dependencies>
 

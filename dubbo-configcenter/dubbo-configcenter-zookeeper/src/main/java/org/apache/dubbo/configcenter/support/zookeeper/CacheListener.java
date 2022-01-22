@@ -32,10 +32,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
-/**
- *
- */
-
 public class CacheListener implements DataListener {
 
     private Map<String, Set<ConfigurationListener>> keyListeners = new ConcurrentHashMap<>();

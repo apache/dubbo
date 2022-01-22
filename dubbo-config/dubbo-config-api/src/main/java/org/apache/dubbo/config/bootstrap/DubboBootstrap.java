@@ -39,23 +39,23 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
+import org.apache.dubbo.config.bootstrap.builders.ConfigCenterBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
+import org.apache.dubbo.config.bootstrap.builders.MetadataReportBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ProtocolBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ProviderBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
 import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -127,10 +127,6 @@ public final class DubboBootstrap {
         return getInstance(frameworkModel.newApplication());
     }
 
-    public static DubboBootstrap newInstance(ApplicationModel applicationModel) {
-        return getInstance(applicationModel);
-    }
-
     /**
      * Try reset dubbo status for new instance.
      *
@@ -153,8 +149,6 @@ public final class DubboBootstrap {
                 instance.destroy();
                 instance = null;
             }
-            AbstractMetadataReportFactory.destroy();
-            destroyAllProtocols();
             FrameworkModel.destroyAll();
         } else {
             instance = null;
@@ -227,7 +221,7 @@ public final class DubboBootstrap {
      * @return
      */
     public DubboBootstrap start(boolean wait) {
-        CompletableFuture future = applicationDeployer.start();
+        Future future = applicationDeployer.start();
         if (wait) {
             try {
                 future.get();
@@ -236,6 +230,14 @@ public final class DubboBootstrap {
             }
         }
         return this;
+    }
+
+    /**
+     * Start dubbo application but no wait for finish.
+     * @return the future object
+     */
+    public Future asyncStart() {
+        return applicationDeployer.start();
     }
 
     /**
@@ -249,7 +251,7 @@ public final class DubboBootstrap {
     }
 
     public void destroy() {
-        applicationDeployer.destroy();
+        applicationModel.destroy();
     }
 
     public boolean isInitialized() {
@@ -330,30 +332,6 @@ public final class DubboBootstrap {
         return applicationDeployer.getReferenceCache();
     }
 
-    /**
-     * Destroy all the protocols.
-     */
-    private static void destroyProtocols(FrameworkModel frameworkModel) {
-        //TODO destroy protocol in framework scope
-        ExtensionLoader<Protocol> loader = frameworkModel.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
-            try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
-                }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
-        }
-    }
-
-    private static void destroyAllProtocols() {
-        for (FrameworkModel frameworkModel : FrameworkModel.getAllInstances()) {
-            destroyProtocols(frameworkModel);
-        }
-    }
-
     private void executeMutually(Runnable runnable) {
         try {
             lock.lock();
@@ -386,6 +364,16 @@ public final class DubboBootstrap {
 
 
     // MetadataReportConfig correlative methods
+
+    public DubboBootstrap metadataReport(Consumer<MetadataReportBuilder> consumerBuilder) {
+        return metadataReport(null, consumerBuilder);
+    }
+
+    public DubboBootstrap metadataReport(String id,Consumer<MetadataReportBuilder> consumerBuilder) {
+        MetadataReportBuilder metadataReportBuilder = createMetadataReportBuilder(id);
+        consumerBuilder.accept(metadataReportBuilder);
+        return this;
+    }
 
     public DubboBootstrap metadataReport(MetadataReportConfig metadataReportConfig) {
         configManager.addMetadataReport(metadataReportConfig);
@@ -673,6 +661,16 @@ public final class DubboBootstrap {
     // module configs end
 
     // {@link ConfigCenterConfig} correlative methods
+    public DubboBootstrap configCenter(Consumer<ConfigCenterBuilder> consumerBuilder) {
+        return configCenter(null, consumerBuilder);
+    }
+
+    public DubboBootstrap configCenter(String id, Consumer<ConfigCenterBuilder> consumerBuilder) {
+        ConfigCenterBuilder configCenterBuilder = createConfigCenterBuilder(id);
+        consumerBuilder.accept(configCenterBuilder);
+        return this;
+    }
+
     public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
         configCenterConfig.setScopeModel(applicationModel);
         configManager.addConfigCenter(configCenterConfig);
@@ -715,6 +713,14 @@ public final class DubboBootstrap {
 
     private RegistryBuilder createRegistryBuilder(String id) {
         return new RegistryBuilder().id(id);
+    }
+
+    private MetadataReportBuilder createMetadataReportBuilder(String id) {
+        return new MetadataReportBuilder().id(id);
+    }
+
+    private ConfigCenterBuilder createConfigCenterBuilder(String id) {
+        return new ConfigCenterBuilder().id(id);
     }
 
     private ProtocolBuilder createProtocolBuilder(String id) {

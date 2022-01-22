@@ -18,8 +18,8 @@ package org.apache.dubbo.registry.client.migration.model;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.metadata.ServiceNameMapping;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -99,8 +99,7 @@ public class MigrationRuleTest {
 
         Mockito.when(url.getDisplayServiceKey()).thenReturn("GreetingService:1.0.1");
         Mockito.when(url.getServiceInterface()).thenReturn("GreetingService");
-        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(defaultModel);
-        metadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(url), Collections.singleton("TestApplication"));
+        when(mapping.getCachedMapping(any(URL.class))).thenReturn(Collections.singleton("TestApplication"));
 
         Set<String> services = new HashSet<>();
         services.add("TestApplication");
@@ -110,7 +109,8 @@ public class MigrationRuleTest {
         assertEquals(10, migrationRule.getDelay(url));
         assertEquals(false, migrationRule.getForce(url));
         assertEquals(MigrationStep.FORCE_INTERFACE, migrationRule.getStep(url));
-        metadataService.removeCachedMapping("GreetingService");
+        when(mapping.getCachedMapping(any(URL.class))).thenReturn(Collections.emptySet());
+
         ApplicationModel.defaultModel().destroy();
     }
 }

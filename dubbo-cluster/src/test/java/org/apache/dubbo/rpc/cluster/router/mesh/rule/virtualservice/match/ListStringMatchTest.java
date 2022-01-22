@@ -46,9 +46,9 @@ public class ListStringMatchTest {
 
         listStringMatch.setOneof(oneof);
 
-        assertTrue(ListStringMatch.isMatch(listStringMatch, "1"));
-        assertTrue(ListStringMatch.isMatch(listStringMatch, "2"));
-        assertFalse(ListStringMatch.isMatch(listStringMatch, "3"));
+        assertTrue(listStringMatch.isMatch("1"));
+        assertTrue(listStringMatch.isMatch("2"));
+        assertFalse(listStringMatch.isMatch("3"));
 
     }
 }

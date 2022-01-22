@@ -43,21 +43,24 @@ public class TriHealthImpl implements Health {
     private final Map<String, HealthCheckResponse.ServingStatus> statusMap = new ConcurrentHashMap<>();
 
     private final Object watchLock = new Object();
-
-    // Indicates if future status changes should be ignored.
-    private boolean terminal;
-
     // Technically a Multimap<String, StreamObserver<HealthCheckResponse>>.  The Boolean value is not
-    // used.  The StreamObservers need to be kept in a identity-equality set, to make sure
+    // used.  The StreamObservers need to be kept in an identity-equality set, to make sure
     // user-defined equals() doesn't confuse our book-keeping of the StreamObservers.  Constructing
     // such Multimap would require extra lines and the end result is not significantly simpler, thus I
     // would rather not have the Guava collections dependency.
     private final HashMap<String, IdentityHashMap<StreamObserver<HealthCheckResponse>, Boolean>>
         watchers = new HashMap<>();
+    // Indicates if future status changes should be ignored.
+    private boolean terminal;
 
     public TriHealthImpl() {
         // Copy of what Go and C++ do.
         statusMap.put(HealthStatusManager.SERVICE_NAME_ALL_SERVICES, HealthCheckResponse.ServingStatus.SERVING);
+    }
+
+    private static HealthCheckResponse getResponseForWatch(HealthCheckResponse.ServingStatus recordedStatus) {
+        return HealthCheckResponse.newBuilder().setStatus(
+            recordedStatus == null ? HealthCheckResponse.ServingStatus.SERVICE_UNKNOWN : recordedStatus).build();
     }
 
     @Override
@@ -150,10 +153,5 @@ public class TriHealthImpl implements Health {
                 responseObserver.onNext(response);
             }
         }
-    }
-
-    private static HealthCheckResponse getResponseForWatch(HealthCheckResponse.ServingStatus recordedStatus) {
-        return HealthCheckResponse.newBuilder().setStatus(
-            recordedStatus == null ? HealthCheckResponse.ServingStatus.SERVICE_UNKNOWN : recordedStatus).build();
     }
 }

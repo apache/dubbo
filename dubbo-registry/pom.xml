@@ -35,8 +35,14 @@
         <module>dubbo-registry-zookeeper</module>
         <module>dubbo-registry-nacos</module>
         <module>dubbo-registry-multiple</module>
-        <module>dubbo-registry-kubernetes</module>
-        <module>dubbo-registry-dns</module>
-        <module>dubbo-registry-xds</module>
     </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-test-check</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

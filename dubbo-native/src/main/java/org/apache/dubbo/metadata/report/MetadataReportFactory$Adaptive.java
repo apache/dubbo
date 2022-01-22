@@ -27,4 +27,7 @@ ScopeModel scopeModel = ScopeModelUtil.getOrDefault(url.getScopeModel(), org.apa
 org.apache.dubbo.metadata.report.MetadataReportFactory extension = (org.apache.dubbo.metadata.report.MetadataReportFactory)scopeModel.getExtensionLoader(org.apache.dubbo.metadata.report.MetadataReportFactory.class).getExtension(extName);
 return extension.getMetadataReport(arg0);
 }
+public void destroy()  {
+throw new UnsupportedOperationException("The method public abstract void org.apache.dubbo.metadata.report.MetadataReportFactory.destroy() of interface org.apache.dubbo.metadata.report.MetadataReportFactory is not adaptive method!");
+}
 }

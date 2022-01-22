@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.resource.GlobalResourcesRepository;
+
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
@@ -30,25 +32,21 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class ClassLoaderResourceLoader {
-    private final static ExecutorService executorService =
-        new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-            60L, TimeUnit.SECONDS,
-            new SynchronousQueue<>(),
-            new NamedThreadFactory("DubboClassLoaderResourceLoader", true));
 
     private static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> classLoaderResourcesCache = null;
 
-    public static Map<ClassLoader, Set<java.net.URL>> loadResources(String fileName, List<ClassLoader> classLoaders) {
-        Map<ClassLoader, Set<java.net.URL>> resources = new ConcurrentHashMap<>();
+    static {
+        // register resources destroy listener
+        GlobalResourcesRepository.registerGlobalDisposable(()-> destroy());
+    }
+
+    public static Map<ClassLoader, Set<URL>> loadResources(String fileName, List<ClassLoader> classLoaders) {
+        Map<ClassLoader, Set<URL>> resources = new ConcurrentHashMap<>();
         CountDownLatch countDownLatch = new CountDownLatch(classLoaders.size());
         for (ClassLoader classLoader : classLoaders) {
-            executorService.submit(()->{
+            GlobalResourcesRepository.getGlobalExecutorService().submit(() -> {
                 resources.put(classLoader, loadResources(fileName, classLoader));
                 countDownLatch.countDown();
             });
@@ -61,10 +59,10 @@ public class ClassLoaderResourceLoader {
         return Collections.unmodifiableMap(new LinkedHashMap<>(resources));
     }
 
-    public static Set<java.net.URL> loadResources(String fileName, ClassLoader currentClassLoader) {
-        Map<ClassLoader, Map<String, Set<java.net.URL>>> classLoaderCache;
+    public static Set<URL> loadResources(String fileName, ClassLoader currentClassLoader) {
+        Map<ClassLoader, Map<String, Set<URL>>> classLoaderCache;
         if (classLoaderResourcesCache == null || (classLoaderCache = classLoaderResourcesCache.get()) == null) {
-            synchronized (ConfigUtils.class) {
+            synchronized (ClassLoaderResourceLoader.class) {
                 if (classLoaderResourcesCache == null || (classLoaderCache = classLoaderResourcesCache.get()) == null) {
                     classLoaderCache = new ConcurrentHashMap<>();
                     classLoaderResourcesCache = new SoftReference<>(classLoaderCache);
@@ -74,10 +72,10 @@ public class ClassLoaderResourceLoader {
         if (!classLoaderCache.containsKey(currentClassLoader)) {
             classLoaderCache.putIfAbsent(currentClassLoader, new ConcurrentHashMap<>());
         }
-        Map<String, Set<java.net.URL>> urlCache = classLoaderCache.get(currentClassLoader);
+        Map<String, Set<URL>> urlCache = classLoaderCache.get(currentClassLoader);
         if (!urlCache.containsKey(fileName)) {
-            Set<java.net.URL> set = new LinkedHashSet<>();
-            Enumeration<URL> urls = null;
+            Set<URL> set = new LinkedHashSet<>();
+            Enumeration<URL> urls;
             try {
                 urls = currentClassLoader.getResources(fileName);
                 boolean isNative = NativeUtils.isNative();
@@ -99,6 +97,11 @@ public class ClassLoaderResourceLoader {
         return urlCache.get(fileName);
     }
 
+    public static void destroy() {
+        synchronized (ClassLoaderResourceLoader.class) {
+            classLoaderResourcesCache = null;
+        }
+    }
 
     private static void setRef(URL url) {
         try {
@@ -110,4 +113,8 @@ public class ClassLoaderResourceLoader {
     }
 
 
+    // for test
+    protected static SoftReference<Map<ClassLoader, Map<String, Set<URL>>>> getClassLoaderResourcesCache() {
+        return classLoaderResourcesCache;
+    }
 }

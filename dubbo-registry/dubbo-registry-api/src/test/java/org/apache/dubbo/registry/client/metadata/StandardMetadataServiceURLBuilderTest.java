@@ -17,26 +17,25 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
 import java.util.List;
 
 import static org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilderTest.serviceInstance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.spy;
 
 /**
  * {@link StandardMetadataServiceURLBuilder} Test
  */
 public class StandardMetadataServiceURLBuilderTest {
-
-    private StandardMetadataServiceURLBuilder builder = new StandardMetadataServiceURLBuilder();
-
 
     @BeforeAll
     public static void setUp() {
@@ -52,6 +51,10 @@ public class StandardMetadataServiceURLBuilderTest {
 
     @Test
     public void testBuild() {
+        ExtensionLoader<MetadataServiceURLBuilder> loader = ApplicationModel.defaultModel()
+            .getExtensionLoader(MetadataServiceURLBuilder.class);
+        MetadataServiceURLBuilder builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
+
         // test generateUrlWithoutMetadata
         List<URL> urls = builder.build(new DefaultServiceInstance("test", "127.0.0.1", 8080, ApplicationModel.defaultModel()));
         assertEquals(1, urls.size());
@@ -63,9 +66,10 @@ public class StandardMetadataServiceURLBuilderTest {
         assertEquals(url.getGroup(), "test");
         assertEquals(url.getSide(), "consumer");
         assertEquals(url.getVersion(), "1.0.0");
-        assertEquals(url.getParameters().get("getAndListenInstanceMetadata.1.callback"), "true");
+//        assertEquals(url.getParameters().get("getAndListenInstanceMetadata.1.callback"), "true");
         assertEquals(url.getParameters().get("reconnect"), "false");
         assertEquals(url.getParameters().get("timeout"), "5000");
+        assertEquals(url.getApplicationModel(), ApplicationModel.defaultModel());
 
         // test generateWithMetadata
         urls = builder.build(serviceInstance);

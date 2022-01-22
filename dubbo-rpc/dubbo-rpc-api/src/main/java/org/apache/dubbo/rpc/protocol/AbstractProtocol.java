@@ -94,7 +94,6 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
     public void destroy() {
         for (Invoker<?> invoker : invokers) {
             if (invoker != null) {
-                invokers.remove(invoker);
                 try {
                     if (logger.isInfoEnabled()) {
                         logger.info("Destroy reference: " + invoker.getUrl());
@@ -105,8 +104,9 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
                 }
             }
         }
-        for (String key : new ArrayList<>(exporterMap.keySet())) {
-            Exporter<?> exporter = exporterMap.remove(key);
+        invokers.clear();
+
+        exporterMap.forEach((key, exporter)-> {
             if (exporter != null) {
                 try {
                     if (logger.isInfoEnabled()) {
@@ -117,7 +117,8 @@ public abstract class AbstractProtocol implements Protocol, ScopeModelAware {
                     logger.warn(t.getMessage(), t);
                 }
             }
-        }
+        });
+        exporterMap.clear();
     }
 
     @Override

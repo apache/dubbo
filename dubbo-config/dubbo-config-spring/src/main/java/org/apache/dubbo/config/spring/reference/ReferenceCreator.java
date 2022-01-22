@@ -16,22 +16,24 @@
  */
 package org.apache.dubbo.config.spring.reference;
 
-import com.alibaba.spring.util.AnnotationUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationPropertyValuesAdapter;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.rpc.model.ModuleModel;
+
+import com.alibaba.spring.util.AnnotationUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -39,13 +41,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
-import static com.alibaba.spring.util.BeanFactoryUtils.getBeans;
-import static com.alibaba.spring.util.BeanFactoryUtils.getOptionalBean;
 import static com.alibaba.spring.util.ObjectUtils.of;
 
 /**
@@ -72,6 +70,7 @@ public class ReferenceCreator {
     protected final ClassLoader classLoader;
 
     protected Class<?> defaultInterfaceClass;
+    private final ModuleModel moduleModel;
 
     private ReferenceCreator(Map<String, Object> attributes, ApplicationContext applicationContext) {
         Assert.notNull(attributes, "The Annotation attributes must not be null!");
@@ -80,6 +79,8 @@ public class ReferenceCreator {
         this.applicationContext = applicationContext;
         this.classLoader = applicationContext.getClassLoader() != null ?
                 applicationContext.getClassLoader() : Thread.currentThread().getContextClassLoader();
+        moduleModel = DubboBeanUtils.getModuleModel(applicationContext);
+        Assert.notNull(moduleModel, "ModuleModel not found in Spring ApplicationContext");
     }
 
     public final ReferenceConfig build() throws Exception {
@@ -98,108 +99,49 @@ public class ReferenceCreator {
 
     protected void configureBean(ReferenceConfig configBean) throws Exception {
 
-        populateBean(attributes, configBean);
+        populateBean(configBean);
 
-        //configureRegistryConfigs(configBean);
+        // deprecate application reference
+        //configureApplicationConfig(configBean);
 
         configureMonitorConfig(configBean);
 
-        configureApplicationConfig(configBean);
-
         configureModuleConfig(configBean);
 
-        //interfaceClass
-        //configureInterface(attributes, configBean);
-
-        configureConsumerConfig(attributes, configBean);
-
-        //configureMethodConfig(attributes, configBean);
-
-        //bean.setApplicationContext(applicationContext);
-        //bean.afterPropertiesSet();
-
-    }
-
-    private void configureRegistryConfigs(ReferenceConfig configBean) {
-
-        String[] registryConfigBeanIds = getAttribute(attributes, "registry");
-        if (registryConfigBeanIds != null) {
-            List<RegistryConfig> registryConfigs = getBeans(applicationContext, registryConfigBeanIds, RegistryConfig.class);
-            configBean.setRegistries(registryConfigs);
-        }
+        configureConsumerConfig(configBean);
 
     }
 
     private void configureMonitorConfig(ReferenceConfig configBean) {
-
-        String monitorBeanName = getAttribute(attributes, "monitor");
-
-        MonitorConfig monitorConfig = getOptionalBean(applicationContext, monitorBeanName, MonitorConfig.class);
-
-        configBean.setMonitor(monitorConfig);
-
-    }
-
-    private void configureApplicationConfig(ReferenceConfig configBean) {
-
-        String applicationConfigBeanName = getAttribute(attributes, "application");
-
-        ApplicationConfig applicationConfig =
-                getOptionalBean(applicationContext, applicationConfigBeanName, ApplicationConfig.class);
-
-        configBean.setApplication(applicationConfig);
-
-    }
-
-    private void configureModuleConfig(ReferenceConfig configBean) {
-
-        String moduleConfigBeanName = getAttribute(attributes, "module");
-
-        ModuleConfig moduleConfig =
-                getOptionalBean(applicationContext, moduleConfigBeanName, ModuleConfig.class);
-
-        configBean.setModule(moduleConfig);
-
-    }
-
-    private void configureInterface(Map<String, Object> attributes, ReferenceConfig referenceBean) {
-        if (referenceBean.getInterface() == null) {
-
-            Object genericValue = getAttribute(attributes, "generic");
-            String generic = (genericValue != null) ? genericValue.toString() : null;
-            referenceBean.setGeneric(generic);
-
-            String interfaceClassName = getAttribute(attributes, "interfaceName");
-            if (StringUtils.hasText(interfaceClassName)) {
-                referenceBean.setInterface(interfaceClassName);
-            } else {
-                Class<?> interfaceClass = getAttribute(attributes, "interfaceClass");
-                if (void.class.equals(interfaceClass)) { // default or set void.class for purpose.
-                    interfaceClass = null;
-                }
-                if (interfaceClass != null) {
-                    Assert.isTrue(interfaceClass.isInterface(),
-                            "The interfaceClass of @DubboReference is not an interface: "+interfaceClass.getName());
-                }
-                // Not present 'interfaceClass' attribute, use default injection type of annotated
-                if (interfaceClass == null && defaultInterfaceClass != null) {
-                    interfaceClass = defaultInterfaceClass;
-                    Assert.isTrue(interfaceClass.isInterface(),
-                            "The class of field or method that was annotated @DubboReference is not an interface!");
-                }
-                // Convert to interface class name, InterfaceClass will be determined later
-                referenceBean.setInterface(interfaceClass.getName());
-            }
+        String monitorConfigId = getAttribute(attributes, "monitor");
+        if (StringUtils.hasText(monitorConfigId)) {
+            MonitorConfig monitorConfig = getConfig(monitorConfigId, MonitorConfig.class);
+            configBean.setMonitor(monitorConfig);
         }
     }
 
+//    private void configureApplicationConfig(ReferenceConfig configBean) {
+//        String applicationConfigId = getAttribute(attributes, "application");
+//        if (StringUtils.hasText(applicationConfigId)) {
+//            ApplicationConfig applicationConfig = getConfig(applicationConfigId, ApplicationConfig.class);
+//            configBean.setApplication(applicationConfig);
+//        }
+//    }
 
-    private void configureConsumerConfig(Map<String, Object> attributes, ReferenceConfig<?> referenceBean) {
+    private void configureModuleConfig(ReferenceConfig configBean) {
+        String moduleConfigId = getAttribute(attributes, "module");
+        if (StringUtils.hasText(moduleConfigId)) {
+            ModuleConfig moduleConfig = getConfig(moduleConfigId, ModuleConfig.class);
+            configBean.setModule(moduleConfig);
+        }
+    }
+
+    private void configureConsumerConfig(ReferenceConfig<?> referenceBean) {
         ConsumerConfig consumerConfig = null;
         Object consumer = getAttribute(attributes, "consumer");
         if (consumer != null) {
             if (consumer instanceof String) {
-                consumerConfig = getOptionalBean(applicationContext, (String) consumer, ConsumerConfig.class);
+                consumerConfig = getConfig((String) consumer, ConsumerConfig.class);
             } else if (consumer instanceof ConsumerConfig) {
                 consumerConfig = (ConsumerConfig) consumer;
             } else {
@@ -209,22 +151,24 @@ public class ReferenceCreator {
         }
     }
 
-    void configureMethodConfig(Map<String, Object> attributes, ReferenceConfig<?> referenceBean) {
-        Object value = attributes.get("methods");
-        if (value instanceof Method[]) {
-            Method[] methods = (Method[]) value;
-            List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
-            if (!methodConfigs.isEmpty()) {
-                referenceBean.setMethods(methodConfigs);
+    private <T extends AbstractConfig> T getConfig(String configIdOrName, Class<T> configType) {
+        // 1. find in ModuleConfigManager
+        T config = moduleModel.getConfigManager().getConfig(configType, configIdOrName).orElse(null);
+        if (config == null) {
+            // 2. find in Spring ApplicationContext
+            if (applicationContext.containsBean(configIdOrName)) {
+                config = applicationContext.getBean(configIdOrName, configType);
             }
-        } else if (value instanceof MethodConfig[]) {
-            MethodConfig[] methodConfigs = (MethodConfig[]) value;
-            referenceBean.setMethods(Arrays.asList(methodConfigs));
         }
+        if (config == null) {
+            throw new IllegalArgumentException(configType.getSimpleName() + " not found: " + configIdOrName);
+        }
+        return config;
     }
 
-    protected void populateBean(Map<String, Object> attributes, ReferenceConfig referenceBean) {
+    protected void populateBean(ReferenceConfig referenceBean) {
         Assert.notNull(defaultInterfaceClass, "The default interface class cannot be empty!");
+        // convert attributes, e.g. interface, registry
         ReferenceBeanSupport.convertReferenceProps(attributes, defaultInterfaceClass);
 
         DataBinder dataBinder = new DataBinder(referenceBean);

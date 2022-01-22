@@ -23,17 +23,15 @@ import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.NetUtils;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.curator.test.TestingServer;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,16 +52,17 @@ public class ZookeeperDynamicConfigurationTest {
     private static CuratorFramework client;
 
     private static URL configUrl;
-    private static int zkServerPort = NetUtils.getAvailablePort();
-    private static TestingServer zkServer;
     private static DynamicConfiguration configuration;
+    private static int zookeeperServerPort1;
+    private static String zookeeperConnectionAddress1;
 
     @BeforeAll
     public static void setUp() throws Exception {
-        zkServer = new TestingServer(zkServerPort, true);
+        zookeeperConnectionAddress1 = System.getProperty("zookeeper.connection.address.1");
+        zookeeperServerPort1 = Integer.parseInt(zookeeperConnectionAddress1.substring(zookeeperConnectionAddress1.lastIndexOf(":") + 1));
 
-        client = CuratorFrameworkFactory.newClient("127.0.0.1:" + zkServerPort, 60 * 1000, 60 * 1000,
-                new ExponentialBackoffRetry(1000, 3));
+        client = CuratorFrameworkFactory.newClient("127.0.0.1:" + zookeeperServerPort1, 60 * 1000, 60 * 1000,
+            new ExponentialBackoffRetry(1000, 3));
         client.start();
 
         try {
@@ -76,16 +75,9 @@ public class ZookeeperDynamicConfigurationTest {
             e.printStackTrace();
         }
 
-
-        configUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
-
+        configUrl = URL.valueOf(zookeeperConnectionAddress1);
         configuration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(configUrl.getProtocol())
-                .getDynamicConfiguration(configUrl);
-    }
-
-    @AfterAll
-    public static void tearDown() throws Exception {
-        zkServer.stop();
+            .getDynamicConfiguration(configUrl);
     }
 
     private static void setData(String path, String data) throws Exception {
@@ -95,18 +87,35 @@ public class ZookeeperDynamicConfigurationTest {
         client.setData().forPath(path, data.getBytes());
     }
 
+    private ConfigurationListener mockListener(CountDownLatch latch, String[] value, Map<String, Integer> countMap) {
+        ConfigurationListener listener = Mockito.mock(ConfigurationListener.class);
+        Mockito.doAnswer(invoke -> {
+            ConfigChangedEvent event = invoke.getArgument(0);
+            Integer count = countMap.computeIfAbsent(event.getKey(), k -> 0);
+            countMap.put(event.getKey(), ++count);
+            value[0] = event.getContent();
+            latch.countDown();
+            return null;
+        }).when(listener).process(Mockito.any());
+        return listener;
+    }
+
     @Test
-    public void testGetConfig() throws Exception {
+    public void testGetConfig() {
         Assertions.assertEquals("The content from dubbo.properties", configuration.getConfig("dubbo.properties", "dubbo"));
     }
 
     @Test
     public void testAddListener() throws Exception {
         CountDownLatch latch = new CountDownLatch(4);
-        TestListener listener1 = new TestListener(latch);
-        TestListener listener2 = new TestListener(latch);
-        TestListener listener3 = new TestListener(latch);
-        TestListener listener4 = new TestListener(latch);
+
+        String[] value1 = new String[1], value2 = new String[1], value3 = new String[1], value4 = new String[1];
+        Map<String, Integer> countMap1 = new HashMap<>(), countMap2 = new HashMap<>(), countMap3 = new HashMap<>(), countMap4 = new HashMap<>();
+        ConfigurationListener listener1 = mockListener(latch, value1, countMap1);
+        ConfigurationListener listener2 = mockListener(latch, value2, countMap2);
+        ConfigurationListener listener3 = mockListener(latch, value3, countMap3);
+        ConfigurationListener listener4 = mockListener(latch, value4, countMap4);
+
         configuration.addListener("service:version:group.configurators", listener1);
         configuration.addListener("service:version:group.configurators", listener2);
         configuration.addListener("appname.tag-router", listener3);
@@ -122,15 +131,16 @@ public class ZookeeperDynamicConfigurationTest {
         Thread.sleep(5000);
 
         latch.await();
-        Assertions.assertEquals(2, listener1.getCount("service:version:group.configurators"));
-        Assertions.assertEquals(2, listener2.getCount("service:version:group.configurators"));
-        Assertions.assertEquals(2, listener3.getCount("appname.tag-router"));
-        Assertions.assertEquals(2, listener4.getCount("appname.tag-router"));
 
-        Assertions.assertEquals("new value1", listener1.getValue());
-        Assertions.assertEquals("new value1", listener2.getValue());
-        Assertions.assertEquals("new value2", listener3.getValue());
-        Assertions.assertEquals("new value2", listener4.getValue());
+        Assertions.assertEquals(1, countMap1.get("service:version:group.configurators"));
+        Assertions.assertEquals(1, countMap2.get("service:version:group.configurators"));
+        Assertions.assertEquals(1, countMap3.get("appname.tag-router"));
+        Assertions.assertEquals(1, countMap4.get("appname.tag-router"));
+
+        Assertions.assertEquals("new value1", value1[0]);
+        Assertions.assertEquals("new value1", value2[0]);
+        Assertions.assertEquals("new value2", value3[0]);
+        Assertions.assertEquals("new value2", value4[0]);
     }
 
     @Test
@@ -172,34 +182,6 @@ public class ZookeeperDynamicConfigurationTest {
         Set<String> configKeys = configuration.getConfigKeys(group);
 
         assertEquals(new TreeSet(asList(key, key2)), configKeys);
-    }
-
-    private class TestListener implements ConfigurationListener {
-        private CountDownLatch latch;
-        private String value;
-        private Map<String, Integer> countMap = new HashMap<>();
-
-        public TestListener(CountDownLatch latch) {
-            this.latch = latch;
-        }
-
-        @Override
-        public void process(ConfigChangedEvent event) {
-            System.out.println(this + ": " + event);
-            Integer count = countMap.computeIfAbsent(event.getKey(), k -> new Integer(0));
-            countMap.put(event.getKey(), ++count);
-
-            value = event.getContent();
-            latch.countDown();
-        }
-
-        public int getCount(String key) {
-            return countMap.get(key);
-        }
-
-        public String getValue() {
-            return value;
-        }
     }
 
 }

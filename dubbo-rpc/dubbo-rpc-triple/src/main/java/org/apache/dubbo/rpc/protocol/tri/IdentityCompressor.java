@@ -19,10 +19,10 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 /**
  * Default compressor
+ * <p>
+ * Do not use the spi
  */
 public class IdentityCompressor implements Compressor {
-
-    public static final Compressor NONE = new IdentityCompressor();
 
     @Override
     public String getMessageEncoding() {

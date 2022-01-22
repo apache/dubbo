@@ -30,10 +30,12 @@ public class TimeoutCountDownTest {
         Assertions.assertEquals(5 * 1000, timeoutCountDown.getTimeoutInMilli());
         Assertions.assertFalse(timeoutCountDown.isExpired());
         Assertions.assertTrue(timeoutCountDown.timeRemaining(TimeUnit.SECONDS) > 0);
+        Assertions.assertTrue(timeoutCountDown.elapsedMillis() < TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS));
 
         Thread.sleep(6 * 1000);
 
         Assertions.assertTrue(timeoutCountDown.isExpired());
         Assertions.assertTrue(timeoutCountDown.timeRemaining(TimeUnit.SECONDS) <= 0);
+        Assertions.assertTrue(timeoutCountDown.elapsedMillis() > TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS));
     }
 }

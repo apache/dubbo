@@ -29,9 +29,9 @@ public class BoolMatch {
         this.exact = exact;
     }
 
-    public static boolean isMatch(BoolMatch boolMatch,boolean input){
-        if (boolMatch.getExact() != null){
-            return input == boolMatch.getExact();
+    public boolean isMatch(boolean input){
+        if (exact != null){
+            return input == exact;
         }
         return false;
     }

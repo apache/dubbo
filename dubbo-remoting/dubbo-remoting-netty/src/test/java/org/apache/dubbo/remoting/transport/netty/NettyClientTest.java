@@ -40,7 +40,7 @@ public class NettyClientTest {
 
     @BeforeAll
     public static void setUp() throws Exception {
-        server = Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=netty3"), new TelnetServerHandler());
+        server = Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=netty3&codec=exchange"), new TelnetServerHandler());
     }
 
     @AfterAll
@@ -53,7 +53,7 @@ public class NettyClientTest {
     }
 
     public static void main(String[] args) throws RemotingException, InterruptedException {
-        ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://10.20.153.10:20880?client=netty3&heartbeat=1000"));
+        ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://10.20.153.10:20880?client=netty3&heartbeat=1000&codec=exchange"));
         Thread.sleep(60 * 1000 * 50);
     }
 
@@ -61,7 +61,7 @@ public class NettyClientTest {
     public void testClientClose() throws Exception {
         List<ExchangeChannel> clients = new ArrayList<ExchangeChannel>(100);
         for (int i = 0; i < 100; i++) {
-            ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=netty3"));
+            ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=netty3&codec=exchange"));
             Thread.sleep(5);
             clients.add(client);
         }
@@ -74,7 +74,7 @@ public class NettyClientTest {
     @Test
     public void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {
-            RemotingServer aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + NetUtils.getAvailablePort(6000) + "?server=netty3"), new TelnetServerHandler());
+            RemotingServer aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + NetUtils.getAvailablePort(6000) + "?server=netty3&codec=exchange"), new TelnetServerHandler());
             aServer.close();
         }
     }

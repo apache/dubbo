@@ -83,10 +83,10 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         inv.setServiceModel(RpcContext.getServiceContext().getConsumerUrl().getServiceModel());
         inv.setAttachment(PATH_KEY, getUrl().getPath());
         inv.setAttachment(Constants.SERIALIZATION_KEY,
-                getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+            getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
         try {
             int timeout = calculateTimeout(invocation, methodName);
-            invocation.put(TIMEOUT_KEY, timeout);
+            invocation.setAttachment(TIMEOUT_KEY, timeout);
             ExecutorService executor = getCallbackExecutor(getUrl(), inv);
             // create request.
             Request req = new Request();
@@ -126,12 +126,12 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             return result;
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION,
-                    "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                            + ", cause: " + e.getMessage(), e);
+                "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
+                    + ", cause: " + e.getMessage(), e);
         } catch (RemotingException e) {
             throw new RpcException(RpcException.NETWORK_EXCEPTION,
-                    "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                            + ", cause: " + e.getMessage(), e);
+                "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
+                    + ", cause: " + e.getMessage(), e);
         }
     }
 

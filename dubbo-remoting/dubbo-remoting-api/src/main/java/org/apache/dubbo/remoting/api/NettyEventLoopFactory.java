@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.api;
 
+import org.apache.dubbo.common.resource.GlobalResourceInitializer;
 import org.apache.dubbo.remoting.Constants;
 
 import io.netty.channel.EventLoopGroup;
@@ -40,7 +41,10 @@ public class NettyEventLoopFactory {
     /**
      * netty client bootstrap
      */
-    public static final EventLoopGroup NIO_EVENT_LOOP_GROUP = eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker");
+    public static final GlobalResourceInitializer<EventLoopGroup> NIO_EVENT_LOOP_GROUP = new GlobalResourceInitializer<>(() ->
+        eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker"),
+        eventLoopGroup -> eventLoopGroup.shutdownGracefully()
+    );
 
     public static EventLoopGroup eventLoopGroup(int threads, String threadFactoryName) {
         ThreadFactory threadFactory = new DefaultThreadFactory(threadFactoryName, true);

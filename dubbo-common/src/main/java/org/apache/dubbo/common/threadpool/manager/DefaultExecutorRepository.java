@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -48,6 +49,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REFER_TH
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
@@ -57,17 +59,18 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     private int DEFAULT_SCHEDULER_SIZE = Runtime.getRuntime().availableProcessors();
 
-    private final ExecutorService SHARED_EXECUTOR = Executors.newCachedThreadPool(new NamedThreadFactory("DubboSharedHandler", true));
+    private final ExecutorService sharedExecutor;
+    private final ScheduledExecutorService sharedScheduledExecutor;
 
     private Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
 
-    private volatile ExecutorService serviceExportExecutor;
+    private volatile ScheduledExecutorService serviceExportExecutor;
 
     private volatile ExecutorService serviceReferExecutor;
 
-    private ScheduledExecutorService reconnectScheduledExecutor;
+    private ScheduledExecutorService connectivityScheduledExecutor;
 
-    public  Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
+    public Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
 
     private Ring<ScheduledExecutorService> serviceDiscoveryAddressNotificationExecutorRing = new Ring<>();
 
@@ -77,26 +80,29 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     private ExecutorService poolRouterExecutor;
 
-    private static Ring<ExecutorService> executorServiceRing = new Ring<ExecutorService>();
+    private Ring<ExecutorService> executorServiceRing = new Ring<ExecutorService>();
 
-    private static final Object LOCK = new Object();
+    private final Object LOCK = new Object();
     private ExtensionAccessor extensionAccessor;
 
     private ApplicationModel applicationModel;
 
     public DefaultExecutorRepository() {
+        sharedExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("Dubbo-shared-handler", true));
+        sharedScheduledExecutor = Executors.newScheduledThreadPool(8, new NamedThreadFactory("Dubbo-shared-scheduler", true));
+
         for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
             ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
-                new NamedThreadFactory("Dubbo-framework-scheduler"));
+                new NamedThreadFactory("Dubbo-framework-scheduler-" + i, true));
             scheduledExecutors.addItem(scheduler);
 
             executorServiceRing.addItem(new ThreadPoolExecutor(1, 1,
                 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(1024), new NamedInternalThreadFactory("Dubbo-state-router-loop", true)
+                new LinkedBlockingQueue<Runnable>(1024), new NamedInternalThreadFactory("Dubbo-state-router-loop-" + i, true)
                 , new ThreadPoolExecutor.AbortPolicy()));
         }
-//
-//        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
+
+        connectivityScheduledExecutor = Executors.newScheduledThreadPool(DEFAULT_SCHEDULER_SIZE, new NamedThreadFactory("Dubbo-connectivity-scheduler", true));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
 
@@ -123,7 +129,11 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
         Map<Integer, ExecutorService> executors = data.computeIfAbsent(EXECUTOR_SERVICE_COMPONENT_KEY, k -> new ConcurrentHashMap<>());
         // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
         Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
-        ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
+        if (url.getParameter(THREAD_NAME_KEY) == null) {
+            url = url.putAttribute(THREAD_NAME_KEY, "Dubbo-protocol-"+portKey);
+        }
+        URL finalUrl = url;
+        ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(finalUrl));
         // If executor has been shut down, create a new one
         if (executor.isShutdown() || executor.isTerminated()) {
             executors.remove(portKey);
@@ -156,7 +166,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             logger.info("Executor for " + url + " is shutdown.");
         }
         if (executor == null) {
-            return SHARED_EXECUTOR;
+            return sharedExecutor;
         } else {
             return executor;
         }
@@ -201,17 +211,14 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     @Override
-    public ExecutorService getServiceExportExecutor() {
-        if (serviceExportExecutor == null) {
-            synchronized (LOCK) {
-                if (serviceExportExecutor == null) {
-                    int coreSize = getExportThreadNum();
-                    serviceExportExecutor = Executors.newFixedThreadPool(coreSize,
+    public ScheduledExecutorService getServiceExportExecutor() {
+        synchronized (LOCK) {
+            if (serviceExportExecutor == null) {
+                int coreSize = getExportThreadNum();
+                serviceExportExecutor = Executors.newScheduledThreadPool(coreSize,
                         new NamedThreadFactory("Dubbo-service-export", true));
-                }
             }
         }
-
         return serviceExportExecutor;
     }
 
@@ -219,30 +226,26 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     public void shutdownServiceExportExecutor() {
         synchronized (LOCK) {
             if (serviceExportExecutor != null && !serviceExportExecutor.isShutdown()) {
-                try{
+                try {
                     serviceExportExecutor.shutdown();
-                }catch (Throwable ignored){
+                } catch (Throwable ignored) {
                     // ignored
-                    logger.warn(ignored.getMessage(),ignored);
+                    logger.warn(ignored.getMessage(), ignored);
                 }
             }
-
             serviceExportExecutor = null;
         }
     }
 
     @Override
     public ExecutorService getServiceReferExecutor() {
-        if (serviceReferExecutor == null) {
-            synchronized (LOCK) {
-                if (serviceReferExecutor == null) {
-                    int coreSize = getReferThreadNum();
-                    serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
+        synchronized (LOCK) {
+            if (serviceReferExecutor == null) {
+                int coreSize = getReferThreadNum();
+                serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
                         new NamedThreadFactory("Dubbo-service-refer", true));
-                }
             }
         }
-
         return serviceReferExecutor;
     }
 
@@ -250,13 +253,12 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     public void shutdownServiceReferExecutor() {
         synchronized (LOCK) {
             if (serviceReferExecutor != null && !serviceReferExecutor.isShutdown()) {
-                try{
+                try {
                     serviceReferExecutor.shutdown();
-                }catch (Throwable ignored){
-                    logger.warn(ignored.getMessage(),ignored);
+                } catch (Throwable ignored) {
+                    logger.warn(ignored.getMessage(), ignored);
                 }
             }
-
             serviceReferExecutor = null;
         }
     }
@@ -341,7 +343,12 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     @Override
     public ExecutorService getSharedExecutor() {
-        return SHARED_EXECUTOR;
+        return sharedExecutor;
+    }
+
+    @Override
+    public ScheduledExecutorService getSharedScheduledExecutor() {
+        return sharedScheduledExecutor;
     }
 
     private ExecutorService createExecutor(URL url) {
@@ -354,21 +361,16 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     @Override
+    public ScheduledExecutorService getConnectivityScheduledExecutor() {
+        return connectivityScheduledExecutor;
+    }
+
+    @Override
     public void destroyAll() {
-        try{
-            poolRouterExecutor.shutdown();
-        }catch (Throwable ignored){
-            // ignored
-            logger.warn(ignored.getMessage(),ignored);
-        }
-//        serviceDiscoveryAddressNotificationExecutor.shutdown();
-//        registryNotificationExecutor.shutdown();
-        try{
-            metadataRetryExecutor.shutdown();
-        }catch (Throwable ignored){
-            // ignored
-            logger.warn(ignored.getMessage(),ignored);
-        }
+        logger.info("destroying executor repository ..");
+        shutdownExecutorService(poolRouterExecutor, "poolRouterExecutor");
+        shutdownExecutorService(metadataRetryExecutor, "metadataRetryExecutor");
+
         shutdownServiceExportExecutor();
         shutdownServiceReferExecutor();
 
@@ -376,32 +378,53 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
             if (executors != null) {
                 executors.values().forEach(executor -> {
                     if (executor != null && !executor.isShutdown()) {
-                        try{
+                        try {
                             ExecutorUtil.shutdownNow(executor, 100);
-                        }catch (Throwable ignored){
+                        } catch (Throwable ignored) {
                             // ignored
-                            logger.warn(ignored.getMessage(),ignored);
+                            logger.warn(ignored.getMessage(), ignored);
                         }
                     }
                 });
             }
         });
+        data.clear();
 
-        // shutdown all executor services
-        for (ScheduledExecutorService executorService : scheduledExecutors.listItems()) {
-            try {
-                executorService.shutdown();
-            } catch (Exception e) {
-                logger.warn("shutdown scheduledExecutors failed: " + e.getMessage(), e);
-            }
+        // scheduledExecutors
+        shutdownExecutorServices(scheduledExecutors.listItems(), "scheduledExecutors");
+
+        // executorServiceRing
+        shutdownExecutorServices(executorServiceRing.listItems(), "executorServiceRing");
+
+        // connectivityScheduledExecutor
+        shutdownExecutorService(connectivityScheduledExecutor, "connectivityScheduledExecutor");
+
+        // shutdown share executor
+        shutdownExecutorService(sharedExecutor, "sharedExecutor");
+        shutdownExecutorService(sharedScheduledExecutor, "sharedScheduledExecutor");
+
+        // serviceDiscoveryAddressNotificationExecutorRing
+        shutdownExecutorServices(serviceDiscoveryAddressNotificationExecutorRing.listItems(),
+            "serviceDiscoveryAddressNotificationExecutorRing");
+
+        // registryNotificationExecutorRing
+        shutdownExecutorServices(registryNotificationExecutorRing.listItems(),
+            "registryNotificationExecutorRing");
+
+    }
+
+    private void shutdownExecutorServices(List<? extends ExecutorService> executorServices, String msg) {
+        for (ExecutorService executorService : executorServices) {
+            shutdownExecutorService(executorService, msg);
         }
+    }
 
-        for (ExecutorService executorService : executorServiceRing.listItems()) {
-            try {
-                executorService.shutdown();
-            } catch (Exception e) {
-                logger.warn("shutdown executorServiceRing failed: " + e.getMessage(), e);
-            }
+    private void shutdownExecutorService(ExecutorService executorService, String name) {
+        try {
+            executorService.shutdownNow();
+        } catch (Exception e) {
+            String msg = "shutdown executor service [" + name + "] failed: ";
+            logger.warn(msg + e.getMessage(), e);
         }
     }
 

@@ -18,8 +18,8 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
-import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import io.netty.channel.Channel;
 import io.netty.util.DefaultAttributeMap;
@@ -49,7 +49,7 @@ public class PwdTelnetTest {
 
     @AfterEach
     public void tearDown() {
-        ProtocolUtils.closeAll();
+        FrameworkModel.destroyAll();
         mockChannel.close();
         reset(mockChannel, mockCommandContext);
     }

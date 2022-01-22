@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.cluster;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.cluster.filter.DemoService;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -45,8 +46,8 @@ public class RouterChainTest {
             DemoService.class.getName(),
             parameters);
 
-        RouterChain<DemoService> routerChain = RouterChain.buildChain(url);
-        Assertions.assertEquals(5, routerChain.getRouters().size());
-        Assertions.assertEquals(2, routerChain.getStateRouters().size());
+        RouterChain<DemoService> routerChain = RouterChain.buildChain(DemoService.class, url);
+        Assertions.assertEquals(0, routerChain.getRouters().size());
+        Assertions.assertEquals(5, routerChain.getStateRouters().size());
     }
 }

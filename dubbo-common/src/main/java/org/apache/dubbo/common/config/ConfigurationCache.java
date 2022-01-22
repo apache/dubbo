@@ -37,6 +37,8 @@ public class ConfigurationCache {
      */
     public String computeIfAbsent(String key, Function<String, String> function) {
         String value = cache.get(key);
+        // value might be empty here!
+        // empty value from config center will be cached here
         if (value == null) {
             // lock free, tolerate repeat apply, will return previous value
             cache.putIfAbsent(key, function.apply(key));

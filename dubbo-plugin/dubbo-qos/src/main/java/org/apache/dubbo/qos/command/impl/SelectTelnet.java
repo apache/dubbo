@@ -16,14 +16,16 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import io.netty.channel.Channel;
-import io.netty.util.AttributeKey;
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
+import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -43,7 +45,7 @@ public class SelectTelnet implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        if (args == null || args.length == 0) {
+        if (ArrayUtils.isEmpty(args)) {
             return "Please input the index of the method you want to invoke, eg: \r\n select 1";
         }
         Channel channel = commandContext.getRemote();

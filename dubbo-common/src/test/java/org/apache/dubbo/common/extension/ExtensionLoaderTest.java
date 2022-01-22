@@ -43,9 +43,7 @@ import org.apache.dubbo.common.extension.ext11_no_adaptive.NoAdaptiveExtImpl;
 import org.apache.dubbo.common.extension.ext2.Ext2;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExt;
 import org.apache.dubbo.common.extension.ext6_wrap.WrappedExtWrapper;
-import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Impl1;
-import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper1;
-import org.apache.dubbo.common.extension.ext6_wrap.impl.Ext5Wrapper2;
+import org.apache.dubbo.common.extension.ext6_wrap.impl.*;
 import org.apache.dubbo.common.extension.ext7.InitErrorExt;
 import org.apache.dubbo.common.extension.ext8_add.AddExt1;
 import org.apache.dubbo.common.extension.ext8_add.AddExt2;
@@ -66,6 +64,7 @@ import org.apache.dubbo.common.extension.wrapper.impl.DemoImpl;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -157,7 +156,7 @@ public class ExtensionLoaderTest {
     @Test
     public void test_getExtension_WithWrapper() {
         WrappedExt impl1 = getExtensionLoader(WrappedExt.class).getExtension("impl1");
-        assertThat(impl1, anyOf(instanceOf(Ext5Wrapper1.class), instanceOf(Ext5Wrapper2.class)));
+        assertThat(impl1, anyOf(instanceOf(Ext6Wrapper1.class), instanceOf(Ext6Wrapper2.class)));
         assertThat(impl1, instanceOf(WrappedExtWrapper.class));
         // get origin instance from wrapper
         WrappedExt originImpl1 = impl1;
@@ -167,22 +166,49 @@ public class ExtensionLoaderTest {
 
         // test unwrapped instance
         WrappedExt unwrappedImpl1 = getExtensionLoader(WrappedExt.class).getExtension("impl1", false);
-        assertThat(unwrappedImpl1, instanceOf(Ext5Impl1.class));
+        assertThat(unwrappedImpl1, instanceOf(Ext6Impl1.class));
         assertNotSame(unwrappedImpl1, impl1);
         assertSame(unwrappedImpl1, originImpl1);
 
 
         WrappedExt impl2 = getExtensionLoader(WrappedExt.class).getExtension("impl2");
-        assertThat(impl2, anyOf(instanceOf(Ext5Wrapper1.class), instanceOf(Ext5Wrapper2.class)));
+        assertThat(impl2, anyOf(instanceOf(Ext6Wrapper1.class), instanceOf(Ext6Wrapper2.class)));
 
 
         URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1");
-        int echoCount1 = Ext5Wrapper1.echoCount.get();
-        int echoCount2 = Ext5Wrapper2.echoCount.get();
+        int echoCount1 = Ext6Wrapper1.echoCount.get();
+        int echoCount2 = Ext6Wrapper2.echoCount.get();
 
-        assertEquals("Ext5Impl1-echo", impl1.echo(url, "ha"));
-        assertEquals(echoCount1 + 1, Ext5Wrapper1.echoCount.get());
-        assertEquals(echoCount2 + 1, Ext5Wrapper2.echoCount.get());
+        assertEquals("Ext6Impl1-echo", impl1.echo(url, "ha"));
+        assertEquals(echoCount1 + 1, Ext6Wrapper1.echoCount.get());
+        assertEquals(echoCount2 + 1, Ext6Wrapper2.echoCount.get());
+    }
+
+    @Test
+    public void test_getExtension_withWrapperAnnotation() {
+        WrappedExt impl3 = getExtensionLoader(WrappedExt.class).getExtension("impl3");
+        assertThat(impl3, instanceOf(Ext6Wrapper3.class));
+        WrappedExt originImpl3 = impl3;
+        while (originImpl3 instanceof WrappedExtWrapper) {
+            originImpl3 = ((WrappedExtWrapper) originImpl3).getOrigin();
+        }
+
+        // test unwrapped instance
+        WrappedExt unwrappedImpl3 = getExtensionLoader(WrappedExt.class).getExtension("impl3", false);
+        assertThat(unwrappedImpl3, instanceOf(Ext6Impl3.class));
+        assertNotSame(unwrappedImpl3, impl3);
+        assertSame(unwrappedImpl3, originImpl3);
+
+        WrappedExt impl4 = getExtensionLoader(WrappedExt.class).getExtension("impl4");
+        assertThat(impl4, instanceOf(Ext6Wrapper4.class));
+
+        URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1");
+        int echoCount3 = Ext6Wrapper3.echoCount.get();
+        int echoCount4 = Ext6Wrapper4.echoCount.get();
+
+        assertEquals("Ext6Impl4-echo", impl4.echo(url, "haha"));
+        assertEquals(echoCount3, Ext6Wrapper3.echoCount.get());
+        assertEquals(echoCount4 + 1, Ext6Wrapper4.echoCount.get());
     }
 
     @Test
@@ -272,6 +298,8 @@ public class ExtensionLoaderTest {
         Set<String> expected = new HashSet<String>();
         expected.add("impl1");
         expected.add("impl2");
+        expected.add("impl3");
+        expected.add("impl4");
 
         assertEquals(expected, exts);
     }

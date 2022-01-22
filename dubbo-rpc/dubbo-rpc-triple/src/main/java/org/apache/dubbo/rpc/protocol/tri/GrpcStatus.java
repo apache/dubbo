@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.QueryStringEncoder;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.RpcException;
+
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.QueryStringEncoder;
 
 import static org.apache.dubbo.rpc.RpcException.FORBIDDEN_EXCEPTION;
 import static org.apache.dubbo.rpc.RpcException.LIMIT_EXCEEDED_EXCEPTION;
@@ -37,8 +39,8 @@ import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code.UNAVAILABLE;
 
 public class GrpcStatus {
     public final Code code;
-    public final Throwable cause;
-    public final String description;
+    public Throwable cause;
+    public String description;
 
     public GrpcStatus(Code code, Throwable cause, String description) {
         this.code = code;
@@ -52,6 +54,10 @@ public class GrpcStatus {
 
     public static GrpcStatus fromCode(Code code) {
         return new GrpcStatus(code, null, null);
+    }
+
+    public static GrpcStatus fromCodeWithDescription(Code code, String description) {
+        return new GrpcStatus(code, null, description);
     }
 
     public static byte toDubboStatus(Code code) {
@@ -89,7 +95,26 @@ public class GrpcStatus {
         return status;
     }
 
-    public static GrpcStatus rpcExceptionCodeToGrpc(int rpcExceptionCode) {
+    /**
+     * todo The remaining exceptions are converted to status
+     */
+    public static GrpcStatus getStatus(Throwable throwable) {
+        return getStatus(throwable, null);
+    }
+
+    public static GrpcStatus getStatus(Throwable throwable, String description) {
+        if (throwable instanceof RpcException) {
+            RpcException rpcException = (RpcException) throwable;
+            Code code = rpcExceptionCodeToGrpcCode(rpcException.getCode());
+            return new GrpcStatus(code, throwable, description);
+        }
+        if (throwable instanceof TimeoutException) {
+            return new GrpcStatus(GrpcStatus.Code.DEADLINE_EXCEEDED, throwable, description);
+        }
+        return new GrpcStatus(Code.UNKNOWN, throwable, description);
+    }
+
+    public static Code rpcExceptionCodeToGrpcCode(int rpcExceptionCode) {
         Code code;
         switch (rpcExceptionCode) {
             case TIMEOUT_EXCEPTION:
@@ -113,7 +138,7 @@ public class GrpcStatus {
                 code = Code.UNKNOWN;
                 break;
         }
-        return fromCode(code);
+        return code;
     }
 
     public static String limitSizeTo4KB(String desc) {
@@ -124,19 +149,29 @@ public class GrpcStatus {
         }
     }
 
-    public static String fromMessage(String raw) {
-        if (raw == null || raw.isEmpty()) {
+    public static String decodeMessage(String raw) {
+        if (StringUtils.isEmpty(raw)) {
             return "";
         }
         return QueryStringDecoder.decodeComponent(raw);
     }
 
+
+    public static String encodeMessage(String raw) {
+        if (StringUtils.isEmpty(raw)) {
+            return "";
+        }
+        return encodeComponent(raw);
+    }
+
     public GrpcStatus withCause(Throwable cause) {
-        return new GrpcStatus(this.code, cause, this.description);
+        this.cause = cause;
+        return this;
     }
 
     public GrpcStatus withDescription(String description) {
-        return new GrpcStatus(this.code, this.cause, description);
+        this.description = description;
+        return this;
     }
 
     public RpcException asException() {
@@ -155,8 +190,13 @@ public class GrpcStatus {
             return "";
         }
         String output = limitSizeTo4KB(msg);
+        return encodeComponent(output);
+    }
+
+
+    private static String encodeComponent(String raw) {
         QueryStringEncoder encoder = new QueryStringEncoder("");
-        encoder.addParam("", output);
+        encoder.addParam("", raw);
         // ?=
         return encoder.toString().substring(2);
     }

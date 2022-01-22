@@ -17,8 +17,8 @@
 package org.apache.dubbo.common.config.configcenter.file;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -19,6 +19,7 @@ package org.apache.dubbo.test.spring.context;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.spring.context.DubboSpringInitContext;
 import org.apache.dubbo.config.spring.context.DubboSpringInitCustomizer;
+
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;

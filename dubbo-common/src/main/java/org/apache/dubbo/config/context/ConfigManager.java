@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
@@ -181,6 +182,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         return getDefaultConfigs(ProtocolConfig.class);
     }
 
+    @Override
     public <C extends AbstractConfig> List<C> getDefaultConfigs(Class<C> cls) {
         return getDefaultConfigs(getConfigsMap(getTagName(cls)));
     }
@@ -215,8 +217,9 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
     }
 
 
+    @Override
     public void refreshAll() {
-        // refresh all configs here,
+        // refresh all configs here
         getApplication().ifPresent(ApplicationConfig::refresh);
         getMonitor().ifPresent(MonitorConfig::refresh);
         getMetrics().ifPresent(MetricsConfig::refresh);
@@ -237,7 +240,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // load dubbo.monitors.xxx
         loadConfigsOfTypeFromProps(MonitorConfig.class);
 
-        // load dubbo.metricses.xxx
+        // load dubbo.metrics.xxx
         loadConfigsOfTypeFromProps(MetricsConfig.class);
 
         // load multiple config types:
@@ -253,7 +256,14 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         // config centers has bean loaded before starting config center
         //loadConfigsOfTypeFromProps(ConfigCenterConfig.class);
 
+        refreshAll();
+
         checkConfigs();
+
+        // set model name
+        if (StringUtils.isBlank(applicationModel.getModelName())) {
+            applicationModel.setModelName(applicationModel.getApplicationName());
+        }
     }
 
     private void checkConfigs() {

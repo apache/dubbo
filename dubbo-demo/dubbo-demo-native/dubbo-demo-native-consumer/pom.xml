@@ -28,6 +28,9 @@
 
     <artifactId>dubbo-demo-native-consumer</artifactId>
 
+    <properties>
+        <skip_maven_deploy>true</skip_maven_deploy>
+    </properties>
 
     <dependencies>
 
@@ -71,13 +74,12 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-registry-xds</artifactId>
+            <artifactId>dubbo-filter-validation</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-filter-validation</artifactId>
+            <artifactId>dubbo-remoting-http</artifactId>
         </dependency>
-
 
     </dependencies>
 

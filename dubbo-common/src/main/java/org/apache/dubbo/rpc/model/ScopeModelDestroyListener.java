@@ -16,6 +16,6 @@
  */
 package org.apache.dubbo.rpc.model;
 
-public interface ScopeModelDestroyListener {
-    void onDestroy(ScopeModel scopeModel);
+public interface ScopeModelDestroyListener<T extends ScopeModel> {
+    void onDestroy(T scopeModel);
 }

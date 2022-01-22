@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 
@@ -28,11 +29,11 @@ public interface Hessian2FactoryInitializer {
     String WHITELIST = "dubbo.application.hessian2.whitelist";
     String ALLOW = "dubbo.application.hessian2.allow";
     String DENY = "dubbo.application.hessian2.deny";
-    ExtensionLoader<Hessian2FactoryInitializer> loader = ExtensionLoader.getExtensionLoader(Hessian2FactoryInitializer.class);
 
     SerializerFactory getSerializerFactory();
 
     static Hessian2FactoryInitializer getInstance() {
+        ExtensionLoader<Hessian2FactoryInitializer> loader = FrameworkModel.defaultModel().getExtensionLoader(Hessian2FactoryInitializer.class);
         String whitelist = System.getProperty(WHITELIST);
         if (StringUtils.isNotEmpty(whitelist)) {
             return loader.getExtension("whitelist");

@@ -59,7 +59,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     private final String root;
 
-    final ZookeeperClient zkClient;
+    ZookeeperClient zkClient;
 
     private Gson gson = new Gson();
 
@@ -147,6 +147,14 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
+    public void unPublishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
+        String path = getNodePath(identifier);
+        if (StringUtils.isNotEmpty(zkClient.getContent(path))) {
+            zkClient.delete(path);
+        }
+    }
+
+    @Override
     public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         String content = zkClient.getContent(getNodePath(identifier));
         return gson.fromJson(content, MetadataInfo.class);
@@ -159,6 +167,14 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
             addCasServiceMappingListener(path, serviceKey, listener);
         }
         return getAppNames(zkClient.getContent(path));
+    }
+
+    @Override
+    public void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
+        String path = buildPathKey(DEFAULT_MAPPING_GROUP, serviceKey);
+        if (null != casListenerMap.get(path)) {
+            removeCasServiceMappingListener(path, listener);
+        }
     }
 
     @Override
@@ -188,6 +204,13 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         }
     }
 
+    @Override
+    public void destroy() {
+        super.destroy();
+        // release zk client reference, but should not close it
+        zkClient = null;
+    }
+
     private String buildPathKey(String group, String serviceKey) {
         return toRootDir() + group + PATH_SEPARATOR + serviceKey;
     }
@@ -196,6 +219,15 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         MappingDataListener mappingDataListener = casListenerMap.computeIfAbsent(path, _k -> new MappingDataListener(serviceKey, path));
         mappingDataListener.addListener(listener);
         zkClient.addDataListener(path, mappingDataListener);
+    }
+
+    private void removeCasServiceMappingListener(String path, MappingListener listener) {
+        MappingDataListener mappingDataListener = casListenerMap.get(path);
+        mappingDataListener.removeListener(listener);
+        if (mappingDataListener.isEmpty()) {
+            zkClient.removeDataListener(path, mappingDataListener);
+            casListenerMap.remove(path, mappingDataListener);
+        }
     }
 
     private static class MappingDataListener implements DataListener {
@@ -212,6 +244,14 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
         public void addListener(MappingListener listener) {
             this.listeners.add(listener);
+        }
+
+        public void removeListener(MappingListener listener) {
+            this.listeners.remove(listener);
+        }
+
+        public boolean isEmpty() {
+            return listeners.isEmpty();
         }
 
         @Override

@@ -27,6 +27,7 @@ import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -36,7 +37,7 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * An ApplicationListener to control Dubbo application.
@@ -105,7 +106,7 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
         ModuleDeployer deployer = moduleModel.getDeployer();
         Assert.notNull(deployer, "Module deployer is null");
         // start module
-        CompletableFuture future = deployer.start();
+        Future future = deployer.start();
 
         // if the module does not start in background, await finish
         if (!deployer.isBackground()) {
@@ -129,6 +130,8 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
         } catch (Exception e) {
             logger.error("An error occurred when stop dubbo module: " + e.getMessage(), e);
         }
+        // remove context bind cache
+        DubboSpringInitializer.remove(event.getApplicationContext());
     }
 
     @Override

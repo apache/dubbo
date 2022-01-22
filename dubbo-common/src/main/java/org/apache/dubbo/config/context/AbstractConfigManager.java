@@ -43,6 +43,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -79,7 +80,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
     private final Collection<Class<? extends AbstractConfig>> supportedConfigTypes;
     private final Environment environment;
     private ConfigValidator configValidator;
-    private AtomicBoolean inited = new AtomicBoolean(false);
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
     protected ConfigMode configMode = ConfigMode.STRICT;
     protected boolean ignoreDuplicatedInterface = false;
 
@@ -105,7 +106,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     @Override
     public void initialize() throws IllegalStateException {
-        if (!inited.compareAndSet(false, true)) {
+        if (!initialized.compareAndSet(false, true)) {
             return;
         }
         CompositeConfiguration configuration = scopeModel.getModelEnvironment().getConfiguration();
@@ -326,7 +327,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         if (configsMap.isEmpty()) {
             return null;
         }
-        // try find config by name
+        // try to find config by name
         if (ReflectUtils.hasMethod(cls, CONFIG_NAME_READ_METHOD)) {
             List<C> list = configsMap.values().stream()
                 .filter(cfg -> name.equals(getConfigName(cfg)))
@@ -343,7 +344,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     private <C extends AbstractConfig> String getConfigName(C config) {
         try {
-            return (String) ReflectUtils.getProperty(config, CONFIG_NAME_READ_METHOD);
+            return ReflectUtils.getProperty(config, CONFIG_NAME_READ_METHOD);
         } catch (Exception e) {
             return null;
         }
@@ -419,7 +420,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         // exclude isDefault() == false
     }
 
-    protected  <C extends AbstractConfig> Optional<C> checkUniqueConfig(Map<String, C> configsMap, C config) {
+    protected <C extends AbstractConfig> Optional<C> checkUniqueConfig(Map<String, C> configsMap, C config) {
         if (configsMap.size() > 0 && isUniqueConfig(config)) {
             C oldOne = configsMap.values().iterator().next();
             String configName = oldOne.getClass().getSimpleName();
@@ -454,14 +455,15 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
     public abstract void loadConfigs();
 
-    public <T extends AbstractConfig> void loadConfigsOfTypeFromProps(Class<T> cls) {
+    public <T extends AbstractConfig> List<T> loadConfigsOfTypeFromProps(Class<T> cls) {
+        List<T> tmpConfigs = new ArrayList<>();
         PropertiesConfiguration properties = environment.getPropertiesConfiguration();
 
         // load multiple configs with id
         Set<String> configIds = this.getConfigIdsFromProps(cls);
         configIds.forEach(id -> {
             if (!this.getConfig(cls, id).isPresent()) {
-                T config = null;
+                T config;
                 try {
                     config = createConfig(cls, scopeModel);
                     config.setId(id);
@@ -481,6 +483,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
 
                     config.refresh();
                     this.addConfig(config);
+                    tmpConfigs.add(config);
                 } catch (Exception e) {
                     logger.error("load config failed, id: " + id + ", type:" + cls.getSimpleName(), e);
                     throw new IllegalStateException("load config failed, id: " + id + ", type:" + cls.getSimpleName());
@@ -497,7 +500,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             // load single config
             List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
             if (ConfigurationUtils.hasSubProperties(configurationMaps, AbstractConfig.getTypePrefix(cls))) {
-                T config = null;
+                T config;
                 try {
                     config = createConfig(cls, scopeModel);
                     config.refresh();
@@ -506,9 +509,11 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                 }
 
                 this.addConfig(config);
+                tmpConfigs.add(config);
             }
         }
 
+        return tmpConfigs;
     }
 
     private <T extends AbstractConfig> T createConfig(Class<T> cls, ScopeModel scopeModel) throws ReflectiveOperationException {
@@ -555,7 +560,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
             throw new IllegalStateException("Add default config failed: " + configType.getSimpleName(), e);
         }
 
-        //validate configs
+        // validate configs
         Collection<T> configs = this.getConfigs(configType);
         if (getConfigValidator() != null) {
             for (T config : configs) {
@@ -648,5 +653,9 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         this.configsCache.clear();
         this.configIdIndexes.clear();
         this.duplicatedConfigs.clear();
+    }
+
+    public boolean isInitialized() {
+        return initialized.get();
     }
 }

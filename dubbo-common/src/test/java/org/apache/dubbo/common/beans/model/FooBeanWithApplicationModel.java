@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.common.beans.model;
 
+import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-public class FooBeanWithApplicationModel {
+public class FooBeanWithApplicationModel implements Disposable {
     private ApplicationModel applicationModel;
+    private boolean destroyed;
 
     public FooBeanWithApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -27,5 +29,14 @@ public class FooBeanWithApplicationModel {
 
     public ApplicationModel getApplicationModel() {
         return applicationModel;
+    }
+
+    @Override
+    public void destroy() {
+        this.destroyed = true;
+    }
+
+    public boolean isDestroyed() {
+        return destroyed;
     }
 }

@@ -37,10 +37,7 @@ public enum TripleHeaderEnum {
     APPLICATION_GRPC("application/grpc"),
     GRPC_ENCODING("grpc-encoding"),
     GRPC_ACCEPT_ENCODING("grpc-accept-encoding"),
-    TRICE_ID_KEY("tri-trace-traceid"),
-    RPC_ID_KEY("tri-trace-rpcid"),
     CONSUMER_APP_NAME_KEY("tri-consumer-appname"),
-    UNIT_INFO_KEY("tri-unit-info"),
     SERVICE_VERSION("tri-service-version"),
     SERVICE_GROUP("tri-service-group");
 
@@ -61,6 +58,12 @@ public enum TripleHeaderEnum {
         excludeAttachmentsSet.add(TripleConstant.TE_KEY);
     }
 
+    private final String header;
+
+    TripleHeaderEnum(String header) {
+        this.header = header;
+    }
+
     public static TripleHeaderEnum getEnum(String header) {
         return enumMap.get(header);
     }
@@ -71,12 +74,6 @@ public enum TripleHeaderEnum {
 
     public static boolean containsExcludeAttachments(String key) {
         return excludeAttachmentsSet.contains(key) || enumMap.containsKey(key);
-    }
-
-    private final String header;
-
-    TripleHeaderEnum(String header) {
-        this.header = header;
     }
 
     public String getHeader() {

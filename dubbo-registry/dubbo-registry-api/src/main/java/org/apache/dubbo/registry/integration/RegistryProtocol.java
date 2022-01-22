@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -64,10 +65,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -253,8 +253,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         exporter.setRegisterUrl(registeredProviderUrl);
         exporter.setSubscribeUrl(overrideSubscribeUrl);
 
-        // Deprecated! Subscribe to override rules in 2.6.x or before.
-        registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+        if (!registry.isServiceDiscovery()) {
+            // Deprecated! Subscribe to override rules in 2.6.x or before.
+            registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
+        }
 
         notifyExport(exporter);
         //Ensure that a new exporter instance is returned every time export
@@ -473,7 +475,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         // group="a,b" or group="*"
         Map<String, String> qs = (Map<String, String>) url.getAttribute(REFER_KEY);
         String group = qs.get(GROUP_KEY);
-        if (group != null && group.length() > 0) {
+        if (StringUtils.isNotEmpty(group)) {
             if ((COMMA_SPLIT_PATTERN.split(group)).length > 1 || "*".equals(group)) {
                 return doRefer(Cluster.getCluster(url.getScopeModel(), MergeableCluster.NAME), registry, type, url, qs);
             }
@@ -592,6 +594,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     @Override
     public void destroy() {
+        // FIXME all application models in framework are removed at this moment
         for (ApplicationModel applicationModel : frameworkModel.getApplicationModels()) {
             for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
                 List<RegistryProtocolListener> listeners = moduleModel.getExtensionLoader(RegistryProtocolListener.class)
@@ -644,7 +647,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     public static class InvokerDelegate<T> extends InvokerWrapper<T> {
-        private final Invoker<T> invoker;
 
         /**
          * @param invoker
@@ -652,7 +654,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
          */
         public InvokerDelegate(Invoker<T> invoker, URL url) {
             super(invoker, url);
-            this.invoker = invoker;
         }
 
         public Invoker<T> getInvoker() {
@@ -849,7 +850,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      */
     private class ExporterChangeableWrapper<T> implements Exporter<T> {
 
-        private final ExecutorService executor = newSingleThreadExecutor(new NamedThreadFactory("Exporter-Unexport", true));
+        private final ScheduledExecutorService executor;
 
         private final Invoker<T> originInvoker;
         private Exporter<T> exporter;
@@ -859,6 +860,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker) {
             this.exporter = exporter;
             this.originInvoker = originInvoker;
+            ExecutorRepository executorRepository = originInvoker.getUrl().getOrDefaultApplicationModel()
+                .getDefaultExtension(ExecutorRepository.class);
+            this.executor = executorRepository.getSharedScheduledExecutor();
         }
 
         public Invoker<T> getOriginInvoker() {
@@ -890,7 +894,9 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                     Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
                     NotifyListener listener = overrideListeners.remove(registerUrl);
                     if (listener != null) {
-                        registry.unsubscribe(subscribeUrl, listener);
+                        if (!registry.isServiceDiscovery()) {
+                            registry.unsubscribe(subscribeUrl, listener);
+                        }
                         ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
                         if (applicationModel.getModelEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                             for (ModuleModel moduleModel : applicationModel.getPubModuleModels()) {
@@ -907,19 +913,15 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 logger.warn(t.getMessage(), t);
             }
 
-            executor.submit(() -> {
+            //TODO wait for shutdown timeout is a bit strange
+            int timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
+            executor.schedule(() -> {
                 try {
-                    int timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
-                    if (timeout > 0) {
-                        logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. " +
-                            "Usually, this is called when you use dubbo API");
-                        Thread.sleep(timeout);
-                    }
                     exporter.unexport();
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
-            });
+            }, timeout, TimeUnit.MILLISECONDS);
         }
 
         public void setSubscribeUrl(URL subscribeUrl) {

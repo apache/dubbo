@@ -18,9 +18,9 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.api.Greeting;
-
 import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

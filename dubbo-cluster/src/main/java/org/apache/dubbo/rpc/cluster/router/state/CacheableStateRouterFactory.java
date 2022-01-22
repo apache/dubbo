@@ -16,23 +16,23 @@
  */
 package org.apache.dubbo.rpc.cluster.router.state;
 
+import org.apache.dubbo.common.URL;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 
 /**
  * If you want to provide a router implementation based on design of v2.7.0, please extend from this abstract class.
  * For 2.6.x style router, please implement and use RouterFactory directly.
  */
 public abstract class CacheableStateRouterFactory implements StateRouterFactory {
+    // TODO reuse StateRouter for all routerChain
     private final ConcurrentMap<String, StateRouter> routerMap = new ConcurrentHashMap<>();
 
     @Override
-    public StateRouter getRouter(URL url, RouterChain chain) {
-        return routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(url, chain));
+    public <T> StateRouter<T> getRouter(Class<T> interfaceClass, URL url) {
+        return routerMap.computeIfAbsent(url.getServiceKey(), k -> createRouter(interfaceClass, url));
     }
 
-    protected abstract StateRouter createRouter(URL url, RouterChain chain);
+    protected abstract <T> StateRouter<T> createRouter(Class<T> interfaceClass, URL url);
 }

@@ -21,6 +21,8 @@ import org.apache.dubbo.common.stream.StreamObserver;
 
 public class IGreeterImpl implements IGreeter {
 
+    private StreamObserver<String> mockStreamObserver = new MockStreamObserver();
+
     @Override
     public String echo(String request) {
         return request;
@@ -28,8 +30,19 @@ public class IGreeterImpl implements IGreeter {
 
     @Override
     public void serverStream(String str, StreamObserver<String> observer) {
-        System.out.println("srt="+str);
+        System.out.println("srt=" + str);
         observer.onNext(str);
         observer.onCompleted();
+    }
+
+    @Override
+    public StreamObserver<String> bidirectionalStream(StreamObserver<String> observer) {
+        observer.onNext(SERVER_MSG);
+        observer.onCompleted();
+        return mockStreamObserver; // This will serve as the server's outboundMessageSubscriber
+    }
+
+    public StreamObserver<String> getMockStreamObserver() {
+        return mockStreamObserver;
     }
 }

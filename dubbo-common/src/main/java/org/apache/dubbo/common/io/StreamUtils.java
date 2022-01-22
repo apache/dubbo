@@ -28,7 +28,9 @@ public class StreamUtils {
 
     public static InputStream limitedInputStream(final InputStream is, final int limit) throws IOException {
         return new InputStream() {
-            private int mPosition = 0, mMark = 0, mLimit = Math.min(limit, is.available());
+            private int mPosition = 0;
+            private int mMark = 0;
+            private final int mLimit = Math.min(limit, is.available());
 
             @Override
             public int read() throws IOException {

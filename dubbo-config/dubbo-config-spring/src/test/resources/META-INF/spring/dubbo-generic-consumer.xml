@@ -25,7 +25,7 @@
     <dubbo:application name="dubbo-generic-consumer"/>
 
     <!-- 连接注册中心配置 -->
-    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:registry address="${zookeeper.connection.address}"/>
 
     <dubbo:reference id="demoServiceRef" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true" init="false"/>
 

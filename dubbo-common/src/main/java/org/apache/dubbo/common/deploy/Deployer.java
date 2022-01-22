@@ -18,10 +18,8 @@ package org.apache.dubbo.common.deploy;
 
 import org.apache.dubbo.rpc.model.ScopeModel;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
-/**
- */
 public interface Deployer<E extends ScopeModel> {
 
     /**
@@ -31,8 +29,9 @@ public interface Deployer<E extends ScopeModel> {
 
     /**
      * Starts the component.
+     * @return
      */
-    CompletableFuture start() throws IllegalStateException;
+    Future start() throws IllegalStateException;
 
     /**
      * Stops the component.
@@ -88,4 +87,5 @@ public interface Deployer<E extends ScopeModel> {
 
     void removeDeployListener(DeployListener<E> listener);
 
+    Throwable getError();
 }
