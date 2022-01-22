@@ -87,6 +87,23 @@ public class ForkingClusterInvokerTest {
         given(invoker3.getInterface()).willReturn(ForkingClusterInvokerTest.class);
     }
 
+    private void resetInvokerToTimeout() {
+        given(invoker1.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
+        given(invoker1.getUrl()).willReturn(url);
+        given(invoker1.isAvailable()).willReturn(true);
+        given(invoker1.getInterface()).willReturn(ForkingClusterInvokerTest.class);
+
+        given(invoker2.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
+        given(invoker2.getUrl()).willReturn(url);
+        given(invoker2.isAvailable()).willReturn(true);
+        given(invoker2.getInterface()).willReturn(ForkingClusterInvokerTest.class);
+
+        given(invoker3.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
+        given(invoker3.getUrl()).willReturn(url);
+        given(invoker3.isAvailable()).willReturn(true);
+        given(invoker3.getInterface()).willReturn(ForkingClusterInvokerTest.class);
+    }
+
     private void resetInvokerToNoException() {
         given(invoker1.invoke(invocation)).willReturn(result);
         given(invoker1.getUrl()).willReturn(url);
@@ -107,6 +124,20 @@ public class ForkingClusterInvokerTest {
     @Test
     public void testInvokeException() {
         resetInvokerToException();
+        ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<>(dic);
+
+        try {
+            invoker.invoke(invocation);
+            Assertions.fail();
+        } catch (RpcException expected) {
+            Assertions.assertTrue(expected.getMessage().contains("Failed to forking invoke provider"));
+            assertFalse(expected.getCause() instanceof RpcException);
+        }
+    }
+
+    @Test
+    public void testInvokeTimeout() {
+        resetInvokerToTimeout();
         ForkingClusterInvoker<ForkingClusterInvokerTest> invoker = new ForkingClusterInvoker<>(dic);
 
         try {
