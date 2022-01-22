@@ -28,7 +28,10 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_APPLICATION_NAME_PROPERTY;
