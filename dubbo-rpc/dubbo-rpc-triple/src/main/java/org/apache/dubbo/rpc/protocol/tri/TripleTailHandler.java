@@ -14,17 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper.curator5;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
+package org.apache.dubbo.rpc.protocol.tri;
 
-public class Curator5ZookeeperTransporter extends AbstractZookeeperTransporter {
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.util.ReferenceCountUtil;
+import io.netty.util.ReferenceCounted;
 
+/**
+ * Process unhandled message to avoid mem leak and netty's unhandled exception
+ */
+public class TripleTailHandler extends ChannelInboundHandlerAdapter {
     @Override
-    public ZookeeperClient createZookeeperClient(URL url) {
-        return new Curator5ZookeeperClient(url);
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg instanceof ReferenceCounted) {
+            ReferenceCountUtil.release(msg);
+        }
     }
-
 }

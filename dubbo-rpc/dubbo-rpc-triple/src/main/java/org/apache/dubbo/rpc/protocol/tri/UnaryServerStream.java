@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.getStatus;
 
 public class UnaryServerStream extends AbstractServerStream implements Stream {
@@ -68,6 +69,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
             if (invocation == null) {
                 return;
             }
+            final long stInNano = System.nanoTime();
             final Result result = getInvoker().invoke(invocation);
             CompletionStage<Object> future = result.thenApply(Function.identity());
             future.whenComplete((o, throwable) -> {
@@ -81,17 +83,28 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     transportError(getStatus(response.getException()));
                     return;
                 }
-                Metadata metadata = createResponseMeta();
-                outboundTransportObserver().onMetadata(metadata, false);
-                final byte[] data = encodeResponse(response.getValue());
-                if (data == null) {
-                    // already handled in encodeResponse()
-                    return;
+                final Object timeoutVal = invocation.getObjectAttachment(TIMEOUT_KEY);
+                final long cost = System.nanoTime() - stInNano;
+                if (timeoutVal != null && cost > ((Long) timeoutVal)) {
+                    LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s timeout=%s",
+                        invocation.getTargetServiceUniqueName(),
+                        invocation.getMethodName(),
+                        cost, timeoutVal));
+                    outboundTransportObserver()
+                        .onError(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED));
+                } else {
+                    Metadata metadata = createResponseMeta();
+                    outboundTransportObserver().onMetadata(metadata, false);
+                    final byte[] data = encodeResponse(response.getValue());
+                    if (data == null) {
+                        // already handled in encodeResponse()
+                        return;
+                    }
+                    outboundTransportObserver().onData(data, false);
+                    Metadata trailers = TripleConstant.getSuccessResponseMeta();
+                    convertAttachment(trailers, response.getObjectAttachments());
+                    outboundTransportObserver().onMetadata(trailers, true);
                 }
-                outboundTransportObserver().onData(data, false);
-                Metadata trailers = TripleConstant.getSuccessResponseMeta();
-                convertAttachment(trailers, response.getObjectAttachments());
-                outboundTransportObserver().onMetadata(trailers, true);
             });
             RpcContext.removeContext();
         }

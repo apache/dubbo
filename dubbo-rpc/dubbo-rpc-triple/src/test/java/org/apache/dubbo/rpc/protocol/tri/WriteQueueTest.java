@@ -54,6 +54,7 @@ public class WriteQueueTest {
         ChannelPromise promise = Mockito.mock(ChannelPromise.class);
         EventLoop eventLoop = new DefaultEventLoop();
         Mockito.when(channel.eventLoop()).thenReturn(eventLoop);
+        Mockito.when(channel.isActive()).thenReturn(true);
         Mockito.when(channel.newPromise()).thenReturn(promise);
         Mockito.when(channel.write(Mockito.any(), Mockito.any())).thenAnswer(
             (Answer<ChannelPromise>) invocationOnMock -> {

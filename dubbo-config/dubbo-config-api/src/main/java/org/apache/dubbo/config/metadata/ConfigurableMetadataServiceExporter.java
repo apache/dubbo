@@ -170,8 +170,8 @@ public class ConfigurableMetadataServiceExporter {
         serviceConfig.setGroup(applicationConfig.getName());
         serviceConfig.setVersion(MetadataService.VERSION);
 //            serviceConfig.setMethods(generateMethodConfig());
-        serviceConfig.setConnections(1);
-        serviceConfig.setExecutes(100);
+        serviceConfig.setConnections(1); // separate connection
+        serviceConfig.setExecutes(100); // max tasks running at the same time
 
         return serviceConfig;
     }

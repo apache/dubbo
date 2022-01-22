@@ -69,7 +69,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.rpc.protocol.tri.Compressor.DEFAULT_COMPRESSOR;
 import static org.apache.dubbo.rpc.protocol.tri.TripleConstant.HTTP_SCHEME;
 import static org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum.GRPC_ENCODING;
 
@@ -333,6 +332,7 @@ public class ClientStreamTest {
         Mockito.when(streamChannel.writeAndFlush(Mockito.any())).thenReturn(channelFuture);
         Mockito.when(streamChannel.alloc()).thenReturn(ByteBufAllocator.DEFAULT);
         Mockito.when(streamChannel.attr(TripleConstant.CLIENT_STREAM_KEY)).thenReturn(attribute);
+        Mockito.when(streamChannel.isActive()).thenReturn(true);
         Mockito.when(streamChannel.eventLoop()).thenReturn(eventLoop);
         Mockito.when(streamChannel.newPromise()).thenReturn(promise);
 

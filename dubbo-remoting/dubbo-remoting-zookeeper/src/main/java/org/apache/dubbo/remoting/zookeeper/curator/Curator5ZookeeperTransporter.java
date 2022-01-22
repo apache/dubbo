@@ -14,32 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.remoting.zookeeper.curator;
 
-package org.apache.dubbo.rpc.protocol.tri;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 
-import java.util.Map;
-import java.util.Optional;
+public class Curator5ZookeeperTransporter extends AbstractZookeeperTransporter {
 
-public interface Metadata extends Iterable<Map.Entry<CharSequence, CharSequence>> {
-
-    Metadata put(CharSequence key, CharSequence value);
-
-    default Metadata putIfNotNull(CharSequence key, CharSequence value) {
-        if (value != null) {
-            put(key, value);
-        }
-        return this;
+    @Override
+    public ZookeeperClient createZookeeperClient(URL url) {
+        return new Curator5ZookeeperClient(url);
     }
-
-    CharSequence get(CharSequence key);
-
-
-    default CharSequence getOrDefault(CharSequence key, CharSequence val) {
-        return Optional.ofNullable(get(key)).orElse(val);
-    }
-
-    boolean contains(CharSequence key);
-
-    boolean remove(CharSequence key);
 
 }

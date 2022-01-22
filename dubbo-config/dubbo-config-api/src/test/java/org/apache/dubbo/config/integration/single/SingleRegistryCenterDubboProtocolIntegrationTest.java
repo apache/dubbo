@@ -45,6 +45,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +61,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 /**
  * This abstraction class will implement some methods as base for single registry center.
  */
+@DisabledForJreRange(min = JRE.JAVA_16)
 public class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterDubboProtocolIntegrationTest.class);

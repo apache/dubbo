@@ -402,10 +402,11 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             .put(Http2Headers.PseudoHeaderName.METHOD.value(), HttpMethod.POST.asciiName());
 
         metadata.put(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
-            .put(TripleHeaderEnum.TIMEOUT.getHeader(), inv.get(CommonConstants.TIMEOUT_KEY) + "m")
-            .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS)
-        ;
+            .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
+        if (inv.get(CommonConstants.TIMEOUT_KEY) != null) {
+            metadata.put(TripleHeaderEnum.TIMEOUT.getHeader(), inv.get(CommonConstants.TIMEOUT_KEY) + "m");
+        }
         metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), getUrl().getVersion())
             .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
                 (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))

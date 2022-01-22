@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.common.config;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -58,7 +56,7 @@ public class InmemoryConfiguration implements Configuration {
      * Add a set of properties into the store
      */
     public void addProperties(Map<String, String> properties) {
-        if (CollectionUtils.isNotEmptyMap(properties)) {
+        if (properties != null) {
             this.store.putAll(properties);
         }
     }
@@ -67,7 +65,7 @@ public class InmemoryConfiguration implements Configuration {
      * set store
      */
     public void setProperties(Map<String, String> properties) {
-        if (CollectionUtils.isNotEmptyMap(properties)) {
+        if (properties != null) {
             this.store = properties;
         }
     }

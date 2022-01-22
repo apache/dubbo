@@ -519,4 +519,12 @@ public interface CommonConstants {
     String CURRENT_CLUSTER_INVOKER_KEY = "currentClusterInvoker";
 
     String ENABLE_ROUTER_SNAPSHOT_PRINT_KEY = "ENABLE_ROUTER_SNAPSHOT_PRINT";
+
+    String INJVM_COPY_UTIL_KEY = "injvm-copy-util";
+
+    String INJVM_IGNORE_SAME_MODULE_KEY = "injvm.ignore.same-module";
+
+    String SET_FUTURE_IN_SYNC_MODE = "future.sync.set";
+
+    String CLEAR_FUTURE_AFTER_GET = "future.clear.once";
 }
