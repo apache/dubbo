@@ -370,7 +370,7 @@ public class ServiceInstancesChangedListener {
      * Since this listener is shared among interfaces, destroy this listener only when all interface listener are unsubscribed
      */
     public synchronized void destroy() {
-        if (!destroyed && CollectionUtils.isEmptyMap(listeners)) {
+        if (!destroyed) {
             if (CollectionUtils.isEmptyMap(listeners)) {
                 allInstances.clear();
                 serviceUrls.clear();
