@@ -20,7 +20,6 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -78,24 +77,27 @@ public class ExceptionFilter implements Filter, Filter.Listener {
                 // for the exception not found in method's signature, print ERROR message in server's log.
                 logger.error("Got unchecked and undeclared exception which called by " + RpcContext.getServiceContext().getRemoteHost() + ". service: " + invoker.getInterface().getName() + ", method: " + invocation.getMethodName() + ", exception: " + exception.getClass().getName() + ": " + exception.getMessage(), exception);
 
-                // directly throw if exception class and interface class are in the same jar file.
-                String serviceFile = ReflectUtils.getCodeBase(invoker.getInterface());
-                String exceptionFile = ReflectUtils.getCodeBase(exception.getClass());
-                if (serviceFile == null || exceptionFile == null || serviceFile.equals(exceptionFile)) {
-                    return;
-                }
-                // directly throw if it's JDK exception
-                String className = exception.getClass().getName();
-                if (className.startsWith("java.") || className.startsWith("javax.")) {
-                    return;
-                }
-                // directly throw if it's dubbo exception
-                if (exception instanceof RpcException) {
-                    return;
-                }
+//                // directly throw if exception class and interface class are in the same jar file.
+//                String serviceFile = ReflectUtils.getCodeBase(invoker.getInterface());
+//                String exceptionFile = ReflectUtils.getCodeBase(exception.getClass());
+//                if (serviceFile == null || exceptionFile == null || serviceFile.equals(exceptionFile)) {
+//                    return;
+//                }
+//                // directly throw if it's JDK exception
+//                String className = exception.getClass().getName();
+//                if (className.startsWith("java.") || className.startsWith("javax.")) {
+//                    return;
+//                }
+//                // directly throw if it's dubbo exception
+//                if (exception instanceof RpcException) {
+//                    return;
+//                }
+//
+//                // otherwise, wrap with RuntimeException and throw back to the client
+//                appResponse.setException(new RuntimeException(StringUtils.toString(exception)));
 
-                // otherwise, wrap with RuntimeException and throw back to the client
-                appResponse.setException(new RuntimeException(StringUtils.toString(exception)));
+                appResponse.setAttachment(CommonConstants.BIZ_EXCEPTION_MESSAGE, StringUtils.toString(exception));
+
             } catch (Throwable e) {
                 logger.warn("Fail to ExceptionFilter when called by " + RpcContext.getServiceContext().getRemoteHost() + ". service: " + invoker.getInterface().getName() + ", method: " + invocation.getMethodName() + ", exception: " + e.getClass().getName() + ": " + e.getMessage(), e);
             }

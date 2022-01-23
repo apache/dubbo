@@ -527,4 +527,6 @@ public interface CommonConstants {
     String SET_FUTURE_IN_SYNC_MODE = "future.sync.set";
 
     String CLEAR_FUTURE_AFTER_GET = "future.clear.once";
+
+    String BIZ_EXCEPTION_MESSAGE = "biz.exception.message";
 }

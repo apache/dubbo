@@ -1,0 +1,1 @@
+exception-client=org.apache.dubbo.rpc.filter.ExceptionClientFilter
