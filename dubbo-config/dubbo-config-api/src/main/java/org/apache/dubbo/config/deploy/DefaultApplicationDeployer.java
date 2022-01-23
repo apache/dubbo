@@ -96,7 +96,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     private final ExecutorRepository executorRepository;
 
     private final AtomicBoolean hasPreparedApplicationInstance = new AtomicBoolean(false);
-    private final AtomicBoolean hasPreparedInternalModule = new AtomicBoolean(false);
+    private volatile boolean hasPreparedInternalModule = false;
 
     private ScheduledFuture<?> asyncMetadataFuture;
     private volatile CompletableFuture<Boolean> startFuture;
@@ -168,12 +168,12 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
      */
     @Override
     public void initialize() {
-        if (initialized.get()) {
+        if (initialized) {
             return;
         }
         // Ensure that the initialization is completed when concurrent calls
         synchronized (startLock) {
-            if (initialized.get()) {
+            if (initialized) {
                 return;
             }
             // register shutdown hook
@@ -188,7 +188,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             // @since 2.7.8
             startMetadataCenter();
 
-            initialized.set(true);
+            initialized = true;
 
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " has been initialized!");
@@ -609,8 +609,11 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
     }
 
     public void prepareInternalModule() {
+        if(hasPreparedInternalModule){
+            return;
+        }
         synchronized (internalModuleLock) {
-            if (!hasPreparedInternalModule.compareAndSet(false, true)) {
+            if (hasPreparedInternalModule) {
                 return;
             }
 
@@ -659,7 +662,7 @@ public class DefaultApplicationDeployer extends AbstractDeployer<ApplicationMode
             } catch (Exception e) {
                 if (!configCenter.isCheck()) {
                     logger.warn("The configuration center failed to initialize", e);
-                    configCenter.checkOrUpdateInitialized(false);
+                    configCenter.setInitialized(false);
                     return null;
                 } else {
                     throw new IllegalStateException(e);

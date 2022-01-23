@@ -66,10 +66,10 @@ public class ConfigCenterConfigTest {
         config.setHighestPriority(null);
         config.refresh();
 
-        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress()+"/ConfigCenterConfig?check=true&" +
-                        "config-file=dubbo.properties&group=group&" +
-                        "namespace=namespace&timeout=30000",
-                config.toUrl().toFullString()
+        Assertions.assertEquals(ZookeeperRegistryCenterConfig.getConnectionAddress() +
+                "/" + ConfigCenterConfig.class.getName() +
+                "?check=true&config-file=dubbo.properties&group=group&namespace=namespace&timeout=30000",
+            config.toUrl().toFullString()
         );
     }
 

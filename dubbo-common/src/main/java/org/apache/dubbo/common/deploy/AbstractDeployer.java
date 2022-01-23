@@ -22,7 +22,6 @@ import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.deploy.DeployState.FAILED;
 import static org.apache.dubbo.common.deploy.DeployState.PENDING;
@@ -39,7 +38,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
 
     private volatile Throwable lastError;
 
-    protected AtomicBoolean initialized = new AtomicBoolean(false);
+    protected volatile boolean initialized = false;
 
     protected List<DeployListener<E>> listeners = new ArrayList<>();
 
@@ -164,7 +163,7 @@ public abstract class AbstractDeployer<E extends ScopeModel> implements Deployer
     }
 
     public boolean isInitialized() {
-        return initialized.get();
+        return initialized;
     }
 
     protected String getIdentifier() {
