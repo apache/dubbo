@@ -53,7 +53,7 @@ public class HeaderExchangeClient implements ExchangeClient {
     public static GlobalResourceInitializer<HashedWheelTimer> IDLE_CHECK_TIMER = new GlobalResourceInitializer<>(() ->
         new HashedWheelTimer(new NamedThreadFactory("dubbo-client-idleCheck", true), 1,
             TimeUnit.SECONDS, TICKS_PER_WHEEL),
-        timer -> timer.stop());
+        HashedWheelTimer::stop);
 
     private Timeout reconnectTimer;
     private Timeout heartBeatTimer;
