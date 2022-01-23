@@ -77,25 +77,8 @@ public class ExceptionFilter implements Filter, Filter.Listener {
                 // for the exception not found in method's signature, print ERROR message in server's log.
                 logger.error("Got unchecked and undeclared exception which called by " + RpcContext.getServiceContext().getRemoteHost() + ". service: " + invoker.getInterface().getName() + ", method: " + invocation.getMethodName() + ", exception: " + exception.getClass().getName() + ": " + exception.getMessage(), exception);
 
-//                // directly throw if exception class and interface class are in the same jar file.
-//                String serviceFile = ReflectUtils.getCodeBase(invoker.getInterface());
-//                String exceptionFile = ReflectUtils.getCodeBase(exception.getClass());
-//                if (serviceFile == null || exceptionFile == null || serviceFile.equals(exceptionFile)) {
-//                    return;
-//                }
-//                // directly throw if it's JDK exception
-//                String className = exception.getClass().getName();
-//                if (className.startsWith("java.") || className.startsWith("javax.")) {
-//                    return;
-//                }
-//                // directly throw if it's dubbo exception
-//                if (exception instanceof RpcException) {
-//                    return;
-//                }
-//
-//                // otherwise, wrap with RuntimeException and throw back to the client
-//                appResponse.setException(new RuntimeException(StringUtils.toString(exception)));
-
+                // save exception message in attachment
+                // if client can not deserialize exception class, build a customized runtime exception in {@link ExceptionClientFilter}
                 appResponse.setAttachment(CommonConstants.BIZ_EXCEPTION_MESSAGE, StringUtils.toString(exception));
 
             } catch (Throwable e) {
