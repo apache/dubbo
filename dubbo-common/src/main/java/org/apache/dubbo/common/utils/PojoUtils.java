@@ -20,6 +20,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -74,7 +75,10 @@ public class PojoUtils {
     private static final Logger logger = LoggerFactory.getLogger(PojoUtils.class);
     private static final ConcurrentMap<String, Method> NAME_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
     private static final ConcurrentMap<Class<?>, ConcurrentMap<String, Field>> CLASS_FIELD_CACHE = new ConcurrentHashMap<Class<?>, ConcurrentMap<String, Field>>();
-    private static final boolean GENERIC_WITH_CLZ = Boolean.parseBoolean(ConfigurationUtils.getProperty(CommonConstants.GENERIC_WITH_CLZ_KEY, "true"));
+    private static final boolean GENERIC_WITH_CLZ =
+            Boolean.parseBoolean(
+                    ConfigurationUtils.getProperty(
+                            ApplicationModel.defaultModel(), CommonConstants.GENERIC_WITH_CLZ_KEY, "true"));
     private static final List<Class<?>> CLASS_CAN_BE_STRING = Arrays.asList(Byte.class, Short.class, Integer.class,
         Long.class, Float.class, Double.class, Boolean.class, Character.class);
 
