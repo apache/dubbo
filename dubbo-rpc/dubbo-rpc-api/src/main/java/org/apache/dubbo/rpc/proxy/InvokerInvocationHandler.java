@@ -87,39 +87,35 @@ public class InvokerInvocationHandler implements InvocationHandler {
         if (ProfilerSwitch.isEnableSimpleProfiler()) {
             ProfilerEntry parentProfiler = Profiler.getBizProfiler();
             ProfilerEntry bizProfiler;
-            boolean containsBizProfiler = false;
             if (parentProfiler != null) {
-                containsBizProfiler = true;
-                bizProfiler = Profiler.enter(parentProfiler, "Receive request. Client invoke begin.");
+                bizProfiler = Profiler.enter(parentProfiler, "Receive request. Client invoke begin. ServiceKey: " + serviceKey + " MethodName:" + methodName);
             } else {
-                bizProfiler = Profiler.start("Receive request. Client invoke begin.");
+                bizProfiler = Profiler.start("Receive request. Client invoke begin. ServiceKey: " + serviceKey + " MethodName:" + methodName);
             }
             rpcInvocation.put(Profiler.PROFILER_KEY, bizProfiler);
             try {
                 return invoker.invoke(rpcInvocation).recreate();
             } finally {
                 Profiler.release(bizProfiler);
-                if (!containsBizProfiler) {
-                    int timeout;
-                    Object timeoutKey = rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
-                    if (timeoutKey instanceof Integer) {
-                        timeout = (Integer) timeoutKey;
-                    } else {
-                        timeout = url.getMethodPositiveParameter(methodName, TIMEOUT_KEY, DEFAULT_TIMEOUT);
+                int timeout;
+                Object timeoutKey = rpcInvocation.getObjectAttachmentWithoutConvert(TIMEOUT_KEY);
+                if (timeoutKey instanceof Integer) {
+                    timeout = (Integer) timeoutKey;
+                } else {
+                    timeout = url.getMethodPositiveParameter(methodName, TIMEOUT_KEY, DEFAULT_TIMEOUT);
+                }
+                long usage = bizProfiler.getEndTime() - bizProfiler.getStartTime();
+                if ((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) {
+                    StringBuilder attachment = new StringBuilder();
+                    for (Map.Entry<String, Object> entry : rpcInvocation.getObjectAttachments().entrySet()) {
+                        attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
                     }
-                    long usage = bizProfiler.getEndTime() - bizProfiler.getStartTime();
-                    if ((usage / (1000_000L * ProfilerSwitch.getWarnPercent())) > timeout) {
-                        StringBuilder attachment = new StringBuilder();
-                        for (Map.Entry<String, Object> entry : rpcInvocation.getObjectAttachments().entrySet()) {
-                            attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
-                        }
 
-                        logger.warn(String.format("[Dubbo-Consumer] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout\n" +
-                                "invocation context:\n%s" +
-                                "thread info: \n%s",
-                            protocolServiceKey, methodName, usage / 1000_000, usage % 1000_000,
-                            attachment, Profiler.buildDetail(bizProfiler)));
-                    }
+                    logger.warn(String.format("[Dubbo-Consumer] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" +
+                            "invocation context:\n%s" +
+                            "thread info: \n%s",
+                        protocolServiceKey, methodName, usage / 1000_000, usage % 1000_000, timeout,
+                        attachment, Profiler.buildDetail(bizProfiler)));
                 }
             }
         }

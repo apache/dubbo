@@ -44,7 +44,13 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
         if (ProfilerSwitch.isEnableSimpleProfiler()) {
-            ProfilerEntry bizProfiler = Profiler.start("Receive request. Server invoke begin.");
+            ProfilerEntry bizProfiler;
+            Object localInvokeProfiler = invocation.get(Profiler.PROFILER_KEY);
+            if (localInvokeProfiler instanceof ProfilerEntry) {
+                bizProfiler = Profiler.enter((ProfilerEntry) localInvokeProfiler, "Receive request. Local server invoke begin.");
+            } else {
+                bizProfiler = Profiler.start("Receive request. Server invoke begin.");
+            }
             invocation.put(Profiler.PROFILER_KEY, bizProfiler);
             invocation.put(CLIENT_IP_KEY, RpcContext.getServiceContext().getRemoteAddressString());
         }
@@ -69,7 +75,7 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
                 ProfilerEntry profiler = Profiler.release((ProfilerEntry) fromInvocation);
                 invocation.put(Profiler.PROFILER_KEY, profiler);
 
-                dumpIfNeed(invoker, invocation, profiler);
+                dumpIfNeed(invoker, invocation,(ProfilerEntry) fromInvocation);
             }
         }
     }
@@ -90,11 +96,11 @@ public class ProfilerServerFilter implements Filter, BaseFilter.Listener {
                 attachment.append(entry.getKey()).append("=").append(entry.getValue()).append(";\n");
             }
 
-            logger.warn(String.format("[Dubbo-Provider] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout\n" +
+            logger.warn(String.format("[Dubbo-Provider] execute service %s#%s cost %d.%06d ms, this invocation almost (maybe already) timeout. Timeout: %dms\n" +
                     "client: %s\n" +
                     "invocation context:\n%s" +
                     "thread info: \n%s",
-                invocation.getTargetServiceUniqueName(), invocation.getMethodName(), usage / 1000_000, usage % 1000_000,
+                invocation.getTargetServiceUniqueName(), invocation.getMethodName(), usage / 1000_000, usage % 1000_000, timeout,
                 invocation.get(CLIENT_IP_KEY), attachment, Profiler.buildDetail(profiler)));
         }
     }
