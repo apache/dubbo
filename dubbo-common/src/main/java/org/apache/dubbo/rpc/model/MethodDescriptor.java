@@ -99,7 +99,7 @@ public class MethodDescriptor {
         try {
             returnTypesResult = ReflectUtils.getReturnTypes(method);
         } catch (Throwable throwable) {
-            logger.error("fail to get return types", throwable);
+            logger.error("fail to get return types. Method name: " + methodName + " Declaring class:" + method.getDeclaringClass().getName(), throwable);
             returnTypesResult = new Type[]{returnClass, returnClass};
         }
 
