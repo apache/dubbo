@@ -38,8 +38,8 @@ import org.springframework.context.ApplicationEventPublisherAware;
  *
  * @export
  */
-public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean,
-        ApplicationContextAware, BeanNameAware, ApplicationEventPublisherAware {
+public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, ApplicationContextAware, BeanNameAware,
+        ApplicationEventPublisherAware {
 
 
     private static final long serialVersionUID = 213195494150089726L;
@@ -131,12 +131,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     private void publishExportEvent() {
         ServiceBeanExportedEvent exportEvent = new ServiceBeanExportedEvent(this);
         applicationEventPublisher.publishEvent(exportEvent);
-    }
-
-    @Override
-    public void destroy() throws Exception {
-        // no need to call unexport() here, see
-        // org.apache.dubbo.config.spring.extension.SpringExtensionInjector.ShutdownHookListener
     }
 
     // merged from dubbox
