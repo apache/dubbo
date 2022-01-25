@@ -297,7 +297,7 @@ public class ConfigManager extends AbstractConfigManager implements ApplicationE
         }
     }
 
-    ConfigMode getConfigMode() {
+    public ConfigMode getConfigMode() {
         return configMode;
     }
 }
