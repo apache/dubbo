@@ -709,6 +709,13 @@ public class ExtensionLoader<T> {
                     continue;
                 }
 
+                /*
+                 * Check {@link DisableInject} to see if we need autowire injection for this property
+                 */
+                if (method.getAnnotation(DisableInject.class) != null) {
+                    continue;
+                }
+
                 Class<?> pt = method.getParameterTypes()[0];
                 if (ReflectUtils.isPrimitives(pt)) {
                     continue;
