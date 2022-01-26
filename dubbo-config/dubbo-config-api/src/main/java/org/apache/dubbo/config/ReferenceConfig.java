@@ -80,6 +80,7 @@ import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
@@ -396,7 +397,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("Referred dubbo service " + interfaceClass.getName());
+            logger.info("Referred dubbo service: [" + referenceParameters.get(INTERFACE_KEY) + "]." +
+                (Boolean.TRUE.toString().equals(referenceParameters.get(GENERIC_KEY)) ?
+                    " it's GenericService reference" : " it's not GenericService reference"));
         }
 
         URL consumerUrl = new ServiceConfigURL(CONSUMER_PROTOCOL, referenceParameters.get(REGISTER_IP_KEY), 0,
@@ -488,7 +491,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (urls.size() == 1) {
             URL curUrl = urls.get(0);
             invoker = protocolSPI.refer(interfaceClass, curUrl);
-            if (!UrlUtils.isRegistry(curUrl)){
+            if (!UrlUtils.isRegistry(curUrl)) {
                 List<Invoker<?>> invokers = new ArrayList<>();
                 invokers.add(invoker);
                 invoker = Cluster.getCluster(scopeModel, Cluster.DEFAULT).join(new StaticDirectory(curUrl, invokers), true);
