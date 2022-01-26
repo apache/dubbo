@@ -114,6 +114,7 @@
         <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
         <servlet_version>3.1.0</servlet_version>
         <jetty_version>9.4.43.v20210629</jetty_version>
+        <smart_socket_version>1.5.15</smart_socket_version>
         <validation_version>1.1.0.Final</validation_version>
         <hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
         <jel_version>3.0.1-b08</jel_version>
@@ -368,6 +369,11 @@
                 <artifactId>jetty</artifactId>
                 <version>${mortbay_jetty_version}</version>
                 <optional>true</optional>
+            </dependency>
+            <dependency>
+                <groupId>org.smartboot.socket</groupId>
+                <artifactId>aio-core</artifactId>
+                <version>${smart_socket_version}</version>
             </dependency>
             <dependency>
                 <groupId>javax.validation</groupId>

@@ -42,5 +42,6 @@
         <module>dubbo-remoting-netty4</module>
         <module>dubbo-remoting-etcd3</module>
         <module>dubbo-remoting-redis</module>
+        <module>dubbo-remoting-smart-socket</module>
     </modules>
 </project>
