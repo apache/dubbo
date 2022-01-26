@@ -569,11 +569,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             interfaceClass = GenericService.class;
         } else {
             try {
-                if (getInterfaceClassLoader() != null) {
+                if (getInterfaceClassLoader() != null && (interfaceClass == null || interfaceClass.getClassLoader() != getInterfaceClassLoader())) {
                     interfaceClass = Class.forName(interfaceName, true, getInterfaceClassLoader());
-                } else {
+                } else if (interfaceClass == null) {
                     interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
-                        .getContextClassLoader());
+                            .getContextClassLoader());
                 }
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
