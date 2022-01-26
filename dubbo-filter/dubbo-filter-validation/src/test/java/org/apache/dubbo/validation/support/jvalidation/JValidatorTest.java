@@ -17,12 +17,12 @@
 package org.apache.dubbo.validation.support.jvalidation;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.validation.support.jvalidation.mock.ValidationParameter;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import javax.validation.ValidationException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -47,13 +47,11 @@ public class JValidatorTest {
 
     @Test
     public void testItWhenItViolatedConstraint() throws Exception {
-        RpcException rpcException = Assertions.assertThrows(RpcException.class, () -> {
+        Assertions.assertThrows(ValidationException.class, () -> {
             URL url = URL.valueOf("test://test:11/org.apache.dubbo.validation.support.jvalidation.mock.JValidatorTestTarget");
             JValidator jValidator = new JValidator(url);
             jValidator.validate("someMethod2", new Class<?>[]{ValidationParameter.class}, new Object[]{new ValidationParameter()});
         });
-
-        Assertions.assertTrue(rpcException.isValidation());
     }
 
     @Test

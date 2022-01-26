@@ -266,11 +266,7 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
         }
 
         // check unique config
-        Optional<C> oldOne = checkUniqueConfig(configsMap, config);
-        if (oldOne != null) {
-            return oldOne;
-        }
-        return Optional.empty();
+        return checkUniqueConfig(configsMap, config);
     }
 
     public <C extends AbstractConfig> Map<String, C> getConfigsMap(Class<C> cls) {
@@ -448,9 +444,25 @@ public abstract class AbstractConfigManager extends LifecycleAdapter {
                     }
                     break;
                 }
+                case OVERRIDE_ALL: {
+                    // override old one's properties with the new one
+                    oldOne.overrideWithConfig(config, true);
+                    if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+                        logger.warn(msgPrefix + "override previous config with later config");
+                    }
+                    return Optional.of(oldOne);
+                }
+                case OVERRIDE_IF_ABSENT: {
+                    // override old one's properties with the new one
+                    oldOne.overrideWithConfig(config, false);
+                    if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+                        logger.warn(msgPrefix + "override previous config with later config");
+                    }
+                    return Optional.of(oldOne);
+                }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     public abstract void loadConfigs();

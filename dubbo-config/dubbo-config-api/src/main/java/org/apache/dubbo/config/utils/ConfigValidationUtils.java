@@ -194,6 +194,10 @@ public class ConfigValidationUtils {
         List<RegistryConfig> registries = interfaceConfig.getRegistries();
         if (CollectionUtils.isNotEmpty(registries)) {
             for (RegistryConfig config : registries) {
+                // try to refresh registry in case it is set directly by user using config.setRegistries()
+                if (!config.isRefreshed()) {
+                    config.refresh();
+                }
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
                     address = ANYHOST_VALUE;
