@@ -29,15 +29,11 @@ public class TriDecoder implements Deframer {
     private static final int COMPRESSED_FLAG_MASK = 1;
     private static final int RESERVED_MASK = 0xFE;
     private static final int MAX_BUFFER_SIZE = 1024 * 1024 * 2;
-
-    private boolean compressedFlag;
-
-    private int inboundBodyWireSize;
-
     private final CompositeByteBuf accumulate = Unpooled.compositeBuffer();
     private final Listener listener;
-    private DeCompressor decompressor;
-
+    private final DeCompressor decompressor;
+    private boolean compressedFlag;
+    private int inboundBodyWireSize;
     private long pendingDeliveries;
     private boolean inDelivery = false;
 
@@ -47,25 +43,14 @@ public class TriDecoder implements Deframer {
 
     private GrpcDecodeState state = GrpcDecodeState.HEADER;
 
-    private enum GrpcDecodeState {
-        HEADER,
-        PAYLOAD
-    }
-
     public TriDecoder(DeCompressor decompressor, Listener listener) {
         this.decompressor = decompressor;
         this.listener = listener;
     }
 
-
-    @Override
-    public void setDecompressor(DeCompressor decompressor) {
-        this.decompressor = decompressor;
-    }
-
     @Override
     public void deframe(ByteBuf data) {
-        accumulate.addComponent(true,data);
+        accumulate.addComponent(true, data);
         deliver();
     }
 
@@ -74,12 +59,10 @@ public class TriDecoder implements Deframer {
         deliver();
     }
 
-
     @Override
     public void close() {
         listener.close();
     }
-
 
     private void deliver() {
         // We can have reentrancy here when using a direct executor, triggered by calls to
@@ -154,7 +137,6 @@ public class TriDecoder implements Deframer {
         state = GrpcDecodeState.PAYLOAD;
     }
 
-
     /**
      * Processes the GRPC message body, which depending on frame header flags may be compressed.
      */
@@ -178,12 +160,17 @@ public class TriDecoder implements Deframer {
         return decompressor.decompress(accumulate.array());
     }
 
-
     private byte[] getUncompressedBody() {
-        byte[] data=new byte[requiredLength];
+        byte[] data = new byte[requiredLength];
         accumulate.readBytes(data);
         // todo
         return data;
+    }
+
+
+    private enum GrpcDecodeState {
+        HEADER,
+        PAYLOAD
     }
 
     public interface Listener {

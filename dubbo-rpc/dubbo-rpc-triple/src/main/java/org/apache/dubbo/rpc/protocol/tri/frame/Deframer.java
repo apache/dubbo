@@ -1,19 +1,8 @@
 package org.apache.dubbo.rpc.protocol.tri.frame;
 
-import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
-
 import io.netty.buffer.ByteBuf;
 
 public interface Deframer {
-
-    /**
-     * Sets the decompressor available to use. The message encoding for the stream comes later in
-     * time, and thus will not be available at the time of construction. This should only be set once,
-     * since the compression codec cannot change after the headers have been sent.
-     *
-     * @param decompressor the decompressing wrapper.
-     */
-    void setDecompressor(DeCompressor decompressor);
 
     /**
      * Adds the given data to this deframer and attempts delivery to the listener.

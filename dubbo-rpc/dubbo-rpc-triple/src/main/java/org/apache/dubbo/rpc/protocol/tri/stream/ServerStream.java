@@ -17,10 +17,8 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
@@ -74,7 +72,7 @@ public class ServerStream implements Stream {
     private boolean closed;
     private TriDecoder decoder;
 
-    public ServerStream(         Channel channel,
+    public ServerStream(Channel channel,
                         FrameworkModel frameworkModel,
                         Executor executor,
                         PathResolver pathResolver,
@@ -85,7 +83,7 @@ public class ServerStream implements Stream {
         this.pathResolver = pathResolver;
         this.filters = filters;
         this.frameworkModel = frameworkModel;
-        this.genericUnpack=genericUnpack;
+        this.genericUnpack = genericUnpack;
         this.writeQueue = new WriteQueue(channel);
     }
 
@@ -321,6 +319,7 @@ public class ServerStream implements Stream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
+            decoder.deframe(data);
             if (endStream) {
                 decoder.close();
             }
