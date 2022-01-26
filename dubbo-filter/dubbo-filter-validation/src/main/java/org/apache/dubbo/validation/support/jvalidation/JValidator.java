@@ -21,7 +21,6 @@ import org.apache.dubbo.common.bytecode.ClassGenerator;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.validation.MethodValidated;
 import org.apache.dubbo.validation.Validator;
 
@@ -293,7 +292,7 @@ public class JValidator implements Validator {
             }
         } catch (ValidationException e) {
             // only use exception's message to avoid potential serialization issue
-            throw new RpcException(RpcException.VALIDATION_EXCEPTION, e.getMessage(), e);
+            throw new ValidationException(e.getMessage());
         }
     }
 
