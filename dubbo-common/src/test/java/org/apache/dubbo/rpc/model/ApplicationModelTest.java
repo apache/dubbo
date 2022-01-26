@@ -23,6 +23,7 @@ import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.support.MockScopeModelDestroyListener;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

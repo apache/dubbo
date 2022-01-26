@@ -217,10 +217,6 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata-type";
 
-    String CONFIG_MAPPING_TYPE = "config";
-
-    String METADATA_MAPPING_TYPE = "metadata";
-
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
@@ -436,6 +432,8 @@ public interface CommonConstants {
 
     String DEFAULT_VERSION = "0.0.0";
 
+    String ROUTER_KEY = "router";
+
     String EXPORT_ASYNC_KEY = "export-async";
 
     String REFER_ASYNC_KEY = "refer-async";
@@ -503,4 +501,30 @@ public interface CommonConstants {
     String ENABLE_CONNECTIVITY_VALIDATION = "dubbo.connectivity.validation";
 
     String DUBBO_INTERNAL_APPLICATION = "DUBBO_INTERNAL_APPLICATION";
+
+    String RETRY_TIMES_KEY = "retry-times";
+
+    String RETRY_PERIOD_KEY = "retry-period";
+
+    String SYNC_REPORT_KEY = "sync-report";
+
+    String CYCLE_REPORT_KEY = "cycle-report";
+
+    String WORKING_CLASSLOADER_KEY = "WORKING_CLASSLOADER";
+
+    String STAGED_CLASSLOADER_KEY = "STAGED_CLASSLOADER";
+
+    String PROVIDER_ASYNC_KEY = "PROVIDER_ASYNC";
+
+    String CURRENT_CLUSTER_INVOKER_KEY = "currentClusterInvoker";
+
+    String ENABLE_ROUTER_SNAPSHOT_PRINT_KEY = "ENABLE_ROUTER_SNAPSHOT_PRINT";
+
+    String INJVM_COPY_UTIL_KEY = "injvm-copy-util";
+
+    String INJVM_IGNORE_SAME_MODULE_KEY = "injvm.ignore.same-module";
+
+    String SET_FUTURE_IN_SYNC_MODE = "future.sync.set";
+
+    String CLEAR_FUTURE_AFTER_GET = "future.clear.once";
 }

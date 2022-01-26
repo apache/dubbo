@@ -108,7 +108,7 @@ public class FailfastClusterInvokerTest {
         }
     }
 
-    @Test()
+    @Test
     public void testInvokeNoException() {
 
         resetInvoker1ToNoException();
@@ -118,7 +118,7 @@ public class FailfastClusterInvokerTest {
         assertSame(result, ret);
     }
 
-    @Test()
+    @Test
     public void testNoInvoke() {
         dic = mock(Directory.class);
 

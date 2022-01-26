@@ -86,7 +86,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol implements ScopeModel
                 p.addLast(new TripleServerInboundHandler());
             }
         });
-        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler);
+        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler, new TripleTailHandler());
     }
 
     @Override

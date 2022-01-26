@@ -32,8 +32,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
-import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
 
 /**
  * dubbo protocol support class.
@@ -49,9 +47,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private ExchangeClient client;
     private int shutdownWaitTime = DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 
-    public ReferenceCountExchangeClient(ExchangeClient client) {
+    public ReferenceCountExchangeClient(ExchangeClient client, String codec) {
         this.client = client;
-        referenceCount.incrementAndGet();
+        this.referenceCount.incrementAndGet();
         this.url = client.getUrl();
     }
 
@@ -170,9 +168,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     /**
      * when destroy unused invoker, closeAll should be true
-     * 
+     *
      * @param timeout
-     * @param closeAll  
+     * @param closeAll
      */
     private void closeInternal(int timeout, boolean closeAll) {
         if (closeAll || referenceCount.decrementAndGet() <= 0) {
@@ -208,12 +206,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
          * the order of judgment in the if statement cannot be changed.
          */
         if (!(client instanceof LazyConnectExchangeClient)) {
-            // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
-            URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
-                    //.addParameter(RECONNECT_KEY, Boolean.FALSE)
-                    .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
-            //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
-            client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
+            client = new LazyConnectExchangeClient(url, client.getExchangeHandler());
         }
     }
 
@@ -229,7 +222,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         referenceCount.incrementAndGet();
     }
 
-    public int getCount(){
+    public int getCount() {
         return referenceCount.get();
     }
 

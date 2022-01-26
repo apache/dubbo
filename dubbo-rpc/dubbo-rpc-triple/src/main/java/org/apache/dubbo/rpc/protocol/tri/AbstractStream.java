@@ -31,6 +31,8 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.Http2Headers;
 
 import java.io.ByteArrayInputStream;
@@ -302,7 +304,7 @@ public abstract class AbstractStream implements Stream {
     protected void transportError(GrpcStatus status, Map<String, Object> attachments, boolean onlyTrailers) {
         if (!onlyTrailers) {
             // set metadata
-            Metadata metadata = new DefaultMetadata();
+            Metadata metadata = createDefaultMetadata();
             outboundTransportObserver().onMetadata(metadata, false);
         }
         // set trailers
@@ -333,11 +335,13 @@ public abstract class AbstractStream implements Stream {
 
     private Metadata getTrailers(GrpcStatus grpcStatus) {
         Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), getGrpcMessage(grpcStatus));
+        String grpcMessage = getGrpcMessage(grpcStatus);
+        grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
+        metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
         metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
         Status.Builder builder = Status.newBuilder()
             .setCode(grpcStatus.code.code)
-            .setMessage(getGrpcMessage(grpcStatus));
+            .setMessage(grpcMessage);
         Throwable throwable = grpcStatus.cause;
         if (throwable == null) {
             Status status = builder.build();
@@ -354,6 +358,19 @@ public abstract class AbstractStream implements Stream {
         Status status = builder.build();
         metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
             encodeBase64ASCII(status.toByteArray()));
+        return metadata;
+    }
+
+
+    /**
+     * default header
+     * <p>
+     * only status and content-type
+     */
+    protected Metadata createDefaultMetadata() {
+        Metadata metadata = new DefaultMetadata();
+        metadata.put(Http2Headers.PseudoHeaderName.STATUS.value(), HttpResponseStatus.OK.codeAsText());
+        metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
         return metadata;
     }
 

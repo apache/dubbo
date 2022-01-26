@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 
@@ -45,6 +46,11 @@ public class FutureContext {
     private CompletableFuture<?> compatibleFuture;
 
     /**
+     * Whether clear future once get
+     */
+    private final static boolean clearFutureAfterGet = Boolean.parseBoolean(System.getProperty(CommonConstants.CLEAR_FUTURE_AFTER_GET, "false"));
+
+    /**
      * get future.
      *
      * @param <T>
@@ -52,7 +58,13 @@ public class FutureContext {
      */
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> getCompletableFuture() {
-        return (CompletableFuture<T>) future;
+        try {
+            return (CompletableFuture<T>) future;
+        } finally {
+            if (clearFutureAfterGet) {
+                this.future = null;
+            }
+        }
     }
 
     /**
@@ -67,7 +79,13 @@ public class FutureContext {
     @Deprecated
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> getCompatibleCompletableFuture() {
-        return (CompletableFuture<T>) compatibleFuture;
+        try {
+            return (CompletableFuture<T>) compatibleFuture;
+        } finally {
+            if (clearFutureAfterGet) {
+                this.compatibleFuture = null;
+            }
+        }
     }
 
     /**

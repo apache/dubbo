@@ -17,6 +17,10 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.RpcException;
+
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
@@ -29,9 +33,6 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.Attribute;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.RpcException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

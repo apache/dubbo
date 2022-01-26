@@ -21,7 +21,6 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-
 import java.util.Map;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.FieldUtils.getNonStaticFields;

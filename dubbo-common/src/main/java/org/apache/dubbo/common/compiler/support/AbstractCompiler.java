@@ -37,7 +37,7 @@ public abstract class AbstractCompiler implements Compiler {
     private static final Map<String, Lock> CLASS_IN_CREATION_MAP = new ConcurrentHashMap<>();
 
     @Override
-    public Class<?> compile(String code, ClassLoader classLoader) {
+    public Class<?> compile(Class<?> neighbor, String code, ClassLoader classLoader) {
         code = code.trim();
         Matcher matcher = PACKAGE_PATTERN.matcher(code);
         String pkg;
@@ -67,7 +67,7 @@ public abstract class AbstractCompiler implements Compiler {
                 throw new IllegalStateException("The java code not endsWith \"}\", code: \n" + code + "\n");
             }
             try {
-                return doCompile(classLoader, className, code);
+                return doCompile(neighbor, classLoader, className, code);
             } catch (RuntimeException t) {
                 throw t;
             } catch (Throwable t) {
@@ -78,6 +78,6 @@ public abstract class AbstractCompiler implements Compiler {
         }
     }
 
-    protected abstract Class<?> doCompile(ClassLoader classLoader, String name, String source) throws Throwable;
+    protected abstract Class<?> doCompile(Class<?> neighbor,ClassLoader classLoader, String name, String source) throws Throwable;
 
 }

@@ -17,12 +17,14 @@
 package org.apache.dubbo.registry.nacos.util;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
 
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +35,7 @@ import static org.mockito.Mockito.mock;
  * Test for NacosNamingServiceUtils
  */
 public class NacosNamingServiceUtilsTest {
+    private static MetadataReport metadataReport = Mockito.mock(MetadataReport.class);
 
     @Test
     public void testToInstance() {

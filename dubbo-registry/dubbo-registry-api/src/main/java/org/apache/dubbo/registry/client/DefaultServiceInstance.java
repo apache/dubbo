@@ -306,7 +306,11 @@ public class DefaultServiceInstance implements ServiceInstance {
             if (entry.getKey().equals(EXPORTED_SERVICES_REVISION_PROPERTY_NAME)) {
                 continue;
             }
-            equals = equals && entry.getValue().equals(that.getMetadata().get(entry.getKey()));
+            if (entry.getValue() == null) {
+                equals = equals && (entry.getValue() == that.getMetadata().get(entry.getKey()));
+            } else {
+                equals = equals && entry.getValue().equals(that.getMetadata().get(entry.getKey()));
+            }
         }
 
         return equals;

@@ -17,10 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.util.concurrent.TimeUnit;
-
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Protocol;
@@ -33,16 +30,15 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeter;
 import org.apache.dubbo.rpc.protocol.tri.support.IGreeterImpl;
-
 import org.apache.dubbo.rpc.protocol.tri.support.MockStreamObserver;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.TimeUnit;
+
 
 public class TripleProtocolTest {
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final String REQUEST_MSG = "hello world";
 
     @Test
     public void testDemoProtocol() throws Exception {
@@ -64,6 +60,8 @@ public class TripleProtocolTest {
         serviceRepository.registerProvider(providerModel);
         url = url.setServiceModel(providerModel);
 
+        Protocol protocol =ApplicationModel.defaultModel().getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        ProxyFactory proxy = ApplicationModel.defaultModel().getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         protocol.export(proxy.getInvoker(serviceImpl, IGreeter.class, url));
 
         ConsumerModel consumerModel = new ConsumerModel(url.getServiceKey(), null, serviceDescriptor, null,
@@ -73,6 +71,7 @@ public class TripleProtocolTest {
         Thread.sleep(1000);
 
         // 1. test unaryStream
+        String REQUEST_MSG = "hello world";
         Assertions.assertEquals(REQUEST_MSG, greeterProxy.echo(REQUEST_MSG));
         Assertions.assertEquals(REQUEST_MSG, serviceImpl.echoAsync(REQUEST_MSG).get());
 

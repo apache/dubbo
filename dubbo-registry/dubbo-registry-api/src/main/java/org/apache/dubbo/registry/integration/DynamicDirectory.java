@@ -18,11 +18,13 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -34,10 +36,12 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Configurator;
+import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
+import org.apache.dubbo.rpc.model.ModuleModel;
 
 import java.util.List;
 
@@ -51,7 +55,7 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 
 
 /**
- * RegistryDirectory
+ * DynamicDirectory
  */
 public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
 
@@ -107,17 +111,28 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     protected ServiceInstancesChangedListener serviceListener;
 
+    /**
+     * Should continue route if directory is empty
+     */
+    private final boolean shouldFailFast;
+
+    private volatile InvokersChangedListener invokersChangedListener;
+    private volatile boolean invokersChanged;
+
+
     public DynamicDirectory(Class<T> serviceType, URL url) {
         super(url, true);
 
-        this.cluster = url.getOrDefaultApplicationModel().getExtensionLoader(Cluster.class).getAdaptiveExtension();
-        this.routerFactory = url.getOrDefaultApplicationModel().getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
+        ModuleModel moduleModel = url.getOrDefaultModuleModel();
+
+        this.cluster = moduleModel.getExtensionLoader(Cluster.class).getAdaptiveExtension();
+        this.routerFactory = moduleModel.getExtensionLoader(RouterFactory.class).getAdaptiveExtension();
 
         if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
         }
 
-        if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
+        if (StringUtils.isEmpty(url.getServiceKey())) {
             throw new IllegalArgumentException("registry serviceKey is null.");
         }
 
@@ -130,6 +145,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.directoryUrl = consumerUrl;
         String group = directoryUrl.getGroup("");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
+
+        this.shouldFailFast = Boolean.parseBoolean(ConfigurationUtils.getProperty(moduleModel, Constants.SHOULD_FAIL_FAST_KEY, "true"));
     }
 
     @Override
@@ -165,7 +182,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     @Override
     public List<Invoker<T>> doList(BitList<Invoker<T>> invokers, Invocation invocation) {
-        if (forbidden) {
+        if (forbidden && shouldFailFast) {
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
                 getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
@@ -314,9 +331,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             logger.warn("Failed to destroy service " + serviceKey, t);
         }
     }
-
-    private volatile InvokersChangedListener invokersChangedListener;
-    private volatile boolean invokersChanged;
 
     public synchronized void setInvokersChangedListener(InvokersChangedListener listener) {
         this.invokersChangedListener = listener;

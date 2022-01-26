@@ -1593,9 +1593,6 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.registry.client.DefaultServiceDiscoveryFactory"
-  },
-  {
     "name": "org.apache.dubbo.registry.client.DefaultServiceInstance$Endpoint",
     "allDeclaredFields": true,
     "methods": [
@@ -2227,7 +2224,7 @@
     ]
   },
   {
-    "name": "org.apache.dubbo.rpc.cluster.router.mesh.route.MeshRuleRouterFactory",
+    "name": "org.apache.dubbo.rpc.cluster.router.mesh.route.StandardMeshRuleRouterFactory",
     "allPublicMethods": true,
     "methods": [
       {

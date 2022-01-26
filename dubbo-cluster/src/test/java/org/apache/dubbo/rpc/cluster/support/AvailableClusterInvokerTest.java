@@ -86,7 +86,7 @@ public class AvailableClusterInvokerTest {
         given(invoker3.getInterface()).willReturn(AvailableClusterInvokerTest.class);
     }
 
-    @Test()
+    @Test
     public void testInvokeNoException() {
 
         resetInvokerToNoException();
@@ -96,7 +96,7 @@ public class AvailableClusterInvokerTest {
         Assertions.assertSame(result, ret);
     }
 
-    @Test()
+    @Test
     public void testInvokeWithException() {
 
         // remove invokers for test exception

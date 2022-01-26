@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.support;
 
-import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionInjector;
@@ -32,6 +31,8 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+
+import com.alibaba.fastjson.JSON;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;

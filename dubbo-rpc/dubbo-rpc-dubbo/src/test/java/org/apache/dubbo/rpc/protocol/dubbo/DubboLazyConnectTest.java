@@ -66,7 +66,7 @@ public class DubboLazyConnectTest {
 
     @Test
     public void testSticky3() {
-        Assertions.assertThrows(RpcException.class, () -> {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
             int port = NetUtils.getAvailablePort();
             URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?" + LAZY_CONNECT_KEY + "=true");
             IDemoService service = ProtocolUtils.refer(IDemoService.class, url);

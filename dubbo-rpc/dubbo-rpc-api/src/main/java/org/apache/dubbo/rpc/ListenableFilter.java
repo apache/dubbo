@@ -23,9 +23,10 @@ import java.util.concurrent.ConcurrentMap;
  * It's recommended to implement Filter.Listener directly for callback registration, check the default implementation,
  * see {@link org.apache.dubbo.rpc.filter.ExceptionFilter}, for example.
  * <p>
- * If you do not want to share Listener instance between RPC calls. You can use ListenableFilter
+ * If you do not want to share Listener instance between RPC calls. ListenableFilter can be used
  * to keep a 'one Listener each RPC call' model.
  */
+@Deprecated
 public abstract class ListenableFilter implements Filter {
 
     protected Listener listener = null;

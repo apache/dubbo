@@ -33,9 +33,8 @@ public interface QueuedCommand {
 
     abstract class AbstractQueuedCommand implements QueuedCommand {
 
-        private ChannelPromise promise;
-
         protected boolean flush = false;
+        private ChannelPromise promise;
 
         @Override
         public ChannelPromise promise() {
@@ -53,13 +52,19 @@ public interface QueuedCommand {
 
         @Override
         public void run(Channel channel) {
-            channel.write(this, promise);
+            if (channel.isActive()) {
+                channel.write(this, promise);
+            } else {
+                promise.trySuccess();
+            }
         }
 
         public final void send(ChannelHandlerContext ctx, ChannelPromise promise) {
-            doSend(ctx, promise);
-            if (flush) {
-                ctx.flush();
+            if (ctx.channel().isActive()) {
+                doSend(ctx, promise);
+                if (flush) {
+                    ctx.flush();
+                }
             }
         }
 

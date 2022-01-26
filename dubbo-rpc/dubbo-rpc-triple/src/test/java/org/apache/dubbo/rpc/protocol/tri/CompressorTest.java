@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -36,7 +37,7 @@ class CompressorTest {
         TEST_STR = builder.toString();
     }
 
-    @ValueSource(strings = {"gzip", "identity"})
+    @ValueSource(strings = {"gzip"})
     @ParameterizedTest
     void compression(String compressorName) {
         System.out.println("current compressor is " + compressorName);

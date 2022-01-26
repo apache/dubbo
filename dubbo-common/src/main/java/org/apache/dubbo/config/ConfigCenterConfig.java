@@ -70,7 +70,7 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String password;
 
     /**
-     * The default value is 3000L;
+     * The default value is 30000L;
      */
     private Long timeout;
 
@@ -130,11 +130,8 @@ public class ConfigCenterConfig extends AbstractConfig {
             group = CommonConstants.DUBBO;
         }
         if (timeout == null) {
-            timeout = 3000L;
+            timeout = 30000L;
         }
-//        if (highestPriority == null) {
-//            highestPriority = true;
-//        }
         if (check == null) {
             check = true;
         }
@@ -149,7 +146,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         if (StringUtils.isEmpty(address)) {
             address = ANYHOST_VALUE;
         }
-        map.put(PATH_KEY, ConfigCenterConfig.class.getSimpleName());
+        map.put(PATH_KEY, ConfigCenterConfig.class.getName());
         // use 'zookeeper' as the default config center.
         if (StringUtils.isEmpty(map.get(PROTOCOL_KEY))) {
             map.put(PROTOCOL_KEY, ZOOKEEPER_PROTOCOL);
@@ -159,6 +156,10 @@ public class ConfigCenterConfig extends AbstractConfig {
 
     public boolean checkOrUpdateInitialized(boolean update) {
         return initialized.compareAndSet(false, update);
+    }
+
+    public void setInitialized(boolean val) {
+        initialized.set(val);
     }
 
     public Map<String, String> getExternalConfiguration() {

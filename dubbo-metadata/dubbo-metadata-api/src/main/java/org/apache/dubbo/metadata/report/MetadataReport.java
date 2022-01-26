@@ -45,6 +45,9 @@ public interface MetadataReport {
     default void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
     }
 
+    default void unPublishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
+    }
+
     default MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         return null;
     }
@@ -76,6 +79,10 @@ public interface MetadataReport {
 
     default boolean registerServiceAppMapping(String serviceKey, String application, URL url) {
         return false;
+    }
+
+    default void removeServiceAppMappingListener(String serviceKey, MappingListener listener) {
+
     }
 
     /**

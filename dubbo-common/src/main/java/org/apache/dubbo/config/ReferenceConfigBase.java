@@ -217,7 +217,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             return GenericService.class;
         }
         try {
-            if (interfaceName != null && interfaceName.length() > 0) {
+            if (StringUtils.isNotEmpty(interfaceName)) {
                 return Class.forName(interfaceName, true, classLoader);
             }
         } catch (ClassNotFoundException t) {
@@ -234,21 +234,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         }
     }
 
-    @Override
-    public String getInterface() {
-        return interfaceName;
-    }
-
-    @Override
-    public void setInterface(String interfaceName) {
-        this.interfaceName = interfaceName;
-    }
-
     public void setInterface(Class<?> interfaceClass) {
         if (interfaceClass != null && !interfaceClass.isInterface()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
+        this.interfaceClass = interfaceClass;
         if (getInterfaceClassLoader() == null) {
             setInterfaceClassLoader(interfaceClass == null ? null : interfaceClass.getClassLoader());
         }

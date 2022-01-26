@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -27,10 +28,10 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Constants;
+import org.apache.dubbo.rpc.cluster.router.RouterSnapshotNode;
 import org.apache.dubbo.rpc.cluster.router.condition.config.AppStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
-import org.apache.dubbo.rpc.cluster.router.state.StateRouterResult;
 
 import java.text.ParseException;
 import java.util.HashMap;
@@ -46,7 +47,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ADDRESS_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.PRIORITY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
 
@@ -81,7 +81,6 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
     public ConditionStateRouter(URL url) {
         super(url);
         this.setUrl(url);
-        this.setPriority(url.getParameter(PRIORITY_KEY, 0));
         this.setForce(url.getParameter(FORCE_KEY, false));
         this.enabled = url.getParameter(ENABLED_KEY, true);
         if (enabled) {
@@ -179,44 +178,59 @@ public class ConditionStateRouter<T> extends AbstractStateRouter<T> {
     }
 
     @Override
-    public StateRouterResult<Invoker<T>> route(BitList<Invoker<T>> invokers, URL url,
-                                                   Invocation invocation, boolean needToPrintMessage) throws RpcException {
-
+    protected BitList<Invoker<T>> doRoute(BitList<Invoker<T>> invokers, URL url, Invocation invocation,
+                                          boolean needToPrintMessage, Holder<RouterSnapshotNode<T>> nodeHolder,
+                                          Holder<String> messageHolder) throws RpcException {
         if (!enabled) {
-            return new StateRouterResult<>(invokers,
-                needToPrintMessage ? "Directly return. Reason: ConditionRouter disabled." : null);
+            if (needToPrintMessage) {
+                messageHolder.set("Directly return. Reason: ConditionRouter disabled.");
+            }
+            return invokers;
         }
 
         if (CollectionUtils.isEmpty(invokers)) {
-            return new StateRouterResult<>(invokers,
-                needToPrintMessage ? "Directly return. Reason: Invokers from previous router is empty." : null);
+            if (needToPrintMessage) {
+                messageHolder.set("Directly return. Reason: Invokers from previous router is empty.");
+            }
+            return invokers;
         }
         try {
             if (!matchWhen(url, invocation)) {
-                return new StateRouterResult<>(invokers,
-                    needToPrintMessage ? "Directly return. Reason: WhenCondition not match." : null);
+                if (needToPrintMessage) {
+                    messageHolder.set("Directly return. Reason: WhenCondition not match.");
+                }
+                return invokers;
             }
             if (thenCondition == null) {
                 logger.warn("The current consumer in the service blacklist. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey());
-                return new StateRouterResult<>(BitList.emptyList(),
-                    needToPrintMessage ? "Empty return. Reason: ThenCondition is empty." : null);
+                if (needToPrintMessage) {
+                    messageHolder.set("Empty return. Reason: ThenCondition is empty.");
+                }
+                return BitList.emptyList();
             }
             BitList<Invoker<T>> result = invokers.clone();
             result.removeIf(invoker -> !matchThen(invoker.getUrl(), url));
 
             if (!result.isEmpty()) {
-                return new StateRouterResult<>(result,
-                    needToPrintMessage ? "Match return." : null);
+                if (needToPrintMessage) {
+                    messageHolder.set("Match return.");
+                }
+                return result;
             } else if (this.isForce()) {
                 logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
-                return new StateRouterResult<>(result,
-                    needToPrintMessage ? "Empty return. Reason: Empty result from condition and condition is force." : null);
+
+                if (needToPrintMessage) {
+                    messageHolder.set("Empty return. Reason: Empty result from condition and condition is force.");
+                }
+                return result;
             }
         } catch (Throwable t) {
             logger.error("Failed to execute condition router rule: " + getUrl() + ", invokers: " + invokers + ", cause: " + t.getMessage(), t);
         }
-        return new StateRouterResult<>(invokers,
-            needToPrintMessage ? "Directly return. Reason: Error occurred ( or result is empty )." : null);
+        if (needToPrintMessage) {
+            messageHolder.set("Directly return. Reason: Error occurred ( or result is empty ).");
+        }
+        return invokers;
     }
 
     @Override

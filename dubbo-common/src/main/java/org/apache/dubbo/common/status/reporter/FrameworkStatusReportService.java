@@ -64,8 +64,9 @@ public class FrameworkStatusReportService implements ScopeModelAware {
         // TODO, report asynchronously
         try {
             if (CollectionUtils.isNotEmpty(reporters)) {
-                FrameworkStatusReporter reporter = reporters.iterator().next();
-                reporter.report(type, obj);
+                for (FrameworkStatusReporter reporter : reporters) {
+                    reporter.report(type, obj);
+                }
             }
         } catch (Exception e) {
             logger.info("Report " + type + " status failed because of " + e.getMessage());

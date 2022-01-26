@@ -92,12 +92,12 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
 
     @Override
     public void initialize() throws IllegalStateException {
-        if (initialized.get()) {
+        if (initialized) {
             return;
         }
         // Ensure that the initialization is completed when concurrent calls
         synchronized (this) {
-            if (initialized.get()) {
+            if (initialized) {
                 return;
             }
             loadConfigs();
@@ -114,7 +114,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 background = isExportBackground() || isReferBackground();
             }
 
-            initialized.set(true);
+            initialized = true;
             if (logger.isInfoEnabled()) {
                 logger.info(getIdentifier() + " has been initialized!");
             }
@@ -141,11 +141,11 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
             // export services
             exportServices();
 
-            // prepare application instance
-            // exclude internal module to avoid wait itself
-            if (moduleModel != moduleModel.getApplicationModel().getInternalModule()) {
-                applicationDeployer.prepareApplicationInstance();
-            }
+        // prepare application instance
+        // exclude internal module to avoid wait itself
+        if (moduleModel != moduleModel.getApplicationModel().getInternalModule()) {
+            applicationDeployer.prepareInternalModule();
+        }
 
             // refer services
             referServices();
@@ -168,7 +168,7 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                 });
             }
         } catch (Throwable e) {
-            onModuleFailed(getIdentifier() + " start failed: " + e.toString(), e);
+            onModuleFailed(getIdentifier() + " start failed: " + e, e);
             throw e;
         }
         return startFuture;
@@ -385,8 +385,9 @@ public class DefaultModuleDeployer extends AbstractDeployer<ModuleModel> impleme
                     }
                 }
             } catch (Throwable t) {
-                logger.error(getIdentifier() + " refer catch error", t);
+                logger.error(getIdentifier() + " refer catch error.");
                 referenceCache.destroy(rc);
+                throw t;
             }
         });
     }

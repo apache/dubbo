@@ -19,6 +19,15 @@ package org.apache.dubbo.qos.command.util;
 import org.apache.dubbo.qos.command.GreetingCommand;
 import org.apache.dubbo.qos.command.impl.ChangeTelnet;
 import org.apache.dubbo.qos.command.impl.CountTelnet;
+import org.apache.dubbo.qos.command.impl.DisableDetailProfiler;
+import org.apache.dubbo.qos.command.impl.DisableRouterSnapshot;
+import org.apache.dubbo.qos.command.impl.DisableSimpleProfiler;
+import org.apache.dubbo.qos.command.impl.EnableDetailProfiler;
+import org.apache.dubbo.qos.command.impl.EnableRouterSnapshot;
+import org.apache.dubbo.qos.command.impl.EnableSimpleProfiler;
+import org.apache.dubbo.qos.command.impl.GetEnabledRouterSnapshot;
+import org.apache.dubbo.qos.command.impl.GetRecentRouterSnapshot;
+import org.apache.dubbo.qos.command.impl.GetRouterSnapshot;
 import org.apache.dubbo.qos.command.impl.Help;
 import org.apache.dubbo.qos.command.impl.InvokeTelnet;
 import org.apache.dubbo.qos.command.impl.Live;
@@ -35,10 +44,12 @@ import org.apache.dubbo.qos.command.impl.PwdTelnet;
 import org.apache.dubbo.qos.command.impl.Quit;
 import org.apache.dubbo.qos.command.impl.Ready;
 import org.apache.dubbo.qos.command.impl.SelectTelnet;
+import org.apache.dubbo.qos.command.impl.SetProfilerWarnPercent;
 import org.apache.dubbo.qos.command.impl.ShutdownTelnet;
 import org.apache.dubbo.qos.command.impl.Startup;
 import org.apache.dubbo.qos.command.impl.Version;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;
@@ -88,6 +99,16 @@ public class CommandHelperTest {
         expectedClasses.add(PortTelnet.class);
         expectedClasses.add(PwdTelnet.class);
         expectedClasses.add(ShutdownTelnet.class);
+        expectedClasses.add(EnableDetailProfiler.class);
+        expectedClasses.add(DisableDetailProfiler.class);
+        expectedClasses.add(EnableSimpleProfiler.class);
+        expectedClasses.add(DisableSimpleProfiler.class);
+        expectedClasses.add(SetProfilerWarnPercent.class);
+        expectedClasses.add(GetRouterSnapshot.class);
+        expectedClasses.add(GetEnabledRouterSnapshot.class);
+        expectedClasses.add(EnableRouterSnapshot.class);
+        expectedClasses.add(DisableRouterSnapshot.class);
+        expectedClasses.add(GetRecentRouterSnapshot.class);
         assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 

@@ -48,14 +48,14 @@ public class DoubleMatch {
     }
 
 
-    public static boolean isMatch(DoubleMatch doubleMatch, Double input) {
-        if (doubleMatch.getExact() != null && doubleMatch.getMod() == null) {
-            return input.equals(doubleMatch.getExact());
-        } else if (doubleMatch.getRange() != null) {
-            return DoubleRangeMatch.isMatch(doubleMatch.getRange(), input);
-        } else if (doubleMatch.getExact() != null && doubleMatch.getMod() != null) {
-            Double result = input % doubleMatch.getMod();
-            return result.equals(doubleMatch.getExact());
+    public boolean isMatch(Double input) {
+        if (exact != null && mod == null) {
+            return input.equals(exact);
+        } else if (range != null) {
+            return range.isMatch(input);
+        } else if (exact != null) {
+            Double result = input % mod;
+            return result.equals(exact);
         }
 
         return false;

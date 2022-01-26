@@ -16,17 +16,16 @@
  */
 package org.apache.dubbo.config.integration.multiple.servicediscoveryregistry;
 
+import org.apache.dubbo.config.metadata.MetadataServiceDelegation;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 
 /**
  * The instance to wrap {@link org.apache.dubbo.registry.client.ServiceDiscoveryRegistry}
- * and {@link org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService}
  */
 public class ServiceDiscoveryRegistryInfoWrapper {
 
     private ServiceDiscoveryRegistry serviceDiscoveryRegistry;
-    private InMemoryWritableMetadataService inMemoryWritableMetadataService;
+    private MetadataServiceDelegation inMemoryWritableMetadataService;
     private boolean registered;
     private boolean subscribed;
     private String host;
@@ -38,14 +37,6 @@ public class ServiceDiscoveryRegistryInfoWrapper {
 
     public void setServiceDiscoveryRegistry(ServiceDiscoveryRegistry serviceDiscoveryRegistry) {
         this.serviceDiscoveryRegistry = serviceDiscoveryRegistry;
-    }
-
-    public InMemoryWritableMetadataService getInMemoryWritableMetadataService() {
-        return inMemoryWritableMetadataService;
-    }
-
-    public void setInMemoryWritableMetadataService(InMemoryWritableMetadataService inMemoryWritableMetadataService) {
-        this.inMemoryWritableMetadataService = inMemoryWritableMetadataService;
     }
 
     public boolean isRegistered() {

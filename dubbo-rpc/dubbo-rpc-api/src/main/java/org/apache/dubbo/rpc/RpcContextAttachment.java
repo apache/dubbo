@@ -24,8 +24,47 @@ import java.util.Map;
 
 public class RpcContextAttachment extends RpcContext{
     protected volatile Map<String, Object> attachments = new HashMap<>();
+    // only useful on provider side.
+    protected AsyncContext asyncContext;
 
     protected RpcContextAttachment() {
+    }
+
+    /**
+     * @return
+     * @throws IllegalStateException
+     */
+    @SuppressWarnings("unchecked")
+    public static AsyncContext startAsync() throws IllegalStateException {
+        RpcContextAttachment currentContext = getServerAttachment();
+        if (currentContext.asyncContext == null) {
+            currentContext.asyncContext = new AsyncContextImpl();
+        }
+        currentContext.asyncContext.start();
+        return currentContext.asyncContext;
+    }
+
+    @Override
+    protected void setAsyncContext(AsyncContext asyncContext) {
+        this.asyncContext = asyncContext;
+    }
+
+    @Override
+    public boolean isAsyncStarted() {
+        if (this.asyncContext == null) {
+            return false;
+        }
+        return asyncContext.isAsyncStarted();
+    }
+
+    @Override
+    public boolean stopAsync() {
+        return asyncContext.stop();
+    }
+
+    @Override
+    public AsyncContext getAsyncContext() {
+        return asyncContext;
     }
 
     /**
@@ -201,4 +240,31 @@ public class RpcContextAttachment extends RpcContext{
         return getAttachment(key);
     }
 
+    /**
+     * Also see {@link RpcServiceContext#copyOf(boolean)}
+     *
+     * @return a copy of RpcContextAttachment with deep copied attachments
+     */
+    public RpcContextAttachment copyOf(boolean needCopy) {
+        if (!isValid()) {
+            return null;
+        }
+
+        if (needCopy) {
+            RpcContextAttachment copy = new RpcContextAttachment();
+            if (CollectionUtils.isNotEmptyMap(attachments)) {
+                copy.attachments.putAll(this.attachments);
+            }
+            if (asyncContext != null) {
+                copy.asyncContext = this.asyncContext;
+            }
+            return copy;
+        } else {
+            return this;
+        }
+    }
+
+    protected boolean isValid() {
+        return CollectionUtils.isNotEmptyMap(attachments);
+    }
 }

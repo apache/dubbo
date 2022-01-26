@@ -42,16 +42,21 @@ import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LIVENESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_SERVICE_PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.READINESS_PROBE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STARTUP_PROBE;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST_COMPATIBLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT_COMPATIBLE;
+import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
@@ -166,10 +171,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     private Boolean enableFileCache;
 
-    private Boolean publishInterface;
-
-    private Boolean publishInstance;
-
     /**
      * The preferred protocol(name) of this application
      * convenient for places where it's hard to determine which is the preferred protocol
@@ -194,6 +195,10 @@ public class ApplicationConfig extends AbstractConfig {
     private String readinessProbe;
 
     private String startupProbe;
+
+    private String registerMode;
+
+    private Boolean enableEmptyProtection;
 
     public ApplicationConfig() {
     }
@@ -398,7 +403,7 @@ public class ApplicationConfig extends AbstractConfig {
      *
      * @return
      */
-    @Parameter(key = "qos-enable", excluded = true, attribute = false)
+    @Parameter(key = QOS_ENABLE_COMPATIBLE, excluded = true, attribute = false)
     public Boolean getQosEnableCompatible() {
         return getQosEnable();
     }
@@ -407,7 +412,7 @@ public class ApplicationConfig extends AbstractConfig {
         setQosEnable(qosEnable);
     }
 
-    @Parameter(key = "qos-host", excluded = true, attribute = false)
+    @Parameter(key = QOS_HOST_COMPATIBLE, excluded = true, attribute = false)
     public String getQosHostCompatible() {
         return getQosHost();
     }
@@ -416,7 +421,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.setQosHost(qosHost);
     }
 
-    @Parameter(key = "qos-port", excluded = true, attribute = false)
+    @Parameter(key = QOS_PORT_COMPATIBLE, excluded = true, attribute = false)
     public Integer getQosPortCompatible() {
         return getQosPort();
     }
@@ -425,7 +430,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.setQosPort(qosPort);
     }
 
-    @Parameter(key = "qos-accept-foreign-ip", excluded = true, attribute = false)
+    @Parameter(key = ACCEPT_FOREIGN_IP_COMPATIBLE, excluded = true, attribute = false)
     public Boolean getQosAcceptForeignIpCompatible() {
         return this.getQosAcceptForeignIp();
     }
@@ -496,22 +501,22 @@ public class ApplicationConfig extends AbstractConfig {
         this.enableFileCache = enableFileCache;
     }
 
-    @Parameter(key = REGISTRY_PUBLISH_INTERFACE_KEY)
-    public Boolean getPublishInterface() {
-        return publishInterface;
+    @Parameter(key = REGISTER_MODE_KEY)
+    public String getRegisterMode() {
+        return registerMode;
     }
 
-    public void setPublishInterface(Boolean publishInterface) {
-        this.publishInterface = publishInterface;
+    public void setRegisterMode(String registerMode) {
+        this.registerMode = registerMode;
     }
 
-    @Parameter(key = REGISTRY_PUBLISH_INSTANCE_KEY)
-    public Boolean getPublishInstance() {
-        return publishInstance;
+    @Parameter(key = ENABLE_EMPTY_PROTECTION_KEY)
+    public Boolean getEnableEmptyProtection() {
+        return enableEmptyProtection;
     }
 
-    public void setPublishInstance(Boolean publishInstance) {
-        this.publishInstance = publishInstance;
+    public void setEnableEmptyProtection(Boolean enableEmptyProtection) {
+        this.enableEmptyProtection = enableEmptyProtection;
     }
 
     @Parameter(excluded = true, key = APPLICATION_PROTOCOL_KEY)
@@ -532,7 +537,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.metadataServicePort = metadataServicePort;
     }
 
-    @Parameter(key = METADATA_SERVICE_PORT_KEY)
+    @Parameter(key = METADATA_SERVICE_PROTOCOL_KEY)
     public String getMetadataServiceProtocol() {
         return metadataServiceProtocol;
     }
