@@ -32,6 +32,16 @@ public enum ConfigMode {
     OVERRIDE,
 
     /**
+     * Override mode: accept last config, override previous config
+     */
+    OVERRIDE_ALL,
+
+    /**
+     * Override mode: accept last config, override previous config
+     */
+    OVERRIDE_IF_ABSENT,
+
+    /**
      * Ignore mode: accept first config, ignore later configs
      */
     IGNORE
