@@ -55,7 +55,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 
 
 public class ClientStream extends AbstractStream implements Stream {
@@ -66,11 +65,11 @@ public class ClientStream extends AbstractStream implements Stream {
     public final ClientStreamListener listener;
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
+    private Http2Headers trailers;
     public ClientStream(URL url,
-                        Executor executor,
                         Channel parent,
                         ClientStreamListener listener) {
-        super(url, executor);
+        super(url);
         this.writeQueue = createWriteQueue(parent);
         this.listener = listener;
     }
@@ -118,10 +117,6 @@ public class ClientStream extends AbstractStream implements Stream {
         }
     }
 
-    @Override
-    public URL url() {
-        return url;
-    }
 
     @Override
     public void writeMessage(byte[] message) {
@@ -261,7 +256,7 @@ public class ClientStream extends AbstractStream implements Stream {
             if (null != messageEncoding) {
                 String compressorStr = messageEncoding.toString();
                 if (!Identity.IDENTITY.getMessageEncoding().equals(compressorStr)) {
-                    DeCompressor compressor = DeCompressor.getCompressor(url().getOrDefaultFrameworkModel(), compressorStr);
+                    DeCompressor compressor = DeCompressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
                     if (null == compressor) {
                         throw GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
                             .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
@@ -271,7 +266,16 @@ public class ClientStream extends AbstractStream implements Stream {
                     }
                 }
             }
-            TriDecoder.Listener listener = ClientStream.this.listener::onMessage;
+            TriDecoder.Listener listener = new TriDecoder.Listener() {
+                @Override
+                public void onRawMessage(byte[] data) {
+                    ClientStream.this.listener.onMessage(data);
+                }
+
+                public void close() {
+                    finishProcess(statusFromTrailers(trailers),trailers);
+                }
+            };
             decoder = new TriDecoder(decompressor, listener);
             decoder.request(Integer.MAX_VALUE);
         }
@@ -284,7 +288,9 @@ public class ClientStream extends AbstractStream implements Stream {
                 transportError = transportError.appendDescription("trailers: " + trailers);
             } else {
                 GrpcStatus status = statusFromTrailers(trailers);
-                finishProcess(status, trailers);
+                if(decoder==null) {
+                    finishProcess(status, trailers);
+                }
             }
         }
 

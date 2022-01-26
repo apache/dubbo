@@ -20,10 +20,10 @@ package org.apache.dubbo.rpc.protocol.tri.observer;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 
-public class CallToObserverAdapter implements StreamObserver<Object> {
+public class ClientCallToObserverAdapter implements StreamObserver<Object> {
     private final ClientCall call;
 
-    public CallToObserverAdapter(ClientCall call) {
+    public ClientCallToObserverAdapter(ClientCall call) {
         this.call = call;
     }
 

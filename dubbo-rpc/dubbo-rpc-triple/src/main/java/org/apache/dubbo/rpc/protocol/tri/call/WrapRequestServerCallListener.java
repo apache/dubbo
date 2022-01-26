@@ -17,29 +17,37 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.rpc.protocol.tri.pack.WrapRequestUnpack;
+import org.apache.dubbo.triple.TripleWrapper;
 
-import java.util.Map;
+public class WrapRequestServerCallListener   implements ServerCall.Listener{
+    private final ServerCall.Listener delegate;
+    private final WrapRequestUnpack unpack;
 
-public class ObserverToCallListenerAdapter implements ClientCall.Listener {
-    private final StreamObserver<Object> delegate;
-
-    public ObserverToCallListenerAdapter(StreamObserver<Object> delegate) {
-        this.delegate = delegate;
+    public WrapRequestServerCallListener(ServerCall.Listener delegate, GenericUnpack unpack) {
+        this.delegate=delegate;
+        this.unpack=new WrapRequestUnpack(unpack);
     }
 
     @Override
     public void onMessage(Object message) {
-        delegate.onNext(message);
+        final Object args= this.unpack.unpack((TripleWrapper.TripleRequestWrapper) message);
+        delegate.onMessage(args);
     }
 
     @Override
-    public void onClose(GrpcStatus status, Map<String, Object> trailers) {
-        if (status.isOk()) {
-            delegate.onCompleted();
-        } else {
-            delegate.onError(status.asException());
-        }
+    public void onHalfClose() {
+        delegate.onHalfClose();
+    }
+
+    @Override
+    public void onCancel() {
+        delegate.onCancel();
+    }
+
+    @Override
+    public void onComplete() {
+        delegate.onComplete();
     }
 }

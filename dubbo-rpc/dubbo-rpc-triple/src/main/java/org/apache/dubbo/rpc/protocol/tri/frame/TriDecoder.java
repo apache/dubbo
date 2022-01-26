@@ -77,7 +77,7 @@ public class TriDecoder implements Deframer {
 
     @Override
     public void close() {
-
+        listener.close();
     }
 
 
@@ -189,6 +189,8 @@ public class TriDecoder implements Deframer {
     public interface Listener {
 
         void onRawMessage(byte[] data);
+
+        void close();
 
     }
 

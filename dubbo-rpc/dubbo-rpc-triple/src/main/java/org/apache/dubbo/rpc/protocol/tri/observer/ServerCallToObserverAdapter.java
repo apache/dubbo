@@ -15,19 +15,35 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.stream;
+package org.apache.dubbo.rpc.protocol.tri.observer;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
 
-import java.util.Map;
+public class ServerCallToObserverAdapter implements StreamObserver<Object> {
+    private final ServerCall call;
+    private boolean headerSent;
 
-public interface ClientStreamListener extends StreamListener{
+    public ServerCallToObserverAdapter(ServerCall call) {
+        this.call = call;
+    }
 
-    /**
-     * Indicate the stream is closed . Will be called exactly once
-     *
-     * @param grpcStatus
-     * @param attachments
-     */
-    void complete(GrpcStatus grpcStatus, Map<String, Object> attachments);
+    @Override
+    public void onNext(Object data) {
+        if (headerSent) {
+            call.sendHeader();
+        }
+        call.writeMessage(data);
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+        call.close(GrpcStatus.getStatus(throwable), null);
+    }
+
+    @Override
+    public void onCompleted() {
+        call.close(GrpcStatus.fromCode(GrpcStatus.Code.OK), null);
+    }
 }

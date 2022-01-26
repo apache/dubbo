@@ -17,30 +17,29 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapResponseUnpack;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
-import org.apache.dubbo.triple.TripleWrapper;
 
-public class WrapUnaryResponseCallListener extends UnaryCallListener {
-    private final WrapResponseUnpack responseUnpack;
+import java.util.Map;
 
-    public WrapUnaryResponseCallListener(long requestId, Connection connection, GenericUnpack genericUnpack) {
-        super(requestId, connection);
-        this.responseUnpack = new WrapResponseUnpack(genericUnpack);
+public class ObserverToClientCallListenerAdapter implements ClientCall.Listener {
+    private final StreamObserver<Object> delegate;
+
+    public ObserverToClientCallListenerAdapter(StreamObserver<Object> delegate) {
+        this.delegate = delegate;
     }
 
     @Override
     public void onMessage(Object message) {
-        try {
-            final Object unpack = responseUnpack.unpack((TripleWrapper.TripleResponseWrapper) message);
-            super.onMessage(unpack);
-        } catch (Throwable t) {
-            final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withDescription("Deserialize response message failed")
-                .withCause(t);
-            onClose(status, null);
+        delegate.onNext(message);
+    }
+
+    @Override
+    public void onClose(GrpcStatus status, Map<String, Object> trailers) {
+        if (status.isOk()) {
+            delegate.onCompleted();
+        } else {
+            delegate.onError(status.asException());
         }
     }
 }

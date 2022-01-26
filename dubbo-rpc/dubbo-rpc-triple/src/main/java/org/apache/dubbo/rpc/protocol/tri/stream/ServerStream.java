@@ -22,133 +22,80 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.HeaderFilter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
-import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.PathResolver;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.WriteQueue;
+import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
 import org.apache.dubbo.rpc.protocol.tri.command.DataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
+import org.apache.dubbo.rpc.protocol.tri.command.TextDataQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
-import org.apache.dubbo.rpc.protocol.tri.pack.Pack;
-import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
-import org.apache.dubbo.triple.TripleWrapper;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 
 import com.google.protobuf.Any;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.getStatus;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-public class ServerStream extends AbstractStream implements Stream {
+public class ServerStream implements Stream {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerStream.class);
-
     public final ServerTransportObserver transportObserver = new ServerTransportObserver();
-    private final ProviderModel providerModel;
-    private final List<HeaderFilter> headerFilters;
-    private final String methodName;
-    private final DeCompressor deCompressor;
-    private final Invoker<?> invoker;
-    private final ServiceDescriptor serviceDescriptor;
-    private final PbUnpack<?> unpack;
-    private final MultipleSerialization serialization;
+    private final Channel channel;
+    private final Executor executor;
     private final WriteQueue writeQueue;
-    private TriDecoder decoder;
-    private MethodDescriptor methodDescriptor;
-    private List<MethodDescriptor> methodDescriptors;
+    private final PathResolver pathResolver;
+    private final List<HeaderFilter> filters;
+    private final GenericUnpack genericUnpack;
+    private final FrameworkModel frameworkModel;
     private boolean headerSent;
     private boolean trailersSent;
-    private Pack pack;
+    private ServerStreamListener listener;
     private boolean closed;
+    private TriDecoder decoder;
 
-    public ServerStream(URL url,
-                        WriteQueue writeQueue,
+    public ServerStream(         Channel channel,
+                        FrameworkModel frameworkModel,
                         Executor executor,
-                        ServiceDescriptor serviceDescriptor,
-                        ProviderModel providerModel,
-                        List<HeaderFilter> headerFilters,
-                        String methodName,
-                        MethodDescriptor methodDescriptor,
-                        Invoker<?> invoker,
-                        List<MethodDescriptor> methodDescriptors,
-                        DeCompressor deCompressor,
-                        MultipleSerialization serialization) {
-        super(url, executor);
-        this.writeQueue = writeQueue;
-        this.providerModel = providerModel;
-        this.serviceDescriptor = serviceDescriptor;
-        this.headerFilters = headerFilters;
-        this.invoker = invoker;
-        this.methodName = methodName;
-        this.serialization = serialization;
-        this.deCompressor = deCompressor;
-        this.methodDescriptor = methodDescriptor;
-        this.methodDescriptors = methodDescriptors;
-        if (methodDescriptor == null || methodDescriptor.isNeedWrap()) {
-            unpack = PbUnpack.REQ_PB_UNPACK;
-        } else {
-            unpack = new PbUnpack(methodDescriptor.getParameterClasses()[0]);
-            pack = PbPack.INSTANCE;
-        }
+                        PathResolver pathResolver,
+                        List<HeaderFilter> filters,
+                        GenericUnpack genericUnpack) {
+        this.channel = channel;
+        this.executor = executor;
+        this.pathResolver = pathResolver;
+        this.filters = filters;
+        this.frameworkModel = frameworkModel;
+        this.genericUnpack=genericUnpack;
+        this.writeQueue = new WriteQueue(channel);
     }
 
-
-    protected Long parseTimeoutToNanos(String timeoutVal) {
-        if (StringUtils.isEmpty(timeoutVal) || StringUtils.isContains(timeoutVal, "null")) {
-            return null;
-        }
-        long value = Long.parseLong(timeoutVal.substring(0, timeoutVal.length() - 1));
-        char unit = timeoutVal.charAt(timeoutVal.length() - 1);
-        switch (unit) {
-            case 'n':
-                return value;
-            case 'u':
-                return TimeUnit.MICROSECONDS.toNanos(value);
-            case 'm':
-                return TimeUnit.MILLISECONDS.toNanos(value);
-            case 'S':
-                return TimeUnit.SECONDS.toNanos(value);
-            case 'M':
-                return TimeUnit.MINUTES.toNanos(value);
-            case 'H':
-                return TimeUnit.HOURS.toNanos(value);
-            default:
-                // invalid timeout config
-                return null;
-        }
+    public void writeHeaders(Http2Headers http2Headers, boolean endStream) {
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(http2Headers, endStream), true);
     }
 
+    public void writeData(byte[] data, boolean endStream) {
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(data, endStream), true);
+    }
 
     private String getGrpcMessage(GrpcStatus status) {
         if (StringUtils.isNotEmpty(status.description)) {
@@ -174,23 +121,6 @@ public class ServerStream extends AbstractStream implements Stream {
         }
     }
 
-    void sendMessage(Object message) {
-        final byte[] data;
-        try {
-            data = pack.pack(message);
-        } catch (IOException e) {
-            close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withDescription("Serialize response failed")
-                .withCause(e), null);
-            return;
-        }
-        if (data == null) {
-            close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withDescription("Missing response"), null);
-            return;
-        }
-        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(data, false), true);
-    }
 
     public void close(GrpcStatus status, Http2Headers trailers) {
         if (closed) {
@@ -243,80 +173,154 @@ public class ServerStream extends AbstractStream implements Stream {
 
     }
 
+    /**
+     * Error before create server stream, http plain text will be returned
+     *
+     * @param code
+     * @param status
+     */
+    private void responsePlainTextError(int code, GrpcStatus status) {
+        Http2Headers headers = new DefaultHttp2Headers(true)
+            .status(String.valueOf(code))
+            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
+            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false), false);
+        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true), true);
+    }
+
+    /**
+     * Error in create stream, unsupported config or triple protocol error.
+     *
+     * @param status
+     */
+    private void responseErr(GrpcStatus status) {
+        Http2Headers trailers = new DefaultHttp2Headers()
+            .status(OK.codeAsText())
+            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true), true);
+    }
+
     public class ServerTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
+
+
+        /**
+         * must starts from application/grpc
+         */
+        private boolean supportContentType(String contentType) {
+            if (contentType == null) {
+                return false;
+            }
+            return contentType.startsWith(TripleConstant.APPLICATION_GRPC);
+        }
 
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
-            try {
-                final TriDecoder.Listener listener = data -> {
-                    ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-                    try {
-                        trySetMethodDescriptor(data);
-                        if (closed) {
-                            return;
-                        }
-                        final RpcInvocation inv = buildInvocation(headers);
-                        if (closed) {
-                            return;
-                        }
-                        headerFilters.forEach(f -> f.invoke(invoker, inv));
-                        if (closed) {
-                            return;
-                        }
-                        if (providerModel != null) {
-                            ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
-                        }
+            if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
+                responsePlainTextError(HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
+                    GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription(String.format("Method '%s' is not supported", headers.method())));
+                return;
+            }
 
-                        final Object unpack = ServerStream.this.unpack.unpack(data);
-                        if (unpack instanceof Object[]) {
-                            inv.setArguments((Object[]) unpack);
-                        } else {
-                            inv.setArguments(new Object[]{unpack});
-                        }
-                        if (pack == null) {
-                            pack = PbPack.INSTANCE;
-                        }
-                        invoke(inv);
-                    } catch (IOException e) {
-                        close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription("Server error")
-                            .withCause(e), null);
-                    } finally {
-                        ClassLoadUtil.switchContextLoader(tccl);
+            if (headers.path() == null) {
+                responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
+                    GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
+                return;
+            }
+
+            final String path = headers.path().toString();
+            if (path.charAt(0) != '/') {
+                responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
+                    GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED.code)
+                        .withDescription(String.format("Expected path to start with /: %s", path)));
+                return;
+            }
+
+            final CharSequence contentType = HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));
+            if (contentType == null) {
+                responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
+                    GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code)
+                        .withDescription("Content-Type is missing from the request"));
+                return;
+            }
+
+            final String contentString = contentType.toString();
+            if (!supportContentType(contentString)) {
+                responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
+                    GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code)
+                        .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
+                return;
+            }
+
+            String[] parts = path.split("/");
+            if (parts.length != 3) {
+                responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                    .withDescription("Bad path format:" + path));
+                return;
+            }
+            String serviceName = parts[1];
+            if (serviceName.charAt(0) != '/') {
+                responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                    .withDescription("Service name must start with /" + serviceName));
+                return;
+            }
+            String originalMethodName = parts[2];
+            String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);
+
+            DeCompressor deCompressor = DeCompressor.NONE;
+            CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
+            if (null != messageEncoding) {
+                String compressorStr = messageEncoding.toString();
+                if (!Identity.MESSAGE_ENCODING.equals(compressorStr)) {
+                    DeCompressor compressor = DeCompressor.getCompressor(frameworkModel, compressorStr);
+                    if (null == compressor) {
+                        responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED.code)
+                            .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
+                        return;
+                    }
+                    deCompressor = compressor;
+                }
+            }
+
+            try {
+                final TriDecoder.Listener listener = new TriDecoder.Listener() {
+                    @Override
+                    public void onRawMessage(byte[] data) {
+                        ServerStream.this.listener.onMessage(data);
+                    }
+
+                    @Override
+                    public void close() {
+                        ServerStream.this.listener.complete();
                     }
                 };
-                decoder = new TriDecoder(deCompressor, listener);
+                ServerStream.this.decoder = new TriDecoder(deCompressor, listener);
+                decoder.request(Integer.MAX_VALUE);
             } catch (Throwable t) {
                 close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withCause(t), null);
             }
+
+            ServerCall call = new ServerCall(ServerStream.this, frameworkModel,
+                serviceName,
+                methodName,
+                executor,
+                filters,
+                genericUnpack,
+                pathResolver);
+            ServerStream.this.listener = call.streamListener;
+            listener.onHeaders(headersToMap(headers));
+            if (endStream) {
+                decoder.close();
+            }
         }
 
-        void trySetMethodDescriptor(byte[] data) throws InvalidProtocolBufferException {
-            if (methodDescriptor != null) {
-                return;
-            }
-            final TripleWrapper.TripleRequestWrapper request;
-            request = TripleWrapper.TripleRequestWrapper.parseFrom(data);
-
-            final String[] paramTypes = request.getArgTypesList().toArray(new String[request.getArgsCount()]);
-            // wrapper mode the method can overload so maybe list
-            for (MethodDescriptor descriptor : methodDescriptors) {
-                // params type is array
-                if (Arrays.equals(descriptor.getCompatibleParamSignatures(), paramTypes)) {
-                    methodDescriptor = descriptor;
-                    break;
-                }
-            }
-            if (methodDescriptor == null) {
-                close(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
-                    .withDescription("Method :" + methodName + "[" + Arrays.toString(paramTypes) + "] " +
-                        "not found of service:" + serviceDescriptor.getServiceName()), null);
-            }
-        }
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            decoder.deframe(data);
             if (endStream) {
                 decoder.close();
             }
@@ -325,76 +329,8 @@ public class ServerStream extends AbstractStream implements Stream {
 
         @Override
         public void cancelByRemote(GrpcStatus status) {
+            listener.complete();
             close(status, null);
         }
-
-        /**
-         * Build the RpcInvocation with metadata and execute headerFilter
-         *
-         * @param headers request header
-         * @return RpcInvocation
-         */
-        protected RpcInvocation buildInvocation(Http2Headers headers) {
-            RpcInvocation inv = new RpcInvocation(url().getServiceModel(),
-                methodName, serviceDescriptor.getServiceName(),
-                url().getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
-            inv.setTargetServiceUniqueName(url().getServiceKey());
-            inv.setReturnTypes(methodDescriptor.getReturnTypes());
-
-            final Map<String, Object> attachments = headersToMap(headers);
-            inv.setObjectAttachments(attachments);
-            // handle timeout
-            CharSequence timeout = headers.get(TripleHeaderEnum.TIMEOUT.getHeader());
-            try {
-                if (!Objects.isNull(timeout)) {
-                    final Long timeoutInNanos = parseTimeoutToNanos(timeout.toString());
-                    if (!Objects.isNull(timeoutInNanos)) {
-                        inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
-                    }
-                }
-            } catch (Throwable t) {
-                LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s",
-                    timeout, serviceDescriptor.getServiceName(), methodName));
-            }
-            return inv;
-        }
-
-        public void invoke(RpcInvocation invocation) {
-            final long stInNano = System.nanoTime();
-            final Result result = invoker.invoke(invocation);
-            CompletionStage<Object> future = result.thenApply(Function.identity());
-            future.whenComplete((o, throwable) -> {
-                if (throwable != null) {
-                    LOGGER.error("Invoke error", throwable);
-                    close(getStatus(throwable), null);
-                    return;
-                }
-                AppResponse response = (AppResponse) o;
-                if (response.hasException()) {
-                    close(getStatus(response.getException()), null);
-                    return;
-                }
-                final Object timeoutVal = invocation.getObjectAttachment(TIMEOUT_KEY);
-                final long cost = System.nanoTime() - stInNano;
-                if (timeoutVal != null && cost > ((Long) timeoutVal)) {
-                    LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s timeout=%s",
-                        invocation.getTargetServiceUniqueName(),
-                        invocation.getMethodName(),
-                        cost, timeoutVal));
-                    close(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED), null);
-                } else {
-                    Http2Headers metadata = TripleConstant.createSuccessHttp2Headers();
-                    // todo add encoding
-                    sendHeader(metadata);
-                    sendMessage(response.getValue());
-                    DefaultHttp2Headers trailers = TripleConstant.createSuccessHttp2Trailers();
-                    StreamUtils.convertAttachment(trailers, response.getObjectAttachments());
-                    sendHeader(trailers);
-                }
-            });
-            RpcContext.removeContext();
-        }
     }
-
-
 }

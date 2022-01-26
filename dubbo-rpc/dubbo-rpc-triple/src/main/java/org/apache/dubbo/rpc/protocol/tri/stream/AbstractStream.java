@@ -18,26 +18,19 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.rpc.CancellationContext;
-
-import java.util.concurrent.Executor;
 
 public abstract class AbstractStream implements org.apache.dubbo.rpc.protocol.tri.stream.Stream {
     final URL url;
-    final Executor executor;
     final CancellationContext cancellationContext;
 
-
-
-    protected AbstractStream(URL url, Executor executor) {
+    protected AbstractStream(URL url) {
         this.url = url;
-        this.executor= new SerializingExecutor(executor);
         this.cancellationContext = new CancellationContext();
     }
 
-    @Override
-    public URL url() {
-        return url;
-    }
+//    @Override
+//    public URL url() {
+//        return url;
+//    }
 }

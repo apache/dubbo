@@ -17,8 +17,18 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-public interface StreamListener {
+import java.util.Map;
 
-    void onMessage(byte[] message);
+public interface ServerStreamListener extends StreamListener {
+
+    void onHeaders(Map<String,Object> headers);
+
+    /**
+     * Indicate the stream is closed . Will be called exactly once
+     *
+     * @param grpcStatus
+     * @param attachments
+     */
+    void complete();
 
 }

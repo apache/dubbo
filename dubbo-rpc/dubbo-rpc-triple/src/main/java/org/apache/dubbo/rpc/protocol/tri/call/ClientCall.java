@@ -31,7 +31,7 @@ import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
-import org.apache.dubbo.rpc.protocol.tri.observer.CallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.WrapperRequestObserver;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
@@ -45,7 +45,6 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AsciiString;
 
 import java.io.IOException;
@@ -54,7 +53,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 public class ClientCall {
-    private static final Logger logger = LoggerFactory.getLogger(ClientCall.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientCall.class);
     private final Connection connection;
     private final ExecutorService executor;
     private final DefaultHttp2Headers headers;
@@ -159,7 +158,7 @@ public class ClientCall {
                                                     StreamMethodDescriptor methodDescriptor,
                                                     GenericPack genericPack, List<String> argumentTypes,
                                                     GenericUnpack genericUnpack) {
-        ObserverToCallListenerAdapter listener = new ObserverToCallListenerAdapter(responseObserver);
+        ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver);
         final StreamObserver<Object> requestObserver = call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
         return requestObserver;
     }
@@ -193,38 +192,23 @@ public class ClientCall {
     public static StreamObserver<Object> wrapperCall(ClientCall call, ClientCall.Listener responseListener,
                                                      GenericPack genericPack, List<String> argumentTypes,
                                                      GenericUnpack genericUnpack) {
-        final StreamObserver<Object> requestObserver = WrapperRequestObserver.wrap(new CallToObserverAdapter(call), argumentTypes, genericPack);
+        final StreamObserver<Object> requestObserver = WrapperRequestObserver.wrap(new ClientCallToObserverAdapter(call), argumentTypes, genericPack);
         final Listener wrapResponseListener = WrapResponseCallListener.wrap(responseListener, genericUnpack);
         call.start(wrapResponseListener);
         return requestObserver;
     }
 
     public static StreamObserver<Object> call(ClientCall call, ClientCall.Listener responseListener) {
-        final CallToObserverAdapter requestObserver = new CallToObserverAdapter(call);
+        final ClientCallToObserverAdapter requestObserver = new ClientCallToObserverAdapter(call);
         call.start(responseListener);
         return requestObserver;
-    }
-
-    public static void unaryCall(ClientCall call, Object request, long requestId, Connection connection, GenericUnpack unpack) {
-        UnaryCallListener listener = new WrapUnaryResponseCallListener(requestId, connection, unpack);
-        unaryCall(call, request, listener);
-    }
-
-    public static void unaryCall(ClientCall call, Object request, ClientCall.Listener listener) {
-        startCall(call, listener);
-        try {
-            call.sendMessage(request);
-            call.closeLocal();
-        } catch (Throwable t) {
-            cancelByThrowable(call, t);
-        }
     }
 
     static void cancelByThrowable(ClientCall call, Throwable t) {
         try {
             call.cancel(null, t);
         } catch (Throwable t1) {
-            logger.error("Cancel triple request failed", t1);
+            LOGGER.error("Cancel triple request failed", t1);
         }
         if (t instanceof RuntimeException) {
             throw (RuntimeException) t;
@@ -262,7 +246,6 @@ public class ClientCall {
     public void start(Listener responseListener) {
         this.stream = new ClientStream(
             url,
-            executor,
             connection.getChannel(),
             new ClientStreamListenerImpl(responseListener, unpack));
         stream.startCall(headers);
@@ -338,11 +321,6 @@ public class ClientCall {
 
         void cancelByErr(GrpcStatus status) {
             stream.cancelByLocal(status);
-        }
-
-        @Override
-        public void onHeaders(Http2Headers headers) {
-            // ignored
         }
     }
 }

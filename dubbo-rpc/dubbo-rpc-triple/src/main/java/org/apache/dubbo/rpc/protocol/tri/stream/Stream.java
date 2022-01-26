@@ -18,7 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 
 /**
@@ -29,7 +28,6 @@ import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
  */
 public interface Stream {
 
-    URL url();
 
     void writeMessage(byte[] message);
 }
