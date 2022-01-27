@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
 public class UnaryServerCallListener extends AbstractServerCallListener implements ServerCall.Listener{
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
@@ -34,7 +33,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener implemen
 
     @Override
     protected void onServerResponse(AppResponse response) {
-        call.sendHeader(TripleConstant.createSuccessHttp2Headers());
+        call.sendHeader();
         call.sendMessage(response.getValue());
         call.close(GrpcStatus.fromCode(GrpcStatus.Code.OK), response.getObjectAttachments());
     }

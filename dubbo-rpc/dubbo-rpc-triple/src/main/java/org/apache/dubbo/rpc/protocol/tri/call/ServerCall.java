@@ -110,7 +110,7 @@ public class ServerCall {
     }
 
     public void sendHeader() {
-        serverStream.writeHeaders(TripleConstant.createSuccessHttp2Headers(), false);
+        serverStream.sendHeader(TripleConstant.createSuccessHttp2Headers());
     }
 
     public void writeMessage(Object message) {
@@ -217,11 +217,7 @@ public class ServerCall {
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
-        serverStream.writeHeaders(trailers, true);
-    }
-
-    void sendHeader(Http2Headers headers) {
-
+        serverStream.sendHeaderWithEos(trailers);
     }
 
     void sendMessage(Object message) {
@@ -331,7 +327,7 @@ public class ServerCall {
 
         @Override
         public void complete() {
-
+            listener.onComplete();
         }
 
         @Override

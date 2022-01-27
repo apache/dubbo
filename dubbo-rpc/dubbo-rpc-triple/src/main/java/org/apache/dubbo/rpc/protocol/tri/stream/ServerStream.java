@@ -87,9 +87,6 @@ public class ServerStream implements Stream {
         this.writeQueue = new WriteQueue(channel);
     }
 
-    public void writeHeaders(Http2Headers http2Headers, boolean endStream) {
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(http2Headers, endStream), true);
-    }
 
     public void writeData(byte[] data, boolean endStream) {
         writeQueue.enqueue(DataQueueCommand.createGrpcCommand(data, endStream), true);
@@ -105,7 +102,7 @@ public class ServerStream implements Stream {
         return "unknown";
     }
 
-    void sendHeader(Http2Headers headers) {
+    public void sendHeader(Http2Headers headers) {
         if (headerSent && trailersSent) {
             // todo handle this state
             return;
@@ -119,6 +116,10 @@ public class ServerStream implements Stream {
         }
     }
 
+    public void sendHeaderWithEos(Http2Headers headers) {
+        headerSent = true;
+        sendHeader(headers);
+    }
 
     public void close(GrpcStatus status, Http2Headers trailers) {
         if (closed) {
@@ -168,7 +169,7 @@ public class ServerStream implements Stream {
 
     @Override
     public void writeMessage(byte[] message) {
-
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false), true);
     }
 
     /**
