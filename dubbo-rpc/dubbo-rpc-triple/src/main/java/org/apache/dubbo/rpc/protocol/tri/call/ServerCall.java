@@ -66,7 +66,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 public class ServerCall {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
 
-    public final ServerStreamListener streamListener=new ServerStreamListenerImpl();
+    public final ServerStreamListener streamListener = new ServerStreamListenerImpl();
     private final List<HeaderFilter> headerFilters;
     private final GenericUnpack genericUnpack;
     private final FrameworkModel frameworkModel;
@@ -101,7 +101,7 @@ public class ServerCall {
         this.serviceName = serviceName;
         this.serverStream = serverStream;
         this.headerFilters = headerFilters;
-        this.genericUnpack= genericUnpack;
+        this.genericUnpack = genericUnpack;
         this.pathResolver = pathResolver;
     }
 
@@ -110,7 +110,7 @@ public class ServerCall {
     }
 
     public void sendHeader() {
-        serverStream.writeHeaders(TripleConstant.createSuccessHttp2Headers(),false);
+        serverStream.writeHeaders(TripleConstant.createSuccessHttp2Headers(), false);
     }
 
     public void writeMessage(Object message) {
@@ -124,12 +124,12 @@ public class ServerCall {
     }
 
     public void close(GrpcStatus status, Map<String, Object> trailers) {
-        DefaultHttp2Headers headers=new DefaultHttp2Headers();
-        StreamUtils.convertAttachment(headers,trailers);
-        serverStream.close(status,headers);
+        DefaultHttp2Headers headers = new DefaultHttp2Headers();
+        StreamUtils.convertAttachment(headers, trailers);
+        serverStream.close(status, headers);
     }
 
-    private Invoker<?> getInvoker(Map<String,Object> headers, String serviceName) {
+    private Invoker<?> getInvoker(Map<String, Object> headers, String serviceName) {
         final String version = headers.containsKey(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ? headers.get(
             TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
         final String group = headers.containsKey(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader())
@@ -148,7 +148,7 @@ public class ServerCall {
      * @param headers request header
      * @return RpcInvocation
      */
-    protected RpcInvocation buildInvocation(Map<String,Object> headers) {
+    protected RpcInvocation buildInvocation(Map<String, Object> headers) {
         final URL url = invoker.getUrl();
         RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
             methodName, serviceDescriptor.getServiceName(),
@@ -223,6 +223,7 @@ public class ServerCall {
     void sendHeader(Http2Headers headers) {
 
     }
+
     void sendMessage(Object message) {
         final byte[] data;
         try {
@@ -254,7 +255,7 @@ public class ServerCall {
 
     class ServerStreamListenerImpl implements ServerStreamListener {
 
-        private Map<String,Object> headers;
+        private Map<String, Object> headers;
 
         void trySetMethodDescriptor(byte[] data) throws InvalidProtocolBufferException {
             if (methodDescriptor != null) {
@@ -280,7 +281,7 @@ public class ServerCall {
         }
 
         @Override
-        public void onHeaders(Map<String,Object> headers) {
+        public void onHeaders(Map<String, Object> headers) {
             this.headers = headers;
             invoker = getInvoker(headers, serviceName);
             if (invoker == null) {
@@ -295,7 +296,7 @@ public class ServerCall {
                     .withDescription("Service not found:" + serviceName));
                 return;
             }
-            serviceDescriptor=providerModel.getServiceModel();
+            serviceDescriptor = providerModel.getServiceModel();
 
             if (isGeneric(methodName)) {
                 // There should be one and only one
@@ -335,12 +336,12 @@ public class ServerCall {
 
         @Override
         public void onMessage(byte[] message) {
-            if(closed){
+            if (closed) {
                 return;
             }
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {
-                if(pack==null) {
+                if (listener == null) {
                     trySetMethodDescriptor(message);
                     if (closed) {
                         return;
@@ -349,21 +350,18 @@ public class ServerCall {
                     if (closed) {
                         return;
                     }
-                    headerFilters.forEach(f -> f.invoke(invoker,invocation));
+                    headerFilters.forEach(f -> f.invoke(invoker, invocation));
                     if (closed) {
                         return;
                     }
 
-                    if(methodDescriptor instanceof StreamMethodDescriptor){
+                    if (methodDescriptor instanceof StreamMethodDescriptor) {
                         listener = new StreamServerCallListener(ServerCall.this, invocation, invoker);
-                    }else{
-                        listener=new UnaryServerCallListener(ServerCall.this,invocation,invoker);
+                    } else {
+                        listener = new UnaryServerCallListener(ServerCall.this, invocation, invoker);
                     }
-                    if(methodDescriptor.isNeedWrap()){
-                        listener = new WrapRequestServerCallListener(listener,genericUnpack);
-                    }
-                    if (pack == null) {
-                        pack = PbPack.INSTANCE;
+                    if (methodDescriptor.isNeedWrap()) {
+                        listener = new WrapRequestServerCallListener(listener, genericUnpack);
                     }
                 }
                 if (providerModel != null) {

@@ -253,6 +253,12 @@ public class ServerStream implements Stream {
                 return;
             }
 
+            if (path.charAt(0) != '/') {
+                responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                    .withDescription("Path must start with '/'. Request path: " + path));
+                return;
+            }
+
             String[] parts = path.split("/");
             if (parts.length != 3) {
                 responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
@@ -260,11 +266,6 @@ public class ServerStream implements Stream {
                 return;
             }
             String serviceName = parts[1];
-            if (serviceName.charAt(0) != '/') {
-                responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
-                    .withDescription("Service name must start with /" + serviceName));
-                return;
-            }
             String originalMethodName = parts[2];
             String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);
 
