@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,7 +32,6 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
-import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
 import grpc.health.v1.HealthCheckResponse;
@@ -45,8 +43,6 @@ public class TripleProtocol extends AbstractProtocol {
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver;
     private final TriBuiltinService triBuiltinService;
-    private final Compressor defaultCompressor;
-    private final String acceptEncoding;
     private final ConnectionManager connectionManager;
     private final FrameworkModel frameworkModel;
 
@@ -54,10 +50,6 @@ public class TripleProtocol extends AbstractProtocol {
         this.frameworkModel = frameworkModel;
         this.triBuiltinService = new TriBuiltinService(frameworkModel);
         this.pathResolver = frameworkModel.getExtensionLoader(PathResolver.class).getDefaultExtension();
-        String compressorStr = ConfigurationUtils
-            .getCachedDynamicProperty(frameworkModel, COMPRESSOR_KEY, Identity.MESSAGE_ENCODING);
-        this.defaultCompressor = Compressor.getCompressor(frameworkModel, compressorStr);
-        this.acceptEncoding = Compressor.getAcceptEncoding(frameworkModel);
         this.connectionManager = frameworkModel.getExtensionLoader(ConnectionManager.class).getExtension("multiple");
     }
 
@@ -100,6 +92,12 @@ public class TripleProtocol extends AbstractProtocol {
             .getExtensionLoader(MultipleSerialization.class)
             .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
 
+        // TODO support config
+//        String compressorStr = ConfigurationUtils.getCachedDynamicProperty(frameworkModel, COMPRESSOR_KEY, Identity.MESSAGE_ENCODING);
+//        Compressor defaultCompressor = Compressor.getCompressor(frameworkModel, compressorStr);
+        Compressor defaultCompressor = Compressor.NONE;
+//        String acceptEncoding = Compressor.getAcceptEncoding(frameworkModel);
+        String acceptEncoding = Compressor.NONE.getMessageEncoding();
         final String serializationName = url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION);
         TripleInvoker<T> invoker;
         try {
