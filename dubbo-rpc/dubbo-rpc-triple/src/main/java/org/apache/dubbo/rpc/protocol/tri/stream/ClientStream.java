@@ -59,13 +59,13 @@ import java.util.Map;
 
 public class ClientStream extends AbstractStream implements Stream {
     private static final Logger logger = LoggerFactory.getLogger(ClientStream.class);
-
-    private boolean canceled;
-    private boolean headerReceived;
     public final ClientStreamListener listener;
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
+    private boolean canceled;
+    private boolean headerReceived;
     private Http2Headers trailers;
+
     public ClientStream(URL url,
                         Channel parent,
                         ClientStreamListener listener) {
@@ -96,8 +96,8 @@ public class ClientStream extends AbstractStream implements Stream {
             return;
         }
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
-        this.writeQueue.enqueue(headerCmd, true).addListener(future->{
-            if(!future.isSuccess()){
+        this.writeQueue.enqueue(headerCmd, true).addListener(future -> {
+            if (!future.isSuccess()) {
                 cancelByLocal(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription("Http2 exception")
                     .withCause(future.cause()));
@@ -106,14 +106,14 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     public void cancelByLocal(GrpcStatus status) {
-        if(canceled){
+        if (canceled) {
             return;
         }
-        canceled=true;
-        listener.complete(status,null);
+        canceled = true;
+        listener.complete(status, null);
         if (headerReceived) {
             final CancelQueueCommand cmd = CancelQueueCommand.createCommand(status);
-            this.writeQueue.enqueue(cmd,true);
+            this.writeQueue.enqueue(cmd, true);
         }
     }
 
@@ -163,9 +163,7 @@ public class ClientStream extends AbstractStream implements Stream {
             } else {
                 listener.complete(status, attachments);
             }
-            if (decoder != null) {
-                decoder.close();
-            }
+
         }
 
         Throwable getThrowableFromTrailers(Http2Headers metadata) {
@@ -273,7 +271,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
 
                 public void close() {
-                    finishProcess(statusFromTrailers(trailers),trailers);
+                    finishProcess(statusFromTrailers(trailers), trailers);
                 }
             };
             decoder = new TriDecoder(decompressor, listener);
@@ -287,9 +285,14 @@ public class ClientStream extends AbstractStream implements Stream {
             if (transportError != null) {
                 transportError = transportError.appendDescription("trailers: " + trailers);
             } else {
+                ClientStream.this.trailers = trailers;
                 GrpcStatus status = statusFromTrailers(trailers);
-                if(decoder==null) {
+                if (decoder == null) {
                     finishProcess(status, trailers);
+                }
+                if (decoder != null) {
+                    decoder.close();
+                    decoder = null;
                 }
             }
         }
