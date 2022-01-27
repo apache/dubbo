@@ -94,6 +94,7 @@
         <javassist_version>3.28.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.1.56.Final</netty4_version>
+        <smart_socket_version>1.5.15</smart_socket_version>
         <mina_version>1.1.7</mina_version>
         <grizzly_version>2.4.4</grizzly_version>
         <httpclient_version>4.5.13</httpclient_version>
@@ -197,6 +198,11 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>${netty4_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.smartboot.socket</groupId>
+                <artifactId>aio-core</artifactId>
+                <version>${smart_socket_version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.mina</groupId>
