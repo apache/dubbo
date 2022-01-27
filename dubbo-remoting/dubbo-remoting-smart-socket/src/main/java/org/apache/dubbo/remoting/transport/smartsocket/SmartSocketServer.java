@@ -55,7 +55,9 @@ public class SmartSocketServer extends AbstractServer {
     @Override
     protected void doOpen() throws Throwable {
         int threadNum = getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS);
-        BufferPagePool pagePool = new BufferPagePool(11, 1, true);
+        //设置内存池：8MB*cpuNum
+        pagePool = new BufferPagePool(DEFAULT_BUFFER_SIZE * 1024, threadNum, true);
+
         this.processor = new SmartSocketMessageProcessor(getUrl(), this, getCodec());
         int b = getUrl().getPositiveParameter(BUFFER_KEY, DEFAULT_BUFFER_SIZE);
         int bufferSize = b >= MIN_BUFFER_SIZE && b <= MAX_BUFFER_SIZE ? b : DEFAULT_BUFFER_SIZE;
