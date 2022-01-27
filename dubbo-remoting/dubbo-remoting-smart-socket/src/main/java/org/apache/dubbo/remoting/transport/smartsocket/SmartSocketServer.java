@@ -1,6 +1,9 @@
 package org.apache.dubbo.remoting.transport.smartsocket;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -26,6 +29,7 @@ import static org.apache.dubbo.remoting.Constants.*;
  * @version V1.0 , 2022/1/25
  */
 public class SmartSocketServer extends AbstractServer {
+    private static final Logger logger = LoggerFactory.getLogger(SmartSocketServer.class);
     private AioQuickServer server;
     private SmartSocketMessageProcessor processor;
     private boolean bound;
@@ -73,6 +77,20 @@ public class SmartSocketServer extends AbstractServer {
     @Override
     protected void doClose() throws Throwable {
         bound = false;
+        try {
+            Collection<Channel> channels = getChannels();
+            if (CollectionUtils.isNotEmpty(channels)) {
+                for (Channel channel : channels) {
+                    try {
+                        channel.close();
+                    } catch (Throwable e) {
+                        logger.warn(e.getMessage(), e);
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            logger.warn(e.getMessage(), e);
+        }
         pagePool.release();
         server.shutdown();
     }

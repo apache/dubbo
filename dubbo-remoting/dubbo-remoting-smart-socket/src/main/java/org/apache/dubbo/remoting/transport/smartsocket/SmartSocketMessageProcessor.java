@@ -45,9 +45,9 @@ public class SmartSocketMessageProcessor implements MessageProcessor<Object> {
 
     @Override
     public void stateEvent(AioSession session, StateMachineEnum stateMachineEnum, Throwable throwable) {
-        if(throwable!=null){
-            throwable.printStackTrace();
-        }
+//        if(throwable!=null){
+//            throwable.printStackTrace();
+//        }
         switch (stateMachineEnum) {
             case NEW_SESSION: {
                 SmartSocketChannel channel = new SmartSocketChannel(session, url, handler, codec);

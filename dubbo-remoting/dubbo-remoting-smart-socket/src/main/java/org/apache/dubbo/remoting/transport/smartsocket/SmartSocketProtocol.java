@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
  */
 public class SmartSocketProtocol implements Protocol<Object> {
     private final Codec2 codec;
-    private int bufferSize;
 
 
     public SmartSocketProtocol(Codec2 codec) {
@@ -28,25 +27,25 @@ public class SmartSocketProtocol implements Protocol<Object> {
             return null;
         }
         SmartSocketChannel channel = session.getAttachment();
-
         ChannelBuffer frame = channel.getFrame();
-
         if (frame.readable()) {
             if (frame instanceof DynamicChannelBuffer) {
                 frame.writeBytes(readBuffer);
             } else {
                 int size = frame.readableBytes() + readBuffer.remaining();
-                ChannelBuffer newFrame = ChannelBuffers.dynamicBuffer(Math.max(size, bufferSize));
+                ChannelBuffer newFrame = ChannelBuffers.dynamicBuffer(size);
                 newFrame.writeBytes(frame, frame.readableBytes());
                 newFrame.writeBytes(readBuffer);
                 frame = newFrame;
                 channel.setFrame(newFrame);
             }
         } else {
-            frame = ChannelBuffers.wrappedBuffer(readBuffer);
+//            frame = ChannelBuffers.wrappedBuffer(readBuffer);
+            frame = ChannelBuffers.dynamicBuffer(readBuffer.remaining());
+            frame.writeBytes(readBuffer);
             channel.setFrame(frame);
+            readBuffer.position(readBuffer.position() + readBuffer.remaining());
         }
-        readBuffer.position(readBuffer.position() + readBuffer.remaining());
 
 
         Object msg;

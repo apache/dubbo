@@ -8,9 +8,6 @@ import org.apache.dubbo.remoting.transport.AbstractClient;
 import org.smartboot.socket.transport.AioQuickClient;
 import org.smartboot.socket.transport.AioSession;
 
-import static org.apache.dubbo.remoting.Constants.BUFFER_KEY;
-import static org.apache.dubbo.remoting.Constants.DEFAULT_BUFFER_SIZE;
-
 /**
  * @author 三刀（zhengjunweimail@163.com）
  * @version V1.0 , 2022/1/25
@@ -25,7 +22,8 @@ public class SmartSocketClient extends AbstractClient {
 
     @Override
     protected void doOpen() throws Throwable {
-        client = new AioQuickClient(getUrl().getHost(), getUrl().getPort(), new SmartSocketProtocol(getCodec()), new SmartSocketMessageProcessor(getUrl(), this, getCodec()));
+        SmartSocketMessageProcessor processor = new SmartSocketMessageProcessor(getUrl(), this, getCodec());
+        client = new AioQuickClient(getUrl().getHost(), getUrl().getPort(), new SmartSocketProtocol(getCodec()), processor);
     }
 
     @Override
