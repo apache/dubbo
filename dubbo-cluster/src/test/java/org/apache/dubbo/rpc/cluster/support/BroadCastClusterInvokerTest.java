@@ -144,7 +144,7 @@ public class BroadCastClusterInvokerTest {
     @Test
     public void testFailoverInvokerSelect(){
         given(dic.list(invocation)).willReturn(Arrays.asList(invoker1, invoker2, invoker3, invoker4));
-        //取得当前调用链的所有invoker，逐个判断调用是否成功
+        //Get all invokers of the current call chain, and judge whether the call is successful one by one
 
         invokers =  dicIncludeInvokers.getAllInvokers();
 
@@ -176,7 +176,7 @@ class MockLoadBalance implements LoadBalance {
 }
 
 
-//设置一个注册中心地址，便于consumer本地进行远程调用测试
+//Set a registry address to facilitate the consumer to perform remote call testing locally
 class MockRegistryInvoker implements Invoker<DemoService> {
     private static int count = 0;
     private URL url = URL.valueOf("registry://localhost:9090/org.apache.dubbo.rpc.cluster.filter.DemoService?refer=" + URL.encode("application=BroadcastClusterInvokerTest"));
