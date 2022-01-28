@@ -54,7 +54,7 @@ public class StartupTest {
         Mockito.when(frameworkModel.getExtensionLoader(StartupProbe.class)).thenReturn(loader);
         URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_STARTUP_PROBE_EXTENSION, "");
         List<StartupProbe> readinessProbes = Arrays.asList(
-            new DeployerStartupProbe(frameworkModel.newApplication())
+            new DeployerStartupProbe()
         );
         Mockito.when(loader.getActivateExtension(url, CommonConstants.QOS_STARTUP_PROBE_EXTENSION)).thenReturn(readinessProbes);
     }

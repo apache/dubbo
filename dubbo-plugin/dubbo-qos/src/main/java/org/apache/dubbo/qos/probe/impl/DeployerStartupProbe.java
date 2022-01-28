@@ -19,22 +19,22 @@ package org.apache.dubbo.qos.probe.impl;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.qos.probe.StartupProbe;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+
+import java.util.List;
 
 @Activate
 public class DeployerStartupProbe implements StartupProbe {
 
-    private ApplicationModel applicationModel;
-
-    public DeployerStartupProbe(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
-    }
-
     @Override
     public boolean check() {
-        for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
-            if (moduleModel.getDeployer().isRunning()) {
-                return true;
+        List<ApplicationModel> applicationModels = FrameworkModel.defaultModel().getAllApplicationModels();
+        for (ApplicationModel applicationModel : applicationModels) {
+            for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
+                if (moduleModel.getDeployer().isRunning()) {
+                    return true;
+                }
             }
         }
         return false;

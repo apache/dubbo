@@ -56,7 +56,7 @@ public class ReadyTest {
         Mockito.when(frameworkModel.getExtensionLoader(ReadinessProbe.class)).thenReturn(loader);
         URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, "");
         List<ReadinessProbe> readinessProbes = Arrays.asList(
-            new DeployerReadinessProbe(frameworkModel.newApplication()),
+            new DeployerReadinessProbe(),
             new ProviderReadinessProbe()
         );
         Mockito.when(loader.getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION)).thenReturn(readinessProbes);
