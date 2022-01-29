@@ -46,6 +46,7 @@ public class StartupTest {
         ModuleModel moduleModel = Mockito.mock(ModuleModel.class);
         moduleDeployer = Mockito.mock(ModuleDeployer.class);
         Mockito.when(frameworkModel.newApplication()).thenReturn(applicationModel);
+        Mockito.when(frameworkModel.getAllApplicationModels()).thenReturn(Arrays.asList(applicationModel));
         Mockito.when(applicationModel.getModuleModels()).thenReturn(Arrays.asList(moduleModel));
         Mockito.when(moduleModel.getDeployer()).thenReturn(moduleDeployer);
         Mockito.when(moduleDeployer.isRunning()).thenReturn(true);
@@ -54,7 +55,7 @@ public class StartupTest {
         Mockito.when(frameworkModel.getExtensionLoader(StartupProbe.class)).thenReturn(loader);
         URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_STARTUP_PROBE_EXTENSION, "");
         List<StartupProbe> readinessProbes = Arrays.asList(
-            new DeployerStartupProbe()
+            new DeployerStartupProbe(frameworkModel)
         );
         Mockito.when(loader.getActivateExtension(url, CommonConstants.QOS_STARTUP_PROBE_EXTENSION)).thenReturn(readinessProbes);
     }
