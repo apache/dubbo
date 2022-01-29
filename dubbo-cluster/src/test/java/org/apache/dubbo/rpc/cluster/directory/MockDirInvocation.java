@@ -16,17 +16,19 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
+import org.apache.dubbo.rpc.AttachmentsAdapter;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+
 import java.util.HashMap;
 import java.util.Map;
+
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import org.apache.dubbo.common.utils.MapUtils;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
 
 /**
  * MockInvocation.java
@@ -73,7 +75,7 @@ public class MockDirInvocation implements Invocation {
     }
 
     public Map<String, String> getAttachments() {
-        return MapUtils.objectToStringMap(attachments);
+        return new AttachmentsAdapter.ObjectToStringMap(attachments);
     }
 
     @Override
@@ -88,7 +90,7 @@ public class MockDirInvocation implements Invocation {
 
     @Override
     public void setAttachment(String key, Object value) {
-        setObjectAttachment(key, value);
+       setObjectAttachment(key, value);
     }
 
     @Override

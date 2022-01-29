@@ -20,7 +20,6 @@ import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.MapUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -547,15 +546,13 @@ public class RpcContext {
     }
 
     /**
-     * get String type attachments.
-     *
-     * Best to use {{@link #getObjectAttachments()}}
+     * get attachments.
      *
      * @return attachments
      */
     @Deprecated
     public Map<String, String> getAttachments() {
-        return MapUtils.objectToStringMap(this.getObjectAttachments());
+        return new AttachmentsAdapter.ObjectToStringMap(this.getObjectAttachments());
     }
 
     /**
