@@ -108,7 +108,7 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
         // use previously cached services.
         Set<String> cachedServices = this.getCachedMapping(key);
 
-       Runnable runnable = () -> {
+        Runnable runnable = () -> {
             synchronized (mappingListeners) {
                 if (listener != null) {
                     Set<String> mappedServices = getAndListen(subscribedURL, listener);

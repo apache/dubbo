@@ -392,7 +392,7 @@ public class RegistryProtocolTest {
             .thenReturn(registryProtocolListeners);
         url = url.setScopeModel(moduleModel);
 
-        registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl, url);
+        registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl);
         verify(migrationRuleListener, times(1)).onRefer(registryProtocol, clusterInvoker, consumerUrl, url);
     }
 
@@ -458,7 +458,7 @@ public class RegistryProtocolTest {
             .thenReturn(registryProtocolListeners);
         url = url.setScopeModel(moduleModel);
 
-        registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl, url);
+        registryProtocol.interceptInvoker(clusterInvoker, url, consumerUrl);
 
         Assertions.assertEquals(1, CountRegistryProtocolListener.getReferCounter().get());
     }

@@ -36,7 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
 import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 
@@ -302,7 +301,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             List<URL> urls = getCacheUrls(url);
             if (CollectionUtils.isNotEmpty(urls)) {
                 notify(url, listener, urls);
-                logger.error("Failed to subscribe " + url + ", Using cached list: " + urls + " from cache file: " + getUrl().getParameter(FILE_KEY, System.getProperty("user.home") + "/dubbo-registry-" + url.getHost() + ".cache") + ", cause: " + t.getMessage(), t);
+                logger.error("Failed to subscribe " + url + ", Using cached list: " + urls + " from cache file: " + getCacheFile().getName() + ", cause: " + t.getMessage(), t);
             } else {
                 // If the startup detection is opened, the Exception is thrown directly.
                 boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)

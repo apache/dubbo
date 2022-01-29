@@ -110,7 +110,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory, ScopeM
 
     /**
      * Create the key for the registries cache.
-     * This method may be override by the sub-class.
+     * This method may be overridden by the sub-class.
      *
      * @param url the registration {@link URL url}
      * @return non-null

@@ -122,6 +122,8 @@ public class MetadataUtils {
         String key = computeKey(instance);
         if (metadataServiceProxies.containsKey(key)) {
             metadataServiceProxies.remove(key);
+        }
+        if (metadataServiceInvokers.containsKey(key)) {
             Invoker<?> invoker = metadataServiceInvokers.remove(key);
             invoker.destroy();
         }
@@ -163,7 +165,7 @@ public class MetadataUtils {
 
     public static MetadataInfo getRemoteMetadata(String revision, ServiceInstance instance, MetadataReport metadataReport) {
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
-        MetadataInfo metadataInfo = null;
+        MetadataInfo metadataInfo;
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);

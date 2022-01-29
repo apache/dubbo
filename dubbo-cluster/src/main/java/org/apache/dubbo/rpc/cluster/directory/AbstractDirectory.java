@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -52,11 +51,16 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_PERIOD;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_TRY_COUNT;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_PERIOD;
+import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_TRY_COUNT;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -148,26 +152,26 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.queryMap = applicationModel.getBeanFactory().getBean(ClusterUtils.class).mergeLocalParams(queryMap);
 
         if (consumerUrl == null) {
-            String host = StringUtils.isNotEmpty(queryMap.get("register.ip")) ? queryMap.get("register.ip") : this.url.getHost();
-            String path = queryMap.get(PATH_KEY);
-            String consumedProtocol = queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY);
+            String host = StringUtils.isNotEmpty(queryMap.get(REGISTER_IP_KEY)) ? queryMap.get(REGISTER_IP_KEY) : this.url.getHost();
+            String path = StringUtils.isNotEmpty(queryMap.get(PATH_KEY)) ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY);
+            String consumedProtocol = StringUtils.isNotEmpty(queryMap.get(PROTOCOL_KEY)) ? queryMap.get(PROTOCOL_KEY) : DUBBO;
 
             URL consumerUrlFrom = this.url
                 .setHost(host)
                 .setPort(0)
                 .setProtocol(consumedProtocol)
-                .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
+                .setPath(path);
             if (isUrlFromRegistry) {
                 // reserve parameters if url is already a consumer url
-                consumerUrlFrom = consumerUrlFrom.clearParameters().setServiceModel(url.getServiceModel()).setScopeModel(url.getScopeModel());
+                consumerUrlFrom = consumerUrlFrom.clearParameters();
             }
-            this.consumerUrl = consumerUrlFrom.addParameters(queryMap).removeAttribute(MONITOR_KEY);
+            this.consumerUrl = consumerUrlFrom.addParameters(queryMap);
         }
 
         this.connectivityExecutor = applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getConnectivityScheduledExecutor();
         Configuration configuration = ConfigurationUtils.getGlobalConfiguration(url.getOrDefaultModuleModel());
-        this.reconnectTaskTryCount = configuration.getInt(CommonConstants.RECONNECT_TASK_TRY_COUNT, CommonConstants.DEFAULT_RECONNECT_TASK_TRY_COUNT);
-        this.reconnectTaskPeriod = configuration.getInt(CommonConstants.RECONNECT_TASK_PERIOD, CommonConstants.DEFAULT_RECONNECT_TASK_PERIOD);
+        this.reconnectTaskTryCount = configuration.getInt(RECONNECT_TASK_TRY_COUNT, DEFAULT_RECONNECT_TASK_TRY_COUNT);
+        this.reconnectTaskPeriod = configuration.getInt(RECONNECT_TASK_PERIOD, DEFAULT_RECONNECT_TASK_PERIOD);
         setRouterChain(routerChain);
     }
 

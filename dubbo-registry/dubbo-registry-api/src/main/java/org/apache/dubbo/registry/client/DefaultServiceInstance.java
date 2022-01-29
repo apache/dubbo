@@ -335,7 +335,7 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public String toFullString() {
         return "DefaultServiceInstance{" +
-                ", serviceName='" + serviceName + '\'' +
+                "serviceName='" + serviceName + '\'' +
                 ", host='" + host + '\'' +
                 ", port=" + port +
                 ", enabled=" + enabled +

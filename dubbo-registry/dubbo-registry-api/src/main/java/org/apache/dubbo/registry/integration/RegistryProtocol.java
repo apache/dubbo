@@ -497,7 +497,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             consumerAttribute);
         url = url.putAttribute(CONSUMER_URL_KEY, consumerUrl);
         ClusterInvoker<T> migrationInvoker = getMigrationInvoker(this, cluster, registry, type, url, consumerUrl);
-        return interceptInvoker(migrationInvoker, url, consumerUrl, url);
+        return interceptInvoker(migrationInvoker, url, consumerUrl);
     }
 
     private String getPath(Map<String, String> parameters, Class<?> type) {
@@ -517,18 +517,17 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      * @param invoker     MigrationInvoker that determines which type of invoker list to use
      * @param url         The original url generated during refer, more like a registry:// style url
      * @param consumerUrl Consumer url representing current interface and its config
-     * @param registryURL The actual registry url, zookeeper:// for example
      * @param <T>         The service definition
      * @return The @param MigrationInvoker passed in
      */
-    protected <T> Invoker<T> interceptInvoker(ClusterInvoker<T> invoker, URL url, URL consumerUrl, URL registryURL) {
+    protected <T> Invoker<T> interceptInvoker(ClusterInvoker<T> invoker, URL url, URL consumerUrl) {
         List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(url);
         if (CollectionUtils.isEmpty(listeners)) {
             return invoker;
         }
 
         for (RegistryProtocolListener listener : listeners) {
-            listener.onRefer(this, invoker, consumerUrl, registryURL);
+            listener.onRefer(this, invoker, consumerUrl, url);
         }
         return invoker;
     }
@@ -711,8 +710,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 logger.debug("original override urls: " + urls);
             }
 
-            List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl.addParameter(CATEGORY_KEY,
-                CONFIGURATORS_CATEGORY));
+            List<URL> matchedUrls = getMatchedUrls(urls, subscribeUrl);
             if (logger.isDebugEnabled()) {
                 logger.debug("subscribe url: " + subscribeUrl + ", override urls: " + matchedUrls);
             }

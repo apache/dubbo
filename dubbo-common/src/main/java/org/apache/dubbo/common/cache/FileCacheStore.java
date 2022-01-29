@@ -212,7 +212,8 @@ public class FileCacheStore {
 
         try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheFile, false), StandardCharsets.UTF_8))) {
             bw.write("#" + comment);
-            bw.write("#" + new Date().toString());
+            bw.newLine();
+            bw.write("#" + new Date());
             bw.newLine();
             for (Map.Entry<String, String> e : properties.entrySet()) {
                 String key = e.getKey();

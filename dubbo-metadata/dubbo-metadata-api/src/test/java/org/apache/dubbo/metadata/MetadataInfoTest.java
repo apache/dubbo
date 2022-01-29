@@ -115,11 +115,11 @@ public class MetadataInfoTest {
         MetadataInfo metadataInfo = new MetadataInfo("demo");
         metadataInfo.addService(url);
         metadataInfo.addService(url2);
-        assertTrue(metadataInfo.updated.get());
+        assertTrue(metadataInfo.updated);
         metadataInfo.calAndGetRevision();
-        assertFalse(metadataInfo.updated.get());
+        assertFalse(metadataInfo.updated);
         metadataInfo.removeService(url2);
-        assertTrue(metadataInfo.updated.get());
+        assertTrue(metadataInfo.updated);
     }
 
     @Test
@@ -129,7 +129,7 @@ public class MetadataInfoTest {
         // export normal url again
         metadataInfo.addService(url);
         Gson gson = new Gson();
-       System.out.println(gson.toJson(metadataInfo));
+        System.out.println(gson.toJson(metadataInfo));
 
         MetadataInfo metadataInfo2 = new MetadataInfo("demo");
         // export normal url again

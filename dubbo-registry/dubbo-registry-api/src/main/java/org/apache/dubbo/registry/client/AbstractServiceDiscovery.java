@@ -289,7 +289,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     private String getCacheNameSuffix() {
         String name = this.getClass().getSimpleName();
-        int i = name.indexOf("ServiceDiscovery");
+        int i = name.indexOf(ServiceDiscovery.class.getSimpleName());
         if (i != -1) {
             name = name.substring(0, i);
         }

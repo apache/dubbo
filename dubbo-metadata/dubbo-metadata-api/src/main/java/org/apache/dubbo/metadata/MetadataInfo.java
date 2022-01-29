@@ -69,7 +69,7 @@ public class MetadataInfo implements Serializable {
     // used at runtime
     private transient final Map<String, String> extendParams;
     private transient final Map<String, String> instanceParams;
-    protected transient AtomicBoolean updated = new AtomicBoolean(false);
+    protected transient volatile boolean updated = false;
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs;
     private transient ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs;
     private transient ExtensionLoader<MetadataParamsFilter> loader;
@@ -137,7 +137,7 @@ public class MetadataInfo implements Serializable {
             exportedServiceURLs = new ConcurrentSkipListMap<>();
         }
         addURL(exportedServiceURLs, url);
-        updated.compareAndSet(false, true);
+        updated = true;
     }
 
     public synchronized void removeService(URL url) {
@@ -149,7 +149,7 @@ public class MetadataInfo implements Serializable {
             removeURL(exportedServiceURLs, url);
         }
 
-        updated.compareAndSet(false, true);
+        updated = true;
     }
 
     public String getRevision() {
@@ -160,11 +160,11 @@ public class MetadataInfo implements Serializable {
      * Reported status and metadata modification must be synchronized if used in multiple threads.
      */
     public synchronized String calAndGetRevision() {
-        if (revision != null && !updated.get()) {
+        if (revision != null && !updated) {
             return revision;
         }
 
-        updated.compareAndSet(true, false);
+        updated = false;
 
         if (CollectionUtils.isEmptyMap(services)) {
             this.revision = EMPTY_REVISION;
