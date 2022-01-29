@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.service;
 
-import org.apache.dubbo.common.utils.MapUtils;
+import org.apache.dubbo.rpc.AttachmentsAdapter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
@@ -79,7 +79,7 @@ public class MockInvocation implements Invocation {
     }
 
     public Map<String, String> getAttachments() {
-        return MapUtils.objectToStringMap(attachments);
+        return new AttachmentsAdapter.ObjectToStringMap(attachments);
     }
 
     @Override
