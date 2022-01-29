@@ -26,10 +26,18 @@ import java.util.List;
 
 @Activate
 public class DeployerReadinessProbe implements ReadinessProbe {
+    private FrameworkModel frameworkModel;
+
+    public DeployerReadinessProbe(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public boolean check() {
-        List<ApplicationModel> applicationModels = FrameworkModel.defaultModel().getAllApplicationModels();
+        if (this.frameworkModel == null) {
+            this.frameworkModel = FrameworkModel.defaultModel();
+        }
+        List<ApplicationModel> applicationModels = frameworkModel.getAllApplicationModels();
         for (ApplicationModel applicationModel : applicationModels) {
             for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
                 if (!moduleModel.getDeployer().isStarted()) {

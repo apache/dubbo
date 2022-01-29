@@ -26,6 +26,7 @@ import org.apache.dubbo.qos.probe.impl.DeployerReadinessProbe;
 import org.apache.dubbo.qos.probe.impl.ProviderReadinessProbe;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+import org.apache.dubbo.rpc.model.FrameworkServiceRepository;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
 import org.junit.jupiter.api.Assertions;
@@ -34,20 +35,27 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class ReadyTest {
 
     private FrameworkModel frameworkModel;
     private ModuleDeployer moduleDeployer;
+    private FrameworkServiceRepository frameworkServiceRepository;
 
     @BeforeEach
     public void setUp() {
         frameworkModel = Mockito.mock(FrameworkModel.class);
+        frameworkServiceRepository = Mockito.mock(FrameworkServiceRepository.class);
+
         ApplicationModel applicationModel = Mockito.mock(ApplicationModel.class);
         ModuleModel moduleModel = Mockito.mock(ModuleModel.class);
         moduleDeployer = Mockito.mock(ModuleDeployer.class);
+        Mockito.when(frameworkServiceRepository.allProviderModels()).thenReturn(Collections.emptyList());
         Mockito.when(frameworkModel.newApplication()).thenReturn(applicationModel);
+        Mockito.when(frameworkModel.getAllApplicationModels()).thenReturn(Arrays.asList(applicationModel));
+        Mockito.when(frameworkModel.getServiceRepository()).thenReturn(frameworkServiceRepository);
         Mockito.when(applicationModel.getModuleModels()).thenReturn(Arrays.asList(moduleModel));
         Mockito.when(moduleModel.getDeployer()).thenReturn(moduleDeployer);
         Mockito.when(moduleDeployer.isStarted()).thenReturn(true);
@@ -56,8 +64,8 @@ public class ReadyTest {
         Mockito.when(frameworkModel.getExtensionLoader(ReadinessProbe.class)).thenReturn(loader);
         URL url = URL.valueOf("application://").addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, "");
         List<ReadinessProbe> readinessProbes = Arrays.asList(
-            new DeployerReadinessProbe(),
-            new ProviderReadinessProbe()
+            new DeployerReadinessProbe(frameworkModel),
+            new ProviderReadinessProbe(frameworkModel)
         );
         Mockito.when(loader.getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION)).thenReturn(readinessProbes);
     }
@@ -68,7 +76,7 @@ public class ReadyTest {
         CommandContext commandContext = new CommandContext("ready");
 
         String result = ready.execute(commandContext, new String[0]);
-        Assertions.assertEquals(result, "true");
+        Assertions.assertEquals("true", result);
         Assertions.assertEquals(commandContext.getHttpCode(), 200);
 
         Mockito.when(moduleDeployer.isStarted()).thenReturn(false);

@@ -27,9 +27,17 @@ import java.util.List;
 
 @Activate
 public class ProviderReadinessProbe implements ReadinessProbe {
+    private FrameworkModel frameworkModel;
+    private FrameworkServiceRepository serviceRepository;
 
-
-    private static FrameworkServiceRepository serviceRepository = FrameworkModel.defaultModel().getServiceRepository();
+    public ProviderReadinessProbe(FrameworkModel frameworkModel) {
+        if (frameworkModel != null) {
+            this.frameworkModel = frameworkModel;
+        } else {
+            this.frameworkModel = FrameworkModel.defaultModel();
+        }
+        this.serviceRepository = this.frameworkModel.getServiceRepository();
+    }
 
     @Override
     public boolean check() {

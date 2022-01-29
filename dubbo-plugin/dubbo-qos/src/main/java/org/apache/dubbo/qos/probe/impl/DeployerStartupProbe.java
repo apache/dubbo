@@ -26,10 +26,18 @@ import java.util.List;
 
 @Activate
 public class DeployerStartupProbe implements StartupProbe {
+    private FrameworkModel frameworkModel;
+
+    public DeployerStartupProbe(FrameworkModel frameworkModel) {
+        this.frameworkModel = frameworkModel;
+    }
 
     @Override
     public boolean check() {
-        List<ApplicationModel> applicationModels = FrameworkModel.defaultModel().getAllApplicationModels();
+        if (this.frameworkModel == null) {
+            this.frameworkModel = FrameworkModel.defaultModel();
+        }
+        List<ApplicationModel> applicationModels = frameworkModel.getAllApplicationModels();
         for (ApplicationModel applicationModel : applicationModels) {
             for (ModuleModel moduleModel : applicationModel.getModuleModels()) {
                 if (moduleModel.getDeployer().isRunning()) {
