@@ -87,9 +87,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
 
-        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
+        // update origin metadataInfo's revision
+        this.metadataInfo.calAndGetRevision();
+        // clone metadataInfo to prevent metadataInfo changed during `calOrUpdateInstanceRevision` to `reportMetadata`
+        MetadataInfo copyOfMetaInfo = this.metadataInfo.clone();
+        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance, copyOfMetaInfo);
         if (revisionUpdated) {
-            reportMetadata(this.metadataInfo);
+            reportMetadata(copyOfMetaInfo);
             doRegister(this.serviceInstance);
         }
     }
@@ -115,10 +119,15 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
 
-        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance);
+
+        // update origin metadataInfo's revision
+        this.metadataInfo.calAndGetRevision();
+        // clone metadataInfo to prevent metadataInfo changed during `calOrUpdateInstanceRevision` to `reportMetadata`
+        MetadataInfo copyOfMetaInfo = this.metadataInfo.clone();
+        boolean revisionUpdated = calOrUpdateInstanceRevision(this.serviceInstance, copyOfMetaInfo);
         if (revisionUpdated) {
-            logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", this.serviceInstance.getServiceMetadata().getRevision()));
-            doUpdate(this.serviceInstance);
+            logger.info(String.format("Metadata of instance changed, updating instance with revision %s.", copyOfMetaInfo.getRevision()));
+            doUpdate(this.serviceInstance, copyOfMetaInfo);
         }
     }
 
@@ -224,11 +233,11 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
        throw new UnsupportedOperationException("Service discovery implementation does not support lookup of url list.");
     }
 
-    protected void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+    protected void doUpdate(ServiceInstance serviceInstance, MetadataInfo metadataInfo) throws RuntimeException {
 
         this.unregister();
 
-        reportMetadata(serviceInstance.getServiceMetadata());
+        reportMetadata(metadataInfo);
         this.doRegister(serviceInstance);
     }
 
@@ -251,9 +260,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         return instance;
     }
 
-    protected boolean calOrUpdateInstanceRevision(ServiceInstance instance) {
+    protected boolean calOrUpdateInstanceRevision(ServiceInstance instance, MetadataInfo metadataInfo) {
         String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
-        MetadataInfo metadataInfo = instance.getServiceMetadata();
         String newRevision = metadataInfo.calAndGetRevision();
         if (!newRevision.equals(existingInstanceRevision)) {
             if (EMPTY_REVISION.equals(newRevision)) {
