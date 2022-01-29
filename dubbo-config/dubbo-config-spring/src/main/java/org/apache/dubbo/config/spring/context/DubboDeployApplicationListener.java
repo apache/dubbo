@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
+
+import java.util.concurrent.Future;
 import org.apache.dubbo.common.deploy.DeployListenerAdapter;
 import org.apache.dubbo.common.deploy.DeployState;
 import org.apache.dubbo.common.deploy.ModuleDeployer;
@@ -27,7 +30,6 @@ import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModelConstants;
 import org.apache.dubbo.rpc.model.ModuleModel;
-
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -36,8 +38,6 @@ import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
-
-import java.util.concurrent.Future;
 
 /**
  * An ApplicationListener to control Dubbo application.
@@ -95,10 +95,12 @@ public class DubboDeployApplicationListener implements ApplicationListener<Appli
 
     @Override
     public void onApplicationEvent(ApplicationContextEvent event) {
-        if (event instanceof ContextRefreshedEvent) {
-            onContextRefreshedEvent((ContextRefreshedEvent) event);
-        } else if (event instanceof ContextClosedEvent) {
-            onContextClosedEvent((ContextClosedEvent) event);
+        if (nullSafeEquals(applicationContext, event.getSource())) {
+            if (event instanceof ContextRefreshedEvent) {
+                onContextRefreshedEvent((ContextRefreshedEvent) event);
+            } else if (event instanceof ContextClosedEvent) {
+                onContextClosedEvent((ContextClosedEvent) event);
+            }
         }
     }
 
