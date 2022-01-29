@@ -98,7 +98,14 @@ public class ServiceInstancesChangedListener {
      *
      * @param event {@link ServiceInstancesChangedEvent}
      */
-    public synchronized void onEvent(ServiceInstancesChangedEvent event) {
+    public void onEvent(ServiceInstancesChangedEvent event) {
+        if (destroyed.get() || !accept(event) || isRetryAndExpired(event)) {
+            return;
+        }
+        doOnEvent(event);
+    }
+
+    private synchronized void doOnEvent(ServiceInstancesChangedEvent event) {
         if (destroyed.get() || !accept(event) || isRetryAndExpired(event)) {
             return;
         }
@@ -222,10 +229,6 @@ public class ServiceInstancesChangedListener {
         }
 
         logger.info("Interface listener of interface " + serviceKey + " removed.");
-        if (listeners.isEmpty()) {
-            logger.info("No interface listeners exist, will stop instance listener for " + this.getServiceNames());
-            serviceDiscovery.removeServiceInstancesChangedListener(this);
-        }
     }
 
     public boolean hasListeners() {
@@ -375,6 +378,11 @@ public class ServiceInstancesChangedListener {
         if (!destroyed.get()) {
             if (CollectionUtils.isEmptyMap(listeners)) {
                 if (destroyed.compareAndSet(false, true)) {
+                    if (listeners.isEmpty()) {
+                        logger.info("No interface listeners exist, will stop instance listener for " + this.getServiceNames());
+                        serviceDiscovery.removeServiceInstancesChangedListener(this);
+                    }
+
                     allInstances.clear();
                     serviceUrls.clear();
                     if (retryFuture != null && !retryFuture.isDone()) {

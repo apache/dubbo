@@ -90,6 +90,23 @@ public class MetadataInfo implements Serializable {
         this.instanceParams = new ConcurrentHashMap<>();
     }
 
+    private MetadataInfo(String app, String revision, Map<String, ServiceInfo> services, AtomicBoolean initiated,
+                        Map<String, String> extendParams, Map<String, String> instanceParams, AtomicBoolean updated,
+                        ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs,
+                        ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs,
+                        ExtensionLoader<MetadataParamsFilter> loader) {
+        this.app = app;
+        this.revision = revision;
+        this.services = new ConcurrentHashMap<>(services);
+        this.initiated = new AtomicBoolean(initiated.get());
+        this.extendParams = new ConcurrentHashMap<>(extendParams);
+        this.instanceParams = new ConcurrentHashMap<>(instanceParams);
+        this.updated = new AtomicBoolean(updated.get());
+        this.subscribedServiceURLs = subscribedServiceURLs == null ? null : new ConcurrentSkipListMap<>(subscribedServiceURLs);
+        this.exportedServiceURLs = exportedServiceURLs == null ? null : new ConcurrentSkipListMap<>(exportedServiceURLs);
+        this.loader = loader;
+    }
+
     /**
      * Initialize is needed when MetadataInfo is created from deserialization on the consumer side before being used for RPC call.
      */
@@ -342,6 +359,11 @@ public class MetadataInfo implements Serializable {
         }
 
         return services.keySet().toString();
+    }
+
+    @Override
+    public synchronized MetadataInfo clone() {
+        return new MetadataInfo(app, revision, services, initiated, extendParams, instanceParams, updated, subscribedServiceURLs, exportedServiceURLs, loader);
     }
 
     public static class ServiceInfo implements Serializable {

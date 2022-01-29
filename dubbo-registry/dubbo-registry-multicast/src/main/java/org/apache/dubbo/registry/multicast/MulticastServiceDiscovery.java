@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.multicast;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,7 +48,7 @@ public class MulticastServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance, MetadataInfo metadataInfo) throws RuntimeException {
     }
 
     @Override
