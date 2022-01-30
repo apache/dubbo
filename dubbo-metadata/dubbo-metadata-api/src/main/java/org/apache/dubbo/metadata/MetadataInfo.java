@@ -91,7 +91,7 @@ public class MetadataInfo implements Serializable {
     }
 
     private MetadataInfo(String app, String revision, Map<String, ServiceInfo> services, AtomicBoolean initiated,
-                        Map<String, String> extendParams, Map<String, String> instanceParams, AtomicBoolean updated,
+                        Map<String, String> extendParams, Map<String, String> instanceParams, boolean updated,
                         ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs,
                         ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs,
                         ExtensionLoader<MetadataParamsFilter> loader) {
@@ -101,7 +101,7 @@ public class MetadataInfo implements Serializable {
         this.initiated = new AtomicBoolean(initiated.get());
         this.extendParams = new ConcurrentHashMap<>(extendParams);
         this.instanceParams = new ConcurrentHashMap<>(instanceParams);
-        this.updated = new AtomicBoolean(updated.get());
+        this.updated = updated;
         this.subscribedServiceURLs = subscribedServiceURLs == null ? null : new ConcurrentSkipListMap<>(subscribedServiceURLs);
         this.exportedServiceURLs = exportedServiceURLs == null ? null : new ConcurrentSkipListMap<>(exportedServiceURLs);
         this.loader = loader;
