@@ -153,7 +153,9 @@ public class InjvmProtocol extends AbstractProtocol {
                 for (Exporter<?> exporter : map.values()) {
                     if (UrlUtils.isServiceKeyMatch(url, exporter.getInvoker().getUrl())) {
                         URL realUrl = exporter.getInvoker().getUrl();
-                        InjvmInvoker<T> invoker = new InjvmInvoker<>(type, url, realUrl.getServiceKey(), exporter);
+                        InjvmInvoker<T> invoker = new InjvmInvoker<>(type,
+                            url.addParameter(GROUP_KEY, realUrl.getGroup()),
+                            realUrl.getServiceKey(), exporter);
                         result.add(invoker);
                     }
                 }
