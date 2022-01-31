@@ -18,19 +18,26 @@ package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Cluster;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
-import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
@@ -69,7 +76,7 @@ public class InjvmProtocol extends AbstractProtocol {
         if (result == null) {
             return null;
         } else if (ProtocolUtils.isGeneric(
-                result.getInvoker().getUrl().getParameter(GENERIC_KEY))) {
+            result.getInvoker().getUrl().getParameter(GENERIC_KEY))) {
             return null;
         } else {
             return result;
@@ -88,7 +95,15 @@ public class InjvmProtocol extends AbstractProtocol {
 
     @Override
     public <T> Invoker<T> protocolBindingRefer(Class<T> serviceType, URL url) throws RpcException {
-        return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
+        // group="a,b" or group="*"
+        String group = url.getParameter(GROUP_KEY);
+        if (StringUtils.isNotEmpty(group)) {
+            if ((COMMA_SPLIT_PATTERN.split(group)).length > 1 || "*".equals(group)) {
+                return doCreateInvoker(url, Cluster.getCluster(url.getScopeModel(), MergeableCluster.NAME), serviceType);
+            }
+        }
+        Cluster cluster = Cluster.getCluster(url.getScopeModel(), url.getParameter(CLUSTER_KEY));
+        return doCreateInvoker(url, cluster, serviceType);
     }
 
     public boolean isInjvmRefer(URL url) {
@@ -115,5 +130,34 @@ public class InjvmProtocol extends AbstractProtocol {
         } else {
             return false;
         }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    protected <T> ClusterInvoker<T> doCreateInvoker(URL url, Cluster cluster, Class<T> type) {
+        StaticDirectory directory = new StaticDirectory(url, getInvokers(exporterMap, url, type));
+        return (ClusterInvoker<T>) cluster.join(directory, true);
+    }
+
+    private <T> List<Invoker<T>> getInvokers(Map<String, Exporter<?>> map, URL url, Class<T> type) {
+        List<Invoker<T>> result = new ArrayList<>();
+
+        if (!url.getServiceKey().contains("*")) {
+            Exporter<?> exporter = map.get(url.getServiceKey());
+            URL realUrl = exporter.getInvoker().getUrl();
+            InjvmInvoker<T> invoker = new InjvmInvoker<>(type, realUrl, realUrl.getServiceKey(), exporter);
+            result.add(invoker);
+        } else {
+            if (CollectionUtils.isNotEmptyMap(map)) {
+                for (Exporter<?> exporter : map.values()) {
+                    if (UrlUtils.isServiceKeyMatch(url, exporter.getInvoker().getUrl())) {
+                        URL realUrl = exporter.getInvoker().getUrl();
+                        InjvmInvoker<T> invoker = new InjvmInvoker<>(type, realUrl, realUrl.getServiceKey(), exporter);
+                        result.add(invoker);
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 }

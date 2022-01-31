@@ -253,7 +253,7 @@ public class MultipleRegistry extends AbstractRegistry {
 
     static protected class MultipleNotifyListenerWrapper implements NotifyListener {
 
-        Map<URL, SingleNotifyListener> registryMap = new ConcurrentHashMap<URL, SingleNotifyListener>(4);
+        Map<URL, SingleNotifyListener> registryMap = new ConcurrentHashMap<>(4);
         NotifyListener sourceNotifyListener;
 
         public MultipleNotifyListenerWrapper(NotifyListener sourceNotifyListener) {
