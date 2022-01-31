@@ -146,14 +146,14 @@ public class InjvmProtocol extends AbstractProtocol {
         if (!url.getServiceKey().contains("*")) {
             Exporter<?> exporter = map.get(url.getServiceKey());
             URL realUrl = exporter.getInvoker().getUrl();
-            InjvmInvoker<T> invoker = new InjvmInvoker<>(type, realUrl, realUrl.getServiceKey(), exporter);
+            InjvmInvoker<T> invoker = new InjvmInvoker<>(type, url, realUrl.getServiceKey(), exporter);
             result.add(invoker);
         } else {
             if (CollectionUtils.isNotEmptyMap(map)) {
                 for (Exporter<?> exporter : map.values()) {
                     if (UrlUtils.isServiceKeyMatch(url, exporter.getInvoker().getUrl())) {
                         URL realUrl = exporter.getInvoker().getUrl();
-                        InjvmInvoker<T> invoker = new InjvmInvoker<>(type, realUrl, realUrl.getServiceKey(), exporter);
+                        InjvmInvoker<T> invoker = new InjvmInvoker<>(type, url, realUrl.getServiceKey(), exporter);
                         result.add(invoker);
                     }
                 }
