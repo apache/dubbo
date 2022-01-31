@@ -39,6 +39,7 @@ import java.util.Map;
 import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
@@ -145,17 +146,16 @@ public class InjvmProtocol extends AbstractProtocol {
 
         if (!url.getServiceKey().contains("*")) {
             Exporter<?> exporter = map.get(url.getServiceKey());
-            URL realUrl = exporter.getInvoker().getUrl();
-            InjvmInvoker<T> invoker = new InjvmInvoker<>(type, url, realUrl.getServiceKey(), exporter);
+            InjvmInvoker<T> invoker = new InjvmInvoker<>(type, url, url.getServiceKey(), exporter);
             result.add(invoker);
         } else {
             if (CollectionUtils.isNotEmptyMap(map)) {
                 for (Exporter<?> exporter : map.values()) {
                     if (UrlUtils.isServiceKeyMatch(url, exporter.getInvoker().getUrl())) {
-                        URL realUrl = exporter.getInvoker().getUrl();
-                        InjvmInvoker<T> invoker = new InjvmInvoker<>(type,
-                            url.addParameter(GROUP_KEY, realUrl.getGroup()),
-                            realUrl.getServiceKey(), exporter);
+                        URL providerUrl = exporter.getInvoker().getUrl();
+                        URL consumerUrl = url.addParameter(GROUP_KEY, providerUrl.getGroup())
+                            .addParameter(VERSION_KEY, providerUrl.getVersion());
+                        InjvmInvoker<T> invoker = new InjvmInvoker<>(type, consumerUrl, consumerUrl.getServiceKey(), exporter);
                         result.add(invoker);
                     }
                 }
