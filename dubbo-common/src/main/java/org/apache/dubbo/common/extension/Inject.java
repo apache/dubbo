@@ -22,9 +22,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static org.apache.dubbo.common.extension.Inject.InjectType.ByName;
+
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
-@Deprecated
-public @interface DisableInject {
+public @interface Inject {
+    // whether enable injection or not
+    boolean enable() default true;
+
+    // inject type default by name injection
+    InjectType type() default ByName;
+
+    enum InjectType{
+        ByName,
+        ByType
+    }
 }
