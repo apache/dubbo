@@ -22,6 +22,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
@@ -49,14 +50,14 @@ import static org.springframework.util.ObjectUtils.containsElement;
 public class AwaitingNonWebApplicationListener implements SmartApplicationListener {
 
     private static final String[] WEB_APPLICATION_CONTEXT_CLASSES = new String[]{
-            "org.springframework.web.context.WebApplicationContext",
-            "org.springframework.boot.web.reactive.context.ReactiveWebApplicationContext"
+        "org.springframework.web.context.WebApplicationContext",
+        "org.springframework.boot.web.reactive.context.ReactiveWebApplicationContext"
     };
 
     private static final Logger logger = LoggerFactory.getLogger(AwaitingNonWebApplicationListener.class);
 
     private static final Class<? extends ApplicationEvent>[] SUPPORTED_APPLICATION_EVENTS =
-            of(ApplicationReadyEvent.class, ContextClosedEvent.class);
+        of(ApplicationReadyEvent.class, ContextClosedEvent.class);
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
 
@@ -96,6 +97,10 @@ public class AwaitingNonWebApplicationListener implements SmartApplicationListen
         if (event instanceof ApplicationReadyEvent) {
             onApplicationReadyEvent((ApplicationReadyEvent) event);
         }
+
+        if (event instanceof ApplicationFailedEvent) {
+            awaitAndRelease(((ApplicationFailedEvent) event).getApplicationContext());
+        }
     }
 
     @Override
@@ -112,14 +117,18 @@ public class AwaitingNonWebApplicationListener implements SmartApplicationListen
         }
 
         if (applicationContextId.compareAndSet(UNDEFINED_ID, applicationContext.hashCode())) {
-            await();
-            releaseOnExit(event.getApplicationContext());
+            awaitAndRelease(event.getApplicationContext());
         }
     }
 
+    private void awaitAndRelease(ConfigurableApplicationContext applicationContext) {
+        await();
+        releaseOnExit(applicationContext);
+    }
+
     /**
-     * @since 2.7.8
      * @param applicationContext
+     * @since 2.7.8
      */
     private void releaseOnExit(ConfigurableApplicationContext applicationContext) {
         ApplicationModel applicationModel = DubboBeanUtils.getApplicationModel(applicationContext);

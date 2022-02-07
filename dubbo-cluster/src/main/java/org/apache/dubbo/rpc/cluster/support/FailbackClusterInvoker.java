@@ -54,6 +54,9 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final long RETRY_FAILED_PERIOD = 5;
 
+    /**
+     * Number of retries obtained from the configuration, don't contain the first invoke.
+     */
     private final int retries;
 
     private final int failbackTasks;
@@ -64,7 +67,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         super(directory);
 
         int retriesConfig = getUrl().getParameter(RETRIES_KEY, DEFAULT_FAILBACK_TIMES);
-        if (retriesConfig <= 0) {
+        if (retriesConfig < 0) {
             retriesConfig = DEFAULT_FAILBACK_TIMES;
         }
         int failbackTasksConfig = getUrl().getParameter(FAIL_BACK_TASKS_KEY, DEFAULT_FAILBACK_TASKS);
@@ -129,11 +132,19 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         private final Invocation invocation;
         private final LoadBalance loadbalance;
         private final List<Invoker<T>> invokers;
-        private final int retries;
         private final long tick;
         private Invoker<T> lastInvoker;
-        private int retryTimes = 0;
         private URL consumerUrl;
+
+        /**
+         * Number of retries obtained from the configuration, don't contain the first invoke.
+         */
+        private final int retries;
+
+        /**
+         * Number of retried.
+         */
+        private int retriedTimes = 0;
 
         RetryTimerTask(LoadBalance loadbalance, Invocation invocation, List<Invoker<T>> invokers, Invoker<T> lastInvoker,
                        int retries, long tick, URL consumerUrl) {
@@ -149,12 +160,14 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         @Override
         public void run(Timeout timeout) {
             try {
+                logger.info("Attempt to retry to invoke method " + invocation.getMethodName() +
+                        ". The total will retry " + retries + " times, the current is the " + retriedTimes + " retry");
                 Invoker<T> retryInvoker = select(loadbalance, invocation, invokers, Collections.singletonList(lastInvoker));
                 lastInvoker = retryInvoker;
                 invokeWithContextAsync(retryInvoker, invocation, consumerUrl);
             } catch (Throwable e) {
                 logger.error("Failed retry to invoke method " + invocation.getMethodName() + ", waiting again.", e);
-                if ((++retryTimes) >= retries) {
+                if ((++retriedTimes) >= retries) {
                     logger.error("Failed retry times exceed threshold (" + retries + "), We have to abandon, invocation->" + invocation);
                 } else {
                     rePut(timeout);

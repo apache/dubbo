@@ -68,14 +68,14 @@ public class ProfilerTest {
          *   |     +-[ Offset: 4.696655ms; Usage: 0.000195ms, 0% ] 1-2-6-8
          *   +-[ Offset: 4.721044ms; Usage: 0.000270ms, 0% ] 1-9
          */
-        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(two));
-        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(three));
-        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(four));
-        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(five));
-        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(six));
-        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(seven));
-        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(eight));
-        Assertions.assertEquals(Profiler.buildDetail(one), Profiler.buildDetail(nine));
+        Assertions.assertNotEquals(Profiler.buildDetail(one), Profiler.buildDetail(two));
+        Assertions.assertNotEquals(Profiler.buildDetail(one), Profiler.buildDetail(three));
+        Assertions.assertNotEquals(Profiler.buildDetail(one), Profiler.buildDetail(four));
+        Assertions.assertNotEquals(Profiler.buildDetail(one), Profiler.buildDetail(five));
+        Assertions.assertNotEquals(Profiler.buildDetail(one), Profiler.buildDetail(six));
+        Assertions.assertNotEquals(Profiler.buildDetail(one), Profiler.buildDetail(seven));
+        Assertions.assertNotEquals(Profiler.buildDetail(one), Profiler.buildDetail(eight));
+        Assertions.assertNotEquals(Profiler.buildDetail(one), Profiler.buildDetail(nine));
     }
 
     @Test

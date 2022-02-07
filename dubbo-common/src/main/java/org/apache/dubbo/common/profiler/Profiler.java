@@ -59,10 +59,9 @@ public class Profiler {
     }
 
     public static String buildDetail(ProfilerEntry entry) {
-        ProfilerEntry firstEntry = entry.getFirst();
-        long totalUsageTime = firstEntry.getEndTime() - firstEntry.getStartTime();
-        return "Start time: " + firstEntry.getStartTime() + "\n" +
-            String.join("\n", buildDetail(firstEntry, firstEntry.getStartTime(), totalUsageTime, 0));
+        long totalUsageTime = entry.getEndTime() - entry.getStartTime();
+        return "Start time: " + entry.getStartTime() + "\n" +
+            String.join("\n", buildDetail(entry, entry.getStartTime(), totalUsageTime, 0));
     }
 
     public static List<String> buildDetail(ProfilerEntry entry, long startTime, long totalUsageTime, int depth) {
