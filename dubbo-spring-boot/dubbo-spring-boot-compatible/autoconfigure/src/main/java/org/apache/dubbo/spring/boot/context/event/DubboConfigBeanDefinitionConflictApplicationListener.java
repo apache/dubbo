@@ -106,10 +106,8 @@ public class DubboConfigBeanDefinitionConflictApplicationListener implements App
             // Dubbo ApplicationConfig id as bean name
             || Objects.equals(beanName, environment.getProperty("dubbo.application.id"));
 
-        if (removed) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("The {} bean [ name : {} ] has been removed!", ApplicationConfig.class.getSimpleName(), beanName);
-            }
+        if (removed && logger.isDebugEnabled()) {
+            logger.debug("The {} bean [ name : {} ] has been removed!", ApplicationConfig.class.getSimpleName(), beanName);
         }
 
         return removed;
