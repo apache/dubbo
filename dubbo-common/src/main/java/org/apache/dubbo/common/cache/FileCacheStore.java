@@ -55,7 +55,7 @@ public class FileCacheStore {
         this.directoryLock = directoryLock;
     }
 
-    public Map<String, String> loadCache(int entrySize) throws IOException {
+    public synchronized Map<String, String> loadCache(int entrySize) throws IOException {
         Map<String, String> properties = new HashMap<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(cacheFile))) {
             int count = 1;
@@ -93,7 +93,7 @@ public class FileCacheStore {
         }
     }
 
-    public void refreshCache(Map<String, String> properties, String comment, long maxFileSize) {
+    public synchronized void refreshCache(Map<String, String> properties, String comment, long maxFileSize) {
         if (CollectionUtils.isEmptyMap(properties)) {
             return;
         }
@@ -128,7 +128,7 @@ public class FileCacheStore {
         }
     }
 
-    public void destroy() {
+    public synchronized void destroy() {
         unlock();
         FileCacheStoreFactory.removeCache(cacheFilePath);
     }
