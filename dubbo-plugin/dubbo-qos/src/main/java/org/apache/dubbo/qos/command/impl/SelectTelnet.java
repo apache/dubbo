@@ -54,7 +54,7 @@ public class SelectTelnet implements BaseCommand {
         if (CollectionUtils.isEmpty(methodList)) {
             return "Please use the invoke command first.";
         }
-        if (!StringUtils.isInteger(message) || Integer.parseInt(message) < 1 || Integer.parseInt(message) > methodList.size()) {
+        if (!StringUtils.isNumber(message) || Integer.parseInt(message) < 1 || Integer.parseInt(message) > methodList.size()) {
             return "Illegal index ,please input select 1~" + methodList.size();
         }
         Method method = methodList.get(Integer.parseInt(message) - 1);

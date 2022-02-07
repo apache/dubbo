@@ -34,7 +34,7 @@ public class ClearTelnetHandler implements TelnetHandler {
     public String telnet(Channel channel, String message) {
         int lines = 100;
         if (message.length() > 0) {
-            if (!StringUtils.isInteger(message)) {
+            if (!StringUtils.isNumber(message)) {
                 return "Illegal lines " + message + ", must be integer.";
             }
             lines = Math.min(MAX_LINES,Integer.parseInt(message));

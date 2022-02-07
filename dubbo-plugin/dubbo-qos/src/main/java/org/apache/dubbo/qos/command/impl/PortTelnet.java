@@ -48,7 +48,7 @@ public class PortTelnet implements BaseCommand {
                 if ("-l".equals(part)) {
                     detail = true;
                 } else {
-                    if (!StringUtils.isInteger(part)) {
+                    if (!StringUtils.isNumber(part)) {
                         return "Illegal port " + part + ", must be integer.";
                     }
                     port = part;
