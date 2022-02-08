@@ -52,6 +52,7 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -121,7 +122,7 @@ public class ServerStream implements Stream {
         sendHeader(headers);
     }
 
-    public void close(GrpcStatus status, Http2Headers trailers) {
+    public void close(GrpcStatus status, Map<String,Object> attachments) {
         if (closed) {
             return;
         }
@@ -131,16 +132,17 @@ public class ServerStream implements Stream {
             // todo add sign for outbound status
             return;
         }
-        final Http2Headers headers = getTrailers(status, headerSent);
-        sendHeader(headers);
+        final Http2Headers headers = getTrailers(status,attachments);
+        sendHeaderWithEos(headers);
     }
 
-    private Http2Headers getTrailers(GrpcStatus grpcStatus, boolean headerSent) {
-        Http2Headers headers = new DefaultHttp2Headers();
+    private Http2Headers getTrailers(GrpcStatus grpcStatus,Map<String,Object> attachments) {
+        DefaultHttp2Headers headers = new DefaultHttp2Headers();
         if (!headerSent) {
             headers.status(HttpResponseStatus.OK.codeAsText());
             headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
         }
+        StreamUtils.convertAttachment(headers,attachments);
         String grpcMessage = getGrpcMessage(grpcStatus);
         grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
         headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);

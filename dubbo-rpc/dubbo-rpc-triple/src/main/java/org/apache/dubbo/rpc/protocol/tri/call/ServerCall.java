@@ -124,9 +124,7 @@ public class ServerCall {
     }
 
     public void close(GrpcStatus status, Map<String, Object> trailers) {
-        DefaultHttp2Headers headers = new DefaultHttp2Headers();
-        StreamUtils.convertAttachment(headers, trailers);
-        serverStream.close(status, headers);
+        serverStream.close(status,trailers);
     }
 
     private Invoker<?> getInvoker(Map<String, Object> headers, String serviceName) {

@@ -70,7 +70,6 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener{
                 call.close(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED), null);
             } else {
                 onServerResponse(response);
-
             }
         });
         RpcContext.removeContext();
