@@ -86,14 +86,15 @@ public class ClientCall {
         setIfNotNull(headers, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(), application);
         setIfNotNull(headers, TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
         setIfNotNull(headers, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), acceptEncoding);
-        if (attachments != null) {
-            StreamUtils.convertAttachment(headers, attachments);
-        }
+        StreamUtils.convertAttachment(headers, attachments);
+        unpack = getUnpack(methodDescriptor);
+    }
+
+    private PbUnpack<?> getUnpack(MethodDescriptor methodDescriptor) {
         if (methodDescriptor.isNeedWrap()) {
-            unpack = PbUnpack.RESP_PB_UNPACK;
-        } else {
-            unpack = new PbUnpack<>(methodDescriptor.getReturnClass());
+            return PbUnpack.RESP_PB_UNPACK;
         }
+        return new PbUnpack<>(methodDescriptor.getReturnClass());
     }
 
     private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key, CharSequence value) {
@@ -138,9 +139,7 @@ public class ClientCall {
             } else {
                 status.withDescription("Cancel by client without message");
             }
-            if (t != null) {
-                status.withCause(t);
-            }
+            status.withCause(t);
             stream.cancelByLocal(status);
         }
 
@@ -165,7 +164,7 @@ public class ClientCall {
 
         @Override
         public void onMessage(byte[] message) {
-            executor.execute(()-> {
+            executor.execute(() -> {
                 try {
                     final Object unpacked = unpack.unpack(message);
                     listener.onMessage(unpacked);
@@ -179,7 +178,7 @@ public class ClientCall {
 
         @Override
         public void complete(GrpcStatus grpcStatus, Map<String, Object> attachments) {
-            executor.execute(()-> {
+            executor.execute(() -> {
                 if (done) {
                     return;
                 }

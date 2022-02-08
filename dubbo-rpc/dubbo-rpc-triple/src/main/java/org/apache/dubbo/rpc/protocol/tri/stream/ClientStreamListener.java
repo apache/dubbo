@@ -21,7 +21,7 @@ import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 
 import java.util.Map;
 
-public interface ClientStreamListener extends StreamListener{
+public interface ClientStreamListener extends StreamListener {
 
     /**
      * Indicate the stream is closed . Will be called exactly once
@@ -30,4 +30,9 @@ public interface ClientStreamListener extends StreamListener{
      * @param attachments
      */
     void complete(GrpcStatus grpcStatus, Map<String, Object> attachments);
+
+
+    default void complete(GrpcStatus grpcStatus) {
+        complete(grpcStatus, null);
+    }
 }

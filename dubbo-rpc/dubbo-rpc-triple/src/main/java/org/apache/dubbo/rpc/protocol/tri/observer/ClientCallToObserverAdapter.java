@@ -34,7 +34,7 @@ public class ClientCallToObserverAdapter implements StreamObserver<Object> {
 
     @Override
     public void onError(Throwable throwable) {
-        call.cancel(null,throwable);
+        call.cancel(null, throwable);
     }
 
     @Override
