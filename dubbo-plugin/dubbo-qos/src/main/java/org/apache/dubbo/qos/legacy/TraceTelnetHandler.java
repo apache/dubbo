@@ -54,11 +54,11 @@ public class TraceTelnetHandler implements TelnetHandler {
             method = parts.length > 0 ? parts[0] : null;
             times = parts.length > 1 ? parts[1] : "1";
         }
-        if (StringUtils.isInteger(method)) {
+        if (StringUtils.isNumber(method)) {
             times = method;
             method = null;
         }
-        if (!StringUtils.isInteger(times)) {
+        if (!StringUtils.isNumber(times)) {
             return "Illegal times " + times + ", must be integer.";
         }
         Invoker<?> invoker = null;

@@ -643,7 +643,7 @@ public class NetUtils {
         int i = host.indexOf('.');
         if (i > 0) {
             String prefix = host.substring(0, i);
-            if (StringUtils.isInteger(prefix)) {
+            if (StringUtils.isNumber(prefix)) {
                 int p = Integer.parseInt(prefix);
                 return p >= 224 && p <= 239;
             }

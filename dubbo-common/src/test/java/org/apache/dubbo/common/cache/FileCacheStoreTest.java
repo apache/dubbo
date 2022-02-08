@@ -33,7 +33,7 @@ public class FileCacheStoreTest {
     public void testCache() throws Exception {
         String directoryPath = getDirectoryOfClassPath();
         String filePath = "test-cache.dubbo.cache";
-        cacheStore = new FileCacheStore(directoryPath, filePath);
+        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, filePath);
         Map<String, String> properties = cacheStore.loadCache(10);
         assertEquals(2, properties.size());
 
@@ -42,8 +42,8 @@ public class FileCacheStoreTest {
         newProperties.put("newKey2", "newValue2");
         newProperties.put("newKey3", "newValue3");
         newProperties.put("newKey4", "newValue4");
-        cacheStore = new FileCacheStore(directoryPath, "non-exit.dubbo.cache");
-        cacheStore.refreshCache(newProperties, "test refresh cache");
+        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, "non-exit.dubbo.cache");
+        cacheStore.refreshCache(newProperties, "test refresh cache", 0);
         Map<String, String> propertiesLimitTo2 = cacheStore.loadCache(2);
         assertEquals(2, propertiesLimitTo2.size());
 
@@ -51,6 +51,20 @@ public class FileCacheStoreTest {
         assertEquals(4, propertiesLimitTo10.size());
 
         cacheStore.destroy();
+    }
+
+    @Test
+    public void testFileSizeExceed() throws Exception {
+        String directoryPath = getDirectoryOfClassPath();
+        Map<String, String> newProperties = new HashMap<>();
+        newProperties.put("newKey1", "newValue1");
+        newProperties.put("newKey2", "newValue2");
+        newProperties.put("newKey3", "newValue3");
+        newProperties.put("newKey4", "newValue4");
+        cacheStore = FileCacheStoreFactory.getInstance(directoryPath, "non-exit.dubbo.cache");
+        cacheStore.refreshCache(newProperties, "test refresh cache", 2);
+        Map<String, String> propertiesLimitTo1 = cacheStore.loadCache(2);
+        assertEquals(0, propertiesLimitTo1.size());
     }
 
     private String getDirectoryOfClassPath() throws URISyntaxException {

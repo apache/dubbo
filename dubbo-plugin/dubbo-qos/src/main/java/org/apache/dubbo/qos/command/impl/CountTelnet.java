@@ -71,13 +71,13 @@ public class CountTelnet implements BaseCommand {
         } else {
             method = args.length > 0 ? args[0] : null;
         }
-        if (StringUtils.isInteger(method)) {
+        if (StringUtils.isNumber(method)) {
             times = method;
             method = null;
         } else {
             times = args.length > 2 ? args[2] : "1";
         }
-        if (!StringUtils.isInteger(times)) {
+        if (!StringUtils.isNumber(times)) {
             return "Illegal times " + times + ", must be integer.";
         }
         final int t = Integer.parseInt(times);

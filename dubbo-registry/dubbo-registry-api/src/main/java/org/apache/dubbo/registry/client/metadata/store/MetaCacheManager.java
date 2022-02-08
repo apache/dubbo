@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.metadata.store;
 
 import org.apache.dubbo.common.cache.FileCacheStore;
+import org.apache.dubbo.common.cache.FileCacheStoreFactory;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.resource.Disposable;
@@ -76,7 +77,7 @@ public class MetaCacheManager implements ScopeModelAware, Disposable {
         cache = new LRUCache<>(entrySize);
 
         try {
-            cacheStore = new FileCacheStore(filePath, fileName);
+            cacheStore = FileCacheStoreFactory.getInstance(filePath, fileName);
             Map<String, String> properties = cacheStore.loadCache(entrySize);
             logger.info("Successfully loaded meta cache from file " + fileName + ", entries " + properties.size());
             for (Map.Entry<String, String> entry : properties.entrySet()) {
@@ -88,7 +89,10 @@ public class MetaCacheManager implements ScopeModelAware, Disposable {
             }
             // executorService can be empty if FileCacheStore fails
             executorService = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-cache-refresh", true));
-            executorService.scheduleWithFixedDelay(new CacheRefreshTask(cacheStore, cache), 10, INTERVAL, TimeUnit.MINUTES);
+
+            String rawMaxFileSize = System.getProperty("dubbo.meta.cache.maxFileSize");
+            long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
+            executorService.scheduleWithFixedDelay(new CacheRefreshTask(cacheStore, cache, maxFileSize), 10, INTERVAL, TimeUnit.MINUTES);
         } catch (Exception e) {
             logger.error("Load metadata from local cache file error ", e);
         }
@@ -137,10 +141,12 @@ public class MetaCacheManager implements ScopeModelAware, Disposable {
     protected static class CacheRefreshTask implements Runnable {
         private final FileCacheStore cacheStore;
         private final LRUCache<String, MetadataInfo> cache;
+        private final long maxFileSize;
 
-        public CacheRefreshTask(FileCacheStore cacheStore, LRUCache<String, MetadataInfo> cache) {
+        public CacheRefreshTask(FileCacheStore cacheStore, LRUCache<String, MetadataInfo> cache, long maxFileSize) {
             this.cacheStore = cacheStore;
             this.cache = cache;
+            this.maxFileSize = maxFileSize;
         }
 
         @Override
@@ -157,7 +163,7 @@ public class MetaCacheManager implements ScopeModelAware, Disposable {
             }
 
             logger.info("Dumping meta caches, latest entries " + properties.size());
-            cacheStore.refreshCache(properties, DEFAULT_COMMENT);
+            cacheStore.refreshCache(properties, DEFAULT_COMMENT, maxFileSize);
         }
     }
 }

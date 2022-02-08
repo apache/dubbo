@@ -27,48 +27,35 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
+import java.io.Writer;
 import java.nio.channels.FileLock;
-import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Local file interaction class that can back different caches.
- *
+ * <p>
  * All items in local file are of human friendly format.
  */
 public class FileCacheStore {
     private static final Logger logger = LoggerFactory.getLogger(FileCacheStore.class);
 
-    private static final int DEL = 0x7F;
-    private static final char ESCAPE = '%';
-    private static final Set<Character> ILLEGALS = new HashSet<Character>();
-    private static final String SUFFIX = ".dubbo.cache";
-
-    private File basePath;
+    private String cacheFilePath;
     private File cacheFile;
-    private FileLock directoryLock;
     private File lockFile;
+    private FileLock directoryLock;
 
-    public FileCacheStore(String basePath, String fileName) throws IOException, PathNotExclusiveException {
-        if (basePath == null) {
-            basePath = System.getProperty("user.home") + "/.dubbo/";
-        }
-        this.basePath = new File(basePath);
-
-        this.cacheFile = getFile(fileName, SUFFIX);
-        if (cacheFile != null && !cacheFile.exists()) {
-            cacheFile.createNewFile();
-        }
+    private FileCacheStore(String cacheFilePath, File cacheFile, File lockFile, FileLock directoryLock) {
+        this.cacheFilePath = cacheFilePath;
+        this.cacheFile = cacheFile;
+        this.lockFile = lockFile;
+        this.directoryLock = directoryLock;
     }
 
-    public Map<String, String> loadCache(int entrySize) throws IOException {
+    public synchronized Map<String, String> loadCache(int entrySize) throws IOException {
         Map<String, String> properties = new HashMap<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(cacheFile))) {
             int count = 1;
@@ -93,105 +80,6 @@ public class FileCacheStore {
         return properties;
     }
 
-    public File getFile(String cacheName, String suffix) throws PathNotExclusiveException {
-        cacheName = safeName(cacheName);
-        if (!cacheName.endsWith(suffix)) {
-            cacheName = cacheName + suffix;
-        }
-        return getFile(cacheName);
-    }
-
-    /**
-     * Get a file object for the given name
-     *
-     * @param name the file name
-     * @return a file object
-     */
-    public File getFile(String name) throws PathNotExclusiveException {
-        synchronized (this) {
-            File candidate = basePath;
-            // ensure cache store path exists
-            if (!candidate.isDirectory() && !candidate.mkdirs()) {
-                throw new RuntimeException("Cache store path can't be created: " + candidate);
-            }
-
-            boolean autoCreated = false;
-            int index = 1;
-            while (true) {
-                try {
-                    tryFileLock(name);
-                    break;
-                } catch (PathNotExclusiveException e) {
-                    autoCreated = true;
-                    index++;
-                    name += index;
-                    if (index > 3) {
-                        logger.warn("Path '" + basePath + "/" + name
-                            + "' has already used by an existing Dubbo process.\n Please specify another one explicitly.");
-                        throw e;
-                    }
-                }
-            }
-            if (autoCreated && index < 3) {
-                logger.warn("Auto-generated cache file name is " + basePath + "/" + name);
-            }
-        }
-
-        File file = new File(basePath, name);
-        for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
-            if (basePath.equals(parent)) {
-                return file;
-            }
-        }
-
-        throw new IllegalArgumentException("Attempted to access file outside the dubbo cache path");
-    }
-
-    /**
-     * sanitize a name for valid file or directory name
-     *
-     * @param name
-     * @return sanitized version of name
-     */
-    private static String safeName(String name) {
-        int len = name.length();
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) {
-            char c = name.charAt(i);
-            if (c <= ' ' || c >= DEL || (c >= 'A' && c <= 'Z') || ILLEGALS.contains(c) || c == ESCAPE) {
-                sb.append(ESCAPE);
-                sb.append(String.format("%04x", (int) c));
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
-    private void tryFileLock(String fileName) throws PathNotExclusiveException {
-        lockFile = new File(basePath.getAbsoluteFile(), fileName + ".lock");
-        lockFile.deleteOnExit();
-
-        FileLock dirLock;
-        try {
-            lockFile.createNewFile();
-            if (!lockFile.exists()) {
-                throw new AssertionError("Failed to create lock file " + lockFile);
-            }
-            FileChannel lockFileChannel = new RandomAccessFile(lockFile, "rw").getChannel();
-            dirLock = lockFileChannel.tryLock();
-        } catch (OverlappingFileLockException ofle) {
-            dirLock = null;
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
-
-        if (dirLock == null) {
-            throw new PathNotExclusiveException(basePath.getAbsolutePath() + "/" + fileName + " is not exclusive.");
-        }
-
-        this.directoryLock = dirLock;
-    }
 
     private void unlock() {
         if (directoryLock != null && directoryLock.isValid()) {
@@ -205,12 +93,15 @@ public class FileCacheStore {
         }
     }
 
-    public void refreshCache(Map<String, String> properties, String comment) {
+    public synchronized void refreshCache(Map<String, String> properties, String comment, long maxFileSize) {
         if (CollectionUtils.isEmptyMap(properties)) {
             return;
         }
 
-        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(cacheFile, false), StandardCharsets.UTF_8))) {
+        try (LimitedLengthBufferedWriter bw =
+                 new LimitedLengthBufferedWriter(
+                     new OutputStreamWriter(
+                         new FileOutputStream(cacheFile, false), StandardCharsets.UTF_8), maxFileSize)) {
             bw.write("#" + comment);
             bw.newLine();
             bw.write("#" + new Date());
@@ -222,6 +113,10 @@ public class FileCacheStore {
                 bw.newLine();
             }
             bw.flush();
+            long remainSize = bw.getRemainSize();
+            if (remainSize < 0) {
+                logger.info("Cache file was truncated for exceeding the maximum file size " + maxFileSize + " byte. Exceeded by " + (-remainSize) + " byte.");
+            }
         } catch (IOException e) {
             logger.warn("Update cache error.");
         }
@@ -233,17 +128,97 @@ public class FileCacheStore {
         }
     }
 
-    private static class PathNotExclusiveException extends Exception {
-        public PathNotExclusiveException() {
-            super();
+    public synchronized void destroy() {
+        unlock();
+        FileCacheStoreFactory.removeCache(cacheFilePath);
+    }
+
+    /**
+     * for unit test only
+     */
+    @Deprecated
+    protected String getCacheFilePath() {
+        return cacheFilePath;
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String cacheFilePath;
+        private File cacheFile;
+        private File lockFile;
+        private FileLock directoryLock;
+
+        private Builder() {
         }
 
-        public PathNotExclusiveException(String msg) {
-            super(msg);
+        public Builder cacheFilePath(String cacheFilePath) {
+            this.cacheFilePath = cacheFilePath;
+            return this;
+        }
+
+        public Builder cacheFile(File cacheFile) {
+            this.cacheFile = cacheFile;
+            return this;
+        }
+
+        public Builder lockFile(File lockFile) {
+            this.lockFile = lockFile;
+            return this;
+        }
+
+        public Builder directoryLock(FileLock directoryLock) {
+            this.directoryLock = directoryLock;
+            return this;
+        }
+
+        public FileCacheStore build() {
+            return new FileCacheStore(cacheFilePath, cacheFile, lockFile, directoryLock);
         }
     }
 
-    public void destroy() {
-        unlock();
+    protected static class Empty extends FileCacheStore {
+
+        private Empty(String cacheFilePath) {
+            super(cacheFilePath, null, null, null);
+        }
+
+        public static Empty getInstance(String cacheFilePath) {
+            return new Empty(cacheFilePath);
+        }
+
+        @Override
+        public Map<String, String> loadCache(int entrySize) throws IOException {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        public void refreshCache(Map<String, String> properties, String comment, long maxFileSize) {
+        }
+    }
+
+    private static class LimitedLengthBufferedWriter extends BufferedWriter {
+
+        private long remainSize;
+
+        public LimitedLengthBufferedWriter(Writer out, long maxSize) {
+            super(out);
+            this.remainSize = maxSize == 0 ? Long.MAX_VALUE : maxSize;
+        }
+
+        @Override
+        public void write(String str) throws IOException {
+            remainSize -= str.getBytes(StandardCharsets.UTF_8).length;
+            if (remainSize < 0) {
+                return;
+            }
+            super.write(str);
+        }
+
+        public long getRemainSize() {
+            return remainSize;
+        }
     }
 }

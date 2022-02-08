@@ -42,7 +42,7 @@ public class ShutdownTelnet implements BaseCommand {
 
         int sleepMilliseconds = 0;
         if (args != null && args.length > 0) {
-            if (args.length == 2 && "-t".equals(args[0]) && StringUtils.isInteger(args[1])) {
+            if (args.length == 2 && "-t".equals(args[0]) && StringUtils.isNumber(args[1])) {
                 sleepMilliseconds = Integer.parseInt(args[1]);
             } else {
                 return "Invalid parameter,please input like shutdown -t 10000";
