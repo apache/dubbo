@@ -61,7 +61,9 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         setObjectAttachmentIfAbsent(key, value);
     }
 
-    default String getServiceName() {
+
+    @Override
+    default String getInterfaceName() {
         return null;
     }
 
