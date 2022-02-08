@@ -140,7 +140,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
      */
     protected RpcInvocation buildInvocation(Metadata metadata) {
         RpcInvocation inv = new RpcInvocation(getUrl().getServiceModel(),
-            getMethodName(), getServiceDescriptor().getServiceName(),
+            getMethodName(), getServiceDescriptor().getInterfaceName(),
             getUrl().getProtocolServiceKey(), getMethodDescriptor().getRealParameterClasses(), new Object[0]);
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
         inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
@@ -157,7 +157,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                 }
             }
         } catch (Throwable t) {
-            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s", timeout, getServiceDescriptor().getServiceName(),
+            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s", timeout, getServiceDescriptor().getInterfaceName(),
                 getMethodName()));
         }
         invokeHeaderFilter(inv);
@@ -285,7 +285,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             if (getMethodDescriptor() == null) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
                     .withDescription("Method :" + getMethodName() + "[" + Arrays.toString(paramTypes) + "] " +
-                        "not found of service:" + getServiceDescriptor().getServiceName()));
+                        "not found of service:" + getServiceDescriptor().getInterfaceName()));
                 return null;
             }
         }

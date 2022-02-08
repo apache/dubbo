@@ -148,7 +148,7 @@ public abstract class MeshRuleRouter<T> extends AbstractStateRouter<T> implement
      * Match virtual service (by serviceName)
      */
     protected DubboRoute getDubboRoute(VirtualServiceRule virtualServiceRule, Invocation invocation) {
-        String serviceName = invocation.getServiceName();
+        String serviceName = invocation.getInterfaceName();
 
         VirtualServiceSpec spec = virtualServiceRule.getSpec();
         List<DubboRoute> dubboRouteList = spec.getDubbo();

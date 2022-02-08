@@ -71,8 +71,6 @@ public class ApplicationModel extends ScopeModel {
     private AtomicInteger moduleIndex = new AtomicInteger(0);
     private Object moduleLock = new Object();
 
-    private final boolean isInternal;
-
     // --------- static methods ----------//
 
     public static ApplicationModel ofNullable(ApplicationModel applicationModel) {
@@ -197,9 +195,8 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public ApplicationModel(FrameworkModel frameworkModel, boolean isInternal) {
-        super(frameworkModel, ExtensionScope.APPLICATION);
+        super(frameworkModel, ExtensionScope.APPLICATION, isInternal);
         Assert.notNull(frameworkModel, "FrameworkModel can not be null");
-        this.isInternal = isInternal;
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
         if (LOGGER.isInfoEnabled()) {
@@ -451,9 +448,5 @@ public class ApplicationModel extends ScopeModel {
 
     public void setDeployer(ApplicationDeployer deployer) {
         this.deployer = deployer;
-    }
-
-    public boolean isInternal() {
-        return isInternal;
     }
 }

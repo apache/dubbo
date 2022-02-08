@@ -63,7 +63,7 @@ public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         ClusterInvoker<T> invoker = getServiceDiscoveryInvoker();
         if (invoker == null) {
-            throw new IllegalStateException("There's no service discovery invoker available for service " + invocation.getServiceName());
+            throw new IllegalStateException("There's no service discovery invoker available for service " + invocation.getInterfaceName());
         }
         return invoker.invoke(invocation);
     }

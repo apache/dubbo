@@ -97,7 +97,7 @@ public class ScopeModelUtilTest {
 
     class MockScopeModel extends ScopeModel {
         public MockScopeModel(ScopeModel parent, ExtensionScope scope) {
-            super(parent, scope);
+            super(parent, scope, false);
         }
 
         @Override

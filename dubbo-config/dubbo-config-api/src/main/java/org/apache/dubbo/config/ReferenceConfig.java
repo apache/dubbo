@@ -403,7 +403,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             referenceParameters.get(INTERFACE_KEY), referenceParameters);
         consumerUrl = consumerUrl.setScopeModel(getScopeModel());
         consumerUrl = consumerUrl.setServiceModel(consumerModel);
-        MetadataUtils.publishServiceDefinition(interfaceName, consumerUrl, getScopeModel(), getApplicationModel());
+        MetadataUtils.publishServiceDefinition(consumerUrl, consumerModel.getServiceModel(), getApplicationModel());
 
         // create service proxy
         return (T) proxyFactory.getProxy(invoker, ProtocolUtils.isGeneric(generic));
