@@ -43,7 +43,6 @@ import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStreamListener;
-import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.service.ServiceDescriptorInternalCache;
 import org.apache.dubbo.triple.TripleWrapper;
 
@@ -85,6 +84,7 @@ public class ServerCall {
     private boolean closed;
     private RpcInvocation invocation;
     private Listener listener;
+    private boolean headerSent;
 
     public ServerCall(ServerStream serverStream,
                       FrameworkModel frameworkModel,
@@ -105,26 +105,41 @@ public class ServerCall {
         this.pathResolver = pathResolver;
     }
 
-    public static void call() {
-
-    }
-
-    public void sendHeader() {
+    private void sendHeader() {
+        if(headerSent){
+            return ;
+        }
+        headerSent=true;
         serverStream.sendHeader(TripleConstant.createSuccessHttp2Headers());
     }
 
     public void writeMessage(Object message) {
-        final byte[] data;
-        try {
-            data = this.pack.pack(message);
+        executor.execute(()-> {
+            if (!headerSent) {
+                sendHeader();
+            }
+            final byte[] data;
+            try {
+                data = pack.pack(message);
+            } catch (IOException e) {
+                close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withDescription("Serialize response failed")
+                    .withCause(e), null);
+                return;
+            }
+            if (data == null) {
+                close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withDescription("Missing response"), null);
+                return;
+            }
             serverStream.writeMessage(data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     public void close(GrpcStatus status, Map<String, Object> trailers) {
-        serverStream.close(status,trailers);
+        executor.execute(()-> {
+            serverStream.close(status, trailers);
+        });
     }
 
     private Invoker<?> getInvoker(Map<String, Object> headers, String serviceName) {
@@ -216,24 +231,6 @@ public class ServerCall {
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
         serverStream.sendHeaderWithEos(trailers);
-    }
-
-    void sendMessage(Object message) {
-        final byte[] data;
-        try {
-            data = pack.pack(message);
-        } catch (IOException e) {
-            close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withDescription("Serialize response failed")
-                .withCause(e), null);
-            return;
-        }
-        if (data == null) {
-            close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withDescription("Missing response"), null);
-            return;
-        }
-        serverStream.writeMessage(data);
     }
 
     interface Listener {

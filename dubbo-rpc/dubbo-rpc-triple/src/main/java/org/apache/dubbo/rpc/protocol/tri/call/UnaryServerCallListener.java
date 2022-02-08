@@ -33,8 +33,7 @@ public class UnaryServerCallListener extends AbstractServerCallListener implemen
 
     @Override
     protected void onServerResponse(AppResponse response) {
-        call.sendHeader();
-        call.sendMessage(response.getValue());
+        call.writeMessage(response.getValue());
         call.close(GrpcStatus.fromCode(GrpcStatus.Code.OK), response.getObjectAttachments());
     }
 

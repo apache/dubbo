@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
 
 public class ServerCallToObserverAdapter implements StreamObserver<Object> {
     private final ServerCall call;
-    private boolean headerSent;
 
     public ServerCallToObserverAdapter(ServerCall call) {
         this.call = call;
@@ -31,9 +30,6 @@ public class ServerCallToObserverAdapter implements StreamObserver<Object> {
 
     @Override
     public void onNext(Object data) {
-        if (headerSent) {
-            call.sendHeader();
-        }
         call.writeMessage(data);
     }
 
