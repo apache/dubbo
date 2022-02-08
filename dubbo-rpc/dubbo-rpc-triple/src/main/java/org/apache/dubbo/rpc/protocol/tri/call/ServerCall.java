@@ -320,7 +320,11 @@ public class ServerCall {
             if (methodDescriptor.isNeedWrap()) {
                 unpack = PbUnpack.REQ_PB_UNPACK;
             } else {
-                unpack = new PbUnpack<>(methodDescriptor.getParameterClasses()[0]);
+                if (methodDescriptor instanceof StreamMethodDescriptor) {
+                    unpack = new PbUnpack<>(((StreamMethodDescriptor) methodDescriptor).requestType);
+                } else {
+                    unpack = new PbUnpack<>(methodDescriptor.getParameterClasses()[0]);
+                }
             }
             pack = PbPack.INSTANCE;
         }

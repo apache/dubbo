@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
+import org.apache.dubbo.rpc.protocol.tri.call.ClientCallUtil;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
@@ -149,7 +150,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
         final List<String> paramTypes = Arrays.stream(invocation.getCompatibleParamSignatures())
             .collect(Collectors.toList());
-        ClientCall.call(call,req.getId(),invocation.getArguments(),connection,methodDescriptor,genericPack,paramTypes,genericUnpack);
+        ClientCallUtil.call(call,req.getId(),invocation.getArguments(),connection,methodDescriptor,genericPack,paramTypes,genericUnpack);
         return result;
     }
 
