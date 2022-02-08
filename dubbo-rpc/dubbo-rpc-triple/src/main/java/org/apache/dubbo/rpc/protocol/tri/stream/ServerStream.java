@@ -143,29 +143,31 @@ public class ServerStream implements Stream {
             headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
         }
         StreamUtils.convertAttachment(headers,attachments);
-        String grpcMessage = getGrpcMessage(grpcStatus);
-        grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
-        headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
-        Status.Builder builder = Status.newBuilder()
-            .setCode(grpcStatus.code.code)
-            .setMessage(grpcMessage);
-        Throwable throwable = grpcStatus.cause;
-        if (throwable == null) {
+        if(!grpcStatus.isOk()) {
+            String grpcMessage = getGrpcMessage(grpcStatus);
+            grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
+            headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
+            Status.Builder builder = Status.newBuilder()
+                .setCode(grpcStatus.code.code)
+                .setMessage(grpcMessage);
+            Throwable throwable = grpcStatus.cause;
+            if (throwable == null) {
+                Status status = builder.build();
+                headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
+                    H2TransportObserver.encodeBase64ASCII(status.toByteArray()));
+                return headers;
+            }
+            DebugInfo debugInfo = DebugInfo.newBuilder()
+                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
+                // can not use now
+                // .setDetail(throwable.getMessage())
+                .build();
+            builder.addDetails(Any.pack(debugInfo));
             Status status = builder.build();
             headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
                 H2TransportObserver.encodeBase64ASCII(status.toByteArray()));
-            return headers;
         }
-        DebugInfo debugInfo = DebugInfo.newBuilder()
-            .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
-            // can not use now
-            // .setDetail(throwable.getMessage())
-            .build();
-        builder.addDetails(Any.pack(debugInfo));
-        Status status = builder.build();
-        headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-            H2TransportObserver.encodeBase64ASCII(status.toByteArray()));
         return headers;
     }
 
