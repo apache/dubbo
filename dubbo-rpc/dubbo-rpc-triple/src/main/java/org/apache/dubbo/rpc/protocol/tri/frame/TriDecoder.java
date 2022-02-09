@@ -36,6 +36,8 @@ public class TriDecoder implements Deframer {
     private int inboundBodyWireSize;
     private long pendingDeliveries;
     private boolean inDelivery = false;
+    private boolean closing;
+    private boolean closed;
 
     private int currentMessageSeqNo = -1;
     private int requiredLength = HEADER_LENGTH;
@@ -61,7 +63,7 @@ public class TriDecoder implements Deframer {
 
     @Override
     public void close() {
-        listener.close();
+        closing = true;
     }
 
     private void deliver() {
@@ -88,6 +90,12 @@ public class TriDecoder implements Deframer {
                         break;
                     default:
                         throw new AssertionError("Invalid state: " + state);
+                }
+            }
+            if (closing) {
+                if (!closed) {
+                    closed = true;
+                    listener.close();
                 }
             }
         } finally {
