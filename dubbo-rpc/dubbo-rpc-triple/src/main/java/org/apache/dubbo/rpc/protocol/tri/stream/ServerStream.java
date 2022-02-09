@@ -60,7 +60,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class ServerStream implements Stream {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerStream.class);
     public final ServerTransportObserver transportObserver = new ServerTransportObserver();
-    private final Channel channel;
     private final Executor executor;
     private final WriteQueue writeQueue;
     private final PathResolver pathResolver;
@@ -79,7 +78,6 @@ public class ServerStream implements Stream {
                         PathResolver pathResolver,
                         List<HeaderFilter> filters,
                         GenericUnpack genericUnpack) {
-        this.channel = channel;
         this.executor = executor;
         this.pathResolver = pathResolver;
         this.filters = filters;
@@ -174,6 +172,11 @@ public class ServerStream implements Stream {
     @Override
     public void writeMessage(byte[] message) {
         writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false), true);
+    }
+
+    @Override
+    public void requestN(int n) {
+        decoder.request(n);
     }
 
     /**
@@ -302,7 +305,6 @@ public class ServerStream implements Stream {
                     }
                 };
                 ServerStream.this.decoder = new TriDecoder(deCompressor, listener);
-                decoder.request(Integer.MAX_VALUE);
             } catch (Throwable t) {
                 close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withCause(t), null);

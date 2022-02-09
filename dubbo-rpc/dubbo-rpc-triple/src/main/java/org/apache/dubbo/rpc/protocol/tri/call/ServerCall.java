@@ -113,6 +113,9 @@ public class ServerCall {
         serverStream.sendHeader(TripleConstant.createSuccessHttp2Headers());
     }
 
+    public void requestN(int n){
+        executor.execute(()->serverStream.requestN(n));
+    }
     public void writeMessage(Object message) {
         executor.execute(()-> {
             if (!headerSent) {
@@ -155,36 +158,6 @@ public class ServerCall {
         return invoker;
     }
 
-    /**
-     * Build the RpcInvocation with metadata and execute headerFilter
-     *
-     * @param headers request header
-     * @return RpcInvocation
-     */
-    protected RpcInvocation buildInvocation(Map<String, Object> headers) {
-        final URL url = invoker.getUrl();
-        RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
-            methodName, serviceDescriptor.getServiceName(),
-            url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
-        inv.setTargetServiceUniqueName(url.getServiceKey());
-        inv.setReturnTypes(methodDescriptor.getReturnTypes());
-
-        inv.setObjectAttachments(headers);
-        // handle timeout
-        String timeout = (String) headers.get(TripleHeaderEnum.TIMEOUT.getHeader());
-        try {
-            if (!Objects.isNull(timeout)) {
-                final Long timeoutInNanos = parseTimeoutToNanos(timeout.toString());
-                if (!Objects.isNull(timeoutInNanos)) {
-                    inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
-                }
-            }
-        } catch (Throwable t) {
-            LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s",
-                timeout, serviceDescriptor.getServiceName(), methodName));
-        }
-        return inv;
-    }
 
     private boolean isEcho(String methodName) {
         return CommonConstants.$ECHO.equals(methodName);
@@ -370,6 +343,36 @@ public class ServerCall {
             } finally {
                 ClassLoadUtil.switchContextLoader(tccl);
             }
+        }
+        /**
+         * Build the RpcInvocation with metadata and execute headerFilter
+         *
+         * @param headers request header
+         * @return RpcInvocation
+         */
+        protected RpcInvocation buildInvocation(Map<String, Object> headers) {
+            final URL url = invoker.getUrl();
+            RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
+                methodName, serviceDescriptor.getServiceName(),
+                url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
+            inv.setTargetServiceUniqueName(url.getServiceKey());
+            inv.setReturnTypes(methodDescriptor.getReturnTypes());
+
+            inv.setObjectAttachments(headers);
+            // handle timeout
+            String timeout = (String) headers.get(TripleHeaderEnum.TIMEOUT.getHeader());
+            try {
+                if (!Objects.isNull(timeout)) {
+                    final Long timeoutInNanos = parseTimeoutToNanos(timeout.toString());
+                    if (!Objects.isNull(timeoutInNanos)) {
+                        inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
+                    }
+                }
+            } catch (Throwable t) {
+                LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s",
+                    timeout, serviceDescriptor.getServiceName(), methodName));
+            }
+            return inv;
         }
     }
 

@@ -30,4 +30,6 @@ public interface Stream {
 
 
     void writeMessage(byte[] message);
+
+    void requestN(int n);
 }

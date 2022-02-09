@@ -130,6 +130,11 @@ public class ClientStream extends AbstractStream implements Stream {
         }
     }
 
+    @Override
+    public void requestN(int n) {
+        //TODO
+    }
+
     public void complete() {
         final EndStreamQueueCommand cmd = EndStreamQueueCommand.create();
         this.writeQueue.enqueue(cmd, true);

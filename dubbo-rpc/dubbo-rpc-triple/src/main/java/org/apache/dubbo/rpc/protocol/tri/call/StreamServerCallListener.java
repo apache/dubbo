@@ -23,8 +23,9 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
-public class StreamServerCallListener extends AbstractServerCallListener implements ServerCall.Listener{
+public class StreamServerCallListener extends AbstractServerCallListener implements ServerCall.Listener {
     private StreamObserver<Object> responseObserver;
+
     public StreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
         super(call, invocation, invoker);
         invocation.setArguments(new Object[]{new ServerCallToObserverAdapter(call)});
@@ -33,7 +34,8 @@ public class StreamServerCallListener extends AbstractServerCallListener impleme
 
     @Override
     protected void onServerResponse(AppResponse response) {
-        responseObserver= (StreamObserver<Object>) response.getValue();
+        responseObserver = (StreamObserver<Object>) response.getValue();
+        call.requestN(Integer.MAX_VALUE);
     }
 
     @Override
