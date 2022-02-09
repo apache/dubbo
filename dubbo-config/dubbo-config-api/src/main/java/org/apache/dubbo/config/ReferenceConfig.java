@@ -398,7 +398,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         if (logger.isInfoEnabled()) {
             logger.info("Referred dubbo service: [" + referenceParameters.get(INTERFACE_KEY) + "]." +
-                (Boolean.TRUE.toString().equals(referenceParameters.get(GENERIC_KEY)) ?
+                (Boolean.parseBoolean(referenceParameters.get(GENERIC_KEY)) ?
                     " it's GenericService reference" : " it's not GenericService reference"));
         }
 
@@ -573,7 +573,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     interfaceClass = Class.forName(interfaceName, true, getInterfaceClassLoader());
                 } else if (interfaceClass == null) {
                     interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
-                            .getContextClassLoader());
+                        .getContextClassLoader());
                 }
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
