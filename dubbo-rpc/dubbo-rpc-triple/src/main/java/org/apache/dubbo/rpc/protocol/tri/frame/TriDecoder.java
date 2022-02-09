@@ -64,6 +64,7 @@ public class TriDecoder implements Deframer {
     @Override
     public void close() {
         closing = true;
+        deliver();
     }
 
     private void deliver() {
@@ -75,7 +76,7 @@ public class TriDecoder implements Deframer {
         inDelivery = true;
         try {
             // Process the uncompressed bytes.
-            while (pendingDeliveries > 0 && readRequiredBytes()) {
+            while (pendingDeliveries > 0 && hasEnoughBytes()) {
                 switch (state) {
                     case HEADER:
                         processHeader();
@@ -103,27 +104,8 @@ public class TriDecoder implements Deframer {
         }
     }
 
-    private boolean readRequiredBytes() {
-        int totalBytesRead = 0;
-        try {
-            int missingBytes;
-            while ((missingBytes = requiredLength - accumulate.readableBytes()) > 0) {
-                if (accumulate.readableBytes() == 0) {
-                    // No more data is available.
-                    return false;
-                }
-                int toRead = Math.min(missingBytes, accumulate.readableBytes());
-                totalBytesRead += toRead;
-                accumulate.addComponent(accumulate.readBytes(toRead));
-            }
-            return true;
-        } finally {
-            if (totalBytesRead > 0) {
-                if (state == GrpcDecodeState.PAYLOAD) {
-                    inboundBodyWireSize += totalBytesRead;
-                }
-            }
-        }
+    private boolean hasEnoughBytes() {
+        return requiredLength - accumulate.readableBytes() <= 0;
     }
 
     /**
@@ -154,7 +136,6 @@ public class TriDecoder implements Deframer {
         // unknown until all bytes are read, and we don't know when it happens.
         inboundBodyWireSize = 0;
         byte[] stream = compressedFlag ? getCompressedBody() : getUncompressedBody();
-        accumulate.clear();
         // todo
         listener.onRawMessage(stream);
 
@@ -171,7 +152,11 @@ public class TriDecoder implements Deframer {
     private byte[] getUncompressedBody() {
         byte[] data = new byte[requiredLength];
         accumulate.readBytes(data);
-        // todo
+        if (requiredLength > 0) {
+            if (state == GrpcDecodeState.PAYLOAD) {
+                inboundBodyWireSize += requiredLength;
+            }
+        }
         return data;
     }
 
