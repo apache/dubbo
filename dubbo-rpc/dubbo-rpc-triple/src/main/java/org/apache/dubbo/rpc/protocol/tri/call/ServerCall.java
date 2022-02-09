@@ -84,7 +84,7 @@ public class ServerCall {
     private RpcInvocation invocation;
     private Listener listener;
     private boolean headerSent;
-    public boolean autoRequestN;
+    public boolean autoRequestN=true;
 
     public ServerCall(ServerStream serverStream,
                       FrameworkModel frameworkModel,
@@ -117,7 +117,7 @@ public class ServerCall {
         executor.execute(() -> serverStream.requestN(n));
     }
     public void disableAutoRequestN(){
-
+        autoRequestN=false;
     }
 
     public void writeMessage(Object message) {

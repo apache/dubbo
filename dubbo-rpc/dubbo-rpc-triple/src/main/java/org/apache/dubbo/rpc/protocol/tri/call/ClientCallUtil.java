@@ -137,7 +137,7 @@ public class ClientCallUtil {
 
     static void cancelByThrowable(ClientCall call, Throwable t) {
         try {
-            call.cancel(null, t);
+            call.cancel("Canceled by error", t);
         } catch (Throwable t1) {
             LOGGER.error("Cancel triple request failed", t1);
         }

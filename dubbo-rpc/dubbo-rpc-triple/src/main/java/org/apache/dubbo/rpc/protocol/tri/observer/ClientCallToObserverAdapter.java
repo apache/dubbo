@@ -18,9 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.CancellationListener;
-import org.apache.dubbo.rpc.RpcServiceContext;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 
@@ -29,6 +27,8 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     public ClientCallToObserverAdapter(ClientCall call) {
         this.call = call;
+        setCancellationContext(RpcContext.getCancellationContext());
+        cancellationContext.addListener(ctx -> call.cancel("Canceled by app ", cancellationContext.getCancellationCause()));
     }
 
     @Override

@@ -28,7 +28,7 @@ public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
     private final AtomicBoolean contextSet = new AtomicBoolean(false);
-    private CancellationContext cancellationContext;
+    protected CancellationContext cancellationContext;
 
     public CancelableStreamObserver() {
     }
