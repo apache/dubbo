@@ -31,5 +31,4 @@ public interface ClientStreamObserver<T> extends StreamObserver<T> {
      */
     void setCompression(String compression);
 
-
 }

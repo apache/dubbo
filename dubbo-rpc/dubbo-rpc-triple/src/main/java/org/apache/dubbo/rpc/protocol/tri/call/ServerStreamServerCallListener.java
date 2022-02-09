@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
@@ -35,7 +35,7 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onMessage(Object message) {
-        invocation.setArguments(new Object[]{message, new ServerStreamObserver<>(call)});
+        invocation.setArguments(new Object[]{message, new ServerCallToObserverAdapter<>(call)});
         invoke();
     }
 

@@ -84,6 +84,7 @@ public class ServerCall {
     private RpcInvocation invocation;
     private Listener listener;
     private boolean headerSent;
+    public boolean autoRequestN;
 
     public ServerCall(ServerStream serverStream,
                       FrameworkModel frameworkModel,

@@ -17,43 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.rpc.protocol.tri.observer.ManagedStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
+import org.apache.dubbo.common.stream.StreamObserver;
 
-public class ServerStreamObserver<T> extends ManagedStreamObserver<T> {
-    private final ServerCall call;
+public interface ServerStreamObserver<T> extends StreamObserver<T> {
 
-    @Override
-    public void setCompression(String compression) {
-        super.setCompression(compression);
-    }
+    void disableAutoRequestN();
 
-    @Override
-    public void disableAutoRequestN() {
-        super.disableAutoRequestN();
-    }
-
-    public ServerStreamObserver(ServerCall call) {
-        this.call = call;
-    }
-
-    @Override
-    public void onNext(Object data) {
-        call.writeMessage(data);
-    }
-
-    @Override
-    public void onError(Throwable throwable) {
-        call.close(GrpcStatus.getStatus(throwable), null);
-    }
-
-    @Override
-    public void onCompleted() {
-        call.close(GrpcStatus.fromCode(GrpcStatus.Code.OK), null);
-    }
-
-    @Override
-    public void requestN(int n) {
-        call.requestN(n);
-    }
+    void requestN(int n);
 }

@@ -21,15 +21,15 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class BiStreamServerCallListener extends AbstractServerCallListener {
-    private final ServerStreamObserver responseObserver;
+    private final ServerCallToObserverAdapter responseObserver;
     private StreamObserver<Object> requestObserver;
 
     public BiStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
         super(call, invocation, invoker);
-        this.responseObserver = new ServerStreamObserver<>(call);
+        this.responseObserver = new ServerCallToObserverAdapter<>(call);
         invocation.setArguments(new Object[]{responseObserver});
         invoke();
     }
@@ -37,7 +37,7 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     @Override
     protected void onServerResponse(AppResponse response) {
         requestObserver = (StreamObserver<Object>) response.getValue();
-        if (responseObserver.autoRequestN) {
+        if (responseObserver.isAutoRequestN()) {
             call.requestN(Integer.MAX_VALUE);
         }
     }

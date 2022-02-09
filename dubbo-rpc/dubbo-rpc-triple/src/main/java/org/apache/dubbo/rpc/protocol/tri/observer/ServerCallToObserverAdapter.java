@@ -17,32 +17,44 @@
 
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.CancellationListener;
-import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
+import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
 
-public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements StreamObserver<T> {
-    private final ClientCall call;
+public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ServerStreamObserver<T> {
+    private final ServerCall call;
 
-    public ClientCallToObserverAdapter(ClientCall call) {
+    public boolean isAutoRequestN(){
+        return call.autoRequestN;
+    }
+
+    @Override
+    public void disableAutoRequestN() {
+        call.disableAutoRequestN();
+    }
+
+    public ServerCallToObserverAdapter(ServerCall call) {
         this.call = call;
     }
 
     @Override
     public void onNext(Object data) {
-        call.sendMessage(data);
+        call.writeMessage(data);
     }
 
     @Override
     public void onError(Throwable throwable) {
-        call.cancel(null, throwable);
+        call.close(GrpcStatus.getStatus(throwable), null);
     }
 
     @Override
     public void onCompleted() {
-        call.closeLocal();
+        call.close(GrpcStatus.fromCode(GrpcStatus.Code.OK), null);
+    }
+
+    @Override
+    public void requestN(int n) {
+        call.requestN(n);
     }
 }
