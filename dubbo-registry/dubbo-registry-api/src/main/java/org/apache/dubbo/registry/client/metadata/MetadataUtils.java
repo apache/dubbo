@@ -78,7 +78,7 @@ public class MetadataUtils {
                 if (serviceDescriptor == null) {
                     return;
                 }
-                FullServiceDefinition serviceDefinition = serviceDescriptor.getServiceDefinition(serviceName);
+                FullServiceDefinition serviceDefinition = serviceDescriptor.getServiceDefinition();
 
                 if (StringUtils.isNotEmpty(serviceName) && serviceDefinition != null) {
                     serviceDefinition.setParameters(url.getParameters());
