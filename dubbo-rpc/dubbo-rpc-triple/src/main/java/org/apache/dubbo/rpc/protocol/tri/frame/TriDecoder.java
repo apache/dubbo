@@ -33,13 +33,11 @@ public class TriDecoder implements Deframer {
     private final Listener listener;
     private final DeCompressor decompressor;
     private boolean compressedFlag;
-    private int inboundBodyWireSize;
     private long pendingDeliveries;
     private boolean inDelivery = false;
     private boolean closing;
     private boolean closed;
 
-    private int currentMessageSeqNo = -1;
     private int requiredLength = HEADER_LENGTH;
 
 
@@ -96,6 +94,8 @@ public class TriDecoder implements Deframer {
             if (closing) {
                 if (!closed) {
                     closed = true;
+                    accumulate.clear();
+                    accumulate.release();
                     listener.close();
                 }
             }
@@ -122,7 +122,6 @@ public class TriDecoder implements Deframer {
 
         requiredLength = accumulate.readInt();
 
-        currentMessageSeqNo++;
         // Continue reading the frame body.
         state = GrpcDecodeState.PAYLOAD;
     }
@@ -134,7 +133,6 @@ public class TriDecoder implements Deframer {
         // There is no reliable way to get the uncompressed size per message when it's compressed,
         // because the uncompressed bytes are provided through an InputStream whose total size is
         // unknown until all bytes are read, and we don't know when it happens.
-        inboundBodyWireSize = 0;
         byte[] stream = compressedFlag ? getCompressedBody() : getUncompressedBody();
         // todo
         listener.onRawMessage(stream);
@@ -145,18 +143,13 @@ public class TriDecoder implements Deframer {
     }
 
     private byte[] getCompressedBody() {
-        // todo
-        return decompressor.decompress(accumulate.array());
+        final byte[] compressedBody = getUncompressedBody();
+        return decompressor.decompress(compressedBody);
     }
 
     private byte[] getUncompressedBody() {
         byte[] data = new byte[requiredLength];
         accumulate.readBytes(data);
-        if (requiredLength > 0) {
-            if (state == GrpcDecodeState.PAYLOAD) {
-                inboundBodyWireSize += requiredLength;
-            }
-        }
         return data;
     }
 
@@ -173,6 +166,5 @@ public class TriDecoder implements Deframer {
         void close();
 
     }
-
 
 }
