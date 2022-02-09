@@ -106,18 +106,19 @@ public class ServerCall {
     }
 
     private void sendHeader() {
-        if(headerSent){
-            return ;
+        if (headerSent) {
+            return;
         }
-        headerSent=true;
+        headerSent = true;
         serverStream.sendHeader(TripleConstant.createSuccessHttp2Headers());
     }
 
-    public void requestN(int n){
-        executor.execute(()->serverStream.requestN(n));
+    public void requestN(int n) {
+        executor.execute(() -> serverStream.requestN(n));
     }
+
     public void writeMessage(Object message) {
-        executor.execute(()-> {
+        executor.execute(() -> {
             if (!headerSent) {
                 sendHeader();
             }
@@ -140,7 +141,7 @@ public class ServerCall {
     }
 
     public void close(GrpcStatus status, Map<String, Object> trailers) {
-        executor.execute(()-> {
+        executor.execute(() -> {
             serverStream.close(status, trailers);
         });
     }
@@ -244,6 +245,35 @@ public class ServerCall {
             }
         }
 
+        void trySetListener() {
+            if (listener != null) {
+                return;
+            }
+            if (methodDescriptor == null) {
+                return;
+            }
+            if (closed) {
+                return;
+            }
+            invocation = buildInvocation(headers);
+            if (closed) {
+                return;
+            }
+            headerFilters.forEach(f -> f.invoke(invoker, invocation));
+            if (closed) {
+                return;
+            }
+
+            if (methodDescriptor instanceof StreamMethodDescriptor) {
+                listener = new StreamServerCallListener(ServerCall.this, invocation, invoker);
+            } else {
+                listener = new UnaryServerCallListener(ServerCall.this, invocation, invoker);
+            }
+            if (methodDescriptor.isNeedWrap()) {
+                listener = new WrapRequestServerCallListener(listener, genericUnpack);
+            }
+        }
+
         @Override
         public void onHeaders(Map<String, Object> headers) {
             this.headers = headers;
@@ -295,6 +325,11 @@ public class ServerCall {
                 }
             }
             pack = PbPack.INSTANCE;
+            trySetListener();
+            if (listener == null) {
+                // wrap request , need one message
+                requestN(1);
+            }
         }
 
         @Override
@@ -309,29 +344,8 @@ public class ServerCall {
             }
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {
-                if (listener == null) {
-                    trySetMethodDescriptor(message);
-                    if (closed) {
-                        return;
-                    }
-                    invocation = buildInvocation(headers);
-                    if (closed) {
-                        return;
-                    }
-                    headerFilters.forEach(f -> f.invoke(invoker, invocation));
-                    if (closed) {
-                        return;
-                    }
-
-                    if (methodDescriptor instanceof StreamMethodDescriptor) {
-                        listener = new StreamServerCallListener(ServerCall.this, invocation, invoker);
-                    } else {
-                        listener = new UnaryServerCallListener(ServerCall.this, invocation, invoker);
-                    }
-                    if (methodDescriptor.isNeedWrap()) {
-                        listener = new WrapRequestServerCallListener(listener, genericUnpack);
-                    }
-                }
+                trySetMethodDescriptor(message);
+                trySetListener();
                 if (providerModel != null) {
                     ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
                 }
@@ -344,6 +358,7 @@ public class ServerCall {
                 ClassLoadUtil.switchContextLoader(tccl);
             }
         }
+
         /**
          * Build the RpcInvocation with metadata and execute headerFilter
          *
