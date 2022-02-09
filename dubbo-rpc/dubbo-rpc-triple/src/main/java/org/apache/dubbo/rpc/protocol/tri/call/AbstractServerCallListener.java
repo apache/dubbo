@@ -27,12 +27,13 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 
 import java.util.concurrent.CompletionStage;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.getStatus;
 
-public abstract class AbstractServerCallListener implements ServerCall.Listener{
+public abstract class AbstractServerCallListener implements ServerCall.Listener {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
 
     final RpcInvocation invocation;
@@ -40,7 +41,7 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener{
     final Invoker<?> invoker;
 
     public AbstractServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
-        this.call=call;
+        this.call = call;
         this.invocation = invocation;
         this.invoker = invoker;
     }
@@ -49,7 +50,12 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener{
         final long stInNano = System.nanoTime();
         final Result result = invoker.invoke(invocation);
         CompletionStage<Object> future = result.thenApply(Function.identity());
-        future.whenComplete((o, throwable) -> {
+        future.whenComplete(onResponse(stInNano));
+        RpcContext.removeContext();
+    }
+
+    private BiConsumer<Object, Throwable> onResponse(long stInNano) {
+        return (o, throwable) -> {
             if (throwable != null) {
                 LOGGER.error("Invoke error", throwable);
                 call.close(getStatus(throwable), null);
@@ -71,8 +77,7 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener{
             } else {
                 onServerResponse(response);
             }
-        });
-        RpcContext.removeContext();
+        };
     }
 
     protected abstract void onServerResponse(AppResponse response);
