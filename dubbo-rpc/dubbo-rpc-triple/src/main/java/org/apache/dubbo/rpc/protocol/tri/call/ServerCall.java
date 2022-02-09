@@ -79,7 +79,6 @@ public class ServerCall {
     private PbUnpack<?> unpack;
     private PbPack pack;
     private ProviderModel providerModel;
-    private MethodDescriptor methodDescriptor;
     private List<MethodDescriptor> methodDescriptors;
     private boolean closed;
     private RpcInvocation invocation;
@@ -116,6 +115,9 @@ public class ServerCall {
     public void requestN(int n) {
         executor.execute(() -> serverStream.requestN(n));
     }
+    public void disableAutoRequestN(){
+
+    }
 
     public void writeMessage(Object message) {
         executor.execute(() -> {
@@ -141,9 +143,7 @@ public class ServerCall {
     }
 
     public void close(GrpcStatus status, Map<String, Object> trailers) {
-        executor.execute(() -> {
-            serverStream.close(status, trailers);
-        });
+        executor.execute(() -> serverStream.close(status, trailers));
     }
 
     private Invoker<?> getInvoker(Map<String, Object> headers, String serviceName) {
@@ -220,6 +220,7 @@ public class ServerCall {
 
     class ServerStreamListenerImpl implements ServerStreamListener {
 
+        private MethodDescriptor methodDescriptor;
         private Map<String, Object> headers;
 
         void trySetMethodDescriptor(byte[] data) throws InvalidProtocolBufferException {
@@ -265,7 +266,11 @@ public class ServerCall {
             }
 
             if (methodDescriptor instanceof StreamMethodDescriptor) {
-                listener = new StreamServerCallListener(ServerCall.this, invocation, invoker);
+                if (((StreamMethodDescriptor) methodDescriptor).streamType == StreamMethodDescriptor.StreamType.SERVER) {
+                    listener = new ServerStreamServerCallListener(ServerCall.this, invocation, invoker);
+                } else {
+                    listener = new BiStreamServerCallListener(ServerCall.this, invocation, invoker);
+                }
             } else {
                 listener = new UnaryServerCallListener(ServerCall.this, invocation, invoker);
             }
@@ -307,7 +312,7 @@ public class ServerCall {
                 }
                 if (CollectionUtils.isEmpty(methodDescriptors)) {
                     responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
-                        .withDescription("Method :" + methodName + " not found of service:" + serviceName));
+                        .withDescription("Method : " + methodName + " not found of service:" + serviceName));
                     return;
                 }
                 // In most cases there is only one method

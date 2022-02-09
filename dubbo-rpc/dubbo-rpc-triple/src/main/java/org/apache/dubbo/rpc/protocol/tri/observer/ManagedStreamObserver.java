@@ -15,33 +15,22 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.common.stream;
+package org.apache.dubbo.rpc.protocol.tri.observer;
 
-/**
- * StreamObserver is a common streaming API. It is an observer for receiving messages.
- * Implementations are NOT required to be thread-safe.
- *
- * @param <T> type of message
- */
-public interface StreamObserver<T> {
+import org.apache.dubbo.common.stream.StreamObserver;
 
+public abstract class ManagedStreamObserver<T> implements StreamObserver<T> {
+    public boolean autoRequestN = true;
+    public String compression;
 
-    /**
-     * onNext
-     *
-     * @param data to process
-     */
-    void onNext(T data);
+    public void setCompression(String compression) {
+        this.compression = compression;
+    }
 
-    /**
-     * onError
-     *
-     * @param throwable error
-     */
-    void onError(Throwable throwable);
+    public abstract void requestN(int n);
 
-    /**
-     * onCompleted
-     */
-    void onCompleted();
+    public void disableAutoRequestN() {
+        this.autoRequestN = false;
+    }
+
 }

@@ -21,26 +21,30 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
+import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 
-public class StreamServerCallListener extends AbstractServerCallListener implements ServerCall.Listener {
-    private StreamObserver<Object> responseObserver;
+public class BiStreamServerCallListener extends AbstractServerCallListener {
+    private final ServerStreamObserver responseObserver;
+    private StreamObserver<Object> requestObserver;
 
-    public StreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
+    public BiStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
         super(call, invocation, invoker);
-        invocation.setArguments(new Object[]{new ServerCallToObserverAdapter(call)});
+        this.responseObserver = new ServerStreamObserver<>(call);
+        invocation.setArguments(new Object[]{responseObserver});
         invoke();
     }
 
     @Override
     protected void onServerResponse(AppResponse response) {
-        responseObserver = (StreamObserver<Object>) response.getValue();
-        call.requestN(Integer.MAX_VALUE);
+        requestObserver = (StreamObserver<Object>) response.getValue();
+        if (responseObserver.autoRequestN) {
+            call.requestN(Integer.MAX_VALUE);
+        }
     }
 
     @Override
     public void onMessage(Object message) {
-        responseObserver.onNext(message);
+        requestObserver.onNext(message);
     }
 
     @Override
@@ -55,6 +59,6 @@ public class StreamServerCallListener extends AbstractServerCallListener impleme
 
     @Override
     public void onComplete() {
-        responseObserver.onCompleted();
+        requestObserver.onCompleted();
     }
 }

@@ -15,31 +15,42 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.rpc.protocol.tri.observer;
+package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 
-public class ServerCallToObserverAdapter implements StreamObserver<Object> {
-    private final ServerCall call;
+public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
-    public ServerCallToObserverAdapter(ServerCall call) {
-        this.call = call;
+    public ServerStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
+        super(call, invocation, invoker);
+        call.requestN(2);
     }
 
     @Override
-    public void onNext(Object data) {
-        call.writeMessage(data);
+    protected void onServerResponse(AppResponse response) {
     }
 
     @Override
-    public void onError(Throwable throwable) {
-        call.close(GrpcStatus.getStatus(throwable), null);
+    public void onMessage(Object message) {
+        invocation.setArguments(new Object[]{message, new ServerStreamObserver<>(call)});
+        invoke();
     }
 
     @Override
-    public void onCompleted() {
-        call.close(GrpcStatus.fromCode(GrpcStatus.Code.OK), null);
+    public void onHalfClose() {
+
+    }
+
+    @Override
+    public void onCancel() {
+
+    }
+
+    @Override
+    public void onComplete() {
+
     }
 }
