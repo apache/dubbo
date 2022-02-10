@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.proxy;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -42,6 +44,8 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         EchoService.class, Destroyable.class
     };
 
+    private static final Logger logger = LoggerFactory.getLogger(AbstractProxyFactory.class);
+
     @Override
     public <T> T getProxy(Invoker<T> invoker) throws RpcException {
         return getProxy(invoker, false);
@@ -66,13 +70,13 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
             }
         }
 
+        Class<?> realInterfaceClass = null;
         if (generic) {
             try {
                 // find the real interface from url
                 String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
                 ClassLoader classLoader = getClassLoader(invoker);
-                Class<?> realInterfaceClass = ReflectUtils.forName(classLoader, realInterface);
-                realInterfaceClass.getMethods();
+                realInterfaceClass = ReflectUtils.forName(classLoader, realInterface);
                 interfaces.add(realInterfaceClass);
             } catch (Throwable e) {
                 // ignore
@@ -86,7 +90,21 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         interfaces.add(invoker.getInterface());
         interfaces.addAll(Arrays.asList(INTERNAL_INTERFACES));
 
-        return getProxy(invoker, interfaces.toArray(new Class<?>[0]));
+        try {
+            return getProxy(invoker, interfaces.toArray(new Class<?>[0]));
+        } catch (Throwable t) {
+            if (generic) {
+                if (realInterfaceClass != null) {
+                    interfaces.remove(realInterfaceClass);
+                }
+                interfaces.remove(invoker.getInterface());
+
+                logger.error("Error occur when creating proxy. Invoker is in generic mode. Trying to create proxy without real interface class.", t);
+                return getProxy(invoker, interfaces.toArray(new Class<?>[0]));
+            } else {
+                throw t;
+            }
+        }
     }
 
     private <T> ClassLoader getClassLoader(Invoker<T> invoker) {
