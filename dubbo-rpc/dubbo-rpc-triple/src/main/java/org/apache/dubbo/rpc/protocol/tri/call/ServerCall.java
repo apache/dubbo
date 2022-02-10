@@ -38,6 +38,8 @@ import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.PathResolver;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
@@ -85,6 +87,7 @@ public class ServerCall {
     private RpcInvocation invocation;
     private Listener listener;
     private boolean headerSent;
+    private Compressor compressor;
 
     public ServerCall(ServerStream serverStream,
                       FrameworkModel frameworkModel,
@@ -110,11 +113,22 @@ public class ServerCall {
             return;
         }
         headerSent = true;
-        serverStream.sendHeader(TripleConstant.createSuccessHttp2Headers());
+        final DefaultHttp2Headers headers = TripleConstant.createSuccessHttp2Headers();
+        if (compressor != null) {
+            headers.set(TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
+        }
+        serverStream.sendHeader(headers);
     }
 
     public void requestN(int n) {
         executor.execute(() -> serverStream.requestN(n));
+    }
+
+    public void setCompression(String compression) {
+        if (headerSent) {
+            throw new IllegalStateException("Can not set compression after message sent");
+        }
+        this.compressor = Compressor.getCompressor(frameworkModel, compression);
     }
 
     public void disableAutoRequestN() {
@@ -140,8 +154,13 @@ public class ServerCall {
                     .withDescription("Missing response"), null);
                 return;
             }
-            //TODO fill compressor
-            serverStream.writeMessage(data,0);
+            if (compressor != null) {
+                int compressedFlag = Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding()) ? 0 : 1;
+                final byte[] compressed = compressor.compress(data);
+                serverStream.writeMessage(compressed, compressedFlag);
+            } else {
+                serverStream.writeMessage(data, 0);
+            }
         });
     }
 
@@ -285,7 +304,7 @@ public class ServerCall {
         @Override
         public void onHeaders(Map<String, Object> headers) {
             this.headers = headers;
-            executor.execute(()-> doOnHeaders(headers));
+            executor.execute(() -> doOnHeaders(headers));
         }
 
         private void doOnHeaders(Map<String, Object> headers) {
@@ -351,7 +370,7 @@ public class ServerCall {
 
         @Override
         public void cancel(GrpcStatus status) {
-            executor.execute(()->listener.onCancel(status.description));
+            executor.execute(() -> listener.onCancel(status.description));
         }
 
         @Override

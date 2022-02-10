@@ -69,6 +69,11 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         call.requestN(n);
     }
 
+    @Override
+    public void setCompression(String compression) {
+        call.setCompression(compression);
+    }
+
 //    public final void setCancellationContext(CancellationContext cancellationContext) {
 //        if (contextSet.compareAndSet(false, true)) {
 //            this.cancellationContext = cancellationContext;

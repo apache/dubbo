@@ -22,7 +22,6 @@ import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AsciiString;
 import io.netty.util.AttributeKey;
 
@@ -57,8 +56,8 @@ public class TripleConstant {
      * <p>
      * only status and content-type
      */
-    public static Http2Headers createSuccessHttp2Headers() {
-        Http2Headers headers = new DefaultHttp2Headers();
+    public static DefaultHttp2Headers createSuccessHttp2Headers() {
+        DefaultHttp2Headers headers = new DefaultHttp2Headers();
         headers.status(HttpResponseStatus.OK.codeAsText());
         headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
         return headers;

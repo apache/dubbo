@@ -18,10 +18,20 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 
 public interface ServerStreamObserver<T> extends StreamObserver<T> {
 
     void disableAutoRequestN();
 
     void requestN(int n);
+
+    /**
+     * Sets the compression algorithm to use for the call
+     * <p>
+     * For stream set compression needs to determine whether the metadata has been sent, and carry on corresponding processing
+     *
+     * @param compression {@link Compressor}
+     */
+    void setCompression(String compression);
 }
