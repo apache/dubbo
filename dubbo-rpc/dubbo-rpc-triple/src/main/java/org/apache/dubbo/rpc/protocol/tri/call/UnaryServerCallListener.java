@@ -53,8 +53,8 @@ public class UnaryServerCallListener extends AbstractServerCallListener implemen
     }
 
     @Override
-    public void onCancel() {
-
+    public void onCancel(String errorInfo) {
+        // ignored
     }
 
     @Override

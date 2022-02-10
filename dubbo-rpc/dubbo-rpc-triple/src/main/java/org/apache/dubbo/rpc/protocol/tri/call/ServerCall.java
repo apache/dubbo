@@ -74,6 +74,7 @@ public class ServerCall {
     private final String methodName;
     private final String serviceName;
     private final PathResolver pathResolver;
+    public boolean autoRequestN = true;
     private Invoker<?> invoker;
     private ServiceDescriptor serviceDescriptor;
     private PbUnpack<?> unpack;
@@ -84,7 +85,6 @@ public class ServerCall {
     private RpcInvocation invocation;
     private Listener listener;
     private boolean headerSent;
-    public boolean autoRequestN=true;
 
     public ServerCall(ServerStream serverStream,
                       FrameworkModel frameworkModel,
@@ -116,8 +116,9 @@ public class ServerCall {
     public void requestN(int n) {
         executor.execute(() -> serverStream.requestN(n));
     }
-    public void disableAutoRequestN(){
-        autoRequestN=false;
+
+    public void disableAutoRequestN() {
+        autoRequestN = false;
     }
 
     public void writeMessage(Object message) {
@@ -214,7 +215,7 @@ public class ServerCall {
 
         void onHalfClose();
 
-        void onCancel();
+        void onCancel(String errorInfo);
 
         void onComplete();
     }
@@ -340,29 +341,36 @@ public class ServerCall {
 
         @Override
         public void complete() {
-            listener.onComplete();
+            executor.execute(() -> listener.onComplete());
+        }
+
+        @Override
+        public void cancel(GrpcStatus status) {
+            executor.execute(()->listener.onCancel(status.description));
         }
 
         @Override
         public void onMessage(byte[] message) {
-            if (closed) {
-                return;
-            }
-            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-            try {
-                trySetMethodDescriptor(message);
-                trySetListener();
-                if (providerModel != null) {
-                    ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
+            executor.execute(() -> {
+                if (closed) {
+                    return;
                 }
-                final Object obj = unpack.unpack(message);
-                listener.onMessage(obj);
-            } catch (IOException e) {
-                close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription("Server error")
-                    .withCause(e), null);
-            } finally {
-                ClassLoadUtil.switchContextLoader(tccl);
-            }
+                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                try {
+                    trySetMethodDescriptor(message);
+                    trySetListener();
+                    if (providerModel != null) {
+                        ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
+                    }
+                    final Object obj = unpack.unpack(message);
+                    listener.onMessage(obj);
+                } catch (IOException e) {
+                    close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription("Server error")
+                        .withCause(e), null);
+                } finally {
+                    ClassLoadUtil.switchContextLoader(tccl);
+                }
+            });
         }
 
         /**

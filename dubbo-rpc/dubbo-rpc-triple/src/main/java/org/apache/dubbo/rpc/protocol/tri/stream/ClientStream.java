@@ -110,11 +110,11 @@ public class ClientStream extends AbstractStream implements Stream {
             return;
         }
         canceled = true;
-        listener.complete(status);
-        if (headerReceived) {
+//        listener.complete(status);
+//        if (headerReceived) {
             final CancelQueueCommand cmd = CancelQueueCommand.createCommand(status);
             this.writeQueue.enqueue(cmd, true);
-        }
+//        }
     }
 
 

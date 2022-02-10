@@ -336,8 +336,9 @@ public class ServerStream implements Stream {
 
         @Override
         public void cancelByRemote(GrpcStatus status) {
-            listener.complete();
-            close(status, null);
+            listener.cancel(status);
+//            listener.complete();
+//            close(status, null);
         }
     }
 }

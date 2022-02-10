@@ -42,8 +42,9 @@ public class WrapRequestServerCallListener   implements ServerCall.Listener{
     }
 
     @Override
-    public void onCancel() {
-        delegate.onCancel();
+    public void onCancel(String errorInfo) {
+        delegate.onCancel(errorInfo);
+
     }
 
     @Override

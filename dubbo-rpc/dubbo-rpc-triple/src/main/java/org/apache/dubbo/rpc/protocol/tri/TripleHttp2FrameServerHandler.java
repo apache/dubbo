@@ -80,7 +80,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         final ServerStream serverStream = ctx.channel().attr(TripleConstant.SERVER_STREAM_KEY).get();
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
         if (serverStream != null) {
-            serverStream.transportObserver.cancelByRemote(GrpcStatus.fromCode(Code.CANCELLED));
+            serverStream.transportObserver.cancelByRemote(GrpcStatus.fromCode(Code.CANCELLED)
+                .withDescription("Cancel by remote peer, err_code="+frame.errorCode()));
         }
         ctx.close();
     }
