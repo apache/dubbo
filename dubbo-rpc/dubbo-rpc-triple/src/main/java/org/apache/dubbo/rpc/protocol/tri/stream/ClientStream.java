@@ -98,11 +98,16 @@ public class ClientStream extends AbstractStream implements Stream {
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
         this.writeQueue.enqueue(headerCmd, true).addListener(future -> {
             if (!future.isSuccess()) {
-                cancelByLocal(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Http2 exception")
-                    .withCause(future.cause()));
+                transportException(future.cause());
             }
         });
+    }
+
+    private void transportException(Throwable cause){
+        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+            .withDescription("Http2 exception")
+            .withCause(cause);
+        listener.complete(status);
     }
 
     public void cancelByLocal(GrpcStatus status) {
