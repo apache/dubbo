@@ -284,6 +284,10 @@ public class ServerCall {
         @Override
         public void onHeaders(Map<String, Object> headers) {
             this.headers = headers;
+            executor.execute(()-> doOnHeaders(headers));
+        }
+
+        private void doOnHeaders(Map<String, Object> headers) {
             invoker = getInvoker(headers, serviceName);
             if (invoker == null) {
                 responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)

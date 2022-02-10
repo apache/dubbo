@@ -23,8 +23,10 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
@@ -89,6 +91,11 @@ public class ClientCallUtil {
                                                     StreamMethodDescriptor methodDescriptor,
                                                     GenericPack genericPack, List<String> argumentTypes,
                                                     GenericUnpack genericUnpack) {
+        if(responseObserver instanceof CancelableStreamObserver){
+            final CancellationContext context = new CancellationContext();
+            ((CancelableStreamObserver<Object>) responseObserver).setCancellationContext(context);
+            context.addListener(context1 -> call.cancel("Canceled by app", null));
+        }
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver);
         final StreamObserver<Object> requestObserver = call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
         return requestObserver;

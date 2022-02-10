@@ -88,10 +88,6 @@ public class ServerStream implements Stream {
     }
 
 
-    public void writeData(byte[] data, boolean endStream) {
-        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(data, endStream), true);
-    }
-
     private String getGrpcMessage(GrpcStatus status) {
         if (StringUtils.isNotEmpty(status.description)) {
             return status.description;
@@ -109,9 +105,10 @@ public class ServerStream implements Stream {
         if (headerSent) {
             trailersSent = true;
             writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, true), true);
+        } else {
+            headerSent = true;
+            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false), true);
         }
-        headerSent = true;
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false), true);
     }
 
     public void sendHeaderWithEos(Http2Headers headers) {
@@ -324,7 +321,6 @@ public class ServerStream implements Stream {
 //            listener.complete();
 //            close(status, null);
         }
-
 
 
         private class ServerDecoderListener implements TriDecoder.Listener {
