@@ -71,7 +71,9 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
                 // find the real interface from url
                 String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
                 ClassLoader classLoader = getClassLoader(invoker);
-                interfaces.add(ReflectUtils.forName(classLoader, realInterface));
+                Class<?> realInterfaceClass = ReflectUtils.forName(classLoader, realInterface);
+                realInterfaceClass.getMethods();
+                interfaces.add(realInterfaceClass);
             } catch (Throwable e) {
                 // ignore
             }
