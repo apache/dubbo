@@ -121,7 +121,7 @@ public class ServerCall {
     }
 
     public void requestN(int n) {
-        executor.execute(() -> serverStream.requestN(n));
+        serverStream.requestN(n);
     }
 
     public void setCompression(String compression) {
@@ -304,7 +304,7 @@ public class ServerCall {
         @Override
         public void onHeaders(Map<String, Object> headers) {
             this.headers = headers;
-            executor.execute(() -> doOnHeaders(headers));
+            doOnHeaders(headers);
         }
 
         private void doOnHeaders(Map<String, Object> headers) {
