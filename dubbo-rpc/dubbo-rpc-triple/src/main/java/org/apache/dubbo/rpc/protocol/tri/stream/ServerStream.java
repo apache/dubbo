@@ -53,6 +53,7 @@ import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -95,10 +96,9 @@ public class ServerStream implements Stream {
         if (StringUtils.isNotEmpty(status.description)) {
             return status.description;
         }
-        if (status.cause != null) {
-            return status.cause.getMessage();
-        }
-        return "unknown";
+        return Optional.ofNullable(status.cause)
+            .map(Throwable::getMessage)
+            .orElse("unknown");
     }
 
     public void sendHeader(Http2Headers headers) {
@@ -106,13 +106,12 @@ public class ServerStream implements Stream {
             // todo handle this state
             return;
         }
-        if (!headerSent) {
-            headerSent = true;
-            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false), true);
-        } else {
+        if (headerSent) {
             trailersSent = true;
             writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, true), true);
         }
+        headerSent = true;
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false), true);
     }
 
     public void sendHeaderWithEos(Http2Headers headers) {
@@ -120,52 +119,48 @@ public class ServerStream implements Stream {
         sendHeader(headers);
     }
 
-    public void close(GrpcStatus status, Map<String,Object> attachments) {
+    public void close(GrpcStatus status, Map<String, Object> attachments) {
         if (closed) {
             return;
         }
         closed = true;
-        if (headerSent && trailersSent) {
-            // already closed
-            // todo add sign for outbound status
-            return;
-        }
-        final Http2Headers headers = getTrailers(status,attachments);
+        final Http2Headers headers = getTrailers(status, attachments);
         sendHeaderWithEos(headers);
     }
 
-    private Http2Headers getTrailers(GrpcStatus grpcStatus,Map<String,Object> attachments) {
+    private Http2Headers getTrailers(GrpcStatus grpcStatus, Map<String, Object> attachments) {
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         if (!headerSent) {
             headers.status(HttpResponseStatus.OK.codeAsText());
             headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
         }
-        StreamUtils.convertAttachment(headers,attachments);
+        StreamUtils.convertAttachment(headers, attachments);
         headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
-        if(!grpcStatus.isOk()) {
-            String grpcMessage = getGrpcMessage(grpcStatus);
-            grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
-            headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
-            Status.Builder builder = Status.newBuilder()
-                .setCode(grpcStatus.code.code)
-                .setMessage(grpcMessage);
-            Throwable throwable = grpcStatus.cause;
-            if (throwable == null) {
-                Status status = builder.build();
-                headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-                    H2TransportObserver.encodeBase64ASCII(status.toByteArray()));
-                return headers;
-            }
-            DebugInfo debugInfo = DebugInfo.newBuilder()
-                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
-                // can not use now
-                // .setDetail(throwable.getMessage())
-                .build();
-            builder.addDetails(Any.pack(debugInfo));
+        if (grpcStatus.isOk()) {
+            return headers;
+        }
+        String grpcMessage = getGrpcMessage(grpcStatus);
+        grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
+        headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
+        Status.Builder builder = Status.newBuilder()
+            .setCode(grpcStatus.code.code)
+            .setMessage(grpcMessage);
+        Throwable throwable = grpcStatus.cause;
+        if (throwable == null) {
             Status status = builder.build();
             headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
                 H2TransportObserver.encodeBase64ASCII(status.toByteArray()));
+            return headers;
         }
+        DebugInfo debugInfo = DebugInfo.newBuilder()
+            .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable, 10))
+            // can not use now
+            // .setDetail(throwable.getMessage())
+            .build();
+        builder.addDetails(Any.pack(debugInfo));
+        Status status = builder.build();
+        headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
+            H2TransportObserver.encodeBase64ASCII(status.toByteArray()));
         return headers;
     }
 
@@ -293,23 +288,12 @@ public class ServerStream implements Stream {
             }
 
             try {
-                final TriDecoder.Listener listener = new TriDecoder.Listener() {
-                    @Override
-                    public void onRawMessage(byte[] data) {
-                        ServerStream.this.listener.onMessage(data);
-                    }
-
-                    @Override
-                    public void close() {
-                        ServerStream.this.listener.complete();
-                    }
-                };
+                final TriDecoder.Listener listener = new ServerDecoderListener();
                 ServerStream.this.decoder = new TriDecoder(deCompressor, listener);
             } catch (Throwable t) {
                 close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withCause(t), null);
             }
-
             ServerCall call = new ServerCall(ServerStream.this, frameworkModel,
                 serviceName,
                 methodName,
@@ -339,6 +323,21 @@ public class ServerStream implements Stream {
             listener.cancel(status);
 //            listener.complete();
 //            close(status, null);
+        }
+
+
+
+        private class ServerDecoderListener implements TriDecoder.Listener {
+
+            @Override
+            public void onRawMessage(byte[] data) {
+                ServerStream.this.listener.onMessage(data);
+            }
+
+            @Override
+            public void close() {
+                ServerStream.this.listener.complete();
+            }
         }
     }
 }

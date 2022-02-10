@@ -23,7 +23,7 @@ import java.util.Map;
 
 public interface ServerStreamListener extends StreamListener {
 
-    void onHeaders(Map<String,Object> headers);
+    void onHeaders(Map<String, Object> headers);
 
     /**
      * Indicate the stream is closed . Will be called exactly once
