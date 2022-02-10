@@ -18,10 +18,15 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.CancellationContext;
+import org.apache.dubbo.rpc.RpcContext;
 
 public abstract class CancelableStreamObserver<T> implements StreamObserver<T> {
 
+    private final CancellationContext cancellationContext = RpcContext.getCancellationContext();
+
     public void cancel(Throwable throwable) {
+        cancellationContext.cancel(throwable);
     }
 
 }
