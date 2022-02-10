@@ -317,7 +317,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
             // Auto create MethodConfig/ArgumentConfig according to config props
             Map<String, String> configProperties = subPropsConfiguration.getProperties();
-            Method[] methods = interfaceClass.getMethods();
+            Method[] methods;
+            try {
+                methods = interfaceClass.getMethods();
+            } catch (Throwable e) {
+                // NoClassDefFoundError may be thrown if interface class's dependency jar is missing
+                return;
+            }
+
             for (Method method : methods) {
                 if (ConfigurationUtils.hasSubProperties(configProperties, method.getName())) {
                     MethodConfig methodConfig = getMethodByName(method.getName());
