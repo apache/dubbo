@@ -162,8 +162,8 @@ public class ServerStream implements Stream {
     }
 
     @Override
-    public void writeMessage(byte[] message) {
-        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false), true);
+    public void writeMessage(byte[] message, int compressed) {
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false, compressed), true);
     }
 
     @Override

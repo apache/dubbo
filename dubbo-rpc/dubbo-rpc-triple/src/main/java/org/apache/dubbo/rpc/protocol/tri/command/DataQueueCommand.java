@@ -26,15 +26,18 @@ public class DataQueueCommand extends QueuedCommand{
 
     private final byte[] data;
 
+    private final int compressFlag;
+
     private final boolean endStream;
 
-    private DataQueueCommand(byte[] data, boolean endStream) {
+    private DataQueueCommand(byte[] data, int compressFlag, boolean endStream) {
         this.data = data;
+        this.compressFlag = compressFlag;
         this.endStream = endStream;
     }
 
-    public static DataQueueCommand createGrpcCommand(byte[] data, boolean endStream) {
-        return new DataQueueCommand(data, endStream);
+    public static DataQueueCommand createGrpcCommand(byte[] data, boolean endStream,int compressFlag) {
+        return new DataQueueCommand(data, compressFlag, endStream);
     }
 
     @Override
@@ -43,7 +46,7 @@ public class DataQueueCommand extends QueuedCommand{
             ctx.write(new DefaultHttp2DataFrame(endStream), promise);
         } else {
             ByteBuf buf = ctx.alloc().buffer();
-            buf.writeByte(getCompressFlag(ctx));
+            buf.writeByte(compressFlag);
             buf.writeInt(data.length);
             buf.writeBytes(data);
             ctx.write(new DefaultHttp2DataFrame(buf, endStream), promise);
@@ -59,9 +62,7 @@ public class DataQueueCommand extends QueuedCommand{
     }
 
 //    protected int calcCompressFlag(Compressor compressor) {
-//        if (null == compressor || Identity.NONE.getMessageEncoding().equals(compressor.getMessageEncoding())) {
-//            return 0;
-//        }
+//
 //        return 1;
 //    }
 

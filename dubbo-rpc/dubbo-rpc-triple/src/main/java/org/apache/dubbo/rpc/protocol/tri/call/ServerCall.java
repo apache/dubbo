@@ -140,7 +140,8 @@ public class ServerCall {
                     .withDescription("Missing response"), null);
                 return;
             }
-            serverStream.writeMessage(data);
+            //TODO fill compressor
+            serverStream.writeMessage(data,0);
         });
     }
 

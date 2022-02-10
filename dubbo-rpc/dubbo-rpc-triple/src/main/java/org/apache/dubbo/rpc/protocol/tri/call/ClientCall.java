@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
@@ -50,10 +51,11 @@ public class ClientCall {
     private final Executor executor;
     private final DefaultHttp2Headers headers;
     private final URL url;
-    private final Compressor compressor;
     private final PbUnpack<?> unpack;
+    private Compressor compressor;
     private ClientStream stream;
     private boolean canceled;
+    private boolean started;
 
     public ClientCall(URL url,
                       Connection connection,
@@ -86,7 +88,6 @@ public class ClientCall {
         setIfNotNull(headers, TripleHeaderEnum.SERVICE_VERSION.getHeader(), serviceVersion);
         setIfNotNull(headers, TripleHeaderEnum.SERVICE_GROUP.getHeader(), serviceGroup);
         setIfNotNull(headers, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(), application);
-        setIfNotNull(headers, TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
         setIfNotNull(headers, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), acceptEncoding);
         StreamUtils.convertAttachment(headers, attachments);
         unpack = getUnpack(methodDescriptor);
@@ -107,11 +108,17 @@ public class ClientCall {
     }
 
     public void sendMessage(Object message) {
+        if(!started) {
+            started=true;
+            setIfNotNull(headers, TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
+            stream.startCall(headers);
+        }
         final byte[] data;
         try {
             data = PbPack.INSTANCE.pack(message);
+            int compressed =  Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding())?0:1;
             final byte[] compress = compressor.compress(data);
-            stream.writeMessage(compress);
+            stream.writeMessage(compress,compressed);
         } catch (IOException e) {
             cancel("Serialize request failed", e);
         }
@@ -121,12 +128,15 @@ public class ClientCall {
         stream.complete();
     }
 
+    public void setCompression(String compression) {
+        this.compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compression);
+    }
+
     public void start(Listener responseListener) {
         this.stream = new ClientStream(
             url,
             connection.getChannel(),
             new ClientStreamListenerImpl(responseListener, unpack));
-        stream.startCall(headers);
     }
 
     public void cancel(String message, Throwable t) {

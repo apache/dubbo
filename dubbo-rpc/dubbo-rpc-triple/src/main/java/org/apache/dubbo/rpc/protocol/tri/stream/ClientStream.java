@@ -44,6 +44,7 @@ import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
@@ -74,7 +75,6 @@ public class ClientStream extends AbstractStream implements Stream {
         this.listener = listener;
     }
 
-
     WriteQueue createWriteQueue(Channel parent) {
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(parent);
         final Future<Http2StreamChannel> future = streamChannelBootstrap.open().syncUninterruptibly();
@@ -90,7 +90,8 @@ public class ClientStream extends AbstractStream implements Stream {
         return new WriteQueue(channel);
     }
 
-    public void startCall(Http2Headers headers) {
+
+    public void startCall(Http2Headers headers){
         if (this.writeQueue == null) {
             // already processed at createStream()
             return;
@@ -102,7 +103,6 @@ public class ClientStream extends AbstractStream implements Stream {
             }
         });
     }
-
     private void transportException(Throwable cause){
         final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withDescription("Http2 exception")
@@ -124,9 +124,9 @@ public class ClientStream extends AbstractStream implements Stream {
 
 
     @Override
-    public void writeMessage(byte[] message) {
+    public void writeMessage(byte[] message,int compressed) {
         try {
-            final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false);
+            final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false,compressed);
             this.writeQueue.enqueue(cmd, true);
         } catch (Throwable t) {
             cancelByLocal(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)

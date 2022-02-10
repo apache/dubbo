@@ -29,7 +29,7 @@ import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 public interface Stream {
 
 
-    void writeMessage(byte[] message);
+    void writeMessage(byte[] message,int compressed);
 
     void requestN(int n);
 }

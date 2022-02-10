@@ -18,9 +18,10 @@
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
+import org.apache.dubbo.rpc.protocol.tri.ClientStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 
-public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> {
+public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ClientStreamObserver<T> {
     private final ClientCall call;
 
     public ClientCallToObserverAdapter(ClientCall call) {
@@ -45,5 +46,10 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     @Override
     public void cancel(Throwable throwable) {
         call.cancel("Canceled by app ", throwable);
+    }
+
+    @Override
+    public void setCompression(String compression) {
+        call.setCompression(compression);
     }
 }
