@@ -407,8 +407,10 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         if (inv.get(CommonConstants.TIMEOUT_KEY) != null) {
             metadata.put(TripleHeaderEnum.TIMEOUT.getHeader(), inv.get(CommonConstants.TIMEOUT_KEY) + "m");
         }
-        metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), getUrl().getVersion())
-            .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
+        if (!"1.0.0".equals(getUrl().getVersion())) {
+            metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), getUrl().getVersion());
+        }
+        metadata.putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
                 (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
             .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
                 (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
