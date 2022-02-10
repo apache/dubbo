@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
@@ -40,12 +41,13 @@ import io.netty.util.AsciiString;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 public class ClientCall {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientCall.class);
     private final Connection connection;
-    private final ExecutorService executor;
+    private final Executor executor;
     private final DefaultHttp2Headers headers;
     private final URL url;
     private final Compressor compressor;
@@ -70,7 +72,7 @@ public class ClientCall {
                       MethodDescriptor methodDescriptor
     ) {
         this.url = url;
-        this.executor = executor;
+        this.executor = new SerializingExecutor(executor);
         this.connection = connection;
         this.compressor = compressor;
         this.headers = new DefaultHttp2Headers(false);
