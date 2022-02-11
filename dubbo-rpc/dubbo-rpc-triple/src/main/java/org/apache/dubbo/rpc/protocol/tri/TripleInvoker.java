@@ -150,7 +150,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
         final List<String> paramTypes = Arrays.stream(invocation.getCompatibleParamSignatures())
             .collect(Collectors.toList());
-        ClientCallUtil.call(call,req.getId(),invocation.getArguments(),connection,methodDescriptor,genericPack,paramTypes,genericUnpack);
+        ClientCallUtil.call(call, req.getId(), invocation.getArguments(), connection, methodDescriptor, genericPack, paramTypes, genericUnpack);
         return result;
     }
 
@@ -207,15 +207,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     }
 
     private AsciiString getSchemeFromUrl(URL url) {
-        try {
-            Boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, Boolean.class);
-            if (ssl == null) {
-                return TripleConstant.HTTP_SCHEME;
-            }
-            return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
-        } catch (Exception e) {
-            return TripleConstant.HTTP_SCHEME;
-        }
+        boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
+        return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
     }
 
 }
