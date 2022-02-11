@@ -224,6 +224,11 @@ public class GrpcStatus {
         return new RpcException(this.code.code, this.description, this.cause);
     }
 
+    public String toEncodedMessage() {
+        String output = limitSizeTo4KB(toMessage());
+        return encodeComponent(output);
+    }
+
     public String toMessage() {
         final String msg;
         if (cause == null) {
@@ -235,8 +240,7 @@ public class GrpcStatus {
         if (msg == null) {
             return "";
         }
-        String output = limitSizeTo4KB(msg);
-        return encodeComponent(output);
+        return msg;
     }
 
 

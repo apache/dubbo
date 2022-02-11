@@ -17,30 +17,24 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
-import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 
 import java.util.Map;
 
 public class UnaryCallListener implements ClientCall.Listener {
     private final long requestId;
-    private final Connection connection;
     private Object appResponse;
     private boolean closed;
 
-    public UnaryCallListener(long requestId, Connection connection) {
+    public UnaryCallListener(long requestId) {
         this.requestId = requestId;
-        this.connection = connection;
     }
 
     @Override
     public void onMessage(Object message) {
-        this.appResponse=message;
+        this.appResponse = message;
     }
 
     @Override
@@ -49,21 +43,13 @@ public class UnaryCallListener implements ClientCall.Listener {
             return;
         }
         closed = true;
-        Response response = new Response(requestId, TripleConstant.TRI_VERSION);
         AppResponse result = new AppResponse();
-        response.setResult(result);
         result.setObjectAttachments(trailers);
         if (status.isOk()) {
             result.setValue(appResponse);
         } else {
             result.setException(status.asException());
-            response.setResult(result);
-            if (result.hasException()) {
-                final byte code = GrpcStatus.toDubboStatus(status.code);
-                response.setStatus(code);
-                response.setErrorMessage(ExceptionUtils.getStackTrace(status.asException()));
-            }
         }
-        DefaultFuture2.received(connection, response);
+        DefaultFuture2.received(requestId, status, result);
     }
 }

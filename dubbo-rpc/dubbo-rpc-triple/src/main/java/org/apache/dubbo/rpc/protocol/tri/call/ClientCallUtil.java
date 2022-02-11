@@ -20,15 +20,13 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.WrapperRequestObserver;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
@@ -42,13 +40,12 @@ public class ClientCallUtil {
     public static void call(ClientCall call,
                             long requestId,
                             Object[] arguments,
-                            Connection connection,
                             MethodDescriptor methodDescriptor,
                             GenericPack genericPack,
                             List<String> argumentTypes,
                             GenericUnpack genericUnpack) {
         if (methodDescriptor instanceof StreamMethodDescriptor) {
-            streamCall(call, requestId, arguments, connection, (StreamMethodDescriptor) methodDescriptor, genericPack, argumentTypes, genericUnpack);
+            streamCall(call, requestId, arguments, (StreamMethodDescriptor) methodDescriptor, genericPack, argumentTypes, genericUnpack);
             return;
         }
         // unary call
@@ -58,19 +55,16 @@ public class ClientCallUtil {
         } else {
             argument = arguments[0];
         }
-        unaryCall(call, argument, requestId, connection, methodDescriptor, genericPack, argumentTypes, genericUnpack);
+        unaryCall(call, argument, requestId, methodDescriptor, genericPack, argumentTypes, genericUnpack);
     }
 
     public static void streamCall(ClientCall call,
                                   long requestId,
                                   Object[] arguments,
-                                  Connection connection,
                                   StreamMethodDescriptor methodDescriptor,
                                   GenericPack genericPack, List<String> argumentTypes,
                                   GenericUnpack genericUnpack) {
         AppResponse appResponse = new AppResponse();
-        Response response = new Response(requestId, TripleConstant.TRI_VERSION);
-        response.setResult(appResponse);
         if (methodDescriptor.isServerStream()) {
             Object request = arguments[0];
             StreamObserver<Object> responseObserver = (StreamObserver<Object>) arguments[1];
@@ -84,7 +78,8 @@ public class ClientCallUtil {
         }
         // for timeout
         DefaultFuture2.sent(requestId);
-        DefaultFuture2.received(connection, response);
+        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.OK);
+        DefaultFuture2.received(requestId, status, appResponse);
     }
 
     public static StreamObserver<Object> streamCall(ClientCall call,
@@ -101,11 +96,11 @@ public class ClientCallUtil {
         return call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
     }
 
-    public static void unaryCall(ClientCall call, Object request, long requestId, Connection connection,
+    public static void unaryCall(ClientCall call, Object request, long requestId,
                                  MethodDescriptor methodDescriptor,
                                  GenericPack genericPack, List<String> argumentTypes,
                                  GenericUnpack genericUnpack) {
-        final UnaryCallListener listener = new UnaryCallListener(requestId, connection);
+        final UnaryCallListener listener = new UnaryCallListener(requestId);
         final StreamObserver<Object> requestObserver = call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
         try {
             requestObserver.onNext(request);
@@ -129,14 +124,14 @@ public class ClientCallUtil {
     public static StreamObserver<Object> wrapperCall(ClientCall call, ClientCall.Listener responseListener,
                                                      GenericPack genericPack, List<String> argumentTypes,
                                                      GenericUnpack genericUnpack) {
-        final StreamObserver<Object> requestObserver = WrapperRequestObserver.wrap(new ClientCallToObserverAdapter(call), argumentTypes, genericPack);
+        final StreamObserver<Object> requestObserver = WrapperRequestObserver.wrap(new ClientCallToObserverAdapter<>(call), argumentTypes, genericPack);
         final ClientCall.Listener wrapResponseListener = WrapResponseCallListener.wrap(responseListener, genericUnpack);
         call.start(wrapResponseListener);
         return requestObserver;
     }
 
     public static StreamObserver<Object> call(ClientCall call, ClientCall.Listener responseListener) {
-        final ClientCallToObserverAdapter requestObserver = new ClientCallToObserverAdapter(call);
+        final ClientCallToObserverAdapter<Object> requestObserver = new ClientCallToObserverAdapter<>(call);
         call.start(responseListener);
         return requestObserver;
     }
@@ -152,9 +147,5 @@ public class ClientCallUtil {
         } else {
             throw (Error) t;
         }
-    }
-
-    static void startCall(ClientCall call, ClientCall.Listener responseListener) {
-        call.start(responseListener);
     }
 }

@@ -43,6 +43,9 @@ public interface H2TransportObserver {
         return BASE64_ENCODER.encode(in);
     }
 
+    static String decodeASCII(CharSequence value) {
+        return new String(decodeASCIIByte(value));
+    }
     static byte[] decodeASCIIByte(CharSequence value) {
         return BASE64_DECODER.decode(value.toString().getBytes(StandardCharsets.US_ASCII));
     }

@@ -313,7 +313,8 @@ public class ClientStream extends AbstractStream implements Stream {
             if (status != null) {
                 final CharSequence message = trailers.get(TripleHeaderEnum.MESSAGE_KEY.getHeader());
                 if (message != null) {
-                    status.withDescription(message.toString());
+                    final String description = GrpcStatus.decodeMessage(message.toString());
+                    status.withDescription(description);
                 }
                 return status;
             }

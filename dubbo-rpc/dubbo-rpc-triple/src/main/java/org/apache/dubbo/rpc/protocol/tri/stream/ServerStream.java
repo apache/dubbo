@@ -197,7 +197,7 @@ public class ServerStream implements Stream {
             .status(OK.codeAsText())
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
-            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
+            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true));
     }
 

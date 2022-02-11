@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.FutureContext;
@@ -117,10 +116,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         result.setExecutor(executor);
 
         if (!connection.isAvailable()) {
-            Response response = new Response(req.getId(), req.getVersion());
-            response.setStatus(Response.CHANNEL_INACTIVE);
-            response.setErrorMessage(String.format("Connect to %s failed", this));
-            DefaultFuture2.received(connection, response);
+            final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.UNAVAILABLE)
+                .withDescription(String.format("Connect to %s failed", this));
+            DefaultFuture2.received(req.getId(),status,null);
             return result;
         }
         ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
@@ -150,7 +148,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
         final List<String> paramTypes = Arrays.stream(invocation.getCompatibleParamSignatures())
             .collect(Collectors.toList());
-        ClientCallUtil.call(call, req.getId(), invocation.getArguments(), connection, methodDescriptor, genericPack, paramTypes, genericUnpack);
+        ClientCallUtil.call(call, req.getId(), invocation.getArguments(), methodDescriptor, genericPack, paramTypes, genericUnpack);
         return result;
     }
 

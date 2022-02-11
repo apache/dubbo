@@ -29,14 +29,12 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
+import org.apache.dubbo.rpc.AppResponse;
 
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -51,31 +49,23 @@ import java.util.concurrent.TimeUnit;
  */
 public class DefaultFuture2 extends CompletableFuture<Object> {
 
-    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER =
-        new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true),
-            30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
     private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
     private final Request request;
     private final Connection connection;
     private final int timeout;
     private final long start = System.currentTimeMillis();
-    private final List<Runnable> timeoutListeners = new ArrayList<>();
     private volatile long sent;
-    private Timeout timeoutCheckTask;
+    private Timeout timeoutCheckTask;    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER =
+        new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true),
+            30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private ExecutorService executor;
-
     private DefaultFuture2(Connection client2, Request request, int timeout) {
         this.connection = client2;
         this.request = request;
         this.timeout = timeout;
         // put into waiting map.
         FUTURES.put(request.getId(), this);
-    }
-
-    public static void addTimeoutListener(long id, Runnable runnable) {
-        DefaultFuture2 defaultFuture2 = FUTURES.get(id);
-        defaultFuture2.addTimeoutListener(runnable);
     }
 
     /**
@@ -124,34 +114,20 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         }
     }
 
-    public static void received(Connection connection, Response response) {
-        received(connection, response, false);
-    }
-
-    public static void received(Connection connection, Response response, boolean timeout) {
-        DefaultFuture2 future = FUTURES.remove(response.getId());
+    public static void received(long requestId, GrpcStatus status, AppResponse appResponse) {
+        DefaultFuture2 future = FUTURES.remove(requestId);
         if (future != null) {
             Timeout t = future.timeoutCheckTask;
-            if (!timeout) {
+            if (status.code != GrpcStatus.Code.DEADLINE_EXCEEDED) {
                 // decrease Time
                 t.cancel();
             }
-            future.doReceived(response);
-        } else {
-            logger.warn("The timeout response finally returned at "
-                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
-                + ", response status is " + response.getStatus()
-                + (connection == null ? "" : ", channel: " + connection.getChannel().localAddress()
-                + " -> " + connection.getRemote()) + ", please check provider side for detailed result.");
+            if (future.executor != null) {
+                future.executor.execute(() -> future.doReceived(status, appResponse));
+            } else {
+                future.doReceived(status, appResponse);
+            }
         }
-    }
-
-    public void addTimeoutListener(Runnable runnable) {
-        timeoutListeners.add(runnable);
-    }
-
-    public List<Runnable> getTimeoutListeners() {
-        return timeoutListeners;
     }
 
     public ExecutorService getExecutor() {
@@ -164,10 +140,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        Response errorResult = new Response(request.getId());
-        errorResult.setStatus(Response.CLIENT_ERROR);
-        errorResult.setErrorMessage("request future has been canceled.");
-        this.doReceived(errorResult);
+        doReceived(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED), null);
         FUTURES.remove(request.getId());
         timeoutCheckTask.cancel();
         return true;
@@ -177,21 +150,19 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         this.cancel(true);
     }
 
-    private void doReceived(Response res) {
-        if (res == null) {
-            throw new IllegalStateException("response cannot be null");
-        }
-        if (res.getStatus() == Response.OK) {
-            this.complete(res.getResult());
-        } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
-            this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, null, connection.getRemote(), res.getErrorMessage()));
+    private void doReceived(GrpcStatus status, AppResponse appResponse) {
+        if (status.isOk()) {
+            this.complete(appResponse);
+        } else if (status.code == GrpcStatus.Code.DEADLINE_EXCEEDED) {
+            this.completeExceptionally(new TimeoutException(isSent(), null, connection.getRemote(), "Request timeout"));
         } else {
+            final InetSocketAddress local;
             if (connection.getChannel() != null) {
-                final InetSocketAddress local = (InetSocketAddress) connection.getChannel().localAddress();
-                this.completeExceptionally(new RemotingException(local, connection.getRemote(), res.getErrorMessage()));
+                local = (InetSocketAddress) connection.getChannel().localAddress();
             } else {
-                this.completeExceptionally(new RemotingException(null, connection.getRemote(), res.getErrorMessage()));
+                local = null;
             }
+            this.completeExceptionally(new RemotingException(local, connection.getRemote(), status.toMessage()));
         }
 
         // the result is returning, but the caller thread may still waiting
@@ -209,10 +180,6 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         return request.getId();
     }
 
-    private Connection getConnection() {
-        return connection;
-    }
-
     private boolean isSent() {
         return sent > 0;
     }
@@ -225,10 +192,10 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         sent = System.currentTimeMillis();
     }
 
-    private String getTimeoutMessage(boolean scan) {
+    private String getTimeoutMessage() {
         long nowTimestamp = System.currentTimeMillis();
         return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
-            + (scan ? " by scan timer" : "") + ". start time: "
+            + " by scan timer. start time: "
             + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
             + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp))) + ","
             + (sent > 0 ? " client elapsed: " + (sent - start)
@@ -259,25 +226,20 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
             }
 
             if (future.getExecutor() != null) {
-                future.getExecutor().execute(() -> {
-                    notifyTimeout(future);
-                    for (Runnable timeoutListener : future.getTimeoutListeners()) {
-                        timeoutListener.run();
-                    }
-                });
+                future.getExecutor().execute(() -> notifyTimeout(future));
             } else {
                 notifyTimeout(future);
             }
         }
 
         private void notifyTimeout(DefaultFuture2 future) {
-            // create exception response.
-            Response timeoutResponse = new Response(future.getId());
-            // set timeout status.
-            timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
-            timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
-            // handle response.
-            DefaultFuture2.received(future.getConnection(), timeoutResponse, true);
+            final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED)
+                .withDescription(future.getTimeoutMessage());
+            DefaultFuture2.received(future.getId(), status, null);
         }
     }
+
+
+
+
 }
