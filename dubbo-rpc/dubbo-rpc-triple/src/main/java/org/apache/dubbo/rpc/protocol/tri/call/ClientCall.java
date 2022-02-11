@@ -85,7 +85,9 @@ public class ClientCall {
             .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
             .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         setIfNotNull(headers, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
-        setIfNotNull(headers, TripleHeaderEnum.SERVICE_VERSION.getHeader(), serviceVersion);
+        if(!"1.0.0".equals(serviceVersion)) {
+            setIfNotNull(headers, TripleHeaderEnum.SERVICE_VERSION.getHeader(), serviceVersion);
+        }
         setIfNotNull(headers, TripleHeaderEnum.SERVICE_GROUP.getHeader(), serviceGroup);
         setIfNotNull(headers, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(), application);
         setIfNotNull(headers, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), acceptEncoding);
