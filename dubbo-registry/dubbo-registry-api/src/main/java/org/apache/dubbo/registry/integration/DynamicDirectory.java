@@ -154,6 +154,11 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.serviceListener = instanceListener;
     }
 
+    @Override
+    public ServiceInstancesChangedListener getServiceListener() {
+        return this.serviceListener;
+    }
+
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
     }

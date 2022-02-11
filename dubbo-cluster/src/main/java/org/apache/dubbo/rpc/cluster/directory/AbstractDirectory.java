@@ -51,13 +51,12 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_PERIOD;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RECONNECT_TASK_TRY_COUNT;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_PERIOD;
 import static org.apache.dubbo.common.constants.CommonConstants.RECONNECT_TASK_TRY_COUNT;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_IP_KEY;
@@ -154,12 +153,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (consumerUrl == null) {
             String host = StringUtils.isNotEmpty(queryMap.get(REGISTER_IP_KEY)) ? queryMap.get(REGISTER_IP_KEY) : this.url.getHost();
             String path = StringUtils.isNotEmpty(queryMap.get(PATH_KEY)) ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY);
-            String consumedProtocol = StringUtils.isNotEmpty(queryMap.get(PROTOCOL_KEY)) ? queryMap.get(PROTOCOL_KEY) : DUBBO;
 
             URL consumerUrlFrom = this.url
                 .setHost(host)
                 .setPort(0)
-                .setProtocol(consumedProtocol)
+                .setProtocol(CONSUMER)
                 .setPath(path);
             if (isUrlFromRegistry) {
                 // reserve parameters if url is already a consumer url

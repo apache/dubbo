@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
@@ -393,6 +394,16 @@ public class CollectionUtils {
         } else {
             return values.iterator().next();
         }
+    }
+
+    public static <T> Set<T> toTreeSet(Set<T> set) {
+        if (isEmpty(set)) {
+            return set;
+        }
+        if (!(set instanceof TreeSet)) {
+            set = new TreeSet<>(set);
+        }
+        return set;
     }
 
 }

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
+import org.apache.dubbo.rpc.service.Destroyable;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -39,7 +40,7 @@ import static org.apache.dubbo.common.utils.StringUtils.SLASH;
  * Call variants of getCachedMapping() methods whenever need to use the mapping data.
  */
 @SPI(value = "metadata", scope = APPLICATION)
-public interface ServiceNameMapping {
+public interface ServiceNameMapping extends Destroyable {
 
     String DEFAULT_MAPPING_GROUP = "mapping";
 

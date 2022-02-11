@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.registry.NotifyListener;
@@ -37,6 +38,7 @@ import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -52,13 +54,18 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Collections.emptySet;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ENABLE_EMPTY_PROTECTION_KEY;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
 /**
- * TODO, refactor to move revision-metadata mapping to ServiceDiscovery. Instances should already being mapped with metadata when reached here.
+ * TODO, refactor to move revision-metadata mapping to ServiceDiscovery. Instances should have already been mapped with metadata when reached here.
+ *
+ * The operations of ServiceInstancesChangedListener should be synchronized.
  */
 public class ServiceInstancesChangedListener {
 
@@ -80,6 +87,10 @@ public class ServiceInstancesChangedListener {
     private volatile ScheduledFuture<?> retryFuture;
     private final ScheduledExecutorService scheduler;
     private volatile boolean hasEmptyMetadata;
+
+    private static final String[] SUPPORTED_PROTOCOLS = new String[] {"dubbo", "tri", "rest", "hessian", "grpc", "injvm"};
+    public static final String CONSUMER_PROTOCOL_SUFFIX = ":consumer";
+    public static final String WILDCARD_PROTOCOL_SUFFIX = ":*";
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
@@ -105,6 +116,10 @@ public class ServiceInstancesChangedListener {
         doOnEvent(event);
     }
 
+    /**
+     *
+     * @param event
+     */
     private synchronized void doOnEvent(ServiceInstancesChangedEvent event) {
         if (destroyed.get() || !accept(event) || isRetryAndExpired(event)) {
             return;
@@ -190,45 +205,55 @@ public class ServiceInstancesChangedListener {
     }
 
     public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
-        // Add to global listeners
-        if (!this.listeners.containsKey(serviceKey)) {
-            // synchronized method, no need to use DCL
-            this.listeners.put(serviceKey, new ConcurrentHashSet<>());
-        }
-        Set<NotifyListener> notifyListeners = this.listeners.get(serviceKey);
-
-        if (notifyListeners.add(listener)) {
-            // Add to notify queue
-            NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(serviceKey, listener);
-            listenerQueue.offer(listenerWithKey);
+        if (destroyed.get()) {
+            return;
         }
 
-        List<URL> urls = getAddresses(serviceKey, listener.getConsumerUrl());
-        if (CollectionUtils.isNotEmpty(urls)) {
-            listener.notify(urls);
+        for (String protocolServiceKey : getProtocolServiceKeyList(serviceKey, listener)) {
+            // Add to global listeners
+            if (!this.listeners.containsKey(protocolServiceKey)) {
+                // synchronized method, no need to use DCL
+                this.listeners.put(protocolServiceKey, new ConcurrentHashSet<>());
+            }
+            Set<NotifyListener> notifyListeners = this.listeners.get(protocolServiceKey);
+
+            if (notifyListeners.add(listener)) {
+                // Add to notify queue
+                NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(protocolServiceKey, listener);
+                listenerQueue.offer(listenerWithKey);
+            }
+
+            List<URL> urls = getAddresses(protocolServiceKey, listener.getConsumerUrl());
+            if (CollectionUtils.isNotEmpty(urls)) {
+                listener.notify(urls);
+            }
         }
     }
 
     public synchronized void removeListener(String serviceKey, NotifyListener notifyListener) {
-        // synchronized method, no need to use DCL
-        Set<NotifyListener> notifyListeners = this.listeners.get(serviceKey);
-        if (notifyListeners != null) {
-            if (notifyListeners.contains(notifyListener)) {
-                // Remove from global listeners
-                notifyListeners.remove(notifyListener);
-
-                // Remove from notify queue
-                NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(serviceKey, notifyListener);
-                listenerQueue.remove(listenerWithKey);
-            }
-
-            // ServiceKey has no listener, remove set
-            if (notifyListeners.size() == 0) {
-                this.listeners.remove(serviceKey);
-            }
+        if (destroyed.get()) {
+            return;
         }
 
-        logger.info("Interface listener of interface " + serviceKey + " removed.");
+        for (String protocolServiceKey : getProtocolServiceKeyList(serviceKey, notifyListener)) {
+            // synchronized method, no need to use DCL
+            Set<NotifyListener> notifyListeners = this.listeners.get(protocolServiceKey);
+            if (notifyListeners != null) {
+                if (notifyListeners.contains(notifyListener)) {
+                    // Remove from global listeners
+                    notifyListeners.remove(notifyListener);
+
+                    // Remove from notify queue
+                    NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(protocolServiceKey, notifyListener);
+                    listenerQueue.remove(listenerWithKey);
+                }
+
+                // ServiceKey has no listener, remove set
+                if (notifyListeners.size() == 0) {
+                    this.listeners.remove(protocolServiceKey);
+                }
+            }
+        }
     }
 
     public boolean hasListeners() {
@@ -346,6 +371,7 @@ public class ServiceInstancesChangedListener {
     }
 
     protected void notifyAddressChanged() {
+        if ()
         listenerQueue.forEach(listenerWithKey -> {
             String key = listenerWithKey.getServiceKey();
             NotifyListener notifyListener = listenerWithKey.getNotifyListener();
@@ -375,23 +401,30 @@ public class ServiceInstancesChangedListener {
      * Since this listener is shared among interfaces, destroy this listener only when all interface listener are unsubscribed
      */
     public synchronized void destroy() {
-        if (!destroyed.get()) {
-            if (CollectionUtils.isEmptyMap(listeners)) {
-                if (destroyed.compareAndSet(false, true)) {
-                    if (listeners.isEmpty()) {
-                        logger.info("No interface listeners exist, will stop instance listener for " + this.getServiceNames());
-                        serviceDiscovery.removeServiceInstancesChangedListener(this);
-                    }
-
-                    allInstances.clear();
-                    serviceUrls.clear();
-                    if (retryFuture != null && !retryFuture.isDone()) {
-                        retryFuture.cancel(true);
-                    }
-                }
+        if (destroyed.compareAndSet(false, true)) {
+            logger.info("Destroying instance listener of  " + this.getServiceNames());
+            serviceDiscovery.removeServiceInstancesChangedListener(this);
+            allInstances.clear();
+            serviceUrls.clear();
+            listeners.clear();
+            listenerQueue.clear();
+            if (retryFuture != null && !retryFuture.isDone()) {
+                retryFuture.cancel(true);
             }
         }
     }
+//
+//    public synchronized boolean destroyIfListenersIsEmpty() {
+//        if (destroyed.get()) {
+//            return true;
+//        }
+//        if (hasListeners()) {
+//            return false;
+//        }
+//
+//        destroy();
+//        return true;
+//    }
 
     public boolean isDestroyed() {
         return destroyed.get();
@@ -417,6 +450,49 @@ public class ServiceInstancesChangedListener {
     // for test purpose
     public List<ServiceInstance> getInstancesOfApp(String appName) {
         return allInstances.get(appName);
+    }
+
+    /**
+     * Calculate the protocol list that the consumer will consume.
+     *
+     * @param serviceKey possible input serviceKey includes
+     *                   1. {group}/{interface}:{version}:*
+     *                   2. {group}/{interface}:{version}:consumer
+     *                   3. {group}/{interface}:{version}:{user specified protocols}
+     * @param listener listener also contains the user specified protocols
+     * @return protocol list with the format {group}/{interface}:{version}:{protocol}
+     */
+    protected Set<String> getProtocolServiceKeyList(String serviceKey, NotifyListener listener) {
+        if (StringUtils.isEmpty(serviceKey)) {
+            return emptySet();
+        }
+
+        Set<String> result = new HashSet<>();
+        String protocol = listener.getConsumerUrl().getParameter(PROTOCOL_KEY);
+        if (serviceKey.endsWith(WILDCARD_PROTOCOL_SUFFIX)) {
+            serviceKey = serviceKey.substring(0, serviceKey.indexOf(WILDCARD_PROTOCOL_SUFFIX));
+        } else if (serviceKey.endsWith(CONSUMER_PROTOCOL_SUFFIX)) {
+            serviceKey = serviceKey.substring(0, serviceKey.indexOf(CONSUMER_PROTOCOL_SUFFIX));
+        } else {
+            protocol = serviceKey.substring(serviceKey.lastIndexOf(GROUP_CHAR_SEPARATOR) + GROUP_CHAR_SEPARATOR.length());
+            if (!protocol.contains(",")) {
+                result.add(serviceKey);
+                return result;
+            }
+        }
+
+        if (StringUtils.isNotEmpty(protocol)) {
+            String[] specifiedProtocols = protocol.split(",");
+            for (String specifiedProtocol : specifiedProtocols) {
+                result.add(serviceKey + GROUP_CHAR_SEPARATOR + specifiedProtocol);
+            }
+        } else {
+            for (String supportedProtocol : SUPPORTED_PROTOCOLS) {
+                result.add(serviceKey + GROUP_CHAR_SEPARATOR + supportedProtocol);
+            }
+        }
+
+        return result;
     }
 
     protected class AddressRefreshRetryTask implements Runnable {

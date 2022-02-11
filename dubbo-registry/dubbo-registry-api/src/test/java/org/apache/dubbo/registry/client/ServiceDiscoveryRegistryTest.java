@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.listener.MockServiceInstancesChangedListener;
@@ -63,7 +64,7 @@ public class ServiceDiscoveryRegistryTest {
     public static final String APP_NAME2 = "app2";
     public static final String APP_NAME3 = "app3";
 
-    private static ServiceNameMapping mapping = mock(ServiceNameMapping.class);
+    private static ServiceNameMapping mapping = mock(AbstractServiceNameMapping.class);
     private static URL registryURL = URL.valueOf("zookeeper://127.0.0.1:2181/org.apache.dubbo.registry.RegistryService");
     private static URL url = URL.valueOf("consumer://127.0.0.1/TestService?interface=TestService1&check=false");
     private static NotifyListener testServiceListener = mock(NotifyListener.class);

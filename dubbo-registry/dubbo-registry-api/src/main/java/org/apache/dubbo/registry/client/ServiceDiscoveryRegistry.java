@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
@@ -36,19 +37,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
+import static org.apache.dubbo.common.utils.CollectionUtils.toTreeSet;
 import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 
@@ -73,15 +74,18 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     private final ServiceDiscovery serviceDiscovery;
 
-    private final ServiceNameMapping serviceNameMapping;
+    private final AbstractServiceNameMapping serviceNameMapping;
 
     /* apps - listener */
     private final Map<String, ServiceInstancesChangedListener> serviceListeners = new ConcurrentHashMap<>();
+    private final Map<String, MappingListener> mappingListeners = new ConcurrentHashMap<>();
+
+    private final ConcurrentMap<String, Lock> appSubscriptionLocks = new ConcurrentHashMap<>();
 
     public ServiceDiscoveryRegistry(URL registryURL, ApplicationModel applicationModel) {
         super(registryURL);
         this.serviceDiscovery = createServiceDiscovery(registryURL);
-        this.serviceNameMapping = ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
+        this.serviceNameMapping = (AbstractServiceNameMapping)ServiceNameMapping.getDefaultExtension(registryURL.getScopeModel());
         super.applicationModel = applicationModel;
     }
 
@@ -89,7 +93,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     protected ServiceDiscoveryRegistry(URL registryURL, ServiceDiscovery serviceDiscovery, ServiceNameMapping serviceNameMapping) {
         super(registryURL);
         this.serviceDiscovery = serviceDiscovery;
-        this.serviceNameMapping = serviceNameMapping;
+        this.serviceNameMapping = (AbstractServiceNameMapping)serviceNameMapping;
     }
 
     public ServiceDiscovery getServiceDiscovery() {
@@ -194,21 +198,30 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         boolean check = url.getParameter(CHECK_KEY, false);
 
-        Set<String> subscribedServices = Collections.emptySet();
+        String key = ServiceNameMapping.buildMappingKey(url);
+        Lock mappingLock = serviceNameMapping.getMappingLock(key);
         try {
-            subscribedServices = serviceNameMapping.getAndListen(this.getUrl(), url, new DefaultMappingListener(url, subscribedServices, listener));
-        } catch (Exception e) {
-            logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
-        }
-
-        if (CollectionUtils.isEmpty(subscribedServices)) {
-            if (check) {
-                throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+            mappingLock.lock();
+            Set<String> subscribedServices = Collections.emptySet();
+            try {
+                MappingListener mappingListener = new DefaultMappingListener(url, subscribedServices, listener);
+                subscribedServices = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
+                mappingListeners.put(url.getProtocolServiceKey(), mappingListener);
+            } catch (Exception e) {
+                logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
             }
-            return;
-        }
 
-        subscribeURLs(url, listener, subscribedServices);
+            if (CollectionUtils.isEmpty(subscribedServices)) {
+                if (check) {
+                    throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+                }
+                return;
+            }
+
+            subscribeURLs(url, listener, subscribedServices);
+        } finally {
+            mappingLock.unlock();
+        }
     }
 
     @Override
@@ -232,20 +245,29 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     public void doUnsubscribe(URL url, NotifyListener listener) {
         // TODO: remove service name mapping listener
         serviceDiscovery.unsubscribe(url, listener);
-        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
+        String protocolServiceKey = url.getProtocolServiceKey();
         Set<String> serviceNames = serviceNameMapping.getCachedMapping(url);
-        serviceNameMapping.stopListen(url);
+        serviceNameMapping.stopListen(url, mappingListeners.remove(protocolServiceKey));
         if (CollectionUtils.isNotEmpty(serviceNames)) {
             String serviceNamesKey = toStringKeys(serviceNames);
-            ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
-            if (instancesChangedListener != null) {
-                instancesChangedListener.removeListener(protocolServiceKey, listener);
-                if (!instancesChangedListener.hasListeners()) {
-                    serviceListeners.remove(serviceNamesKey);
-                    instancesChangedListener.destroy();
+            Lock appSubscriptionLock = getAppSubscription(serviceNamesKey);
+            try {
+                appSubscriptionLock.lock();
+                ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
+                if (instancesChangedListener != null) {
+                    instancesChangedListener.removeListener(protocolServiceKey, listener);
+                    if (!instancesChangedListener.hasListeners()) {
+                        instancesChangedListener.destroy();
+                        serviceListeners.remove(serviceNamesKey);
+                        removeAppSubscriptionLock(serviceNamesKey);
+                    }
                 }
+            } finally {
+                appSubscriptionLock.unlock();
             }
         }
+
+        serviceNameMapping.tryRemovingMappingLock(ServiceNameMapping.buildMappingKey(url));
     }
 
     @Override
@@ -267,7 +289,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         for (ServiceInstancesChangedListener listener : serviceListeners.values()) {
             listener.destroy();
         }
+        appSubscriptionLocks.clear();
         serviceListeners.clear();
+        mappingListeners.clear();
     }
 
     @Override
@@ -276,14 +300,15 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
-        serviceNames = new TreeSet<>(serviceNames);
+        serviceNames = toTreeSet(serviceNames);
         String serviceNamesKey = toStringKeys(serviceNames);
-        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
+        String protocolServiceKey = url.getProtocolServiceKey();
 
         // register ServiceInstancesChangedListener
-        ServiceInstancesChangedListener serviceInstancesChangedListener;
-        synchronized (this) {
-            serviceInstancesChangedListener = serviceListeners.get(serviceNamesKey);
+        Lock appSubscriptionLock = getAppSubscription(serviceNamesKey);
+        try {
+            appSubscriptionLock.lock();
+            ServiceInstancesChangedListener serviceInstancesChangedListener = serviceListeners.get(serviceNamesKey);
             if (serviceInstancesChangedListener == null) {
                 serviceInstancesChangedListener = serviceDiscovery.createListener(serviceNames);
                 serviceInstancesChangedListener.setUrl(url);
@@ -295,12 +320,18 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 }
                 serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
             }
-        }
 
-        serviceInstancesChangedListener.setUrl(url);
-        listener.addServiceListener(serviceInstancesChangedListener);
-        serviceInstancesChangedListener.addListenerAndNotify(protocolServiceKey, listener);
-        serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
+            if (!serviceInstancesChangedListener.isDestroyed()) {
+                serviceInstancesChangedListener.setUrl(url);
+                listener.addServiceListener(serviceInstancesChangedListener);
+                serviceInstancesChangedListener.addListenerAndNotify(protocolServiceKey, listener);
+                serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
+            } else {
+                serviceListeners.remove(serviceNamesKey);
+            }
+        } finally {
+            appSubscriptionLock.unlock();
+        }
     }
 
     /**
@@ -311,10 +342,6 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     public static boolean supports(URL registryURL) {
         return SERVICE_REGISTRY_TYPE.equalsIgnoreCase(registryURL.getParameter(REGISTRY_TYPE_KEY));
-    }
-
-    public Map<String, ServiceInstancesChangedListener> getServiceListeners() {
-        return serviceListeners;
     }
 
     private class DefaultMappingListener implements MappingListener {
@@ -331,7 +358,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         }
 
         @Override
-        public void onEvent(MappingChangedEvent event) {
+        public synchronized void onEvent(MappingChangedEvent event) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Received mapping notification from meta server, " + event);
             }
@@ -341,31 +368,71 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             }
             Set<String> newApps = event.getApps();
             Set<String> tempOldApps = oldApps;
-            oldApps = newApps;
 
             if (CollectionUtils.isEmpty(newApps)) {
                 return;
             }
 
-            if (CollectionUtils.isEmpty(tempOldApps) && newApps.size() > 0) {
-                serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
-                subscribeURLs(url, listener, newApps);
-                return;
-            }
-
-            for (String newAppName : newApps) {
-                if (!tempOldApps.contains(newAppName)) {
-                    serviceNameMapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
-                    serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
-                    subscribeURLs(url, listener, newApps);
+            Lock mappingLock = serviceNameMapping.getMappingLock(event.getServiceKey());
+            try {
+                mappingLock.lock();
+                if (CollectionUtils.isEmpty(tempOldApps) && newApps.size() > 0) {
+                        serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
+                        subscribeURLs(url, listener, newApps);
+                    oldApps = newApps;
                     return;
                 }
+
+                for (String newAppName : newApps) {
+                    if (!tempOldApps.contains(newAppName)) {
+                        serviceNameMapping.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
+                        serviceNameMapping.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
+                        // old instance listener related to old app list that needs to be destroyed after subscribe refresh.
+                        ServiceInstancesChangedListener oldListener = listener.getServiceListener();
+                        if (oldListener != null) {
+                            String appKey = toStringKeys(toTreeSet(tempOldApps));
+                            Lock appSubscriptionLock = getAppSubscription(appKey);
+                            try {
+                                appSubscriptionLock.lock();
+                                oldListener.removeListener(url.getProtocolServiceKey(), listener);
+                                if (!oldListener.hasListeners()) {
+                                    oldListener.destroy();
+                                    removeAppSubscriptionLock(appKey);
+                                }
+                            } finally {
+                                appSubscriptionLock.unlock();
+                            }
+                        }
+
+                        subscribeURLs(url, listener, newApps);
+                        oldApps = newApps;
+                        return;
+                    }
+                }
+            } finally {
+                mappingLock.unlock();
             }
         }
 
         @Override
         public void stop() {
             stopped = true;
+        }
+    }
+
+    public Lock getAppSubscription(String key) {
+        return appSubscriptionLocks.computeIfAbsent(key, _k -> new ReentrantLock());
+    }
+
+    public void removeAppSubscriptionLock(String key) {
+        Lock lock = appSubscriptionLocks.get(key);
+        if (lock != null) {
+            try {
+                lock.lock();
+                appSubscriptionLocks.remove(key);
+            } finally {
+                lock.unlock();
+            }
         }
     }
 }
