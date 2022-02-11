@@ -205,13 +205,13 @@ public class ClientCall {
         }
 
         @Override
-        public void complete(GrpcStatus status, Map<String, Object> attachments) {
+        public void complete(GrpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
             executor.execute(() -> {
                 if (done) {
                     return;
                 }
                 done = true;
-                final Throwable throwableFromTrailers = getThrowableFromTrailers(attachments);
+                final Throwable throwableFromTrailers = getThrowableFromTrailers(excludeHeaders);
                 if (throwableFromTrailers != null) {
                     status.withCause(throwableFromTrailers);
                 }
@@ -229,7 +229,7 @@ public class ClientCall {
             stream.cancelByLocal(status);
         }
 
-        Throwable getThrowableFromTrailers(Map<String, Object> metadata) {
+        Throwable getThrowableFromTrailers(Map<String, String> metadata) {
             if (null == metadata) {
                 return null;
             }
@@ -237,7 +237,7 @@ public class ClientCall {
             if (!metadata.containsKey(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
                 return null;
             }
-            final String raw = (metadata.remove(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())).toString();
+            final String raw = (metadata.remove(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader()));
             byte[] statusDetailBin = H2TransportObserver.decodeASCIIByte(raw);
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             try {

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import io.netty.handler.codec.http2.Http2Headers;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,37 +36,43 @@ public abstract class AbstractTransportObserver implements H2TransportObserver {
      * @return KV pairs map
      */
     protected Map<String, Object> headersToMap(Http2Headers trailers) {
-        Map<String, Object> attachments = new HashMap<>();
         if (trailers == null) {
-            return attachments;
+            return Collections.emptyMap();
         }
+        Map<String, Object> attachments = new HashMap<>();
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
-            parseSingleKV(attachments, header);
+            String key = header.getKey().toString();
+            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
+                try {
+                    String realKey = key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length());
+                    byte[] value = H2TransportObserver.decodeASCIIByte(header.getValue());
+                    attachments.put(realKey, value);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to parse response attachment key=" + key, e);
+                }
+            } else {
+                attachments.put(key, header.getValue().toString());
+            }
         }
         return attachments;
     }
 
-    private void parseSingleKV(Map<String, Object> attachments, Map.Entry<CharSequence, CharSequence> header) {
-        String key = header.getKey().toString();
-        if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
-            return;
-        }
-        // avoid subsequent parse protocol header
-        if (TripleHeaderEnum.containsExcludeAttachments(key)) {
-            return;
-        }
-        if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
-            try {
-                String realKey = key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length());
-                byte[] value = H2TransportObserver.decodeASCIIByte(header.getValue());
-                attachments.put(realKey, value);
-            } catch (Exception e) {
-                LOGGER.error("Failed to parse response attachment key=" + key, e);
-            }
-        } else {
-            attachments.put(key, header.getValue().toString());
-        }
-    }
 
+    protected Map<String, String> filterExcludeHeaders(Http2Headers trailers) {
+        if (trailers == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> excludeHeaders = new HashMap<>();
+        for (Map.Entry<CharSequence, CharSequence> header : trailers) {
+            String key = header.getKey().toString();
+            if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
+                excludeHeaders.put(key, trailers.getAndRemove(key).toString());
+            }
+            if (TripleHeaderEnum.containsExcludeAttachments(key)) {
+                excludeHeaders.put(key, trailers.getAndRemove(key).toString());
+            }
+        }
+        return excludeHeaders;
+    }
 
 }

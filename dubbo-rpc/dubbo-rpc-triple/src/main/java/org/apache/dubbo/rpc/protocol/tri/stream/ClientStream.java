@@ -63,7 +63,7 @@ public class ClientStream extends AbstractStream implements Stream {
                         Channel parent,
                         ClientStreamListener listener) {
         super(url);
-        this.requestId=requestId;
+        this.requestId = requestId;
         this.writeQueue = createWriteQueue(parent);
         this.listener = listener;
     }
@@ -154,11 +154,9 @@ public class ClientStream extends AbstractStream implements Stream {
             }
             remoteClosed = true;
 
+            final Map<String, String> excludeHeaders = filterExcludeHeaders(trailers);
             final Map<String, Object> attachments = headersToMap(trailers);
-            if (trailers.contains(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
-                attachments.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(), trailers.get(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader()));
-            }
-            listener.complete(status, attachments);
+            listener.complete(status, attachments, excludeHeaders);
         }
 
         private GrpcStatus validateHeaderStatus(Http2Headers headers) {
