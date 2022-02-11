@@ -34,7 +34,9 @@ import org.apache.dubbo.rpc.AppResponse;
 
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,22 +52,29 @@ import java.util.concurrent.TimeUnit;
 public class DefaultFuture2 extends CompletableFuture<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
-    private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
+    private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER =
+        new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true),
+            30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private final Request request;
     private final Connection connection;
     private final int timeout;
     private final long start = System.currentTimeMillis();
+    private final List<Runnable> timeoutListeners = new ArrayList<>();
+    private Timeout timeoutCheckTask;
     private volatile long sent;
-    private Timeout timeoutCheckTask;    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER =
-        new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true),
-            30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private ExecutorService executor;
+
     private DefaultFuture2(Connection client2, Request request, int timeout) {
         this.connection = client2;
         this.request = request;
         this.timeout = timeout;
         // put into waiting map.
         FUTURES.put(request.getId(), this);
+    }
+
+    public static void addTimeoutListener(long id, Runnable runnable) {
+        DefaultFuture2 defaultFuture2 = FUTURES.get(id);
+        defaultFuture2.addTimeoutListener(runnable);
     }
 
     /**
@@ -128,6 +137,14 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
                 future.doReceived(status, appResponse);
             }
         }
+    }
+
+    public void addTimeoutListener(Runnable runnable) {
+        timeoutListeners.add(runnable);
+    }
+
+    public List<Runnable> getTimeoutListeners() {
+        return timeoutListeners;
     }
 
     public ExecutorService getExecutor() {
@@ -226,7 +243,12 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
             }
 
             if (future.getExecutor() != null) {
-                future.getExecutor().execute(() -> notifyTimeout(future));
+                future.getExecutor().execute(() -> {
+                    notifyTimeout(future);
+                    for (Runnable timeoutListener : future.getTimeoutListeners()) {
+                        timeoutListener.run();
+                    }
+                });
             } else {
                 notifyTimeout(future);
             }

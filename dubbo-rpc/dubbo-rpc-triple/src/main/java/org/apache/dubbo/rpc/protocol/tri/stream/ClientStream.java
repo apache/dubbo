@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleCommandOutBoundHandler;
@@ -52,14 +53,17 @@ public class ClientStream extends AbstractStream implements Stream {
     public final ClientStreamListener listener;
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
+    private final long requestId;
     private boolean canceled;
     private boolean headerReceived;
     private Http2Headers trailers;
 
     public ClientStream(URL url,
+                        long requestId,
                         Channel parent,
                         ClientStreamListener listener) {
         super(url);
+        this.requestId=requestId;
         this.writeQueue = createWriteQueue(parent);
         this.listener = listener;
     }
@@ -76,6 +80,7 @@ public class ClientStream extends AbstractStream implements Stream {
         channel.pipeline()
             .addLast(new TripleCommandOutBoundHandler())
             .addLast(new TripleHttp2ClientResponseHandler(this));
+        DefaultFuture2.addTimeoutListener(requestId, channel::close);
         return new WriteQueue(channel);
     }
 

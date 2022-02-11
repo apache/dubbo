@@ -57,6 +57,7 @@ import java.util.concurrent.ExecutorService;
 
 public class ClientCall {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientCall.class);
+    public final long requestId;
     private final Connection connection;
     private final Executor executor;
     private final DefaultHttp2Headers headers;
@@ -70,6 +71,7 @@ public class ClientCall {
     public ClientCall(URL url,
                       Connection connection,
                       AsciiString scheme,
+                      long requestId,
                       String service,
                       String serviceVersion,
                       String serviceGroup,
@@ -87,6 +89,7 @@ public class ClientCall {
         this.executor = new SerializingExecutor(executor);
         this.connection = connection;
         this.compressor = compressor;
+        this.requestId = requestId;
         this.headers = new DefaultHttp2Headers(false);
         this.headers.scheme(scheme)
             .authority(authority)
@@ -147,6 +150,7 @@ public class ClientCall {
     public void start(Listener responseListener) {
         this.stream = new ClientStream(
             url,
+            requestId,
             connection.getChannel(),
             new ClientStreamListenerImpl(responseListener, unpack));
     }
@@ -208,7 +212,9 @@ public class ClientCall {
                 }
                 done = true;
                 final Throwable throwableFromTrailers = getThrowableFromTrailers(attachments);
-                status.withCause(throwableFromTrailers);
+                if (throwableFromTrailers != null) {
+                    status.withCause(throwableFromTrailers);
+                }
                 try {
                     listener.onClose(status, attachments);
                 } catch (Throwable t) {

@@ -118,7 +118,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!connection.isAvailable()) {
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.UNAVAILABLE)
                 .withDescription(String.format("Connect to %s failed", this));
-            DefaultFuture2.received(req.getId(),status,null);
+            DefaultFuture2.received(req.getId(), status, null);
             return result;
         }
         ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
@@ -133,6 +133,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         ClientCall call = new ClientCall(getUrl(),
             connection,
             scheme,
+            req.getId(),
             getUrl().getPath(),
             getUrl().getVersion(),
             getUrl().getGroup(),
@@ -148,7 +149,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
         final List<String> paramTypes = Arrays.stream(invocation.getCompatibleParamSignatures())
             .collect(Collectors.toList());
-        ClientCallUtil.call(call, req.getId(), invocation.getArguments(), methodDescriptor, genericPack, paramTypes, genericUnpack);
+        ClientCallUtil.call(call, invocation.getArguments(), methodDescriptor, genericPack, paramTypes, genericUnpack);
         return result;
     }
 

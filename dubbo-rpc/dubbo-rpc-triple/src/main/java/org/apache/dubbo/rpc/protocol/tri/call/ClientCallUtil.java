@@ -38,14 +38,13 @@ public class ClientCallUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientCallUtil.class);
 
     public static void call(ClientCall call,
-                            long requestId,
                             Object[] arguments,
                             MethodDescriptor methodDescriptor,
                             GenericPack genericPack,
                             List<String> argumentTypes,
                             GenericUnpack genericUnpack) {
         if (methodDescriptor instanceof StreamMethodDescriptor) {
-            streamCall(call, requestId, arguments, (StreamMethodDescriptor) methodDescriptor, genericPack, argumentTypes, genericUnpack);
+            streamCall(call, arguments, (StreamMethodDescriptor) methodDescriptor, genericPack, argumentTypes, genericUnpack);
             return;
         }
         // unary call
@@ -55,11 +54,10 @@ public class ClientCallUtil {
         } else {
             argument = arguments[0];
         }
-        unaryCall(call, argument, requestId, methodDescriptor, genericPack, argumentTypes, genericUnpack);
+        unaryCall(call, argument,  methodDescriptor, genericPack, argumentTypes, genericUnpack);
     }
 
     public static void streamCall(ClientCall call,
-                                  long requestId,
                                   Object[] arguments,
                                   StreamMethodDescriptor methodDescriptor,
                                   GenericPack genericPack, List<String> argumentTypes,
@@ -77,9 +75,9 @@ public class ClientCallUtil {
             appResponse.setValue(requestObserver);
         }
         // for timeout
-        DefaultFuture2.sent(requestId);
+        DefaultFuture2.sent(call.requestId);
         final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.OK);
-        DefaultFuture2.received(requestId, status, appResponse);
+        DefaultFuture2.received(call.requestId, status, appResponse);
     }
 
     public static StreamObserver<Object> streamCall(ClientCall call,
@@ -96,11 +94,11 @@ public class ClientCallUtil {
         return call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
     }
 
-    public static void unaryCall(ClientCall call, Object request, long requestId,
+    public static void unaryCall(ClientCall call, Object request,
                                  MethodDescriptor methodDescriptor,
                                  GenericPack genericPack, List<String> argumentTypes,
                                  GenericUnpack genericUnpack) {
-        final UnaryCallListener listener = new UnaryCallListener(requestId);
+        final UnaryCallListener listener = new UnaryCallListener(call.requestId);
         final StreamObserver<Object> requestObserver = call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
         try {
             requestObserver.onNext(request);
