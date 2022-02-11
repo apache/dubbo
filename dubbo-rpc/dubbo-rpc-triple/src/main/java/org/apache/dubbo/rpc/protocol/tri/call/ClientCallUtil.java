@@ -49,15 +49,16 @@ public class ClientCallUtil {
                             GenericUnpack genericUnpack) {
         if (methodDescriptor instanceof StreamMethodDescriptor) {
             streamCall(call, requestId, arguments, connection, (StreamMethodDescriptor) methodDescriptor, genericPack, argumentTypes, genericUnpack);
-        } else {
-            Object argument;
-            if (methodDescriptor.isNeedWrap()) {
-                argument = arguments;
-            } else {
-                argument = arguments[0];
-            }
-            unaryCall(call, argument, requestId, connection, methodDescriptor, genericPack, argumentTypes, genericUnpack);
+            return;
         }
+        // unary call
+        Object argument;
+        if (methodDescriptor.isNeedWrap()) {
+            argument = arguments;
+        } else {
+            argument = arguments[0];
+        }
+        unaryCall(call, argument, requestId, connection, methodDescriptor, genericPack, argumentTypes, genericUnpack);
     }
 
     public static void streamCall(ClientCall call,
@@ -70,18 +71,18 @@ public class ClientCallUtil {
         AppResponse appResponse = new AppResponse();
         Response response = new Response(requestId, TripleConstant.TRI_VERSION);
         response.setResult(appResponse);
-        DefaultFuture2.received(connection, response);
-        if (methodDescriptor.streamType == StreamMethodDescriptor.StreamType.CLIENT || methodDescriptor.streamType == StreamMethodDescriptor.StreamType.BI_DIRECTIONAL) {
-            StreamObserver<Object> responseObserver = (StreamObserver<Object>) arguments[0];
-            final StreamObserver<Object> requestObserver = streamCall(call, responseObserver, methodDescriptor, genericPack, argumentTypes, genericUnpack);
-            appResponse.setValue(requestObserver);
-        } else {
+        if (methodDescriptor.isServerStream()) {
             Object request = arguments[0];
             StreamObserver<Object> responseObserver = (StreamObserver<Object>) arguments[1];
             final StreamObserver<Object> requestObserver = streamCall(call, responseObserver, methodDescriptor, genericPack, argumentTypes, genericUnpack);
             requestObserver.onNext(request);
             requestObserver.onCompleted();
+        } else {
+            StreamObserver<Object> responseObserver = (StreamObserver<Object>) arguments[0];
+            final StreamObserver<Object> requestObserver = streamCall(call, responseObserver, methodDescriptor, genericPack, argumentTypes, genericUnpack);
+            appResponse.setValue(requestObserver);
         }
+        // for timeout
         DefaultFuture2.sent(requestId);
         DefaultFuture2.received(connection, response);
     }
@@ -91,14 +92,13 @@ public class ClientCallUtil {
                                                     StreamMethodDescriptor methodDescriptor,
                                                     GenericPack genericPack, List<String> argumentTypes,
                                                     GenericUnpack genericUnpack) {
-        if(responseObserver instanceof CancelableStreamObserver){
+        if (responseObserver instanceof CancelableStreamObserver) {
             final CancellationContext context = new CancellationContext();
             ((CancelableStreamObserver<Object>) responseObserver).setCancellationContext(context);
             context.addListener(context1 -> call.cancel("Canceled by app", null));
         }
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver);
-        final StreamObserver<Object> requestObserver = call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
-        return requestObserver;
+        return call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
     }
 
     public static void unaryCall(ClientCall call, Object request, long requestId, Connection connection,
@@ -122,9 +122,8 @@ public class ClientCallUtil {
 
         if (methodDescriptor.isNeedWrap()) {
             return wrapperCall(call, responseListener, genericPack, argumentTypes, genericUnpack);
-        } else {
-            return call(call, responseListener);
         }
+        return call(call, responseListener);
     }
 
     public static StreamObserver<Object> wrapperCall(ClientCall call, ClientCall.Listener responseListener,

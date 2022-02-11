@@ -83,4 +83,9 @@ public class StreamMethodDescriptor extends MethodDescriptor {
     public enum StreamType {
         SERVER, CLIENT, BI_DIRECTIONAL
     }
+
+
+    public boolean isServerStream() {
+        return streamType == StreamType.SERVER;
+    }
 }
