@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 
 public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ClientStreamObserver<T> {
     private final ClientCall call;
+    private boolean terminated;
 
     public ClientCallToObserverAdapter(ClientCall call) {
         this.call = call;
@@ -30,22 +31,28 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void onNext(Object data) {
+        if (terminated) {
+            throw new IllegalStateException("Stream observer has been terminated, no more data is allowed");
+        }
         call.sendMessage(data);
     }
 
     @Override
     public void onError(Throwable throwable) {
         call.cancel(null, throwable);
+        this.terminated = true;
     }
 
     @Override
     public void onCompleted() {
-        call.closeLocal();
+        call.halfClose();
+        this.terminated = true;
     }
 
     @Override
     public void cancel(Throwable throwable) {
         call.cancel("Canceled by app ", throwable);
+        this.terminated = true;
     }
 
     @Override

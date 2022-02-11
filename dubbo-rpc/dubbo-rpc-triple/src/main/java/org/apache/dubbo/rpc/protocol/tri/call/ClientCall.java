@@ -126,8 +126,8 @@ public class ClientCall {
         }
     }
 
-    public void closeLocal() {
-        stream.complete();
+    public void halfClose() {
+        stream.halfClose();
     }
 
     public void setCompression(String compression) {

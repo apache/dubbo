@@ -28,8 +28,9 @@ import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
 
 public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ServerStreamObserver<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
-    private final ServerCall call;
     public final CancellationContext cancellationContext;
+    private final ServerCall call;
+    private boolean terminated;
 
     public ServerCallToObserverAdapter(ServerCall call) {
         this.call = call;
@@ -47,21 +48,32 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void onNext(Object data) {
+        if (terminated) {
+            throw new IllegalStateException("Stream observer has been terminated, no more data is allowed");
+        }
         call.writeMessage(data);
     }
 
     @Override
     public void onError(Throwable throwable) {
+        if (terminated) {
+            return;
+        }
         final GrpcStatus status = GrpcStatus.getStatus(throwable);
         call.close(status, null);
         if (status.code == GrpcStatus.Code.CANCELLED) {
             cancellationContext.cancel(throwable);
         }
+        terminated = true;
     }
 
     @Override
     public void onCompleted() {
+        if (terminated) {
+            return;
+        }
         call.close(GrpcStatus.fromCode(GrpcStatus.Code.OK), null);
+        terminated = true;
     }
 
     @Override
@@ -73,16 +85,6 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
     public void setCompression(String compression) {
         call.setCompression(compression);
     }
-
-//    public final void setCancellationContext(CancellationContext cancellationContext) {
-//        if (contextSet.compareAndSet(false, true)) {
-//            this.cancellationContext = cancellationContext;
-//        } else {
-//            if (LOGGER.isWarnEnabled()) {
-//                LOGGER.warn("CancellationContext already set,do not repeat the set, ignore this set");
-//            }
-//        }
-//    }
 
     public final void cancel(Throwable throwable) {
         if (cancellationContext == null) {

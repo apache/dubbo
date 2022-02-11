@@ -140,7 +140,7 @@ public class ClientStream extends AbstractStream implements Stream {
         //TODO
     }
 
-    public void complete() {
+    public void halfClose() {
         final EndStreamQueueCommand cmd = EndStreamQueueCommand.create();
         this.writeQueue.enqueue(cmd, true);
     }

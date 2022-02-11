@@ -110,7 +110,7 @@ public class ServerCall {
 
     private void sendHeader() {
         if (headerSent) {
-            return;
+            throw new IllegalStateException("Header has already sent");
         }
         headerSent = true;
         final DefaultHttp2Headers headers = TripleConstant.createSuccessHttp2Headers();
@@ -126,7 +126,7 @@ public class ServerCall {
 
     public void setCompression(String compression) {
         if (headerSent) {
-            throw new IllegalStateException("Can not set compression after message sent");
+            throw new IllegalStateException("Can not set compression after header sent");
         }
         this.compressor = Compressor.getCompressor(frameworkModel, compression);
     }
@@ -136,7 +136,7 @@ public class ServerCall {
     }
 
     public void writeMessage(Object message) {
-        executor.execute(() -> {
+        final Runnable writeMessage = () -> {
             if (!headerSent) {
                 sendHeader();
             }
@@ -161,7 +161,8 @@ public class ServerCall {
             } else {
                 serverStream.writeMessage(data, 0);
             }
-        });
+        };
+        executor.execute(writeMessage);
     }
 
     public void close(GrpcStatus status, Map<String, Object> trailers) {
