@@ -39,16 +39,14 @@ public class WriteQueue {
         scheduled = new AtomicBoolean(false);
     }
 
-    public ChannelPromise enqueue(QueuedCommand command, boolean flush) {
+    public ChannelPromise enqueue(QueuedCommand command) {
         ChannelPromise promise = command.promise();
         if (promise == null) {
             promise = channel.newPromise();
             command.promise(promise);
         }
         queue.add(command);
-        if (flush) {
-            scheduleFlush();
-        }
+        scheduleFlush();
         return promise;
     }
 

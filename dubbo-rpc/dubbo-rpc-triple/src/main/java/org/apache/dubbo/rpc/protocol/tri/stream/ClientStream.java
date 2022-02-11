@@ -44,7 +44,6 @@ import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
@@ -91,19 +90,20 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
 
-    public void startCall(Http2Headers headers){
+    public void startCall(Http2Headers headers) {
         if (this.writeQueue == null) {
             // already processed at createStream()
             return;
         }
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
-        this.writeQueue.enqueue(headerCmd, true).addListener(future -> {
+        this.writeQueue.enqueue(headerCmd).addListener(future -> {
             if (!future.isSuccess()) {
                 transportException(future.cause());
             }
         });
     }
-    private void transportException(Throwable cause){
+
+    private void transportException(Throwable cause) {
         final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withDescription("Http2 exception")
             .withCause(cause);
@@ -115,19 +115,16 @@ public class ClientStream extends AbstractStream implements Stream {
             return;
         }
         canceled = true;
-//        listener.complete(status);
-//        if (headerReceived) {
-            final CancelQueueCommand cmd = CancelQueueCommand.createCommand(status);
-            this.writeQueue.enqueue(cmd, true);
-//        }
+        final CancelQueueCommand cmd = CancelQueueCommand.createCommand(status);
+        this.writeQueue.enqueue(cmd);
     }
 
 
     @Override
-    public void writeMessage(byte[] message,int compressed) {
+    public void writeMessage(byte[] message, int compressed) {
         try {
-            final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false,compressed);
-            this.writeQueue.enqueue(cmd, true);
+            final DataQueueCommand cmd = DataQueueCommand.createGrpcCommand(message, false, compressed);
+            this.writeQueue.enqueue(cmd);
         } catch (Throwable t) {
             cancelByLocal(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withDescription("Client write message failed")
@@ -142,7 +139,7 @@ public class ClientStream extends AbstractStream implements Stream {
 
     public void halfClose() {
         final EndStreamQueueCommand cmd = EndStreamQueueCommand.create();
-        this.writeQueue.enqueue(cmd, true);
+        this.writeQueue.enqueue(cmd);
     }
 
     class ClientTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
@@ -152,7 +149,7 @@ public class ClientStream extends AbstractStream implements Stream {
         private boolean remoteClosed;
 
         void handleH2TransportError(GrpcStatus status, Http2Headers trailers) {
-            writeQueue.enqueue(CancelQueueCommand.createCommand(status), true);
+            writeQueue.enqueue(CancelQueueCommand.createCommand(status));
             finishProcess(status, trailers);
         }
 
@@ -337,7 +334,7 @@ public class ClientStream extends AbstractStream implements Stream {
         public void onHeader(Http2Headers headers, boolean endStream) {
             if (endStream) {
                 if (!remoteClosed) {
-                    writeQueue.enqueue(CancelQueueCommand.createCommand(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED)), true);
+                    writeQueue.enqueue(CancelQueueCommand.createCommand(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED)));
                 }
                 onTrailersReceived(headers);
             } else {

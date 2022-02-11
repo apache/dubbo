@@ -104,10 +104,10 @@ public class ServerStream implements Stream {
         }
         if (headerSent) {
             trailersSent = true;
-            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, true), true);
+            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, true));
         } else {
             headerSent = true;
-            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false), true);
+            writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false));
         }
     }
 
@@ -163,7 +163,7 @@ public class ServerStream implements Stream {
 
     @Override
     public void writeMessage(byte[] message, int compressed) {
-        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false, compressed), true);
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(message, false, compressed));
     }
 
     @Override
@@ -183,8 +183,8 @@ public class ServerStream implements Stream {
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.description)
             .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.TEXT_PLAIN_UTF8);
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false), false);
-        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true), true);
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(headers, false));
+        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
     }
 
     /**
@@ -198,7 +198,7 @@ public class ServerStream implements Stream {
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toMessage());
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true), true);
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true));
     }
 
     public class ServerTransportObserver extends AbstractTransportObserver implements H2TransportObserver {

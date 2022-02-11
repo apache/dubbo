@@ -46,7 +46,7 @@ public class Gzip implements Compressor, DeCompressor {
         try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteOutStream)) {
             gzipOutputStream.write(payloadByteArr);
         } catch (Exception exception) {
-            throw new RpcException(exception);
+            throw new IllegalStateException(exception);
         }
 
         return byteOutStream.toByteArray();
@@ -67,7 +67,7 @@ public class Gzip implements Compressor, DeCompressor {
                 byteOutStream.write(bufferArr, 0, readByteNum);
             }
         } catch (Exception exception) {
-            throw new RpcException(exception);
+            throw new IllegalStateException(exception);
         }
 
         return byteOutStream.toByteArray();
