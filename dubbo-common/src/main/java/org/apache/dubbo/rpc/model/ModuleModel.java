@@ -49,7 +49,7 @@ public class ModuleModel extends ScopeModel {
     }
 
     public ModuleModel(ApplicationModel applicationModel, boolean isInternal) {
-        super(applicationModel, ExtensionScope.MODULE);
+        super(applicationModel, ExtensionScope.MODULE, isInternal);
         Assert.notNull(applicationModel, "ApplicationModel can not be null");
         this.applicationModel = applicationModel;
         applicationModel.addModule(this, isInternal);
@@ -67,7 +67,6 @@ public class ModuleModel extends ScopeModel {
         if (applicationDeployer != null) {
             applicationDeployer.notifyModuleChanged(this, DeployState.PENDING);
         }
-        this.internalModule = isInternal;
     }
 
     @Override

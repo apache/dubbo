@@ -66,7 +66,7 @@ public class FrameworkModel extends ScopeModel {
     private Object instLock = new Object();
 
     public FrameworkModel() {
-        super(null, ExtensionScope.FRAMEWORK);
+        super(null, ExtensionScope.FRAMEWORK, false);
         this.setInternalId(String.valueOf(index.getAndIncrement()));
         // register FrameworkModel instance early
         synchronized (globalLock) {

@@ -51,7 +51,7 @@ public interface Invocation {
      *
      * @return
      */
-    String getServiceName();
+    String getInterfaceName();
 
     /**
      * get parameter types.

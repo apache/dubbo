@@ -63,7 +63,7 @@ public class MockInvocation extends RpcInvocation {
     }
 
     @Override
-    public String getServiceName() {
+    public String getInterfaceName() {
         return "DemoService";
     }
 
