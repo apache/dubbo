@@ -40,27 +40,31 @@ public abstract class AbstractTransportObserver implements H2TransportObserver {
             return attachments;
         }
         for (Map.Entry<CharSequence, CharSequence> header : trailers) {
-            String key = header.getKey().toString();
-            if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
-                continue;
-            }
-            // avoid subsequent parse protocol header
-            if (TripleHeaderEnum.containsExcludeAttachments(key)) {
-                continue;
-            }
-            if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
-                try {
-                    String realKey = key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length());
-                    byte[] value = H2TransportObserver.decodeASCIIByte(header.getValue());
-                    attachments.put(realKey, value);
-                } catch (Exception e) {
-                    LOGGER.error("Failed to parse response attachment key=" + key, e);
-                }
-            } else {
-                attachments.put(key, header.getValue().toString());
-            }
+            parseSingleKV(attachments, header);
         }
         return attachments;
+    }
+
+    private void parseSingleKV(Map<String, Object> attachments, Map.Entry<CharSequence, CharSequence> header) {
+        String key = header.getKey().toString();
+        if (Http2Headers.PseudoHeaderName.isPseudoHeader(key)) {
+            return;
+        }
+        // avoid subsequent parse protocol header
+        if (TripleHeaderEnum.containsExcludeAttachments(key)) {
+            return;
+        }
+        if (key.endsWith(TripleConstant.GRPC_BIN_SUFFIX) && key.length() > TripleConstant.GRPC_BIN_SUFFIX.length()) {
+            try {
+                String realKey = key.substring(0, key.length() - TripleConstant.GRPC_BIN_SUFFIX.length());
+                byte[] value = H2TransportObserver.decodeASCIIByte(header.getValue());
+                attachments.put(realKey, value);
+            } catch (Exception e) {
+                LOGGER.error("Failed to parse response attachment key=" + key, e);
+            }
+        } else {
+            attachments.put(key, header.getValue().toString());
+        }
     }
 
 
