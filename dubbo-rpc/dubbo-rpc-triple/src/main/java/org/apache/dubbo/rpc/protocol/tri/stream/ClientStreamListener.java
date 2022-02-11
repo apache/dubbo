@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 
 import java.util.Collections;
 import java.util.Map;
@@ -27,16 +27,16 @@ public interface ClientStreamListener extends StreamListener {
     /**
      * Indicate the stream is closed . Will be called exactly once
      *
-     * @param grpcStatus
+     * @param rpcStatus
      * @param attachments
      */
-    void complete(GrpcStatus grpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders);
+    void complete(RpcStatus rpcStatus, Map<String, Object> attachments, Map<String, String> excludeHeaders);
 
-    default void complete(GrpcStatus grpcStatus, Map<String, Object> attachments) {
-        complete(grpcStatus, attachments, Collections.emptyMap());
+    default void complete(RpcStatus rpcStatus, Map<String, Object> attachments) {
+        complete(rpcStatus, attachments, Collections.emptyMap());
     }
 
-    default void complete(GrpcStatus grpcStatus) {
-        complete(grpcStatus, Collections.emptyMap(), Collections.emptyMap());
+    default void complete(RpcStatus rpcStatus) {
+        complete(rpcStatus, Collections.emptyMap(), Collections.emptyMap());
     }
 }

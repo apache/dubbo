@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.pack;
 
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class WrapResponseUnpack {
         try {
             return genericUnpack.unpack(wrapper.getData().toByteArray(), wrapper.getSerializeType(), wrapper.getType());
         } catch (ClassNotFoundException | IOException e) {
-            throw  GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+            throw  RpcStatus.INTERNAL
                 .withDescription("Deserialize response failed")
                 .withCause(e)
                 .asException();

@@ -18,7 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.observer;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.triple.TripleWrapper;
 
@@ -55,7 +55,7 @@ public class WrapperRequestObserver implements StreamObserver<Object> {
                 builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
             }
         } catch (IOException e) {
-            throw GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+            throw RpcStatus.INTERNAL
                 .withDescription("Serialize request failed")
                 .withCause(e)
                 .asException();

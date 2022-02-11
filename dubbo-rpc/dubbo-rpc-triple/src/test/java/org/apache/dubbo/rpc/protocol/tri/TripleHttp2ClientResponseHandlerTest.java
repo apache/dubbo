@@ -103,7 +103,7 @@ public class TripleHttp2ClientResponseHandlerTest {
         handler.exceptionCaught(ctx, exception);
         ArgumentCaptor<RpcException> rpcExceptionArgumentCaptor = ArgumentCaptor.forClass(RpcException.class);
         Mockito.verify(streamObserver, Mockito.times(1)).onError(rpcExceptionArgumentCaptor.capture());
-        Assertions.assertEquals(rpcExceptionArgumentCaptor.getValue().getCode(), GrpcStatus.Code.INTERNAL.code);
+        Assertions.assertEquals(rpcExceptionArgumentCaptor.getValue().getCode(), RpcStatus.Code.INTERNAL.code);
         Mockito.verify(ctx, Mockito.times(1)).close();
     }
 }

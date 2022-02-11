@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -161,7 +161,7 @@ public class ClientCall {
         }
         canceled = true;
         if (stream != null) {
-            final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED);
+            final RpcStatus status = RpcStatus.CANCELLED;
             if (message != null) {
                 status.withDescription(message);
             } else {
@@ -177,7 +177,7 @@ public class ClientCall {
 
         void onMessage(Object message);
 
-        void onClose(GrpcStatus status, Map<String, Object> trailers);
+        void onClose(RpcStatus status, Map<String, Object> trailers);
     }
 
     class ClientStreamListenerImpl implements ClientStreamListener {
@@ -197,7 +197,7 @@ public class ClientCall {
                     final Object unpacked = unpack.unpack(message);
                     listener.onMessage(unpacked);
                 } catch (IOException e) {
-                    cancelByErr(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    cancelByErr(RpcStatus.INTERNAL
                         .withDescription("Deserialize response failed")
                         .withCause(e));
                 }
@@ -205,7 +205,7 @@ public class ClientCall {
         }
 
         @Override
-        public void complete(GrpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
+        public void complete(RpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
             executor.execute(() -> {
                 if (done) {
                     return;
@@ -218,14 +218,14 @@ public class ClientCall {
                 try {
                     listener.onClose(status, attachments);
                 } catch (Throwable t) {
-                    cancelByErr(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    cancelByErr(RpcStatus.INTERNAL
                         .withDescription("Close stream error")
                         .withCause(t));
                 }
             });
         }
 
-        void cancelByErr(GrpcStatus status) {
+        void cancelByErr(RpcStatus status) {
             stream.cancelByLocal(status);
         }
 
@@ -249,7 +249,7 @@ public class ClientCall {
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo == null) {
                     return new RpcException(statusDetail.getCode(),
-                        GrpcStatus.decodeMessage(statusDetail.getMessage()));
+                        RpcStatus.decodeMessage(statusDetail.getMessage()));
                 }
                 String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
                 return new RpcException(statusDetail.getCode(), msg);

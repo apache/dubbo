@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.call;
 
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.pack.WrapResponseUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.triple.TripleWrapper;
@@ -43,7 +43,7 @@ public class WrapResponseCallListener implements ClientCall.Listener {
             final Object unpack = responseUnpack.unpack((TripleWrapper.TripleResponseWrapper) message);
             delegate.onMessage(unpack);
         } catch (Throwable t) {
-            final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+            final RpcStatus status = RpcStatus.INTERNAL
                 .withDescription("Failed deserialize response")
                 .withCause(t);
             onClose(status, null);
@@ -51,7 +51,7 @@ public class WrapResponseCallListener implements ClientCall.Listener {
     }
 
     @Override
-    public void onClose(GrpcStatus status, Map<String, Object> trailers) {
+    public void onClose(RpcStatus status, Map<String, Object> trailers) {
         delegate.onClose(status, trailers);
     }
 

@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 
 import java.util.Map;
 
@@ -33,6 +33,6 @@ public interface ServerStreamListener extends StreamListener {
      */
     void complete();
 
-    void cancel(GrpcStatus status);
+    void cancel(RpcStatus status);
 
 }

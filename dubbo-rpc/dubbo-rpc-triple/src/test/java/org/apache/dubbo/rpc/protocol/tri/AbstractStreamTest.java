@@ -51,8 +51,8 @@ public class AbstractStreamTest {
         Exception exception = getException();
         OutboundTransportObserver transportObserver = Mockito.mock(OutboundTransportObserver.class);
         stream.subscribe(transportObserver);
-        GrpcStatus grpcStatus = GrpcStatus
-            .fromCode(GrpcStatus.Code.INTERNAL)
+        RpcStatus rpcStatus = RpcStatus
+            .fromCode(RpcStatus.Code.INTERNAL)
             .withDescription("TEST")
             .withCause(exception);
         Map<String, Object> attachments = new HashMap<>();
@@ -61,14 +61,14 @@ public class AbstractStreamTest {
         attachments.put(String.valueOf(Http2Headers.PseudoHeaderName.PATH.value()), "path");
         attachments.put(CommonConstants.GROUP_KEY, "group");
 
-        stream.transportError(grpcStatus, attachments, false);
+        stream.transportError(rpcStatus, attachments, false);
 
         ArgumentCaptor<DefaultMetadata> metadataArgumentCaptor = ArgumentCaptor.forClass(DefaultMetadata.class);
         Mockito.verify(transportObserver, Mockito.times(2)).onMetadata(metadataArgumentCaptor.capture(), Mockito.anyBoolean());
 
         DefaultMetadata defaultMetadata = metadataArgumentCaptor.getValue();
-        Assertions.assertEquals(defaultMetadata.get(STATUS_KEY.getHeader()), String.valueOf(grpcStatus.code.code));
-        Assertions.assertEquals(defaultMetadata.get(MESSAGE_KEY.getHeader()), grpcStatus.description);
+        Assertions.assertEquals(defaultMetadata.get(STATUS_KEY.getHeader()), String.valueOf(rpcStatus.code.code));
+        Assertions.assertEquals(defaultMetadata.get(MESSAGE_KEY.getHeader()), rpcStatus.description);
         Assertions.assertNotNull(defaultMetadata.get(STATUS_DETAIL_KEY.getHeader()));
         Assertions.assertTrue(defaultMetadata.contains("strKey".toLowerCase(Locale.ROOT)));
         Assertions.assertTrue(defaultMetadata.contains("binKey".toLowerCase(Locale.ROOT) + TripleConstant.GRPC_BIN_SUFFIX));

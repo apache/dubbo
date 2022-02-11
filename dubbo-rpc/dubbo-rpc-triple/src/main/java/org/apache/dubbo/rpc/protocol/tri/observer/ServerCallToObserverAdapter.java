@@ -21,7 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
 
@@ -58,7 +58,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         if (terminated) {
             return;
         }
-        final GrpcStatus status = GrpcStatus.getStatus(throwable);
+        final RpcStatus status = RpcStatus.getStatus(throwable);
         call.close(status, null);
         terminated = true;
     }
@@ -68,7 +68,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         if (terminated) {
             return;
         }
-        call.close(GrpcStatus.fromCode(GrpcStatus.Code.OK), null);
+        call.close(RpcStatus.OK, null);
         terminated = true;
     }
 

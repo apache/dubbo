@@ -18,7 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 
 import java.util.Map;
 
@@ -35,7 +35,7 @@ public class ObserverToClientCallListenerAdapter implements ClientCall.Listener 
     }
 
     @Override
-    public void onClose(GrpcStatus status, Map<String, Object> trailers) {
+    public void onClose(RpcStatus status, Map<String, Object> trailers) {
         if (status.isOk()) {
             delegate.onCompleted();
         } else {

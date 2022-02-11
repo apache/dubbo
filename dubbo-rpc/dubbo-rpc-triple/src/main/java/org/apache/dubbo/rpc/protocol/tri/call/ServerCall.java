@@ -34,7 +34,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.PathResolver;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -144,13 +144,13 @@ public class ServerCall {
             try {
                 data = pack.pack(message);
             } catch (IOException e) {
-                close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                close(RpcStatus.INTERNAL
                     .withDescription("Serialize response failed")
                     .withCause(e), null);
                 return;
             }
             if (data == null) {
-                close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                close(RpcStatus.INTERNAL
                     .withDescription("Missing response"), null);
                 return;
             }
@@ -165,7 +165,7 @@ public class ServerCall {
         executor.execute(writeMessage);
     }
 
-    public void close(GrpcStatus status, Map<String, Object> trailers) {
+    public void close(RpcStatus status, Map<String, Object> trailers) {
         executor.execute(() -> serverStream.close(status, trailers));
     }
 
@@ -221,7 +221,7 @@ public class ServerCall {
      *
      * @param status
      */
-    private void responseErr(GrpcStatus status) {
+    private void responseErr(RpcStatus status) {
         Http2Headers trailers = new DefaultHttp2Headers()
             .status(OK.codeAsText())
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
@@ -261,7 +261,7 @@ public class ServerCall {
                 }
             }
             if (methodDescriptor == null) {
-                close(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                close(RpcStatus.UNIMPLEMENTED
                     .withDescription("Method :" + methodName + "[" + Arrays.toString(paramTypes) + "] " +
                         "not found of service:" + serviceDescriptor.getServiceName()), null);
             }
@@ -309,14 +309,14 @@ public class ServerCall {
         private void doOnHeaders(Map<String, Object> headers) {
             invoker = getInvoker(headers, serviceName);
             if (invoker == null) {
-                responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                responseErr(RpcStatus.UNIMPLEMENTED
                     .withDescription("Service not found:" + serviceName));
                 return;
             }
             FrameworkServiceRepository repo = frameworkModel.getServiceRepository();
             providerModel = repo.lookupExportedService(invoker.getUrl().getServiceKey());
             if (providerModel == null || providerModel.getServiceModel() == null) {
-                responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                responseErr(RpcStatus.UNIMPLEMENTED
                     .withDescription("Service not found:" + serviceName));
                 return;
             }
@@ -336,7 +336,7 @@ public class ServerCall {
                     methodDescriptors = providerModel.getServiceModel().getMethods(upperMethod);
                 }
                 if (CollectionUtils.isEmpty(methodDescriptors)) {
-                    responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                    responseErr(RpcStatus.UNIMPLEMENTED
                         .withDescription("Method : " + methodName + " not found of service:" + serviceName));
                     return;
                 }
@@ -368,7 +368,7 @@ public class ServerCall {
         }
 
         @Override
-        public void cancel(GrpcStatus status) {
+        public void cancel(RpcStatus status) {
             executor.execute(() -> listener.onCancel(status.description));
         }
 
@@ -388,7 +388,7 @@ public class ServerCall {
                     final Object obj = unpack.unpack(message);
                     listener.onMessage(obj);
                 } catch (IOException e) {
-                    close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription("Server error")
+                    close(RpcStatus.INTERNAL.withDescription("Server error")
                         .withCause(e), null);
                 } finally {
                     ClassLoadUtil.switchContextLoader(tccl);

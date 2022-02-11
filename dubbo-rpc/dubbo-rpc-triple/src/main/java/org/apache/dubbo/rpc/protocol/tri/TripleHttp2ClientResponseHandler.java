@@ -65,13 +65,13 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
 
     private void onResetRead(ChannelHandlerContext ctx, Http2ResetFrame resetFrame) {
         LOGGER.warn("Triple Client received remote reset errorCode=" + resetFrame.errorCode());
-        stream.remoteObserver.cancelByRemote(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED));
+        stream.remoteObserver.cancelByRemote(RpcStatus.CANCELLED);
         ctx.close();
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+        final RpcStatus status = RpcStatus.INTERNAL
             .withCause(cause);
         LOGGER.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code, cause);
         stream.remoteObserver.cancelByRemote(status);

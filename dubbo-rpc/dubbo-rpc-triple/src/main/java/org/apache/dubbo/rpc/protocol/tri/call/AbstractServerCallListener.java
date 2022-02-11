@@ -25,14 +25,14 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.getStatus;
+import static org.apache.dubbo.rpc.protocol.tri.RpcStatus.getStatus;
 
 public abstract class AbstractServerCallListener implements ServerCall.Listener {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerCallListener.class);
@@ -78,7 +78,7 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
                     invocation.getTargetServiceUniqueName(),
                     invocation.getMethodName(),
                     cost, timeoutVal));
-                call.close(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED), null);
+                call.close(RpcStatus.DEADLINE_EXCEEDED, null);
             } else {
                 onServerResponse(response);
             }

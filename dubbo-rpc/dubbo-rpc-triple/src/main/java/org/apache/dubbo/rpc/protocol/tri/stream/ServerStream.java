@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.PathResolver;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
@@ -88,7 +88,7 @@ public class ServerStream implements Stream {
     }
 
 
-    private String getGrpcMessage(GrpcStatus status) {
+    private String getGrpcMessage(RpcStatus status) {
         if (StringUtils.isNotEmpty(status.description)) {
             return status.description;
         }
@@ -116,7 +116,7 @@ public class ServerStream implements Stream {
         sendHeader(headers);
     }
 
-    public void close(GrpcStatus status, Map<String, Object> attachments) {
+    public void close(RpcStatus status, Map<String, Object> attachments) {
         if (closed) {
             return;
         }
@@ -125,24 +125,24 @@ public class ServerStream implements Stream {
         sendHeaderWithEos(headers);
     }
 
-    private Http2Headers getTrailers(GrpcStatus grpcStatus, Map<String, Object> attachments) {
+    private Http2Headers getTrailers(RpcStatus rpcStatus, Map<String, Object> attachments) {
         DefaultHttp2Headers headers = new DefaultHttp2Headers();
         if (!headerSent) {
             headers.status(HttpResponseStatus.OK.codeAsText());
             headers.set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
         }
         StreamUtils.convertAttachment(headers, attachments);
-        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(grpcStatus.code.code));
-        if (grpcStatus.isOk()) {
+        headers.set(TripleHeaderEnum.STATUS_KEY.getHeader(), String.valueOf(rpcStatus.code.code));
+        if (rpcStatus.isOk()) {
             return headers;
         }
-        String grpcMessage = getGrpcMessage(grpcStatus);
-        grpcMessage = GrpcStatus.encodeMessage(grpcMessage);
+        String grpcMessage = getGrpcMessage(rpcStatus);
+        grpcMessage = RpcStatus.encodeMessage(grpcMessage);
         headers.set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), grpcMessage);
         Status.Builder builder = Status.newBuilder()
-            .setCode(grpcStatus.code.code)
+            .setCode(rpcStatus.code.code)
             .setMessage(grpcMessage);
-        Throwable throwable = grpcStatus.cause;
+        Throwable throwable = rpcStatus.cause;
         if (throwable == null) {
             Status status = builder.build();
             headers.set(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
@@ -177,7 +177,7 @@ public class ServerStream implements Stream {
      * @param code
      * @param status
      */
-    private void responsePlainTextError(int code, GrpcStatus status) {
+    private void responsePlainTextError(int code, RpcStatus status) {
         Http2Headers headers = new DefaultHttp2Headers(true)
             .status(String.valueOf(code))
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
@@ -192,7 +192,7 @@ public class ServerStream implements Stream {
      *
      * @param status
      */
-    private void responseErr(GrpcStatus status) {
+    private void responseErr(RpcStatus status) {
         Http2Headers trailers = new DefaultHttp2Headers()
             .status(OK.codeAsText())
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
@@ -218,21 +218,21 @@ public class ServerStream implements Stream {
         public void onHeader(Http2Headers headers, boolean endStream) {
             if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
                 responsePlainTextError(HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
-                    GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    RpcStatus.INTERNAL
                         .withDescription(String.format("Method '%s' is not supported", headers.method())));
                 return;
             }
 
             if (headers.path() == null) {
                 responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
-                    GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
+                    RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
                 return;
             }
 
             final String path = headers.path().toString();
             if (path.charAt(0) != '/') {
                 responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
-                    GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED.code)
+                    RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code)
                         .withDescription(String.format("Expected path to start with /: %s", path)));
                 return;
             }
@@ -240,7 +240,7 @@ public class ServerStream implements Stream {
             final CharSequence contentType = HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));
             if (contentType == null) {
                 responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
-                    GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code)
+                    RpcStatus.fromCode(RpcStatus.Code.INTERNAL.code)
                         .withDescription("Content-Type is missing from the request"));
                 return;
             }
@@ -248,20 +248,20 @@ public class ServerStream implements Stream {
             final String contentString = contentType.toString();
             if (!supportContentType(contentString)) {
                 responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
-                    GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code)
+                    RpcStatus.fromCode(RpcStatus.Code.INTERNAL.code)
                         .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
                 return;
             }
 
             if (path.charAt(0) != '/') {
-                responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                responseErr(RpcStatus.UNIMPLEMENTED
                     .withDescription("Path must start with '/'. Request path: " + path));
                 return;
             }
 
             String[] parts = path.split("/");
             if (parts.length != 3) {
-                responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
+                responseErr(RpcStatus.UNIMPLEMENTED
                     .withDescription("Bad path format:" + path));
                 return;
             }
@@ -276,7 +276,7 @@ public class ServerStream implements Stream {
                 if (!Identity.MESSAGE_ENCODING.equals(compressorStr)) {
                     DeCompressor compressor = DeCompressor.getCompressor(frameworkModel, compressorStr);
                     if (null == compressor) {
-                        responseErr(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED.code)
+                        responseErr(RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code)
                             .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
                         return;
                     }
@@ -288,7 +288,7 @@ public class ServerStream implements Stream {
                 final TriDecoder.Listener listener = new ServerDecoderListener();
                 ServerStream.this.decoder = new TriDecoder(deCompressor, listener);
             } catch (Throwable t) {
-                close(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                close(RpcStatus.INTERNAL
                     .withCause(t), null);
             }
             ServerCall call = new ServerCall(ServerStream.this, frameworkModel,
@@ -316,7 +316,7 @@ public class ServerStream implements Stream {
 
 
         @Override
-        public void cancelByRemote(GrpcStatus status) {
+        public void cancelByRemote(RpcStatus status) {
             listener.cancel(status);
 //            listener.complete();
 //            close(status, null);

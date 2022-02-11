@@ -64,6 +64,6 @@ public interface H2TransportObserver {
     void onData(ByteBuf data, boolean endStream);
 
 
-    void cancelByRemote(GrpcStatus status);
+    void cancelByRemote(RpcStatus status);
 
 }

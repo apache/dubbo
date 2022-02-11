@@ -52,7 +52,8 @@ import java.util.concurrent.TimeUnit;
 public class DefaultFuture2 extends CompletableFuture<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
-    private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER =
+    private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
+    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER =
         new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true),
             30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private final Request request;
@@ -123,11 +124,11 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         }
     }
 
-    public static void received(long requestId, GrpcStatus status, AppResponse appResponse) {
+    public static void received(long requestId, RpcStatus status, AppResponse appResponse) {
         DefaultFuture2 future = FUTURES.remove(requestId);
         if (future != null) {
             Timeout t = future.timeoutCheckTask;
-            if (status.code != GrpcStatus.Code.DEADLINE_EXCEEDED) {
+            if (status.code != RpcStatus.Code.DEADLINE_EXCEEDED) {
                 // decrease Time
                 t.cancel();
             }
@@ -157,7 +158,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        doReceived(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED), null);
+        doReceived(RpcStatus.CANCELLED, null);
         FUTURES.remove(request.getId());
         timeoutCheckTask.cancel();
         return true;
@@ -167,10 +168,10 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         this.cancel(true);
     }
 
-    private void doReceived(GrpcStatus status, AppResponse appResponse) {
+    private void doReceived(RpcStatus status, AppResponse appResponse) {
         if (status.isOk()) {
             this.complete(appResponse);
-        } else if (status.code == GrpcStatus.Code.DEADLINE_EXCEEDED) {
+        } else if (status.code == RpcStatus.Code.DEADLINE_EXCEEDED) {
             this.completeExceptionally(new TimeoutException(isSent(), null, connection.getRemote(), "Request timeout"));
         } else {
             final InetSocketAddress local;
@@ -255,13 +256,9 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         }
 
         private void notifyTimeout(DefaultFuture2 future) {
-            final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED)
+            final RpcStatus status = RpcStatus.DEADLINE_EXCEEDED
                 .withDescription(future.getTimeoutMessage());
             DefaultFuture2.received(future.getId(), status, null);
         }
     }
-
-
-
-
 }

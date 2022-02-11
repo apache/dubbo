@@ -116,7 +116,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         result.setExecutor(executor);
 
         if (!connection.isAvailable()) {
-            final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.UNAVAILABLE)
+            final RpcStatus status = RpcStatus.UNAVAILABLE
                 .withDescription(String.format("Connect to %s failed", this));
             DefaultFuture2.received(req.getId(), status, null);
             return result;

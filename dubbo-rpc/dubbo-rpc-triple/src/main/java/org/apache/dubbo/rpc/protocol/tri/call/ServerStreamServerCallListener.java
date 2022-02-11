@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class ServerStreamServerCallListener extends AbstractServerCallListener {
@@ -45,7 +45,7 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onCancel(String errorInfo) {
-        responseObserver.cancel(GrpcStatus.fromCode(GrpcStatus.Code.CANCELLED).withDescription(errorInfo).asException());
+        responseObserver.cancel(RpcStatus.CANCELLED.withDescription(errorInfo).asException());
     }
 
 

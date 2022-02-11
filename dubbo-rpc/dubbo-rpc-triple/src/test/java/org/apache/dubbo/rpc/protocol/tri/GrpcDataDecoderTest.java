@@ -54,7 +54,7 @@ public class GrpcDataDecoderTest {
         } catch (Exception e) {
             Assertions.assertTrue(e instanceof RpcException);
             RpcException rpcException = (RpcException) e;
-            Assertions.assertEquals(rpcException.getCode(), GrpcStatus.Code.INTERNAL.code);
+            Assertions.assertEquals(rpcException.getCode(), RpcStatus.Code.INTERNAL.code);
             Assertions.assertEquals(rpcException.getMessage(), "gRPC frame header malformed: reserved bits not zero");
         }
         in.clear();
@@ -67,7 +67,7 @@ public class GrpcDataDecoderTest {
         } catch (Exception e) {
             Assertions.assertTrue(e instanceof RpcException);
             RpcException rpcException = (RpcException) e;
-            Assertions.assertEquals(rpcException.getCode(), GrpcStatus.Code.RESOURCE_EXHAUSTED.code);
+            Assertions.assertEquals(rpcException.getCode(), RpcStatus.Code.RESOURCE_EXHAUSTED.code);
             Assertions.assertEquals(rpcException.getMessage(), "gRPC message exceeds maximum size 1024: 2048");
         }
 
@@ -95,7 +95,7 @@ public class GrpcDataDecoderTest {
         } catch (Exception e) {
             Assertions.assertTrue(e instanceof RpcException);
             RpcException rpcException = (RpcException) e;
-            Assertions.assertEquals(rpcException.getCode(), GrpcStatus.Code.UNIMPLEMENTED.code);
+            Assertions.assertEquals(rpcException.getCode(), RpcStatus.Code.UNIMPLEMENTED.code);
             Assertions.assertEquals(rpcException.getMessage(), "gRPC message compressor not found");
         }
 

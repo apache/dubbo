@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.WrapperRequestObserver;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
@@ -76,7 +76,7 @@ public class ClientCallUtil {
         }
         // for timeout
         DefaultFuture2.sent(call.requestId);
-        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.OK);
+        final RpcStatus status = RpcStatus.OK;
         DefaultFuture2.received(call.requestId, status, appResponse);
     }
 

@@ -71,7 +71,7 @@ public class WriteQueueTest {
         WriteQueue writeQueue = new WriteQueue(channel);
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultMetadata()), false);
         writeQueue.enqueue(DataQueueCommand.createGrpcCommand(true), false);
-        GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
+        RpcStatus status = RpcStatus.UNKNOWN
             .withCause(new RpcException())
             .withDescription("Encode Response data error");
         writeQueue.enqueue(CancelQueueCommand.createCommand(status), false);

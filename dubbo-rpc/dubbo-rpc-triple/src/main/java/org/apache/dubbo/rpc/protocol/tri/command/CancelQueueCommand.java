@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.tri.command;
 
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -26,13 +26,13 @@ import io.netty.handler.codec.http2.Http2Error;
 
 public class CancelQueueCommand extends QueuedCommand{
 
-    private final GrpcStatus status;
+    private final RpcStatus status;
 
-    private CancelQueueCommand(GrpcStatus status) {
+    private CancelQueueCommand(RpcStatus status) {
         this.status = status;
     }
 
-    public static CancelQueueCommand createCommand(GrpcStatus status) {
+    public static CancelQueueCommand createCommand(RpcStatus status) {
         return new CancelQueueCommand(status);
     }
 

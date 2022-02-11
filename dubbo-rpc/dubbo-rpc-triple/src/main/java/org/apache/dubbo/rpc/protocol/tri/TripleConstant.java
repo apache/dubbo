@@ -49,7 +49,7 @@ public class TripleConstant {
     public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.valueOf("tri_client_stream");
 
     public static final String SUCCESS_RESPONSE_MESSAGE = "OK";
-    public static final String SUCCESS_RESPONSE_STATUS = Integer.toString(GrpcStatus.Code.OK.code);
+    public static final String SUCCESS_RESPONSE_STATUS = Integer.toString(RpcStatus.Code.OK.code);
 
     /**
      * default header
