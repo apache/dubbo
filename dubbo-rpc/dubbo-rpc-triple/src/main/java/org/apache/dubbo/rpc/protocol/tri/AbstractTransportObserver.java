@@ -58,7 +58,7 @@ public abstract class AbstractTransportObserver implements H2TransportObserver {
     }
 
 
-    protected Map<String, String> filterExcludeHeaders(Http2Headers trailers) {
+    protected Map<String, String> filterReservedHeaders(Http2Headers trailers) {
         if (trailers == null) {
             return Collections.emptyMap();
         }

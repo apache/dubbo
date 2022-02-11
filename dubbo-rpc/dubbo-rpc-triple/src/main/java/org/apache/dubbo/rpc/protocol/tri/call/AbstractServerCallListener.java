@@ -35,7 +35,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.protocol.tri.GrpcStatus.getStatus;
 
 public abstract class AbstractServerCallListener implements ServerCall.Listener {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServerCall.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerCallListener.class);
 
     final RpcInvocation invocation;
     final ServerCall call;

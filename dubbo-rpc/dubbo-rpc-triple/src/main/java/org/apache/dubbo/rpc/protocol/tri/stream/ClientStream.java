@@ -154,9 +154,9 @@ public class ClientStream extends AbstractStream implements Stream {
             }
             remoteClosed = true;
 
-            final Map<String, String> excludeHeaders = filterExcludeHeaders(trailers);
+            final Map<String, String> reserved = filterReservedHeaders(trailers);
             final Map<String, Object> attachments = headersToMap(trailers);
-            listener.complete(status, attachments, excludeHeaders);
+            listener.complete(status, attachments, reserved);
         }
 
         private GrpcStatus validateHeaderStatus(Http2Headers headers) {
@@ -253,7 +253,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
                 return status;
             }
-            // No status; something is broken. Try to provide a resonanable error.
+            // No status; something is broken. Try to provide a rational error.
             if (headerReceived) {
                 return GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withDescription("missing GRPC status in response");
             }

@@ -61,41 +61,6 @@ public class GrpcStatus {
         return new GrpcStatus(code, null, description);
     }
 
-    public static byte toDubboStatus(Code code) {
-        byte status;
-        switch (code) {
-            case OK:
-                status = Response.OK;
-                break;
-            case UNKNOWN:
-                status = Response.SERVICE_ERROR;
-                break;
-            case DEADLINE_EXCEEDED:
-                status = Response.SERVER_TIMEOUT;
-                break;
-            case RESOURCE_EXHAUSTED:
-                status = Response.SERVER_THREADPOOL_EXHAUSTED_ERROR;
-                break;
-            case UNIMPLEMENTED:
-                status = Response.SERVICE_NOT_FOUND;
-                break;
-            case INVALID_ARGUMENT:
-                status = Response.BAD_REQUEST;
-                break;
-            case INTERNAL:
-                status = Response.SERVER_ERROR;
-                break;
-            case UNAVAILABLE:
-            case DATA_LOSS:
-                status = Response.CHANNEL_INACTIVE;
-                break;
-            default:
-                status = Response.CLIENT_ERROR;
-                break;
-        }
-        return status;
-    }
-
     /**
      * todo The remaining exceptions are converted to status
      */
@@ -178,7 +143,6 @@ public class GrpcStatus {
         if (httpStatusCode == HttpResponseStatus.BAD_REQUEST.code() ||
             httpStatusCode == HttpResponseStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.code()
         ) {
-
             return GrpcStatus.Code.INTERNAL;
         } else if (httpStatusCode == HttpResponseStatus.UNAUTHORIZED.code()) {
             return GrpcStatus.Code.UNAUTHENTICATED;
@@ -190,7 +154,6 @@ public class GrpcStatus {
             || httpStatusCode == HttpResponseStatus.TOO_MANY_REQUESTS.code()
             || httpStatusCode == HttpResponseStatus.SERVICE_UNAVAILABLE.code()
             || httpStatusCode == HttpResponseStatus.GATEWAY_TIMEOUT.code()) {
-
             return UNAVAILABLE;
         } else {
             return GrpcStatus.Code.UNKNOWN;
