@@ -20,7 +20,6 @@ package org.apache.dubbo.rpc.protocol.tri.observer;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.ServerStreamObserver;
@@ -28,13 +27,13 @@ import org.apache.dubbo.rpc.protocol.tri.call.ServerCall;
 
 public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> implements ServerStreamObserver<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CancelableStreamObserver.class);
-    public final CancellationContext cancellationContext;
     private final ServerCall call;
+    private final CancellationContext cancellationContext;
     private boolean terminated;
 
-    public ServerCallToObserverAdapter(ServerCall call) {
+    public ServerCallToObserverAdapter(ServerCall call, CancellationContext cancellationContext) {
         this.call = call;
-        this.cancellationContext = RpcContext.getCancellationContext();
+        this.cancellationContext = cancellationContext;
     }
 
     public boolean isAutoRequestN() {
@@ -61,9 +60,6 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         }
         final GrpcStatus status = GrpcStatus.getStatus(throwable);
         call.close(status, null);
-        if (status.code == GrpcStatus.Code.CANCELLED) {
-            cancellationContext.cancel(throwable);
-        }
         terminated = true;
     }
 
@@ -86,10 +82,7 @@ public class ServerCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
         call.setCompression(compression);
     }
 
-    public final void cancel(Throwable throwable) {
-        if (cancellationContext == null) {
-            return;
-        }
+    public void cancel(Throwable throwable) {
         cancellationContext.cancel(throwable);
     }
 }

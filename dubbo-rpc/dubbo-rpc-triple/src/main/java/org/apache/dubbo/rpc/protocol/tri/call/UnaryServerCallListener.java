@@ -47,10 +47,6 @@ public class UnaryServerCallListener extends AbstractServerCallListener implemen
         }
     }
 
-    @Override
-    public void onHalfClose() {
-
-    }
 
     @Override
     public void onCancel(String errorInfo) {

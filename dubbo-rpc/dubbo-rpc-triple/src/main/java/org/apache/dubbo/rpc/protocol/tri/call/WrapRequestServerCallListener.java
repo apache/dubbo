@@ -37,11 +37,6 @@ public class WrapRequestServerCallListener   implements ServerCall.Listener{
     }
 
     @Override
-    public void onHalfClose() {
-        delegate.onHalfClose();
-    }
-
-    @Override
     public void onCancel(String errorInfo) {
         delegate.onCancel(errorInfo);
 

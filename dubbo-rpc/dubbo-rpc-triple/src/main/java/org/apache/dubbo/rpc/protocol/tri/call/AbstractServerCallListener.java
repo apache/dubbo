@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -39,18 +40,22 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
     final RpcInvocation invocation;
     final ServerCall call;
     final Invoker<?> invoker;
+    public final CancellationContext cancellationContext;
 
     public AbstractServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
         this.call = call;
         this.invocation = invocation;
         this.invoker = invoker;
+        this.cancellationContext = RpcContext.getCancellationContext();
     }
 
     public void invoke() {
+        RpcContext.restoreCancellationContext(cancellationContext);
         final long stInNano = System.nanoTime();
         final Result result = invoker.invoke(invocation);
         CompletionStage<Object> future = result.thenApply(Function.identity());
         future.whenComplete(onResponse(stInNano));
+        RpcContext.removeCancellationContext();
         RpcContext.removeContext();
     }
 

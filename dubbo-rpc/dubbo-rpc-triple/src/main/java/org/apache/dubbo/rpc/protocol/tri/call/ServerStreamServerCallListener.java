@@ -30,7 +30,7 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
     public ServerStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
         super(call, invocation, invoker);
         call.requestN(2);
-        this.responseObserver = new ServerCallToObserverAdapter<>(call);
+        this.responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
     }
 
     @Override
@@ -40,13 +40,8 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
     @Override
     public void onMessage(Object message) {
         invocation.setArguments(new Object[]{message, responseObserver});
-        invoke();
     }
 
-    @Override
-    public void onHalfClose() {
-
-    }
 
     @Override
     public void onCancel(String errorInfo) {
@@ -56,6 +51,6 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     @Override
     public void onComplete() {
-
+        invoke();
     }
 }

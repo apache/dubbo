@@ -234,8 +234,6 @@ public class ServerCall {
 
         void onMessage(Object message);
 
-        void onHalfClose();
-
         void onCancel(String errorInfo);
 
         void onComplete();

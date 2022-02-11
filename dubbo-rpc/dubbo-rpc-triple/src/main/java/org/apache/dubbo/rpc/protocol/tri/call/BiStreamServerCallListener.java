@@ -30,7 +30,7 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
 
     public BiStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
         super(call, invocation, invoker);
-        this.responseObserver = new ServerCallToObserverAdapter<>(call);
+        this.responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
         invocation.setArguments(new Object[]{responseObserver});
         invoke();
     }
@@ -46,11 +46,6 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     @Override
     public void onMessage(Object message) {
         requestObserver.onNext(message);
-    }
-
-    @Override
-    public void onHalfClose() {
-
     }
 
     @Override
