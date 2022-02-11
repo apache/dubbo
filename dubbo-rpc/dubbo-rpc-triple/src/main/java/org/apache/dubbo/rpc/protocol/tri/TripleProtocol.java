@@ -36,8 +36,6 @@ import org.apache.dubbo.rpc.protocol.tri.service.TriBuiltinService;
 
 import grpc.health.v1.HealthCheckResponse;
 
-import static org.apache.dubbo.rpc.Constants.COMPRESSOR_KEY;
-
 public class TripleProtocol extends AbstractProtocol {
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
@@ -101,7 +99,7 @@ public class TripleProtocol extends AbstractProtocol {
         final String serializationName = url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION);
         TripleInvoker<T> invoker;
         try {
-            invoker = new TripleInvoker<>(type, url, serialization, serializationName,defaultCompressor, acceptEncoding, connectionManager, invokers);
+            invoker = new TripleInvoker<>(type, url, serialization, serializationName, defaultCompressor, acceptEncoding, connectionManager, invokers);
         } catch (RemotingException e) {
             throw new RpcException("Fail to create remoting client for service(" + url + "): " + e.getMessage(), e);
         }
