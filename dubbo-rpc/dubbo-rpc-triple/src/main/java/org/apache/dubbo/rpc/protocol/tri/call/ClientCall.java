@@ -22,8 +22,12 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
+import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus;
+import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
@@ -34,6 +38,10 @@ import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamListener;
 import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.ErrorInfo;
+import com.google.rpc.Status;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
@@ -41,6 +49,8 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.util.AsciiString;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -85,7 +95,7 @@ public class ClientCall {
             .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
             .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         setIfNotNull(headers, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
-        if(!"1.0.0".equals(serviceVersion)) {
+        if (!"1.0.0".equals(serviceVersion)) {
             setIfNotNull(headers, TripleHeaderEnum.SERVICE_VERSION.getHeader(), serviceVersion);
         }
         setIfNotNull(headers, TripleHeaderEnum.SERVICE_GROUP.getHeader(), serviceGroup);
@@ -110,17 +120,17 @@ public class ClientCall {
     }
 
     public void sendMessage(Object message) {
-        if(!started) {
-            started=true;
+        if (!started) {
+            started = true;
             setIfNotNull(headers, TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
             stream.startCall(headers);
         }
         final byte[] data;
         try {
             data = PbPack.INSTANCE.pack(message);
-            int compressed =  Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding())?0:1;
+            int compressed = Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding()) ? 0 : 1;
             final byte[] compress = compressor.compress(data);
-            stream.writeMessage(compress,compressed);
+            stream.writeMessage(compress, compressed);
         } catch (IOException e) {
             cancel("Serialize request failed", e);
         }
@@ -191,14 +201,16 @@ public class ClientCall {
         }
 
         @Override
-        public void complete(GrpcStatus grpcStatus, Map<String, Object> attachments) {
+        public void complete(GrpcStatus status, Map<String, Object> attachments) {
             executor.execute(() -> {
                 if (done) {
                     return;
                 }
                 done = true;
+                final Throwable throwableFromTrailers = getThrowableFromTrailers(attachments);
+                status.withCause(throwableFromTrailers);
                 try {
-                    listener.onClose(grpcStatus, attachments);
+                    listener.onClose(status, attachments);
                 } catch (Throwable t) {
                     cancelByErr(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                         .withDescription("Close stream error")
@@ -209,6 +221,57 @@ public class ClientCall {
 
         void cancelByErr(GrpcStatus status) {
             stream.cancelByLocal(status);
+        }
+
+        Throwable getThrowableFromTrailers(Map<String, Object> metadata) {
+            if (null == metadata) {
+                return null;
+            }
+            // second get status detail
+            if (!metadata.containsKey(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
+                return null;
+            }
+            final String raw = (metadata.remove(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())).toString();
+            byte[] statusDetailBin = H2TransportObserver.decodeASCIIByte(raw);
+            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+            try {
+                final Status statusDetail = Status.parseFrom(statusDetailBin);
+                List<Any> detailList = statusDetail.getDetailsList();
+                Map<Class<?>, Object> classObjectMap = tranFromStatusDetails(detailList);
+
+                // get common exception from DebugInfo
+                DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
+                if (debugInfo == null) {
+                    return new RpcException(statusDetail.getCode(),
+                        GrpcStatus.decodeMessage(statusDetail.getMessage()));
+                }
+                String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
+                return new RpcException(statusDetail.getCode(), msg);
+            } catch (IOException ioException) {
+                return null;
+            } finally {
+                ClassLoadUtil.switchContextLoader(tccl);
+            }
+
+        }
+
+        private Map<Class<?>, Object> tranFromStatusDetails(List<Any> detailList) {
+            Map<Class<?>, Object> map = new HashMap<>();
+            try {
+                for (Any any : detailList) {
+                    if (any.is(ErrorInfo.class)) {
+                        ErrorInfo errorInfo = any.unpack(ErrorInfo.class);
+                        map.putIfAbsent(ErrorInfo.class, errorInfo);
+                    } else if (any.is(DebugInfo.class)) {
+                        DebugInfo debugInfo = any.unpack(DebugInfo.class);
+                        map.putIfAbsent(DebugInfo.class, debugInfo);
+                    }
+                    // support others type but now only support this
+                }
+            } catch (Throwable t) {
+                LOGGER.error("tran from grpc-status-details error", t);
+            }
+            return map;
         }
     }
 }
