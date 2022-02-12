@@ -17,20 +17,104 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
+import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.rpc.support.RpcUtils;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.util.AsciiString;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class StreamUtils {
     protected static final Logger LOGGER = LoggerFactory.getLogger(StreamUtils.class);
+
+    public static RequestMetadata createRequest(URL url, Invocation invocation, long requestId, Compressor compressor,
+                                                String acceptEncoding, int timeout, GenericPack genericPack,
+                                                GenericUnpack genericUnpack) {
+        final String methodName = RpcUtils.getMethodName(invocation);
+        final RequestMetadata meta = new RequestMetadata();
+        meta.scheme = getSchemeFromUrl(url);
+        meta.requestId = requestId;
+        String application = (String) invocation.getObjectAttachments().get(CommonConstants.APPLICATION_KEY);
+        if (application == null) {
+            application = (String) invocation.getObjectAttachments().get(CommonConstants.REMOTE_APPLICATION_KEY);
+        }
+        meta.application = application;
+        ConsumerModel consumerModel = invocation.getServiceModel() != null ?
+                (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) url.getServiceModel();
+        meta.method = consumerModel.getServiceModel().getMethod(methodName, invocation.getParameterTypes());
+        if (meta.method == null) {
+            throw new IllegalStateException("MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(invocation.getCompatibleParamSignatures()));
+        }
+        meta.attachments = invocation.getObjectAttachments();
+        meta.compressor = compressor;
+        meta.acceptEncoding = acceptEncoding;
+        meta.address = url.getAddress();
+        meta.service = url.getPath();
+        meta.group = url.getGroup();
+        meta.version = url.getVersion();
+        meta.timeout = timeout + "m";
+        meta.genericPack=genericPack;
+        meta.genericUnpack=genericUnpack;
+        meta.arguments=invocation.getArguments();
+        meta.argumentTypes= Arrays.stream(invocation.getCompatibleParamSignatures())
+                .collect(Collectors.toList());
+        return meta;
+    }
+
+    public static DefaultHttp2Headers metadataToHeaders(RequestMetadata metadata) {
+        DefaultHttp2Headers header = new DefaultHttp2Headers(false);
+        header.scheme(metadata.scheme)
+                .authority(metadata.address)
+                .method(HttpMethod.POST.asciiName())
+                .path("/" + metadata.service + "/" + metadata.method.getMethodName())
+                .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+                .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+        setIfNotNull(header, TripleHeaderEnum.TIMEOUT.getHeader(), metadata.timeout);
+        if (!"1.0.0".equals(metadata.version)) {
+            setIfNotNull(header, TripleHeaderEnum.SERVICE_VERSION.getHeader(), metadata.version);
+        }
+        setIfNotNull(header, TripleHeaderEnum.SERVICE_GROUP.getHeader(), metadata.group);
+        setIfNotNull(header, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(), metadata.application);
+        setIfNotNull(header, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), metadata.acceptEncoding);
+        if(!Identity.MESSAGE_ENCODING.equals(metadata.compressor.getMessageEncoding())) {
+            setIfNotNull(header, TripleHeaderEnum.GRPC_ENCODING.getHeader(), metadata.compressor.getMessageEncoding());
+        }
+        StreamUtils.convertAttachment(header, metadata.attachments);
+        return header;
+    }
+
+    private static void setIfNotNull(DefaultHttp2Headers headers, CharSequence key, CharSequence value) {
+        if (value == null) {
+            return;
+        }
+        headers.set(key, value);
+    }
+
+    private static AsciiString getSchemeFromUrl(URL url) {
+        boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
+        return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
+    }
 
     /**
      * Parse and put the KV pairs into metadata. Ignore Http2 PseudoHeaderName and internal name.
@@ -55,6 +139,7 @@ public class StreamUtils {
             convertSingleAttachment(headers, key, v);
         }
     }
+
     /**
      * Convert each user's attach value to metadata
      *

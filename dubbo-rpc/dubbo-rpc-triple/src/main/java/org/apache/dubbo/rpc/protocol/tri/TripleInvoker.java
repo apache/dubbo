@@ -17,12 +17,10 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
-import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.FutureContext;
@@ -31,26 +29,20 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.TimeoutCountDown;
-import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCall;
 import org.apache.dubbo.rpc.protocol.tri.call.ClientCallUtil;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import io.netty.util.AsciiString;
-
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
@@ -68,7 +60,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     private final Connection connection;
     private final ReentrantLock destroyLock = new ReentrantLock();
-    private final AsciiString scheme;
     private final Compressor compressor;
     private final String acceptEncoding;
     private final Set<Invoker<?>> invokers;
@@ -87,7 +78,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         this.genericPack = new GenericPack(serialization, serializationName, url);
         this.genericUnpack = new GenericUnpack(serialization, url);
         this.invokers = invokers;
-        this.scheme = getSchemeFromUrl(url);
         this.acceptEncoding = acceptEncoding;
         this.connection = connectionManager.connect(url);
         String compressorStr = url.getParameter(COMPRESSOR_KEY);
@@ -100,16 +90,10 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
 
     @Override
-    protected Result doInvoke(final Invocation invocation) throws Throwable {
-        connection.isAvailable();
+    protected Result doInvoke(final Invocation invocation) {
         ExecutorService executor = getCallbackExecutor(getUrl(), invocation);
-        final String methodName = RpcUtils.getMethodName(invocation);
-        int timeout = calculateTimeout(invocation, methodName);
-        Request req = new Request();
-        req.setVersion(TripleConstant.TRI_VERSION);
-        req.setTwoWay(true);
-        req.setData(invocation);
-        DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
+        int timeout=calculateTimeout(invocation,invocation.getMethodName());
+        DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, invocation, timeout, executor);
         final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
         FutureContext.getContext().setCompatibleFuture(respFuture);
         AsyncRpcResult result = new AsyncRpcResult(respFuture, invocation);
@@ -117,39 +101,17 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
         if (!connection.isAvailable()) {
             final RpcStatus status = RpcStatus.UNAVAILABLE
-                .withDescription(String.format("Connect to %s failed", this));
-            DefaultFuture2.received(req.getId(), status, null);
+                    .withDescription(String.format("Connect to %s failed", this));
+            DefaultFuture2.received(future.requestId, status, null);
             return result;
         }
-        ConsumerModel consumerModel = invocation.getServiceModel() != null ? (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) getUrl().getServiceModel();
-        MethodDescriptor methodDescriptor = consumerModel.getServiceModel().getMethod(methodName, invocation.getParameterTypes());
-        if (methodDescriptor == null) {
-            throw new IllegalStateException("MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(invocation.getCompatibleParamSignatures()));
-        }
-        String application = (String) invocation.getObjectAttachments().get(CommonConstants.APPLICATION_KEY);
-        if (application == null) {
-            application = (String) invocation.getObjectAttachments().get(CommonConstants.REMOTE_APPLICATION_KEY);
-        }
-        ClientCall call = new ClientCall(getUrl(),
-            connection,
-            scheme,
-            req.getId(),
-            getUrl().getPath(),
-            getUrl().getVersion(),
-            getUrl().getGroup(),
-            application,
-            getUrl().getAddress(),
-            timeout + "m",
-            methodName,
-            acceptEncoding,
-            compressor,
-            invocation.getObjectAttachments(),
-            executor,
-            methodDescriptor);
 
-        final List<String> paramTypes = Arrays.stream(invocation.getCompatibleParamSignatures())
-            .collect(Collectors.toList());
-        ClientCallUtil.call(call, invocation.getArguments(), methodDescriptor, genericPack, paramTypes, genericUnpack);
+        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(),invocation,future.requestId,
+                compressor,acceptEncoding,timeout,genericPack,genericUnpack);
+
+        ClientCall call = new ClientCall(getUrl(), connection, executor);
+
+        ClientCallUtil.call(call, metadata);
         return result;
     }
 
@@ -203,11 +165,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);// pass timeout to remote server
         }
         return timeout;
-    }
-
-    private AsciiString getSchemeFromUrl(URL url) {
-        boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY, false);
-        return ssl ? TripleConstant.HTTPS_SCHEME : TripleConstant.HTTP_SCHEME;
     }
 
 }

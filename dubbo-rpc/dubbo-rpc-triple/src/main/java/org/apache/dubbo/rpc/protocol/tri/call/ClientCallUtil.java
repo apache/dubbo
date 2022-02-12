@@ -22,115 +22,97 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.CancellationContext;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.CancelableStreamObserver;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
+import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ClientCallToObserverAdapter;
 import org.apache.dubbo.rpc.protocol.tri.observer.WrapperRequestObserver;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericPack;
-import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
-
-import java.util.List;
 
 public class ClientCallUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientCallUtil.class);
 
-    public static void call(ClientCall call,
-                            Object[] arguments,
-                            MethodDescriptor methodDescriptor,
-                            GenericPack genericPack,
-                            List<String> argumentTypes,
-                            GenericUnpack genericUnpack) {
-        if (methodDescriptor instanceof StreamMethodDescriptor) {
-            streamCall(call, arguments, (StreamMethodDescriptor) methodDescriptor, genericPack, argumentTypes, genericUnpack);
-            return;
-        }
-        // unary call
-        Object argument;
-        if (methodDescriptor.isNeedWrap()) {
-            argument = arguments;
+    public static void call(ClientCall call, RequestMetadata metadata) {
+        if (metadata.method instanceof StreamMethodDescriptor) {
+            streamCall(call, metadata);
         } else {
-            argument = arguments[0];
+            unaryCall(call, metadata);
         }
-        unaryCall(call, argument,  methodDescriptor, genericPack, argumentTypes, genericUnpack);
     }
 
     public static void streamCall(ClientCall call,
-                                  Object[] arguments,
-                                  StreamMethodDescriptor methodDescriptor,
-                                  GenericPack genericPack, List<String> argumentTypes,
-                                  GenericUnpack genericUnpack) {
+                                  RequestMetadata metadata) {
         AppResponse appResponse = new AppResponse();
+        StreamMethodDescriptor methodDescriptor = (StreamMethodDescriptor) metadata.method;
         if (methodDescriptor.isServerStream()) {
-            Object request = arguments[0];
-            StreamObserver<Object> responseObserver = (StreamObserver<Object>) arguments[1];
-            final StreamObserver<Object> requestObserver = streamCall(call, responseObserver, methodDescriptor, genericPack, argumentTypes, genericUnpack);
+            Object request = metadata.arguments[0];
+            StreamObserver<Object> responseObserver = (StreamObserver<Object>) metadata.arguments[1];
+            final StreamObserver<Object> requestObserver = streamCall(call, metadata, responseObserver);
             requestObserver.onNext(request);
             requestObserver.onCompleted();
         } else {
-            StreamObserver<Object> responseObserver = (StreamObserver<Object>) arguments[0];
-            final StreamObserver<Object> requestObserver = streamCall(call, responseObserver, methodDescriptor, genericPack, argumentTypes, genericUnpack);
+            StreamObserver<Object> responseObserver = (StreamObserver<Object>) metadata.arguments[0];
+            final StreamObserver<Object> requestObserver = streamCall(call, metadata, responseObserver);
             appResponse.setValue(requestObserver);
         }
         // for timeout
-        DefaultFuture2.sent(call.requestId);
+        DefaultFuture2.sent(metadata.requestId);
         final RpcStatus status = RpcStatus.OK;
-        DefaultFuture2.received(call.requestId, status, appResponse);
+        DefaultFuture2.received(metadata.requestId, status, appResponse);
     }
 
     public static StreamObserver<Object> streamCall(ClientCall call,
-                                                    StreamObserver<Object> responseObserver,
-                                                    StreamMethodDescriptor methodDescriptor,
-                                                    GenericPack genericPack, List<String> argumentTypes,
-                                                    GenericUnpack genericUnpack) {
+                                                    RequestMetadata metadata,
+                                                    StreamObserver<Object> responseObserver
+    ) {
         if (responseObserver instanceof CancelableStreamObserver) {
             final CancellationContext context = new CancellationContext();
             ((CancelableStreamObserver<Object>) responseObserver).setCancellationContext(context);
             context.addListener(context1 -> call.cancel("Canceled by app", null));
         }
         ObserverToClientCallListenerAdapter listener = new ObserverToClientCallListenerAdapter(responseObserver);
-        return call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
+        return call(call, metadata, listener);
     }
 
-    public static void unaryCall(ClientCall call, Object request,
-                                 MethodDescriptor methodDescriptor,
-                                 GenericPack genericPack, List<String> argumentTypes,
-                                 GenericUnpack genericUnpack) {
-        final UnaryCallListener listener = new UnaryCallListener(call.requestId);
-        final StreamObserver<Object> requestObserver = call(call, methodDescriptor, listener, genericPack, argumentTypes, genericUnpack);
+    public static void unaryCall(ClientCall call, RequestMetadata metadata) {
+        final UnaryCallListener listener = new UnaryCallListener(metadata.requestId);
+        final StreamObserver<Object> requestObserver = call(call, metadata, listener);
         try {
-            requestObserver.onNext(request);
+            Object argument;
+            if (metadata.method.isNeedWrap()) {
+                argument = metadata.arguments;
+            } else {
+                argument = metadata.arguments[0];
+            }
+            requestObserver.onNext(argument);
             requestObserver.onCompleted();
         } catch (Throwable t) {
             cancelByThrowable(call, t);
         }
     }
 
-    public static StreamObserver<Object> call(ClientCall call, MethodDescriptor methodDescriptor,
-                                              ClientCall.Listener responseListener,
-                                              GenericPack genericPack, List<String> argumentTypes,
-                                              GenericUnpack genericUnpack) {
+    public static StreamObserver<Object> call(ClientCall call, RequestMetadata metadata,
+                                              ClientCall.Listener responseListener) {
 
-        if (methodDescriptor.isNeedWrap()) {
-            return wrapperCall(call, responseListener, genericPack, argumentTypes, genericUnpack);
+        if (metadata.method.isNeedWrap()) {
+            return wrapperCall(call, metadata, responseListener);
         }
-        return call(call, responseListener);
+        return callDirectly(call, metadata, responseListener);
     }
 
-    public static StreamObserver<Object> wrapperCall(ClientCall call, ClientCall.Listener responseListener,
-                                                     GenericPack genericPack, List<String> argumentTypes,
-                                                     GenericUnpack genericUnpack) {
-        final StreamObserver<Object> requestObserver = WrapperRequestObserver.wrap(new ClientCallToObserverAdapter<>(call), argumentTypes, genericPack);
-        final ClientCall.Listener wrapResponseListener = WrapResponseCallListener.wrap(responseListener, genericUnpack);
-        call.start(wrapResponseListener);
+    public static StreamObserver<Object> wrapperCall(ClientCall call, RequestMetadata metadata,
+                                                     ClientCall.Listener responseListener) {
+        final StreamObserver<Object> requestObserver = WrapperRequestObserver.wrap(new ClientCallToObserverAdapter<>(call),
+                metadata.argumentTypes, metadata.genericPack);
+        final ClientCall.Listener wrapResponseListener = WrapResponseCallListener.wrap(responseListener, metadata.genericUnpack);
+        call.start(metadata, wrapResponseListener);
         return requestObserver;
     }
 
-    public static StreamObserver<Object> call(ClientCall call, ClientCall.Listener responseListener) {
+    public static StreamObserver<Object> callDirectly(ClientCall call, RequestMetadata metadata, ClientCall.Listener responseListener) {
         final ClientCallToObserverAdapter<Object> requestObserver = new ClientCallToObserverAdapter<>(call);
-        call.start(responseListener);
+        call.start(metadata, responseListener);
         return requestObserver;
     }
 

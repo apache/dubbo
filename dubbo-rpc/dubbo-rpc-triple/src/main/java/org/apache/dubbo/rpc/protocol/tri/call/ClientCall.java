@@ -23,12 +23,11 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
-import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
+import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
@@ -36,17 +35,11 @@ import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStreamListener;
-import org.apache.dubbo.rpc.protocol.tri.stream.StreamUtils;
 
 import com.google.protobuf.Any;
 import com.google.rpc.DebugInfo;
 import com.google.rpc.ErrorInfo;
 import com.google.rpc.Status;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.util.AsciiString;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -57,82 +50,34 @@ import java.util.concurrent.ExecutorService;
 
 public class ClientCall {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientCall.class);
-    public final long requestId;
     private final Connection connection;
     private final Executor executor;
-    private final DefaultHttp2Headers headers;
     private final URL url;
-    private final PbUnpack<?> unpack;
-    private Compressor compressor;
+    private RequestMetadata requestMetadata;
     private ClientStream stream;
     private boolean canceled;
     private boolean started;
 
     public ClientCall(URL url,
                       Connection connection,
-                      AsciiString scheme,
-                      long requestId,
-                      String service,
-                      String serviceVersion,
-                      String serviceGroup,
-                      String application,
-                      String authority,
-                      String timeout,
-                      String methodName,
-                      String acceptEncoding,
-                      Compressor compressor,
-                      Map<String, Object> attachments,
-                      ExecutorService executor,
-                      MethodDescriptor methodDescriptor
+                      ExecutorService executor
     ) {
         this.url = url;
         this.executor = new SerializingExecutor(executor);
         this.connection = connection;
-        this.compressor = compressor;
-        this.requestId = requestId;
-        this.headers = new DefaultHttp2Headers(false);
-        this.headers.scheme(scheme)
-            .authority(authority)
-            .method(HttpMethod.POST.asciiName())
-            .path("/" + service + "/" + methodName)
-            .set(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
-            .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
-        setIfNotNull(headers, TripleHeaderEnum.TIMEOUT.getHeader(), timeout);
-        if (!"1.0.0".equals(serviceVersion)) {
-            setIfNotNull(headers, TripleHeaderEnum.SERVICE_VERSION.getHeader(), serviceVersion);
-        }
-        setIfNotNull(headers, TripleHeaderEnum.SERVICE_GROUP.getHeader(), serviceGroup);
-        setIfNotNull(headers, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(), application);
-        setIfNotNull(headers, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), acceptEncoding);
-        StreamUtils.convertAttachment(headers, attachments);
-        unpack = getUnpack(methodDescriptor);
     }
 
-    private PbUnpack<?> getUnpack(MethodDescriptor methodDescriptor) {
-        if (methodDescriptor.isNeedWrap()) {
-            return PbUnpack.RESP_PB_UNPACK;
-        }
-        return new PbUnpack<>(methodDescriptor.getReturnClass());
-    }
-
-    private void setIfNotNull(DefaultHttp2Headers headers, CharSequence key, CharSequence value) {
-        if (value == null) {
-            return;
-        }
-        headers.set(key, value);
-    }
 
     public void sendMessage(Object message) {
         if (!started) {
             started = true;
-            setIfNotNull(headers, TripleHeaderEnum.GRPC_ENCODING.getHeader(), compressor.getMessageEncoding());
-            stream.startCall(headers);
+            stream.startCall(requestMetadata);
         }
         final byte[] data;
         try {
             data = PbPack.INSTANCE.pack(message);
-            int compressed = Identity.MESSAGE_ENCODING.equals(compressor.getMessageEncoding()) ? 0 : 1;
-            final byte[] compress = compressor.compress(data);
+            int compressed = Identity.MESSAGE_ENCODING.equals(requestMetadata.compressor.getMessageEncoding()) ? 0 : 1;
+            final byte[] compress = requestMetadata.compressor.compress(data);
             stream.writeMessage(compress, compressed);
         } catch (IOException e) {
             cancel("Serialize request failed", e);
@@ -144,15 +89,19 @@ public class ClientCall {
     }
 
     public void setCompression(String compression) {
-        this.compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compression);
+        this.requestMetadata.compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compression);
     }
 
-    public void start(Listener responseListener) {
+    public void start(RequestMetadata metadata, Listener responseListener) {
+        this.requestMetadata = metadata;
+        final PbUnpack<?> unpack = requestMetadata.method.isNeedWrap() ?
+                PbUnpack.RESP_PB_UNPACK : new PbUnpack<>(requestMetadata.method.getReturnClass());
+
         this.stream = new ClientStream(
-            url,
-            requestId,
-            connection.getChannel(),
-            new ClientStreamListenerImpl(responseListener, unpack));
+                url,
+                metadata.requestId,
+                connection.getChannel(),
+                new ClientStreamListenerImpl(responseListener, unpack));
     }
 
     public void cancel(String message, Throwable t) {
@@ -198,8 +147,8 @@ public class ClientCall {
                     listener.onMessage(unpacked);
                 } catch (IOException e) {
                     cancelByErr(RpcStatus.INTERNAL
-                        .withDescription("Deserialize response failed")
-                        .withCause(e));
+                            .withDescription("Deserialize response failed")
+                            .withCause(e));
                 }
             });
         }
@@ -219,8 +168,8 @@ public class ClientCall {
                     listener.onClose(status, attachments);
                 } catch (Throwable t) {
                     cancelByErr(RpcStatus.INTERNAL
-                        .withDescription("Close stream error")
-                        .withCause(t));
+                            .withDescription("Close stream error")
+                            .withCause(t));
                 }
             });
         }
@@ -249,7 +198,7 @@ public class ClientCall {
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo == null) {
                     return new RpcException(statusDetail.getCode(),
-                        RpcStatus.decodeMessage(statusDetail.getMessage()));
+                            RpcStatus.decodeMessage(statusDetail.getMessage()));
                 }
                 String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
                 return new RpcException(statusDetail.getCode(), msg);

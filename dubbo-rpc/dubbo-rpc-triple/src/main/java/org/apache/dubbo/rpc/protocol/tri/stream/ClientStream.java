@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
+import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.TripleCommandOutBoundHandler;
@@ -38,6 +39,7 @@ import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
@@ -73,23 +75,25 @@ public class ClientStream extends AbstractStream implements Stream {
         final Future<Http2StreamChannel> future = streamChannelBootstrap.open().syncUninterruptibly();
         if (!future.isSuccess()) {
             listener.complete(RpcStatus.INTERNAL
-                .withDescription("Create remote stream failed"), null);
+                    .withDescription("Create remote stream failed"), null);
             return null;
         }
         final Http2StreamChannel channel = future.getNow();
         channel.pipeline()
-            .addLast(new TripleCommandOutBoundHandler())
-            .addLast(new TripleHttp2ClientResponseHandler(this));
+                .addLast(new TripleCommandOutBoundHandler())
+                .addLast(new TripleHttp2ClientResponseHandler(this));
         DefaultFuture2.addTimeoutListener(requestId, channel::close);
         return new WriteQueue(channel);
     }
 
 
-    public void startCall(Http2Headers headers) {
+    public void startCall(RequestMetadata metadata) {
         if (this.writeQueue == null) {
             // already processed at createStream()
             return;
         }
+        DefaultHttp2Headers headers = StreamUtils.metadataToHeaders(metadata);
+
         final HeaderQueueCommand headerCmd = HeaderQueueCommand.createHeaders(headers);
         this.writeQueue.enqueue(headerCmd).addListener(future -> {
             if (!future.isSuccess()) {
@@ -100,8 +104,8 @@ public class ClientStream extends AbstractStream implements Stream {
 
     private void transportException(Throwable cause) {
         final RpcStatus status = RpcStatus.INTERNAL
-            .withDescription("Http2 exception")
-            .withCause(cause);
+                .withDescription("Http2 exception")
+                .withCause(cause);
         listener.complete(status);
     }
 
@@ -122,8 +126,8 @@ public class ClientStream extends AbstractStream implements Stream {
             this.writeQueue.enqueue(cmd);
         } catch (Throwable t) {
             cancelByLocal(RpcStatus.INTERNAL
-                .withDescription("Client write message failed")
-                .withCause(t));
+                    .withDescription("Client write message failed")
+                    .withCause(t));
         }
     }
 
@@ -167,7 +171,7 @@ public class ClientStream extends AbstractStream implements Stream {
             final CharSequence contentType = headers.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader());
             if (contentType == null || !contentType.toString().startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader())) {
                 return RpcStatus.fromCode(RpcStatus.httpStatusToGrpcCode(httpStatus))
-                    .withDescription("invalid content-type: " + contentType);
+                        .withDescription("invalid content-type: " + contentType);
             }
             return null;
         }
@@ -179,7 +183,7 @@ public class ClientStream extends AbstractStream implements Stream {
             }
             if (headerReceived) {
                 transportError = RpcStatus.INTERNAL
-                    .withDescription("Received headers twice");
+                        .withDescription("Received headers twice");
                 return;
             }
             Integer httpStatus = headers.status() == null ? null : Integer.parseInt(headers.status().toString());
@@ -199,8 +203,8 @@ public class ClientStream extends AbstractStream implements Stream {
                     DeCompressor compressor = DeCompressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
                     if (null == compressor) {
                         throw RpcStatus.UNIMPLEMENTED
-                            .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
-                            .asException();
+                                .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
+                                .asException();
                     } else {
                         decompressor = compressor;
                     }
@@ -291,7 +295,7 @@ public class ClientStream extends AbstractStream implements Stream {
             }
             if (!headerReceived) {
                 handleH2TransportError(RpcStatus.INTERNAL
-                    .withDescription("headers not received before payload"), null);
+                        .withDescription("headers not received before payload"), null);
                 return;
             }
             decoder.deframe(data);
