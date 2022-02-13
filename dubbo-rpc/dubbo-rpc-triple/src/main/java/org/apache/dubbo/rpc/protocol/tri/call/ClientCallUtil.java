@@ -46,20 +46,28 @@ public class ClientCallUtil {
         AppResponse appResponse = new AppResponse();
         StreamMethodDescriptor methodDescriptor = (StreamMethodDescriptor) metadata.method;
         if (methodDescriptor.isServerStream()) {
-            Object request = metadata.arguments[0];
-            StreamObserver<Object> responseObserver = (StreamObserver<Object>) metadata.arguments[1];
-            final StreamObserver<Object> requestObserver = streamCall(call, metadata, responseObserver);
-            requestObserver.onNext(request);
-            requestObserver.onCompleted();
+            callServerStream(call, metadata);
         } else {
-            StreamObserver<Object> responseObserver = (StreamObserver<Object>) metadata.arguments[0];
-            final StreamObserver<Object> requestObserver = streamCall(call, metadata, responseObserver);
-            appResponse.setValue(requestObserver);
+            callBiOrClientStream(call, metadata, appResponse);
         }
         // for timeout
         DefaultFuture2.sent(metadata.requestId);
         final RpcStatus status = RpcStatus.OK;
         DefaultFuture2.received(metadata.requestId, status, appResponse);
+    }
+
+    private static void callBiOrClientStream(ClientCall call, RequestMetadata metadata, AppResponse appResponse) {
+        StreamObserver<Object> responseObserver = (StreamObserver<Object>) metadata.arguments[0];
+        final StreamObserver<Object> requestObserver = streamCall(call, metadata, responseObserver);
+        appResponse.setValue(requestObserver);
+    }
+
+    private static void callServerStream(ClientCall call, RequestMetadata metadata) {
+        Object request = metadata.arguments[0];
+        StreamObserver<Object> responseObserver = (StreamObserver<Object>) metadata.arguments[1];
+        final StreamObserver<Object> requestObserver = streamCall(call, metadata, responseObserver);
+        requestObserver.onNext(request);
+        requestObserver.onCompleted();
     }
 
     public static StreamObserver<Object> streamCall(ClientCall call,
