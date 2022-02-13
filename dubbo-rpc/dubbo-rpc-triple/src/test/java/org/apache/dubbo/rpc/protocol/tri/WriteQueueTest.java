@@ -74,7 +74,7 @@ public class WriteQueueTest {
         RpcStatus status = RpcStatus.UNKNOWN
             .withCause(new RpcException())
             .withDescription("Encode Response data error");
-        writeQueue.enqueue(CancelQueueCommand.createCommand(status), false);
+        writeQueue.enqueue(CancelQueueCommand.createCommand(), false);
         writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true), false);
         writeQueue.enqueue(new FlushQueueCommand(), true);
 

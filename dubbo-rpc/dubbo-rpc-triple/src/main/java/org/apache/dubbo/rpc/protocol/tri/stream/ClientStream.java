@@ -114,7 +114,7 @@ public class ClientStream extends AbstractStream implements Stream {
             return;
         }
         canceled = true;
-        final CancelQueueCommand cmd = CancelQueueCommand.createCommand(status);
+        final CancelQueueCommand cmd = CancelQueueCommand.createCommand();
         this.writeQueue.enqueue(cmd);
     }
 
@@ -147,9 +147,9 @@ public class ClientStream extends AbstractStream implements Stream {
         private TriDecoder decoder;
         private boolean remoteClosed;
 
-        void handleH2TransportError(RpcStatus status, Http2Headers trailers) {
-            writeQueue.enqueue(CancelQueueCommand.createCommand(status));
-            finishProcess(status, trailers);
+        void handleH2TransportError(RpcStatus status) {
+            writeQueue.enqueue(CancelQueueCommand.createCommand());
+            finishProcess(status, null);
         }
 
         void finishProcess(RpcStatus status, Http2Headers trailers) {
@@ -253,7 +253,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 final CharSequence message = trailers.get(TripleHeaderEnum.MESSAGE_KEY.getHeader());
                 if (message != null) {
                     final String description = RpcStatus.decodeMessage(message.toString());
-                    status.withDescription(description);
+                    status = status.withDescription(description);
                 }
                 return status;
             }
@@ -274,7 +274,7 @@ public class ClientStream extends AbstractStream implements Stream {
         public void onHeader(Http2Headers headers, boolean endStream) {
             if (endStream) {
                 if (!remoteClosed) {
-                    writeQueue.enqueue(CancelQueueCommand.createCommand(RpcStatus.CANCELLED));
+                    writeQueue.enqueue(CancelQueueCommand.createCommand());
                 }
                 onTrailersReceived(headers);
             } else {
@@ -288,14 +288,14 @@ public class ClientStream extends AbstractStream implements Stream {
                 transportError.appendDescription("Data:" + data.toString(StandardCharsets.UTF_8));
                 ReferenceCountUtil.release(data);
                 if (transportError.description.length() > 512 || endStream) {
-                    handleH2TransportError(transportError, null);
+                    handleH2TransportError(transportError);
 
                 }
                 return;
             }
             if (!headerReceived) {
                 handleH2TransportError(RpcStatus.INTERNAL
-                        .withDescription("headers not received before payload"), null);
+                        .withDescription("headers not received before payload"));
                 return;
             }
             decoder.deframe(data);
