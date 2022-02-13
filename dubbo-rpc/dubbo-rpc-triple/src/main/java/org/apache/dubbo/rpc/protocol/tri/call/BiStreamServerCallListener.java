@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.observer.ServerCallToObserverAdapter;
 
 public class BiStreamServerCallListener extends AbstractServerCallListener {
-    private final ServerCallToObserverAdapter responseObserver;
+    private final ServerCallToObserverAdapter<Object> responseObserver;
     private StreamObserver<Object> requestObserver;
 
     public BiStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {

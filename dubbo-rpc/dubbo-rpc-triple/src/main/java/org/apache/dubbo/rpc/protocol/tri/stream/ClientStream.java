@@ -71,8 +71,8 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     WriteQueue createWriteQueue(Channel parent) {
-        final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(parent);
-        final Future<Http2StreamChannel> future = streamChannelBootstrap.open().syncUninterruptibly();
+        final Http2StreamChannelBootstrap bootstrap = new Http2StreamChannelBootstrap(parent);
+        final Future<Http2StreamChannel> future = bootstrap.open().syncUninterruptibly();
         if (!future.isSuccess()) {
             listener.complete(RpcStatus.INTERNAL
                     .withDescription("Create remote stream failed"), null);
