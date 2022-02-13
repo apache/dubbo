@@ -74,10 +74,10 @@ public class StreamUtils {
         meta.group = url.getGroup();
         meta.version = url.getVersion();
         meta.timeout = timeout + "m";
-        meta.genericPack=genericPack;
-        meta.genericUnpack=genericUnpack;
-        meta.arguments=invocation.getArguments();
-        meta.argumentTypes= Arrays.stream(invocation.getCompatibleParamSignatures())
+        meta.genericPack = genericPack;
+        meta.genericUnpack = genericUnpack;
+        meta.arguments = invocation.getArguments();
+        meta.argumentTypes = Arrays.stream(invocation.getCompatibleParamSignatures())
                 .collect(Collectors.toList());
         return meta;
     }
@@ -97,7 +97,7 @@ public class StreamUtils {
         setIfNotNull(header, TripleHeaderEnum.SERVICE_GROUP.getHeader(), metadata.group);
         setIfNotNull(header, TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(), metadata.application);
         setIfNotNull(header, TripleHeaderEnum.GRPC_ACCEPT_ENCODING.getHeader(), metadata.acceptEncoding);
-        if(!Identity.MESSAGE_ENCODING.equals(metadata.compressor.getMessageEncoding())) {
+        if (!Identity.MESSAGE_ENCODING.equals(metadata.compressor.getMessageEncoding())) {
             setIfNotNull(header, TripleHeaderEnum.GRPC_ENCODING.getHeader(), metadata.compressor.getMessageEncoding());
         }
         StreamUtils.convertAttachment(header, metadata.attachments);

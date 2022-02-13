@@ -21,18 +21,18 @@ import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.WrapRequestUnpack;
 import org.apache.dubbo.triple.TripleWrapper;
 
-public class WrapRequestServerCallListener   implements ServerCall.Listener{
+public class WrapRequestServerCallListener implements ServerCall.Listener {
     private final ServerCall.Listener delegate;
     private final WrapRequestUnpack unpack;
 
     public WrapRequestServerCallListener(ServerCall.Listener delegate, GenericUnpack unpack) {
-        this.delegate=delegate;
-        this.unpack=new WrapRequestUnpack(unpack);
+        this.delegate = delegate;
+        this.unpack = new WrapRequestUnpack(unpack);
     }
 
     @Override
     public void onMessage(Object message) {
-        final Object args= this.unpack.unpack((TripleWrapper.TripleRequestWrapper) message);
+        final Object args = this.unpack.unpack((TripleWrapper.TripleRequestWrapper) message);
         delegate.onMessage(args);
     }
 

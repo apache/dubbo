@@ -22,7 +22,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2ResetFrame;
 import io.netty.handler.codec.http2.Http2Error;
 
-public class CancelQueueCommand extends QueuedCommand{
+public class CancelQueueCommand extends QueuedCommand {
 
     public static CancelQueueCommand createCommand() {
         return new CancelQueueCommand();

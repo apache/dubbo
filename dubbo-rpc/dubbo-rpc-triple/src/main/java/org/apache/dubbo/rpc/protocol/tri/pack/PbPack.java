@@ -24,6 +24,7 @@ import java.io.IOException;
 
 public class PbPack implements Pack {
     public static final PbPack INSTANCE = new PbPack();
+
     @Override
     public byte[] pack(Object obj) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();

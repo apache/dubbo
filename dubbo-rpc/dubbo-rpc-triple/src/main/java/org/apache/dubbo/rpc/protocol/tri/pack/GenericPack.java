@@ -45,7 +45,6 @@ public class GenericPack implements Pack {
     }
 
 
-
     /**
      * Convert hessian version from Dubbo's SPI version(hessian2) to wrapper API version (hessian4)
      *

@@ -39,9 +39,9 @@ public class WrapRequestUnpack {
             return ret;
         } catch (ClassNotFoundException | IOException e) {
             throw RpcStatus.INTERNAL
-                .withDescription("Deserialize response failed")
-                .withCause(e)
-                .asException();
+                    .withDescription("Deserialize response failed")
+                    .withCause(e)
+                    .asException();
         }
     }
 }

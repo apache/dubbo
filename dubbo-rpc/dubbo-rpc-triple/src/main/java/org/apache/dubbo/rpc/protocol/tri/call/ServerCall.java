@@ -34,8 +34,8 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.StreamMethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.PathResolver;
+import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
@@ -418,7 +418,7 @@ public class ServerCall {
             String timeout = (String) headers.get(TripleHeaderEnum.TIMEOUT.getHeader());
             try {
                 if (!Objects.isNull(timeout)) {
-                    final Long timeoutInNanos = parseTimeoutToNanos(timeout.toString());
+                    final Long timeoutInNanos = parseTimeoutToNanos(timeout);
                     if (!Objects.isNull(timeoutInNanos)) {
                         inv.setAttachment(TIMEOUT_KEY, timeoutInNanos);
                     }

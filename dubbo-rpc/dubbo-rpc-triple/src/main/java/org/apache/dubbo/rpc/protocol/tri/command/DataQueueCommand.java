@@ -22,7 +22,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 
-public class DataQueueCommand extends QueuedCommand{
+public class DataQueueCommand extends QueuedCommand {
 
     private final byte[] data;
 
@@ -36,7 +36,7 @@ public class DataQueueCommand extends QueuedCommand{
         this.endStream = endStream;
     }
 
-    public static DataQueueCommand createGrpcCommand(byte[] data, boolean endStream,int compressFlag) {
+    public static DataQueueCommand createGrpcCommand(byte[] data, boolean endStream, int compressFlag) {
         return new DataQueueCommand(data, compressFlag, endStream);
     }
 

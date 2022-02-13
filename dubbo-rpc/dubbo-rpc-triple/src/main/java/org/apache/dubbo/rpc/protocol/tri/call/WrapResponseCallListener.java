@@ -18,8 +18,8 @@
 package org.apache.dubbo.rpc.protocol.tri.call;
 
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
-import org.apache.dubbo.rpc.protocol.tri.pack.WrapResponseUnpack;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
+import org.apache.dubbo.rpc.protocol.tri.pack.WrapResponseUnpack;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import java.util.Map;
@@ -28,13 +28,13 @@ public class WrapResponseCallListener implements ClientCall.Listener {
     private final ClientCall.Listener delegate;
     private final WrapResponseUnpack responseUnpack;
 
-    public static ClientCall.Listener wrap(ClientCall.Listener listener,GenericUnpack genericUnpack){
-        return new WrapResponseCallListener(listener,genericUnpack);
-    }
-
     protected WrapResponseCallListener(ClientCall.Listener delegate, GenericUnpack genericUnpack) {
         this.delegate = delegate;
         this.responseUnpack = new WrapResponseUnpack(genericUnpack);
+    }
+
+    public static ClientCall.Listener wrap(ClientCall.Listener listener, GenericUnpack genericUnpack) {
+        return new WrapResponseCallListener(listener, genericUnpack);
     }
 
     @Override
@@ -44,8 +44,8 @@ public class WrapResponseCallListener implements ClientCall.Listener {
             delegate.onMessage(unpack);
         } catch (Throwable t) {
             final RpcStatus status = RpcStatus.INTERNAL
-                .withDescription("Failed deserialize response")
-                .withCause(t);
+                    .withDescription("Failed deserialize response")
+                    .withCause(t);
             onClose(status, null);
         }
     }

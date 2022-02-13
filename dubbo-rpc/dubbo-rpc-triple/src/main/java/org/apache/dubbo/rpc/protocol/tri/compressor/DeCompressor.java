@@ -29,14 +29,6 @@ public interface DeCompressor extends MessageEncoding {
 
     DeCompressor NONE = Identity.IDENTITY;
 
-    /**
-     * decompress payload
-     *
-     * @param payloadByteArr payload byte array
-     * @return decompressed payload byte array
-     */
-    byte[] decompress(byte[] payloadByteArr);
-
     static DeCompressor getCompressor(FrameworkModel frameworkModel, String compressorStr) {
         if (null == compressorStr) {
             return null;
@@ -54,6 +46,14 @@ public interface DeCompressor extends MessageEncoding {
         }
         return supportedEncodingSet.stream().map(DeCompressor::getMessageEncoding).collect(Collectors.joining(","));
     }
+
+    /**
+     * decompress payload
+     *
+     * @param payloadByteArr payload byte array
+     * @return decompressed payload byte array
+     */
+    byte[] decompress(byte[] payloadByteArr);
 
 
 }

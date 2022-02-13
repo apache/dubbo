@@ -23,19 +23,20 @@ import org.apache.dubbo.triple.TripleWrapper;
 import java.io.IOException;
 
 public class WrapResponseUnpack {
-    private final GenericUnpack  genericUnpack;
+    private final GenericUnpack genericUnpack;
 
     public WrapResponseUnpack(GenericUnpack genericUnpack) {
-        this.genericUnpack=genericUnpack;
+        this.genericUnpack = genericUnpack;
     }
-    public Object unpack(TripleWrapper.TripleResponseWrapper wrapper){
+
+    public Object unpack(TripleWrapper.TripleResponseWrapper wrapper) {
         try {
             return genericUnpack.unpack(wrapper.getData().toByteArray(), wrapper.getSerializeType(), wrapper.getType());
         } catch (ClassNotFoundException | IOException e) {
-            throw  RpcStatus.INTERNAL
-                .withDescription("Deserialize response failed")
-                .withCause(e)
-                .asException();
+            throw RpcStatus.INTERNAL
+                    .withDescription("Deserialize response failed")
+                    .withCause(e)
+                    .asException();
         }
     }
 }

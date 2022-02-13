@@ -94,7 +94,7 @@ public class SingleProtobufUtils {
     public static <T> T deserialize(InputStream in, Class<T> clz) throws IOException {
         if (!isSupported(clz)) {
             throw new IllegalArgumentException("This serialization only support google protobuf messages, but the " +
-                "actual input type is :" + clz.getName());
+                    "actual input type is :" + clz.getName());
         }
         try {
             return (T) getMarshaller(clz).parse(in);

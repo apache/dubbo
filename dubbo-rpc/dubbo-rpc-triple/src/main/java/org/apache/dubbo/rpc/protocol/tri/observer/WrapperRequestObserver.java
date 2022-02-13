@@ -33,20 +33,21 @@ public class WrapperRequestObserver implements StreamObserver<Object> {
     private final List<String> argumentsType;
     private final GenericPack genericPack;
 
-    public static StreamObserver<Object> wrap(StreamObserver<Object> delegate,List<String> argumentsType, GenericPack genericPack) {
-        return new WrapperRequestObserver(delegate, argumentsType, genericPack);
-    }
     private WrapperRequestObserver(StreamObserver<Object> delegate, List<String> argumentsType, GenericPack genericPack) {
         this.delegate = delegate;
         this.argumentsType = argumentsType;
         this.genericPack = genericPack;
     }
 
+    public static StreamObserver<Object> wrap(StreamObserver<Object> delegate, List<String> argumentsType, GenericPack genericPack) {
+        return new WrapperRequestObserver(delegate, argumentsType, genericPack);
+    }
+
     @Override
     public void onNext(Object data) {
         Object[] arguments = (Object[]) data;
         final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
-            .setSerializeType(genericPack.serializationName);
+                .setSerializeType(genericPack.serializationName);
         builder.addAllArgTypes(argumentsType);
         try {
             for (Object argument : arguments) {
@@ -56,9 +57,9 @@ public class WrapperRequestObserver implements StreamObserver<Object> {
             }
         } catch (IOException e) {
             throw RpcStatus.INTERNAL
-                .withDescription("Serialize request failed")
-                .withCause(e)
-                .asException();
+                    .withDescription("Serialize request failed")
+                    .withCause(e)
+                    .asException();
         }
         delegate.onNext(builder.build());
     }

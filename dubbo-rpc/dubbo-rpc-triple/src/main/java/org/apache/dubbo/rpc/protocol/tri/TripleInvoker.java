@@ -92,7 +92,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     @Override
     protected Result doInvoke(final Invocation invocation) {
         ExecutorService executor = getCallbackExecutor(getUrl(), invocation);
-        int timeout=calculateTimeout(invocation,invocation.getMethodName());
+        int timeout = calculateTimeout(invocation, invocation.getMethodName());
         DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, invocation, timeout, executor);
         final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
         FutureContext.getContext().setCompatibleFuture(respFuture);
@@ -106,8 +106,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             return result;
         }
 
-        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(),invocation,future.requestId,
-                compressor,acceptEncoding,timeout,genericPack,genericUnpack);
+        final RequestMetadata metadata = StreamUtils.createRequest(getUrl(), invocation, future.requestId,
+                compressor, acceptEncoding, timeout, genericPack, genericUnpack);
 
         ClientCall call = new ClientCall(getUrl(), connection, executor);
 

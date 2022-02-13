@@ -87,8 +87,8 @@ public class TripleProtocol extends AbstractProtocol {
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         final MultipleSerialization serialization = frameworkModel
-            .getExtensionLoader(MultipleSerialization.class)
-            .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
+                .getExtensionLoader(MultipleSerialization.class)
+                .getExtension(url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY));
 
         // TODO support config
 //        String compressorStr = ConfigurationUtils.getCachedDynamicProperty(frameworkModel, COMPRESSOR_KEY, Identity.MESSAGE_ENCODING);

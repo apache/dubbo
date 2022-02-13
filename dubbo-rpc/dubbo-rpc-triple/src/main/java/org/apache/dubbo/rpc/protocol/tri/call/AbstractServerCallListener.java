@@ -36,11 +36,10 @@ import static org.apache.dubbo.rpc.protocol.tri.RpcStatus.getStatus;
 
 public abstract class AbstractServerCallListener implements ServerCall.Listener {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractServerCallListener.class);
-
+    public final CancellationContext cancellationContext;
     final RpcInvocation invocation;
     final ServerCall call;
     final Invoker<?> invoker;
-    public final CancellationContext cancellationContext;
 
     public AbstractServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
         this.call = call;
@@ -75,9 +74,9 @@ public abstract class AbstractServerCallListener implements ServerCall.Listener 
             final long cost = System.nanoTime() - stInNano;
             if (timeoutVal != null && cost > ((Long) timeoutVal)) {
                 LOGGER.error(String.format("Invoke timeout at server side, ignored to send response. service=%s method=%s cost=%s timeout=%s",
-                    invocation.getTargetServiceUniqueName(),
-                    invocation.getMethodName(),
-                    cost, timeoutVal));
+                        invocation.getTargetServiceUniqueName(),
+                        invocation.getMethodName(),
+                        cost, timeoutVal));
                 call.close(RpcStatus.DEADLINE_EXCEEDED, null);
             } else {
                 onServerResponse(response);

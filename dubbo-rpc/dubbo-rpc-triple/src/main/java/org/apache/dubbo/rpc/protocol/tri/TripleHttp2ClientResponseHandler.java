@@ -44,7 +44,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
             Http2GoAwayFrame event = (Http2GoAwayFrame) evt;
             ctx.close();
             LOGGER.debug(
-                "Event triggered, event name is: " + event.name() + ", last stream id is: " + event.lastStreamId());
+                    "Event triggered, event name is: " + event.name() + ", last stream id is: " + event.lastStreamId());
         } else if (evt instanceof Http2ResetFrame) {
             onResetRead(ctx, (Http2ResetFrame) evt);
         }
@@ -72,7 +72,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         final RpcStatus status = RpcStatus.INTERNAL
-            .withCause(cause);
+                .withCause(cause);
         LOGGER.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code, cause);
         stream.remoteObserver.cancelByRemote(status);
         ctx.close();

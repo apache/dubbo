@@ -143,7 +143,7 @@ public class RpcStatus {
             return RpcStatus.Code.INTERNAL;
         }
         if (httpStatusCode == HttpResponseStatus.BAD_REQUEST.code() ||
-            httpStatusCode == HttpResponseStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.code()
+                httpStatusCode == HttpResponseStatus.REQUEST_HEADER_FIELDS_TOO_LARGE.code()
         ) {
             return RpcStatus.Code.INTERNAL;
         } else if (httpStatusCode == HttpResponseStatus.UNAUTHORIZED.code()) {
@@ -153,9 +153,9 @@ public class RpcStatus {
         } else if (httpStatusCode == HttpResponseStatus.NOT_FOUND.code()) {
             return RpcStatus.Code.UNIMPLEMENTED;
         } else if (httpStatusCode == HttpResponseStatus.BAD_GATEWAY.code()
-            || httpStatusCode == HttpResponseStatus.TOO_MANY_REQUESTS.code()
-            || httpStatusCode == HttpResponseStatus.SERVICE_UNAVAILABLE.code()
-            || httpStatusCode == HttpResponseStatus.GATEWAY_TIMEOUT.code()) {
+                || httpStatusCode == HttpResponseStatus.TOO_MANY_REQUESTS.code()
+                || httpStatusCode == HttpResponseStatus.SERVICE_UNAVAILABLE.code()
+                || httpStatusCode == HttpResponseStatus.GATEWAY_TIMEOUT.code()) {
             return Code.UNAVAILABLE;
         } else {
             return RpcStatus.Code.UNKNOWN;

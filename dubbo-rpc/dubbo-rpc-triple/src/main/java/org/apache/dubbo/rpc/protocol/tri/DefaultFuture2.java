@@ -56,8 +56,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
     private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
-    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
-    public final long requestId;
+    public final long requestId;    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private final Invocation invocation;
     private final Connection connection;
     private final int timeout;
@@ -66,7 +65,6 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
     private Timeout timeoutCheckTask;
     private volatile long sent;
     private ExecutorService executor;
-
     private DefaultFuture2(Connection connection, Invocation invocation, int timeout) {
         this.connection = connection;
         this.invocation = invocation;
@@ -249,4 +247,6 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
             DefaultFuture2.received(future.requestId, status, null);
         }
     }
+
+
 }

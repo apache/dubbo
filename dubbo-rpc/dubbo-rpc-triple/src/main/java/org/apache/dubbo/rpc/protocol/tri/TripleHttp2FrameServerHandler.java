@@ -20,7 +20,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.protocol.tri.RpcStatus.Code;
 import org.apache.dubbo.rpc.protocol.tri.pack.GenericUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ServerStream;
 
@@ -44,10 +43,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private final GenericUnpack genericUnpack;
 
     public TripleHttp2FrameServerHandler(
-        FrameworkModel frameworkModel,
-        Executor executor,
-        List<HeaderFilter> filters,
-        GenericUnpack genericUnpack) {
+            FrameworkModel frameworkModel,
+            Executor executor,
+            List<HeaderFilter> filters,
+            GenericUnpack genericUnpack) {
         this.frameworkModel = frameworkModel;
         this.executor = executor;
         this.filters = filters;
@@ -81,7 +80,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         LOGGER.warn("Triple Server received remote reset errorCode=" + frame.errorCode());
         if (serverStream != null) {
             serverStream.transportObserver.cancelByRemote(RpcStatus.CANCELLED
-                .withDescription("Cancel by remote peer, err_code=" + frame.errorCode()));
+                    .withDescription("Cancel by remote peer, err_code=" + frame.errorCode()));
         }
         ctx.close();
     }

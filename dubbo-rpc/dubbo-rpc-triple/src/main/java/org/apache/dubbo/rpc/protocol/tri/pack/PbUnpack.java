@@ -24,9 +24,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 public class PbUnpack<T> {
-    private final Class<?> clz;
     public static PbUnpack<TripleWrapper.TripleResponseWrapper> RESP_PB_UNPACK = new PbUnpack<>(TripleWrapper.TripleResponseWrapper.class);
     public static PbUnpack<TripleWrapper.TripleRequestWrapper> REQ_PB_UNPACK = new PbUnpack<>(TripleWrapper.TripleRequestWrapper.class);
+    private final Class<?> clz;
 
     public PbUnpack(Class<?> clz) {
         this.clz = clz;

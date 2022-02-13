@@ -33,9 +33,9 @@ public class GenericUnpack {
         this.url = url;
     }
 
-    public Object unpack(byte[] data,String serializeType, String clz) throws ClassNotFoundException, IOException {
+    public Object unpack(byte[] data, String serializeType, String clz) throws ClassNotFoundException, IOException {
         final ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        return serialization.deserialize(url,convertHessianFromWrapper(serializeType), clz, bais);
+        return serialization.deserialize(url, convertHessianFromWrapper(serializeType), clz, bais);
     }
 
     protected String convertHessianFromWrapper(String serializeType) {

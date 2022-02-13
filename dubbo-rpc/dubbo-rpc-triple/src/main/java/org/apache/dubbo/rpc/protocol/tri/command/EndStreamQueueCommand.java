@@ -23,9 +23,10 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 
 public class EndStreamQueueCommand extends QueuedCommand {
 
-    public static EndStreamQueueCommand create(){
+    public static EndStreamQueueCommand create() {
         return new EndStreamQueueCommand();
     }
+
     @Override
     public void doSend(ChannelHandlerContext ctx, ChannelPromise promise) {
         ctx.write(new DefaultHttp2DataFrame(true));

@@ -22,7 +22,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 
-public class HeaderQueueCommand extends QueuedCommand{
+public class HeaderQueueCommand extends QueuedCommand {
 
     private final Http2Headers headers;
 

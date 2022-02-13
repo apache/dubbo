@@ -35,15 +35,6 @@ public interface Compressor extends MessageEncoding {
 
     Compressor NONE = Identity.IDENTITY;
 
-    /**
-     * compress payload
-     *
-     * @param payloadByteArr payload byte array
-     * @return compressed payload byte array
-     */
-    byte[] compress(byte[] payloadByteArr);
-
-
     static Compressor getCompressor(FrameworkModel frameworkModel, String compressorStr) {
         if (null == compressorStr) {
             return null;
@@ -61,5 +52,13 @@ public interface Compressor extends MessageEncoding {
         }
         return supportedEncodingSet.stream().map(Compressor::getMessageEncoding).collect(Collectors.joining(","));
     }
+
+    /**
+     * compress payload
+     *
+     * @param payloadByteArr payload byte array
+     * @return compressed payload byte array
+     */
+    byte[] compress(byte[] payloadByteArr);
 
 }
