@@ -145,13 +145,13 @@ public class ServerCall {
                 data = pack.pack(message);
             } catch (IOException e) {
                 close(RpcStatus.INTERNAL
-                    .withDescription("Serialize response failed")
-                    .withCause(e), null);
+                        .withDescription("Serialize response failed")
+                        .withCause(e), null);
                 return;
             }
             if (data == null) {
                 close(RpcStatus.INTERNAL
-                    .withDescription("Missing response"), null);
+                        .withDescription("Missing response"), null);
                 return;
             }
             if (compressor != null) {
@@ -171,11 +171,14 @@ public class ServerCall {
 
     private Invoker<?> getInvoker(Map<String, Object> headers, String serviceName) {
         final String version = headers.containsKey(TripleHeaderEnum.SERVICE_VERSION.getHeader()) ? headers.get(
-            TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
+                TripleHeaderEnum.SERVICE_VERSION.getHeader()).toString() : null;
         final String group = headers.containsKey(TripleHeaderEnum.SERVICE_GROUP.getHeader()) ? headers.get(TripleHeaderEnum.SERVICE_GROUP.getHeader())
-            .toString() : null;
+                .toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = pathResolver.resolve(key);
+        if (invoker == null) {
+            invoker = pathResolver.resolve(URL.buildKey(serviceName, group, "1.0.0"));
+        }
         if (invoker == null) {
             invoker = pathResolver.resolve(serviceName);
         }
@@ -223,10 +226,10 @@ public class ServerCall {
      */
     private void responseErr(RpcStatus status) {
         Http2Headers trailers = new DefaultHttp2Headers()
-            .status(OK.codeAsText())
-            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-            .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
-            .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
+                .status(OK.codeAsText())
+                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+                .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
+                .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
         serverStream.sendHeaderWithEos(trailers);
     }
 
@@ -262,8 +265,8 @@ public class ServerCall {
             }
             if (methodDescriptor == null) {
                 close(RpcStatus.UNIMPLEMENTED
-                    .withDescription("Method :" + methodName + "[" + Arrays.toString(paramTypes) + "] " +
-                        "not found of service:" + serviceDescriptor.getServiceName()), null);
+                        .withDescription("Method :" + methodName + "[" + Arrays.toString(paramTypes) + "] " +
+                                "not found of service:" + serviceDescriptor.getServiceName()), null);
             }
         }
 
@@ -310,14 +313,14 @@ public class ServerCall {
             invoker = getInvoker(headers, serviceName);
             if (invoker == null) {
                 responseErr(RpcStatus.UNIMPLEMENTED
-                    .withDescription("Service not found:" + serviceName));
+                        .withDescription("Service not found:" + serviceName));
                 return;
             }
             FrameworkServiceRepository repo = frameworkModel.getServiceRepository();
             providerModel = repo.lookupExportedService(invoker.getUrl().getServiceKey());
             if (providerModel == null || providerModel.getServiceModel() == null) {
                 responseErr(RpcStatus.UNIMPLEMENTED
-                    .withDescription("Service not found:" + serviceName));
+                        .withDescription("Service not found:" + serviceName));
                 return;
             }
             serviceDescriptor = providerModel.getServiceModel();
@@ -337,7 +340,7 @@ public class ServerCall {
                 }
                 if (CollectionUtils.isEmpty(methodDescriptors)) {
                     responseErr(RpcStatus.UNIMPLEMENTED
-                        .withDescription("Method : " + methodName + " not found of service:" + serviceName));
+                            .withDescription("Method : " + methodName + " not found of service:" + serviceName));
                     return;
                 }
                 // In most cases there is only one method
@@ -389,7 +392,7 @@ public class ServerCall {
                     listener.onMessage(obj);
                 } catch (IOException e) {
                     close(RpcStatus.INTERNAL.withDescription("Server error")
-                        .withCause(e), null);
+                            .withCause(e), null);
                 } finally {
                     ClassLoadUtil.switchContextLoader(tccl);
                 }
@@ -405,8 +408,8 @@ public class ServerCall {
         protected RpcInvocation buildInvocation(Map<String, Object> headers) {
             final URL url = invoker.getUrl();
             RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
-                methodName, serviceDescriptor.getServiceName(),
-                url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
+                    methodName, serviceDescriptor.getServiceName(),
+                    url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
             inv.setTargetServiceUniqueName(url.getServiceKey());
             inv.setReturnTypes(methodDescriptor.getReturnTypes());
 
@@ -422,7 +425,7 @@ public class ServerCall {
                 }
             } catch (Throwable t) {
                 LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s",
-                    timeout, serviceDescriptor.getServiceName(), methodName));
+                        timeout, serviceDescriptor.getServiceName(), methodName));
             }
             return inv;
         }
