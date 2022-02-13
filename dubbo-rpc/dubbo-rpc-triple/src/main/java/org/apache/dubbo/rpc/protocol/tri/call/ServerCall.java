@@ -266,7 +266,7 @@ public class ServerCall {
             if (methodDescriptor == null) {
                 close(RpcStatus.UNIMPLEMENTED
                         .withDescription("Method :" + methodName + "[" + Arrays.toString(paramTypes) + "] " +
-                                "not found of service:" + serviceDescriptor.getServiceName()), null);
+                                "not found of service:" + serviceDescriptor.getInterfaceName()), null);
             }
         }
 
@@ -408,7 +408,7 @@ public class ServerCall {
         protected RpcInvocation buildInvocation(Map<String, Object> headers) {
             final URL url = invoker.getUrl();
             RpcInvocation inv = new RpcInvocation(url.getServiceModel(),
-                    methodName, serviceDescriptor.getServiceName(),
+                    methodName, serviceDescriptor.getInterfaceName(),
                     url.getProtocolServiceKey(), methodDescriptor.getParameterClasses(), new Object[0]);
             inv.setTargetServiceUniqueName(url.getServiceKey());
             inv.setReturnTypes(methodDescriptor.getReturnTypes());
@@ -425,7 +425,7 @@ public class ServerCall {
                 }
             } catch (Throwable t) {
                 LOGGER.warn(String.format("Failed to parse request timeout set from:%s, service=%s method=%s",
-                        timeout, serviceDescriptor.getServiceName(), methodName));
+                        timeout, serviceDescriptor.getInterfaceName(), methodName));
             }
             return inv;
         }
