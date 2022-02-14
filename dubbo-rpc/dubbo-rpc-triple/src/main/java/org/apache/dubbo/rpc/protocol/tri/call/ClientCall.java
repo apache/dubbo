@@ -25,7 +25,7 @@ import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
-import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
@@ -84,6 +84,11 @@ public class ClientCall {
         }
     }
 
+
+    public void requestN(int n) {
+        stream.requestN(n);
+    }
+
     public void halfClose() {
         stream.halfClose();
     }
@@ -92,16 +97,16 @@ public class ClientCall {
         this.requestMetadata.compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compression);
     }
 
-    public void start(RequestMetadata metadata, Listener responseListener) {
+    public void start(RequestMetadata metadata, StartListener responseListener) {
         this.requestMetadata = metadata;
         final PbUnpack<?> unpack = requestMetadata.method.isNeedWrap() ?
-                PbUnpack.RESP_PB_UNPACK : new PbUnpack<>(requestMetadata.method.getReturnClass());
+            PbUnpack.RESP_PB_UNPACK : new PbUnpack<>(requestMetadata.method.getReturnClass());
 
         this.stream = new ClientStream(
-                url,
-                metadata.requestId,
-                connection.getChannel(),
-                new ClientStreamListenerImpl(responseListener, unpack));
+            url,
+            metadata.requestId,
+            connection.getChannel(),
+            new ClientStreamListenerImpl(responseListener, unpack));
     }
 
     public void cancel(String message, Throwable t) {
@@ -129,14 +134,26 @@ public class ClientCall {
         void onClose(RpcStatus status, Map<String, Object> trailers);
     }
 
+
+    public interface StartListener extends Listener {
+
+        void onStart();
+    }
+
     class ClientStreamListenerImpl implements ClientStreamListener {
-        private final Listener listener;
+
+        private final StartListener listener;
         private final PbUnpack<?> unpack;
         private boolean done;
 
-        ClientStreamListenerImpl(Listener listener, PbUnpack<?> unpack) {
+        ClientStreamListenerImpl(StartListener listener, PbUnpack<?> unpack) {
             this.unpack = unpack;
             this.listener = listener;
+        }
+
+        @Override
+        public void onStart() {
+            executor.execute(listener::onStart);
         }
 
         @Override
@@ -147,8 +164,8 @@ public class ClientCall {
                     listener.onMessage(unpacked);
                 } catch (IOException e) {
                     cancelByErr(RpcStatus.INTERNAL
-                            .withDescription("Deserialize response failed")
-                            .withCause(e));
+                        .withDescription("Deserialize response failed")
+                        .withCause(e));
                 }
             });
         }
@@ -168,8 +185,8 @@ public class ClientCall {
                     listener.onClose(status, attachments);
                 } catch (Throwable t) {
                     cancelByErr(RpcStatus.INTERNAL
-                            .withDescription("Close stream error")
-                            .withCause(t));
+                        .withDescription("Close stream error")
+                        .withCause(t));
                 }
             });
         }
@@ -198,7 +215,7 @@ public class ClientCall {
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo == null) {
                     return new RpcException(statusDetail.getCode(),
-                            RpcStatus.decodeMessage(statusDetail.getMessage()));
+                        RpcStatus.decodeMessage(statusDetail.getMessage()));
                 }
                 String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
                 return new RpcException(statusDetail.getCode(), msg);

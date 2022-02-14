@@ -23,13 +23,15 @@ import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 
 import java.util.Map;
 
-public class UnaryCallListener implements ClientCall.Listener {
+public class UnaryCallListener implements ClientCall.StartListener {
     private final long requestId;
+    private final ClientCall call;
     private Object appResponse;
     private boolean closed;
 
-    public UnaryCallListener(long requestId) {
+    public UnaryCallListener(long requestId, ClientCall call) {
         this.requestId = requestId;
+        this.call = call;
     }
 
     @Override
@@ -51,5 +53,10 @@ public class UnaryCallListener implements ClientCall.Listener {
             result.setException(status.asException());
         }
         DefaultFuture2.received(requestId, status, result);
+    }
+
+    @Override
+    public void onStart() {
+        call.requestN(2);
     }
 }

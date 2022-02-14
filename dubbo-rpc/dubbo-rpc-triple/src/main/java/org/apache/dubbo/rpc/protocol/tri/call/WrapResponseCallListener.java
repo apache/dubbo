@@ -24,16 +24,16 @@ import org.apache.dubbo.triple.TripleWrapper;
 
 import java.util.Map;
 
-public class WrapResponseCallListener implements ClientCall.Listener {
-    private final ClientCall.Listener delegate;
+public class WrapResponseCallListener implements ClientCall.StartListener {
+    private final ClientCall.StartListener delegate;
     private final WrapResponseUnpack responseUnpack;
 
-    protected WrapResponseCallListener(ClientCall.Listener delegate, GenericUnpack genericUnpack) {
+    protected WrapResponseCallListener(ClientCall.StartListener delegate, GenericUnpack genericUnpack) {
         this.delegate = delegate;
         this.responseUnpack = new WrapResponseUnpack(genericUnpack);
     }
 
-    public static ClientCall.Listener wrap(ClientCall.Listener listener, GenericUnpack genericUnpack) {
+    public static ClientCall.StartListener wrap(ClientCall.StartListener listener, GenericUnpack genericUnpack) {
         return new WrapResponseCallListener(listener, genericUnpack);
     }
 
@@ -55,4 +55,8 @@ public class WrapResponseCallListener implements ClientCall.Listener {
         delegate.onClose(status, trailers);
     }
 
+    @Override
+    public void onStart() {
+        delegate.onStart();
+    }
 }

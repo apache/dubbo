@@ -20,9 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
-import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleCommandOutBoundHandler;
@@ -35,10 +33,14 @@ import org.apache.dubbo.rpc.protocol.tri.command.EndStreamQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.command.HeaderQueueCommand;
 import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.frame.Deframer;
 import org.apache.dubbo.rpc.protocol.tri.frame.TriDecoder;
+import org.apache.dubbo.rpc.protocol.tri.observer.AbstractTransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.EventLoop;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
@@ -56,8 +58,10 @@ public class ClientStream extends AbstractStream implements Stream {
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
     private final long requestId;
+    private EventLoop eventLoop;
     private boolean canceled;
     private boolean headerReceived;
+    private Deframer deframer;
     private Http2Headers trailers;
 
     public ClientStream(URL url,
@@ -75,13 +79,14 @@ public class ClientStream extends AbstractStream implements Stream {
         final Future<Http2StreamChannel> future = bootstrap.open().syncUninterruptibly();
         if (!future.isSuccess()) {
             listener.complete(RpcStatus.INTERNAL
-                    .withDescription("Create remote stream failed"), null);
+                .withDescription("Create remote stream failed"), null);
             return null;
         }
         final Http2StreamChannel channel = future.getNow();
+        eventLoop = channel.eventLoop();
         channel.pipeline()
-                .addLast(new TripleCommandOutBoundHandler())
-                .addLast(new TripleHttp2ClientResponseHandler(this));
+            .addLast(new TripleCommandOutBoundHandler())
+            .addLast(new TripleHttp2ClientResponseHandler(this));
         DefaultFuture2.addTimeoutListener(requestId, channel::close);
         return new WriteQueue(channel);
     }
@@ -104,8 +109,8 @@ public class ClientStream extends AbstractStream implements Stream {
 
     private void transportException(Throwable cause) {
         final RpcStatus status = RpcStatus.INTERNAL
-                .withDescription("Http2 exception")
-                .withCause(cause);
+            .withDescription("Http2 exception")
+            .withCause(cause);
         listener.complete(status);
     }
 
@@ -126,14 +131,18 @@ public class ClientStream extends AbstractStream implements Stream {
             this.writeQueue.enqueue(cmd);
         } catch (Throwable t) {
             cancelByLocal(RpcStatus.INTERNAL
-                    .withDescription("Client write message failed")
-                    .withCause(t));
+                .withDescription("Client write message failed")
+                .withCause(t));
         }
     }
 
     @Override
     public void requestN(int n) {
-        //TODO
+        if (eventLoop.inEventLoop()) {
+            deframer.request(n);
+            return;
+        }
+        eventLoop.execute(() -> deframer.request(n));
     }
 
     public void halfClose() {
@@ -144,7 +153,6 @@ public class ClientStream extends AbstractStream implements Stream {
     class ClientTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
         private RpcStatus transportError;
         private DeCompressor decompressor;
-        private TriDecoder decoder;
         private boolean remoteClosed;
 
         void handleH2TransportError(RpcStatus status) {
@@ -171,7 +179,7 @@ public class ClientStream extends AbstractStream implements Stream {
             final CharSequence contentType = headers.get(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader());
             if (contentType == null || !contentType.toString().startsWith(TripleHeaderEnum.APPLICATION_GRPC.getHeader())) {
                 return RpcStatus.fromCode(RpcStatus.httpStatusToGrpcCode(httpStatus))
-                        .withDescription("invalid content-type: " + contentType);
+                    .withDescription("invalid content-type: " + contentType);
             }
             return null;
         }
@@ -183,7 +191,7 @@ public class ClientStream extends AbstractStream implements Stream {
             }
             if (headerReceived) {
                 transportError = RpcStatus.INTERNAL
-                        .withDescription("Received headers twice");
+                    .withDescription("Received headers twice");
                 return;
             }
             Integer httpStatus = headers.status() == null ? null : Integer.parseInt(headers.status().toString());
@@ -203,8 +211,8 @@ public class ClientStream extends AbstractStream implements Stream {
                     DeCompressor compressor = DeCompressor.getCompressor(url.getOrDefaultFrameworkModel(), compressorStr);
                     if (null == compressor) {
                         throw RpcStatus.UNIMPLEMENTED
-                                .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
-                                .asException();
+                            .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr))
+                            .asException();
                     } else {
                         decompressor = compressor;
                     }
@@ -220,8 +228,9 @@ public class ClientStream extends AbstractStream implements Stream {
                     finishProcess(statusFromTrailers(trailers), trailers);
                 }
             };
-            decoder = new TriDecoder(decompressor, listener);
-            decoder.request(Integer.MAX_VALUE);
+            deframer = new TriDecoder(decompressor, listener);
+
+            ClientStream.this.listener.onStart();
         }
 
         void onTrailersReceived(Http2Headers trailers) {
@@ -233,12 +242,12 @@ public class ClientStream extends AbstractStream implements Stream {
             } else {
                 ClientStream.this.trailers = trailers;
                 RpcStatus status = statusFromTrailers(trailers);
-                if (decoder == null) {
+                if (deframer == null) {
                     finishProcess(status, trailers);
                 }
-                if (decoder != null) {
-                    decoder.close();
-                    decoder = null;
+                if (deframer != null) {
+                    deframer.close();
+//                    deframer = null;
                 }
             }
         }
@@ -295,10 +304,10 @@ public class ClientStream extends AbstractStream implements Stream {
             }
             if (!headerReceived) {
                 handleH2TransportError(RpcStatus.INTERNAL
-                        .withDescription("headers not received before payload"));
+                    .withDescription("headers not received before payload"));
                 return;
             }
-            decoder.deframe(data);
+            deframer.deframe(data);
         }
 
         @Override

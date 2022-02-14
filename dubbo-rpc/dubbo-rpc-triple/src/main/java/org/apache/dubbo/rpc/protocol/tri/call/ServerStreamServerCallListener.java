@@ -29,7 +29,6 @@ public class ServerStreamServerCallListener extends AbstractServerCallListener {
 
     public ServerStreamServerCallListener(ServerCall call, RpcInvocation invocation, Invoker<?> invoker) {
         super(call, invocation, invoker);
-        call.requestN(2);
         this.responseObserver = new ServerCallToObserverAdapter<>(call, cancellationContext);
     }
 

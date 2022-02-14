@@ -135,6 +135,11 @@ public class ServerCall {
         autoRequestN = false;
     }
 
+
+    public boolean isAutoRequestN() {
+        return autoRequestN;
+    }
+
     public void writeMessage(Object message) {
         final Runnable writeMessage = () -> {
             if (!headerSent) {
@@ -290,12 +295,14 @@ public class ServerCall {
             }
 
             if (methodDescriptor instanceof StreamMethodDescriptor) {
-                if (((StreamMethodDescriptor) methodDescriptor).streamType == StreamMethodDescriptor.StreamType.SERVER) {
+                requestN(1);
+                if (((StreamMethodDescriptor) methodDescriptor).isServerStream()) {
                     listener = new ServerStreamServerCallListener(ServerCall.this, invocation, invoker);
                 } else {
                     listener = new BiStreamServerCallListener(ServerCall.this, invocation, invoker);
                 }
             } else {
+                requestN(2);
                 listener = new UnaryServerCallListener(ServerCall.this, invocation, invoker);
             }
             if (methodDescriptor.isNeedWrap()) {

@@ -38,14 +38,14 @@ public class BiStreamServerCallListener extends AbstractServerCallListener {
     @Override
     protected void onServerResponse(AppResponse response) {
         requestObserver = (StreamObserver<Object>) response.getValue();
-        if (responseObserver.isAutoRequestN()) {
-            call.requestN(Integer.MAX_VALUE);
-        }
     }
 
     @Override
     public void onMessage(Object message) {
         requestObserver.onNext(message);
+        if (responseObserver.isAutoRequestN()) {
+            call.requestN(1);
+        }
     }
 
     @Override

@@ -18,7 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 
-import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
 
 /**
  * Stream acts as a bi-directional intermediate layer for processing streaming data . It serializes object instance to
