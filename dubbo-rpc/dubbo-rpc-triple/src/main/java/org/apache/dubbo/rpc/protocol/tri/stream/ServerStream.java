@@ -59,7 +59,7 @@ import java.util.concurrent.Executor;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-public class ServerStream implements Stream {
+public class ServerStream extends AbstractStream {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerStream.class);
     public final ServerTransportObserver transportObserver = new ServerTransportObserver();
     private final Executor executor;
@@ -171,11 +171,7 @@ public class ServerStream implements Stream {
 
     @Override
     public void requestN(int n) {
-        if (eventLoop.inEventLoop()) {
-            decoder.request(n);
-            return;
-        }
-        eventLoop.execute(() -> decoder.request(n));
+        runOnEventLoop(() -> decoder.request(n));
     }
 
     /**
@@ -206,6 +202,11 @@ public class ServerStream implements Stream {
             .setInt(TripleHeaderEnum.STATUS_KEY.getHeader(), status.code.code)
             .set(TripleHeaderEnum.MESSAGE_KEY.getHeader(), status.toEncodedMessage());
         writeQueue.enqueue(HeaderQueueCommand.createHeaders(trailers, true));
+    }
+
+    @Override
+    EventLoop getEventLoop() {
+        return eventLoop;
     }
 
     public class ServerTransportObserver extends AbstractTransportObserver implements H2TransportObserver {

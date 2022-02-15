@@ -17,20 +17,17 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.CancellationContext;
+import io.netty.channel.EventLoop;
 
-public abstract class AbstractStream implements org.apache.dubbo.rpc.protocol.tri.stream.Stream {
-    final URL url;
-    final CancellationContext cancellationContext;
+public abstract class AbstractStream implements Stream {
 
-    protected AbstractStream(URL url) {
-        this.url = url;
-        this.cancellationContext = new CancellationContext();
+    abstract EventLoop getEventLoop();
+
+    void runOnEventLoop(final Runnable r) {
+        if (getEventLoop().inEventLoop()) {
+            r.run();
+            return;
+        }
+        getEventLoop().execute(r);
     }
-
-//    @Override
-//    public URL url() {
-//        return url;
-//    }
 }

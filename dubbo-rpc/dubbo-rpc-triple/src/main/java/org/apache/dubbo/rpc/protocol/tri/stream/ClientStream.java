@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
@@ -58,6 +59,7 @@ public class ClientStream extends AbstractStream implements Stream {
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
     private final long requestId;
+    private final URL url;
     private EventLoop eventLoop;
     private boolean canceled;
     private boolean headerReceived;
@@ -68,7 +70,7 @@ public class ClientStream extends AbstractStream implements Stream {
                         long requestId,
                         Channel parent,
                         ClientStreamListener listener) {
-        super(url);
+        this.url = url;
         this.requestId = requestId;
         this.writeQueue = createWriteQueue(parent);
         this.listener = listener;
@@ -138,16 +140,17 @@ public class ClientStream extends AbstractStream implements Stream {
 
     @Override
     public void requestN(int n) {
-        if (eventLoop.inEventLoop()) {
-            deframer.request(n);
-            return;
-        }
-        eventLoop.execute(() -> deframer.request(n));
+        runOnEventLoop(() -> deframer.request(n));
     }
 
     public void halfClose() {
         final EndStreamQueueCommand cmd = EndStreamQueueCommand.create();
         this.writeQueue.enqueue(cmd);
+    }
+
+    @Override
+    EventLoop getEventLoop() {
+        return eventLoop;
     }
 
     class ClientTransportObserver extends AbstractTransportObserver implements H2TransportObserver {
