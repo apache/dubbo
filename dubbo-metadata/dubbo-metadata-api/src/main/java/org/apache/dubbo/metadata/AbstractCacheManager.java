@@ -62,13 +62,15 @@ public abstract class AbstractCacheManager<V> implements Disposable {
 
             String rawMaxFileSize = System.getProperty("dubbo.mapping.cache.maxFileSize");
             long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
-            this.executorService.scheduleWithFixedDelay(new CacheRefreshTask<>(this.cacheStore, this.cache, maxFileSize), 0, interval, TimeUnit.MINUTES);
+            this.executorService.scheduleWithFixedDelay(new CacheRefreshTask<>(this.cacheStore, this.cache, this, maxFileSize), 10, interval, TimeUnit.MINUTES);
         } catch (Exception e) {
             logger.error("Load mapping from local cache file error ", e);
         }
     }
 
     protected abstract V toValueType(String value);
+
+    protected abstract String getName();
 
     public V get(String key) {
         return cache.get(key);
@@ -122,11 +124,13 @@ public abstract class AbstractCacheManager<V> implements Disposable {
         private static final String DEFAULT_COMMENT = "Dubbo cache";
         private final FileCacheStore cacheStore;
         private final LRUCache<String, V> cache;
+        private final AbstractCacheManager<V> cacheManager;
         private final long maxFileSize;
 
-        public CacheRefreshTask(FileCacheStore cacheStore, LRUCache<String, V> cache, long maxFileSize) {
+        public CacheRefreshTask(FileCacheStore cacheStore, LRUCache<String, V> cache, AbstractCacheManager<V> cacheManager, long maxFileSize) {
             this.cacheStore = cacheStore;
             this.cache = cache;
+            this.cacheManager = cacheManager;
             this.maxFileSize = maxFileSize;
         }
 
@@ -143,7 +147,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
                 cache.releaseLock();
             }
 
-            logger.info("Dumping meta caches, latest entries " + properties.size());
+            logger.info("Dumping " + cacheManager.getName() + " caches, latest entries " + properties.size());
             cacheStore.refreshCache(properties, DEFAULT_COMMENT, maxFileSize);
         }
     }

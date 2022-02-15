@@ -53,12 +53,17 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
         int entrySize = StringUtils.parseInteger(rawEntrySize);
         entrySize = (entrySize == 0 ? DEFAULT_ENTRY_SIZE : entrySize);
 
-        init(filePath, fileName, entrySize, 1, executorService);
+        init(filePath, fileName, entrySize, 50, executorService);
     }
 
     @Override
     protected Set<String> toValueType(String value) {
         return JsonUtils.getGson().fromJson(value, founderSetType);
+    }
+
+    @Override
+    protected String getName() {
+        return "mapping";
     }
 
     public void update(Map<String, Set<String>> newCache) {

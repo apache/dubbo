@@ -93,7 +93,7 @@ public class MetaCacheManagerTest {
             cacheManager.put("3", metadataInfo3);
 
             try {
-                MetaCacheManager.CacheRefreshTask<MetadataInfo> task = new MetaCacheManager.CacheRefreshTask<>(cacheManager.getCacheStore(), cacheManager.getCache(), 0);
+                MetaCacheManager.CacheRefreshTask<MetadataInfo> task = new MetaCacheManager.CacheRefreshTask<>(cacheManager.getCacheStore(), cacheManager.getCache(), cacheManager, 0);
                 task.run();
             } catch (Exception e) {
                 fail();

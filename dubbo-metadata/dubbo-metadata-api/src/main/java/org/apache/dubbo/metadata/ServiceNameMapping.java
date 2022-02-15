@@ -90,13 +90,13 @@ public interface ServiceNameMapping extends Destroyable {
     }
 
     /**
-     * Get the mapping data from cache in local storage.
+     * Init the mapping data from local storage and url parameter.
      *
      * @return app list that current interface maps to, in sequence determined by:
      * 1. PROVIDED_BY specified by user
      * 2. snapshot in local file
      */
-    Set<String> getServices(URL subscribedURL);
+    void initInterfaceAppMapping(URL subscribedURL);
 
     /**
      * Get the latest mapping result from remote center and register listener at the same time to get notified once mapping changes.

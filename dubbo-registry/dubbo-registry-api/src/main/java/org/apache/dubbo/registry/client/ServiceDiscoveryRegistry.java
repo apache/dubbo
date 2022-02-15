@@ -30,7 +30,6 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.support.FailbackRegistry;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -197,7 +196,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         Lock mappingLock = serviceNameMapping.getMappingLock(key);
         try {
             mappingLock.lock();
-            Set<String> subscribedServices = Collections.emptySet();
+            Set<String> subscribedServices = serviceNameMapping.getCachedMapping(url);
             try {
                 MappingListener mappingListener = new DefaultMappingListener(url, subscribedServices, listener);
                 subscribedServices = serviceNameMapping.getAndListen(this.getUrl(), url, mappingListener);
@@ -368,9 +367,11 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             Set<String> newApps = event.getApps();
             Set<String> tempOldApps = oldApps;
 
-            if (CollectionUtils.isEmpty(newApps)) {
+            if (CollectionUtils.isEmpty(newApps) || CollectionUtils.equals(newApps, tempOldApps)) {
                 return;
             }
+
+            logger.info("Mapping of service " + event.getServiceKey() + "changed from " + tempOldApps + " to " + newApps);
 
             Lock mappingLock = serviceNameMapping.getMappingLock(event.getServiceKey());
             try {
