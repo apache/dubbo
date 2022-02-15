@@ -17,17 +17,14 @@
 
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
+import org.junit.jupiter.api.Test;
 
-import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
+import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Stream is a bi-directional intermediate layer for processing streaming data. It serializes business object instance to
- * byte[] then send to remote, and deserializes byte[] to object instance from remote.
- * {@link H2TransportObserver} to receive data from remote and {@link org.apache.dubbo.rpc.protocol.tri.WriteQueue} to write data.
- */
-public interface Stream {
+class ClientStreamTest {
+    @Test
+    public void create(){
+        ClientStream stream
+    }
 
-    void writeMessage(byte[] message, int compressed);
-
-    void requestN(int n);
 }
