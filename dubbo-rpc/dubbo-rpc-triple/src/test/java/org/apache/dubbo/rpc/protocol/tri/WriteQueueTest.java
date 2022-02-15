@@ -28,6 +28,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.DefaultEventLoop;
 import io.netty.channel.EventLoop;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,7 @@ import static org.apache.dubbo.rpc.protocol.tri.WriteQueue.DEQUE_CHUNK_SIZE;
  * {@link WriteQueue}
  */
 public class WriteQueueTest {
-    private AtomicInteger writeMethodCalledTimes = new AtomicInteger(0);
+    private final AtomicInteger writeMethodCalledTimes = new AtomicInteger(0);
     private Channel channel;
 
     @BeforeEach
@@ -69,14 +70,14 @@ public class WriteQueueTest {
     public void test() throws Exception {
 
         WriteQueue writeQueue = new WriteQueue(channel);
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultMetadata()), false);
-        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(true), false);
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
+        writeQueue.enqueue(DataQueueCommand.createGrpcCommand(new byte[0],false,0));
         RpcStatus status = RpcStatus.UNKNOWN
             .withCause(new RpcException())
             .withDescription("Encode Response data error");
-        writeQueue.enqueue(CancelQueueCommand.createCommand(), false);
-        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true), false);
-        writeQueue.enqueue(new FlushQueueCommand(), true);
+        writeQueue.enqueue(CancelQueueCommand.createCommand());
+        writeQueue.enqueue(TextDataQueueCommand.createCommand(status.description, true));
+        writeQueue.enqueue(new FlushQueueCommand());
 
         while (writeMethodCalledTimes.get() != 5) {
             Thread.sleep(50);
@@ -102,9 +103,9 @@ public class WriteQueueTest {
         // test deque chunk size
         writeMethodCalledTimes.set(0);
         for (int i = 0; i < DEQUE_CHUNK_SIZE; i++) {
-            writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultMetadata()), false);
+            writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
         }
-        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultMetadata()), true);
+        writeQueue.enqueue(HeaderQueueCommand.createHeaders(new DefaultHttp2Headers()));
         while (writeMethodCalledTimes.get() != (DEQUE_CHUNK_SIZE + 1)) {
             Thread.sleep(50);
         }

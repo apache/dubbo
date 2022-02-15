@@ -23,7 +23,6 @@ public class RequestMetadata {
     public Compressor compressor;
     public MethodDescriptor method;
     public Object[] arguments;
-    public List<String> argumentTypes;
     public Map<String, Object> attachments;
     public GenericPack genericPack;
     public GenericUnpack genericUnpack;

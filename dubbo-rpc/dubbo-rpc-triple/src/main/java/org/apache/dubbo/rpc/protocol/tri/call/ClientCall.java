@@ -20,17 +20,16 @@ package org.apache.dubbo.rpc.protocol.tri.call;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
-import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
 import org.apache.dubbo.rpc.protocol.tri.TripleHeaderEnum;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Identity;
+import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbPack;
 import org.apache.dubbo.rpc.protocol.tri.pack.PbUnpack;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
@@ -56,21 +55,23 @@ public class ClientCall {
     private RequestMetadata requestMetadata;
     private ClientStream stream;
     private boolean canceled;
-    private boolean started;
+    private boolean headerSent;
 
     public ClientCall(URL url,
                       Connection connection,
                       ExecutorService executor
     ) {
         this.url = url;
-        this.executor = new SerializingExecutor(executor);
+        this.executor = executor;
         this.connection = connection;
     }
 
-
     public void sendMessage(Object message) {
-        if (!started) {
-            started = true;
+        if (canceled) {
+            throw new IllegalStateException("Call already canceled");
+        }
+        if (!headerSent) {
+            headerSent = true;
             stream.startCall(requestMetadata);
         }
         final byte[] data;
@@ -90,6 +91,12 @@ public class ClientCall {
     }
 
     public void halfClose() {
+        if (!headerSent) {
+            return;
+        }
+        if (canceled) {
+            return;
+        }
         stream.halfClose();
     }
 
@@ -97,7 +104,7 @@ public class ClientCall {
         this.requestMetadata.compressor = Compressor.getCompressor(url.getOrDefaultFrameworkModel(), compression);
     }
 
-    public void start(RequestMetadata metadata, StartListener responseListener) {
+    public void start(RequestMetadata metadata, ClientCall.StartListener responseListener) {
         this.requestMetadata = metadata;
         final PbUnpack<?> unpack = requestMetadata.method.isNeedWrap() ?
             PbUnpack.RESP_PB_UNPACK : new PbUnpack<>(requestMetadata.method.getReturnClass());
@@ -114,18 +121,21 @@ public class ClientCall {
         if (canceled) {
             return;
         }
-        canceled = true;
-        if (stream != null) {
-            final RpcStatus status = RpcStatus.CANCELLED;
-            if (message != null) {
-                status.withDescription(message);
-            } else {
-                status.withDescription("Cancel by client without message");
-            }
-            status.withCause(t);
-            stream.cancelByLocal(status);
+        // did not create stream
+        if (!headerSent) {
+            return;
         }
-
+        canceled = true;
+        if (stream == null) {
+            return;
+        }
+        RpcStatus status = RpcStatus.CANCELLED.withCause(t);
+        if (message != null) {
+            status = status.withDescription(message);
+        } else {
+            status = status.withDescription("Cancel by client without message");
+        }
+        stream.cancelByLocal(status);
     }
 
     interface Listener {
@@ -159,6 +169,11 @@ public class ClientCall {
 
         @Override
         public void onMessage(byte[] message) {
+            if (done) {
+                LOGGER.warn("Received message from closed stream,connection=" + connection
+                    + " service=" + requestMetadata.service + " method=" + requestMetadata.method.getMethodName());
+                return;
+            }
             try {
                 final Object unpacked = unpack.unpack(message);
                 listener.onMessage(unpacked);
@@ -171,9 +186,6 @@ public class ClientCall {
 
         @Override
         public void complete(RpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
-            if (done) {
-                return;
-            }
             done = true;
             final Throwable throwableFromTrailers = getThrowableFromTrailers(excludeHeaders);
             if (throwableFromTrailers != null) {

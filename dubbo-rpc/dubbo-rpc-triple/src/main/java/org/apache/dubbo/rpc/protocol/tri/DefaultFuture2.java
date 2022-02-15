@@ -56,9 +56,9 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
     private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
-    public final long requestId;    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
+    public final long requestId;
     private final Invocation invocation;
-    private final Connection connection;
+    private final Connection connection;    private static final GlobalResourceInitializer<Timer> TIME_OUT_TIMER = new GlobalResourceInitializer<>(() -> new HashedWheelTimer(new NamedThreadFactory("dubbo-future-timeout", true), 30, TimeUnit.MILLISECONDS), DefaultFuture2::destroy);
     private final int timeout;
     private final long start = System.currentTimeMillis();
     private final List<Runnable> timeoutListeners = new ArrayList<>();
@@ -75,8 +75,13 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
     }
 
     public static void addTimeoutListener(long id, Runnable runnable) {
-        DefaultFuture2 defaultFuture2 = FUTURES.get(id);
-        defaultFuture2.addTimeoutListener(runnable);
+        DefaultFuture2 future = FUTURES.get(id);
+        if (future == null) {
+            // already time out
+            runnable.run();
+        } else {
+            future.addTimeoutListener(runnable);
+        }
     }
 
     /**
@@ -247,6 +252,8 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
             DefaultFuture2.received(future.requestId, status, null);
         }
     }
+
+
 
 
 }

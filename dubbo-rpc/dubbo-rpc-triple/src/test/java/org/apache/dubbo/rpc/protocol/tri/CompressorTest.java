@@ -17,8 +17,9 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.tri.compressor.Compressor;
+import org.apache.dubbo.rpc.protocol.tri.compressor.DeCompressor;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,12 +43,18 @@ class CompressorTest {
     @ParameterizedTest
     void compression(String compressorName) {
         System.out.println("current compressor is " + compressorName);
-        Compressor compressor = ExtensionLoader.getExtensionLoader(Compressor.class).getExtension(compressorName);
+        Compressor compressor = ApplicationModel.defaultModel().getDefaultModule()
+            .getExtensionLoader(Compressor.class)
+            .getExtension(compressorName);
 
         byte[] compressedByteArr = compressor.compress(TEST_STR.getBytes());
         System.out.println("compressed byte length：" + compressedByteArr.length);
 
-        byte[] decompressedByteArr = compressor.decompress(compressedByteArr);
+        DeCompressor deCompressor = ApplicationModel.defaultModel().getDefaultModule()
+            .getExtensionLoader(DeCompressor.class)
+            .getExtension(compressorName);
+
+        byte[] decompressedByteArr = deCompressor.decompress(compressedByteArr);
         System.out.println("decompressed byte length：" + decompressedByteArr.length);
         Assertions.assertEquals(new String(decompressedByteArr), TEST_STR);
     }

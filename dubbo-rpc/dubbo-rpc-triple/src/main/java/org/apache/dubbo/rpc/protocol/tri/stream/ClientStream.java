@@ -18,8 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
@@ -53,18 +51,33 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 
+/**
+ * ClientStream is an abstraction for bi-directional messaging.
+ * It maintains a {@link WriteQueue} to write Http2Frame to remote.
+ * A {@link H2TransportObserver} receives Http2Frame from remote.
+ */
 public class ClientStream extends AbstractStream implements Stream {
-    private static final Logger logger = LoggerFactory.getLogger(ClientStream.class);
     public final ClientStreamListener listener;
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
     private final long requestId;
     private final URL url;
     private EventLoop eventLoop;
-    private boolean canceled;
-    private boolean headerReceived;
     private Deframer deframer;
-    private Http2Headers trailers;
+
+    // for test
+    ClientStream(URL url,
+                 long requestId,
+                 Executor executor,
+                 WriteQueue writeQueue,
+                 ClientStreamListener listener) {
+
+        super(executor);
+        this.url = url;
+        this.requestId = requestId;
+        this.listener = listener;
+        this.writeQueue = writeQueue;
+    }
 
     public ClientStream(URL url,
                         long requestId,
@@ -74,17 +87,15 @@ public class ClientStream extends AbstractStream implements Stream {
         super(executor);
         this.url = url;
         this.requestId = requestId;
-        this.writeQueue = createWriteQueue(parent);
         this.listener = listener;
+        this.writeQueue = createWriteQueue(parent);
     }
 
-    WriteQueue createWriteQueue(Channel parent) {
+    private WriteQueue createWriteQueue(Channel parent) {
         final Http2StreamChannelBootstrap bootstrap = new Http2StreamChannelBootstrap(parent);
         final Future<Http2StreamChannel> future = bootstrap.open().syncUninterruptibly();
         if (!future.isSuccess()) {
-            listener.complete(RpcStatus.INTERNAL
-                .withDescription("Create remote stream failed"), null);
-            return null;
+            throw new IllegalStateException("Create remote stream failed. channel:" + parent);
         }
         final Http2StreamChannel channel = future.getNow();
         eventLoop = channel.eventLoop();
@@ -119,10 +130,6 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     public void cancelByLocal(RpcStatus status) {
-        if (canceled) {
-            return;
-        }
-        canceled = true;
         final CancelQueueCommand cmd = CancelQueueCommand.createCommand();
         this.writeQueue.enqueue(cmd);
     }
@@ -159,6 +166,8 @@ public class ClientStream extends AbstractStream implements Stream {
         private RpcStatus transportError;
         private DeCompressor decompressor;
         private boolean remoteClosed;
+        private boolean headerReceived;
+        private Http2Headers trailers;
 
         void handleH2TransportError(RpcStatus status) {
             writeQueue.enqueue(CancelQueueCommand.createCommand());
@@ -244,7 +253,7 @@ public class ClientStream extends AbstractStream implements Stream {
             if (transportError != null) {
                 transportError = transportError.appendDescription("trailers: " + trailers);
             } else {
-                ClientStream.this.trailers = trailers;
+                this.trailers = trailers;
                 RpcStatus status = statusFromTrailers(trailers);
                 if (deframer == null) {
                     finishProcess(status, trailers);

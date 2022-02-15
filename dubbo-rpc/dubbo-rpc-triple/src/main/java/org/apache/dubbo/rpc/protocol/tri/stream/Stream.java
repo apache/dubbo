@@ -21,13 +21,11 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.rpc.protocol.tri.observer.H2TransportObserver;
 
 /**
- * Stream acts as a bi-directional intermediate layer for processing streaming data . It serializes object instance to
- * byte[] then send to remote, and deserializes byte[] to object instance from remote. {@link H2TransportObserver} to
- * receive data from remote and {@link org.apache.dubbo.rpc.protocol.tri.WriteQueue} to write data.
- * {@link Listener} acts as API for users fetch objects from remote peer.
+ * Stream is a bi-directional intermediate layer for processing streaming data. It serializes business object instance to
+ * byte[] then send to remote, and deserializes byte[] to object instance from remote.
+ * {@link H2TransportObserver} to receive data from remote and {@link org.apache.dubbo.rpc.protocol.tri.WriteQueue} to write data.
  */
 public interface Stream {
-
 
     void writeMessage(byte[] message, int compressed);
 
