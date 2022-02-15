@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
 import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.tri.ClassLoadUtil;
 import org.apache.dubbo.rpc.protocol.tri.ExceptionUtils;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
@@ -180,12 +179,15 @@ public class ClientCall {
         public void complete(RpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
             executor.execute(() -> {
                 done = true;
-                final Throwable throwableFromTrailers = getThrowableFromTrailers(excludeHeaders);
-                if (throwableFromTrailers != null) {
-                    status.withCause(throwableFromTrailers);
+                final RpcStatus detailStatus;
+                final RpcStatus statusFromTrailers = getStatusFromTrailers(excludeHeaders);
+                if (statusFromTrailers != null) {
+                    detailStatus = statusFromTrailers;
+                } else {
+                    detailStatus = status;
                 }
                 try {
-                    listener.onClose(status, attachments);
+                    listener.onClose(detailStatus, attachments);
                 } catch (Throwable t) {
                     cancelByErr(RpcStatus.INTERNAL
                         .withDescription("Close stream error")
@@ -198,7 +200,7 @@ public class ClientCall {
             stream.cancelByLocal(status);
         }
 
-        Throwable getThrowableFromTrailers(Map<String, String> metadata) {
+        RpcStatus getStatusFromTrailers(Map<String, String> metadata) {
             if (null == metadata) {
                 return null;
             }
@@ -215,13 +217,14 @@ public class ClientCall {
                 Map<Class<?>, Object> classObjectMap = tranFromStatusDetails(detailList);
 
                 // get common exception from DebugInfo
+                RpcStatus status = RpcStatus.fromCode(statusDetail.getCode())
+                    .withDescription(RpcStatus.decodeMessage(statusDetail.getMessage()));
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
-                if (debugInfo == null) {
-                    return new RpcException(statusDetail.getCode(),
-                        RpcStatus.decodeMessage(statusDetail.getMessage()));
+                if (debugInfo != null) {
+                    String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
+                    status = status.appendDescription(msg);
                 }
-                String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
-                return new RpcException(statusDetail.getCode(), msg);
+                return status;
             } catch (IOException ioException) {
                 return null;
             } finally {

@@ -390,9 +390,9 @@ public class ServerCall {
                     }
                     final Object obj = unpack.unpack(message);
                     listener.onMessage(obj);
-                } catch (IOException e) {
+                } catch (Throwable t) {
                     close(RpcStatus.INTERNAL.withDescription("Server error")
-                            .withCause(e), null);
+                            .withCause(t), null);
                 } finally {
                     ClassLoadUtil.switchContextLoader(tccl);
                 }
