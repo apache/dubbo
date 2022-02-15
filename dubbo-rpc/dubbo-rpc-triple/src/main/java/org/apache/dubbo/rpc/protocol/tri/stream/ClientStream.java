@@ -53,8 +53,6 @@ public class ClientStream extends AbstractStream implements Stream {
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
     private final long requestId;
-    private boolean headerReceived;
-    private Http2Headers trailers;
 
     public ClientStream(URL url,
                         long requestId,
@@ -138,6 +136,8 @@ public class ClientStream extends AbstractStream implements Stream {
         private DeCompressor decompressor;
         private TriDecoder decoder;
         private boolean remoteClosed;
+        private boolean headerReceived;
+        private Http2Headers trailers;
 
         void handleH2TransportError(RpcStatus status) {
             writeQueue.enqueue(CancelQueueCommand.createCommand());
@@ -223,7 +223,7 @@ public class ClientStream extends AbstractStream implements Stream {
             if (transportError != null) {
                 transportError = transportError.appendDescription("trailers: " + trailers);
             } else {
-                ClientStream.this.trailers = trailers;
+                this.trailers = trailers;
                 RpcStatus status = statusFromTrailers(trailers);
                 if (decoder == null) {
                     finishProcess(status, trailers);
@@ -281,7 +281,6 @@ public class ClientStream extends AbstractStream implements Stream {
                 ReferenceCountUtil.release(data);
                 if (transportError.description.length() > 512 || endStream) {
                     handleH2TransportError(transportError);
-
                 }
                 return;
             }

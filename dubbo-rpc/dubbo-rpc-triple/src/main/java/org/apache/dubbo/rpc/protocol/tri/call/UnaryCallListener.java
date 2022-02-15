@@ -26,7 +26,6 @@ import java.util.Map;
 public class UnaryCallListener implements ClientCall.Listener {
     private final long requestId;
     private Object appResponse;
-    private boolean closed;
 
     public UnaryCallListener(long requestId) {
         this.requestId = requestId;
@@ -39,10 +38,6 @@ public class UnaryCallListener implements ClientCall.Listener {
 
     @Override
     public void onClose(RpcStatus status, Map<String, Object> trailers) {
-        if (closed) {
-            return;
-        }
-        closed = true;
         AppResponse result = new AppResponse();
         result.setObjectAttachments(trailers);
         if (status.isOk()) {

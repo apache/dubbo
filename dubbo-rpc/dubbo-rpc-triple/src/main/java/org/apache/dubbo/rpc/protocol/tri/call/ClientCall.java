@@ -68,10 +68,6 @@ public class ClientCall {
     }
 
     public void sendMessage(Object message) {
-        executor.execute(() -> doSendMessage(message));
-    }
-
-    public void doSendMessage(Object message) {
         if (canceled) {
             throw new IllegalStateException("Call already canceled");
         }
@@ -182,9 +178,6 @@ public class ClientCall {
         @Override
         public void complete(RpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
             executor.execute(() -> {
-                if (done) {
-                    return;
-                }
                 done = true;
                 final Throwable throwableFromTrailers = getThrowableFromTrailers(excludeHeaders);
                 if (throwableFromTrailers != null) {
