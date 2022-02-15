@@ -32,7 +32,6 @@ import java.util.TreeSet;
 import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.extension.ExtensionScope.APPLICATION;
-import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 
 /**
  * This will interact with remote metadata center to find the interface-app mapping and will cache the data locally.
@@ -64,7 +63,8 @@ public interface ServiceNameMapping extends Destroyable {
 
     static String buildGroup(String serviceInterface) {
         //the issue : https://github.com/apache/dubbo/issues/4671
-        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
+//        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
+        return serviceInterface;
     }
 
     static String toStringKeys(Set<String> serviceNames) {
@@ -90,24 +90,23 @@ public interface ServiceNameMapping extends Destroyable {
     }
 
     /**
-     * Get the mapping data from remote metadata center and cache in local storage.
+     * Get the mapping data from cache in local storage.
      *
-     * @return app list current interface mapping to, in sequence determined by:
-     * 1.check PROVIDED_BY
-     * 2.check remote metadata center
-     *
+     * @return app list that current interface maps to, in sequence determined by:
+     * 1. PROVIDED_BY specified by user
+     * 2. snapshot in local file
      */
     Set<String> getServices(URL subscribedURL);
 
     /**
-     * Register listener to get notified once mapping data changes.
+     * Get the latest mapping result from remote center and register listener at the same time to get notified once mapping changes.
      *
-     * @param listener
-     * @return
+     * @param listener listener that will be notified on mapping change
+     * @return the latest mapping result from remote center
      */
     Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener);
 
-    MappingListener stopListen(URL subscribeURL);
+    MappingListener stopListen(URL subscribeURL, MappingListener listener);
 
     void putCachedMapping(String serviceKey, Set<String> apps);
 

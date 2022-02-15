@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -36,13 +37,14 @@ import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SER
  */
 class AbstractServiceNameMappingTest {
 
-    private MockServiceNameMapping mapping = new MockServiceNameMapping();
-    private MockServiceNameMapping2 mapping2 = new MockServiceNameMapping2();
+    private MockServiceNameMapping mapping = new MockServiceNameMapping(ApplicationModel.defaultModel());
+    private MockServiceNameMapping2 mapping2 = new MockServiceNameMapping2(ApplicationModel.defaultModel());
 
     URL url = URL.valueOf("dubbo://127.0.0.1:21880/" + AbstractServiceNameMappingTest.class);
 
     @BeforeEach
-    public void setUp() throws Exception {}
+    public void setUp() throws Exception {
+    }
 
     @AfterEach
     public void clearup() throws Exception {
@@ -103,6 +105,10 @@ class AbstractServiceNameMappingTest {
 
         public boolean enabled = false;
 
+        public MockServiceNameMapping(ApplicationModel applicationModel) {
+            super(applicationModel);
+        }
+
         @Override
         public Set<String> get(URL url) {
             return new HashSet<>(Arrays.asList("remote-app1", "remote-app2"));
@@ -130,6 +136,10 @@ class AbstractServiceNameMappingTest {
     private class MockServiceNameMapping2 extends AbstractServiceNameMapping {
 
         public boolean enabled = false;
+
+        public MockServiceNameMapping2(ApplicationModel applicationModel) {
+            super(applicationModel);
+        }
 
         @Override
         public Set<String> get(URL url) {

@@ -28,11 +28,11 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
-
-import com.google.gson.Gson;
 import org.apache.dubbo.registry.client.metadata.store.MetaCacheManager;
 import org.apache.dubbo.registry.client.support.MockServiceDiscovery;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import com.google.gson.Gson;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -50,6 +50,7 @@ import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,8 +63,10 @@ import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 /**
  * {@link ServiceInstancesChangedListener} Test
@@ -155,10 +158,10 @@ public class ServiceInstancesChangedListenerTest {
         metadataInfo_333 = gson.fromJson(metadata_333, MetadataInfo.class);
         metadataInfo_444 = gson.fromJson(metadata_444, MetadataInfo.class);
 
-        Mockito.when(metadataService.getMetadataInfo(eq("111"))).thenReturn(metadataInfo_111);
-        Mockito.when(metadataService.getMetadataInfo(eq("222"))).thenReturn(metadataInfo_222);
-        Mockito.when(metadataService.getMetadataInfo(eq("333"))).thenReturn(metadataInfo_333);
-        Mockito.when(metadataService.getMetadataInfo(eq("444"))).thenThrow(IllegalStateException.class);
+        when(metadataService.getMetadataInfo(eq("111"))).thenReturn(metadataInfo_111);
+        when(metadataService.getMetadataInfo(eq("222"))).thenReturn(metadataInfo_222);
+        when(metadataService.getMetadataInfo(eq("333"))).thenReturn(metadataInfo_333);
+        when(metadataService.getMetadataInfo(eq("444"))).thenThrow(IllegalStateException.class);
 
         serviceDiscovery = new MockServiceDiscovery("app1,app2", registryURL);
 
@@ -400,7 +403,7 @@ public class ServiceInstancesChangedListenerTest {
         ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1Instances);
         listener.onEvent(event);
 
-        Mockito.when(metadataService.getMetadataInfo(eq("222"))).thenAnswer(new Answer<MetadataInfo>() {
+        when(metadataService.getMetadataInfo(eq("222"))).thenAnswer(new Answer<MetadataInfo>() {
             @Override
             public MetadataInfo answer(InvocationOnMock invocationOnMock) throws Throwable {
                 if (Thread.currentThread().getName().contains("Dubbo-metadata-retry")) {
@@ -450,6 +453,42 @@ public class ServiceInstancesChangedListenerTest {
         assertTrue(true);
     }
 
+    @Test
+    public void testGetProtocolServiceKeyList() {
+        String protocolServiceKey1 = "group/Service:1.0:*";
+        String protocolServiceKey2 = "group/Service:1.0:consumer";
+
+        NotifyListener listener = Mockito.mock(NotifyListener.class);
+
+        Set<String> serviceNames = new HashSet<>();
+        serviceNames.add("app1");
+        ServiceDiscovery serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
+        ServiceInstancesChangedListener instancesChangedListener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+
+        when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service?protocol=tri"));
+        Set<String> keyList11 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey1, listener);
+        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri")), keyList11);
+
+        when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service"));
+        Set<String> keyList12 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey1, listener);
+        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri", "group/Service:1.0:dubbo")), keyList12);
+
+        when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service?protocol=dubbo"));
+        Set<String> keyList21 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey2, listener);
+        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:dubbo")), keyList21);
+
+        when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service"));
+        Set<String> keyList22 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey2, listener);
+        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:tri", "group/Service:1.0:dubbo")), keyList22);
+
+        when(listener.getConsumerUrl()).thenReturn(URL.valueOf("consumer://localhost/Service?protocol=dubbo,tri"));
+        Set<String> keyList23 = instancesChangedListener.getProtocolServiceKeyList(protocolServiceKey2, listener);
+        assertEquals(getExpectedSet(Arrays.asList("group/Service:1.0:dubbo", "group/Service:1.0:tri")), keyList23);
+    }
+
+    Set<String> getExpectedSet(List<String> list) {
+        return new HashSet<>(list);
+    }
 
     static List<ServiceInstance> buildInstances(List<Object> rawURls) {
         List<ServiceInstance> instances = new ArrayList<>();

@@ -48,6 +48,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     protected MetadataReportInstance metadataReportInstance;
 
     public MetadataServiceNameMapping(ApplicationModel applicationModel) {
+        super(applicationModel);
         metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
     }
 

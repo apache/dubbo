@@ -212,7 +212,7 @@ public class ServiceDiscoveryRegistryTest {
         // still called once, not executed this time
         verify(serviceDiscovery, times(2)).addServiceInstancesChangedListener(multiAppsInstanceListener);
         // check different protocol
-        Map<String, Set<NotifyListener>> serviceListeners = multiAppsInstanceListener.getServiceListeners();
+        Map<String, Set<ServiceInstancesChangedListener.NotifyListenerWithKey>> serviceListeners = multiAppsInstanceListener.getServiceListeners();
         assertEquals(2, serviceListeners.size());
         String protocolServiceKey = url2.getServiceKey() + GROUP_CHAR_SEPARATOR + url2.getParameter(PROTOCOL_KEY, DUBBO);
         assertTrue(serviceListeners.get(protocolServiceKey).contains(testServiceListener2));

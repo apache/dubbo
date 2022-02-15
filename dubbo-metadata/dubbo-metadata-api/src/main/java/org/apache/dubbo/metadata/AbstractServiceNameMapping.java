@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -29,10 +30,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -49,14 +50,14 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 public abstract class AbstractServiceNameMapping implements ServiceNameMapping, ScopeModelAware {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     protected ApplicationModel applicationModel;
-    private final Map<String, Set<String>> serviceToAppsMapping = new ConcurrentHashMap<>();
+    private final MappingCacheManager mappingCacheManager;
     private final Map<String, Set<MappingListener>> mappingListeners = new ConcurrentHashMap<>();
     // mapping lock is shared among registries of the same application.
-    private final ConcurrentMap<String, CountableLock> mappingLocks = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ReentrantLock> mappingLocks = new ConcurrentHashMap<>();
 
-    @Override
-    public void setApplicationModel(ApplicationModel applicationModel) {
+    public AbstractServiceNameMapping(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
+        this.mappingCacheManager = new MappingCacheManager("", applicationModel.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getCacheRefreshingScheduledExecutor());
     }
 
     /**
@@ -65,11 +66,6 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
      * @return
      */
     abstract public Set<String> get(URL url);
-
-    public Set<String> getFromLocalCache(URL url) {
-
-        return emptySet();
-    }
 
     /**
      * Get the service names from the specified Dubbo service interface, group, version and protocol
@@ -83,67 +79,41 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     @Override
     public Set<String> getServices(URL subscribedURL) {
         Set<String> subscribedServices = new TreeSet<>();
-
+        String key = ServiceNameMapping.buildMappingKey(subscribedURL);
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
+
         if (StringUtils.isNotEmpty(serviceNames)) {
-            logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " instructed by provided-by set by user.");
+            logger.info(key + " mapping to " + serviceNames + " instructed by provided-by set by user.");
             subscribedServices.addAll(parseServices(serviceNames));
         }
 
-        String key = ServiceNameMapping.buildMappingKey(subscribedURL);
-
         if (isEmpty(subscribedServices)) {
             Set<String> cachedServices = this.getCachedMapping(key);
-            if(!isEmpty(cachedServices)) {
+            if (!isEmpty(cachedServices)) {
+                logger.info(key + " mapping to " + serviceNames + " instructed by local cache.");
                 subscribedServices.addAll(cachedServices);
             }
+        } else {
+            this.putCachedMappingIfAbsent(key, subscribedServices);
         }
-
-        if (isEmpty(subscribedServices)) {
-            Set<String> mappedServices = get(subscribedURL);
-            logger.info(subscribedURL.getServiceInterface() + " mapping to " + mappedServices + " instructed by remote metadata center.");
-            subscribedServices.addAll(mappedServices);
-        }
-
-        this.putCachedMappingIfAbsent(key, subscribedServices);
 
         return subscribedServices;
     }
 
-    /**
-     * Register callback to listen to mapping changes.
-     *
-     * @return cached or remote mapping data
-     */
     @Override
     public Set<String> getAndListen(URL registryURL, URL subscribedURL, MappingListener listener) {
         String key = ServiceNameMapping.buildMappingKey(subscribedURL);
         // use previously cached services.
         Set<String> cachedServices = this.getCachedMapping(key);
 
-        Runnable runnable = () -> {
-            synchronized (mappingListeners) {
-                if (listener != null) {
-                    Set<String> mappedServices = new TreeSet<>(getAndListen(subscribedURL, listener));
-                    // guarantee at-least-once notification no matter whatever underlying meta server might being used.
-                    // listener notification will also cause updating of mapping cache.
-                    String mappingKey = ServiceNameMapping.buildMappingKey(subscribedURL);
-                    listener.onEvent(new MappingChangedEvent(mappingKey, mappedServices));
-                    Set<MappingListener> listeners = mappingListeners.computeIfAbsent(mappingKey, _k -> new HashSet<>());
-                    listeners.add(listener);
-                } else {
-                    Set<String> mappedServices = get(subscribedURL);
-                    if (CollectionUtils.isNotEmpty(mappedServices)) {
-                        this.putCachedMapping(key, mappedServices);
-                    }
-                }
-            }
-        };
-
         // Asynchronously register listener in case previous cache does not exist or cache expired.
         if (CollectionUtils.isEmpty(cachedServices)) {
-            runnable.run();
-            cachedServices = this.getCachedMapping(key);
+            try {
+                logger.info("Local cache mapping is empty");
+                cachedServices = (new AsyncMappingTask(listener, subscribedURL, true)).call();
+            } catch (Exception e) {
+                // ignore
+            }
             if (CollectionUtils.isEmpty(cachedServices)) {
                 String registryServices = registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
                 if (StringUtils.isNotEmpty(registryServices)) {
@@ -152,8 +122,8 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
                 }
             }
         } else {
-            ExecutorService executorService = applicationModel.getApplicationExecutorRepository().nextExecutorExecutor();
-            executorService.submit(runnable);
+            ExecutorService executorService = applicationModel.getApplicationExecutorRepository().getMappingRefreshingExecutor();
+            executorService.submit(new AsyncMappingTask(listener, subscribedURL, false));
         }
 
         return cachedServices;
@@ -162,7 +132,8 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
     @Override
     public MappingListener stopListen(URL subscribeURL, MappingListener listener) {
         synchronized (mappingListeners) {
-            Set<MappingListener> listeners = mappingListeners.get(ServiceNameMapping.buildMappingKey(subscribeURL));
+            String mappingKey = ServiceNameMapping.buildMappingKey(subscribeURL);
+            Set<MappingListener> listeners = mappingListeners.get(mappingKey);
             //todo, remove listener from remote metadata center
             if (CollectionUtils.isNotEmpty(listeners)) {
                 listeners.remove(listener);
@@ -170,7 +141,8 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
                 removeListener(subscribeURL, listener);
             }
             if (CollectionUtils.isEmpty(listeners)) {
-                removeCachedMapping(ServiceNameMapping.buildMappingKey(subscribeURL));
+                removeCachedMapping(mappingKey);
+                removeMappingLock(mappingKey);
             }
             return listener;
         }
@@ -186,49 +158,53 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
 
     @Override
     public void putCachedMapping(String serviceKey, Set<String> apps) {
-        serviceToAppsMapping.put(serviceKey, toTreeSet(apps));
+        mappingCacheManager.put(serviceKey, toTreeSet(apps));
     }
 
     protected void putCachedMappingIfAbsent(String serviceKey, Set<String> apps) {
-        serviceToAppsMapping.putIfAbsent(serviceKey, toTreeSet(apps));
+        Lock lock = getMappingLock(serviceKey);
+        try {
+            lock.lock();
+            if (CollectionUtils.isEmpty(mappingCacheManager.get(serviceKey))) {
+                mappingCacheManager.put(serviceKey, toTreeSet(apps));
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public Set<String> getCachedMapping(String mappingKey) {
-        return serviceToAppsMapping.get(mappingKey);
+        return mappingCacheManager.get(mappingKey);
     }
 
     @Override
     public Set<String> getCachedMapping(URL consumerURL) {
-        return serviceToAppsMapping.get(ServiceNameMapping.buildMappingKey(consumerURL));
+        return getCachedMapping(ServiceNameMapping.buildMappingKey(consumerURL));
     }
 
     @Override
     public Set<String> removeCachedMapping(String serviceKey) {
-        return serviceToAppsMapping.remove(serviceKey);
+        return mappingCacheManager.remove(serviceKey);
     }
 
     @Override
     public Map<String, Set<String>> getCachedMapping() {
-        return Collections.unmodifiableMap(serviceToAppsMapping);
+        return Collections.unmodifiableMap(mappingCacheManager.getAll());
     }
 
     public Lock getMappingLock(String key) {
-        CountableLock countableLock = mappingLocks.computeIfAbsent(key, _k -> new CountableLock());
-        countableLock.counter.incrementAndGet();
-        return countableLock.lock;
+        return mappingLocks.computeIfAbsent(key, _k -> new ReentrantLock());
     }
 
-    public void tryRemovingMappingLock(String key) {
-        CountableLock countableLock = mappingLocks.get(key);
-        if (countableLock != null) {
+    protected void removeMappingLock(String key) {
+        Lock lock = mappingLocks.get(key);
+        if (lock != null) {
             try {
-                countableLock.lock.lock();
-                if (countableLock.counter.decrementAndGet() == 0) {
-                    mappingLocks.remove(key);
-                }
+                lock.lock();
+                mappingLocks.remove(key);
             } finally {
-                countableLock.lock.unlock();
+                lock.unlock();
             }
         }
     }
@@ -238,13 +214,47 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping, 
         mappingLocks.clear();
     }
 
-    private static class CountableLock {
-        private ReentrantLock lock;
-        private AtomicInteger counter;
+    private class AsyncMappingTask implements Callable<Set<String>> {
+        private final MappingListener listener;
+        private final URL subscribedURL;
+        private final boolean notifyAtFirstTime;
 
-        public CountableLock() {
-            lock = new ReentrantLock();
-            counter = new AtomicInteger(0);
+        public AsyncMappingTask(MappingListener listener, URL subscribedURL, boolean notifyAtFirstTime) {
+            this.listener = listener;
+            this.subscribedURL = subscribedURL;
+            this.notifyAtFirstTime = notifyAtFirstTime;
+        }
+
+        @Override
+        public Set<String> call() throws Exception {
+            synchronized (mappingListeners) {
+                Set<String> mappedServices = emptySet();
+                try {
+                    String mappingKey = ServiceNameMapping.buildMappingKey(subscribedURL);
+                    if (listener != null) {
+                        mappedServices = toTreeSet(getAndListen(subscribedURL, listener));
+                        // guarantee at-least-once notification no matter what kind of underlying meta server is used.
+                        // listener notification will also cause updating of mapping cache.
+                        Set<MappingListener> listeners = mappingListeners.computeIfAbsent(mappingKey, _k -> new HashSet<>());
+                        listeners.add(listener);
+                        if (CollectionUtils.isNotEmpty(mappedServices)) {
+                            if (notifyAtFirstTime) {
+                                listener.onEvent(new MappingChangedEvent(mappingKey, mappedServices));
+                            } else {
+                                AbstractServiceNameMapping.this.putCachedMapping(mappingKey, mappedServices);
+                            }
+                        }
+                    } else {
+                        mappedServices = get(subscribedURL);
+                        if (CollectionUtils.isNotEmpty(mappedServices)) {
+                            AbstractServiceNameMapping.this.putCachedMapping(mappingKey, mappedServices);
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed getting mapping info from remote center. ", e);
+                }
+                return mappedServices;
+            }
         }
     }
 }

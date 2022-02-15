@@ -60,7 +60,10 @@ public class FileCacheStoreFactory {
 
     public static FileCacheStore getInstance(String basePath, String cacheName) {
         if (basePath == null) {
-            basePath = System.getProperty("user.home") + "/.dubbo/";
+            basePath = System.getProperty("user.home") + File.separator + ".dubbo";
+        }
+        if (basePath.endsWith(File.separator)) {
+            basePath = basePath.substring(0, basePath.length() - 1);
         }
 
         File candidate = new File(basePath);

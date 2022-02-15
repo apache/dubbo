@@ -46,7 +46,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
@@ -74,8 +73,7 @@ public class ServiceInstancesChangedListener {
     protected final Set<String> serviceNames;
     protected final ServiceDiscovery serviceDiscovery;
     protected URL url;
-    protected Map<String, Set<NotifyListener>> listeners;
-    protected ConcurrentLinkedQueue<NotifyListenerWithKey> listenerQueue;
+    protected Map<String, Set<NotifyListenerWithKey>> listeners;
 
     protected AtomicBoolean destroyed = new AtomicBoolean(false);
 
@@ -88,7 +86,8 @@ public class ServiceInstancesChangedListener {
     private final ScheduledExecutorService scheduler;
     private volatile boolean hasEmptyMetadata;
 
-    private static final String[] SUPPORTED_PROTOCOLS = new String[] {"dubbo", "tri", "rest", "hessian", "grpc", "injvm"};
+    // protocols subscribe by default, specify the protocol that should be subscribed through 'consumer.protocol'.
+    private static final String[] SUPPORTED_PROTOCOLS = new String[]{"dubbo", "tri"};
     public static final String CONSUMER_PROTOCOL_SUFFIX = ":consumer";
     public static final String WILDCARD_PROTOCOL_SUFFIX = ":*";
 
@@ -96,7 +95,6 @@ public class ServiceInstancesChangedListener {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
         this.listeners = new ConcurrentHashMap<>();
-        this.listenerQueue = new ConcurrentLinkedQueue<>();
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
         retryPermission = new Semaphore(1);
@@ -209,24 +207,34 @@ public class ServiceInstancesChangedListener {
             return;
         }
 
-        for (String protocolServiceKey : getProtocolServiceKeyList(serviceKey, listener)) {
+        Set<String> protocolServiceKeys = getProtocolServiceKeyList(serviceKey, listener);
+        for (String protocolServiceKey : protocolServiceKeys) {
             // Add to global listeners
-            if (!this.listeners.containsKey(protocolServiceKey)) {
+            if (!this.listeners.containsKey(serviceKey)) {
                 // synchronized method, no need to use DCL
-                this.listeners.put(protocolServiceKey, new ConcurrentHashSet<>());
+                this.listeners.put(serviceKey, new ConcurrentHashSet<>());
             }
-            Set<NotifyListener> notifyListeners = this.listeners.get(protocolServiceKey);
+            Set<NotifyListenerWithKey> notifyListeners = this.listeners.get(serviceKey);
+            notifyListeners.add(new NotifyListenerWithKey(protocolServiceKey, listener));
+        }
 
-            if (notifyListeners.add(listener)) {
-                // Add to notify queue
-                NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(protocolServiceKey, listener);
-                listenerQueue.offer(listenerWithKey);
+        List<URL> urls;
+        if (protocolServiceKeys.size() > 1) {
+            urls = new ArrayList<>();
+            for (NotifyListenerWithKey notifyListenerWithKey : this.listeners.get(serviceKey)) {
+                String protocolKey = notifyListenerWithKey.getProtocolServiceKey();
+                List<URL> urlsOfProtocol = getAddresses(protocolKey, listener.getConsumerUrl());
+                if (CollectionUtils.isNotEmpty(urlsOfProtocol)) {
+                    urls.addAll(urlsOfProtocol);
+                }
             }
+        } else {
+            String protocolKey = this.listeners.get(serviceKey).iterator().next().getProtocolServiceKey();
+            urls = getAddresses(protocolKey, listener.getConsumerUrl());
+        }
 
-            List<URL> urls = getAddresses(protocolServiceKey, listener.getConsumerUrl());
-            if (CollectionUtils.isNotEmpty(urls)) {
-                listener.notify(urls);
-            }
+        if (CollectionUtils.isNotEmpty(urls)) {
+            listener.notify(urls);
         }
     }
 
@@ -237,20 +245,15 @@ public class ServiceInstancesChangedListener {
 
         for (String protocolServiceKey : getProtocolServiceKeyList(serviceKey, notifyListener)) {
             // synchronized method, no need to use DCL
-            Set<NotifyListener> notifyListeners = this.listeners.get(protocolServiceKey);
+            Set<NotifyListenerWithKey> notifyListeners = this.listeners.get(serviceKey);
             if (notifyListeners != null) {
-                if (notifyListeners.contains(notifyListener)) {
-                    // Remove from global listeners
-                    notifyListeners.remove(notifyListener);
-
-                    // Remove from notify queue
-                    NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(protocolServiceKey, notifyListener);
-                    listenerQueue.remove(listenerWithKey);
-                }
+                NotifyListenerWithKey listenerWithKey = new NotifyListenerWithKey(protocolServiceKey, notifyListener);
+                // Remove from global listeners
+                notifyListeners.remove(listenerWithKey);
 
                 // ServiceKey has no listener, remove set
                 if (notifyListeners.size() == 0) {
-                    this.listeners.remove(protocolServiceKey);
+                    this.listeners.remove(serviceKey);
                 }
             }
         }
@@ -370,15 +373,37 @@ public class ServiceInstancesChangedListener {
         return (List<URL>) serviceUrls.get(serviceProtocolKey);
     }
 
+    /**
+     * race condition is protected by onEvent/doOnEvent
+     */
     protected void notifyAddressChanged() {
-        if ()
-        listenerQueue.forEach(listenerWithKey -> {
-            String key = listenerWithKey.getServiceKey();
-            NotifyListener notifyListener = listenerWithKey.getNotifyListener();
-            //FIXME, group wildcard match
-            List<URL> urls = toUrlsWithEmpty(getAddresses(key, notifyListener.getConsumerUrl()));
-            logger.info("Notify service " + key + " with urls " + urls.size());
-            notifyListener.notify(urls);
+        listeners.forEach((serviceKey, listenerSet) -> {
+            if (listenerSet != null) {
+                if (listenerSet.size() == 1) {
+                    NotifyListenerWithKey listenerWithKey = listenerSet.iterator().next();
+                    String protocolServiceKey = listenerWithKey.getProtocolServiceKey();
+                    NotifyListener notifyListener = listenerWithKey.getNotifyListener();
+                    //FIXME, group wildcard match
+                    List<URL> urls = toUrlsWithEmpty(getAddresses(protocolServiceKey, notifyListener.getConsumerUrl()));
+                    logger.info("Notify service " + serviceKey + " with urls " + urls.size());
+                    notifyListener.notify(urls);
+                } else {
+                    List<URL> urls = new ArrayList<>();
+                    NotifyListener notifyListener = null;
+                    for (NotifyListenerWithKey listenerWithKey : listenerSet) {
+                        String protocolServiceKey = listenerWithKey.getProtocolServiceKey();
+                        notifyListener = listenerWithKey.getNotifyListener();
+                        List<URL> tmpUrls = toUrlsWithEmpty(getAddresses(protocolServiceKey, notifyListener.getConsumerUrl()));
+                        if (CollectionUtils.isNotEmpty(tmpUrls)) {
+                            urls.addAll(tmpUrls);
+                        }
+                    }
+                    if (notifyListener != null) {
+                        logger.info("Notify service " + serviceKey + " with urls " + urls.size());
+                        notifyListener.notify(urls);
+                    }
+                }
+            }
         });
     }
 
@@ -400,31 +425,20 @@ public class ServiceInstancesChangedListener {
     /**
      * Since this listener is shared among interfaces, destroy this listener only when all interface listener are unsubscribed
      */
-    public synchronized void destroy() {
+    public void destroy() {
         if (destroyed.compareAndSet(false, true)) {
             logger.info("Destroying instance listener of  " + this.getServiceNames());
             serviceDiscovery.removeServiceInstancesChangedListener(this);
-            allInstances.clear();
-            serviceUrls.clear();
-            listeners.clear();
-            listenerQueue.clear();
-            if (retryFuture != null && !retryFuture.isDone()) {
-                retryFuture.cancel(true);
+            synchronized (this) {
+                allInstances.clear();
+                serviceUrls.clear();
+                listeners.clear();
+                if (retryFuture != null && !retryFuture.isDone()) {
+                    retryFuture.cancel(true);
+                }
             }
         }
     }
-//
-//    public synchronized boolean destroyIfListenersIsEmpty() {
-//        if (destroyed.get()) {
-//            return true;
-//        }
-//        if (hasListeners()) {
-//            return false;
-//        }
-//
-//        destroy();
-//        return true;
-//    }
 
     public boolean isDestroyed() {
         return destroyed.get();
@@ -447,19 +461,14 @@ public class ServiceInstancesChangedListener {
         return Objects.hash(getClass(), getServiceNames());
     }
 
-    // for test purpose
-    public List<ServiceInstance> getInstancesOfApp(String appName) {
-        return allInstances.get(appName);
-    }
-
     /**
-     * Calculate the protocol list that the consumer will consume.
+     * Calculate the protocol list that the consumer cares about.
      *
      * @param serviceKey possible input serviceKey includes
      *                   1. {group}/{interface}:{version}:*
      *                   2. {group}/{interface}:{version}:consumer
      *                   3. {group}/{interface}:{version}:{user specified protocols}
-     * @param listener listener also contains the user specified protocols
+     * @param listener   listener also contains the user specified protocols
      * @return protocol list with the format {group}/{interface}:{version}:{protocol}
      */
     protected Set<String> getProtocolServiceKeyList(String serviceKey, NotifyListener listener) {
@@ -474,10 +483,12 @@ public class ServiceInstancesChangedListener {
         } else if (serviceKey.endsWith(CONSUMER_PROTOCOL_SUFFIX)) {
             serviceKey = serviceKey.substring(0, serviceKey.indexOf(CONSUMER_PROTOCOL_SUFFIX));
         } else {
-            protocol = serviceKey.substring(serviceKey.lastIndexOf(GROUP_CHAR_SEPARATOR) + GROUP_CHAR_SEPARATOR.length());
-            if (!protocol.contains(",")) {
+            String p = serviceKey.substring(serviceKey.lastIndexOf(GROUP_CHAR_SEPARATOR) + GROUP_CHAR_SEPARATOR.length());
+            if (!p.contains(",")) {
                 result.add(serviceKey);
                 return result;
+            } else {
+                protocol = p;
             }
         }
 
@@ -511,17 +522,17 @@ public class ServiceInstancesChangedListener {
         }
     }
 
-    protected static class NotifyListenerWithKey {
-        private String serviceKey;
-        private NotifyListener notifyListener;
+    public static class NotifyListenerWithKey {
+        private final String protocolServiceKey;
+        private final NotifyListener notifyListener;
 
-        public NotifyListenerWithKey(String serviceKey, NotifyListener notifyListener) {
-            this.serviceKey = serviceKey;
+        public NotifyListenerWithKey(String protocolServiceKey, NotifyListener notifyListener) {
+            this.protocolServiceKey = protocolServiceKey;
             this.notifyListener = notifyListener;
         }
 
-        public String getServiceKey() {
-            return serviceKey;
+        public String getProtocolServiceKey() {
+            return protocolServiceKey;
         }
 
         public NotifyListener getNotifyListener() {
@@ -537,12 +548,12 @@ public class ServiceInstancesChangedListener {
                 return false;
             }
             NotifyListenerWithKey that = (NotifyListenerWithKey) o;
-            return Objects.equals(serviceKey, that.serviceKey) && Objects.equals(notifyListener, that.notifyListener);
+            return Objects.equals(protocolServiceKey, that.protocolServiceKey) && Objects.equals(notifyListener, that.notifyListener);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(serviceKey, notifyListener);
+            return Objects.hash(protocolServiceKey, notifyListener);
         }
     }
 }
