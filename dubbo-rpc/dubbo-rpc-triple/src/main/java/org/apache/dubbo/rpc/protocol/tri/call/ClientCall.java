@@ -105,6 +105,7 @@ public class ClientCall {
         this.stream = new ClientStream(
             url,
             metadata.requestId,
+            executor,
             connection.getChannel(),
             new ClientStreamListenerImpl(responseListener, unpack));
     }
@@ -153,42 +154,38 @@ public class ClientCall {
 
         @Override
         public void onStart() {
-            executor.execute(listener::onStart);
+            listener.onStart();
         }
 
         @Override
         public void onMessage(byte[] message) {
-            executor.execute(() -> {
-                try {
-                    final Object unpacked = unpack.unpack(message);
-                    listener.onMessage(unpacked);
-                } catch (IOException e) {
-                    cancelByErr(RpcStatus.INTERNAL
-                        .withDescription("Deserialize response failed")
-                        .withCause(e));
-                }
-            });
+            try {
+                final Object unpacked = unpack.unpack(message);
+                listener.onMessage(unpacked);
+            } catch (IOException e) {
+                cancelByErr(RpcStatus.INTERNAL
+                    .withDescription("Deserialize response failed")
+                    .withCause(e));
+            }
         }
 
         @Override
         public void complete(RpcStatus status, Map<String, Object> attachments, Map<String, String> excludeHeaders) {
-            executor.execute(() -> {
-                if (done) {
-                    return;
-                }
-                done = true;
-                final Throwable throwableFromTrailers = getThrowableFromTrailers(excludeHeaders);
-                if (throwableFromTrailers != null) {
-                    status.withCause(throwableFromTrailers);
-                }
-                try {
-                    listener.onClose(status, attachments);
-                } catch (Throwable t) {
-                    cancelByErr(RpcStatus.INTERNAL
-                        .withDescription("Close stream error")
-                        .withCause(t));
-                }
-            });
+            if (done) {
+                return;
+            }
+            done = true;
+            final Throwable throwableFromTrailers = getThrowableFromTrailers(excludeHeaders);
+            if (throwableFromTrailers != null) {
+                status.withCause(throwableFromTrailers);
+            }
+            try {
+                listener.onClose(status, attachments);
+            } catch (Throwable t) {
+                cancelByErr(RpcStatus.INTERNAL
+                    .withDescription("Close stream error")
+                    .withCause(t));
+            }
         }
 
         void cancelByErr(RpcStatus status) {

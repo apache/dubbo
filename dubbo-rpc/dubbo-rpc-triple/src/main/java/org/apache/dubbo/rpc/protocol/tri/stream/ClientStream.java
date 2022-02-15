@@ -20,7 +20,6 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.CancellationContext;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.RpcStatus;
@@ -51,6 +50,7 @@ import io.netty.util.concurrent.Future;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 
 public class ClientStream extends AbstractStream implements Stream {
@@ -68,8 +68,10 @@ public class ClientStream extends AbstractStream implements Stream {
 
     public ClientStream(URL url,
                         long requestId,
+                        Executor executor,
                         Channel parent,
                         ClientStreamListener listener) {
+        super(executor);
         this.url = url;
         this.requestId = requestId;
         this.writeQueue = createWriteQueue(parent);
@@ -140,7 +142,7 @@ public class ClientStream extends AbstractStream implements Stream {
 
     @Override
     public void requestN(int n) {
-        runOnEventLoop(() -> deframer.request(n));
+        deframer.request(n);
     }
 
     public void halfClose() {
@@ -232,8 +234,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
             };
             deframer = new TriDecoder(decompressor, listener);
-
-            ClientStream.this.listener.onStart();
+            executor.execute(ClientStream.this.listener::onStart);
         }
 
         void onTrailersReceived(Http2Headers trailers) {
@@ -284,14 +285,17 @@ public class ClientStream extends AbstractStream implements Stream {
 
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
-            if (endStream) {
-                if (!remoteClosed) {
-                    writeQueue.enqueue(CancelQueueCommand.createCommand());
+            executor.execute(() -> {
+                if (endStream) {
+                    if (!remoteClosed) {
+                        writeQueue.enqueue(CancelQueueCommand.createCommand());
+                    }
+                    onTrailersReceived(headers);
+                } else {
+                    onHeaderReceived(headers);
                 }
-                onTrailersReceived(headers);
-            } else {
-                onHeaderReceived(headers);
-            }
+            });
+
         }
 
         @Override
@@ -310,13 +314,17 @@ public class ClientStream extends AbstractStream implements Stream {
                     .withDescription("headers not received before payload"));
                 return;
             }
-            deframer.deframe(data);
+            executor.execute(() -> {
+                deframer.deframe(data);
+            });
         }
 
         @Override
         public void cancelByRemote(RpcStatus status) {
-            transportError = status;
-            finishProcess(status, null);
+            executor.execute(() -> {
+                transportError = status;
+                finishProcess(status, null);
+            });
         }
     }
 }

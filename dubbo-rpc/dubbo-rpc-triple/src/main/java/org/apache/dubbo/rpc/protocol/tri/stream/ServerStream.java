@@ -62,7 +62,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class ServerStream extends AbstractStream {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerStream.class);
     public final ServerTransportObserver transportObserver = new ServerTransportObserver();
-    private final Executor executor;
     private final WriteQueue writeQueue;
     private final PathResolver pathResolver;
     private final List<HeaderFilter> filters;
@@ -81,8 +80,8 @@ public class ServerStream extends AbstractStream {
                         PathResolver pathResolver,
                         List<HeaderFilter> filters,
                         GenericUnpack genericUnpack) {
+        super(executor);
         this.eventLoop = channel.eventLoop();
-        this.executor = executor;
         this.pathResolver = pathResolver;
         this.filters = filters;
         this.frameworkModel = frameworkModel;
@@ -171,6 +170,7 @@ public class ServerStream extends AbstractStream {
 
     @Override
     public void requestN(int n) {
+        decoder.request(n);
         runOnEventLoop(() -> decoder.request(n));
     }
 
@@ -307,19 +307,23 @@ public class ServerStream extends AbstractStream {
                 genericUnpack,
                 pathResolver);
             ServerStream.this.listener = call.streamListener;
-            listener.onHeaders(headersToMap(headers));
-            if (endStream) {
-                decoder.close();
-            }
+            executor.execute((Runnable) () -> {
+                listener.onHeaders(headersToMap(headers));
+                if (endStream) {
+                    decoder.close();
+                }
+            });
         }
 
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            decoder.deframe(data);
-            if (endStream) {
-                decoder.close();
-            }
+            executor.execute(() -> {
+                decoder.deframe(data);
+                if (endStream) {
+                    decoder.close();
+                }
+            });
         }
 
 
@@ -335,12 +339,16 @@ public class ServerStream extends AbstractStream {
 
             @Override
             public void onRawMessage(byte[] data) {
-                ServerStream.this.listener.onMessage(data);
+//                executor.execute((Runnable) () -> {
+                    ServerStream.this.listener.onMessage(data);
+//                });
             }
 
             @Override
             public void close() {
-                ServerStream.this.listener.complete();
+//                executor.execute((Runnable) () -> {
+                    ServerStream.this.listener.complete();
+//                });
             }
         }
     }

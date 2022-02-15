@@ -374,17 +374,19 @@ public class ServerCall {
 
         @Override
         public void complete() {
-            executor.execute(() -> listener.onComplete());
+            listener.onComplete();
+//            executor.execute(() -> listener.onComplete());
         }
 
         @Override
         public void cancel(RpcStatus status) {
-            executor.execute(() -> listener.onCancel(status.description));
+            listener.onCancel(status.description);
+//            executor.execute(() -> listener.onCancel(status.description));
         }
 
         @Override
         public void onMessage(byte[] message) {
-            executor.execute(() -> {
+//            executor.execute(() -> {
                 if (closed) {
                     return;
                 }
@@ -403,7 +405,7 @@ public class ServerCall {
                 } finally {
                     ClassLoadUtil.switchContextLoader(tccl);
                 }
-            });
+//            });
         }
 
         /**

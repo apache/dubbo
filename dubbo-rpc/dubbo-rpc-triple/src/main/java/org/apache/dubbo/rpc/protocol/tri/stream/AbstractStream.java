@@ -19,7 +19,15 @@ package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import io.netty.channel.EventLoop;
 
+import java.util.concurrent.Executor;
+
 public abstract class AbstractStream implements Stream {
+
+    protected final Executor executor;
+
+    public AbstractStream(Executor executor) {
+        this.executor = executor;
+    }
 
     abstract EventLoop getEventLoop();
 
