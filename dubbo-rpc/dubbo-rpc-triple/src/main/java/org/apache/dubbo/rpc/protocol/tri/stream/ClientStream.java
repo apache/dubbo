@@ -59,23 +59,33 @@ public class ClientStream extends AbstractStream implements Stream {
     private final WriteQueue writeQueue;
     private final long requestId;
 
+    // for test
+    ClientStream(URL url,
+                 long requestId,
+                 WriteQueue writeQueue,
+                 ClientStreamListener listener) {
+
+        super(url);
+        this.requestId = requestId;
+        this.listener = listener;
+        this.writeQueue = writeQueue;
+    }
+
     public ClientStream(URL url,
                         long requestId,
                         Channel parent,
                         ClientStreamListener listener) {
         super(url);
         this.requestId = requestId;
-        this.writeQueue = createWriteQueue(parent);
         this.listener = listener;
+        this.writeQueue = createWriteQueue(parent);
     }
 
-    WriteQueue createWriteQueue(Channel parent) {
+    private WriteQueue createWriteQueue(Channel parent) {
         final Http2StreamChannelBootstrap bootstrap = new Http2StreamChannelBootstrap(parent);
         final Future<Http2StreamChannel> future = bootstrap.open().syncUninterruptibly();
         if (!future.isSuccess()) {
-            listener.complete(RpcStatus.INTERNAL
-                .withDescription("Create remote stream failed"), null);
-            return null;
+            throw new IllegalStateException("Create remote stream failed. channel:" + parent);
         }
         final Http2StreamChannel channel = future.getNow();
         channel.pipeline()

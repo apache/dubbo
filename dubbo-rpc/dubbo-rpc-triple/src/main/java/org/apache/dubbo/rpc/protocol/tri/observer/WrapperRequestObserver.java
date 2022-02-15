@@ -26,20 +26,19 @@ import com.google.protobuf.ByteString;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 public class WrapperRequestObserver implements StreamObserver<Object> {
     private final StreamObserver<Object> delegate;
-    private final List<String> argumentsType;
+    private final String[] argumentsType;
     private final GenericPack genericPack;
 
-    private WrapperRequestObserver(StreamObserver<Object> delegate, List<String> argumentsType, GenericPack genericPack) {
+    private WrapperRequestObserver(StreamObserver<Object> delegate, String[] argumentsType, GenericPack genericPack) {
         this.delegate = delegate;
         this.argumentsType = argumentsType;
         this.genericPack = genericPack;
     }
 
-    public static StreamObserver<Object> wrap(StreamObserver<Object> delegate, List<String> argumentsType, GenericPack genericPack) {
+    public static StreamObserver<Object> wrap(StreamObserver<Object> delegate, String[] argumentsType, GenericPack genericPack) {
         return new WrapperRequestObserver(delegate, argumentsType, genericPack);
     }
 
@@ -48,7 +47,9 @@ public class WrapperRequestObserver implements StreamObserver<Object> {
         Object[] arguments = (Object[]) data;
         final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
                 .setSerializeType(genericPack.serializationName);
-        builder.addAllArgTypes(argumentsType);
+        for (String type : argumentsType) {
+            builder.addArgTypes(type);
+        }
         try {
             for (Object argument : arguments) {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();

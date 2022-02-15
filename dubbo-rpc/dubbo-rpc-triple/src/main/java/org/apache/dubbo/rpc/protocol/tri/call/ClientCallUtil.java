@@ -115,7 +115,7 @@ public class ClientCallUtil {
     public static StreamObserver<Object> wrapperCall(ClientCall call, RequestMetadata metadata,
                                                      ClientCall.Listener responseListener) {
         final StreamObserver<Object> requestObserver = WrapperRequestObserver.wrap(new ClientCallToObserverAdapter<>(call),
-            metadata.argumentTypes, metadata.genericPack);
+            metadata.method.getCompatibleParamSignatures(), metadata.genericPack);
         final ClientCall.Listener wrapResponseListener = WrapResponseCallListener.wrap(responseListener, metadata.genericUnpack);
         call.start(metadata, wrapResponseListener);
         return requestObserver;

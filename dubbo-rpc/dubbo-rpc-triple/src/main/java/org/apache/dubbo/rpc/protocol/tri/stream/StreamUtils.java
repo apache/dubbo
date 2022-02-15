@@ -22,7 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.RequestMetadata;
 import org.apache.dubbo.rpc.protocol.tri.TripleConstant;
@@ -43,14 +43,13 @@ import io.netty.util.AsciiString;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class StreamUtils {
     protected static final Logger LOGGER = LoggerFactory.getLogger(StreamUtils.class);
 
-    public static RequestMetadata createRequest(URL url, Invocation invocation, long requestId, Compressor compressor,
-                                                String acceptEncoding, int timeout, GenericPack genericPack,
-                                                GenericUnpack genericUnpack) {
+    public static RequestMetadata createRequest(URL url, MethodDescriptor methodDescriptor,Invocation invocation,
+                                                long requestId, Compressor compressor, String acceptEncoding,
+                                                int timeout, GenericPack genericPack, GenericUnpack genericUnpack) {
         final String methodName = RpcUtils.getMethodName(invocation);
         final RequestMetadata meta = new RequestMetadata();
         meta.scheme = getSchemeFromUrl(url);
@@ -60,9 +59,8 @@ public class StreamUtils {
             application = (String) invocation.getObjectAttachments().get(CommonConstants.REMOTE_APPLICATION_KEY);
         }
         meta.application = application;
-        ConsumerModel consumerModel = invocation.getServiceModel() != null ?
-                (ConsumerModel) invocation.getServiceModel() : (ConsumerModel) url.getServiceModel();
-        meta.method = consumerModel.getServiceModel().getMethod(methodName, invocation.getParameterTypes());
+
+        meta.method = methodDescriptor;
         if (meta.method == null) {
             throw new IllegalStateException("MethodDescriptor not found for" + methodName + " params:" + Arrays.toString(invocation.getCompatibleParamSignatures()));
         }
@@ -77,8 +75,6 @@ public class StreamUtils {
         meta.genericPack = genericPack;
         meta.genericUnpack = genericUnpack;
         meta.arguments = invocation.getArguments();
-        meta.argumentTypes = Arrays.stream(invocation.getCompatibleParamSignatures())
-                .collect(Collectors.toList());
         return meta;
     }
 
