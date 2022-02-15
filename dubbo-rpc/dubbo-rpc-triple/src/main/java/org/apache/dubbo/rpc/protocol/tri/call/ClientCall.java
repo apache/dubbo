@@ -56,7 +56,7 @@ public class ClientCall {
     private RequestMetadata requestMetadata;
     private ClientStream stream;
     private boolean canceled;
-    private boolean started;
+    private boolean headerSent;
 
     public ClientCall(URL url,
                       Connection connection,
@@ -67,10 +67,16 @@ public class ClientCall {
         this.connection = connection;
     }
 
-
     public void sendMessage(Object message) {
-        if (!started) {
-            started = true;
+        executor.execute(() -> doSendMessage(message));
+    }
+
+    public void doSendMessage(Object message) {
+        if (canceled) {
+            throw new IllegalStateException("Call already canceled");
+        }
+        if (!headerSent) {
+            headerSent = true;
             stream.startCall(requestMetadata);
         }
         final byte[] data;
@@ -85,7 +91,15 @@ public class ClientCall {
     }
 
     public void halfClose() {
-        stream.halfClose();
+        executor.execute(() -> {
+            if (!headerSent) {
+                return;
+            }
+            if (canceled) {
+                return;
+            }
+            stream.halfClose();
+        });
     }
 
     public void setCompression(String compression) {
@@ -95,31 +109,38 @@ public class ClientCall {
     public void start(RequestMetadata metadata, Listener responseListener) {
         this.requestMetadata = metadata;
         final PbUnpack<?> unpack = requestMetadata.method.isNeedWrap() ?
-                PbUnpack.RESP_PB_UNPACK : new PbUnpack<>(requestMetadata.method.getReturnClass());
+            PbUnpack.RESP_PB_UNPACK : new PbUnpack<>(requestMetadata.method.getReturnClass());
 
         this.stream = new ClientStream(
-                url,
-                metadata.requestId,
-                connection.getChannel(),
-                new ClientStreamListenerImpl(responseListener, unpack));
+            url,
+            metadata.requestId,
+            connection.getChannel(),
+            new ClientStreamListenerImpl(responseListener, unpack));
     }
 
     public void cancel(String message, Throwable t) {
+        executor.execute(() -> doCancel(message, t));
+    }
+
+    public void doCancel(String message, Throwable t) {
         if (canceled) {
             return;
         }
-        canceled = true;
-        if (stream != null) {
-            final RpcStatus status = RpcStatus.CANCELLED;
-            if (message != null) {
-                status.withDescription(message);
-            } else {
-                status.withDescription("Cancel by client without message");
-            }
-            status.withCause(t);
-            stream.cancelByLocal(status);
+        // did not create stream
+        if (!headerSent) {
+            return;
         }
-
+        canceled = true;
+        if (stream == null) {
+            return;
+        }
+        RpcStatus status = RpcStatus.CANCELLED.withCause(t);
+        if (message != null) {
+            status = status.withDescription(message);
+        } else {
+            status = status.withDescription("Cancel by client without message");
+        }
+        stream.cancelByLocal(status);
     }
 
     interface Listener {
@@ -142,13 +163,18 @@ public class ClientCall {
         @Override
         public void onMessage(byte[] message) {
             executor.execute(() -> {
+                if (done) {
+                    LOGGER.warn("Received message from closed stream,connection=" + connection
+                        + " service=" + requestMetadata.service + " method=" + requestMetadata.method.getMethodName());
+                    return;
+                }
                 try {
                     final Object unpacked = unpack.unpack(message);
                     listener.onMessage(unpacked);
                 } catch (IOException e) {
                     cancelByErr(RpcStatus.INTERNAL
-                            .withDescription("Deserialize response failed")
-                            .withCause(e));
+                        .withDescription("Deserialize response failed")
+                        .withCause(e));
                 }
             });
         }
@@ -168,8 +194,8 @@ public class ClientCall {
                     listener.onClose(status, attachments);
                 } catch (Throwable t) {
                     cancelByErr(RpcStatus.INTERNAL
-                            .withDescription("Close stream error")
-                            .withCause(t));
+                        .withDescription("Close stream error")
+                        .withCause(t));
                 }
             });
         }
@@ -198,7 +224,7 @@ public class ClientCall {
                 DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                 if (debugInfo == null) {
                     return new RpcException(statusDetail.getCode(),
-                            RpcStatus.decodeMessage(statusDetail.getMessage()));
+                        RpcStatus.decodeMessage(statusDetail.getMessage()));
                 }
                 String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
                 return new RpcException(statusDetail.getCode(), msg);

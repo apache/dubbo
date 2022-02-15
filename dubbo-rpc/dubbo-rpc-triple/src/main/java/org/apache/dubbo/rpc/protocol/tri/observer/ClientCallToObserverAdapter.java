@@ -45,6 +45,9 @@ public class ClientCallToObserverAdapter<T> extends CancelableStreamObserver<T> 
 
     @Override
     public void onCompleted() {
+        if (terminated) {
+            return;
+        }
         call.halfClose();
         this.terminated = true;
     }

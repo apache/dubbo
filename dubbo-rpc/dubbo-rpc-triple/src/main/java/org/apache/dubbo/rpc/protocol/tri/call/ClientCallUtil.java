@@ -34,10 +34,18 @@ public class ClientCallUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientCallUtil.class);
 
     public static void call(ClientCall call, RequestMetadata metadata) {
-        if (metadata.method instanceof StreamMethodDescriptor) {
-            streamCall(call, metadata);
-        } else {
-            unaryCall(call, metadata);
+        try {
+            if (metadata.method instanceof StreamMethodDescriptor) {
+                streamCall(call, metadata);
+            } else {
+                unaryCall(call, metadata);
+            }
+        } catch (Throwable t) {
+            cancelByThrowable(call, t);
+            final RpcStatus status = RpcStatus.INTERNAL
+                .withCause(t)
+                .withDescription("Call aborted cause client exception");
+            DefaultFuture2.received(metadata.requestId, status, null);
         }
     }
 
@@ -50,10 +58,8 @@ public class ClientCallUtil {
         } else {
             callBiOrClientStream(call, metadata, appResponse);
         }
-        // for timeout
         DefaultFuture2.sent(metadata.requestId);
-        final RpcStatus status = RpcStatus.OK;
-        DefaultFuture2.received(metadata.requestId, status, appResponse);
+        DefaultFuture2.received(metadata.requestId, RpcStatus.OK, appResponse);
     }
 
     private static void callBiOrClientStream(ClientCall call, RequestMetadata metadata, AppResponse appResponse) {
@@ -86,18 +92,15 @@ public class ClientCallUtil {
     public static void unaryCall(ClientCall call, RequestMetadata metadata) {
         final UnaryCallListener listener = new UnaryCallListener(metadata.requestId);
         final StreamObserver<Object> requestObserver = call(call, metadata, listener);
-        try {
-            Object argument;
-            if (metadata.method.isNeedWrap()) {
-                argument = metadata.arguments;
-            } else {
-                argument = metadata.arguments[0];
-            }
-            requestObserver.onNext(argument);
-            requestObserver.onCompleted();
-        } catch (Throwable t) {
-            cancelByThrowable(call, t);
+        Object argument;
+        if (metadata.method.isNeedWrap()) {
+            argument = metadata.arguments;
+        } else {
+            argument = metadata.arguments[0];
         }
+        requestObserver.onNext(argument);
+        requestObserver.onCompleted();
+        DefaultFuture2.sent(metadata.requestId);
     }
 
     public static StreamObserver<Object> call(ClientCall call, RequestMetadata metadata,
@@ -112,7 +115,7 @@ public class ClientCallUtil {
     public static StreamObserver<Object> wrapperCall(ClientCall call, RequestMetadata metadata,
                                                      ClientCall.Listener responseListener) {
         final StreamObserver<Object> requestObserver = WrapperRequestObserver.wrap(new ClientCallToObserverAdapter<>(call),
-                metadata.argumentTypes, metadata.genericPack);
+            metadata.argumentTypes, metadata.genericPack);
         final ClientCall.Listener wrapResponseListener = WrapResponseCallListener.wrap(responseListener, metadata.genericUnpack);
         call.start(metadata, wrapResponseListener);
         return requestObserver;
@@ -129,11 +132,6 @@ public class ClientCallUtil {
             call.cancel("Canceled by error", t);
         } catch (Throwable t1) {
             LOGGER.error("Cancel triple request failed", t1);
-        }
-        if (t instanceof RuntimeException) {
-            throw (RuntimeException) t;
-        } else {
-            throw (Error) t;
         }
     }
 }

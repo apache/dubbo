@@ -18,8 +18,6 @@
 package org.apache.dubbo.rpc.protocol.tri.stream;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.tri.AbstractTransportObserver;
 import org.apache.dubbo.rpc.protocol.tri.DefaultFuture2;
 import org.apache.dubbo.rpc.protocol.tri.H2TransportObserver;
@@ -51,12 +49,10 @@ import java.util.Map;
 
 
 public class ClientStream extends AbstractStream implements Stream {
-    private static final Logger logger = LoggerFactory.getLogger(ClientStream.class);
     public final ClientStreamListener listener;
     public final H2TransportObserver remoteObserver = new ClientTransportObserver();
     private final WriteQueue writeQueue;
     private final long requestId;
-    private boolean canceled;
     private boolean headerReceived;
     private Http2Headers trailers;
 
@@ -110,10 +106,6 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     public void cancelByLocal(RpcStatus status) {
-        if (canceled) {
-            return;
-        }
-        canceled = true;
         final CancelQueueCommand cmd = CancelQueueCommand.createCommand();
         this.writeQueue.enqueue(cmd);
     }
