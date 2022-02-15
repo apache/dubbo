@@ -234,7 +234,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 }
             };
             deframer = new TriDecoder(decompressor, listener);
-            executor.execute(ClientStream.this.listener::onStart);
+            ClientStream.this.listener.onStart();
         }
 
         void onTrailersReceived(Http2Headers trailers) {
@@ -300,21 +300,21 @@ public class ClientStream extends AbstractStream implements Stream {
 
         @Override
         public void onData(ByteBuf data, boolean endStream) {
-            if (transportError != null) {
-                transportError.appendDescription("Data:" + data.toString(StandardCharsets.UTF_8));
-                ReferenceCountUtil.release(data);
-                if (transportError.description.length() > 512 || endStream) {
-                    handleH2TransportError(transportError);
-
-                }
-                return;
-            }
-            if (!headerReceived) {
-                handleH2TransportError(RpcStatus.INTERNAL
-                    .withDescription("headers not received before payload"));
-                return;
-            }
             executor.execute(() -> {
+                if (transportError != null) {
+                    transportError.appendDescription("Data:" + data.toString(StandardCharsets.UTF_8));
+                    ReferenceCountUtil.release(data);
+                    if (transportError.description.length() > 512 || endStream) {
+                        handleH2TransportError(transportError);
+
+                    }
+                    return;
+                }
+                if (!headerReceived) {
+                    handleH2TransportError(RpcStatus.INTERNAL
+                        .withDescription("headers not received before payload"));
+                    return;
+                }
                 deframer.deframe(data);
             });
         }

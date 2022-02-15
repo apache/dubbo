@@ -224,90 +224,90 @@ public class ServerStream extends AbstractStream {
 
         @Override
         public void onHeader(Http2Headers headers, boolean endStream) {
-            if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
-                responsePlainTextError(HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
-                    RpcStatus.INTERNAL
-                        .withDescription(String.format("Method '%s' is not supported", headers.method())));
-                return;
-            }
-
-            if (headers.path() == null) {
-                responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
-                    RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
-                return;
-            }
-
-            final String path = headers.path().toString();
-            if (path.charAt(0) != '/') {
-                responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
-                    RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code)
-                        .withDescription(String.format("Expected path to start with /: %s", path)));
-                return;
-            }
-
-            final CharSequence contentType = HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));
-            if (contentType == null) {
-                responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
-                    RpcStatus.fromCode(RpcStatus.Code.INTERNAL.code)
-                        .withDescription("Content-Type is missing from the request"));
-                return;
-            }
-
-            final String contentString = contentType.toString();
-            if (!supportContentType(contentString)) {
-                responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
-                    RpcStatus.fromCode(RpcStatus.Code.INTERNAL.code)
-                        .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
-                return;
-            }
-
-            if (path.charAt(0) != '/') {
-                responseErr(RpcStatus.UNIMPLEMENTED
-                    .withDescription("Path must start with '/'. Request path: " + path));
-                return;
-            }
-
-            String[] parts = path.split("/");
-            if (parts.length != 3) {
-                responseErr(RpcStatus.UNIMPLEMENTED
-                    .withDescription("Bad path format:" + path));
-                return;
-            }
-            String serviceName = parts[1];
-            String originalMethodName = parts[2];
-            String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);
-
-            DeCompressor deCompressor = DeCompressor.NONE;
-            CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
-            if (null != messageEncoding) {
-                String compressorStr = messageEncoding.toString();
-                if (!Identity.MESSAGE_ENCODING.equals(compressorStr)) {
-                    DeCompressor compressor = DeCompressor.getCompressor(frameworkModel, compressorStr);
-                    if (null == compressor) {
-                        responseErr(RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code)
-                            .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
-                        return;
-                    }
-                    deCompressor = compressor;
-                }
-            }
-
-            try {
-                final TriDecoder.Listener listener = new ServerDecoderListener();
-                ServerStream.this.decoder = new TriDecoder(deCompressor, listener);
-            } catch (Throwable t) {
-                close(RpcStatus.INTERNAL
-                    .withCause(t), null);
-            }
-            ServerCall call = new ServerCall(ServerStream.this, frameworkModel,
-                serviceName,
-                methodName,
-                executor,
-                filters,
-                genericUnpack,
-                pathResolver);
-            ServerStream.this.listener = call.streamListener;
             executor.execute((Runnable) () -> {
+                if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
+                    responsePlainTextError(HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
+                        RpcStatus.INTERNAL
+                            .withDescription(String.format("Method '%s' is not supported", headers.method())));
+                    return;
+                }
+
+                if (headers.path() == null) {
+                    responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
+                        RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
+                    return;
+                }
+
+                final String path = headers.path().toString();
+                if (path.charAt(0) != '/') {
+                    responsePlainTextError(HttpResponseStatus.NOT_FOUND.code(),
+                        RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code)
+                            .withDescription(String.format("Expected path to start with /: %s", path)));
+                    return;
+                }
+
+                final CharSequence contentType = HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));
+                if (contentType == null) {
+                    responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
+                        RpcStatus.fromCode(RpcStatus.Code.INTERNAL.code)
+                            .withDescription("Content-Type is missing from the request"));
+                    return;
+                }
+
+                final String contentString = contentType.toString();
+                if (!supportContentType(contentString)) {
+                    responsePlainTextError(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
+                        RpcStatus.fromCode(RpcStatus.Code.INTERNAL.code)
+                            .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
+                    return;
+                }
+
+                if (path.charAt(0) != '/') {
+                    responseErr(RpcStatus.UNIMPLEMENTED
+                        .withDescription("Path must start with '/'. Request path: " + path));
+                    return;
+                }
+
+                String[] parts = path.split("/");
+                if (parts.length != 3) {
+                    responseErr(RpcStatus.UNIMPLEMENTED
+                        .withDescription("Bad path format:" + path));
+                    return;
+                }
+                String serviceName = parts[1];
+                String originalMethodName = parts[2];
+                String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);
+
+                DeCompressor deCompressor = DeCompressor.NONE;
+                CharSequence messageEncoding = headers.get(TripleHeaderEnum.GRPC_ENCODING.getHeader());
+                if (null != messageEncoding) {
+                    String compressorStr = messageEncoding.toString();
+                    if (!Identity.MESSAGE_ENCODING.equals(compressorStr)) {
+                        DeCompressor compressor = DeCompressor.getCompressor(frameworkModel, compressorStr);
+                        if (null == compressor) {
+                            responseErr(RpcStatus.fromCode(RpcStatus.Code.UNIMPLEMENTED.code)
+                                .withDescription(String.format("Grpc-encoding '%s' is not supported", compressorStr)));
+                            return;
+                        }
+                        deCompressor = compressor;
+                    }
+                }
+
+                try {
+                    final TriDecoder.Listener listener = new ServerDecoderListener();
+                    ServerStream.this.decoder = new TriDecoder(deCompressor, listener);
+                } catch (Throwable t) {
+                    close(RpcStatus.INTERNAL
+                        .withCause(t), null);
+                }
+                ServerCall call = new ServerCall(ServerStream.this, frameworkModel,
+                    serviceName,
+                    methodName,
+                    executor,
+                    filters,
+                    genericUnpack,
+                    pathResolver);
+                ServerStream.this.listener = call.streamListener;
                 listener.onHeaders(headersToMap(headers));
                 if (endStream) {
                     decoder.close();
@@ -329,9 +329,9 @@ public class ServerStream extends AbstractStream {
 
         @Override
         public void cancelByRemote(RpcStatus status) {
-            listener.cancel(status);
-//            listener.complete();
-//            close(status, null);
+            executor.execute(() -> {
+                listener.cancel(status);
+            });
         }
 
 
@@ -339,16 +339,12 @@ public class ServerStream extends AbstractStream {
 
             @Override
             public void onRawMessage(byte[] data) {
-//                executor.execute((Runnable) () -> {
-                    ServerStream.this.listener.onMessage(data);
-//                });
+                ServerStream.this.listener.onMessage(data);
             }
 
             @Override
             public void close() {
-//                executor.execute((Runnable) () -> {
-                    ServerStream.this.listener.complete();
-//                });
+                ServerStream.this.listener.complete();
             }
         }
     }
