@@ -51,9 +51,12 @@ public class MetaCacheManager extends AbstractCacheManager<MetadataInfo> {
         int entrySize = StringUtils.parseInteger(rawEntrySize);
         entrySize = (entrySize == 0 ? DEFAULT_ENTRY_SIZE : entrySize);
 
+        String rawMaxFileSize = System.getProperty("dubbo.meta.cache.maxFileSize");
+        long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
+
         cache = new LRUCache<>(entrySize);
 
-        init(filePath, fileName, entrySize, 60, executorService);
+        init(filePath, fileName, entrySize, maxFileSize, 60, executorService);
     }
 
     // for unit test only

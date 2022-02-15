@@ -24,7 +24,6 @@ import org.apache.dubbo.common.resource.Disposable;
 import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,7 +40,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
     protected FileCacheStore cacheStore;
     protected LRUCache<String, V> cache;
 
-    protected void init(String filePath, String fileName, int entrySize, int interval, ScheduledExecutorService executorService) {
+    protected void init(String filePath, String fileName, int entrySize, long fileSize, int interval, ScheduledExecutorService executorService) {
         this.cache = new LRUCache<>(entrySize);
 
         try {
@@ -60,9 +59,7 @@ public abstract class AbstractCacheManager<V> implements Disposable {
                 this.executorService = executorService;
             }
 
-            String rawMaxFileSize = System.getProperty("dubbo.mapping.cache.maxFileSize");
-            long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
-            this.executorService.scheduleWithFixedDelay(new CacheRefreshTask<>(this.cacheStore, this.cache, this, maxFileSize), 10, interval, TimeUnit.MINUTES);
+            this.executorService.scheduleWithFixedDelay(new CacheRefreshTask<>(this.cacheStore, this.cache, this, fileSize), 10, interval, TimeUnit.MINUTES);
         } catch (Exception e) {
             logger.error("Load mapping from local cache file error ", e);
         }

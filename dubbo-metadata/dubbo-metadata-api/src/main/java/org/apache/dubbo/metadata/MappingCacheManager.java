@@ -53,7 +53,10 @@ public class MappingCacheManager extends AbstractCacheManager<Set<String>> {
         int entrySize = StringUtils.parseInteger(rawEntrySize);
         entrySize = (entrySize == 0 ? DEFAULT_ENTRY_SIZE : entrySize);
 
-        init(filePath, fileName, entrySize, 50, executorService);
+        String rawMaxFileSize = System.getProperty("dubbo.mapping.cache.maxFileSize");
+        long maxFileSize = StringUtils.parseLong(rawMaxFileSize);
+
+        init(filePath, fileName, entrySize,  maxFileSize, 50, executorService);
     }
 
     @Override
