@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.Serializable;
@@ -61,10 +62,13 @@ public class MetadataInfo implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger(MetadataInfo.class);
 
     private String app;
-    private String revision;
-    private Map<String, ServiceInfo> services;
+    // revision that will report to registry or remote meta center, must always update together with rawMetadataInfo, check {@link this#calAndGetRevision}
+    private volatile String revision;
+    // Json formatted metadata that will report to remote meta center, must always update together with revision, check {@link this#calAndGetRevision}
+    private volatile String rawMetadataInfo;
+    private final Map<String, ServiceInfo> services;
 
-    private volatile AtomicBoolean initiated = new AtomicBoolean(false);
+    private AtomicBoolean initiated = new AtomicBoolean(false);
 
     // used at runtime
     private transient final Map<String, String> extendParams;
@@ -157,7 +161,10 @@ public class MetadataInfo implements Serializable {
     }
 
     /**
-     * Reported status and metadata modification must be synchronized if used in multiple threads.
+     * Calculation of this instance's status and modification the instance must be synchronized among different threads.
+     * <p>
+     * Usage of this method is strictly restricted at certain point of registration, always try using {@link this#getRevision()}
+     * instead of this method.
      */
     public synchronized String calAndGetRevision() {
         if (revision != null && !updated) {
@@ -180,6 +187,7 @@ public class MetadataInfo implements Serializable {
                     logger.info(String.format("metadata revision changed: %s -> %s, app: %s, services: %d", this.revision, tempRevision, this.app, this.services.size()));
                 }
                 this.revision = tempRevision;
+                this.rawMetadataInfo = JsonUtils.getGson().toJson(this);
             }
         }
         return revision;
@@ -187,6 +195,10 @@ public class MetadataInfo implements Serializable {
 
     public void setRevision(String revision) {
         this.revision = revision;
+    }
+
+    public String getContent() {
+        return this.rawMetadataInfo;
     }
 
     public String getApp() {

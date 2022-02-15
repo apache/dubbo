@@ -17,7 +17,6 @@
 package org.apache.dubbo.config.mock;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -49,7 +48,7 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void doUpdate(ServiceInstance serviceInstance, MetadataInfo metadataInfo) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = serviceInstance;
     }
 

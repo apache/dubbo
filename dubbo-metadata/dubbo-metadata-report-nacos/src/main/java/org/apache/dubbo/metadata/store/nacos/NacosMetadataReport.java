@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.utils.JsonUtils;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
@@ -39,7 +40,6 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
 import com.alibaba.nacos.api.exception.NacosException;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,8 +67,6 @@ import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
 public class NacosMetadataReport extends AbstractMetadataReport {
 
     private NacosConfigServiceWrapper configService;
-
-    private Gson gson = new Gson();
 
     /**
      * The group used to store metadata in Nacos
@@ -146,9 +144,10 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     @Override
     public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
-        String content = gson.toJson(metadataInfo);
         try {
-            configService.publishConfig(identifier.getApplication(), identifier.getRevision(), content);
+            if (metadataInfo.getContent() != null) {
+                configService.publishConfig(identifier.getApplication(), identifier.getRevision(), metadataInfo.getContent());
+            }
         } catch (NacosException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -167,7 +166,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         try {
             String content = configService.getConfig(identifier.getApplication(), identifier.getRevision(), 3000L);
-            return gson.fromJson(content, MetadataInfo.class);
+            return JsonUtils.getGson().fromJson(content, MetadataInfo.class);
         } catch (NacosException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
