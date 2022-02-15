@@ -554,6 +554,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         // get consumer's global configuration
         completeCompoundConfigs();
 
+        checkProtocol();
+
         // init some null configuration.
         List<ConfigInitializer> configInitializers = this.getExtensionLoader(ConfigInitializer.class)
             .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
