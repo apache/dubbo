@@ -194,15 +194,12 @@ public class RpcStatus {
     }
 
     public String toMessage() {
-        final String msg;
+        String msg = "";
         if (cause == null) {
-            msg = description;
+            msg += description;
         } else {
             String placeHolder = description == null ? "" : description;
-            msg = StringUtils.toString(placeHolder, cause);
-        }
-        if (msg == null) {
-            return "";
+            msg += StringUtils.toString(placeHolder, cause);
         }
         return msg;
     }

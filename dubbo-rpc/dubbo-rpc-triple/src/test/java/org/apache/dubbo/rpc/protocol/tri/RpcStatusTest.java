@@ -27,8 +27,9 @@ class RpcStatusTest {
         String origin = "haha test 😊";
         final RpcStatus status = RpcStatus.INTERNAL
             .withDescription(origin);
-        Assertions.assertNotEquals(origin, status.toMessage());
-        final String decoded = RpcStatus.decodeMessage(status.toMessage());
+        final String encoded = RpcStatus.encodeMessage(origin);
+        Assertions.assertNotEquals(origin, encoded);
+        final String decoded = RpcStatus.decodeMessage(encoded);
         Assertions.assertEquals(origin, decoded);
     }
 
@@ -37,6 +38,6 @@ class RpcStatusTest {
         String content = "\t\ntest with whitespace\r\nand Unicode BMP ☺ and non-BMP 😈\t\n";
         final RpcStatus status = RpcStatus.INTERNAL
             .withDescription(content);
-        Assertions.assertNotEquals(content, status.toMessage());
+        Assertions.assertEquals(content, status.toMessage());
     }
 }
